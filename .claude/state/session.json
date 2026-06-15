@@ -3,7 +3,7 @@
   "cwd": "/root/my-app",
   "duration_minutes": 2,
   "ended_at": "2026-06-15T11:02:49Z",
-  "event_seq": 9,
+  "event_seq": 15,
   "fork_count": 0,
   "git": {
     "branch": "main",
@@ -16,7 +16,7 @@
     "last_error": ""
   },
   "intent": "literal",
-  "last_event_id": "event-000009",
+  "last_event_id": "event-000015",
   "last_message_hash": "113e0be0b7a719dd",
   "last_message_length": 608,
   "memory_logged": true,
@@ -40,5 +40,5 @@
   "started_at": "2026-06-15T11:00:42Z",
   "state": "stopped",
   "state_version": 1,
-  "updated_at": "2026-06-15T11:11:44Z"
+  "updated_at": "2026-06-15T11:13:01Z"
 }
