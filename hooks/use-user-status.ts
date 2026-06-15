@@ -1,0 +1,61 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { getWsClient } from "@/lib/ws/client";
+import { WsEventPayload } from "@/lib/ws/events";
+
+export function useUserStatus(userId?: string) {
+  const [status, setStatus] = useState<"online" | "offline" | "break">("offline");
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const client = getWsClient();
+    const unsub = client.on("user:status", (data) => {
+      const payload = data.payload as WsEventPayload["user:status"];
+      if (payload.userId === userId) {
+        setStatus(payload.status);
+      }
+      setOnlineUsers((prev) => {
+        const next = new Set(prev);
+        if (payload.status === "offline") {
+          next.delete(payload.userId);
+        } else {
+          next.add(payload.userId);
+        }
+        return next;
+      });
+    });
+
+    fetchStatus(userId).then(setStatus);
+    return () => { unsub(); };
+  }, [userId]);
+
+  const updateStatus = useCallback(async (newStatus: "online" | "offline" | "break") => {
+    const client = getWsClient();
+    client.send({
+      type: "status_update",
+      payload: { userId, status: newStatus },
+    });
+    setStatus(newStatus);
+    await fetch("/api/user/status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, status: newStatus }),
+    });
+  }, [userId]);
+
+  return { status, updateStatus, onlineUsers };
+}
+
+async function fetchStatus(userId: string) {
+  try {
+    const res = await fetch(`/api/user/status?userId=${userId}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.status as "online" | "offline" | "break";
+    }
+  } catch { /* ignore */ }
+  return "offline";
+}

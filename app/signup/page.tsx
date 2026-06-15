@@ -1,12 +1,9 @@
-"use client"
-
-import Link from "next/link"
-import { SignupForm } from "@/components/signup-form"
+import Link from "next/link";
+import { SignupForm } from "@/components/signup-form";
 
 export default function SignupPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      {/* Left: Form column */}
       <div className="flex flex-col gap-4 p-6 md:p-10 bg-background">
         <div className="flex justify-center gap-2 md:justify-start">
           <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
@@ -26,17 +23,13 @@ export default function SignupPage() {
         </p>
       </div>
 
-      {/* Right: Image / branding column */}
       <div className="relative hidden lg:block overflow-hidden bg-[#0d0f1a]">
         <img
           src="/login-bg.png"
           alt="Background"
           className="absolute inset-0 h-full w-full object-cover opacity-80"
         />
-        {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d0f1a]/60 via-transparent to-[#1a0d2e]/60" />
-
-        {/* Branding overlay */}
         <div className="absolute inset-0 flex flex-col items-start justify-end p-12">
           <blockquote className="space-y-3">
             <p className="text-xl font-medium text-white/90 leading-relaxed max-w-xs">
@@ -49,5 +42,5 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

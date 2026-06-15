@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const roboto = Roboto({
@@ -17,6 +17,12 @@ export const metadata: Metadata = {
     template: "%s | MyWorkSpace",
   },
   description: "MyWorkSpace — the platform that transforms how your team collaborates and ships.",
+  metadataBase: new URL("https://myworkspace.io"),
+  openGraph: {
+    title: "MyWorkSpace",
+    description: "The platform that transforms how your team collaborates and ships.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -28,9 +34,10 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${roboto.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

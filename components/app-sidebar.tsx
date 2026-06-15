@@ -1,52 +1,33 @@
-"use client"
+"use client";
 
-import * as React from "react"
-
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from "@/components/nav-main";
+import { NavProjects } from "@/components/nav-projects";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon, LayoutDashboardIcon, ListTodoIcon, UsersIcon, StoreIcon } from "lucide-react"
+} from "@/components/ui/sidebar";
+import {
+  LayoutDashboardIcon,
+  ListTodoIcon,
+  UsersIcon,
+  Settings2Icon,
+  StoreIcon,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: <GalleryVerticalEndIcon className="size-6" />,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: <AudioLinesIcon className="size-6" />,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: <TerminalIcon className="size-6" />,
-      plan: "Free",
-    },
-  ],
+export const defaultNavData = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: <LayoutDashboardIcon className="size-6" />,
       isActive: true,
       items: [
-        { title: "Overview", url: "#" },
+        { title: "Overview", url: "/dashboard" },
         { title: "Reports", url: "#" },
       ],
     },
@@ -55,9 +36,9 @@ const data = {
       url: "/overview",
       icon: <ListTodoIcon className="size-6" />,
       items: [
-        { title: "All Tasks", url: "#" },
-        { title: "My Tasks", url: "#" },
-        { title: "Saved Tasks", url: "#" },
+        { title: "All Tasks", url: "/overview" },
+        { title: "My Tasks", url: "/overview" },
+        { title: "Saved Tasks", url: "/overview" },
       ],
     },
     {
@@ -83,21 +64,36 @@ const data = {
     },
   ],
   appStore: [
-    {
-      name: "Browse Apps",
-      url: "/appstore",
-      icon: <StoreIcon className="size-6" />,
-    },
+    { name: "Browse Apps", url: "/appstore", icon: <StoreIcon className="size-6" /> },
   ],
+};
+
+export interface AppSidebarData {
+  navMain: typeof defaultNavData.navMain;
+  appStore: typeof defaultNavData.appStore;
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  data = defaultNavData,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { data?: AppSidebarData }) {
+  const { data: session } = useSession();
+  const user = session?.user
+    ? { name: session.user.name || "", email: session.user.email || "", avatar: session.user.image || "" }
+    : { name: "User", email: "user@example.com", avatar: "" };
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="h-20 border-b justify-center">
         <div className="flex items-center gap-2 px-1 group-data-[collapsible=icon]:justify-center">
-          <img src="/logo.jpeg" alt="MyWorkSpace Logo" className="size-8 rounded-lg object-cover shadow-sm shrink-0" />
-          <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">My WorkSpace</h1>
+          <img
+            src="/logo.jpeg"
+            alt="MyWorkSpace Logo"
+            className="size-8 rounded-lg object-cover shadow-sm shrink-0"
+          />
+          <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">
+            My WorkSpace
+          </h1>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -106,9 +102,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain.slice(-1)} label="Settings" className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
