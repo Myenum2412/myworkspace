@@ -1,0 +1,30 @@
+import type { Metadata } from "next"
+import Link from "next/link"
+import { ForgotPasswordForm } from "@/components/forgot-password-form"
+
+export const metadata: Metadata = {
+  title: "Forgot Password",
+  description: "Reset your MyWorkSpace account password.",
+}
+
+
+export default function ForgotPasswordPage() {
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+      {/* Logo */}
+      <Link href="/login" className="flex items-center gap-2 font-semibold text-foreground">
+        <img src="/logo.jpeg" alt="MyWorkSpace Logo" className="size-8 rounded-lg object-cover shadow-sm" />
+        <span className="text-base tracking-tight">MyWorkSpace</span>
+      </Link>
+
+      {/* Form card */}
+      <div className="w-full max-w-sm">
+        <ForgotPasswordForm />
+      </div>
+
+      <p className="text-center text-xs text-muted-foreground">
+        &copy; {new Date().getFullYear()} MyWorkSpace. All rights reserved.
+      </p>
+    </div>
+  )
+}
