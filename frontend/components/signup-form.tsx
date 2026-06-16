@@ -66,11 +66,11 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
         )}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-name">Full name</Label>
-          <Input id="signup-name" name="name" type="text" placeholder="Jane Smith" required autoComplete="name" className="h-10" />
+          <Input id="signup-name" name="name" type="text" required autoComplete="name" className="h-10" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-company">Company name</Label>
-          <Input id="signup-company" name="company" type="text" placeholder="Acme Corp" autoComplete="organization" className="h-10" />
+          <Input id="signup-company" name="company" type="text" autoComplete="organization" className="h-10" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-email">Email address</Label>
@@ -79,7 +79,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-password">Password</Label>
           <div className="relative">
-            <Input id="signup-password" name="password" type={showPassword ? "text" : "password"} placeholder="Min. 8 characters" required autoComplete="new-password" className="h-10 pr-10" />
+            <Input id="signup-password" name="password" type={showPassword ? "text" : "password"} required autoComplete="new-password" className="h-10 pr-10" />
             <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground transition-colors" aria-label={showPassword ? "Hide password" : "Show password"}>
               {showPassword ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
             </button>
@@ -88,7 +88,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-confirm">Confirm password</Label>
           <div className="relative">
-            <Input id="signup-confirm" type={showConfirm ? "text" : "password"} placeholder="Re-enter your password" required autoComplete="new-password" className="h-10 pr-10" />
+            <Input id="signup-confirm" type={showConfirm ? "text" : "password"} required autoComplete="new-password" className="h-10 pr-10" />
             <button type="button" onClick={() => setShowConfirm((v) => !v)} className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground transition-colors" aria-label={showConfirm ? "Hide password" : "Show password"}>
               {showConfirm ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
             </button>
@@ -107,9 +107,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 text-sm font-medium" aria-label="Sign up with Google"><GoogleIcon /> Google</Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 text-sm font-medium" aria-label="Sign up with LinkedIn"><LinkedInIcon /> LinkedIn</Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 text-sm font-medium" aria-label="Sign up with GitHub"><GitHubIcon /> GitHub</Button>
+        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with Google"><GoogleIcon /> Google</Button>
+        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with LinkedIn"><LinkedInIcon /> LinkedIn</Button>
+        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with GitHub"><GitHubIcon /> GitHub</Button>
       </div>
 
       <p className="text-center text-sm text-muted-foreground">

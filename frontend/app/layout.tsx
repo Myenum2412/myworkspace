@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { OfflineDetector } from "@/components/offline-detector";
 import "./globals.css";
 
 const roboto = Roboto({
@@ -37,7 +38,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+        <Providers>
+          <OfflineDetector>{children}</OfflineDetector>
+        </Providers>
       </body>
     </html>
   );

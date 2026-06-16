@@ -106,9 +106,9 @@ export function SignupFormMongo({ className, ...props }: React.ComponentProps<"d
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 text-sm font-medium" aria-label="Sign up with Google"><GoogleIcon /> Google</Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 text-sm font-medium" aria-label="Sign up with LinkedIn"><LinkedInIcon /> LinkedIn</Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 text-sm font-medium" aria-label="Sign up with GitHub"><GitHubIcon /> GitHub</Button>
+        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with Google"><GoogleIcon /> Google</Button>
+        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with LinkedIn"><LinkedInIcon /> LinkedIn</Button>
+        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with GitHub"><GitHubIcon /> GitHub</Button>
       </div>
 
       <p className="text-center text-sm text-muted-foreground">
