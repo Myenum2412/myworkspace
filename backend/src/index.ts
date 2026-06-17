@@ -5,8 +5,6 @@ import { connectDb } from "./lib/db/index.js";
 import { wsManager } from "./lib/ws/server.js";
 
 async function start() {
-  await connectDb();
-
   const server = createServer(app);
 
   wsManager.initialize(server);
@@ -16,6 +14,11 @@ async function start() {
     console.log(`✦ WebSocket server ready on ws://localhost:${env.PORT}/api/ws`);
     console.log(`✦ Environment: ${env.NODE_ENV}`);
   });
+
+  connectDb().catch((err) => {
+    console.error("✦ MongoDB connection failed:", err.message);
+    console.error("✦ Server will still respond, but DB routes will return errors");
+  });
 }
 
-start().catch(console.error);
+start();
