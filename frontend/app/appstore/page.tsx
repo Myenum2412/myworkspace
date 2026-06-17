@@ -6,10 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { StoreIcon, PuzzleIcon, BotIcon, CloudIcon, ShieldCheckIcon, BarChart3Icon } from "lucide-react";
+import { StoreIcon } from "lucide-react";
 
 export const metadata = {
   title: "App Store",

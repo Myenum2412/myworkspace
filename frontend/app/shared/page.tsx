@@ -41,16 +41,11 @@ export default function SharedPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
-  const fetchShared = async () => {
-    const res = await fetch("/api/files/shared");
-    if (res.ok) {
-      setFiles(await res.json());
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    fetchShared();
+    fetch("/api/files/shared")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => { setFiles(data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
   useEffect(() => {

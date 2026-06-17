@@ -40,16 +40,11 @@ export default function FilesPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
-  const fetchFiles = async () => {
-    const res = await fetch("/api/files");
-    if (res.ok) {
-      setFiles(await res.json());
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    fetchFiles();
+    fetch("/api/files")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => { setFiles(data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -59,14 +54,21 @@ export default function FilesPage() {
       .catch(() => {});
   }, []);
 
+  const reloadFiles = () => {
+    fetch("/api/files")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setFiles(data))
+      .catch(() => {});
+  };
+
   const handleDelete = async (fileId: string) => {
     await deleteFileAction(fileId);
-    fetchFiles();
+    reloadFiles();
   };
 
   const handleShare = async (fileId: string) => {
     await shareFileAction(fileId, null);
-    fetchFiles();
+    reloadFiles();
   };
 
   return (
