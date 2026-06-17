@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { auth } from "@/lib/auth/config";
 
+export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Task Overview",
   description: "View and manage all team tasks",

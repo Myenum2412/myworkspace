@@ -5,6 +5,7 @@ import { eq, count } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UsersIcon, ClipboardListIcon, ActivityIcon, Building2Icon } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Organization Dashboard",
 };

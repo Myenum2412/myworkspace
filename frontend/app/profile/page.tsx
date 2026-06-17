@@ -41,6 +41,7 @@ const roleBadge: Record<string, string> = {
   member: "outline",
 } as const;
 
+export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Profile",
 };

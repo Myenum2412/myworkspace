@@ -13,6 +13,7 @@ import { eq, and, between, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth/config";
 import { UsersIcon } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Team Time",
 };

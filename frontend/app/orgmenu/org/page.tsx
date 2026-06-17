@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building2Icon, GlobeIcon, CalendarIcon } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Organization" };
 
 const getOrg = cache(async (orgId: string) => {

@@ -12,6 +12,7 @@ import { eq, desc, and, between } from "drizzle-orm";
 import { auth } from "@/lib/auth/config";
 import { ClockIcon } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 export const metadata = {
   title: "My Time",
 };

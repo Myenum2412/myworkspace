@@ -4,6 +4,7 @@ import { schema } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Audit Logs" };
 
 const getLogs = cache(async (orgId: string) => {

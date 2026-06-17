@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Members" };
 
 const getMembers = cache(async (orgId: string) => {

@@ -12,6 +12,7 @@ import { eq, and, between, desc, sql, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth/config";
 import { BarChart3Icon } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Time Reports",
 };
