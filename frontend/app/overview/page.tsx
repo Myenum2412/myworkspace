@@ -11,8 +11,6 @@ import { eq, desc } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { auth } from "@/lib/auth/config";
-import { TaskList } from "./task-list";
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 
 export const metadata = {
   title: "Task Overview",
@@ -64,13 +62,10 @@ export default async function OverviewPage() {
               {tasks.length} tasks
             </Badge>
           </div>
-
-          <ChartAreaInteractive />
-
-          <div className="grid gap-4 md:grid-cols-4 mb-4">
-            <Card>
+          <div className="grid gap-4 md:grid-cols-6 mb-6">
+            <Card className="bg-gray-50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">To Do</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">Today Tasks</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -78,7 +73,17 @@ export default async function OverviewPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-gray-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">Team Task</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tasks.filter((t) => t.status === "in_progress").length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-yellow-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">In Progress</CardTitle>
               </CardHeader>
@@ -88,7 +93,7 @@ export default async function OverviewPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-gray-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">Review</CardTitle>
               </CardHeader>
@@ -98,7 +103,7 @@ export default async function OverviewPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-green-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">Completed</CardTitle>
               </CardHeader>
@@ -108,9 +113,18 @@ export default async function OverviewPage() {
                 </div>
               </CardContent>
             </Card>
+            <Card className="bg-red-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">In Completed</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tasks.filter((t) => t.status === "cancelled").length}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <TaskList tasks={tasks} />
         </main>
       </SidebarInset>
     </SidebarProvider>

@@ -133,6 +133,21 @@ export const fileShares = sqliteTable("file_shares", {
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+export const timeEntries = sqliteTable("time_entries", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  orgId: text("org_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+  taskId: text("task_id").references(() => tasks.id),
+  date: integer("date", { mode: "timestamp" }).notNull(),
+  startTime: integer("start_time", { mode: "timestamp" }).notNull(),
+  endTime: integer("end_time", { mode: "timestamp" }),
+  duration: integer("duration"),
+  description: text("description"),
+  billable: integer("billable", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
 export const ssoConfigs = sqliteTable("sso_configs", {
   id: text("id").primaryKey(),
   orgId: text("org_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
@@ -160,4 +175,5 @@ export const schema = {
   fileAttachments,
   fileShares,
   ssoConfigs,
+  timeEntries,
 };

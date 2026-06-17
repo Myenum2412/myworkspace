@@ -7,6 +7,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth/config";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { AddEmployeeDialog } from "@/components/add-employee-dialog";
 
 export const metadata = {
   title: "Employees Overview",
@@ -40,10 +41,7 @@ export default async function EmployeesPage() {
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4">
           <h1 className="text-2xl font-bold">Employees Overview</h1>
-
-          <ChartAreaInteractive />
-
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-5">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">Total Employees</CardTitle>
@@ -76,7 +74,17 @@ export default async function EmployeesPage() {
                 <div className="text-2xl font-bold">3</div>
               </CardContent>
             </Card>
+                        <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">Terminated</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">3</div>
+              </CardContent>
+            </Card>
           </div>
+
+          <ChartAreaInteractive />
 
           <Card>
             <CardHeader>
@@ -103,11 +111,10 @@ export default async function EmployeesPage() {
                         <td className="py-3 pr-4 text-muted-foreground">{emp.email}</td>
                         <td className="py-3">
                           <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              emp.status === "Active"
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${emp.status === "Active"
                                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                                 : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                            }`}
+                              }`}
                           >
                             {emp.status}
                           </span>
@@ -121,6 +128,7 @@ export default async function EmployeesPage() {
           </Card>
         </main>
       </SidebarInset>
+      <AddEmployeeDialog />
     </SidebarProvider>
   );
 }

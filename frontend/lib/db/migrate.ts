@@ -137,6 +137,20 @@ async function migrate() {
       enabled INTEGER DEFAULT 0,
       created_at INTEGER
     );
+    CREATE TABLE IF NOT EXISTS time_entries (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      org_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      task_id TEXT REFERENCES tasks(id),
+      date INTEGER NOT NULL,
+      start_time INTEGER NOT NULL,
+      end_time INTEGER,
+      duration INTEGER,
+      description TEXT,
+      billable INTEGER DEFAULT 1,
+      created_at INTEGER,
+      updated_at INTEGER
+    );
   `);
 }
 
@@ -257,6 +271,38 @@ async function seed() {
       mimeType: file.mime,
       size: file.size,
       storagePath: `seed/${file.name}`,
+    }).run();
+  }
+
+  const taskIds = db.select({ id: schema.tasks.id }).from(schema.tasks).all();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dayMs = 86400000;
+
+  const timeEntryData = [
+    { dateOffset: 0, startHour: 9, duration: 120, desc: "Working on dashboard layout", taskIdx: 0 },
+    { dateOffset: 0, startHour: 13, duration: 90, desc: "WebSocket integration", taskIdx: 1 },
+    { dateOffset: -1, startHour: 10, duration: 180, desc: "API documentation", taskIdx: 2 },
+    { dateOffset: -1, startHour: 14, duration: 60, desc: "Login page styling fixes", taskIdx: 3 },
+    { dateOffset: -2, startHour: 8, duration: 240, desc: "Database optimization", taskIdx: 5 },
+    { dateOffset: -3, startHour: 9, duration: 150, desc: "CI/CD pipeline setup", taskIdx: 4 },
+  ];
+
+  for (const entry of timeEntryData) {
+    const entryDate = new Date(today.getTime() + entry.dateOffset * dayMs);
+    const start = new Date(entryDate.getTime() + entry.startHour * 3600000);
+    const end = new Date(start.getTime() + entry.duration * 60000);
+    db.insert(schema.timeEntries).values({
+      id: uuid(),
+      userId,
+      orgId,
+      taskId: taskIds[entry.taskIdx]?.id,
+      date: entryDate,
+      startTime: start,
+      endTime: end,
+      duration: entry.duration,
+      description: entry.desc,
+      billable: true,
     }).run();
   }
 

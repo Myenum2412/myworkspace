@@ -10,11 +10,13 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboardIcon,
-  ListTodoIcon,
+  ListChecksIcon,
   UsersIcon,
+  WorkflowIcon,
+  ClockIcon,
+  FolderIcon,
   Settings2Icon,
   StoreIcon,
-  FolderIcon,
 } from "lucide-react";
 
 export const defaultNavData = {
@@ -32,7 +34,7 @@ export const defaultNavData = {
     {
       title: "Task Allocation",
       url: "/overview",
-      icon: <ListTodoIcon className="size-6" />,
+      icon: <ListChecksIcon className="size-6" />,
       items: [
         { title: "All Tasks", url: "/alltasks" },
         { title: "My Tasks", url: "/mytasks" },
@@ -48,13 +50,13 @@ export const defaultNavData = {
         { title: "All Employees", url: "/employees" },
         { title: "Add Employee", url: "/addemployees" },
         { title: "Terminated", url: "/terminated" },
-        { title: "Time Tracker", url: "/time-tracker" },
+        { title: "Departments", url: "/departments" },
       ],
     },
     {
       title: "Projects",
       url: "/projects",
-      icon: <FolderIcon className="size-6" />,
+      icon: <WorkflowIcon className="size-6" />,
       items: [
         { title: "All Projects", url: "/projects" },
         { title: "Add Project", url: "/addprojects" },
@@ -65,11 +67,12 @@ export const defaultNavData = {
     {
       title: "Time Tracker",
       url: "/time-tracker",
-      icon: <ListTodoIcon className="size-6" />,
+      icon: <ClockIcon className="size-6" />,
       items: [
         { title: "My Time", url: "/my-time" },
         { title: "Team Time", url: "/team-time" },
         { title: "Time Reports", url: "/time-reports" },
+        { title: "Calendar", url: "/calendar" },
       ],
     },
     {

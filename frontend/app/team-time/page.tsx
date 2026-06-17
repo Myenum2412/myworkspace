@@ -1,0 +1,174 @@
+import { AppSidebar } from "@/components/app-sidebar";
+import { Header } from "@/components/header";
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { db } from "@/lib/db";
+import { schema } from "@/lib/db/schema";
+import { eq, and, between, desc } from "drizzle-orm";
+import { auth } from "@/lib/auth/config";
+import { UsersIcon } from "lucide-react";
+
+export const metadata = {
+  title: "Team Time",
+};
+
+function formatDuration(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h}h ${m}m`;
+}
+
+export default async function TeamTimePage() {
+  const session = await auth();
+  const user = {
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "user@example.com",
+    avatar: session?.user?.image || "",
+  };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today.getTime() + 86400000);
+
+  const weekStart = new Date(today);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  weekStart.setHours(0, 0, 0, 0);
+
+  const teamMembers = db
+    .select()
+    .from(schema.users)
+    .innerJoin(schema.orgMembers, eq(schema.users.id, schema.orgMembers.userId))
+    .where(eq(schema.orgMembers.orgId, "demo-org-id"))
+    .all();
+
+  const memberTimeSummary = teamMembers.map(({ users }) => {
+    const todayEntries = db
+      .select()
+      .from(schema.timeEntries)
+      .where(
+        and(
+          eq(schema.timeEntries.userId, users.id),
+          between(schema.timeEntries.date, today, tomorrow),
+        ),
+      )
+      .all();
+
+    const weekEntries = db
+      .select()
+      .from(schema.timeEntries)
+      .where(
+        and(
+          eq(schema.timeEntries.userId, users.id),
+          between(schema.timeEntries.date, weekStart, tomorrow),
+        ),
+      )
+      .all();
+
+    const todayMinutes = todayEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
+    const weekMinutes = weekEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
+
+    const lastEntry = [...weekEntries].sort((a, b) => b.startTime.getTime() - a.startTime.getTime())[0];
+
+    return { user: users, todayMinutes, weekMinutes, lastEntry, entryCount: weekEntries.length };
+  });
+
+  const allThisWeek = db
+    .select()
+    .from(schema.timeEntries)
+    .where(
+      and(
+        eq(schema.timeEntries.orgId, "demo-org-id"),
+        between(schema.timeEntries.date, weekStart, tomorrow),
+      ),
+    )
+    .all();
+
+  const teamWeekMinutes = allThisWeek.reduce((sum, e) => sum + (e.duration || 0), 0);
+
+  return (
+    <SidebarProvider>
+      <AppSidebar user={user} />
+      <SidebarInset>
+        <Header />
+        <main className="flex flex-1 flex-col gap-4 p-4">
+          <div className="flex items-center gap-2">
+            <UsersIcon className="size-6" />
+            <h1 className="text-2xl font-bold">Team Time</h1>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">Team Members</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{teamMembers.length}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">Team Hours This Week</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{formatDuration(teamWeekMinutes)}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">Total Entries</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{allThisWeek.length}</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Member Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {memberTimeSummary.map(({ user: member, todayMinutes, weekMinutes, lastEntry, entryCount }) => (
+                  <div key={member.id} className="flex items-center justify-between border-b pb-3 last:border-0">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-9">
+                        <AvatarFallback className="text-xs">
+                          {member.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{member.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {entryCount > 0
+                            ? `Last entry: ${lastEntry!.startTime.toLocaleDateString()}`
+                            : "No entries this week"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-right">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Today</p>
+                        <p className="font-semibold">{formatDuration(todayMinutes)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Week</p>
+                        <p className="font-semibold">{formatDuration(weekMinutes)}</p>
+                      </div>
+                      {todayMinutes > 0 && <Badge>Active</Badge>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
