@@ -65,7 +65,7 @@ jobs:
         with:
           host: "168.144.126.138"
           username: "root"
-          key: ${{ secrets.DO_SSH_KEY }}
+          password: "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAAACAfAoWmG456rfG3JvG4cODl3aF5CHS79t4i9HQO/mZjzAAAAJio0YYRqNGGEQAAAAtzc2gtZWQyNTUxOQAAACAfAoWmG456rfG3JvG4cODl3aF5CHS79t4i9HQO/mZjzAAAAEBIv+HgFpAPzgsJFkUQuKwfbgJFQHIxAi4sA/IvnKIQ3h8ChaYbjnqt8bcm8bhw4OXdoXkIdLv23iL0dA7+ZmPMAAAAEm15ZW51bWFtQGdtYWlsLmNvbQECAw=="
           script: |
             cd /root/myworkspace
             git pull origin main
