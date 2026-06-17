@@ -1,9 +1,9 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
 import { schema } from "@/lib/db/schema";
-import { eq, and, count, sql } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3Icon, TrendingUpIcon, UsersIcon, CheckCircle2Icon } from "lucide-react";
+import { TrendingUpIcon, UsersIcon, CheckCircle2Icon, BarChart2Icon } from "lucide-react";
 
 export const metadata = { title: "Analytics" };
 
@@ -19,7 +19,7 @@ const getAnalytics = cache(async (orgId: string) => {
 export default async function AnalyticsPage() {
   const analytics = await getAnalytics("demo-org-id");
   const items = [
-    { title: "Total Tasks", value: analytics.totalTasks, icon: BarChart3Icon, color: "text-blue-500" },
+    { title: "Total Tasks", value: analytics.totalTasks, icon: BarChart2Icon, color: "text-blue-500" },
     { title: "Completed", value: analytics.completedTasks, icon: CheckCircle2Icon, color: "text-emerald-500" },
     { title: "Completion Rate", value: `${analytics.completionRate}%`, icon: TrendingUpIcon, color: "text-purple-500" },
     { title: "Active Members", value: analytics.activeMembers, icon: UsersIcon, color: "text-amber-500" },
