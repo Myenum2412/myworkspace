@@ -1,15 +1,13 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 
 export async function getRecentActivity(orgId: string) {
-  return db
-    .select()
-    .from(schema.activityLogs)
-    .where(eq(schema.activityLogs.orgId, orgId))
-    .orderBy(desc(schema.activityLogs.createdAt))
+  return await db
+    .collection(collections.activityLogs)
+    .find({ orgId })
+    .sort({ createdAt: -1 })
     .limit(20)
-    .all();
+    .toArray();
 }

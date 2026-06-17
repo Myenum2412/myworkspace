@@ -4,7 +4,7 @@ import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { mongo } from "@/lib/db/mongodb";
+import { db } from "@/lib/db";
 
 export async function signupActionMongo(formData: FormData) {
   const name = formData.get("name") as string;
@@ -20,9 +20,7 @@ export async function signupActionMongo(formData: FormData) {
     redirect("/signup-mongo?error=Password must be at least 8 characters");
   }
 
-  const users = mongo.collection("users");
-
-  const existing = await users.findOne({ email });
+  const existing = await db.collection("users").findOne({ email });
   if (existing) {
     redirect("/signup-mongo?error=An account with this email already exists");
   }
@@ -43,9 +41,9 @@ export async function signupActionMongo(formData: FormData) {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-  await users.insertOne(userDoc as never);
+  await db.collection("users").insertOne(userDoc as never);
 
-  const organizations = mongo.collection("organizations");
+  const organizations = db.collection("organizations");
   const orgDoc: Record<string, unknown> = {
     _id: orgId,
     name: company || `${name}'s Organization`,

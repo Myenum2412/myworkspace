@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,13 +13,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "userId required" }, { status: 400 });
   }
 
-  const notifications = db
-    .select()
-    .from(schema.notifications)
-    .where(eq(schema.notifications.userId, userId))
-    .orderBy(desc(schema.notifications.createdAt))
+  const notifications = await db
+    .collection(collections.notifications)
+    .find({ userId })
+    .sort({ createdAt: -1 })
     .limit(50)
-    .all();
+    .toArray();
 
   return NextResponse.json(notifications);
 }

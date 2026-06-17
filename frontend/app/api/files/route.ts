@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
 import { saveFile } from "@/lib/storage";
@@ -15,27 +14,19 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const files = db
-    .select({
-      id: schema.fileAttachments.id,
-      originalName: schema.fileAttachments.originalName,
-      mimeType: schema.fileAttachments.mimeType,
-      size: schema.fileAttachments.size,
-      createdAt: schema.fileAttachments.createdAt,
-      uploaderId: schema.fileAttachments.uploaderId,
-    })
-    .from(schema.fileAttachments)
-    .where(eq(schema.fileAttachments.orgId, "demo-org-id"))
-    .orderBy(desc(schema.fileAttachments.createdAt))
-    .all();
+  const files = await db
+    .collection(collections.fileAttachments)
+    .find(
+      { orgId: "demo-org-id" },
+      { projection: { id: 1, originalName: 1, mimeType: 1, size: 1, createdAt: 1, uploaderId: 1 } }
+    )
+    .sort({ createdAt: -1 })
+    .toArray();
 
-  const users = db
-    .select({
-      id: schema.users.id,
-      name: schema.users.name,
-    })
-    .from(schema.users)
-    .all();
+  const users = await db
+    .collection(collections.users)
+    .find({}, { projection: { id: 1, name: 1 } })
+    .toArray();
 
   const userMap = Object.fromEntries(users.map((u) => [u.id, u.name]));
 
@@ -64,7 +55,7 @@ export async function POST(request: NextRequest) {
   const storagePath = saveFile(buffer, file.name);
 
   const fileId = uuid();
-  db.insert(schema.fileAttachments).values({
+  await db.collection(collections.fileAttachments).insertOne({
     id: fileId,
     orgId: "demo-org-id",
     uploaderId: session.user.id,
@@ -73,9 +64,9 @@ export async function POST(request: NextRequest) {
     mimeType: file.type || "application/octet-stream",
     size: file.size,
     storagePath,
-  }).run();
+  });
 
-  db.insert(schema.activityLogs).values({
+  await db.collection(collections.activityLogs).insertOne({
     id: uuid(),
     orgId: "demo-org-id",
     userId: session.user.id,
@@ -83,7 +74,7 @@ export async function POST(request: NextRequest) {
     entityType: "file",
     entityId: fileId,
     description: `File "${file.name}" uploaded`,
-  }).run();
+  });
 
   return NextResponse.json({ success: true, fileId });
 }

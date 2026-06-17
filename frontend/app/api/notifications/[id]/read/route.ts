@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  db.update(schema.notifications)
-    .set({ read: true })
-    .where(eq(schema.notifications.id, id))
-    .run();
+  await db.collection(collections.notifications).updateOne(
+    { id },
+    { $set: { read: true } }
+  );
   return NextResponse.json({ success: true });
 }

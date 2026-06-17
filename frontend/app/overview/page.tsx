@@ -6,8 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cache } from "react";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { auth } from "@/lib/auth/config";
@@ -20,11 +19,10 @@ export const metadata = {
 
 const getTasks = cache(async (orgId: string) => {
   return db
-    .select()
-    .from(schema.tasks)
-    .where(eq(schema.tasks.orgId, orgId))
-    .orderBy(desc(schema.tasks.createdAt))
-    .all();
+    .collection(collections.tasks)
+    .find({ orgId })
+    .sort({ createdAt: -1 })
+    .toArray();
 });
 
 export default async function OverviewPage() {

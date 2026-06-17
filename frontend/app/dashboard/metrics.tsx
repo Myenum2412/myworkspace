@@ -1,53 +1,26 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, and, count, sql } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2Icon, ClockIcon, AlertCircleIcon, UsersIcon } from "lucide-react";
 
 const getMetrics = cache(async (orgId: string) => {
-  const totalTasks = db
-    .select({ count: count() })
-    .from(schema.tasks)
-    .where(eq(schema.tasks.orgId, orgId))
-    .all();
-
-  const completedTasks = db
-    .select({ count: count() })
-    .from(schema.tasks)
-    .where(and(eq(schema.tasks.orgId, orgId), eq(schema.tasks.status, "done")))
-    .all();
-
-  const inProgressTasks = db
-    .select({ count: count() })
-    .from(schema.tasks)
-    .where(and(eq(schema.tasks.orgId, orgId), eq(schema.tasks.status, "in_progress")))
-    .all();
-
-  const overdueTasks = db
-    .select({ count: count() })
-    .from(schema.tasks)
-    .where(
-      and(
-        eq(schema.tasks.orgId, orgId),
-        sql`${schema.tasks.dueDate} < ${Date.now()}`,
-        sql`${schema.tasks.status} != 'done'`
-      )
-    )
-    .all();
-
-  const memberCount = db
-    .select({ count: count() })
-    .from(schema.orgMembers)
-    .where(eq(schema.orgMembers.orgId, orgId))
-    .all();
+  const totalTasks = await db.collection(collections.tasks).countDocuments({ orgId });
+  const completedTasks = await db.collection(collections.tasks).countDocuments({ orgId, status: "done" });
+  const inProgressTasks = await db.collection(collections.tasks).countDocuments({ orgId, status: "in_progress" });
+  const overdueTasks = await db.collection(collections.tasks).countDocuments({
+    orgId,
+    dueDate: { $lt: Date.now() },
+    status: { $ne: "done" },
+  });
+  const memberCount = await db.collection(collections.orgMembers).countDocuments({ orgId });
 
   return {
-    totalTasks: totalTasks[0]?.count ?? 0,
-    completedTasks: completedTasks[0]?.count ?? 0,
-    inProgressTasks: inProgressTasks[0]?.count ?? 0,
-    overdueTasks: overdueTasks[0]?.count ?? 0,
-    memberCount: memberCount[0]?.count ?? 0,
+    totalTasks,
+    completedTasks,
+    inProgressTasks,
+    overdueTasks,
+    memberCount,
   };
 });
 

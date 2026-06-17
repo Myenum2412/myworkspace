@@ -6,8 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,32 +55,27 @@ export default async function ProfilePage() {
     avatar: session.user.image || "",
   };
 
-  const [dbUser] = db
-    .select()
-    .from(schema.users)
-    .where(eq(schema.users.id, session.user.id))
-    .all();
+  const [dbUser] = await db
+    .collection(collections.users)
+    .find({ id: session.user.id })
+    .toArray();
 
-  const [membership] = db
-    .select()
-    .from(schema.orgMembers)
-    .where(eq(schema.orgMembers.userId, session.user.id))
-    .all();
+  const [membership] = await db
+    .collection(collections.orgMembers)
+    .find({ userId: session.user.id })
+    .toArray();
 
   let org = null;
   let memberCount = 0;
   if (membership) {
-    [org] = db
-      .select()
-      .from(schema.organizations)
-      .where(eq(schema.organizations.id, membership.orgId))
-      .all();
+    org = await db
+      .collection(collections.organizations)
+      .findOne({ id: membership.orgId });
 
-    const members = db
-      .select()
-      .from(schema.orgMembers)
-      .where(eq(schema.orgMembers.orgId, membership.orgId))
-      .all();
+    const members = await db
+      .collection(collections.orgMembers)
+      .find({ orgId: membership.orgId })
+      .toArray();
     memberCount = members.length;
   }
 

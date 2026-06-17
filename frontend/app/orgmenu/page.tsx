@@ -1,7 +1,6 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, count } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UsersIcon, ClipboardListIcon, ActivityIcon, Building2Icon } from "lucide-react";
 
@@ -11,28 +10,22 @@ export const metadata = {
 };
 
 const getOrgMetrics = cache(async (orgId: string) => {
-  const memberCount = db
-    .select({ count: count() })
-    .from(schema.orgMembers)
-    .where(eq(schema.orgMembers.orgId, orgId))
-    .all();
+  const memberCount = await db
+    .collection(collections.orgMembers)
+    .countDocuments({ orgId });
 
-  const taskCount = db
-    .select({ count: count() })
-    .from(schema.tasks)
-    .where(eq(schema.tasks.orgId, orgId))
-    .all();
+  const taskCount = await db
+    .collection(collections.tasks)
+    .countDocuments({ orgId });
 
-  const activityCount = db
-    .select({ count: count() })
-    .from(schema.activityLogs)
-    .where(eq(schema.activityLogs.orgId, orgId))
-    .all();
+  const activityCount = await db
+    .collection(collections.activityLogs)
+    .countDocuments({ orgId });
 
   return {
-    members: memberCount[0]?.count ?? 0,
-    tasks: taskCount[0]?.count ?? 0,
-    activities: activityCount[0]?.count ?? 0,
+    members: memberCount,
+    tasks: taskCount,
+    activities: activityCount,
   };
 });
 

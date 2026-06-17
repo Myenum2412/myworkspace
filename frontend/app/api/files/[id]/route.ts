@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
 import { getFilePath, deleteFile } from "@/lib/storage";
 import fs from "fs";
@@ -20,11 +19,9 @@ export async function GET(
 
   const { id } = await params;
 
-  const file = db
-    .select()
-    .from(schema.fileAttachments)
-    .where(eq(schema.fileAttachments.id, id))
-    .get();
+  const file = await db
+    .collection(collections.fileAttachments)
+    .findOne({ id });
 
   if (!file) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
@@ -56,11 +53,9 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const file = db
-    .select()
-    .from(schema.fileAttachments)
-    .where(eq(schema.fileAttachments.id, id))
-    .get();
+  const file = await db
+    .collection(collections.fileAttachments)
+    .findOne({ id });
 
   if (!file) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
@@ -71,9 +66,7 @@ export async function DELETE(
   }
 
   deleteFile(file.storagePath);
-  db.delete(schema.fileAttachments)
-    .where(eq(schema.fileAttachments.id, id))
-    .run();
+  await db.collection(collections.fileAttachments).deleteOne({ id });
 
   return NextResponse.json({ success: true });
 }

@@ -1,7 +1,6 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -11,11 +10,10 @@ export const metadata = { title: "Members" };
 
 const getMembers = cache(async (orgId: string) => {
   return db
-    .select()
-    .from(schema.orgMembers)
-    .where(eq(schema.orgMembers.orgId, orgId))
-    .orderBy(desc(schema.orgMembers.joinedAt))
-    .all();
+    .collection(collections.orgMembers)
+    .find({ orgId })
+    .sort({ joinedAt: -1 })
+    .toArray();
 });
 
 export default async function MembersPage() {

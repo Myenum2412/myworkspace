@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
 
@@ -20,13 +19,13 @@ export async function POST(
   const { id: fileId } = await params;
   const { sharedWithUserId } = await request.json();
 
-  db.insert(schema.fileShares).values({
+  await db.collection(collections.fileShares).insertOne({
     id: uuid(),
     fileId,
     sharedByUserId: session.user.id,
     sharedWithUserId: sharedWithUserId || null,
     orgId: "demo-org-id",
-  }).run();
+  });
 
   return NextResponse.json({ success: true });
 }
@@ -42,9 +41,7 @@ export async function DELETE(
 
   const { id } = await params;
 
-  db.delete(schema.fileShares)
-    .where(eq(schema.fileShares.id, id))
-    .run();
+  await db.collection(collections.fileShares).deleteOne({ id });
 
   return NextResponse.json({ success: true });
 }

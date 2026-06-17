@@ -1,18 +1,16 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActivityIcon } from "lucide-react";
 
 const getRecentActivity = cache(async (orgId: string) => {
   return db
-    .select()
-    .from(schema.activityLogs)
-    .where(eq(schema.activityLogs.orgId, orgId))
-    .orderBy(desc(schema.activityLogs.createdAt))
+    .collection(collections.activityLogs)
+    .find({ orgId })
+    .sort({ createdAt: -1 })
     .limit(10)
-    .all();
+    .toArray();
 });
 
 export async function RecentActivityFeed({ orgId }: { orgId: string }) {

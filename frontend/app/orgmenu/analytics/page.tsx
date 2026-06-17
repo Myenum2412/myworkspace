@@ -2,20 +2,19 @@ import { cache } from "react";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
-import { schema } from "@/lib/db/schema";
-import { eq, and, count } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUpIcon, UsersIcon, CheckCircle2Icon, BarChart2Icon } from "lucide-react";
 
 export const metadata = { title: "Analytics" };
 
 const getAnalytics = cache(async (orgId: string) => {
-  const totalTasks = db.select({ count: count() }).from(schema.tasks).where(eq(schema.tasks.orgId, orgId)).all();
-  const completedTasks = db.select({ count: count() }).from(schema.tasks).where(and(eq(schema.tasks.orgId, orgId), eq(schema.tasks.status, "done"))).all();
-  const activeMembers = db.select({ count: count() }).from(schema.orgMembers).where(eq(schema.orgMembers.orgId, orgId)).all();
-  const completionRate = totalTasks[0]?.count ? Math.round(((completedTasks[0]?.count ?? 0) / totalTasks[0].count) * 100) : 0;
+  const totalTasks = await db.collection(collections.tasks).countDocuments({ orgId });
+  const completedTasks = await db.collection(collections.tasks).countDocuments({ orgId, status: "done" });
+  const activeMembers = await db.collection(collections.orgMembers).countDocuments({ orgId });
+  const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  return { totalTasks: totalTasks[0]?.count ?? 0, completedTasks: completedTasks[0]?.count ?? 0, activeMembers: activeMembers[0]?.count ?? 0, completionRate };
+  return { totalTasks, completedTasks, activeMembers, completionRate };
 });
 
 export default async function AnalyticsPage() {

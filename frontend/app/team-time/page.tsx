@@ -8,8 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, and, between, desc } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
 import { UsersIcon } from "lucide-react";
 
@@ -40,54 +39,57 @@ export default async function TeamTimePage() {
   weekStart.setDate(weekStart.getDate() - weekStart.getDay());
   weekStart.setHours(0, 0, 0, 0);
 
-  const teamMembers = db
-    .select()
-    .from(schema.users)
-    .innerJoin(schema.orgMembers, eq(schema.users.id, schema.orgMembers.userId))
-    .where(eq(schema.orgMembers.orgId, "demo-org-id"))
-    .all();
+  const teamMembers = await db
+    .collection(collections.orgMembers)
+    .find({ orgId: "demo-org-id" })
+    .toArray();
 
-  const memberTimeSummary = teamMembers.map(({ users }) => {
-    const todayEntries = db
-      .select()
-      .from(schema.timeEntries)
-      .where(
-        and(
-          eq(schema.timeEntries.userId, users.id),
-          between(schema.timeEntries.date, today, tomorrow),
-        ),
-      )
-      .all();
+  const memberIds = teamMembers.map(m => m.userId);
+  const users = memberIds.length > 0
+    ? await db
+        .collection(collections.users)
+        .find({ id: { $in: memberIds } })
+        .toArray()
+    : [];
+  const userMap = Object.fromEntries(users.map(u => [u.id, u]));
 
-    const weekEntries = db
-      .select()
-      .from(schema.timeEntries)
-      .where(
-        and(
-          eq(schema.timeEntries.userId, users.id),
-          between(schema.timeEntries.date, weekStart, tomorrow),
-        ),
-      )
-      .all();
+  const memberTimeSummary = await Promise.all(
+    teamMembers.map(async (membership) => {
+      const memberUser = userMap[membership.userId];
+      if (!memberUser) return null;
 
-    const todayMinutes = todayEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
-    const weekMinutes = weekEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
+      const todayEntries = await db
+        .collection(collections.timeEntries)
+        .find({
+          userId: membership.userId,
+          date: { $gte: today, $lte: tomorrow },
+        })
+        .toArray();
 
-    const lastEntry = [...weekEntries].sort((a, b) => b.startTime.getTime() - a.startTime.getTime())[0];
+      const weekEntries = await db
+        .collection(collections.timeEntries)
+        .find({
+          userId: membership.userId,
+          date: { $gte: weekStart, $lte: tomorrow },
+        })
+        .toArray();
 
-    return { user: users, todayMinutes, weekMinutes, lastEntry, entryCount: weekEntries.length };
-  });
+      const todayMinutes = todayEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
+      const weekMinutes = weekEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
 
-  const allThisWeek = db
-    .select()
-    .from(schema.timeEntries)
-    .where(
-      and(
-        eq(schema.timeEntries.orgId, "demo-org-id"),
-        between(schema.timeEntries.date, weekStart, tomorrow),
-      ),
-    )
-    .all();
+      const lastEntry = [...weekEntries].sort((a, b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime())[0];
+
+      return { user: memberUser, todayMinutes, weekMinutes, lastEntry, entryCount: weekEntries.length };
+    }),
+  ) as { user: Record<string, unknown>; todayMinutes: number; weekMinutes: number; lastEntry: Record<string, unknown> | undefined; entryCount: number }[];
+
+  const allThisWeek = await db
+    .collection(collections.timeEntries)
+    .find({
+      orgId: "demo-org-id",
+      date: { $gte: weekStart, $lte: tomorrow },
+    })
+    .toArray();
 
   const teamWeekMinutes = allThisWeek.reduce((sum, e) => sum + (e.duration || 0), 0);
 
@@ -135,7 +137,10 @@ export default async function TeamTimePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {memberTimeSummary.map(({ user: member, todayMinutes, weekMinutes, lastEntry, entryCount }) => (
+                {memberTimeSummary.map((item) => {
+                  const member = item.user as { id: string; name: string; image?: string; [k: string]: unknown };
+                  const { todayMinutes, weekMinutes, lastEntry, entryCount } = item;
+                  return (
                   <div key={member.id} className="flex items-center justify-between border-b pb-3 last:border-0">
                     <div className="flex items-center gap-3">
                       <Avatar className="size-9">
@@ -147,7 +152,7 @@ export default async function TeamTimePage() {
                         <p className="font-medium">{member.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {entryCount > 0
-                            ? `Last entry: ${lastEntry!.startTime.toLocaleDateString()}`
+                            ? `Last entry: ${(lastEntry!.startTime as Date).toLocaleDateString()}`
                             : "No entries this week"}
                         </p>
                       </div>
@@ -164,7 +169,8 @@ export default async function TeamTimePage() {
                       {todayMinutes > 0 && <Badge>Active</Badge>}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

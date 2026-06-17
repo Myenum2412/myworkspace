@@ -15,11 +15,11 @@ function getUri() {
 
 function createClient() {
   const client = new MongoClient(getUri());
-  const db = client.db(dbName);
-  return { client, db };
+  const database = client.db(dbName);
+  return { client, db: database };
 }
 
-function getOrCreateMongo() {
+function getOrCreateDb() {
   if (!globalForMongo.db) {
     const { client, db } = createClient();
     globalForMongo.client = client;
@@ -28,17 +28,17 @@ function getOrCreateMongo() {
   return globalForMongo.db;
 }
 
-export const mongo = new Proxy({} as Db, {
+export const db = new Proxy({} as Db, {
   get(_, prop) {
-    return Reflect.get(getOrCreateMongo(), prop);
+    return Reflect.get(getOrCreateDb(), prop);
   },
 });
 
 export async function connectToMongo() {
-  if (globalForMongo.client) return { client: globalForMongo.client, db: mongo };
-  const { client, db } = createClient();
+  if (globalForMongo.client) return { client: globalForMongo.client, db };
+  const { client, db: database } = createClient();
   await client.connect();
   globalForMongo.client = client;
-  globalForMongo.db = db;
-  return { client, db };
+  globalForMongo.db = database;
+  return { client, db: database };
 }

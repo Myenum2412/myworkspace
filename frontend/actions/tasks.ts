@@ -2,8 +2,7 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
 
@@ -22,7 +21,7 @@ export async function createTask(formData: FormData) {
 
   const taskId = uuid();
 
-  db.insert(schema.tasks).values({
+  await db.collection(collections.tasks).insertOne({
     id: taskId,
     orgId: "demo-org-id",
     teamId: teamId || null,
@@ -32,9 +31,9 @@ export async function createTask(formData: FormData) {
     description: description || null,
     priority: priority as "low" | "medium" | "high" | "urgent",
     dueDate: dueDate ? new Date(dueDate) : null,
-  }).run();
+  });
 
-  db.insert(schema.activityLogs).values({
+  await db.collection(collections.activityLogs).insertOne({
     id: uuid(),
     orgId: "demo-org-id",
     userId: session.user.id,
@@ -42,7 +41,7 @@ export async function createTask(formData: FormData) {
     entityType: "task",
     entityId: taskId,
     description: `Task "${title}" created`,
-  }).run();
+  });
 
   revalidateTag(`tasks:demo-org-id`, 'max');
   revalidatePath("/overview", "page");
@@ -71,12 +70,12 @@ export async function updateTask(formData: FormData) {
   if (assigneeId) updates.assigneeId = assigneeId;
   if (description !== undefined) updates.description = description;
 
-  db.update(schema.tasks)
-    .set(updates)
-    .where(eq(schema.tasks.id, taskId))
-    .run();
+  await db.collection(collections.tasks).updateOne(
+    { id: taskId },
+    { $set: updates }
+  );
 
-  db.insert(schema.activityLogs).values({
+  await db.collection(collections.activityLogs).insertOne({
     id: uuid(),
     orgId: "demo-org-id",
     userId: session.user.id,
@@ -84,7 +83,7 @@ export async function updateTask(formData: FormData) {
     entityType: "task",
     entityId: taskId,
     description: `Task updated: ${status ? `status changed to ${status}` : title ? `title updated` : ""}`,
-  }).run();
+  });
 
   revalidateTag(`tasks:demo-org-id`, 'max');
   revalidatePath("/overview", "page");
@@ -100,7 +99,7 @@ export async function deleteTask(formData: FormData) {
   const taskId = formData.get("id") as string;
   if (!taskId) return { error: "Task ID is required" };
 
-  db.delete(schema.tasks).where(eq(schema.tasks.id, taskId)).run();
+  await db.collection(collections.tasks).deleteOne({ id: taskId });
 
   revalidateTag(`tasks:demo-org-id`, 'max');
   revalidatePath("/overview", "page");
@@ -113,10 +112,10 @@ export async function updateTaskStatus(taskId: string, status: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Unauthorized" };
 
-  db.update(schema.tasks)
-    .set({ status: status as "todo" | "in_progress" | "review" | "done" | "cancelled", updatedAt: new Date() })
-    .where(eq(schema.tasks.id, taskId))
-    .run();
+  await db.collection(collections.tasks).updateOne(
+    { id: taskId },
+    { $set: { status: status as "todo" | "in_progress" | "review" | "done" | "cancelled", updatedAt: new Date() } }
+  );
 
   revalidateTag(`tasks:demo-org-id`, 'max');
   return { success: true };

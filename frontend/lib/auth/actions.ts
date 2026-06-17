@@ -3,15 +3,11 @@
 import { signIn, signOut } from "./config";
 import { AuthError } from "next-auth";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DbTx = any;
 
 export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string;
@@ -30,19 +26,15 @@ export async function loginAction(formData: FormData) {
     throw error;
   }
 
-  const users = db
-    .select()
-    .from(schema.users)
-    .where(eq(schema.users.email, email))
-    .all();
+  const users = await db.collection(collections.users).find({ email }).toArray();
 
   if (users.length > 0) {
-    db.update(schema.users)
-      .set({ status: "online", updatedAt: new Date() })
-      .where(eq(schema.users.id, users[0].id))
-      .run();
+    await db.collection(collections.users).updateOne(
+      { id: users[0].id },
+      { $set: { status: "online", updatedAt: new Date() } }
+    );
 
-    db.insert(schema.activityLogs).values({
+    await db.collection(collections.activityLogs).insertOne({
       id: uuid(),
       orgId: "demo-org-id",
       userId: users[0].id,
@@ -50,7 +42,7 @@ export async function loginAction(formData: FormData) {
       entityType: "user",
       entityId: users[0].id,
       description: `${users[0].name} logged in`,
-    }).run();
+    });
   }
 
   revalidatePath("/dashboard");
@@ -71,11 +63,7 @@ export async function signupAction(formData: FormData) {
     redirect("/signup?error=Password+must+be+at+least+8+characters");
   }
 
-  const existing = db
-    .select()
-    .from(schema.users)
-    .where(eq(schema.users.email, email))
-    .all();
+  const existing = await db.collection(collections.users).find({ email }).toArray();
 
   if (existing.length > 0) {
     redirect("/signup?error=An+account+with+this+email+already+exists");
@@ -85,29 +73,27 @@ export async function signupAction(formData: FormData) {
   const userId = uuid();
   const orgId = uuid();
 
-  db.transaction((tx: DbTx) => {
-    tx.insert(schema.users).values({
-      id: userId,
-      name,
-      email,
-      password: hashedPassword,
-      status: "online",
-      role: "admin",
-    }).run();
+  await db.collection(collections.users).insertOne({
+    id: userId,
+    name,
+    email,
+    password: hashedPassword,
+    status: "online",
+    role: "admin",
+  });
 
-    tx.insert(schema.organizations).values({
-      id: orgId,
-      name: company || `${name}'s Organization`,
-      slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${userId.slice(0, 8)}`,
-      plan: "starter",
-    }).run();
+  await db.collection(collections.organizations).insertOne({
+    id: orgId,
+    name: company || `${name}'s Organization`,
+    slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${userId.slice(0, 8)}`,
+    plan: "starter",
+  });
 
-    tx.insert(schema.orgMembers).values({
-      id: uuid(),
-      orgId,
-      userId,
-      role: "admin",
-    }).run();
+  await db.collection(collections.orgMembers).insertOne({
+    id: uuid(),
+    orgId,
+    userId,
+    role: "admin",
   });
 
   await signIn("credentials", { email, password, redirect: false });
@@ -118,10 +104,10 @@ export async function signupAction(formData: FormData) {
 export async function logoutAction() {
   const session = await import("./config").then(m => m.auth());
   if (session?.user?.id) {
-    db.update(schema.users)
-      .set({ status: "offline", updatedAt: new Date() })
-      .where(eq(schema.users.id, session.user.id))
-      .run();
+    await db.collection(collections.users).updateOne(
+      { id: session.user.id },
+      { $set: { status: "offline", updatedAt: new Date() } }
+    );
   }
   await signOut({ redirect: false });
   revalidatePath("/login");

@@ -7,8 +7,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, desc, and, between } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
 import { ClockIcon } from "lucide-react";
 
@@ -39,17 +38,14 @@ export default async function MyTimePage() {
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today.getTime() + 86400000);
 
-  const todayEntries = db
-    .select()
-    .from(schema.timeEntries)
-    .where(
-      and(
-        eq(schema.timeEntries.userId, "demo-user-id"),
-        between(schema.timeEntries.date, today, tomorrow),
-      ),
-    )
-    .orderBy(desc(schema.timeEntries.startTime))
-    .all();
+  const todayEntries = await db
+    .collection(collections.timeEntries)
+    .find({
+      userId: "demo-user-id",
+      date: { $gte: today, $lte: tomorrow },
+    })
+    .sort({ startTime: -1 })
+    .toArray();
 
   const todayMinutes = todayEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
 
@@ -57,17 +53,14 @@ export default async function MyTimePage() {
   weekStart.setDate(weekStart.getDate() - weekStart.getDay());
   weekStart.setHours(0, 0, 0, 0);
 
-  const weekEntries = db
-    .select()
-    .from(schema.timeEntries)
-    .where(
-      and(
-        eq(schema.timeEntries.userId, "demo-user-id"),
-        between(schema.timeEntries.date, weekStart, tomorrow),
-      ),
-    )
-    .orderBy(desc(schema.timeEntries.date))
-    .all();
+  const weekEntries = await db
+    .collection(collections.timeEntries)
+    .find({
+      userId: "demo-user-id",
+      date: { $gte: weekStart, $lte: tomorrow },
+    })
+    .sort({ date: -1 })
+    .toArray();
 
   const weekMinutes = weekEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
 

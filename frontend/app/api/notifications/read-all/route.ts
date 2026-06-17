@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const userId = body.userId;
   if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
 
-  db.update(schema.notifications)
-    .set({ read: true })
-    .where(eq(schema.notifications.userId, userId))
-    .run();
+  await db.collection(collections.notifications).updateMany(
+    { userId },
+    { $set: { read: true } }
+  );
   return NextResponse.json({ success: true });
 }

@@ -1,7 +1,6 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building2Icon, GlobeIcon, CalendarIcon } from "lucide-react";
@@ -10,8 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Organization" };
 
 const getOrg = cache(async (orgId: string) => {
-  const orgs = db.select().from(schema.organizations).where(eq(schema.organizations.id, orgId)).all();
-  return orgs[0] || null;
+  return db.collection(collections.organizations).findOne({ id: orgId });
 });
 
 export default async function OrgDetailsPage() {

@@ -1,7 +1,6 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
@@ -9,12 +8,11 @@ export const metadata = { title: "Audit Logs" };
 
 const getLogs = cache(async (orgId: string) => {
   return db
-    .select()
-    .from(schema.activityLogs)
-    .where(eq(schema.activityLogs.orgId, orgId))
-    .orderBy(desc(schema.activityLogs.createdAt))
+    .collection(collections.activityLogs)
+    .find({ orgId })
+    .sort({ createdAt: -1 })
     .limit(50)
-    .all();
+    .toArray();
 });
 
 export default async function AuditPage() {

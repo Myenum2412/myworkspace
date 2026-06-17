@@ -2,9 +2,6 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { compare } from "bcryptjs";
-import { db } from "@/lib/db";
-import { schema } from "@/lib/db";
-import { eq } from "drizzle-orm";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
@@ -40,26 +37,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-
         const email = credentials.email as string;
         const password = credentials.password as string;
-
-        const users = db.select().from(schema.users).where(eq(schema.users.email, email)).all();
+        const { db } = await import("@/lib/db");
+        const users = await db.collection("users").find({ email }).toArray();
         if (users.length === 0) return null;
-
         const user = users[0];
         if (!user.password) return null;
-
         const valid = await compare(password, user.password);
         if (!valid) return null;
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role,
-        };
+        return { id: user.id, email: user.email, name: user.name, image: user.image, role: user.role };
       },
     }),
   ],

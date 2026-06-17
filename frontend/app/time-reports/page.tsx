@@ -7,8 +7,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
-import { schema } from "@/lib/db/schema";
-import { eq, and, between, desc, sql, inArray } from "drizzle-orm";
+import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
 import { BarChart3Icon } from "lucide-react";
 
@@ -39,16 +38,13 @@ export default async function TimeReportsPage() {
 
   const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
 
-  const monthEntries = db
-    .select()
-    .from(schema.timeEntries)
-    .where(
-      and(
-        eq(schema.timeEntries.orgId, "demo-org-id"),
-        between(schema.timeEntries.date, monthStart, nextMonth),
-      ),
-    )
-    .all();
+  const monthEntries = await db
+    .collection(collections.timeEntries)
+    .find({
+      orgId: "demo-org-id",
+      date: { $gte: monthStart, $lte: nextMonth },
+    })
+    .toArray();
 
   const totalMinutes = monthEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
   const billableMinutes = monthEntries.filter(e => e.billable).reduce((sum, e) => sum + (e.duration || 0), 0);
@@ -73,11 +69,10 @@ export default async function TimeReportsPage() {
   if (monthEntries.some(e => e.taskId)) {
     const taskIds = [...new Set(monthEntries.map(e => e.taskId).filter(Boolean))] as string[];
     const tasks = taskIds.length > 0
-      ? db
-          .select({ id: schema.tasks.id, title: schema.tasks.title })
-          .from(schema.tasks)
-          .where(inArray(schema.tasks.id, taskIds))
-          .all()
+      ? await db
+          .collection(collections.tasks)
+          .find({ id: { $in: taskIds } }, { projection: { id: 1, title: 1 } })
+          .toArray()
       : [];
     const taskMap = Object.fromEntries(tasks.map(t => [t.id, t.title]));
     for (const e of monthEntries) {
@@ -93,33 +88,25 @@ export default async function TimeReportsPage() {
 
   const sortedTasks = Object.values(entriesByTask).sort((a, b) => b.minutes - a.minutes);
 
-  const entriesByUser = db
-    .select({
-      userId: schema.timeEntries.userId,
-      total: sql<number>`SUM(${schema.timeEntries.duration})`.as("total"),
-      count: sql<number>`COUNT(*)`.as("count"),
-    })
-    .from(schema.timeEntries)
-    .where(
-      and(
-        eq(schema.timeEntries.orgId, "demo-org-id"),
-        between(schema.timeEntries.date, monthStart, nextMonth),
-      ),
-    )
-    .groupBy(schema.timeEntries.userId)
-    .all();
+  const entriesByUser = await db
+    .collection(collections.timeEntries)
+    .aggregate([
+      { $match: { orgId: "demo-org-id", date: { $gte: monthStart, $lte: nextMonth } } },
+      { $group: { _id: "$userId", total: { $sum: "$duration" }, count: { $sum: 1 } } },
+    ])
+    .toArray();
 
-  const userIds = entriesByUser.map(e => e.userId);
-  const userMap = userIds.length > 0
-    ? Object.fromEntries(
-        db
-          .select({ id: schema.users.id, name: schema.users.name })
-          .from(schema.users)
-          .where(inArray(schema.users.id, userIds))
-          .all()
-          .map(u => [u.id, u.name]),
-      )
-    : {};
+  const userIds = entriesByUser.map(e => e._id);
+  const userMap: Record<string, string> = {};
+  if (userIds.length > 0) {
+    const users = await db
+      .collection(collections.users)
+      .find({ id: { $in: userIds } }, { projection: { id: 1, name: 1 } })
+      .toArray();
+    for (const u of users) {
+      userMap[u.id] = u.name;
+    }
+  }
 
   return (
     <SidebarProvider>
@@ -200,8 +187,8 @@ export default async function TimeReportsPage() {
               ) : (
                 <div className="space-y-3">
                   {entriesByUser.map((entry) => (
-                    <div key={entry.userId} className="flex items-center justify-between border-b pb-2 last:border-0">
-                      <p className="font-medium">{userMap[entry.userId] || "Unknown"}</p>
+                    <div key={entry._id} className="flex items-center justify-between border-b pb-2 last:border-0">
+                      <p className="font-medium">{userMap[entry._id] || "Unknown"}</p>
                       <div className="flex items-center gap-3">
                         <Badge variant="outline">{entry.count} entries</Badge>
                         <span className="font-semibold">{formatDuration(entry.total || 0)}</span>
