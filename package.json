@@ -1,3 +1,11 @@
 {
-  "private": true
+  "private": true,
+  "scripts": {
+    "vercel-build": "rm -rf .next public && cd frontend && npm ci --include=dev && npm run build && cp -r .next ../.next && cp -r public ../public"
+  },
+  "dependencies": {
+    "next": "^16.2.9",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
 }
