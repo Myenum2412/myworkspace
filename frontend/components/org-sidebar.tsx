@@ -1,5 +1,3 @@
-"use client";
-
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -18,7 +16,6 @@ import {
   ClipboardListIcon,
   BarChart3Icon,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 export const defaultOrgNavData = [
   {
@@ -91,16 +88,20 @@ export const defaultOrgNavData = [
   },
 ];
 
+interface NavUserData {
+  name: string;
+  email: string;
+  avatar: string;
+}
+
 export function OrgSidebar({
+  user,
   navItems = defaultOrgNavData,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   navItems?: typeof defaultOrgNavData;
+  user: NavUserData;
 }) {
-  const { data: session } = useSession();
-  const user = session?.user
-    ? { name: session.user.name || "", email: session.user.email || "", avatar: session.user.image || "" }
-    : { name: "User", email: "user@example.com", avatar: "" };
 
   return (
     <Sidebar collapsible="icon" {...props}>

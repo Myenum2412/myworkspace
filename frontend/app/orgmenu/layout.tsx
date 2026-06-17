@@ -14,10 +14,15 @@ export default async function OrgLayout({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  const user = {
+    name: session.user.name || "User",
+    email: session.user.email || "user@example.com",
+    avatar: session.user.image || "",
+  };
 
   return (
     <SidebarProvider>
-      <OrgSidebar />
+      <OrgSidebar user={user} />
       <SidebarInset>
         <Header />
         {children}

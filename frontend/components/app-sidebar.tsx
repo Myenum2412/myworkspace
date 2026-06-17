@@ -1,5 +1,3 @@
-"use client";
-
 import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
@@ -16,8 +14,8 @@ import {
   UsersIcon,
   Settings2Icon,
   StoreIcon,
+  FolderIcon,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 export const defaultNavData = {
   navMain: [
@@ -28,7 +26,7 @@ export const defaultNavData = {
       isActive: true,
       items: [
         { title: "Overview", url: "/dashboard" },
-        { title: "Reports", url: "#" },
+        { title: "Reports", url: "/reports" },
       ],
     },
     {
@@ -36,19 +34,53 @@ export const defaultNavData = {
       url: "/overview",
       icon: <ListTodoIcon className="size-6" />,
       items: [
-        { title: "All Tasks", url: "/overview" },
-        { title: "My Tasks", url: "/overview" },
-        { title: "Saved Tasks", url: "/overview" },
+        { title: "All Tasks", url: "/alltasks" },
+        { title: "My Tasks", url: "/mytasks" },
+        { title: "Saved Tasks", url: "/savedtasks" },
+        { title: "Upcoming Tasks", url: "/upcomingtasks" },
       ],
     },
     {
       title: "Employees",
-      url: "#",
+      url: "/employees",
       icon: <UsersIcon className="size-6" />,
       items: [
-        { title: "Directory", url: "#" },
-        { title: "Onboarding", url: "#" },
-        { title: "Statics", url: "#" },
+        { title: "All Employees", url: "/employees" },
+        { title: "Add Employee", url: "/addemployees" },
+        { title: "Terminated", url: "/terminated" },
+        { title: "Time Tracker", url: "/time-tracker" },
+      ],
+    },
+    {
+      title: "Projects",
+      url: "/projects",
+      icon: <FolderIcon className="size-6" />,
+      items: [
+        { title: "All Projects", url: "/projects" },
+        { title: "Add Project", url: "/addprojects" },
+        { title: "Clients", url: "/clients" },
+        { title: "Add Client", url: "/addclients" },
+      ],
+    },
+    {
+      title: "Time Tracker",
+      url: "/time-tracker",
+      icon: <ListTodoIcon className="size-6" />,
+      items: [
+        { title: "My Time", url: "/my-time" },
+        { title: "Team Time", url: "/team-time" },
+        { title: "Time Reports", url: "/time-reports" },
+      ],
+    },
+    {
+      title: "File Manager",
+      url: "/files",
+      icon: <FolderIcon className="size-6" />,
+      items: [
+        { title: "All Files", url: "/files" },
+        { title: "Upload File", url: "/upload" },
+        { title: "Shared with Me", url: "/shared" },
+        { title: "Recycle Bin", url: "/recycle-bin" },
       ],
     },
     {
@@ -73,14 +105,17 @@ export interface AppSidebarData {
   appStore: typeof defaultNavData.appStore;
 }
 
+interface NavUserData {
+  name: string;
+  email: string;
+  avatar: string;
+}
+
 export function AppSidebar({
+  user,
   data = defaultNavData,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { data?: AppSidebarData }) {
-  const { data: session } = useSession();
-  const user = session?.user
-    ? { name: session.user.name || "", email: session.user.email || "", avatar: session.user.image || "" }
-    : { name: "User", email: "user@example.com", avatar: "" };
+}: React.ComponentProps<typeof Sidebar> & { data?: AppSidebarData; user: NavUserData }) {
 
   return (
     <Sidebar collapsible="icon" {...props}>

@@ -107,6 +107,25 @@ async function migrate() {
       expires_at INTEGER,
       created_at INTEGER
     );
+    CREATE TABLE IF NOT EXISTS file_attachments (
+      id TEXT PRIMARY KEY,
+      org_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      uploader_id TEXT NOT NULL REFERENCES users(id),
+      name TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      size INTEGER NOT NULL,
+      storage_path TEXT NOT NULL,
+      created_at INTEGER
+    );
+    CREATE TABLE IF NOT EXISTS file_shares (
+      id TEXT PRIMARY KEY,
+      file_id TEXT NOT NULL REFERENCES file_attachments(id) ON DELETE CASCADE,
+      shared_by_user_id TEXT NOT NULL REFERENCES users(id),
+      shared_with_user_id TEXT REFERENCES users(id),
+      org_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      created_at INTEGER
+    );
     CREATE TABLE IF NOT EXISTS sso_configs (
       id TEXT PRIMARY KEY,
       org_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -218,6 +237,28 @@ async function seed() {
     entityId: userId,
     description: "Demo User logged in",
   }).run();
+
+  const sampleFiles = [
+    { name: "Project_Proposal.pdf", mime: "application/pdf", size: 2516582, originalName: "Project_Proposal.pdf" },
+    { name: "Team_Photo.png", mime: "image/png", size: 4299161, originalName: "Team_Photo.png" },
+    { name: "Budget_2026.xlsx", mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", size: 1258291, originalName: "Budget_2026.xlsx" },
+    { name: "Meeting_Notes.docx", mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", size: 876544, originalName: "Meeting_Notes.docx" },
+    { name: "Logo_v2.svg", mime: "image/svg+xml", size: 126976, originalName: "Logo_v2.svg" },
+  ];
+
+  for (const file of sampleFiles) {
+    const fileId = uuid();
+    db.insert(schema.fileAttachments).values({
+      id: fileId,
+      orgId,
+      uploaderId: userId,
+      name: file.name,
+      originalName: file.originalName,
+      mimeType: file.mime,
+      size: file.size,
+      storagePath: `seed/${file.name}`,
+    }).run();
+  }
 
   console.log("Database seeded successfully");
   console.log("Demo credentials: demo@myworkspace.io / password123");

@@ -1,6 +1,3 @@
-"use client";
-
-import { useActionState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -8,8 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { loginAction } from "@/lib/auth/actions";
-import { useRouter } from "next/navigation";
-import { Loader2Icon } from "lucide-react";
 
 function GoogleIcon() {
   return (
@@ -38,18 +33,7 @@ function GitHubIcon() {
   );
 }
 
-async function loginActionWrapper(_prev: unknown, formData: FormData) {
-  return loginAction(formData);
-}
-
-export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
-  const [state, formAction, pending] = useActionState(loginActionWrapper, null);
-  const router = useRouter();
-
-  if (state?.success) {
-    router.push("/dashboard");
-  }
-
+export function LoginForm({ className, error, ...props }: React.ComponentProps<"div"> & { error?: string }) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-2 text-center">
@@ -59,10 +43,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         </p>
       </div>
 
-      <form action={formAction} className="flex flex-col gap-4">
-        {state?.error && (
+      <form action={loginAction} className="flex flex-col gap-4">
+        {error && (
           <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            {state.error}
+            {error}
           </div>
         )}
         <div className="flex flex-col gap-1.5">
@@ -78,9 +62,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
           </div>
           <Input id="password" name="password" type="password" required autoComplete="current-password" className="h-10" />
         </div>
-        <Button type="submit" className="w-full mt-1 font-semibold h-10" disabled={pending}>
-          {pending ? <Loader2Icon className="size-4 animate-spin" /> : null}
-          {pending ? "Signing in..." : "Sign in"}
+        <Button type="submit" className="w-full mt-1 font-semibold h-10">
+          Sign in
         </Button>
       </form>
 

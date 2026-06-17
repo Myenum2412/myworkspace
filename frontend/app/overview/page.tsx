@@ -4,15 +4,15 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { auth } from "@/lib/auth/config";
-import { redirect } from "next/navigation";
 import { cache } from "react";
 import { db } from "@/lib/db";
 import { schema } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { auth } from "@/lib/auth/config";
 import { TaskList } from "./task-list";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 
 export const metadata = {
   title: "Task Overview",
@@ -45,13 +45,16 @@ const statusColors: Record<string, string> = {
 
 export default async function OverviewPage() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
-
+  const user = {
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "user@example.com",
+    avatar: session?.user?.image || "",
+  };
   const tasks = await getTasks("demo-org-id");
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar user={user} />
       <SidebarInset>
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4">
@@ -61,6 +64,8 @@ export default async function OverviewPage() {
               {tasks.length} tasks
             </Badge>
           </div>
+
+          <ChartAreaInteractive />
 
           <div className="grid gap-4 md:grid-cols-4 mb-4">
             <Card>

@@ -1,22 +1,15 @@
-"use client";
-
-import { useActionState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { forgotPasswordAction } from "@/lib/auth/actions";
-import { ArrowLeftIcon, MailIcon, Loader2Icon } from "lucide-react";
+import { ArrowLeftIcon, MailIcon } from "lucide-react";
 
-async function wrapper(_prev: unknown, formData: FormData) {
-  return forgotPasswordAction(formData);
-}
+export function ForgotPasswordForm({ className, searchParams, ...props }: React.ComponentProps<"div"> & { searchParams: Record<string, string> }) {
+  const success = searchParams.success;
 
-export function ForgotPasswordForm({ className, ...props }: React.ComponentProps<"div">) {
-  const [state, formAction, pending] = useActionState(wrapper, null);
-
-  if (state?.success) {
+  if (success) {
     return (
       <div className={cn("flex flex-col gap-6 text-center", className)} {...props}>
         <div className="flex flex-col items-center gap-4">
@@ -26,15 +19,15 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
             <p className="text-sm text-muted-foreground">
-              {state.message || "We've sent a password reset link to your email address."}
+              {success}
             </p>
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
           Didn&apos;t receive an email?{" "}
-          <button type="button" onClick={() => window.location.reload()} className="font-medium text-foreground underline-offset-4 hover:underline">
+          <Link href="/forgot-password" className="font-medium text-foreground underline-offset-4 hover:underline">
             Try again
-          </button>
+          </Link>
         </p>
         <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeftIcon className="size-3.5" />
@@ -53,17 +46,13 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
         </p>
       </div>
 
-      <form action={formAction} className="flex flex-col gap-4">
-        {state?.error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{state.error}</div>
-        )}
+      <form action={forgotPasswordAction} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="reset-email">Email address</Label>
           <Input id="reset-email" name="email" type="email" required autoComplete="email" className="h-10" />
         </div>
-        <Button type="submit" className="w-full font-semibold h-10" disabled={pending}>
-          {pending ? <Loader2Icon className="size-4 animate-spin" /> : null}
-          {pending ? "Sending..." : "Send reset link"}
+        <Button type="submit" className="w-full font-semibold h-10">
+          Send reset link
         </Button>
       </form>
 

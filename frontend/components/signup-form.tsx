@@ -1,6 +1,3 @@
-"use client";
-
-import { useActionState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -8,9 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { signupAction } from "@/lib/auth/actions";
-import { useRouter } from "next/navigation";
-import { EyeIcon, EyeOffIcon, Loader2Icon } from "lucide-react";
-import { useState } from "react";
+import { PasswordInput } from "@/components/password-input";
 
 function GoogleIcon() {
   return (
@@ -39,20 +34,7 @@ function GitHubIcon() {
   );
 }
 
-async function signupActionWrapper(_prev: unknown, formData: FormData) {
-  return signupAction(formData);
-}
-
-export function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
-  const [state, formAction, pending] = useActionState(signupActionWrapper, null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const router = useRouter();
-
-  if (state?.success) {
-    router.push("/dashboard");
-  }
-
+export function SignupForm({ className, error, ...props }: React.ComponentProps<"div"> & { error?: string }) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-2 text-center">
@@ -60,9 +42,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
         <p className="text-sm text-muted-foreground">Join MyWorkSpace and start collaborating</p>
       </div>
 
-      <form action={formAction} className="flex flex-col gap-4">
-        {state?.error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{state.error}</div>
+      <form action={signupAction} className="flex flex-col gap-4">
+        {error && (
+          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
         )}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-name">Full name</Label>
@@ -78,25 +60,14 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-password">Password</Label>
-          <div className="relative">
-            <Input id="signup-password" name="password" type={showPassword ? "text" : "password"} required autoComplete="new-password" className="h-10 pr-10" />
-            <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground transition-colors" aria-label={showPassword ? "Hide password" : "Show password"}>
-              {showPassword ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
-            </button>
-          </div>
+          <PasswordInput id="signup-password" name="password" required autoComplete="new-password" placeholder="Min. 8 characters" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-confirm">Confirm password</Label>
-          <div className="relative">
-            <Input id="signup-confirm" type={showConfirm ? "text" : "password"} required autoComplete="new-password" className="h-10 pr-10" />
-            <button type="button" onClick={() => setShowConfirm((v) => !v)} className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground transition-colors" aria-label={showConfirm ? "Hide password" : "Show password"}>
-              {showConfirm ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
-            </button>
-          </div>
+          <PasswordInput id="signup-confirm" name="confirm" required autoComplete="new-password" placeholder="Re-enter your password" />
         </div>
-        <Button type="submit" className="w-full mt-1 font-semibold h-10" disabled={pending}>
-          {pending ? <Loader2Icon className="size-4 animate-spin" /> : null}
-          {pending ? "Creating account..." : "Create account"}
+        <Button type="submit" className="w-full mt-1 font-semibold h-10">
+          Create account
         </Button>
       </form>
 

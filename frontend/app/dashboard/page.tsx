@@ -5,7 +5,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth/config";
-import { redirect } from "next/navigation";
+import { ChartBarInteractive } from "@/components/chart-bar-interactive";
 
 export const metadata = {
   title: "Dashboard",
@@ -13,14 +13,20 @@ export const metadata = {
 
 export default async function DashboardPage() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  const user = {
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "user@example.com",
+    avatar: session?.user?.image || "",
+  };
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar user={user} />
       <SidebarInset>
         <Header />
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0" />
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
+          <ChartBarInteractive />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

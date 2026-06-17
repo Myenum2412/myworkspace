@@ -112,6 +112,27 @@ export const apiKeys = sqliteTable("api_keys", {
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+export const fileAttachments = sqliteTable("file_attachments", {
+  id: text("id").primaryKey(),
+  orgId: text("org_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+  uploaderId: text("uploader_id").notNull().references(() => users.id),
+  name: text("name").notNull(),
+  originalName: text("original_name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  size: integer("size").notNull(),
+  storagePath: text("storage_path").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const fileShares = sqliteTable("file_shares", {
+  id: text("id").primaryKey(),
+  fileId: text("file_id").notNull().references(() => fileAttachments.id, { onDelete: "cascade" }),
+  sharedByUserId: text("shared_by_user_id").notNull().references(() => users.id),
+  sharedWithUserId: text("shared_with_user_id").references(() => users.id),
+  orgId: text("org_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
 export const ssoConfigs = sqliteTable("sso_configs", {
   id: text("id").primaryKey(),
   orgId: text("org_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
@@ -136,5 +157,7 @@ export const schema = {
   activityLogs,
   messages,
   apiKeys,
+  fileAttachments,
+  fileShares,
   ssoConfigs,
 };

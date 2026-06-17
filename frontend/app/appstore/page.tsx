@@ -16,21 +16,19 @@ export const metadata = {
   description: "Browse and install workspace applications",
 };
 
-const apps = [
-  { name: "Analytics Dashboard", icon: BarChart3Icon, description: "Advanced analytics and reporting tools", category: "Analytics", color: "text-blue-500" },
-  { name: "AI Assistant", icon: BotIcon, description: "AI-powered task suggestions and automation", category: "AI", color: "text-purple-500" },
-  { name: "Cloud Sync", icon: CloudIcon, description: "Sync your workspace across all devices", category: "Infrastructure", color: "text-cyan-500" },
-  { name: "Security Scanner", icon: ShieldCheckIcon, description: "Automated security scanning and alerts", category: "Security", color: "text-emerald-500" },
-  { name: "Custom Integrations", icon: PuzzleIcon, description: "Connect with your favorite tools", category: "Integrations", color: "text-amber-500" },
-];
 
 export default async function AppStorePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  const user = {
+    name: session.user.name || "User",
+    email: session.user.email || "user@example.com",
+    avatar: session.user.image || "",
+  };
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar user={user} />
       <SidebarInset>
         <Header />
         <main className="flex flex-1 flex-col gap-6 p-6">
@@ -47,23 +45,6 @@ export default async function AppStorePage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {apps.map((app) => (
-              <Card key={app.name} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <app.icon className={`size-8 ${app.color}`} />
-                    <Badge variant="secondary">{app.category}</Badge>
-                  </div>
-                  <CardTitle className="mt-3">{app.name}</CardTitle>
-                  <CardDescription>{app.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    Install
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
           </div>
         </main>
       </SidebarInset>
