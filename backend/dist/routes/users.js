@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { User } from "../lib/db/models/User";
-import { authenticate } from "../middleware/auth";
-import { AppError } from "../middleware/error";
+import { User } from "../lib/db/models/User.js";
+import { authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 const router = Router();
 router.use(authenticate);
 router.get("/status", async (req, res) => {

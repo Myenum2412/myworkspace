@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket as WsSocket } from "ws";
-import { createEvent } from "./events";
+import { createEvent } from "./events.js";
 class WsManager {
     wss = null;
     clients = new Map();

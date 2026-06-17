@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { Organization } from "../lib/db/models/Organization";
-import { OrgMember } from "../lib/db/models/OrgMember";
-import { authenticate } from "../middleware/auth";
-import { AppError } from "../middleware/error";
+import { Organization } from "../lib/db/models/Organization.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 const router = Router();
 router.use(authenticate);
 router.get("/", async (req, res) => {

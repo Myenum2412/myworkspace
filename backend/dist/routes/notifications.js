@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { Notification } from "../lib/db/models/Notification";
-import { authenticate } from "../middleware/auth";
+import { Notification } from "../lib/db/models/Notification.js";
+import { authenticate } from "../middleware/auth.js";
 const router = Router();
 router.use(authenticate);
 router.get("/", async (req, res) => {

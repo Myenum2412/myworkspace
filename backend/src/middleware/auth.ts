@@ -1,8 +1,8 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { env } from "../config/env";
-import { JwtPayload } from "../types";
-import type { AuthRequest } from "../types";
+import { env } from "../config/env.js";
+import { JwtPayload } from "../types/index.js";
+import type { AuthRequest } from "../types/index.js";
 export type { AuthRequest };
 
 export function authenticate(req: AuthRequest, res: Response, next: NextFunction): void {

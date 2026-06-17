@@ -1,14 +1,14 @@
 import express from "express";
 import cors from "cors";
-import { env } from "./config/env";
-import { errorHandler } from "./middleware/error";
-import authRoutes from "./routes/auth";
-import tasksRoutes from "./routes/tasks";
-import notificationsRoutes from "./routes/notifications";
-import activityRoutes from "./routes/activity";
-import dashboardRoutes from "./routes/dashboard";
-import usersRoutes from "./routes/users";
-import organizationsRoutes from "./routes/organizations";
+import { env } from "./config/env.js";
+import { errorHandler } from "./middleware/error.js";
+import authRoutes from "./routes/auth.js";
+import tasksRoutes from "./routes/tasks.js";
+import notificationsRoutes from "./routes/notifications.js";
+import activityRoutes from "./routes/activity.js";
+import dashboardRoutes from "./routes/dashboard.js";
+import usersRoutes from "./routes/users.js";
+import organizationsRoutes from "./routes/organizations.js";
 
 const app = express();
 

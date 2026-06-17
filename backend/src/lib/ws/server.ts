@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket as WsSocket } from "ws";
 import { IncomingMessage } from "http";
 import { Server } from "http";
-import { createEvent, WsEvent, WsEventType, WsClientMessage } from "./events";
+import { createEvent, WsEvent, WsEventType, WsClientMessage } from "./events.js";
 
 interface Client {
   ws: WsSocket;

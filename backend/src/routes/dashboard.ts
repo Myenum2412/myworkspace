@@ -1,9 +1,9 @@
 import { Router, Response } from "express";
-import { Task } from "../lib/db/models/Task";
-import { OrgMember } from "../lib/db/models/OrgMember";
-import { ActivityLog } from "../lib/db/models/ActivityLog";
-import { AuthRequest, authenticate } from "../middleware/auth";
-import { AppError } from "../middleware/error";
+import { Task } from "../lib/db/models/Task.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 
 const router = Router();
 

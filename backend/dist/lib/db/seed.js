@@ -1,12 +1,12 @@
-import { connectDb, mongoose } from "./index";
-import { User } from "./models/User";
-import { Organization } from "./models/Organization";
-import { OrgMember } from "./models/OrgMember";
-import { Team } from "./models/Team";
-import { TeamMember } from "./models/TeamMember";
-import { Task } from "./models/Task";
-import { Notification } from "./models/Notification";
-import { ActivityLog } from "./models/ActivityLog";
+import { connectDb, mongoose } from "./index.js";
+import { User } from "./models/User.js";
+import { Organization } from "./models/Organization.js";
+import { OrgMember } from "./models/OrgMember.js";
+import { Team } from "./models/Team.js";
+import { TeamMember } from "./models/TeamMember.js";
+import { Task } from "./models/Task.js";
+import { Notification } from "./models/Notification.js";
+import { ActivityLog } from "./models/ActivityLog.js";
 import bcrypt from "bcryptjs";
 async function seed() {
     await connectDb();

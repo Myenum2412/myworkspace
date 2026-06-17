@@ -1,8 +1,8 @@
 import { createServer } from "http";
-import app from "./app";
-import { env } from "./config/env";
-import { connectDb } from "./lib/db";
-import { wsManager } from "./lib/ws/server";
+import app from "./app.js";
+import { env } from "./config/env.js";
+import { connectDb } from "./lib/db/index.js";
+import { wsManager } from "./lib/ws/server.js";
 async function start() {
     await connectDb();
     const server = createServer(app);

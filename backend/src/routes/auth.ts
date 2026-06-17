@@ -1,12 +1,12 @@
 import { Router, Response } from "express";
 import { hash, compare } from "bcryptjs";
-import { User } from "../lib/db/models/User";
-import { Organization } from "../lib/db/models/Organization";
-import { OrgMember } from "../lib/db/models/OrgMember";
-import { ActivityLog } from "../lib/db/models/ActivityLog";
-import { signToken } from "../config/auth";
-import { AuthRequest, authenticate } from "../middleware/auth";
-import { AppError } from "../middleware/error";
+import { User } from "../lib/db/models/User.js";
+import { Organization } from "../lib/db/models/Organization.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { signToken } from "../config/auth.js";
+import { AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 
 const router = Router();
 

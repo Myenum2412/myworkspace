@@ -1,5 +1,5 @@
 import { Server } from "http";
-import { WsEvent, WsEventType } from "./events";
+import { WsEvent, WsEventType } from "./events.js";
 declare class WsManager {
     private wss;
     private clients;

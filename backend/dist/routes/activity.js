@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { ActivityLog } from "../lib/db/models/ActivityLog";
-import { authenticate } from "../middleware/auth";
-import { AppError } from "../middleware/error";
+import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 const router = Router();
 router.use(authenticate);
 router.get("/", async (req, res) => {
