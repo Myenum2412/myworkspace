@@ -63,8 +63,8 @@ jobs:
       - name: SSH and deploy
         uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USERNAME }}
+          host: "168.144.126.138"
+          username: "root"
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
             cd /root/myworkspace
