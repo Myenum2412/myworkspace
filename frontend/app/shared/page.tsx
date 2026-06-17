@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import {
@@ -41,17 +41,17 @@ export default function SharedPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
-  const fetchShared = useCallback(async () => {
+  const fetchShared = async () => {
     const res = await fetch("/api/files/shared");
     if (res.ok) {
       setFiles(await res.json());
     }
     setLoading(false);
-  }, []);
+  };
 
   useEffect(() => {
     fetchShared();
-  }, [fetchShared]);
+  }, []);
 
   useEffect(() => {
     fetch("/api/user/me")

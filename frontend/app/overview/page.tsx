@@ -26,21 +26,6 @@ const getTasks = cache(async (orgId: string) => {
     .all();
 });
 
-const priorityColors: Record<string, string> = {
-  urgent: "bg-red-500",
-  high: "bg-amber-500",
-  medium: "bg-blue-500",
-  low: "bg-gray-400",
-};
-
-const statusColors: Record<string, string> = {
-  todo: "bg-gray-500",
-  in_progress: "bg-blue-500",
-  review: "bg-purple-500",
-  done: "bg-emerald-500",
-  cancelled: "bg-red-500",
-};
-
 export default async function OverviewPage() {
   const session = await auth();
   const user = {

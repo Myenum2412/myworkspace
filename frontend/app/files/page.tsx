@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import {
@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Trash2Icon, DownloadIcon, Share2Icon } from "lucide-react";
 import { deleteFileAction, shareFileAction } from "@/actions/files";
 
@@ -41,17 +40,17 @@ export default function FilesPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
-  const fetchFiles = useCallback(async () => {
+  const fetchFiles = async () => {
     const res = await fetch("/api/files");
     if (res.ok) {
       setFiles(await res.json());
     }
     setLoading(false);
-  }, []);
+  };
 
   useEffect(() => {
     fetchFiles();
-  }, [fetchFiles]);
+  }, []);
 
   useEffect(() => {
     fetch("/api/user/me")

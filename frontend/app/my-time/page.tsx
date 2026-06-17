@@ -104,7 +104,7 @@ export default async function MyTimePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Today's Entries</CardTitle>
+              <CardTitle>Today&apos;s Entries</CardTitle>
             </CardHeader>
             <CardContent>
               {todayEntries.length === 0 ? (
