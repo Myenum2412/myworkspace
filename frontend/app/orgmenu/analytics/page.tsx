@@ -1,5 +1,7 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 import { schema } from "@/lib/db/schema";
 import { eq, and, count } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
