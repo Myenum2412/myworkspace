@@ -31,7 +31,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.AUTH_LINKEDIN_SECRET!,
     }),
     Google({
-      clientId: "651387886925-l2gairqedhq8r3iungd0kfat1jvehk8i.apps.googleusercontent.com",
+      clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
     Credentials({
