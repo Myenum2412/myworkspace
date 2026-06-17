@@ -4,6 +4,7 @@ import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { signIn } from "./config";
 import { db } from "@/lib/db";
 
 export async function signupActionMongo(formData: FormData) {
@@ -31,6 +32,7 @@ export async function signupActionMongo(formData: FormData) {
 
   const userDoc: Record<string, unknown> = {
     _id: userId,
+    id: userId,
     name,
     email,
     password: hashedPassword,
@@ -55,6 +57,7 @@ export async function signupActionMongo(formData: FormData) {
   };
   await organizations.insertOne(orgDoc as never);
 
+  await signIn("credentials", { email, password, redirect: false });
   revalidatePath("/dashboard");
   redirect("/dashboard");
 }

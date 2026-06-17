@@ -1,38 +1,37 @@
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { cache } from "react";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { auth } from "@/lib/auth/config";
 
-export const dynamic = "force-dynamic";
-export const metadata = {
-  title: "Task Overview",
-  description: "View and manage all team tasks",
+type Task = {
+  _id: string;
+  status: string;
 };
 
-const getTasks = cache(async (orgId: string) => {
-  return db
-    .collection(collections.tasks)
-    .find({ orgId })
-    .sort({ createdAt: -1 })
-    .toArray();
-});
+export default function OverviewPage() {
+  const { data: session } = useSession();
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-export default async function OverviewPage() {
-  const session = await auth();
+  useEffect(() => {
+    fetch("/api/tasks?orgId=demo-org-id")
+      .then((r) => r.json())
+      .then(setTasks)
+      .catch(() => {});
+  }, []);
+
   const user = {
     name: session?.user?.name || "User",
     email: session?.user?.email || "user@example.com",
     avatar: session?.user?.image || "",
   };
-  const tasks = await getTasks("demo-org-id");
 
   return (
     <SidebarProvider>
@@ -46,6 +45,7 @@ export default async function OverviewPage() {
               {tasks.length} tasks
             </Badge>
           </div>
+
           <div className="grid gap-4 md:grid-cols-6 mb-6">
             <Card className="bg-gray-50">
               <CardHeader className="pb-2">
@@ -63,7 +63,7 @@ export default async function OverviewPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {tasks.filter((t) => t.status === "in_progress").length}
+                  {tasks.filter((t) => t.status === "assigned").length}
                 </div>
               </CardContent>
             </Card>
@@ -108,7 +108,6 @@ export default async function OverviewPage() {
               </CardContent>
             </Card>
           </div>
-
         </main>
       </SidebarInset>
     </SidebarProvider>

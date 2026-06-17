@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { NotFoundContent } from "@/components/not-found-content";
+import { NotFound } from "@/components/ui/not-found";
 
 export function OfflineDetector({ children }: { children: React.ReactNode }) {
   const [isOffline, setIsOffline] = useState(
@@ -23,7 +23,7 @@ export function OfflineDetector({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (isOffline) {
-    return <NotFoundContent variant="offline" />;
+    return <NotFound title="No internet connection" description="You appear to be offline. Please check your network connection and try again." />;
   }
 
   return <>{children}</>;

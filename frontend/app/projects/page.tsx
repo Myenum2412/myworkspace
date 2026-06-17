@@ -21,13 +21,7 @@ interface Project {
   progress: number;
 }
 
-const defaultProjects: Project[] = [
-  { id: "1", name: "Website Redesign", client: "Acme Corp", status: "In Progress", deadline: "2026-07-15", progress: 65 },
-  { id: "2", name: "Mobile App v2", client: "Globex Inc", status: "Completed", deadline: "2026-05-30", progress: 100 },
-  { id: "3", name: "Dashboard Overhaul", client: "Initech", status: "In Progress", deadline: "2026-08-01", progress: 30 },
-  { id: "4", name: "API Integration", client: "Umbrella Corp", status: "Planning", deadline: "2026-09-10", progress: 10 },
-  { id: "5", name: "Brand Refresh", client: "Stark Industries", status: "In Progress", deadline: "2026-07-01", progress: 50 },
-];
+const defaultProjects: Project[] = [];
 
 export default function ProjectsPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
@@ -84,57 +78,6 @@ export default function ProjectsPage() {
             </Card>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Projects</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-3 pr-4 font-medium">Name</th>
-                      <th className="pb-3 pr-4 font-medium">Client</th>
-                      <th className="pb-3 pr-4 font-medium">Status</th>
-                      <th className="pb-3 pr-4 font-medium">Deadline</th>
-                      <th className="pb-3 font-medium">Progress</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {defaultProjects.map((project) => (
-                      <tr key={project.id} className="border-b last:border-0">
-                        <td className="py-3 pr-4 font-medium">{project.name}</td>
-                        <td className="py-3 pr-4 text-muted-foreground">{project.client}</td>
-                        <td className="py-3 pr-4">
-                          <Badge
-                            variant={
-                              project.status === "Completed" ? "default" :
-                              project.status === "In Progress" ? "secondary" :
-                              "outline"
-                            }
-                          >
-                            {project.status}
-                          </Badge>
-                        </td>
-                        <td className="py-3 pr-4 text-muted-foreground">{project.deadline}</td>
-                        <td className="py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 rounded-full bg-muted">
-                              <div
-                                className="h-2 rounded-full bg-primary"
-                                style={{ width: `${project.progress}%` }}
-                              />
-                            </div>
-                            <span className="text-xs text-muted-foreground">{project.progress}%</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
         </main>
       </SidebarInset>
     </SidebarProvider>

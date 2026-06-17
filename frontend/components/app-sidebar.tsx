@@ -58,10 +58,8 @@ export const defaultNavData = {
       url: "/projects",
       icon: <WorkflowIcon className="size-6" />,
       items: [
-        { title: "All Projects", url: "/projects" },
-        { title: "Add Project", url: "/addprojects" },
         { title: "Clients", url: "/clients" },
-        { title: "Add Client", url: "/addclients" },
+        { title: "All Projects", url: "/projects" },
       ],
     },
     {
@@ -81,8 +79,6 @@ export const defaultNavData = {
       icon: <FolderIcon className="size-6" />,
       items: [
         { title: "All Files", url: "/files" },
-        { title: "Upload File", url: "/upload" },
-        { title: "Shared with Me", url: "/shared" },
         { title: "Recycle Bin", url: "/recycle-bin" },
       ],
     },

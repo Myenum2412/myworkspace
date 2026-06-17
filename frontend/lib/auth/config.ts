@@ -25,6 +25,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
+  events: {
+    async signIn({ user }) {
+      if (!user.id) return;
+      try {
+        const { db } = await import("@/lib/db");
+        await db.collection("users").updateOne(
+          { id: user.id },
+          { $set: { status: "online", updatedAt: new Date() } }
+        );
+      } catch {
+        // MongoDB connection may not be available
+      }
+    },
+    async signOut(data) {
+      const userId = "token" in data ? (data.token?.sub as string) : undefined;
+      if (!userId) return;
+      try {
+        const { db } = await import("@/lib/db");
+        await db.collection("users").updateOne(
+          { id: userId },
+          { $set: { status: "offline", updatedAt: new Date() } }
+        );
+      } catch {
+        // MongoDB connection may not be available
+      }
+    },
+  },
   providers: [
     LinkedIn({
       clientId: process.env.AUTH_LINKEDIN_ID!,

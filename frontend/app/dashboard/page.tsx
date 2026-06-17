@@ -1,18 +1,15 @@
+"use client";
+
+import { useSession } from "next-auth/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { auth } from "@/lib/auth/config";
-import { ChartBarInteractive } from "@/components/chart-bar-interactive";
 
-export const metadata = {
-  title: "Dashboard",
-};
-
-export default async function DashboardPage() {
-  const session = await auth();
+export default function DashboardPage() {
+  const { data: session } = useSession();
   const user = {
     name: session?.user?.name || "User",
     email: session?.user?.email || "user@example.com",
@@ -26,7 +23,6 @@ export default async function DashboardPage() {
         <Header />
         <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
           <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-          <ChartBarInteractive />
         </div>
       </SidebarInset>
     </SidebarProvider>

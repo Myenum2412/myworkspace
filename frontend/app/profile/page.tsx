@@ -1,16 +1,19 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   MailIcon,
   CalendarIcon,
@@ -20,7 +23,17 @@ import {
   CreditCardIcon,
   UsersIcon,
   CircleIcon,
+  CameraIcon,
+  XIcon,
 } from "lucide-react";
+
+import nextDynamic from "next/dynamic";
+const BannerUpload = nextDynamic(
+  () => import("@/components/ui/file-upload-1").then((m) => m.BannerUpload),
+  { ssr: false }
+);
+
+export const dynamic = "force-dynamic";
 
 const planLabels: Record<string, string> = {
   starter: "Starter",
@@ -34,49 +47,97 @@ const statusColors: Record<string, string> = {
   break: "bg-amber-500",
 };
 
-const roleBadge: Record<string, string> = {
+const roleBadge: Record<string, "default" | "secondary" | "outline"> = {
   admin: "default",
   manager: "secondary",
   member: "outline",
-} as const;
-
-export const dynamic = "force-dynamic";
-export const metadata = {
-  title: "Profile",
 };
 
-export default async function ProfilePage() {
-  const session = await auth();
-  if (!session?.user?.id) return null;
+type ProfileData = {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    status: string;
+    role: string;
+    createdAt: string;
+    bannerUrl?: string;
+    image?: string;
+  } | null;
+  org: {
+    id: string;
+    name: string;
+    domain?: string;
+    plan: string;
+    createdAt: string;
+  } | null;
+  memberCount: number;
+};
+
+export default function ProfilePage() {
+  const { data: session } = useSession();
+  const [data, setData] = useState<ProfileData | null>(null);
+  const [showBannerEditor, setShowBannerEditor] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [mounted, setMounted] = useState(false);
+  const fileKey = useRef(0);
+
+  useEffect(() => {
+    setMounted(true);
+    fetch("/api/user/profile")
+      .then((r) => r.json())
+      .then((d) => {
+        setData(d);
+        setBannerUrl(d?.user?.bannerUrl || "");
+      })
+      .catch(() => {});
+  }, []);
+
+  if (!mounted) {
+    return <div className="min-h-screen" />;
+  }
+
+  const dbUser = data?.user;
+  const org = data?.org;
+  const memberCount = data?.memberCount ?? 0;
 
   const user = {
-    name: session.user.name || "User",
-    email: session.user.email || "user@example.com",
-    avatar: session.user.image || "",
+    name: session?.user?.name || dbUser?.name || "User",
+    email: session?.user?.email || dbUser?.email || "user@example.com",
+    avatar: session?.user?.image || dbUser?.image || "",
   };
 
-  const [dbUser] = await db
-    .collection(collections.users)
-    .find({ id: session.user.id })
-    .toArray();
+  async function updateBanner(url: string) {
+    const res = await fetch("/api/user/banner", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    if (res.ok) {
+      const result = await res.json();
+      setBannerUrl(result.bannerUrl);
+      setShowBannerEditor(false);
+      setUrlInput("");
+    }
+  }
 
-  const [membership] = await db
-    .collection(collections.orgMembers)
-    .find({ userId: session.user.id })
-    .toArray();
-
-  let org = null;
-  let memberCount = 0;
-  if (membership) {
-    org = await db
-      .collection(collections.organizations)
-      .findOne({ id: membership.orgId });
-
-    const members = await db
-      .collection(collections.orgMembers)
-      .find({ orgId: membership.orgId })
-      .toArray();
-    memberCount = members.length;
+  async function handleBannerFile(file: File) {
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("banner", file);
+    const res = await fetch("/api/user/banner", {
+      method: "POST",
+      body: formData,
+    });
+    if (res.ok) {
+      const result = await res.json();
+      setBannerUrl(result.bannerUrl);
+      setShowBannerEditor(false);
+      fileKey.current++;
+    }
+    setUploading(false);
   }
 
   return (
@@ -84,28 +145,40 @@ export default async function ProfilePage() {
       <AppSidebar user={user} />
       <SidebarInset>
         <Header />
-        <main className="flex flex-1 flex-col gap-6 p-6 max-w-4xl">
-          <div className="flex items-center gap-4">
-            <Avatar className="size-16 ring-2 ring-border">
+        <main className="flex flex-1 flex-col">
+          <div
+            className="relative h-[200px] bg-gradient-to-b from-primary/90 via-primary/40 to-background bg-cover bg-center"
+            style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
+          >
+            <button
+              onClick={() => setShowBannerEditor(true)}
+              className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-md bg-background/80 px-3 py-1.5 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm hover:bg-background/90 transition-colors"
+            >
+              <CameraIcon className="size-3.5" />
+              Edit banner
+            </button>
+          </div>
+
+          <div className="flex flex-col items-center -mt-12 px-6">
+            <Avatar className="size-24 ring-4 ring-background shadow-xl">
               <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="text-lg">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="text-2xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <div>
-              <h1 className="text-2xl font-bold">{user.name}</h1>
-              <div className="flex items-center gap-2 mt-1 text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className={`inline-block size-2 rounded-full ${statusColors[dbUser?.status || "offline"]}`} />
-                  {dbUser?.status ? dbUser.status.charAt(0).toUpperCase() + dbUser.status.slice(1) : "Offline"}
-                </span>
-                <span aria-hidden>&middot;</span>
-                <Badge variant={(roleBadge[dbUser?.role || "member"] as "default" | "secondary" | "outline")}>
-                  {dbUser?.role ? dbUser.role.charAt(0).toUpperCase() + dbUser.role.slice(1) : "Member"}
-                </Badge>
-              </div>
+
+            <h1 className="mt-3 text-2xl font-bold">{user.name}</h1>
+            <div className="flex items-center gap-2 mt-1 text-muted-foreground">
+              <span className="flex items-center gap-1.5 text-sm">
+                <span className={`inline-block size-2 rounded-full ${statusColors[dbUser?.status || "offline"]}`} />
+                {dbUser?.status ? dbUser.status.charAt(0).toUpperCase() + dbUser.status.slice(1) : "Offline"}
+              </span>
+              <span aria-hidden>&middot;</span>
+              <Badge variant={roleBadge[dbUser?.role || "member"]}>
+                {dbUser?.role ? dbUser.role.charAt(0).toUpperCase() + dbUser.role.slice(1) : "Member"}
+              </Badge>
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 p-6 max-w-4xl mx-auto w-full">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -221,6 +294,76 @@ export default async function ProfilePage() {
             </Card>
           </div>
         </main>
+
+        {showBannerEditor && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBannerEditor(false)}>
+            <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold">Update banner</h2>
+                <button
+                  onClick={() => setShowBannerEditor(false)}
+                  className="rounded-md p-1 hover:bg-muted transition-colors"
+                >
+                  <XIcon className="size-3.5" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Paste image URL"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs shrink-0"
+                    disabled={!urlInput}
+                    onClick={() => updateBanner(urlInput)}
+                  >
+                    Set
+                  </Button>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <span className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">or</span>
+                  </span>
+                </div>
+
+                <BannerUpload
+                  key={fileKey.current}
+                  onFile={handleBannerFile}
+                  disabled={uploading}
+                />
+
+                {bannerUrl && (
+                  <>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <span className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">or</span>
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      className="w-full h-8 text-xs text-destructive hover:text-destructive"
+                      onClick={() => updateBanner("")}
+                    >
+                      Remove banner
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </SidebarInset>
     </SidebarProvider>
   );

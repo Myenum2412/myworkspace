@@ -8,7 +8,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 
-export default function TimeReportsPage() {
+export default function CalendarPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function TimeReportsPage() {
       <SidebarInset>
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4">
-          <h1 className="text-2xl font-bold">Time Reports</h1>
+          <h1 className="text-2xl font-bold">Calendar</h1>
         </main>
       </SidebarInset>
     </SidebarProvider>
