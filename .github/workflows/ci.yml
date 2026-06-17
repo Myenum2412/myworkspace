@@ -58,7 +58,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [frontend, backend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    continue-on-error: true
 
     steps:
       - name: SSH and deploy
@@ -75,8 +74,6 @@ jobs:
             cd frontend
             npm ci --include=dev
             npm run build
-            cp -r .next ../.next 2>/dev/null; true
-            cp -r public ../public 2>/dev/null; true
             cd ..
 
             # Install backend deps & build
@@ -87,4 +84,4 @@ jobs:
 
             # Restart PM2 processes
             pm2 restart workspace-api 2>/dev/null || pm2 start backend/dist/index.js --name workspace-api
-            pm2 restart workspace-frontend 2>/dev/null || pm2 start frontend/node_modules/.bin/next --name workspace-frontend --start -p 3000
+            pm2 restart workspace-frontend 2>/dev/null || pm2 start npm --name workspace-frontend -- run start
