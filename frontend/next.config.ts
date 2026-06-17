@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const config: NextConfig = {
   serverExternalPackages: ["better-sqlite3"],
   experimental: {
     serverActions: {
@@ -11,5 +11,12 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
   },
 };
+
+const isVercel = process.env.VERCEL === "1";
+if (isVercel) {
+  config.distDir = "../.next";
+}
+
+const nextConfig: NextConfig = config;
 
 export default nextConfig;
