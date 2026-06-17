@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "vercel-build": "ln -sfn frontend/.next .next && cd frontend && npm ci --include=dev && npm run build && cp -r public ../public"
+    "vercel-build": "cd frontend && npm ci --include=dev && npm run build && rm -rf ../.next && mv .next ../.next && cp -r public ../public && ls -la ../.next/routes-manifest.json"
   },
   "dependencies": {
     "next": "^16.2.9",
