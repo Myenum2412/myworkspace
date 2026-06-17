@@ -25,8 +25,16 @@ function createDb() {
   return drizzle(sqlite, { schema });
 }
 
-export const db = globalForDb.db ?? createDb();
-if (process.env.NODE_ENV !== "production") globalForDb.db = db;
+function getOrCreateDb() {
+  if (!globalForDb.db) globalForDb.db = createDb();
+  return globalForDb.db;
+}
+
+export const db = new Proxy({} as ReturnType<typeof createDb>, {
+  get(_, prop) {
+    return Reflect.get(getOrCreateDb(), prop);
+  },
+});
 
 export type Db = typeof db;
 export { schema };
