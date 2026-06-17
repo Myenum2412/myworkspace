@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -5,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { loginAction } from "@/lib/auth/actions";
+import { signIn } from "next-auth/react";
 
 function GoogleIcon() {
   return (
@@ -74,13 +77,13 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
       </div>
 
       <div className="flex flex-col gap-3">
-        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with Google">
+        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}>
           <GoogleIcon /> Continue with Google
         </Button>
-        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with LinkedIn">
+        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}>
           <LinkedInIcon /> Continue with LinkedIn
         </Button>
-        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with GitHub">
+        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}>
           <GitHubIcon /> Continue with GitHub
         </Button>
       </div>
