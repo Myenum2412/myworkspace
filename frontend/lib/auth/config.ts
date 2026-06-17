@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import LinkedIn from "next-auth/providers/linkedin";
 import { compare } from "bcryptjs";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
@@ -25,6 +26,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   providers: [
+    LinkedIn({
+      clientId: process.env.AUTH_LINKEDIN_ID!,
+      clientSecret: process.env.AUTH_LINKEDIN_SECRET!,
+    }),
     Google({
       clientId: "651387886925-l2gairqedhq8r3iungd0kfat1jvehk8i.apps.googleusercontent.com",
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
