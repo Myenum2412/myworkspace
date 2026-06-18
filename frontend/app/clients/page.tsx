@@ -25,14 +25,26 @@ import { DataTable } from "./data-table";
 
 export default function ClientsPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
-  const [clients, setClients] = useState<Client[]>([
-    { id: "1", name: "John Smith", email: "john@acmecorp.com", company: "Acme Corp", projects: 3, status: "Active" },
-    { id: "2", name: "Jane Doe", email: "jane@globex.com", company: "Globex Inc", projects: 1, status: "Active" },
-    { id: "3", name: "Bill Lumbergh", email: "bill@initech.com", company: "Initech", projects: 2, status: "Active" },
-    { id: "4", name: "Tony Stark", email: "tony@starkindustries.com", company: "Stark Industries", projects: 1, status: "Inactive" },
-    { id: "5", name: "Peter Wyenandt", email: "peter@umbrellacorp.com", company: "Umbrella Corp", projects: 1, status: "Active" },
-  ]);
+  const defaultClients: Client[] = [
+    { id: "1", name: "John Smith", email: "john@acmecorp.com", company: "Acme Corp", projects: 3, status: "Active Client", city: "New York", mobileNumber: "+1 (555) 123-4567", serviceRequired: "Website Development" },
+    { id: "2", name: "Jane Doe", email: "jane@globex.com", company: "Globex Inc", projects: 1, status: "Active Client", city: "San Francisco", mobileNumber: "+1 (555) 987-6543", serviceRequired: "Mobile App Development" },
+    { id: "3", name: "Bill Lumbergh", email: "bill@initech.com", company: "Initech", projects: 2, status: "Prospect", city: "Austin", mobileNumber: "+1 (555) 555-0001", serviceRequired: "SEO" },
+    { id: "4", name: "Tony Stark", email: "tony@starkindustries.com", company: "Stark Industries", projects: 1, status: "Inactive Client", city: "Malibu", mobileNumber: "+1 (555) 111-2222", serviceRequired: "Custom Software" },
+    { id: "5", name: "Peter Wyenandt", email: "peter@umbrellacorp.com", company: "Umbrella Corp", projects: 1, status: "Active Client", city: "Raccoon City", mobileNumber: "+1 (555) 333-4444", serviceRequired: "Digital Marketing" },
+  ];
+
+  const [clients, setClients] = useState<Client[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("clients");
+      if (stored) return JSON.parse(stored);
+    }
+    return defaultClients;
+  });
   const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("clients", JSON.stringify(clients));
+  }, [clients]);
 
   // Client Information
   const [clientName, setClientName] = useState("");
@@ -95,6 +107,18 @@ export default function ClientsPage() {
       .catch(() => {});
   }, []);
 
+  function resetForm() {
+    setClientName(""); setCompanyName(""); setClientType("Individual"); setIndustry(""); setWebsiteUrl("");
+    setPrimaryContact(""); setDesignation(""); setEmail(""); setMobileNumber(""); setAlternatePhone(""); setWhatsappNumber("");
+    setAddressLine1(""); setAddressLine2(""); setCity(""); setStateProvince(""); setCountry(""); setPostalCode("");
+    setGstNumber(""); setPanNumber(""); setCompanyRegNumber(""); setTaxId("");
+    setProjectName(""); setServiceRequired("Website Development"); setProjectBudget(""); setExpectedStartDate(""); setExpectedEndDate("");
+    setBillingContactName(""); setBillingEmail(""); setPaymentTerms(""); setCurrency("USD"); setCreditLimit("");
+    setPreferredContactMethod("Email"); setPreferredTimeZone("");
+    setStatus("Lead");
+    setSourceOfLead("Referral"); setNotes("");
+  }
+
   function handleSubmit() {
     if (!clientName || !email || !primaryContact) return;
     const newClient: Client = {
@@ -103,10 +127,19 @@ export default function ClientsPage() {
       email,
       company: companyName,
       projects: 0,
-      status: status as "Active" | "Inactive",
+      status,
+      clientType, industry, websiteUrl,
+      primaryContact, designation, mobileNumber, alternatePhone, whatsappNumber,
+      addressLine1, addressLine2, city, stateProvince, country, postalCode,
+      gstNumber, panNumber, companyRegNumber, taxId,
+      projectName, serviceRequired, projectBudget, expectedStartDate, expectedEndDate,
+      billingContactName, billingEmail, paymentTerms, currency, creditLimit,
+      preferredContactMethod, preferredTimeZone,
+      sourceOfLead, notes,
     };
     setClients((prev) => [...prev, newClient]);
     setShowForm(false);
+    resetForm();
   }
 
   return (
@@ -138,17 +171,17 @@ export default function ClientsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-500">
-                  {clients.filter((c) => c.status === "Active").length}
+                  {clients.filter((c) => c.status === "Active Client").length}
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">In Active</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">Inactive / Lead</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-red-500">
-                  {clients.filter((c) => c.status === "Inactive").length}
+                  {clients.filter((c) => c.status === "Inactive Client" || c.status === "Lead").length}
                 </div>
               </CardContent>
             </Card>

@@ -46,6 +46,7 @@
     "@types/ws": "^8.18.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "mongodb-memory-server": "^11.2.0",
     "tsx": "^4.22.4",
     "typescript": "^5"
   }

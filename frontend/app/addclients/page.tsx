@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type { Client } from "@/app/clients/columns";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import {
@@ -88,6 +89,26 @@ export default function AddClientPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!clientName || !email || !primaryContact) return;
+    const newClient: Client = {
+      id: Date.now().toString(),
+      name: clientName,
+      email,
+      company: companyName,
+      projects: 0,
+      status,
+      clientType, industry, websiteUrl,
+      primaryContact, designation, mobileNumber, alternatePhone, whatsappNumber,
+      addressLine1, addressLine2, city, stateProvince, country, postalCode,
+      gstNumber, panNumber, companyRegNumber, taxId,
+      projectName, serviceRequired, projectBudget, expectedStartDate, expectedEndDate,
+      billingContactName, billingEmail, paymentTerms, currency, creditLimit,
+      preferredContactMethod, preferredTimeZone,
+      sourceOfLead, notes,
+    };
+    const stored = JSON.parse(localStorage.getItem("clients") || "[]");
+    stored.push(newClient);
+    localStorage.setItem("clients", JSON.stringify(stored));
     router.push("/clients");
   };
 
