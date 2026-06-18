@@ -1,0 +1,130 @@
+import { Router, Response } from "express";
+import multer from "multer";
+import { v4 as uuid } from "uuid";
+import { FileAttachment } from "../lib/db/models/FileAttachment.js";
+import { FileShare } from "../lib/db/models/FileShare.js";
+import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
+import { saveFile, getFilePath, deleteFile as deleteStorageFile } from "../lib/storage/index.js";
+
+const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+
+router.use(authenticate);
+
+router.get("/shared", async (req: AuthRequest, res: Response) => {
+  const shares = await FileShare.find({ orgId: "demo-org-id" }).sort({ createdAt: -1 }).lean();
+
+  const fileIds = [...new Set(shares.map(s => s.fileId))];
+  const files = await FileAttachment.find({ id: { $in: fileIds } }).lean();
+  const fileMap = new Map(files.map(f => [f.id, f]));
+
+  const userIds = [...new Set(files.map(f => f.uploaderId))];
+  const { User } = await import("../lib/db/models/User.js");
+  const users = await User.find({ _id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+
+  const result = shares.map(share => {
+    const file = fileMap.get(share.fileId);
+    return {
+      ...share,
+      file: file ? { originalName: file.originalName, mimeType: file.mimeType, size: file.size } : undefined,
+      uploaderName: file ? userMap.get(file.uploaderId) || "Unknown" : "Unknown",
+    };
+  });
+
+  res.json(result);
+});
+
+router.get("/", async (req: AuthRequest, res: Response) => {
+  const files = await FileAttachment.find({ orgId: "demo-org-id" })
+    .select("id originalName mimeType size createdAt uploaderId")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const userIds = [...new Set(files.map(f => f.uploaderId))];
+  const { User } = await import("../lib/db/models/User.js");
+  const users = await User.find({ _id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+
+  const result = files.map(f => ({
+    ...f,
+    uploaderName: userMap.get(f.uploaderId) || "Unknown",
+  }));
+
+  res.json(result);
+});
+
+router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) => {
+  if (!req.file) throw new AppError(400, "No file provided");
+
+  const buffer = req.file.buffer;
+  const storagePath = saveFile(buffer, req.file.originalname);
+
+  const fileId = uuid();
+  await FileAttachment.create({
+    id: fileId,
+    orgId: "demo-org-id",
+    uploaderId: req.user!.userId,
+    name: req.file.originalname,
+    originalName: req.file.originalname,
+    mimeType: req.file.mimetype || "application/octet-stream",
+    size: req.file.size,
+    storagePath,
+  });
+
+  await ActivityLog.create({
+    orgId: "demo-org-id",
+    userId: req.user!.userId,
+    action: "file.uploaded",
+    entityType: "file",
+    entityId: fileId,
+    description: `File "${req.file.originalname}" uploaded`,
+  });
+
+  res.status(201).json({ success: true, fileId });
+});
+
+router.get("/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id }).lean();
+  if (!file) throw new AppError(404, "File not found");
+
+  const filePath = getFilePath(file.storagePath);
+  if (!filePath) throw new AppError(404, "File not found on disk");
+
+  res.download(filePath, file.originalName);
+});
+
+router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id }).lean();
+  if (!file) throw new AppError(404, "File not found");
+  if (file.uploaderId !== req.user!.userId) throw new AppError(403, "Not authorized to delete this file");
+
+  deleteStorageFile(file.storagePath);
+  await FileAttachment.deleteOne({ id: req.params.id });
+  await FileShare.deleteMany({ fileId: req.params.id });
+
+  res.json({ success: true });
+});
+
+router.post("/:id/share", async (req: AuthRequest, res: Response) => {
+  const { sharedWithUserId } = req.body;
+  const shareId = uuid();
+  await FileShare.create({
+    id: shareId,
+    fileId: req.params.id,
+    sharedByUserId: req.user!.userId,
+    sharedWithUserId: sharedWithUserId || null,
+    orgId: "demo-org-id",
+  });
+  res.json({ success: true });
+});
+
+router.delete("/:id/share", async (req: AuthRequest, res: Response) => {
+  const { id } = req.body;
+  await FileShare.deleteOne({ id });
+  res.json({ success: true });
+});
+
+export default router;

@@ -4,12 +4,9 @@ import { useEffect, useState } from "react";
 import { NotFound } from "@/components/ui/not-found";
 
 export function OfflineDetector({ children }: { children: React.ReactNode }) {
-  const [isOffline, setIsOffline] = useState(
-    typeof navigator !== "undefined" && !navigator.onLine,
-  );
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
 
   useEffect(() => {
-
     const handleOffline = () => setIsOffline(true);
     const handleOnline = () => setIsOffline(false);
 

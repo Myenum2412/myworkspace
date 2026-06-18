@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "fuser -k 4000/tcp 2>/dev/null; tsx watch src/index.ts",
     "build": "tsc",
     "start": "tsx src/index.ts",
     "db:seed": "tsx src/lib/db/seed.ts"
@@ -15,6 +15,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.14.1",
+    "multer": "^2.2.0",
     "uuid": "^14.0.0",
     "ws": "^8.21.0",
     "zod": "^4.4.3"
@@ -24,6 +25,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",

@@ -22,9 +22,7 @@ export class WsClient {
   }
 
   private attemptConnection() {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.host;
-    const url = `${protocol}//${host}/api/ws?userId=${this.userId}&orgId=${this.orgId}`;
+    const url = `ws://localhost:4000/api/ws?userId=${this.userId}&orgId=${this.orgId}`;
 
     try {
       this.ws = new WebSocket(url);

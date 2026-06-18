@@ -38,10 +38,24 @@ export type Client = {
   paymentTerms?: string;
   currency?: string;
   creditLimit?: string;
+  bankName?: string;
+  accountHolderName?: string;
+  accountNumber?: string;
+  confirmAccountNumber?: string;
+  ifscCode?: string;
+  branchName?: string;
+  accountType?: string;
+  upiId?: string;
   preferredContactMethod?: string;
   preferredTimeZone?: string;
   sourceOfLead?: string;
   notes?: string;
+
+  assignedSalesPerson?: string;
+  assignedProjectManager?: string;
+  createdBy?: string;
+  createdDate?: string;
+  lastUpdatedDate?: string;
 };
 
 export const columns: ColumnDef<Client>[] = [
