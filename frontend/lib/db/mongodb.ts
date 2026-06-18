@@ -2,12 +2,14 @@ import { MongoClient, Db, Collection } from "mongodb";
 
 const dbName = process.env.MONGODB_DB || "myworkspace";
 
-let client: MongoClient | undefined;
-let database: Db | undefined;
-let connectPromise: Promise<void> | null = null;
+const globalWithMongo = global as typeof globalThis & {
+  _mongoClient?: MongoClient;
+  _mongoDatabase?: Db;
+  _mongoConnectPromise?: Promise<void> | null;
+};
 
 export async function connectToMongo() {
-  if (client) return;
+  if (globalWithMongo._mongoClient) return;
 
   const uri = process.env.MONGODB_URI;
   if (uri) {
@@ -19,8 +21,8 @@ export async function connectToMongo() {
         { serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000, tlsInsecure: true },
       );
       await atlasClient.connect();
-      client = atlasClient;
-      database = atlasClient.db(dbName);
+      globalWithMongo._mongoClient = atlasClient;
+      globalWithMongo._mongoDatabase = atlasClient.db(dbName);
       console.log("> Connected to MongoDB Atlas");
       return;
     } catch (err: unknown) {
@@ -33,17 +35,17 @@ export async function connectToMongo() {
   const mongod = await MongoMemoryServer.create({ instance: { dbName } });
   const localClient = new MongoClient(mongod.getUri());
   await localClient.connect();
-  client = localClient;
-  database = localClient.db(dbName);
+  globalWithMongo._mongoClient = localClient;
+  globalWithMongo._mongoDatabase = localClient.db(dbName);
   console.log("> Using local in-memory MongoDB");
 }
 
 async function ensureDb(): Promise<Db> {
-  if (!connectPromise) {
-    connectPromise = connectToMongo().catch(() => {});
+  if (!globalWithMongo._mongoConnectPromise) {
+    globalWithMongo._mongoConnectPromise = connectToMongo().catch(() => {});
   }
-  await connectPromise;
-  return database!;
+  await globalWithMongo._mongoConnectPromise;
+  return globalWithMongo._mongoDatabase!;
 }
 
 export const db = new Proxy({} as Db, {
