@@ -17,6 +17,7 @@ import {
   FolderIcon,
   Settings2Icon,
   StoreIcon,
+  CheckCheckIcon,
 } from "lucide-react";
 
 export const defaultNavData = {
@@ -63,6 +64,16 @@ export const defaultNavData = {
       ],
     },
     {
+      title: "Approvals",
+      url: "/approvals",
+      icon: <CheckCheckIcon className="size-6" />,
+      items: [
+        { title: "Pending", url: "/approvals" },
+        { title: "Approved", url: "/approvals/approved" },
+        { title: "Rejected", url: "/approvals/rejected" },
+      ],
+    },
+    {
       title: "Time Tracker",
       url: "/time-tracker",
       icon: <ClockIcon className="size-6" />,
@@ -70,7 +81,6 @@ export const defaultNavData = {
         { title: "My Time", url: "/my-time" },
         { title: "Team Time", url: "/team-time" },
         { title: "Time Reports", url: "/time-reports" },
-        { title: "Calendar", url: "/calendar" },
       ],
     },
     {

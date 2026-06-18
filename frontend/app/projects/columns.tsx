@@ -1,0 +1,109 @@
+"use client";
+
+import { ColumnDef } from "@tanstack/react-table";
+
+export type Project = {
+  id: string;
+  name: string;
+  client: string;
+  color: string;
+  tracked: number;
+  progress: number;
+  access: "Public" | "Private";
+  status: "Active" | "Inactive";
+};
+
+export const columns: ColumnDef<Project>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <input
+        type="checkbox"
+        className="size-4 cursor-pointer rounded border-border accent-primary"
+        checked={table.getIsAllPageRowsSelected()}
+        onChange={(e) => table.toggleAllPageRowsSelected(e.target.checked)}
+      />
+    ),
+    cell: ({ row }) => (
+      <input
+        type="checkbox"
+        className="size-4 cursor-pointer rounded border-border accent-primary"
+        checked={row.getIsSelected()}
+        onChange={(e) => row.toggleSelected(e.target.checked)}
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    id: "sno",
+    header: "S.No",
+    cell: ({ row }) => <span className="text-muted-foreground">{row.index + 1}</span>,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "name",
+    header: "Project Name",
+    cell: ({ row }) => <span className="font-medium">{row.getValue("name")}</span>,
+  },
+  {
+    accessorKey: "client",
+    header: "Client",
+    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("client")}</span>,
+  },
+  {
+    accessorKey: "tracked",
+    header: "Tracked",
+    cell: ({ row }) => <span>{row.getValue<number>("tracked")}h</span>,
+  },
+  {
+    accessorKey: "progress",
+    header: "Progress",
+    cell: ({ row }) => {
+      const progress = row.getValue<number>("progress");
+      return (
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-20 rounded-full bg-muted">
+            <div
+              className="h-2 rounded-full bg-primary transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">{progress}%</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "access",
+    header: "Access",
+    cell: ({ row }) => {
+      const access = row.getValue<string>("access");
+      return (
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+          access === "Public"
+            ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+            : "bg-gray-50 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+        }`}>
+          {access}
+        </span>
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: "",
+    cell: ({ row, table }) => {
+      const project = row.original;
+      const meta = table.options.meta as { onView?: (project: Project) => void } | undefined;
+      return (
+        <button
+          onClick={() => meta?.onView?.(project)}
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          View
+        </button>
+      );
+    },
+  },
+];

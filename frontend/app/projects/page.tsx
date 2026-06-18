@@ -8,23 +8,45 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { PlusIcon, XIcon } from "lucide-react";
+import { columns, type Project } from "./columns";
+import { DataTable } from "./data-table";
 
-interface Project {
-  id: string;
-  name: string;
-  client: string;
-  status: string;
-  deadline: string;
-  progress: number;
-}
-
-const defaultProjects: Project[] = [];
+const clients = [
+  "Acme Corp",
+  "Globex Inc",
+  "Initech",
+  "Umbrella Corp",
+  "Wayne Enterprises",
+];
 
 export default function ProjectsPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
+  const [showForm, setShowForm] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [selectedClient, setSelectedClient] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectColor, setProjectColor] = useState("#3b82f6");
+  const [viewProject, setViewProject] = useState<Project | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editClient, setEditClient] = useState("");
+  const [editColor, setEditColor] = useState("");
+  const [editAccess, setEditAccess] = useState<"Public" | "Private">("Public");
+  const [editStatus, setEditStatus] = useState<"Active" | "Inactive">("Active");
+
+  const colors = [
+    "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
+    "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
+  ];
 
   useEffect(() => {
     fetch("/api/user/me")
@@ -32,6 +54,46 @@ export default function ProjectsPage() {
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
       .catch(() => {});
   }, []);
+
+  function handleSubmit() {
+    if (!projectName || !selectedClient) return;
+    const newProject: Project = {
+      id: Date.now().toString(),
+      name: projectName,
+      client: selectedClient,
+      color: projectColor,
+      tracked: Math.floor(Math.random() * 80) + 10,
+      progress: Math.floor(Math.random() * 100),
+      access: Math.random() > 0.5 ? "Public" : "Private",
+      status: "Active",
+    };
+    setProjects((prev) => [...prev, newProject]);
+    setShowForm(false);
+    setProjectName("");
+    setSelectedClient("");
+    setProjectColor("#3b82f6");
+  }
+
+  function handleView(project: Project) {
+    setViewProject(project);
+    setEditName(project.name);
+    setEditClient(project.client);
+    setEditColor(project.color);
+    setEditAccess(project.access);
+    setEditStatus(project.status);
+  }
+
+  function handleSave() {
+    if (!viewProject) return;
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id === viewProject.id
+          ? { ...p, name: editName, client: editClient, color: editColor, access: editAccess, status: editStatus }
+          : p
+      )
+    );
+    setViewProject(null);
+  }
 
   return (
     <SidebarProvider>
@@ -41,19 +103,19 @@ export default function ProjectsPage() {
         <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">All Projects</h1>
-            <Button>
+            <Button onClick={() => setShowForm(true)}>
               <PlusIcon className="mr-2 size-4" />
               New Project
             </Button>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">Total Project</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{defaultProjects.length}</div>
+                <div className="text-2xl font-bold">{projects.length}</div>
               </CardContent>
             </Card>
             <Card>
@@ -62,17 +124,17 @@ export default function ProjectsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-500">
-                  {defaultProjects.filter((p) => p.status === "In Progress").length}
+                  {projects.filter((p) => p.progress > 0 && p.progress < 100).length}
                 </div>
               </CardContent>
             </Card>
-                        <Card>
+            <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Completed</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">In Completed</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-500">
-                  {defaultProjects.filter((p) => p.status === "Completed").length}
+                  {projects.filter((p) => p.progress === 0).length}
                 </div>
               </CardContent>
             </Card>
@@ -82,13 +144,193 @@ export default function ProjectsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-500">
-                  {defaultProjects.filter((p) => p.status === "Completed").length}
+                  {projects.filter((p) => p.progress === 100).length}
                 </div>
               </CardContent>
             </Card>
           </div>
 
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Project List</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <DataTable columns={columns} data={projects} meta={{ onView: handleView }} />
+            </CardContent>
+          </Card>
         </main>
+
+        {showForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowForm(false)}>
+            <div className="w-full max-w-sm rounded-xl bg-background p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-base font-semibold">New Project</h2>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="rounded-md p-1 hover:bg-muted transition-colors"
+                >
+                  <XIcon className="size-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Project Name</label>
+                  <Input
+                    placeholder="Enter project name"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Client</label>
+                  <Select value={selectedClient} onValueChange={setSelectedClient}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Color</label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-2 flex-wrap">
+                      {colors.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setProjectColor(c)}
+                          className={`size-7 rounded-full ring-offset-2 ring-offset-background transition-all ${
+                            projectColor === c ? "ring-2 ring-foreground scale-110" : ""
+                          }`}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+                    <input
+                      type="color"
+                      value={projectColor}
+                      onChange={(e) => setProjectColor(e.target.value)}
+                      className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>
+                    Cancel
+                  </Button>
+                  <Button className="flex-1" disabled={!projectName || !selectedClient} onClick={handleSubmit}>
+                    Create
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {viewProject && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setViewProject(null)}>
+            <div className="w-full max-w-sm rounded-xl bg-background p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-base font-semibold">Edit Project</h2>
+                <button
+                  onClick={() => setViewProject(null)}
+                  className="rounded-md p-1 hover:bg-muted transition-colors"
+                >
+                  <XIcon className="size-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Project Name</label>
+                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Client</label>
+                  <Select value={editClient} onValueChange={setEditClient}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Access</label>
+                  <Select value={editAccess} onValueChange={(v) => setEditAccess(v as "Public" | "Private")}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Public">Public</SelectItem>
+                      <SelectItem value="Private">Private</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Status</label>
+                  <Select value={editStatus} onValueChange={(v) => setEditStatus(v as "Active" | "Inactive")}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Color</label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-2 flex-wrap">
+                      {colors.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setEditColor(c)}
+                          className={`size-7 rounded-full ring-offset-2 ring-offset-background transition-all ${
+                            editColor === c ? "ring-2 ring-foreground scale-110" : ""
+                          }`}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+                    <input
+                      type="color"
+                      value={editColor}
+                      onChange={(e) => setEditColor(e.target.value)}
+                      className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setViewProject(null)}>
+                    Cancel
+                  </Button>
+                  <Button className="flex-1" onClick={handleSave}>
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </SidebarInset>
     </SidebarProvider>
   );

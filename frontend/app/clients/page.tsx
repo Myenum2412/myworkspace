@@ -8,27 +8,85 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
-interface Client {
-  id: string;
-  name: string;
-  email: string;
-  company: string;
-  projects: number;
-  status: string;
-}
-
-const defaultClients: Client[] = [
-  { id: "1", name: "John Smith", email: "john@acmecorp.com", company: "Acme Corp", projects: 3, status: "Active" },
-  { id: "2", name: "Jane Doe", email: "jane@globex.com", company: "Globex Inc", projects: 1, status: "Active" },
-  { id: "3", name: "Bill Lumbergh", email: "bill@initech.com", company: "Initech", projects: 2, status: "Active" },
-  { id: "4", name: "Tony Stark", email: "tony@starkindustries.com", company: "Stark Industries", projects: 1, status: "Inactive" },
-  { id: "5", name: "Peter Wyenandt", email: "peter@umbrellacorp.com", company: "Umbrella Corp", projects: 1, status: "Active" },
-];
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { PlusIcon, XIcon } from "lucide-react";
+import { columns, type Client } from "./columns";
+import { DataTable } from "./data-table";
 
 export default function ClientsPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
+  const [clients, setClients] = useState<Client[]>([
+    { id: "1", name: "John Smith", email: "john@acmecorp.com", company: "Acme Corp", projects: 3, status: "Active" },
+    { id: "2", name: "Jane Doe", email: "jane@globex.com", company: "Globex Inc", projects: 1, status: "Active" },
+    { id: "3", name: "Bill Lumbergh", email: "bill@initech.com", company: "Initech", projects: 2, status: "Active" },
+    { id: "4", name: "Tony Stark", email: "tony@starkindustries.com", company: "Stark Industries", projects: 1, status: "Inactive" },
+    { id: "5", name: "Peter Wyenandt", email: "peter@umbrellacorp.com", company: "Umbrella Corp", projects: 1, status: "Active" },
+  ]);
+  const [showForm, setShowForm] = useState(false);
+
+  // Client Information
+  const [clientName, setClientName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [clientType, setClientType] = useState("Individual");
+  const [industry, setIndustry] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+
+  // Contact Information
+  const [primaryContact, setPrimaryContact] = useState("");
+  const [designation, setDesignation] = useState("");
+  const [email, setEmail] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [alternatePhone, setAlternatePhone] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+
+  // Address Details
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [stateProvince, setStateProvince] = useState("");
+  const [country, setCountry] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+
+  // Business Details
+  const [gstNumber, setGstNumber] = useState("");
+  const [panNumber, setPanNumber] = useState("");
+  const [companyRegNumber, setCompanyRegNumber] = useState("");
+  const [taxId, setTaxId] = useState("");
+
+  // Project Information
+  const [projectName, setProjectName] = useState("");
+  const [serviceRequired, setServiceRequired] = useState("Website Development");
+  const [projectBudget, setProjectBudget] = useState("");
+  const [expectedStartDate, setExpectedStartDate] = useState("");
+  const [expectedEndDate, setExpectedEndDate] = useState("");
+
+  // Billing Information
+  const [billingContactName, setBillingContactName] = useState("");
+  const [billingEmail, setBillingEmail] = useState("");
+  const [paymentTerms, setPaymentTerms] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [creditLimit, setCreditLimit] = useState("");
+
+  // Communication Preferences
+  const [preferredContactMethod, setPreferredContactMethod] = useState("Email");
+  const [preferredTimeZone, setPreferredTimeZone] = useState("");
+
+  // Client Status
+  const [status, setStatus] = useState("Lead");
+
+  // Additional Information
+  const [sourceOfLead, setSourceOfLead] = useState("Referral");
+  const [notes, setNotes] = useState("");
 
   useEffect(() => {
     fetch("/api/user/me")
@@ -37,21 +95,41 @@ export default function ClientsPage() {
       .catch(() => {});
   }, []);
 
+  function handleSubmit() {
+    if (!clientName || !email || !primaryContact) return;
+    const newClient: Client = {
+      id: Date.now().toString(),
+      name: clientName,
+      email,
+      company: companyName,
+      projects: 0,
+      status: status as "Active" | "Inactive",
+    };
+    setClients((prev) => [...prev, newClient]);
+    setShowForm(false);
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar user={user} />
       <SidebarInset>
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4">
-          <h1 className="text-2xl font-bold">Clients</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">Clients</h1>
+            <Button onClick={() => setShowForm(true)}>
+              <PlusIcon className="mr-2 size-4" />
+              Add Client
+            </Button>
+          </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">Total Clients</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{defaultClients.length}</div>
+                <div className="text-2xl font-bold">{clients.length}</div>
               </CardContent>
             </Card>
             <Card>
@@ -60,7 +138,17 @@ export default function ClientsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-500">
-                  {defaultClients.filter((c) => c.status === "Active").length}
+                  {clients.filter((c) => c.status === "Active").length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">In Active</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-500">
+                  {clients.filter((c) => c.status === "Inactive").length}
                 </div>
               </CardContent>
             </Card>
@@ -70,7 +158,7 @@ export default function ClientsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {defaultClients.reduce((acc, c) => acc + c.projects, 0)}
+                  {clients.reduce((acc, c) => acc + c.projects, 0)}
                 </div>
               </CardContent>
             </Card>
@@ -78,40 +166,361 @@ export default function ClientsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Client Directory</CardTitle>
+              <CardTitle className="text-base">Client List</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-3 pr-4 font-medium">Name</th>
-                      <th className="pb-3 pr-4 font-medium">Email</th>
-                      <th className="pb-3 pr-4 font-medium">Company</th>
-                      <th className="pb-3 pr-4 font-medium">Projects</th>
-                      <th className="pb-3 font-medium">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {defaultClients.map((client) => (
-                      <tr key={client.id} className="border-b last:border-0">
-                        <td className="py-3 pr-4 font-medium">{client.name}</td>
-                        <td className="py-3 pr-4 text-muted-foreground">{client.email}</td>
-                        <td className="py-3 pr-4 text-muted-foreground">{client.company}</td>
-                        <td className="py-3 pr-4">{client.projects}</td>
-                        <td className="py-3">
-                          <Badge variant={client.status === "Active" ? "default" : "secondary"}>
-                            {client.status}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <CardContent className="p-0">
+              <DataTable columns={columns} data={clients} />
             </CardContent>
           </Card>
         </main>
+
+        {showForm && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto py-6" onClick={() => setShowForm(false)}>
+            <div className="w-full max-w-4xl rounded-xl bg-background p-6 shadow-xl my-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-semibold">Add Client</h2>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="rounded-md p-1 hover:bg-muted transition-colors"
+                >
+                  <XIcon className="size-5" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Client Information */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Client Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Client ID</Label>
+                      <Input value="Auto Generated" disabled className="text-muted-foreground" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Client Name *</Label>
+                      <Input placeholder="Enter client name" value={clientName} onChange={(e) => setClientName(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
+                      <Input placeholder="Enter company name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Client Type</Label>
+                      <Select value={clientType} onValueChange={setClientType}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Individual">Individual</SelectItem>
+                          <SelectItem value="Business">Business</SelectItem>
+                          <SelectItem value="Government">Government</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Industry</Label>
+                      <Input placeholder="Enter industry" value={industry} onChange={(e) => setIndustry(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Website URL</Label>
+                      <Input placeholder="https://example.com" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Contact Information */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Contact Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Primary Contact Person *</Label>
+                      <Input placeholder="Enter contact person" value={primaryContact} onChange={(e) => setPrimaryContact(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Designation</Label>
+                      <Input placeholder="Enter designation" value={designation} onChange={(e) => setDesignation(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
+                      <Input placeholder="Enter email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile Number *</Label>
+                      <Input placeholder="Enter mobile number" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Alternate Phone Number</Label>
+                      <Input placeholder="Enter alternate phone" value={alternatePhone} onChange={(e) => setAlternatePhone(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">WhatsApp Number</Label>
+                      <Input placeholder="Enter WhatsApp number" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Address Details */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Address Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 1 *</Label>
+                      <Input placeholder="Enter address" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 2</Label>
+                      <Input placeholder="Enter address line 2" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">City *</Label>
+                      <Input placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">State/Province *</Label>
+                      <Input placeholder="Enter state/province" value={stateProvince} onChange={(e) => setStateProvince(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Country *</Label>
+                      <Input placeholder="Enter country" value={country} onChange={(e) => setCountry(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Postal Code *</Label>
+                      <Input placeholder="Enter postal code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Business Details */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Business Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">GST Number (Optional)</Label>
+                      <Input placeholder="Enter GST number" value={gstNumber} onChange={(e) => setGstNumber(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">PAN Number (Optional)</Label>
+                      <Input placeholder="Enter PAN number" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Company Registration Number</Label>
+                      <Input placeholder="Enter registration number" value={companyRegNumber} onChange={(e) => setCompanyRegNumber(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Tax ID</Label>
+                      <Input placeholder="Enter tax ID" value={taxId} onChange={(e) => setTaxId(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Project Information */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Project Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Project Name</Label>
+                      <Input placeholder="Enter project name" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Service Required</Label>
+                      <Select value={serviceRequired} onValueChange={setServiceRequired}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Website Development">Website Development</SelectItem>
+                          <SelectItem value="Mobile App Development">Mobile App Development</SelectItem>
+                          <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
+                          <SelectItem value="SEO">SEO</SelectItem>
+                          <SelectItem value="Branding">Branding</SelectItem>
+                          <SelectItem value="Graphic Design">Graphic Design</SelectItem>
+                          <SelectItem value="Custom Software">Custom Software</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Project Budget</Label>
+                      <Input placeholder="Enter budget" value={projectBudget} onChange={(e) => setProjectBudget(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Expected Start Date</Label>
+                      <Input type="date" value={expectedStartDate} onChange={(e) => setExpectedStartDate(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Expected End Date</Label>
+                      <Input type="date" value={expectedEndDate} onChange={(e) => setExpectedEndDate(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Billing Information */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Billing Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Contact Name</Label>
+                      <Input placeholder="Enter billing contact" value={billingContactName} onChange={(e) => setBillingContactName(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Email</Label>
+                      <Input placeholder="Enter billing email" type="email" value={billingEmail} onChange={(e) => setBillingEmail(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Payment Terms</Label>
+                      <Input placeholder="Enter payment terms" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Currency</Label>
+                      <Select value={currency} onValueChange={setCurrency}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="USD">USD</SelectItem>
+                          <SelectItem value="EUR">EUR</SelectItem>
+                          <SelectItem value="GBP">GBP</SelectItem>
+                          <SelectItem value="INR">INR</SelectItem>
+                          <SelectItem value="AED">AED</SelectItem>
+                          <SelectItem value="AUD">AUD</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Credit Limit</Label>
+                      <Input placeholder="Enter credit limit" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Communication Preferences */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Communication Preferences</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Contact Method</Label>
+                      <Select value={preferredContactMethod} onValueChange={setPreferredContactMethod}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Email">Email</SelectItem>
+                          <SelectItem value="Phone">Phone</SelectItem>
+                          <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                          <SelectItem value="Teams">Teams</SelectItem>
+                          <SelectItem value="Zoom">Zoom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Time Zone</Label>
+                      <Input placeholder="Enter timezone (e.g. IST, EST, PST)" value={preferredTimeZone} onChange={(e) => setPreferredTimeZone(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Client Status */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Client Status</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Status</Label>
+                      <Select value={status} onValueChange={setStatus}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Lead">Lead</SelectItem>
+                          <SelectItem value="Prospect">Prospect</SelectItem>
+                          <SelectItem value="Active Client">Active Client</SelectItem>
+                          <SelectItem value="Inactive Client">Inactive Client</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Additional Information */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Additional Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Source of Lead</Label>
+                      <Select value={sourceOfLead} onValueChange={setSourceOfLead}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Referral">Referral</SelectItem>
+                          <SelectItem value="Website">Website</SelectItem>
+                          <SelectItem value="Social Media">Social Media</SelectItem>
+                          <SelectItem value="BNI">BNI</SelectItem>
+                          <SelectItem value="Advertisement">Advertisement</SelectItem>
+                          <SelectItem value="Direct Contact">Direct Contact</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Attachments/Documents</Label>
+                      <Input type="file" className="file:text-xs file:font-medium" />
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Notes</Label>
+                    <textarea
+                      className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
+                      placeholder="Enter notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* System Fields */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">System Fields</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Sales Person</Label>
+                      <Input placeholder="Sales person" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Project Manager</Label>
+                      <Input placeholder="Project manager" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Created By</Label>
+                      <Input placeholder="Created by" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Created Date</Label>
+                      <Input type="date" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Last Updated Date</Label>
+                      <Input type="date" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t pt-4">
+                  <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>
+                    Cancel
+                  </Button>
+                  <Button className="flex-1" disabled={!clientName || !email || !primaryContact} onClick={handleSubmit}>
+                    Create Client
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </SidebarInset>
     </SidebarProvider>
   );
