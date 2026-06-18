@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
@@ -81,11 +81,9 @@ export default function ProfilePage() {
   const [urlInput, setUrlInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [bannerUrl, setBannerUrl] = useState("");
-  const [mounted, setMounted] = useState(false);
-  const fileKey = useRef(0);
+  const [fileKey, setFileKey] = useState(0);
 
   useEffect(() => {
-    setMounted(true);
     fetch("/api/user/profile")
       .then((r) => r.json())
       .then((d) => {
@@ -94,10 +92,6 @@ export default function ProfilePage() {
       })
       .catch(() => {});
   }, []);
-
-  if (!mounted) {
-    return <div className="min-h-screen" />;
-  }
 
   const dbUser = data?.user;
   const org = data?.org;
@@ -135,7 +129,7 @@ export default function ProfilePage() {
       const result = await res.json();
       setBannerUrl(result.bannerUrl);
       setShowBannerEditor(false);
-      fileKey.current++;
+      setFileKey((k) => k + 1);
     }
     setUploading(false);
   }
@@ -336,7 +330,7 @@ export default function ProfilePage() {
                 </div>
 
                 <BannerUpload
-                  key={fileKey.current}
+                  key={fileKey}
                   onFile={handleBannerFile}
                   disabled={uploading}
                 />

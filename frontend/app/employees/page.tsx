@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth/config";
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { AddEmployeeDialog } from "@/components/add-employee-dialog";
 
 export const metadata = {

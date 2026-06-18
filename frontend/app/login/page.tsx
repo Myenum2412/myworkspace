@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { LoginForm } from "@/components/login-form";
 
@@ -7,7 +8,7 @@ export default async function LoginPage(props: { searchParams: Promise<Record<st
       <div className="flex flex-col gap-4 p-6 md:p-10 bg-background">
         <div className="flex justify-center gap-2 md:justify-start">
           <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
-            <img src="/logo.jpeg" alt="MyWorkSpace Logo" className="size-8 rounded-lg object-cover shadow-sm" />
+            <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-8 rounded-lg object-cover shadow-sm" />
             <span className="text-base tracking-tight">MyWorkSpace</span>
           </Link>
         </div>
@@ -24,10 +25,12 @@ export default async function LoginPage(props: { searchParams: Promise<Record<st
       </div>
 
       <div className="relative hidden lg:block overflow-hidden bg-[#0d0f1a]">
-        <img
+        <Image
           src="/login-bg.png"
           alt="Background"
+          fill
           className="absolute inset-0 h-full w-full object-cover opacity-80"
+          sizes="50vw"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d0f1a]/60 via-transparent to-[#1a0d2e]/60" />
         <div className="absolute inset-0 flex flex-col items-start justify-end p-12">

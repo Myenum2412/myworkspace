@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -107,9 +108,11 @@ export function OrgSidebar({
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="h-20 border-b justify-center">
         <div className="flex items-center gap-2 px-1 group-data-[collapsible=icon]:justify-center">
-          <img
+          <Image
             src="/logo.jpeg"
             alt="MyWorkSpace Logo"
+            width={32}
+            height={32}
             className="size-8 rounded-lg object-cover shadow-sm shrink-0"
           />
           <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">

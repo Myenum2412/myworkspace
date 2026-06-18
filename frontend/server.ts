@@ -1,6 +1,6 @@
 import { createServer } from "http";
-import { parse } from "url";
 import next from "next";
+import { connectToMongo } from "./lib/db";
 import { wsManager } from "./lib/ws/server";
 
 const dev = process.env.NODE_ENV !== "production";
@@ -10,10 +10,13 @@ const port = parseInt(process.env.PORT || "3000", 10);
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-app.prepare().then(() => {
+app.prepare().then(async () => {
+  await connectToMongo().catch((err) => {
+    console.error("Failed to connect to MongoDB:", err.message);
+  });
+
   const server = createServer((req, res) => {
-    const parsedUrl = parse(req.url!, true);
-    handle(req, res, parsedUrl);
+    handle(req, res);
   });
 
   wsManager.initialize(server);
