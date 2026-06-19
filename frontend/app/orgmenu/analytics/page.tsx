@@ -1,5 +1,7 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth/config";
+import { getUserOrgId } from "@/lib/org";
 
 export const dynamic = "force-dynamic";
 import { collections } from "@/lib/db/schema";
@@ -18,7 +20,9 @@ const getAnalytics = cache(async (orgId: string) => {
 });
 
 export default async function AnalyticsPage() {
-  const analytics = await getAnalytics("demo-org-id");
+  const session = await auth();
+  const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
+  const analytics = await getAnalytics(orgId || "null");
   const items = [
     { title: "Total Tasks", value: analytics.totalTasks, icon: BarChart2Icon, color: "text-blue-500" },
     { title: "Completed", value: analytics.completedTasks, icon: CheckCircle2Icon, color: "text-emerald-500" },

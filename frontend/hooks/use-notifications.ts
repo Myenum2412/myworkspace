@@ -28,7 +28,7 @@ export function useNotifications(userId?: string) {
   }, [userId]);
 
   const markAsRead = useCallback(async (id: string) => {
-    await fetch(`/api/notifications/${id}/read`, { method: "POST" });
+    await fetch(`/api/notifications/${id}/read`, { method: "POST", credentials: "include" });
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
@@ -36,7 +36,7 @@ export function useNotifications(userId?: string) {
   }, []);
 
   const markAllAsRead = useCallback(async () => {
-    await fetch("/api/notifications/read-all", { method: "POST", body: JSON.stringify({ userId }) });
+    await fetch("/api/notifications/read-all", { method: "POST", credentials: "include", body: JSON.stringify({ userId }) });
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
   }, [userId]);
@@ -46,8 +46,11 @@ export function useNotifications(userId?: string) {
 
 async function fetchNotifications(userId: string) {
   try {
-    const res = await fetch(`/api/notifications?userId=${userId}`);
-    if (res.ok) return await res.json();
+    const res = await fetch(`/api/notifications?userId=${userId}`, { credentials: "include" });
+    if (res.ok) {
+      const d = await res.json();
+      return d.data || d;
+    }
   } catch { /* ignore */ }
   return [];
 }

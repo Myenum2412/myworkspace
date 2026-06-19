@@ -1,5 +1,7 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth/config";
+import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -16,7 +18,9 @@ const getLogs = cache(async (orgId: string) => {
 });
 
 export default async function AuditPage() {
-  const logs = await getLogs("demo-org-id");
+  const session = await auth();
+  const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
+  const logs = await getLogs(orgId || "null");
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

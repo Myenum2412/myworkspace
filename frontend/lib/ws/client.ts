@@ -22,7 +22,8 @@ export class WsClient {
   }
 
   private attemptConnection() {
-    const url = `ws://localhost:4000/api/ws?userId=${this.userId}&orgId=${this.orgId}`;
+    const baseUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000";
+    const url = `${baseUrl}/api/ws?userId=${this.userId}&orgId=${this.orgId}`;
 
     try {
       this.ws = new WebSocket(url);

@@ -3,6 +3,7 @@ import multer from "multer";
 import { v4 as uuid } from "uuid";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { FileShare } from "../lib/db/models/FileShare.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
@@ -14,7 +15,9 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 
 router.use(authenticate);
 
 router.get("/shared", async (req: AuthRequest, res: Response) => {
-  const shares = await FileShare.find({ orgId: "demo-org-id" }).sort({ createdAt: -1 }).lean();
+  const orgId = (req.query.orgId as string) || "";
+  if (!orgId) { res.json([]); return; }
+  const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).lean();
 
   const fileIds = [...new Set(shares.map(s => s.fileId))];
   const files = await FileAttachment.find({ id: { $in: fileIds } }).lean();
@@ -38,7 +41,9 @@ router.get("/shared", async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/", async (req: AuthRequest, res: Response) => {
-  const files = await FileAttachment.find({ orgId: "demo-org-id" })
+  const orgId = (req.query.orgId as string) || "";
+  if (!orgId) { res.json([]); return; }
+  const files = await FileAttachment.find({ orgId })
     .select("id originalName mimeType size createdAt uploaderId")
     .sort({ createdAt: -1 })
     .lean();
@@ -58,6 +63,8 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
 router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) => {
   if (!req.file) throw new AppError(400, "No file provided");
+  const orgId = req.body.orgId as string;
+  if (!orgId) throw new AppError(400, "orgId is required");
 
   const buffer = req.file.buffer;
   const storagePath = saveFile(buffer, req.file.originalname);
@@ -65,7 +72,7 @@ router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) 
   const fileId = uuid();
   await FileAttachment.create({
     id: fileId,
-    orgId: "demo-org-id",
+    orgId,
     uploaderId: req.user!.userId,
     name: req.file.originalname,
     originalName: req.file.originalname,
@@ -75,7 +82,7 @@ router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) 
   });
 
   await ActivityLog.create({
-    orgId: "demo-org-id",
+    orgId,
     userId: req.user!.userId,
     action: "file.uploaded",
     entityType: "file",
@@ -89,6 +96,9 @@ router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   const file = await FileAttachment.findOne({ id: req.params.id }).lean();
   if (!file) throw new AppError(404, "File not found");
+
+  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: file.orgId }).lean();
+  if (!membership) throw new AppError(403, "Not authorized to access this file");
 
   const filePath = getFilePath(file.storagePath);
   if (!filePath) throw new AppError(404, "File not found on disk");
@@ -109,14 +119,19 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/:id/share", async (req: AuthRequest, res: Response) => {
-  const { sharedWithUserId } = req.body;
+  const { sharedWithUserId, orgId } = req.body;
+  if (!orgId) throw new AppError(400, "orgId is required");
+
+  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId }).lean();
+  if (!membership) throw new AppError(403, "Not a member of this organization");
+
   const shareId = uuid();
   await FileShare.create({
     id: shareId,
     fileId: req.params.id,
     sharedByUserId: req.user!.userId,
     sharedWithUserId: sharedWithUserId || null,
-    orgId: "demo-org-id",
+    orgId,
   });
   res.json({ success: true });
 });

@@ -18,7 +18,7 @@ export default function AddProjectPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
   useEffect(() => {
-    fetch("/api/user/me")
+    fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
       .catch(() => {});

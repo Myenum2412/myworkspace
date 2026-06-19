@@ -17,7 +17,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { PlusIcon, XIcon } from "lucide-react";
+import { PlusIcon, XIcon, Loader2Icon } from "lucide-react";
 import { columns, type Project } from "./columns";
 import { DataTable } from "./data-table";
 
@@ -42,6 +42,8 @@ export default function ProjectsPage() {
   const [editColor, setEditColor] = useState("");
   const [editAccess, setEditAccess] = useState<"Public" | "Private">("Public");
   const [editStatus, setEditStatus] = useState<"Active" | "Inactive">("Active");
+  const [orgId, setOrgId] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const colors = [
     "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
@@ -49,29 +51,58 @@ export default function ProjectsPage() {
   ];
 
   useEffect(() => {
-    fetch("/api/user/me")
+    fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
       .catch(() => {});
   }, []);
 
-  function handleSubmit() {
-    if (!projectName || !selectedClient) return;
-    const newProject: Project = {
-      id: Date.now().toString(),
-      name: projectName,
-      client: selectedClient,
-      color: projectColor,
-      tracked: Math.floor(Math.random() * 80) + 10,
-      progress: Math.floor(Math.random() * 100),
-      access: Math.random() > 0.5 ? "Public" : "Private",
-      status: "Active",
-    };
-    setProjects((prev) => [...prev, newProject]);
-    setShowForm(false);
-    setProjectName("");
-    setSelectedClient("");
-    setProjectColor("#3b82f6");
+  useEffect(() => {
+    fetch("/api/user/profile", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const profile = d.data || d;
+        const id = profile?.org?.id || profile?.org?._id?.toString() || "";
+        if (id) {
+          setOrgId(id);
+          return fetch(`/api/projects?orgId=${id}`, { credentials: "include" });
+        }
+        return null;
+      })
+      .then((res) => res?.json())
+      .then((data) => {
+        if (data) setProjects(data.data || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function handleSubmit() {
+    if (!projectName || !selectedClient || !orgId) return;
+
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          orgId,
+          name: projectName,
+          client: selectedClient,
+          color: projectColor,
+          access: "Public",
+          status: "Active",
+        }),
+      });
+      const d = await res.json();
+      if (d.success && d.data) {
+        setProjects((prev) => [...prev, d.data]);
+      }
+      setShowForm(false);
+      setProjectName("");
+      setSelectedClient("");
+      setProjectColor("#3b82f6");
+    } catch {}
   }
 
   function handleView(project: Project) {
@@ -83,16 +114,28 @@ export default function ProjectsPage() {
     setEditStatus(project.status);
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!viewProject) return;
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id === viewProject.id
-          ? { ...p, name: editName, client: editClient, color: editColor, access: editAccess, status: editStatus }
-          : p
-      )
-    );
-    setViewProject(null);
+
+    try {
+      const res = await fetch(`/api/projects/${viewProject.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: editName,
+          client: editClient,
+          color: editColor,
+          access: editAccess,
+          status: editStatus,
+        }),
+      });
+      const d = await res.json();
+      if (d.success && d.data) {
+        setProjects((prev) => prev.map((p) => (p.id === viewProject.id ? d.data : p)));
+      }
+      setViewProject(null);
+    } catch {}
   }
 
   return (
@@ -103,7 +146,7 @@ export default function ProjectsPage() {
         <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">All Projects</h1>
-            <Button onClick={() => setShowForm(true)}>
+            <Button onClick={() => setShowForm(true)} disabled={!orgId}>
               <PlusIcon className="mr-2 size-4" />
               New Project
             </Button>
@@ -115,7 +158,7 @@ export default function ProjectsPage() {
                 <CardTitle className="text-sm text-muted-foreground">Total Project</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{projects.length}</div>
+                <div className="text-2xl font-bold">{loading ? <Loader2Icon className="size-5 animate-spin" /> : projects.length}</div>
               </CardContent>
             </Card>
             <Card>
@@ -124,7 +167,7 @@ export default function ProjectsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-500">
-                  {projects.filter((p) => p.progress > 0 && p.progress < 100).length}
+                  {loading ? <Loader2Icon className="size-5 animate-spin" /> : projects.filter((p) => p.progress > 0 && p.progress < 100).length}
                 </div>
               </CardContent>
             </Card>
@@ -134,7 +177,7 @@ export default function ProjectsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-500">
-                  {projects.filter((p) => p.progress === 0).length}
+                  {loading ? <Loader2Icon className="size-5 animate-spin" /> : projects.filter((p) => p.progress === 0).length}
                 </div>
               </CardContent>
             </Card>
@@ -144,7 +187,7 @@ export default function ProjectsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-500">
-                  {projects.filter((p) => p.progress === 100).length}
+                  {loading ? <Loader2Icon className="size-5 animate-spin" /> : projects.filter((p) => p.progress === 100).length}
                 </div>
               </CardContent>
             </Card>
@@ -155,7 +198,11 @@ export default function ProjectsPage() {
               <CardTitle className="text-base">Project List</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <DataTable columns={columns} data={projects} meta={{ onView: handleView }} />
+              {loading ? (
+                <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
+              ) : (
+                <DataTable columns={columns} data={projects} meta={{ onView: handleView }} />
+              )}
             </CardContent>
           </Card>
         </main>

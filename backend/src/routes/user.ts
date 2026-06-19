@@ -59,7 +59,7 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
   });
 });
 
-router.get("/status", async (req: AuthRequest, res: Response) => {
+router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {
   const userId = (req.query.userId as string) || req.user?.userId;
   if (!userId) throw new AppError(400, "userId is required");
 
@@ -71,13 +71,12 @@ router.get("/status", async (req: AuthRequest, res: Response) => {
   res.json({ status: user?.status || "offline" });
 });
 
-router.post("/status", async (req: AuthRequest, res: Response) => {
-  const { status, userId: bodyUserId } = req.body;
-  const userId = bodyUserId || req.user?.userId;
-  if (!status || !userId) throw new AppError(400, "Status and userId are required");
+router.post("/status", authenticate, async (req: AuthRequest, res: Response) => {
+  const { status } = req.body;
+  if (!status || !req.user?.userId) throw new AppError(400, "Status is required");
 
-  if (isObjectId(userId)) {
-    await User.findByIdAndUpdate(userId, { status });
+  if (isObjectId(req.user.userId)) {
+    await User.findByIdAndUpdate(req.user.userId, { status });
   }
   res.json({ success: true });
 });
