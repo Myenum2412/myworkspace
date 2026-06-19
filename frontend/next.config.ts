@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
       ],
     };
   },
+  webpack(config, { isServer }) {
+    if (isServer) {
+      config.externals = [...(config.externals || []), "mongodb-memory-server", "mongodb-memory-server-core"];
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

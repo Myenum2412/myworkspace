@@ -9,7 +9,7 @@ const router = Router();
 
 router.use(authenticate);
 
-const getCollection = () => mongoose.connection.db.collection("projects");
+const getCollection = () => mongoose.connection.db!.collection("projects");
 
 async function getUserOrgId(userId: string): Promise<string> {
   const member = await OrgMember.findOne({ userId }).lean();

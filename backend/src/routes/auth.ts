@@ -29,14 +29,17 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   user.status = "online";
   await user.save();
 
-  await ActivityLog.create({
-    orgId: (await OrgMember.findOne({ userId: user._id }))?.orgId,
-    userId: user._id,
-    action: "user.login",
-    entityType: "user",
-    entityId: user._id.toString(),
-    description: `${user.name} logged in`,
-  });
+  const memberOrgId = (await OrgMember.findOne({ userId: user._id }))?.orgId;
+  if (memberOrgId) {
+    await ActivityLog.create({
+      orgId: memberOrgId,
+      userId: user._id,
+      action: "user.login",
+      entityType: "user",
+      entityId: user._id.toString(),
+      description: `${user.name} logged in`,
+    });
+  }
 
   const token = signToken({ userId: user._id.toString(), email: user.email, role: user.role });
 
