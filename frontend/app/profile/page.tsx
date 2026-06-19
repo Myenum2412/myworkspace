@@ -25,6 +25,7 @@ import {
   CircleIcon,
   CameraIcon,
   XIcon,
+  Loader2Icon,
 } from "lucide-react";
 
 import nextDynamic from "next/dynamic";
@@ -84,11 +85,11 @@ export default function ProfilePage() {
   const [fileKey, setFileKey] = useState(0);
 
   useEffect(() => {
-    fetch("/api/user/profile")
+    fetch("/api/user/profile", { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
-        setData(d);
-        setBannerUrl(d?.user?.bannerUrl || "");
+        setData(d.data || d);
+        setBannerUrl((d.data || d)?.user?.bannerUrl || "");
       })
       .catch(() => {});
   }, []);
@@ -107,6 +108,7 @@ export default function ProfilePage() {
     const res = await fetch("/api/user/banner", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ url }),
     });
     if (res.ok) {
@@ -123,6 +125,7 @@ export default function ProfilePage() {
     formData.append("banner", file);
     const res = await fetch("/api/user/banner", {
       method: "POST",
+      credentials: "include",
       body: formData,
     });
     if (res.ok) {
@@ -132,6 +135,20 @@ export default function ProfilePage() {
       setFileKey((k) => k + 1);
     }
     setUploading(false);
+  }
+
+  if (!data) {
+    return (
+      <SidebarProvider>
+        <AppSidebar user={user} />
+        <SidebarInset>
+          <Header />
+          <main className="flex flex-1 flex-col items-center justify-center py-24">
+            <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    );
   }
 
   return (

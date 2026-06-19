@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { Task } from "../lib/db/models/Task.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 
@@ -8,12 +9,15 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get("/", async (req: AuthRequest, res: Response) => {
-  const orgId = (req.query.orgId as string) || "";
-  const filter: Record<string, any> = {};
-  if (orgId) filter.orgId = orgId;
+async function getUserOrgId(userId: string): Promise<string> {
+  const member = await OrgMember.findOne({ userId }).lean();
+  if (!member) throw new AppError(403, "User is not a member of any organization");
+  return member.orgId.toString();
+}
 
-  const tasks = await Task.find(filter).sort({ createdAt: -1 }).lean();
+router.get("/", async (req: AuthRequest, res: Response) => {
+  const orgId = (req.query.orgId as string) || await getUserOrgId(req.user!.userId);
+  const tasks = await Task.find({ orgId }).sort({ createdAt: -1 }).lean();
   res.json({ success: true, data: tasks });
 });
 
@@ -48,6 +52,11 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   const id = req.params.id;
   const { title, status, priority, assigneeId, description, dueDate } = req.body;
+  const userOrgId = await getUserOrgId(req.user!.userId);
+
+  const existing = await Task.findById(id).lean();
+  if (!existing) throw new AppError(404, "Task not found");
+  if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to modify this task");
 
   const updates: Record<string, any> = {};
   if (title !== undefined) updates.title = title;
@@ -60,7 +69,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   await Task.findByIdAndUpdate(id, updates);
 
   await ActivityLog.create({
-    orgId: "demo-org-id",
+    orgId: existing.orgId,
     userId: req.user!.userId,
     action: "task.updated",
     entityType: "task",
@@ -72,6 +81,11 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  const userOrgId = await getUserOrgId(req.user!.userId);
+  const existing = await Task.findById(req.params.id).lean();
+  if (!existing) throw new AppError(404, "Task not found");
+  if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to delete this task");
+
   await Task.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
@@ -79,6 +93,11 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
   const { status } = req.body;
   if (!status) throw new AppError(400, "Status is required");
+  const userOrgId = await getUserOrgId(req.user!.userId);
+
+  const existing = await Task.findById(req.params.id).lean();
+  if (!existing) throw new AppError(404, "Task not found");
+  if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to modify this task");
 
   await Task.findByIdAndUpdate(req.params.id, { status });
   res.json({ success: true });

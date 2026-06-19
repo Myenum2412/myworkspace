@@ -38,9 +38,9 @@ export default function ClientsPage() {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    fetch("/api/clients")
+    fetch("/api/clients", { credentials: "include" })
       .then((r) => r.json())
-      .then(setClients)
+      .then((d) => setClients(Array.isArray(d) ? d : d.data || []))
       .catch(() => {});
   }, []);
 
@@ -134,7 +134,7 @@ export default function ClientsPage() {
   }
 
   useEffect(() => {
-    fetch("/api/user/me")
+    fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
       .catch(() => {});
@@ -177,6 +177,7 @@ export default function ClientsPage() {
     const res = await fetch("/api/clients", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(payload),
     });
     if (res.ok) {

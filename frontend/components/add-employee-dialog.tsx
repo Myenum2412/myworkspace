@@ -2,9 +2,26 @@
 
 import { useState } from "react";
 import { PlusIcon, XIcon } from "lucide-react";
+import { addEmployeeAction } from "@/actions/employees";
 
 export function AddEmployeeDialog() {
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    setError("");
+    const form = new FormData(e.currentTarget);
+    const result = await addEmployeeAction(form);
+    setPending(false);
+    if (result?.error) {
+      setError(result.error);
+    } else {
+      setOpen(false);
+    }
+  }
 
   return (
     <>
@@ -27,42 +44,26 @@ export function AddEmployeeDialog() {
 
             <h2 className="mb-6 text-lg font-semibold">Add Employee</h2>
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const form = new FormData(e.currentTarget);
-                console.log(Object.fromEntries(form));
-                setOpen(false);
-              }}
-              className="space-y-4"
-            >
+            {error && (
+              <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Full Name</label>
-                <input
-                  name="name"
-                  required
-                  className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  placeholder="e.g. Jane Doe"
-                />
+                <input name="name" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="e.g. Jane Doe" />
               </div>
-
+              <div>
+                <label className="text-sm font-medium">Email</label>
+                <input name="email" type="email" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="jane@myworkspace.io" />
+              </div>
               <div>
                 <label className="text-sm font-medium">Role</label>
-                <input
-                  name="role"
-                  required
-                  className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  placeholder="e.g. Frontend Developer"
-                />
+                <input name="role" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="e.g. Frontend Developer" />
               </div>
-
               <div>
                 <label className="text-sm font-medium">Department</label>
-                <select
-                  name="department"
-                  required
-                  className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
+                <select name="department" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <option value="">Select department</option>
                   <option value="Engineering">Engineering</option>
                   <option value="Creative">Creative</option>
@@ -71,25 +72,9 @@ export function AddEmployeeDialog() {
                   <option value="Sales">Sales</option>
                 </select>
               </div>
-
-              <div>
-                <label className="text-sm font-medium">Email</label>
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  placeholder="jane@myworkspace.io"
-                />
-              </div>
-
               <div>
                 <label className="text-sm font-medium">Status</label>
-                <select
-                  name="status"
-                  required
-                  className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
+                <select name="status" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <option value="Active">Active</option>
                   <option value="On Leave">On Leave</option>
                   <option value="Terminated">Terminated</option>
@@ -97,18 +82,9 @@ export function AddEmployeeDialog() {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="inline-flex h-10 items-center justify-center rounded-md border bg-background px-4 py-2 text-sm font-medium hover:bg-muted"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                >
-                  Add Employee
+                <button type="button" onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-md border bg-background px-4 py-2 text-sm font-medium hover:bg-muted">Cancel</button>
+                <button type="submit" disabled={pending} className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+                  {pending ? "Adding..." : "Add Employee"}
                 </button>
               </div>
             </form>

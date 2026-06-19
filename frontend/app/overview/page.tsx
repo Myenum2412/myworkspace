@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Loader2Icon } from "lucide-react";
 
 type Task = {
   _id: string;
@@ -19,13 +20,25 @@ type Task = {
 export default function OverviewPage() {
   const { data: session } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/tasks?orgId=demo-org-id")
+    if (!session?.user) return;
+    fetch("/api/user/profile", { credentials: "include" })
       .then((r) => r.json())
-      .then(setTasks)
-      .catch(() => {});
-  }, []);
+      .then((d) => {
+        const profile = d.data || d;
+        const orgId = profile?.org?.id || profile?.org?._id?.toString() || "";
+        if (orgId) {
+          return fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
+        }
+        return null;
+      })
+      .then((res) => res?.json())
+      .then((d) => { if (d) setTasks(d.data || d); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [session]);
 
   const user = {
     name: session?.user?.name || "User",
@@ -46,6 +59,9 @@ export default function OverviewPage() {
             </Badge>
           </div>
 
+          {loading ? (
+            <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
+          ) : (
           <div className="grid gap-4 md:grid-cols-6 mb-6">
             <Card className="bg-gray-50">
               <CardHeader className="pb-2">
@@ -108,6 +124,7 @@ export default function OverviewPage() {
               </CardContent>
             </Card>
           </div>
+          )}
         </main>
       </SidebarInset>
     </SidebarProvider>

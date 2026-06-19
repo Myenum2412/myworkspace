@@ -14,4 +14,5 @@ export const collections = {
   fileShares: "file_shares",
   timeEntries: "time_entries",
   ssoConfigs: "sso_configs",
+  projects: "projects",
 } as const;

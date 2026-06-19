@@ -13,6 +13,7 @@ import organizationsRoutes from "./routes/organizations.js";
 import filesRoutes from "./routes/files.js";
 import userRoutes from "./routes/user.js";
 import clientsRoutes from "./routes/clients.js";
+import projectsRoutes from "./routes/projects.js";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use("/api/organizations", organizationsRoutes);
 app.use("/api/files", filesRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/clients", clientsRoutes);
+app.use("/api/projects", projectsRoutes);
 
 // Error handler
 app.use(errorHandler);

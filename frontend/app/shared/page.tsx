@@ -28,8 +28,9 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(timestamp: number) {
-  return new Date(timestamp).toLocaleDateString("en-GB", {
+function formatDate(createdAt: string | number) {
+  const ts = typeof createdAt === "string" ? new Date(createdAt).getTime() : Number(createdAt);
+  return new Date(ts || Date.now()).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -42,14 +43,14 @@ export default function SharedPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
   useEffect(() => {
-    fetch("/api/files/shared")
+    fetch("/api/files/shared", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : []))
-      .then((data) => { setFiles(data); setLoading(false); })
+      .then((data) => { setFiles(Array.isArray(data) ? data : data.data || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    fetch("/api/user/me")
+    fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
       .catch(() => {});
@@ -104,11 +105,12 @@ export default function SharedPage() {
                             {file.sharedByName}
                           </td>
                           <td className="py-3 pr-4 text-muted-foreground">
-                            {formatDate(Number(file.createdAt))}
+                            {formatDate(file.createdAt)}
                           </td>
                           <td className="py-3">
                             <a
                               href={`/api/files/${file.fileId}`}
+                              download
                               className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                             >
                               <DownloadIcon className="size-4" />

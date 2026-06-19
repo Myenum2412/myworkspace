@@ -34,9 +34,11 @@ export async function loginAction(formData: FormData) {
       { $set: { status: "online", updatedAt: new Date() } }
     );
 
+    const member = await db.collection(collections.orgMembers).findOne({ userId: users[0].id });
+
     await db.collection(collections.activityLogs).insertOne({
       id: uuid(),
-      orgId: "demo-org-id",
+      orgId: member?.orgId || "system",
       userId: users[0].id,
       action: "user.login",
       entityType: "user",
@@ -53,6 +55,7 @@ export async function signupAction(formData: FormData) {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const confirm = formData.get("confirm") as string;
   const company = formData.get("company") as string;
 
   if (!name || !email || !password) {
@@ -61,6 +64,10 @@ export async function signupAction(formData: FormData) {
 
   if (password.length < 8) {
     redirect("/signup?error=Password+must+be+at+least+8+characters");
+  }
+
+  if (password !== confirm) {
+    redirect("/signup?error=Passwords+do+not+match");
   }
 
   const existing = await db.collection(collections.users).find({ email }).toArray();

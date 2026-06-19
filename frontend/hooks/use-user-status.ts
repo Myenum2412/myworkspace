@@ -42,6 +42,7 @@ export function useUserStatus(userId?: string) {
     await fetch("/api/user/status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ userId, status: newStatus }),
     });
   }, [userId]);
@@ -51,10 +52,10 @@ export function useUserStatus(userId?: string) {
 
 async function fetchStatus(userId: string) {
   try {
-    const res = await fetch(`/api/user/status?userId=${userId}`);
+    const res = await fetch(`/api/user/status?userId=${userId}`, { credentials: "include" });
     if (res.ok) {
-      const data = await res.json();
-      return data.status as "online" | "offline" | "break";
+      const d = await res.json();
+      return (d.data?.status || d.status || "offline") as "online" | "offline" | "break";
     }
   } catch { /* ignore */ }
   return "offline";

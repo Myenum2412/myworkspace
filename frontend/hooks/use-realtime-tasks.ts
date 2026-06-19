@@ -61,8 +61,11 @@ export function useRealtimeTasks(orgId?: string) {
 
 async function fetchTasks(orgId: string) {
   try {
-    const res = await fetch(`/api/tasks?orgId=${orgId}`);
-    if (res.ok) return await res.json();
+    const res = await fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
+    if (res.ok) {
+      const d = await res.json();
+      return d.data || d;
+    }
   } catch { /* ignore */ }
   return [];
 }

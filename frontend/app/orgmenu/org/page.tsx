@@ -1,5 +1,7 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth/config";
+import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +15,9 @@ const getOrg = cache(async (orgId: string) => {
 });
 
 export default async function OrgDetailsPage() {
-  const org = await getOrg("demo-org-id");
+  const session = await auth();
+  const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
+  const org = await getOrg(orgId || "null");
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
