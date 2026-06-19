@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["better-sqlite3", "mongodb-memory-server", "mongodb-memory-server-core"],
   experimental: {
     serverActions: {
       bodySizeLimit: "50mb",
@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
         },
       ],
     };
+  },
+  webpack(config, { isServer }) {
+    if (isServer) {
+      config.externals = [...(config.externals || []), "mongodb-memory-server", "mongodb-memory-server-core"];
+    }
+    return config;
   },
 };
 

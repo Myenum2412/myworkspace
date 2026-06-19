@@ -8,23 +8,23 @@ import { auth } from "@/lib/auth/config";
 import { deleteFile } from "@/lib/storage";
 import { getUserOrgId } from "@/lib/org";
 
-async function requireOrgId(): Promise<string> {
+async function requireSession() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   const orgId = await getUserOrgId(session.user.id);
   if (!orgId) throw new Error("No organization found");
-  return orgId;
+  return { orgId, userId: session.user.id };
 }
 
 export async function deleteFileAction(fileId: string) {
-  let orgId: string;
-  try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
+  let sessionData: { orgId: string; userId: string };
+  try { sessionData = await requireSession(); } catch { return { error: "Unauthorized" }; }
+  const { orgId, userId } = sessionData;
 
-  const session = await auth();
   const file = await db.collection(collections.fileAttachments).findOne({ id: fileId });
 
   if (!file) return { error: "File not found" };
-  if (file.uploaderId !== session!.user.id) return { error: "Not your file" };
+  if (file.uploaderId !== userId) return { error: "Not your file" };
 
   deleteFile(file.storagePath);
   await db.collection(collections.fileAttachments).deleteOne({ id: fileId });
@@ -32,7 +32,7 @@ export async function deleteFileAction(fileId: string) {
   await db.collection(collections.activityLogs).insertOne({
     id: uuid(),
     orgId,
-    userId: session!.user.id,
+    userId,
     action: "file.deleted",
     entityType: "file",
     entityId: fileId,
@@ -46,10 +46,9 @@ export async function deleteFileAction(fileId: string) {
 }
 
 export async function shareFileAction(fileId: string, sharedWithUserId: string | null) {
-  let orgId: string;
-  try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
-
-  const session = await auth();
+  let sessionData: { orgId: string; userId: string };
+  try { sessionData = await requireSession(); } catch { return { error: "Unauthorized" }; }
+  const { orgId, userId } = sessionData;
 
   const existing = await db.collection(collections.fileShares).findOne({
     fileId,
@@ -60,7 +59,7 @@ export async function shareFileAction(fileId: string, sharedWithUserId: string |
     await db.collection(collections.fileShares).insertOne({
       id: uuid(),
       fileId,
-      sharedByUserId: session!.user.id,
+      sharedByUserId: userId,
       sharedWithUserId: sharedWithUserId || null,
       orgId,
     });
@@ -68,7 +67,7 @@ export async function shareFileAction(fileId: string, sharedWithUserId: string |
     await db.collection(collections.activityLogs).insertOne({
       id: uuid(),
       orgId,
-      userId: session!.user.id,
+      userId,
       action: "file.shared",
       entityType: "file",
       entityId: fileId,

@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, Najas-Dev]
   pull_request:
     branches: [main]
 
@@ -29,9 +29,14 @@ jobs:
 
       - run: npm run build
         env:
-          NEXTAUTH_URL: ${{ vars.NEXTAUTH_URL || 'http://localhost:3000' }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'ci-build-secret' }}
-          MONGODB_URI: ${{ secrets.MONGODB_URI || 'mongodb://localhost:27017/test' }}
+          AUTH_URL: ${{ vars.AUTH_URL || 'http://localhost:3000' }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'ci-build-secret' }}
+          AUTH_LINKEDIN_ID: ${{ vars.AUTH_LINKEDIN_ID || 'ci-dummy-id' }}
+          AUTH_LINKEDIN_SECRET: ${{ secrets.AUTH_LINKEDIN_SECRET || 'ci-dummy-secret' }}
+          AUTH_GOOGLE_ID: ${{ vars.AUTH_GOOGLE_ID || 'ci-dummy-id' }}
+          AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET || 'ci-dummy-secret' }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI || '' }}
+          NEXT_PUBLIC_WS_URL: ${{ vars.NEXT_PUBLIC_WS_URL || 'ws://localhost:4000' }}
 
   backend:
     name: Backend
@@ -52,6 +57,14 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+
+      - name: Cache MongoDB binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}
+
+      - run: npm test
 
   deploy:
     name: Deploy
@@ -83,5 +96,5 @@ jobs:
             cd ..
 
             # Restart
-            pm2 restart workspace-api 2>/dev/null || pm2 start backend/dist/index.js --name workspace-api
-            pm2 restart workspace-frontend 2>/dev/null || pm2 start npm --name workspace-frontend -- run start
+            pm2 restart workspace-api 2>/dev/null || pm2 start "npm" --name workspace-api -- run start
+            pm2 restart workspace-frontend 2>/dev/null || pm2 start "npm" --name workspace-frontend -- run start
