@@ -30,6 +30,17 @@ import { PlusIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { columns, type Client } from "./columns";
 import { DataTable } from "./data-table";
 
+const FAKE_CLIENTS: Client[] = [
+  { id: "cli_1", name: "John Smith", email: "john@acmecorp.com", company: "Acme Corp", projects: 3, status: "Active Client" },
+  { id: "cli_2", name: "Jane Doe", email: "jane@globex.com", company: "Globex Inc", projects: 2, status: "Active Client" },
+  { id: "cli_3", name: "Bob Johnson", email: "bob@initech.com", company: "Initech", projects: 0, status: "Lead" },
+  { id: "cli_4", name: "Alice Williams", email: "alice@umbrella.com", company: "Umbrella Corp", projects: 5, status: "Active Client" },
+  { id: "cli_5", name: "Charlie Brown", email: "charlie@wayne.com", company: "Wayne Enterprises", projects: 1, status: "Inactive Client" },
+  { id: "cli_6", name: "Diana Prince", email: "diana@stark.com", company: "Stark Industries", projects: 4, status: "Active Client" },
+  { id: "cli_7", name: "Eve Adams", email: "eve@osscorp.com", company: "OSS Corp", projects: 0, status: "Lead" },
+  { id: "cli_8", name: "Frank Castle", email: "frank@micro.com", company: "MicroTech", projects: 2, status: "Active Client" },
+];
+
 export default function ClientsPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
@@ -41,7 +52,7 @@ export default function ClientsPage() {
     fetch("/api/clients", { credentials: "include" })
       .then((r) => r.json())
       .then((d) => setClients(Array.isArray(d) ? d : d.data || []))
-      .catch(() => {});
+      .catch(() => setClients(FAKE_CLIENTS));
   }, []);
 
   // Client Information

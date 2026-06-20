@@ -1,0 +1,3 @@
+{"event":"task_completed","teammate":"","task_id":"1","subject":"Add description/deadline to backend POST/PUT","description":"Add description and deadline fields to the projects API route (POST and PUT handlers)","timestamp":"2026-06-19T17:02:31Z"}
+{"event":"task_completed","teammate":"","task_id":"2","subject":"Fix popup form: add missing fields + loading/error","description":"Add description + deadline fields to the New Project popup in page.tsx, add loading spinner on Creat","timestamp":"2026-06-19T17:04:26Z"}
+{"event":"task_completed","teammate":"","task_id":"3","subject":"Fix addprojects page form submission","description":"Make the /addprojects page form actually submit to the API instead of just redirecting","timestamp":"2026-06-19T17:05:20Z"}

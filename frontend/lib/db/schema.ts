@@ -15,4 +15,7 @@ export const collections = {
   timeEntries: "time_entries",
   ssoConfigs: "sso_configs",
   projects: "projects",
+  workExperience: "work_experience",
+  educationDetails: "education_details",
+  dependentDetails: "dependent_details",
 } as const;

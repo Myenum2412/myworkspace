@@ -63,20 +63,26 @@ router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {
   const userId = (req.query.userId as string) || req.user?.userId;
   if (!userId) throw new AppError(400, "userId is required");
 
-  if (!isObjectId(userId)) {
-    res.json({ status: "offline" });
-    return;
+  let user;
+  if (isObjectId(userId)) {
+    user = await User.findById(userId).lean();
+  } else {
+    user = await User.findOne({ id: userId }).lean();
   }
-  const user = await User.findById(userId).lean();
   res.json({ status: user?.status || "offline" });
 });
 
 router.post("/status", authenticate, async (req: AuthRequest, res: Response) => {
-  const { status } = req.body;
-  if (!status || !req.user?.userId) throw new AppError(400, "Status is required");
+  const { status, userId: bodyUserId } = req.body;
+  if (!status) throw new AppError(400, "Status is required");
 
-  if (isObjectId(req.user.userId)) {
-    await User.findByIdAndUpdate(req.user.userId, { status });
+  const targetUserId = bodyUserId || req.user?.userId;
+  if (!targetUserId) throw new AppError(400, "userId is required");
+
+  if (isObjectId(targetUserId)) {
+    await User.findByIdAndUpdate(targetUserId, { status });
+  } else {
+    await User.findOneAndUpdate({ id: targetUserId }, { status });
   }
   res.json({ success: true });
 });

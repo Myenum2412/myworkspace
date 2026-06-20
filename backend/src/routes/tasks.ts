@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { Task } from "../lib/db/models/Task.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 
@@ -18,7 +19,37 @@ async function getUserOrgId(userId: string): Promise<string> {
 router.get("/", async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || await getUserOrgId(req.user!.userId);
   const tasks = await Task.find({ orgId }).sort({ createdAt: -1 }).lean();
-  res.json({ success: true, data: tasks });
+
+  // Collect all user IDs for assignee + creator
+  const userIds = new Set<string>();
+  tasks.forEach((t) => {
+    if (t.assigneeId) userIds.add(t.assigneeId.toString());
+    if (t.creatorId) userIds.add(t.creatorId.toString());
+  });
+
+  const users = await User.find({ _id: { $in: [...userIds] } }).select("name email image").lean();
+  const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+
+  const result = tasks.map((t) => {
+    const assignee = t.assigneeId ? userMap.get(t.assigneeId.toString()) : null;
+    const creator = t.creatorId ? userMap.get(t.creatorId.toString()) : null;
+    return {
+      _id: t._id.toString(),
+      title: t.title,
+      description: t.description || "",
+      status: t.status,
+      priority: t.priority,
+      dueDate: t.dueDate || null,
+      assigneeId: t.assigneeId ? t.assigneeId.toString() : "",
+      assigneeName: assignee?.name || "",
+      assigneeAvatar: assignee?.image || "",
+      creatorId: t.creatorId ? t.creatorId.toString() : "",
+      creatorName: creator?.name || "",
+      createdAt: t.createdAt,
+    };
+  });
+
+  res.json({ success: true, data: result });
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {

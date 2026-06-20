@@ -4,19 +4,31 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth/config";
+import { redirect } from "next/navigation";
+import { AddEmployeeDialogWrapper } from "./add-employee-dialog-wrapper";
+import { RecentEmployeesTable } from "./recent-employees-table";
 
 export const metadata = {
   title: "Add Employee",
 };
 
 export default async function AddEmployeePage() {
-  const session = await auth();
+  let session;
+  try {
+    session = await auth();
+  } catch {
+    redirect("/login");
+  }
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
   const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "user@example.com",
-    avatar: session?.user?.image || "",
+    name: session.user.name || "User",
+    email: session.user.email || "user@example.com",
+    avatar: session.user.image || "",
   };
 
   return (
@@ -24,16 +36,14 @@ export default async function AddEmployeePage() {
       <AppSidebar user={user} />
       <SidebarInset>
         <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
-          <h1 className="text-2xl font-bold">Add Employee</h1>
-          <Card>
-            <CardHeader>
-              <CardTitle>New Employee</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Employee creation form will appear here.</p>
-            </CardContent>
-          </Card>
+        <main className="flex flex-1 flex-col gap-6 p-6">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Employees</h1>
+            <p className="text-muted-foreground">Manage your organization&apos;s employees</p>
+          </div>
+          <AddEmployeeDialogWrapper />
+
+          <RecentEmployeesTable />
         </main>
       </SidebarInset>
     </SidebarProvider>

@@ -7,6 +7,9 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, TrendingUp, Users, CalendarDays, ArrowUp, ArrowDown } from "lucide-react";
 
 export default function TimeReportsPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
@@ -18,13 +21,138 @@ export default function TimeReportsPage() {
       .catch(() => {});
   }, []);
 
+  const reportData = {
+    totalHours: 1247.5,
+    billableHours: 986.3,
+    avgDailyHours: 7.8,
+    activeProjects: 12,
+    teamMembers: 24,
+    weeklyChange: 5.2,
+    weeklyChangeDirection: "up" as const,
+    utilization: 79,
+    topMembers: [
+      { name: "Alice Chen", hours: 168, billable: 152, avatar: "" },
+      { name: "Bob Martinez", hours: 162, billable: 148, avatar: "" },
+      { name: "David Kim", hours: 158, billable: 140, avatar: "" },
+      { name: "Carol Williams", hours: 155, billable: 130, avatar: "" },
+      { name: "Frank Lee", hours: 148, billable: 125, avatar: "" },
+    ],
+    weeklyData: [
+      { day: "Mon", hours: 142 },
+      { day: "Tue", hours: 168 },
+      { day: "Wed", hours: 155 },
+      { day: "Thu", hours: 172 },
+      { day: "Fri", hours: 134 },
+    ],
+  };
+
+  const maxHours = Math.max(...reportData.weeklyData.map((d) => d.hours));
+
   return (
     <SidebarProvider>
       <AppSidebar user={user} />
       <SidebarInset>
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4">
-          <h1 className="text-2xl font-bold">Time Reports</h1>
+          <div>
+            <h1 className="text-2xl font-bold">Time Reports</h1>
+            <p className="text-sm text-muted-foreground mt-1">Weekly time tracking overview</p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
+                <Clock className="size-4 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{reportData.totalHours}</div>
+                <div className="flex items-center gap-1 text-xs text-emerald-600 mt-1">
+                  <ArrowUp className="size-3" />
+                  {reportData.weeklyChange}% vs last week
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Billable Hours</CardTitle>
+                <TrendingUp className="size-4 text-emerald-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{reportData.billableHours}</div>
+                <p className="text-xs text-muted-foreground mt-1">{reportData.utilization}% utilization rate</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
+                <CalendarDays className="size-4 text-purple-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{reportData.activeProjects}</div>
+                <p className="text-xs text-muted-foreground mt-1">{reportData.teamMembers} team members</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Daily Average</CardTitle>
+                <Users className="size-4 text-orange-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{reportData.avgDailyHours}h</div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                  per team member
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Weekly Hours</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-end gap-2 h-32">
+                  {reportData.weeklyData.map((d) => (
+                    <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
+                      <div
+                        className="w-full bg-primary/20 rounded-t transition-all hover:bg-primary/30"
+                        style={{ height: `${(d.hours / maxHours) * 100}%` }}
+                      />
+                      <span className="text-xs text-muted-foreground">{d.hours}</span>
+                      <span className="text-xs font-medium">{d.day}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Top Contributors</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {reportData.topMembers.map((m, i) => (
+                    <div key={m.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground w-4">#{i + 1}</span>
+                        <span className="text-sm">{m.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{m.hours}h</span>
+                        <Badge variant="outline" className="text-xs">{m.billable}h billable</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </SidebarInset>
     </SidebarProvider>

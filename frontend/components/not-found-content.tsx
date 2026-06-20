@@ -5,13 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface NotFoundContentProps {
-  variant: "offline" | "not-found";
-}
-
-export function NotFoundContent({ variant }: NotFoundContentProps) {
+export function NotFoundContent() {
   const router = useRouter();
-  const isOffline = variant === "offline";
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
@@ -30,12 +25,10 @@ export function NotFoundContent({ variant }: NotFoundContentProps) {
         </div>
         <div className="mt-12 space-y-3">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {isOffline ? "No internet connection" : "Page not found"}
+            Page not found
           </h1>
           <p className="mx-auto max-w-md text-base text-muted-foreground">
-            {isOffline
-              ? "It seems you've lost your connection. Please check your network and try again."
-              : "The page you're looking for doesn't exist or has been moved to a new location."}
+            The page you're looking for doesn't exist or has been moved to a new location.
           </p>
         </div>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -43,18 +36,12 @@ export function NotFoundContent({ variant }: NotFoundContentProps) {
             <ArrowLeft className="mr-2 size-4 transition-transform group-hover:-translate-x-0.5" />
             Go back
           </Button>
-          {isOffline ? (
-            <Button className="w-full sm:w-auto" onClick={() => window.location.reload()}>
-              Retry connection
-            </Button>
-          ) : (
-            <Button className="w-full sm:w-auto" asChild>
-              <Link href="/">
-                <Home className="mr-2 size-4" />
-                Take me home
-              </Link>
-            </Button>
-          )}
+          <Button className="w-full sm:w-auto" asChild>
+            <Link href="/">
+              <Home className="mr-2 size-4" />
+              Take me home
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

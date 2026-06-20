@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["better-sqlite3", "mongodb"],
   experimental: {
     serverActions: {
       bodySizeLimit: "50mb",
@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
       ],
     };
   },
+  turbopack: {},
 };
 
 export default nextConfig;

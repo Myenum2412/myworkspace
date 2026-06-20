@@ -20,6 +20,7 @@ export async function createTask(formData: FormData) {
   try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
 
   const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
 
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
@@ -36,8 +37,8 @@ export async function createTask(formData: FormData) {
     id: taskId,
     orgId,
     teamId: teamId || null,
-    assigneeId: assigneeId || session!.user.id,
-    creatorId: session!.user.id,
+    assigneeId: assigneeId || session.user.id,
+    creatorId: session.user.id,
     title,
     description: description || null,
     priority: priority as "low" | "medium" | "high" | "urgent",
@@ -47,7 +48,7 @@ export async function createTask(formData: FormData) {
   await db.collection(collections.activityLogs).insertOne({
     id: uuid(),
     orgId,
-    userId: session!.user.id,
+    userId: session.user.id,
     action: "task.created",
     entityType: "task",
     entityId: taskId,
@@ -66,6 +67,7 @@ export async function updateTask(formData: FormData) {
   try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
 
   const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
 
   const taskId = formData.get("id") as string;
   const title = formData.get("title") as string;
@@ -91,7 +93,7 @@ export async function updateTask(formData: FormData) {
   await db.collection(collections.activityLogs).insertOne({
     id: uuid(),
     orgId,
-    userId: session!.user.id,
+    userId: session.user.id,
     action: "task.updated",
     entityType: "task",
     entityId: taskId,

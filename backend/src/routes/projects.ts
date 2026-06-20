@@ -9,7 +9,7 @@ const router = Router();
 
 router.use(authenticate);
 
-const getCollection = () => mongoose.connection.db.collection("projects");
+const getCollection = () => mongoose.connection.db!.collection("projects");
 
 async function getUserOrgId(userId: string): Promise<string> {
   const member = await OrgMember.findOne({ userId }).lean();
@@ -24,7 +24,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {
-  const { orgId, name, client, color, access, status } = req.body;
+  const { orgId, name, client, color, access, status, description, deadline } = req.body;
   if (!name) { res.status(400).json({ error: "Name is required" }); return; }
 
   const doc = {
@@ -33,6 +33,8 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     name,
     client: client || "",
     color: color || "#3b82f6",
+    description: description || "",
+    deadline: deadline || null,
     tracked: 0,
     progress: 0,
     access: access || "Public",
@@ -51,13 +53,15 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (!existing) { res.status(404).json({ error: "Project not found" }); return; }
   if (existing.orgId !== userOrgId) throw new AppError(403, "Not authorized to modify this project");
 
-  const { name, client, color, access, status, tracked, progress } = req.body;
+  const { name, client, color, access, status, description, deadline, tracked, progress } = req.body;
   const update: Record<string, any> = { updatedAt: new Date() };
   if (name !== undefined) update.name = name;
   if (client !== undefined) update.client = client;
   if (color !== undefined) update.color = color;
   if (access !== undefined) update.access = access;
   if (status !== undefined) update.status = status;
+  if (description !== undefined) update.description = description;
+  if (deadline !== undefined) update.deadline = deadline;
   if (tracked !== undefined) update.tracked = tracked;
   if (progress !== undefined) update.progress = progress;
 

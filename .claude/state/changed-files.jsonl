@@ -1,0 +1,14 @@
+{"file":"frontend/hooks/use-mobile.ts","action":"Edit","timestamp":"2026-06-19T12:27:30Z","important":false}
+{"file":"frontend/components/ui/sidebar.tsx","action":"Edit","timestamp":"2026-06-19T12:28:11Z","important":false}
+{"file":"frontend/app/addemployees/page.tsx","action":"Edit","timestamp":"2026-06-19T16:53:18Z","important":false}
+{"file":"frontend/app/api/employees/route.ts","action":"Edit","timestamp":"2026-06-19T16:53:27Z","important":false}
+{"file":"backend/src/routes/projects.ts","action":"Edit","timestamp":"2026-06-19T17:01:51Z","important":false}
+{"file":"frontend/app/projects/columns.tsx","action":"Edit","timestamp":"2026-06-19T17:02:24Z","important":false}
+{"file":"frontend/app/projects/page.tsx","action":"Edit","timestamp":"2026-06-19T17:02:37Z","important":false}
+{"file":"frontend/app/addprojects/page.tsx","action":"Write","timestamp":"2026-06-19T17:05:06Z","important":false}
+{"file":"frontend/app/layout.tsx","action":"Edit","timestamp":"2026-06-19T17:11:50Z","important":false}
+{"file":"frontend/components/not-found-content.tsx","action":"Write","timestamp":"2026-06-19T17:12:15Z","important":false}
+{"file":"frontend/components/providers.tsx","action":"Edit","timestamp":"2026-06-19T17:17:24Z","important":false}
+{"file":"backend/src/lib/db/models/FileAttachment.ts","action":"Edit","timestamp":"2026-06-19T18:21:14Z","important":false}
+{"file":"backend/src/routes/files.ts","action":"Edit","timestamp":"2026-06-19T18:21:58Z","important":false}
+{"file":"frontend/app/recycle-bin/page.tsx","action":"Write","timestamp":"2026-06-19T18:25:08Z","important":false}

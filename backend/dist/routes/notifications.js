@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { Notification } from "../lib/db/models/Notification.js";
 import { authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 const router = Router();
 router.use(authenticate);
 router.get("/", async (req, res) => {
-    const userId = req.query.userId || req.user.userId;
+    const userId = req.user.userId;
     const notifications = await Notification.find({ userId })
         .sort({ createdAt: -1 })
         .limit(50)
@@ -19,12 +20,18 @@ router.get("/unread-count", async (req, res) => {
     res.json({ success: true, data: { count } });
 });
 router.post("/read-all", async (req, res) => {
-    const userId = req.body.userId || req.user.userId;
+    const userId = req.user.userId;
     await Notification.updateMany({ userId }, { read: true });
     res.json({ success: true });
 });
 router.post("/:id/read", async (req, res) => {
-    await Notification.findByIdAndUpdate(req.params.id, { read: true });
+    const notification = await Notification.findById(req.params.id);
+    if (!notification)
+        throw new AppError(404, "Notification not found");
+    if (notification.userId.toString() !== req.user.userId)
+        throw new AppError(403, "Not authorized");
+    notification.read = true;
+    await notification.save();
     res.json({ success: true });
 });
 export default router;

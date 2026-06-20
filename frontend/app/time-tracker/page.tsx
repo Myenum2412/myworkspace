@@ -7,244 +7,211 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { TrendingUp, FilterIcon, XIcon } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
-
-const allData: Record<string, { day: string; hours: number }[]> = {
-  "January-2026": [
-    { day: "Week 1", hours: 28 },
-    { day: "Week 2", hours: 32 },
-    { day: "Week 3", hours: 25 },
-    { day: "Week 4", hours: 30 },
-  ],
-  "February-2026": [
-    { day: "Week 1", hours: 26 },
-    { day: "Week 2", hours: 30 },
-    { day: "Week 3", hours: 28 },
-    { day: "Week 4", hours: 22 },
-  ],
-  "March-2026": [
-    { day: "Week 1", hours: 30 },
-    { day: "Week 2", hours: 28 },
-    { day: "Week 3", hours: 35 },
-    { day: "Week 4", hours: 27 },
-  ],
-  "April-2026": [
-    { day: "Week 1", hours: 24 },
-    { day: "Week 2", hours: 29 },
-    { day: "Week 3", hours: 31 },
-    { day: "Week 4", hours: 26 },
-  ],
-  "May-2026": [
-    { day: "Week 1", hours: 30 },
-    { day: "Week 2", hours: 33 },
-    { day: "Week 3", hours: 28 },
-    { day: "Week 4", hours: 31 },
-  ],
-  "June-2026": [
-    { day: "Monday", hours: 6.5 },
-    { day: "Tuesday", hours: 7.2 },
-    { day: "Wednesday", hours: 5.8 },
-    { day: "Thursday", hours: 8 },
-    { day: "Friday", hours: 4.5 },
-    { day: "Saturday", hours: 2 },
-    { day: "Sunday", hours: 0 },
-  ],
-};
-
-const defaultKey = "June-2026";
-
-const chartConfig = {
-  hours: {
-    label: "Hours",
-    color: "var(--chart-1)",
-  },
-} satisfies ChartConfig;
-
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const years = ["2024", "2025", "2026", "2027"];
+import { PlusCircle, Tag, Calendar, Clock, List, Loader2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
 
 export default function TimeTrackerPage() {
-  const [user, setUser] = useState({ name: "", email: "", avatar: "" });
-  const [selectedMonth, setSelectedMonth] = useState("June");
-  const [selectedYear, setSelectedYear] = useState("2026");
-  const [showFilter, setShowFilter] = useState(false);
-  const [tempMonth, setTempMonth] = useState("June");
-  const [tempYear, setTempYear] = useState("2026");
+  const [user, setUser] = useState({ name: "Demo User", email: "demo@example.com", avatar: "" });
+  const [userId, setUserId] = useState("u1");
+  const [orgId, setOrgId] = useState("org1");
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [description, setDescription] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
-      .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
+      .then((u) => {
+        setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" });
+        setUserId(u.id || "");
+      })
       .catch(() => {});
   }, []);
 
-  const dataKey = `${selectedMonth}-${selectedYear}`;
-  const chartData = allData[dataKey] || allData[defaultKey];
+  useEffect(() => {
+    if (!userId) return;
+    fetch("/api/user/profile", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const profile = d.data || d;
+        const id = profile?.org?.id || profile?.org?._id?.toString() || "";
+        setOrgId(id);
+      })
+      .catch(() => {});
+  }, [userId]);
 
-  const totalHours = chartData.reduce((sum, d) => sum + d.hours, 0);
-  const activeDays = chartData.filter((d) => d.hours > 0).length;
-  const avgHours = activeDays > 0 ? (totalHours / activeDays).toFixed(1) : "0";
+  const handleAdd = async () => {
+    if (!description.trim() || !orgId || !userId) return;
 
-  function applyFilter() {
-    setSelectedMonth(tempMonth);
-    setSelectedYear(tempYear);
-    setShowFilter(false);
-  }
+    const startParts = startTime.split(":").map(Number);
+    const endParts = endTime.split(":").map(Number);
+    const duration = startParts.length === 2 && endParts.length === 2
+      ? Math.max(0, (endParts[0] * 60 + endParts[1]) - (startParts[0] * 60 + startParts[1]))
+      : 0;
 
-  function resetFilter() {
-    setTempMonth("June");
-    setTempYear("2026");
-    setSelectedMonth("June");
-    setSelectedYear("2026");
-    setShowFilter(false);
-  }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/time-entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          orgId,
+          userId,
+          date: date?.toISOString().slice(0, 10),
+          startTime: startTime || undefined,
+          endTime: endTime || undefined,
+          duration,
+          description,
+        }),
+      });
+      if (res.ok) {
+        setDescription("");
+        setStartTime("");
+        setEndTime("");
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <SidebarProvider>
       <AppSidebar user={user} />
       <SidebarInset>
         <Header />
-        <main className="flex flex-1 flex-col gap-6 p-6">
-          <h1 className="text-2xl font-bold tracking-tight">Time Tracker</h1>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Hours Tracked</CardTitle>
-              <CardDescription>{selectedMonth} {selectedYear}</CardDescription>
-              <CardAction>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 gap-1.5 text-xs"
-                  onClick={() => {
-                    setTempMonth(selectedMonth);
-                    setTempYear(selectedYear);
-                    setShowFilter(true);
-                  }}
-                >
-                  <FilterIcon className="size-3.5" />
-                  Filter
-                </Button>
-              </CardAction>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[220px]">
-                <BarChart accessibilityLayer data={chartData}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="day"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                    interval={0}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    unit="h"
-                    ticks={[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
-                  />
-                  <Bar dataKey="hours" fill="var(--color-hours)" radius={8} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-sm">
-              <div className="flex gap-2 leading-none font-medium">
-                {totalHours}h total tracked <TrendingUp className="size-4" />
+        
+        <main className="flex flex-1 flex-col bg-[#f3f4f6] min-h-screen">
+          <div className="flex items-center bg-white border-b border-gray-200 px-4 py-[10px] shadow-sm w-full relative z-10 h-16">
+            <div className="flex-1 h-full flex items-center">
+              <input
+                type="text"
+                placeholder="What have you worked on?"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full border-none focus:ring-0 shadow-none text-[14px] placeholder:text-gray-400 outline-none bg-transparent h-full"
+              />
+            </div>
+            
+            <div className="flex items-center gap-4 text-gray-500 h-full">
+              <div className="h-6 w-px bg-gray-200"></div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-[6px] text-[#03a9f4] hover:text-blue-600 font-medium text-[14px] transition-colors outline-none">
+                    <PlusCircle className="size-[15px]" />
+                    Project
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[220px]">
+                  <DropdownMenuLabel className="text-xs text-gray-500 font-medium uppercase tracking-wider">Recent Projects</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer">
+                    <div className="w-2 h-2 rounded-full bg-red-500 mr-2 shadow-sm"></div>
+                    Website Redesign
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-sm"></div>
+                    Mobile App
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <div className="w-2 h-2 rounded-full bg-blue-500 mr-2 shadow-sm"></div>
+                    Marketing Campaign
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer text-[#03a9f4] font-medium hover:text-[#03a9f4] focus:text-[#03a9f4] focus:bg-blue-50">
+                    <PlusCircle className="size-4 mr-2" />
+                    Create new project
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <div className="h-6 w-px bg-gray-200"></div>
+              
+              <button className="hover:text-gray-800 transition-colors">
+                <Tag className="size-[18px]" />
+              </button>
+              
+              <div className="h-6 w-px bg-gray-200"></div>
+              
+              <div className="flex items-center text-gray-800 font-medium text-[13px] tracking-wide">
+                <input
+                  type="text"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  placeholder="00:00"
+                  className="w-[42px] text-center border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-text hover:text-gray-900 focus:text-gray-900"
+                />
+                <span className="mx-1 text-gray-400">-</span>
+                <input
+                  type="text"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  placeholder="00:00"
+                  className="w-[42px] text-center border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-text hover:text-gray-900 focus:text-gray-900"
+                />
               </div>
-              <div className="leading-none text-muted-foreground">
-                {activeDays} active days &middot; {avgHours}h daily avg
+
+              <div className="h-6 w-px bg-gray-200"></div>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-[6px] hover:text-gray-800 transition-colors text-[13px] font-medium text-gray-600 outline-none">
+                    <Calendar className="size-[16px]" />
+                    {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString() : "Today"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="center">
+                  <CalendarUI
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    autoFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <div className="h-6 w-px bg-gray-200"></div>
+              
+              <div className="font-bold text-gray-800 text-[19px] w-24 text-center tracking-tight font-mono">
+                00:00:00
               </div>
-            </CardFooter>
-          </Card>
-        </main>
-
-        {showFilter && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowFilter(false)}>
-            <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-semibold">Filter hours</h2>
-                <button
-                  onClick={() => setShowFilter(false)}
-                  className="rounded-md p-1 hover:bg-muted transition-colors"
-                >
-                  <XIcon className="size-3.5" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Month</label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {months.map((m) => (
-                      <button
-                        key={m}
-                        onClick={() => setTempMonth(m)}
-                        className={`rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
-                          tempMonth === m
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted hover:bg-muted/80 text-muted-foreground"
-                        }`}
-                      >
-                        {m.slice(0, 3)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Year</label>
-                  <div className="flex gap-2">
-                    {years.map((y) => (
-                      <button
-                        key={y}
-                        onClick={() => setTempYear(y)}
-                        className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                          tempYear === y
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted hover:bg-muted/80 text-muted-foreground"
-                        }`}
-                      >
-                        {y}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={resetFilter}>
-                    Reset
-                  </Button>
-                  <Button size="sm" className="flex-1 h-8 text-xs" onClick={applyFilter}>
-                    Apply
-                  </Button>
-                </div>
+              
+              <Button
+                className="bg-[#03a9f4] hover:bg-[#0288d1] text-white rounded-[3px] h-[34px] px-[22px] font-semibold shadow-none tracking-wide text-[13px] disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleAdd}
+                disabled={saving || !description.trim()}
+              >
+                {saving ? <Loader2 className="size-4 animate-spin" /> : null}
+                {saving ? "SAVING" : "ADD"}
+              </Button>
+              
+              <div className="h-6 w-px bg-gray-200"></div>
+              
+              <div className="flex flex-col items-center justify-center gap-[2px] opacity-60 hover:opacity-100 cursor-pointer transition-opacity px-1">
+                <Clock className="size-[14px]" />
+                <List className="size-[14px]" />
               </div>
             </div>
           </div>
-        )}
+          
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

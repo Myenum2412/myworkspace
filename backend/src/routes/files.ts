@@ -20,7 +20,7 @@ router.get("/shared", async (req: AuthRequest, res: Response) => {
   const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).lean();
 
   const fileIds = [...new Set(shares.map(s => s.fileId))];
-  const files = await FileAttachment.find({ id: { $in: fileIds } }).lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
   const fileMap = new Map(files.map(f => [f.id, f]));
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
@@ -43,9 +43,30 @@ router.get("/shared", async (req: AuthRequest, res: Response) => {
 router.get("/", async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || "";
   if (!orgId) { res.json([]); return; }
-  const files = await FileAttachment.find({ orgId })
+  const files = await FileAttachment.find({ orgId, deletedAt: null })
     .select("id originalName mimeType size createdAt uploaderId")
     .sort({ createdAt: -1 })
+    .lean();
+
+  const userIds = [...new Set(files.map(f => f.uploaderId))];
+  const { User } = await import("../lib/db/models/User.js");
+  const users = await User.find({ _id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+
+  const result = files.map(f => ({
+    ...f,
+    uploaderName: userMap.get(f.uploaderId) || "Unknown",
+  }));
+
+  res.json(result);
+});
+
+router.get("/recycle-bin", async (req: AuthRequest, res: Response) => {
+  const orgId = (req.query.orgId as string) || "";
+  if (!orgId) { res.json([]); return; }
+  const files = await FileAttachment.find({ orgId, deletedAt: { $ne: null } })
+    .select("id originalName mimeType size createdAt uploaderId deletedAt")
+    .sort({ deletedAt: -1 })
     .lean();
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
@@ -96,6 +117,7 @@ router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   const file = await FileAttachment.findOne({ id: req.params.id }).lean();
   if (!file) throw new AppError(404, "File not found");
+  if (file.deletedAt) throw new AppError(410, "File has been deleted");
 
   const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: file.orgId }).lean();
   if (!membership) throw new AppError(403, "Not authorized to access this file");
@@ -110,6 +132,32 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   const file = await FileAttachment.findOne({ id: req.params.id }).lean();
   if (!file) throw new AppError(404, "File not found");
   if (file.uploaderId !== req.user!.userId) throw new AppError(403, "Not authorized to delete this file");
+  if (file.deletedAt) throw new AppError(400, "File is already in recycle bin");
+
+  await FileAttachment.updateOne({ id: req.params.id }, { deletedAt: new Date() });
+
+  res.json({ success: true });
+});
+
+router.post("/:id/restore", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id }).lean();
+  if (!file) throw new AppError(404, "File not found");
+  if (!file.deletedAt) throw new AppError(400, "File is not in recycle bin");
+
+  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: file.orgId }).lean();
+  if (!membership) throw new AppError(403, "Not authorized");
+
+  await FileAttachment.updateOne({ id: req.params.id }, { deletedAt: null });
+
+  res.json({ success: true });
+});
+
+router.delete("/:id/permanent", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id }).lean();
+  if (!file) throw new AppError(404, "File not found");
+
+  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: file.orgId }).lean();
+  if (!membership) throw new AppError(403, "Not authorized");
 
   deleteStorageFile(file.storagePath);
   await FileAttachment.deleteOne({ id: req.params.id });

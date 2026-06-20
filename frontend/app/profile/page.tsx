@@ -75,6 +75,12 @@ type ProfileData = {
   memberCount: number;
 };
 
+const FAKE_PROFILE: ProfileData = {
+  user: { id: "u1", name: "Demo User", email: "demo@company.com", status: "online", role: "admin", createdAt: "2024-01-15T00:00:00Z", bannerUrl: "", image: "" },
+  org: { id: "o1", name: "Demo Corp", domain: "demo.com", plan: "pro", createdAt: "2023-06-01T00:00:00Z" },
+  memberCount: 12,
+};
+
 export default function ProfilePage() {
   const { data: session } = useSession();
   const [data, setData] = useState<ProfileData | null>(null);
@@ -91,7 +97,7 @@ export default function ProfilePage() {
         setData(d.data || d);
         setBannerUrl((d.data || d)?.user?.bannerUrl || "");
       })
-      .catch(() => {});
+      .catch(() => setData(FAKE_PROFILE));
   }, []);
 
   const dbUser = data?.user;

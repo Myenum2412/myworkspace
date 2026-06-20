@@ -9,6 +9,7 @@ export interface IFileAttachment extends Document {
   mimeType: string;
   size: number;
   storagePath: string;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
     mimeType: { type: String, required: true },
     size: { type: Number, required: true },
     storagePath: { type: String, required: true },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

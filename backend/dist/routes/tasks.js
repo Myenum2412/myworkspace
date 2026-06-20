@@ -1,17 +1,50 @@
 import { Router } from "express";
 import { Task } from "../lib/db/models/Task.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { User } from "../lib/db/models/User.js";
 import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 const router = Router();
 router.use(authenticate);
+async function getUserOrgId(userId) {
+    const member = await OrgMember.findOne({ userId }).lean();
+    if (!member)
+        throw new AppError(403, "User is not a member of any organization");
+    return member.orgId.toString();
+}
 router.get("/", async (req, res) => {
-    const orgId = req.query.orgId || "";
-    const filter = {};
-    if (orgId)
-        filter.orgId = orgId;
-    const tasks = await Task.find(filter).sort({ createdAt: -1 }).lean();
-    res.json({ success: true, data: tasks });
+    const orgId = req.query.orgId || await getUserOrgId(req.user.userId);
+    const tasks = await Task.find({ orgId }).sort({ createdAt: -1 }).lean();
+    // Collect all user IDs for assignee + creator
+    const userIds = new Set();
+    tasks.forEach((t) => {
+        if (t.assigneeId)
+            userIds.add(t.assigneeId.toString());
+        if (t.creatorId)
+            userIds.add(t.creatorId.toString());
+    });
+    const users = await User.find({ _id: { $in: [...userIds] } }).select("name email image").lean();
+    const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+    const result = tasks.map((t) => {
+        const assignee = t.assigneeId ? userMap.get(t.assigneeId.toString()) : null;
+        const creator = t.creatorId ? userMap.get(t.creatorId.toString()) : null;
+        return {
+            _id: t._id.toString(),
+            title: t.title,
+            description: t.description || "",
+            status: t.status,
+            priority: t.priority,
+            dueDate: t.dueDate || null,
+            assigneeId: t.assigneeId ? t.assigneeId.toString() : "",
+            assigneeName: assignee?.name || "",
+            assigneeAvatar: assignee?.image || "",
+            creatorId: t.creatorId ? t.creatorId.toString() : "",
+            creatorName: creator?.name || "",
+            createdAt: t.createdAt,
+        };
+    });
+    res.json({ success: true, data: result });
 });
 router.post("/", async (req, res) => {
     const { orgId, title, description, priority, assigneeId, teamId, dueDate } = req.body;
@@ -42,6 +75,12 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
     const id = req.params.id;
     const { title, status, priority, assigneeId, description, dueDate } = req.body;
+    const userOrgId = await getUserOrgId(req.user.userId);
+    const existing = await Task.findById(id).lean();
+    if (!existing)
+        throw new AppError(404, "Task not found");
+    if (existing.orgId.toString() !== userOrgId)
+        throw new AppError(403, "Not authorized to modify this task");
     const updates = {};
     if (title !== undefined)
         updates.title = title;
@@ -57,7 +96,7 @@ router.put("/:id", async (req, res) => {
         updates.dueDate = dueDate ? new Date(dueDate) : null;
     await Task.findByIdAndUpdate(id, updates);
     await ActivityLog.create({
-        orgId: "demo-org-id",
+        orgId: existing.orgId,
         userId: req.user.userId,
         action: "task.updated",
         entityType: "task",
@@ -67,6 +106,12 @@ router.put("/:id", async (req, res) => {
     res.json({ success: true });
 });
 router.delete("/:id", async (req, res) => {
+    const userOrgId = await getUserOrgId(req.user.userId);
+    const existing = await Task.findById(req.params.id).lean();
+    if (!existing)
+        throw new AppError(404, "Task not found");
+    if (existing.orgId.toString() !== userOrgId)
+        throw new AppError(403, "Not authorized to delete this task");
     await Task.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
@@ -74,6 +119,12 @@ router.patch("/:id/status", async (req, res) => {
     const { status } = req.body;
     if (!status)
         throw new AppError(400, "Status is required");
+    const userOrgId = await getUserOrgId(req.user.userId);
+    const existing = await Task.findById(req.params.id).lean();
+    if (!existing)
+        throw new AppError(404, "Task not found");
+    if (existing.orgId.toString() !== userOrgId)
+        throw new AppError(403, "Not authorized to modify this task");
     await Task.findByIdAndUpdate(req.params.id, { status });
     res.json({ success: true });
 });

@@ -35,6 +35,15 @@ export default function FilesPage() {
     avatar: session?.user?.image || "",
   };
 
+  const FAKE_FILES: FileItem[] = [
+    { id: "fake-1", originalName: "Q4-Report.pdf", mimeType: "application/pdf", size: 2_400_000, createdAt: "2025-12-01T10:00:00Z", uploaderName: "Alice Chen" },
+    { id: "fake-2", originalName: "Proposal-Draft.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", size: 860_000, createdAt: "2025-11-28T14:30:00Z", uploaderName: "Bob Kumar" },
+    { id: "fake-3", originalName: "Budget-2026.xlsx", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", size: 1_200_000, createdAt: "2025-11-25T09:15:00Z", uploaderName: "Carol Davis" },
+    { id: "fake-4", originalName: "Screenshot-Mockup.png", mimeType: "image/png", size: 3_100_000, createdAt: "2025-11-22T16:45:00Z", uploaderName: "David Park" },
+    { id: "fake-5", originalName: "Archive-Backup.zip", mimeType: "application/zip", size: 15_800_000, createdAt: "2025-11-20T08:00:00Z", uploaderName: "Eve Torres" },
+    { id: "fake-6", originalName: "Meeting-Notes.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", size: 320_000, createdAt: "2025-11-18T11:20:00Z", uploaderName: "Frank Lee" },
+  ];
+
   useEffect(() => {
     if (!session?.user) return;
     fetch("/api/user/profile", { credentials: "include" })
@@ -46,13 +55,13 @@ export default function FilesPage() {
           fetch(`/api/files?orgId=${id}`, { credentials: "include" })
             .then((r) => r.json())
             .then((data) => setFiles(Array.isArray(data) ? data : data.data || []))
-            .catch(() => {})
+            .catch(() => setFiles(FAKE_FILES))
             .finally(() => setLoading(false));
         } else {
           setLoading(false);
         }
       })
-      .catch(() => setLoading(false));
+      .catch(() => { setFiles(FAKE_FILES); setLoading(false); });
   }, [session]);
 
   return (

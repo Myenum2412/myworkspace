@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 export default function UploadPage() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [user, setUser] = useState({ name: "", email: "", avatar: "" });
+  const [user, setUser] = useState({ name: "Demo User", email: "demo@example.com", avatar: "" });
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);

@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -17,7 +16,6 @@ import {
   ClockIcon,
   FolderIcon,
   Settings2Icon,
-  StoreIcon,
   CheckCheckIcon,
 } from "lucide-react";
 
@@ -38,6 +36,7 @@ export const defaultNavData = {
       url: "/overview",
       icon: <ListChecksIcon className="size-6" />,
       items: [
+        { title: "Team Tasks", url: "/teamtasks" },
         { title: "All Tasks", url: "/alltasks" },
         { title: "My Tasks", url: "/mytasks" },
         { title: "Saved Tasks", url: "/savedtasks" },
@@ -50,9 +49,8 @@ export const defaultNavData = {
       icon: <UsersIcon className="size-6" />,
       items: [
         { title: "All Employees", url: "/employees" },
-        { title: "Add Employee", url: "/addemployees" },
+        { title: "Teams", url: "/teams" },
         { title: "Terminated", url: "/terminated" },
-        { title: "Departments", url: "/departments" },
       ],
     },
     {
@@ -105,14 +103,10 @@ export const defaultNavData = {
       ],
     },
   ],
-  appStore: [
-    { name: "Browse Apps", url: "/appstore", icon: <StoreIcon className="size-6" /> },
-  ],
 };
 
 export interface AppSidebarData {
   navMain: typeof defaultNavData.navMain;
-  appStore: typeof defaultNavData.appStore;
 }
 
 interface NavUserData {
@@ -145,7 +139,6 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain.slice(0, -1)} label="Platform" />
-        <NavProjects projects={data.appStore} />
         <NavMain items={data.navMain.slice(-1)} label="Settings" className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

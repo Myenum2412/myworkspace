@@ -24,7 +24,8 @@ export async function deleteFileAction(fileId: string) {
   const file = await db.collection(collections.fileAttachments).findOne({ id: fileId });
 
   if (!file) return { error: "File not found" };
-  if (file.uploaderId !== session!.user.id) return { error: "Not your file" };
+  if (!session?.user?.id) return { error: "Unauthorized" };
+  if (file.uploaderId !== session.user.id) return { error: "Not your file" };
 
   deleteFile(file.storagePath);
   await db.collection(collections.fileAttachments).deleteOne({ id: fileId });
@@ -32,7 +33,7 @@ export async function deleteFileAction(fileId: string) {
   await db.collection(collections.activityLogs).insertOne({
     id: uuid(),
     orgId,
-    userId: session!.user.id,
+    userId: session.user.id,
     action: "file.deleted",
     entityType: "file",
     entityId: fileId,
@@ -50,6 +51,7 @@ export async function shareFileAction(fileId: string, sharedWithUserId: string |
   try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
 
   const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
 
   const existing = await db.collection(collections.fileShares).findOne({
     fileId,
@@ -60,7 +62,7 @@ export async function shareFileAction(fileId: string, sharedWithUserId: string |
     await db.collection(collections.fileShares).insertOne({
       id: uuid(),
       fileId,
-      sharedByUserId: session!.user.id,
+      sharedByUserId: session.user.id,
       sharedWithUserId: sharedWithUserId || null,
       orgId,
     });
@@ -68,7 +70,7 @@ export async function shareFileAction(fileId: string, sharedWithUserId: string |
     await db.collection(collections.activityLogs).insertOne({
       id: uuid(),
       orgId,
-      userId: session!.user.id,
+    userId: session.user.id,
       action: "file.shared",
       entityType: "file",
       entityId: fileId,

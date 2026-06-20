@@ -14,6 +14,8 @@ import filesRoutes from "./routes/files.js";
 import userRoutes from "./routes/user.js";
 import clientsRoutes from "./routes/clients.js";
 import projectsRoutes from "./routes/projects.js";
+import teamsRoutes from "./routes/teams.js";
+import timeEntriesRoutes from "./routes/time-entries.js";
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use("/api/files", filesRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/clients", clientsRoutes);
 app.use("/api/projects", projectsRoutes);
+app.use("/api/teams", teamsRoutes);
+app.use("/api/time-entries", timeEntriesRoutes);
 
 // Error handler
 app.use(errorHandler);

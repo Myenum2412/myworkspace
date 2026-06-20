@@ -1,0 +1,542 @@
+"use client"
+
+import * as React from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Field,
+  FieldLabel,
+  FieldSet,
+  FieldLegend,
+} from "@/components/ui/field"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Camera } from "lucide-react"
+
+export interface FirstSlideEmployeeForm {
+  displayId: string
+  firstName: string
+  lastName: string
+  nickname: string
+  email: string
+  password: string
+  department: string
+  location: string
+  designation: string
+  roleName: string
+  employmentType: string
+  status: string
+  branchName: string
+  shift: string
+  sourceOfHire: string
+  joiningDate: string
+  currentExperience: string
+  totalExperience: string
+  avatar?: string
+}
+
+export interface Row {
+  id: string
+  [key: string]: any
+}
+
+interface ProfileImageUploadProps {
+  avatar?: string
+  onAvatarChange: (url: string) => void
+}
+
+export function ProfileImageUpload({ avatar, onAvatarChange }: ProfileImageUploadProps) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        onAvatarChange(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative">
+        <Avatar className="h-24 w-24">
+          <AvatarImage src={avatar} alt="Profile" />
+          <AvatarFallback>Upload</AvatarFallback>
+        </Avatar>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="absolute bottom-0 right-0 rounded-full bg-primary p-2 text-primary-foreground hover:bg-primary/90"
+        >
+          <Camera className="h-4 w-4" />
+        </button>
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+      <p className="text-sm text-muted-foreground">Upload Photo</p>
+    </div>
+  )
+}
+
+interface BasicInfoSectionProps {
+  formData: FirstSlideEmployeeForm
+  onChange: (field: keyof FirstSlideEmployeeForm, value: string) => void
+}
+
+export function BasicInfoSection({ formData, onChange }: BasicInfoSectionProps) {
+  return (
+    <FieldSet>
+      <FieldLegend>Basic Information</FieldLegend>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field>
+          <FieldLabel>Display ID</FieldLabel>
+          <Input
+            placeholder="Employee ID"
+            value={formData.displayId}
+            onChange={(e) => onChange("displayId", e.target.value)}
+            readOnly
+          />
+        </Field>
+        <Field>
+          <FieldLabel>First Name *</FieldLabel>
+          <Input
+            placeholder="First name"
+            value={formData.firstName}
+            onChange={(e) => onChange("firstName", e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Last Name *</FieldLabel>
+          <Input
+            placeholder="Last name"
+            value={formData.lastName}
+            onChange={(e) => onChange("lastName", e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Nickname</FieldLabel>
+          <Input
+            placeholder="Nickname"
+            value={formData.nickname}
+            onChange={(e) => onChange("nickname", e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Email *</FieldLabel>
+          <Input
+            type="email"
+            placeholder="Email address"
+            value={formData.email}
+            onChange={(e) => onChange("email", e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Password</FieldLabel>
+          <Input
+            type="password"
+            placeholder="Leave blank for auto-generated"
+            value={formData.password}
+            onChange={(e) => onChange("password", e.target.value)}
+          />
+        </Field>
+      </div>
+    </FieldSet>
+  )
+}
+
+interface WorkInfoSectionProps {
+  formData: FirstSlideEmployeeForm
+  onChange: (field: keyof FirstSlideEmployeeForm, value: string) => void
+}
+
+export function WorkInfoSection({ formData, onChange }: WorkInfoSectionProps) {
+  return (
+    <div className="space-y-6">
+      <FieldSet>
+        <FieldLegend>Work Information</FieldLegend>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field>
+            <FieldLabel>Department</FieldLabel>
+            <Input
+              placeholder="Department"
+              value={formData.department}
+              onChange={(e) => onChange("department", e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel>Location</FieldLabel>
+            <Input
+              placeholder="Location"
+              value={formData.location}
+              onChange={(e) => onChange("location", e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel>Designation</FieldLabel>
+            <Input
+              placeholder="Job title"
+              value={formData.designation}
+              onChange={(e) => onChange("designation", e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel>Role Name</FieldLabel>
+            <Input
+              placeholder="Role name"
+              value={formData.roleName}
+              onChange={(e) => onChange("roleName", e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel>Employment Type</FieldLabel>
+            <Select value={formData.employmentType} onValueChange={(v) => onChange("employmentType", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Full-time">Full-time</SelectItem>
+                <SelectItem value="Part-time">Part-time</SelectItem>
+                <SelectItem value="Contract">Contract</SelectItem>
+                <SelectItem value="Intern">Intern</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field>
+            <FieldLabel>Status</FieldLabel>
+            <Select value={formData.status} onValueChange={(v) => onChange("status", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
+      </FieldSet>
+
+      <FieldSet>
+        <FieldLegend>Joining Details</FieldLegend>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field>
+            <FieldLabel>Branch Name</FieldLabel>
+            <Input
+              placeholder="Branch"
+              value={formData.branchName}
+              onChange={(e) => onChange("branchName", e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel>Shift</FieldLabel>
+            <Input
+              placeholder="Shift"
+              value={formData.shift}
+              onChange={(e) => onChange("shift", e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel>Source of Hire</FieldLabel>
+            <Input
+              placeholder="Source of hire"
+              value={formData.sourceOfHire}
+              onChange={(e) => onChange("sourceOfHire", e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel>Joining Date</FieldLabel>
+            <Input
+              type="date"
+              value={formData.joiningDate}
+              onChange={(e) => onChange("joiningDate", e.target.value)}
+            />
+          </Field>
+        </div>
+      </FieldSet>
+
+      <FieldSet>
+        <FieldLegend>Experience</FieldLegend>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field>
+            <FieldLabel>Current Experience (Years)</FieldLabel>
+            <Input
+              type="number"
+              placeholder="Years"
+              value={formData.currentExperience}
+              onChange={(e) => onChange("currentExperience", e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel>Total Experience (Years)</FieldLabel>
+            <Input
+              type="number"
+              placeholder="Years"
+              value={formData.totalExperience}
+              onChange={(e) => onChange("totalExperience", e.target.value)}
+            />
+          </Field>
+        </div>
+      </FieldSet>
+    </div>
+  )
+}
+
+export function ContactDetailsSection({
+  phone = "",
+  secondaryPhone = "",
+  address = "",
+  city = "",
+  state = "",
+  postalCode = "",
+  country = "",
+  onPhoneChange,
+  onSecondaryPhoneChange,
+  onAddressChange,
+  onCityChange,
+  onStateChange,
+  onPostalCodeChange,
+  onCountryChange,
+}: {
+  phone?: string
+  secondaryPhone?: string
+  address?: string
+  city?: string
+  state?: string
+  postalCode?: string
+  country?: string
+  onPhoneChange?: (value: string) => void
+  onSecondaryPhoneChange?: (value: string) => void
+  onAddressChange?: (value: string) => void
+  onCityChange?: (value: string) => void
+  onStateChange?: (value: string) => void
+  onPostalCodeChange?: (value: string) => void
+  onCountryChange?: (value: string) => void
+} = {}) {
+  return (
+    <FieldSet>
+      <FieldLegend>Contact Details</FieldLegend>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field>
+          <FieldLabel>Phone Number</FieldLabel>
+          <Input 
+            type="tel" 
+            placeholder="Phone number"
+            value={phone}
+            onChange={(e) => onPhoneChange?.(e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Secondary Phone</FieldLabel>
+          <Input 
+            type="tel" 
+            placeholder="Secondary phone"
+            value={secondaryPhone}
+            onChange={(e) => onSecondaryPhoneChange?.(e.target.value)}
+          />
+        </Field>
+        <Field className="sm:col-span-2">
+          <FieldLabel>Address</FieldLabel>
+          <Input 
+            placeholder="Street address"
+            value={address}
+            onChange={(e) => onAddressChange?.(e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>City</FieldLabel>
+          <Input 
+            placeholder="City"
+            value={city}
+            onChange={(e) => onCityChange?.(e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>State/Province</FieldLabel>
+          <Input 
+            placeholder="State/Province"
+            value={state}
+            onChange={(e) => onStateChange?.(e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Postal Code</FieldLabel>
+          <Input 
+            placeholder="Postal code"
+            value={postalCode}
+            onChange={(e) => onPostalCodeChange?.(e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Country</FieldLabel>
+          <Input 
+            placeholder="Country"
+            value={country}
+            onChange={(e) => onCountryChange?.(e.target.value)}
+          />
+        </Field>
+      </div>
+    </FieldSet>
+  )
+}
+
+export function SocialPresenceSection({
+  linkedin = "",
+  twitter = "",
+  github = "",
+  portfolio = "",
+  onLinkedinChange,
+  onTwitterChange,
+  onGithubChange,
+  onPortfolioChange,
+}: {
+  linkedin?: string
+  twitter?: string
+  github?: string
+  portfolio?: string
+  onLinkedinChange?: (value: string) => void
+  onTwitterChange?: (value: string) => void
+  onGithubChange?: (value: string) => void
+  onPortfolioChange?: (value: string) => void
+} = {}) {
+  return (
+    <FieldSet>
+      <FieldLegend>Social Presence</FieldLegend>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field>
+          <FieldLabel>LinkedIn</FieldLabel>
+          <Input 
+            placeholder="LinkedIn profile URL"
+            value={linkedin}
+            onChange={(e) => onLinkedinChange?.(e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Twitter</FieldLabel>
+          <Input 
+            placeholder="Twitter handle or URL"
+            value={twitter}
+            onChange={(e) => onTwitterChange?.(e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>GitHub</FieldLabel>
+          <Input 
+            placeholder="GitHub profile URL"
+            value={github}
+            onChange={(e) => onGithubChange?.(e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Portfolio</FieldLabel>
+          <Input 
+            placeholder="Portfolio website URL"
+            value={portfolio}
+            onChange={(e) => onPortfolioChange?.(e.target.value)}
+          />
+        </Field>
+      </div>
+    </FieldSet>
+  )
+}
+
+interface DynamicRowSectionProps {
+  title: string
+  rows: Row[]
+  onAdd: () => void
+  onRemove: (id: string) => void
+  renderRow: (row: Row) => React.ReactNode
+}
+
+export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: DynamicRowSectionProps) {
+  return (
+    <FieldSet>
+      <div className="flex items-center justify-between mb-6">
+        <FieldLegend>{title}</FieldLegend>
+        <Button onClick={onAdd} variant="outline" size="sm">
+          + Add {title}
+        </Button>
+      </div>
+      <div className="space-y-6">
+        {rows.map((row) => (
+          <div key={row.id} className="relative border rounded-lg p-4">
+            {renderRow(row)}
+            {rows.length > 1 && (
+              <Button
+                onClick={() => onRemove(row.id)}
+                variant="ghost"
+                size="sm"
+                className="absolute top-2 right-2 text-destructive hover:text-destructive"
+              >
+                Remove
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
+    </FieldSet>
+  )
+}
+
+interface SelectWithAddProps {
+  label: string
+  options: string[]
+}
+
+export function SelectWithAdd({ label, options }: SelectWithAddProps) {
+  const [isOpen, setIsOpen] = React.useState(false)
+  const [customValue, setCustomValue] = React.useState("")
+
+  return (
+    <Field>
+      <FieldLabel>{label}</FieldLabel>
+      <div className="flex gap-2">
+        <Select>
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((opt) => (
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button onClick={() => setIsOpen(true)} variant="outline" size="sm">
+          +
+        </Button>
+      </div>
+      {isOpen && (
+        <div className="mt-2 flex gap-2">
+          <Input
+            placeholder={`Add new ${label.toLowerCase()}`}
+            value={customValue}
+            onChange={(e) => setCustomValue(e.target.value)}
+          />
+          <Button
+            onClick={() => {
+              setCustomValue("")
+              setIsOpen(false)
+            }}
+            size="sm"
+          >
+            Add
+          </Button>
+        </div>
+      )}
+    </Field>
+  )
+}

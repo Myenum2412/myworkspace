@@ -7,6 +7,8 @@ export type Project = {
   name: string;
   client: string;
   color: string;
+  description: string;
+  deadline: string | null;
   tracked: number;
   progress: number;
   access: "Public" | "Private";

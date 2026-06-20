@@ -11,7 +11,11 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Organization" };
 
 const getOrg = cache(async (orgId: string) => {
-  return db.collection(collections.organizations).findOne({ id: orgId });
+  try {
+    return await db.collection(collections.organizations).findOne({ id: orgId });
+  } catch {
+    return null;
+  }
 });
 
 export default async function OrgDetailsPage() {

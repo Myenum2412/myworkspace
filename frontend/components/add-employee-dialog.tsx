@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { PlusIcon, XIcon } from "lucide-react";
+import { XIcon } from "lucide-react";
 import { addEmployeeAction } from "@/actions/employees";
 
-export function AddEmployeeDialog() {
-  const [open, setOpen] = useState(false);
+export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -19,24 +18,17 @@ export function AddEmployeeDialog() {
     if (result?.error) {
       setError(result.error);
     } else {
-      setOpen(false);
+      onOpenChange(false);
     }
   }
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:scale-110 active:scale-95"
-      >
-        <PlusIcon className="size-6" />
-      </button>
-
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="relative w-full max-w-md rounded-xl border bg-background p-6 shadow-2xl">
             <button
-              onClick={() => setOpen(false)}
+              onClick={() => onOpenChange(false)}
               className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
             >
               <XIcon className="size-5" />
@@ -82,7 +74,7 @@ export function AddEmployeeDialog() {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-md border bg-background px-4 py-2 text-sm font-medium hover:bg-muted">Cancel</button>
+                <button type="button" onClick={() => onOpenChange(false)} className="inline-flex h-10 items-center justify-center rounded-md border bg-background px-4 py-2 text-sm font-medium hover:bg-muted">Cancel</button>
                 <button type="submit" disabled={pending} className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
                   {pending ? "Adding..." : "Add Employee"}
                 </button>

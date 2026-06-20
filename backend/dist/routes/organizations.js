@@ -6,7 +6,9 @@ import { AppError } from "../middleware/error.js";
 const router = Router();
 router.use(authenticate);
 router.get("/", async (req, res) => {
-    const orgs = await Organization.find().sort({ createdAt: -1 }).lean();
+    const memberships = await OrgMember.find({ userId: req.user.userId }).lean();
+    const orgIds = memberships.map(m => m.orgId);
+    const orgs = await Organization.find({ _id: { $in: orgIds } }).sort({ createdAt: -1 }).lean();
     res.json({ success: true, data: orgs });
 });
 router.get("/:id", async (req, res) => {
@@ -33,6 +35,9 @@ router.post("/", async (req, res) => {
     res.status(201).json({ success: true, data: { orgId: org._id } });
 });
 router.get("/:id/members", async (req, res) => {
+    const membership = await OrgMember.findOne({ orgId: req.params.id, userId: req.user.userId }).lean();
+    if (!membership)
+        throw new AppError(403, "Not a member of this organization");
     const members = await OrgMember.find({ orgId: req.params.id }).populate("userId", "name email image status").lean();
     res.json({ success: true, data: members });
 });

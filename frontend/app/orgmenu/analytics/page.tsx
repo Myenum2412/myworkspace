@@ -11,12 +11,15 @@ import { TrendingUpIcon, UsersIcon, CheckCircle2Icon, BarChart2Icon } from "luci
 export const metadata = { title: "Analytics" };
 
 const getAnalytics = cache(async (orgId: string) => {
-  const totalTasks = await db.collection(collections.tasks).countDocuments({ orgId });
-  const completedTasks = await db.collection(collections.tasks).countDocuments({ orgId, status: "done" });
-  const activeMembers = await db.collection(collections.orgMembers).countDocuments({ orgId });
-  const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-  return { totalTasks, completedTasks, activeMembers, completionRate };
+  try {
+    const totalTasks = await db.collection(collections.tasks).countDocuments({ orgId });
+    const completedTasks = await db.collection(collections.tasks).countDocuments({ orgId, status: "done" });
+    const activeMembers = await db.collection(collections.orgMembers).countDocuments({ orgId });
+    const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    return { totalTasks, completedTasks, activeMembers, completionRate };
+  } catch {
+    return { totalTasks: 0, completedTasks: 0, activeMembers: 0, completionRate: 0 };
+  }
 });
 
 export default async function AnalyticsPage() {
