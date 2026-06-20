@@ -1,6 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import { Button } from "@/components/ui/button";
 
 export type Project = {
   id: string;
@@ -99,12 +100,14 @@ export const columns: ColumnDef<Project>[] = [
       const project = row.original;
       const meta = table.options.meta as { onView?: (project: Project) => void } | undefined;
       return (
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => meta?.onView?.(project)}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="text-xs"
         >
           View
-        </button>
+        </Button>
       );
     },
   },

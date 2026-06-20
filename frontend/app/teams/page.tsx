@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import {
   UsersIcon,
   PlusIcon,
@@ -39,6 +40,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -57,14 +64,18 @@ const FAKE_TEAMS: Team[] = [
 ];
 
 const FAKE_ORG_MEMBERS: OrgMember[] = [
-  { userId: "u1", name: "Alice Chen", email: "alice@company.com", avatar: "", role: "admin" },
-  { userId: "u2", name: "Marcus Lee", email: "marcus@company.com", avatar: "", role: "member" },
-  { userId: "u3", name: "Sarah Kim", email: "sarah@company.com", avatar: "", role: "member" },
-  { userId: "u4", name: "James Wilson", email: "james@company.com", avatar: "", role: "member" },
-  { userId: "u5", name: "Priya Patel", email: "priya@company.com", avatar: "", role: "member" },
-  { userId: "u6", name: "Tom Rodriguez", email: "tom@company.com", avatar: "", role: "member" },
-  { userId: "u7", name: "Emma Davis", email: "emma@company.com", avatar: "", role: "member" },
-  { userId: "u8", name: "Lisa Wang", email: "lisa@company.com", avatar: "", role: "member" },
+  { userId: "u1", name: "Alice Chen", email: "alice@company.com", avatar: "", role: "admin", designation: "Engineering Manager", department: "Engineering" },
+  { userId: "u2", name: "Marcus Lee", email: "marcus@company.com", avatar: "", role: "member", designation: "Senior Designer", department: "Design" },
+  { userId: "u3", name: "Sarah Kim", email: "sarah@company.com", avatar: "", role: "member", designation: "Marketing Lead", department: "Marketing" },
+  { userId: "u4", name: "James Wilson", email: "james@company.com", avatar: "", role: "member", designation: "Sales Director", department: "Sales" },
+  { userId: "u5", name: "Priya Patel", email: "priya@company.com", avatar: "", role: "member", designation: "QA Lead", department: "QA" },
+  { userId: "u6", name: "Tom Rodriguez", email: "tom@company.com", avatar: "", role: "member", designation: "Full Stack Developer", department: "Engineering" },
+  { userId: "u7", name: "Emma Davis", email: "emma@company.com", avatar: "", role: "member", designation: "UX Researcher", department: "Design" },
+  { userId: "u8", name: "Lisa Wang", email: "lisa@company.com", avatar: "", role: "member", designation: "Content Strategist", department: "Marketing" },
+  { userId: "u9", name: "David Park", email: "david@company.com", avatar: "", role: "member", designation: "Backend Developer", department: "Engineering" },
+  { userId: "u10", name: "Maya Johnson", email: "maya@company.com", avatar: "", role: "member", designation: "Data Analyst", department: "Marketing" },
+  { userId: "u11", name: "Kevin Brown", email: "kevin@company.com", avatar: "", role: "member", designation: "DevOps Engineer", department: "Engineering" },
+  { userId: "u12", name: "Nina Patel", email: "nina@company.com", avatar: "", role: "member", designation: "Product Manager", department: "Product" },
 ];
 
 type OrgMember = {
@@ -73,6 +84,8 @@ type OrgMember = {
   email: string;
   avatar: string;
   role: string;
+  designation?: string;
+  department?: string;
 };
 
 type TeamDetail = Team & {
@@ -102,6 +115,7 @@ export default function TeamsPage() {
   const [teamHeadName, setTeamHeadName] = useState("");
   const [projectManagerIds, setProjectManagerIds] = useState<string[]>([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
+  const [memberSearch, setMemberSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -411,6 +425,17 @@ export default function TeamsPage() {
   const totalMembers = teams.reduce((sum, t) => sum + t.memberCount, 0);
   const avgTeamSize = teams.length > 0 ? (totalMembers / teams.length).toFixed(1) : "0";
 
+  const getInitials = (name: string) =>
+    name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+
+  const filteredMembers = members.filter(
+    (m) =>
+      m.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+      m.email.toLowerCase().includes(memberSearch.toLowerCase()) ||
+      (m.department || "").toLowerCase().includes(memberSearch.toLowerCase()) ||
+      (m.designation || "").toLowerCase().includes(memberSearch.toLowerCase())
+  );
+
   // Filter out members already in the team
   const availableMembers = selectedTeam
     ? members.filter((m) => !selectedTeam.members.some((tm) => tm.userId === m.userId))
@@ -490,8 +515,31 @@ export default function TeamsPage() {
                                 {m.department ? ` · ${m.department}` : ""}
                                 {m.designation ? ` · ${m.designation}` : ""}
                               </p>
-                            </div>
-                          </div>
+                  </div>
+                  {projectManagerIds.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {projectManagerIds.map((id) => {
+                        const m = members.find((x) => x.userId === id);
+                        if (!m) return null;
+                        return (
+                          <span key={id} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium">
+                            <span className="size-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold shrink-0">
+                              {getInitials(m.name)}
+                            </span>
+                            {m.name}
+                            <button
+                              type="button"
+                              onClick={() => setProjectManagerIds((prev) => prev.filter((p) => p !== id))}
+                              className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
+                            >
+                              <XIcon className="size-3" />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
                           <div className="flex items-center gap-1">
                             {m.role !== "lead" && (
                               <Button
@@ -663,128 +711,273 @@ export default function TeamsPage() {
             </>
           )}
 
-          <Dialog open={showForm} onOpenChange={(open) => { if (!submitting && !open) setShowForm(false); }}>
-            <DialogContent className="w-full max-w-2xl max-h-[85vh] h-auto">
-              <DialogHeader>
-                <DialogTitle>{editingTeam ? "Edit Team" : "New Team"}</DialogTitle>
+          <Dialog open={showForm} onOpenChange={(open) => { if (!submitting && !open) { setShowForm(false); setMemberSearch(""); } }}>
+            <DialogContent className="w-full max-w-2xl max-h-[90vh] h-auto p-0 flex flex-col">
+              <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <UsersIcon className="size-5" />
+                  {editingTeam ? "Edit Team" : "New Team"}
+                </DialogTitle>
                 <DialogDescription>
                   {editingTeam ? "Update the team details." : "Create a new team with members and leads."}
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4 overflow-y-auto pr-1">
-                {formError && (
-                  <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    <AlertCircleIcon className="size-4 shrink-0" />
-                    {formError}
-                  </div>
-                )}
+              {formError && (
+                <div className="mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  <AlertCircleIcon className="size-4 shrink-0" />
+                  {formError}
+                </div>
+              )}
 
-                <div className="grid grid-cols-2 gap-4">
+              <div className="flex-1 overflow-y-auto px-6 py-3 space-y-5">
+                {/* Section: Basic Info */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <UsersIcon className="size-3.5" />
+                    Team Information
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="teamName" className="text-sm">Team Name *</Label>
+                      <Input
+                        id="teamName"
+                        placeholder="e.g. Engineering"
+                        value={teamName}
+                        onChange={(e) => setTeamName(e.target.value)}
+                        disabled={submitting}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="teamHead" className="text-sm">Team Lead</Label>
+                      <Select
+                        value={teamHeadId}
+                        onValueChange={(v) => {
+                          const m = members.find((x) => x.userId === v);
+                          setTeamHeadId(v);
+                          setTeamHeadName(m?.name || "");
+                        }}
+                        disabled={submitting}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select team lead" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {members.map((m) => (
+                            <SelectItem key={m.userId} value={m.userId}>
+                              <div className="flex items-center gap-2">
+                                <div className="size-5 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium">
+                                  {getInitials(m.name)}
+                                </div>
+                                <span>{m.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                   <div>
-                    <Label htmlFor="teamName">Team Name *</Label>
-                    <Input
-                      id="teamName"
-                      placeholder="e.g. Engineering"
-                      value={teamName}
-                      onChange={(e) => setTeamName(e.target.value)}
+                    <Label htmlFor="teamDescription" className="text-sm">Description</Label>
+                    <Textarea
+                      id="teamDescription"
+                      placeholder="Brief description of the team"
+                      value={teamDescription}
+                      onChange={(e) => setTeamDescription(e.target.value)}
                       disabled={submitting}
+                      rows={2}
+                      className="mt-1"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="teamHead">Team Head / Lead</Label>
-                    <Select
-                      value={teamHeadId}
-                      onValueChange={(v) => {
-                        const m = members.find((x) => x.userId === v);
-                        setTeamHeadId(v);
-                        setTeamHeadName(m?.name || "");
-                      }}
-                      disabled={submitting}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select team lead" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {members.map((m) => (
-                          <SelectItem key={m.userId} value={m.userId}>{m.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                </div>
+
+                <Separator />
+
+                {/* Section: Project Managers */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <UsersIcon className="size-3.5" />
+                      Project Managers
+                      {projectManagerIds.length > 0 && (
+                        <span className="ml-1 text-[10px] font-normal text-primary bg-primary/10 rounded-full px-1.5 py-0.5">
+                          {projectManagerIds.length}
+                        </span>
+                      )}
+                    </h3>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 text-xs">
+                          {projectManagerIds.length > 0
+                            ? `${projectManagerIds.length} selected`
+                            : "Select project managers"}
+                          <UsersIcon className="ml-1.5 size-3" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-72 p-2" align="end">
+                        <div className="space-y-1 max-h-56 overflow-y-auto">
+                          {members.length === 0 ? (
+                            <p className="text-sm text-muted-foreground py-2 text-center">No employees available</p>
+                          ) : members.map((m) => {
+                            const checked = projectManagerIds.includes(m.userId);
+                            return (
+                              <label
+                                key={m.userId}
+                                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 cursor-pointer hover:bg-muted text-sm"
+                              >
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={() => {
+                                    setProjectManagerIds((prev) =>
+                                      checked ? prev.filter((id) => id !== m.userId) : [...prev, m.userId]
+                                    );
+                                  }}
+                                />
+                                <div className="size-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium shrink-0">
+                                  {getInitials(m.name)}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium truncate">{m.name}</p>
+                                  <p className="text-[10px] text-muted-foreground truncate">{m.designation}</p>
+                                </div>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
+                  {projectManagerIds.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {projectManagerIds.map((id) => {
+                        const m = members.find((x) => x.userId === id);
+                        if (!m) return null;
+                        return (
+                          <span key={id} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium">
+                            <span className="size-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold shrink-0">
+                              {getInitials(m.name)}
+                            </span>
+                            {m.name}
+                            <button
+                              type="button"
+                              onClick={() => setProjectManagerIds((prev) => prev.filter((p) => p !== id))}
+                              className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
+                            >
+                              <XIcon className="size-3" />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <Label htmlFor="teamDescription">Description</Label>
-                  <Textarea
-                    id="teamDescription"
-                    placeholder="Brief description of the team"
-                    value={teamDescription}
-                    onChange={(e) => setTeamDescription(e.target.value)}
-                    disabled={submitting}
-                    rows={2}
-                  />
-                </div>
+                <Separator />
 
-                <div>
-                  <Label>Project Managers</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-1.5 border rounded-md p-3 max-h-36 overflow-y-auto">
-                    {members.length === 0 ? (
-                      <p className="text-sm text-muted-foreground col-span-2">No employees available</p>
-                    ) : members.map((m) => {
-                      const checked = projectManagerIds.includes(m.userId);
-                      return (
-                        <label key={m.userId} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted rounded px-2 py-1">
-                          <input
-                            type="checkbox"
-                            className="size-4 accent-primary"
-                            checked={checked}
-                            onChange={() => {
-                              setProjectManagerIds((prev) =>
-                                checked ? prev.filter((id) => id !== m.userId) : [...prev, m.userId]
+                {/* Section: Team Members */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <UsersIcon className="size-3.5" />
+                      Team Members
+                      {selectedMemberIds.length > 0 && (
+                        <span className="ml-1 text-[10px] font-normal text-primary bg-primary/10 rounded-full px-1.5 py-0.5">
+                          {selectedMemberIds.length}
+                        </span>
+                      )}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Search..."
+                        value={memberSearch}
+                        onChange={(e) => setMemberSearch(e.target.value)}
+                        className="max-w-[150px] h-7 text-xs"
+                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-7 text-xs">
+                            {selectedMemberIds.length > 0
+                              ? `${selectedMemberIds.length} selected`
+                              : "Select members"}
+                            <UsersIcon className="ml-1.5 size-3" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-2" align="end">
+                          <div className="space-y-1 max-h-64 overflow-y-auto">
+                            {filteredMembers.length === 0 ? (
+                              <p className="text-sm text-muted-foreground py-4 text-center">
+                                {memberSearch ? "No matching members" : "No employees available"}
+                              </p>
+                            ) : filteredMembers.map((m) => {
+                              const checked = selectedMemberIds.includes(m.userId);
+                              const isLead = m.userId === teamHeadId;
+                              return (
+                                <label
+                                  key={m.userId}
+                                  className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm ${
+                                    isLead ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted"
+                                  }`}
+                                >
+                                  <Checkbox
+                                    checked={checked}
+                                    disabled={isLead}
+                                    onCheckedChange={() => {
+                                      setSelectedMemberIds((prev) =>
+                                        checked ? prev.filter((id) => id !== m.userId) : [...prev, m.userId]
+                                      );
+                                    }}
+                                  />
+                                  <div className="size-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium shrink-0">
+                                    {getInitials(m.name)}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium truncate flex items-center gap-1">
+                                      {m.name}
+                                      {isLead && <span className="text-[9px] text-amber-600 font-semibold">(Lead)</span>}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground truncate">{m.designation}</p>
+                                  </div>
+                                </label>
                               );
-                            }}
-                          />
-                          {m.name}
-                        </label>
-                      );
-                    })}
+                            })}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   </div>
-                </div>
-
-                <div>
-                  <Label>Team Members</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-1.5 border rounded-md p-3 max-h-36 overflow-y-auto">
-                    {members.length === 0 ? (
-                      <p className="text-sm text-muted-foreground col-span-2">No employees available</p>
-                    ) : members.map((m) => {
-                      const checked = selectedMemberIds.includes(m.userId);
-                      return (
-                        <label key={m.userId} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted rounded px-2 py-1">
-                          <input
-                            type="checkbox"
-                            className="size-4 accent-primary"
-                            checked={checked}
-                            onChange={() => {
-                              setSelectedMemberIds((prev) =>
-                                checked ? prev.filter((id) => id !== m.userId) : [...prev, m.userId]
-                              );
-                            }}
-                          />
-                          {m.name}
-                        </label>
-                      );
-                    })}
-                  </div>
+                  {selectedMemberIds.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedMemberIds.map((id) => {
+                        const m = members.find((x) => x.userId === id);
+                        if (!m) return null;
+                        return (
+                          <span key={id} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium">
+                            <span className="size-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold shrink-0">
+                              {getInitials(m.name)}
+                            </span>
+                            {m.name}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedMemberIds((prev) => prev.filter((p) => p !== id))}
+                              className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
+                            >
+                              <XIcon className="size-3" />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <DialogFooter className="gap-2 pt-2">
-                <Button variant="outline" onClick={() => setShowForm(false)} disabled={submitting}>
+              <DialogFooter className="shrink-0 border-t px-6 py-4 gap-2">
+                <Button variant="outline" onClick={() => { setShowForm(false); setMemberSearch(""); }} disabled={submitting}>
                   Cancel
                 </Button>
                 <Button disabled={!teamName.trim() || submitting} onClick={handleSubmit}>
-                  {submitting ? <Loader2Icon className="size-4 animate-spin" /> : editingTeam ? "Save" : "Create"}
+                  {submitting ? <Loader2Icon className="size-4 animate-spin" /> : editingTeam ? "Save Changes" : "Create Team"}
                 </Button>
               </DialogFooter>
             </DialogContent>
