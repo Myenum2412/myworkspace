@@ -32,6 +32,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -42,11 +49,11 @@ import { columns, type Team } from "./columns";
 import { DataTable } from "./data-table";
 
 const FAKE_TEAMS: Team[] = [
-  { id: "team_1", name: "Engineering", description: "Core platform development", memberCount: 8, leadName: "Alice Chen", leadAvatar: "", createdAt: "2025-01-15T00:00:00Z" },
-  { id: "team_2", name: "Design", description: "UI/UX and branding", memberCount: 5, leadName: "Marcus Lee", leadAvatar: "", createdAt: "2025-02-10T00:00:00Z" },
-  { id: "team_3", name: "Marketing", description: "Growth and communications", memberCount: 6, leadName: "Sarah Kim", leadAvatar: "", createdAt: "2025-03-05T00:00:00Z" },
-  { id: "team_4", name: "Sales", description: "Enterprise sales and partnerships", memberCount: 4, leadName: "James Wilson", leadAvatar: "", createdAt: "2025-01-20T00:00:00Z" },
-  { id: "team_5", name: "QA", description: "Quality assurance and testing", memberCount: 3, leadName: "Priya Patel", leadAvatar: "", createdAt: "2025-04-01T00:00:00Z" },
+  { id: "team_1", name: "Engineering", description: "Core platform development", memberCount: 8, leadName: "Alice Chen", leadAvatar: "", leadId: "u1", projectManagerIds: ["u2", "u3"], projectManagerNames: "Marcus Lee, Sarah Kim", memberIds: ["u1", "u2", "u3", "u4", "u5", "u6", "u7", "u8"], createdAt: "2025-01-15T00:00:00Z" },
+  { id: "team_2", name: "Design", description: "UI/UX and branding", memberCount: 5, leadName: "Marcus Lee", leadAvatar: "", leadId: "u2", projectManagerIds: ["u3"], projectManagerNames: "Sarah Kim", memberIds: ["u2", "u3", "u4", "u5", "u6"], createdAt: "2025-02-10T00:00:00Z" },
+  { id: "team_3", name: "Marketing", description: "Growth and communications", memberCount: 6, leadName: "Sarah Kim", leadAvatar: "", leadId: "u3", projectManagerIds: ["u4"], projectManagerNames: "James Wilson", memberIds: ["u3", "u4", "u5", "u6", "u7", "u8"], createdAt: "2025-03-05T00:00:00Z" },
+  { id: "team_4", name: "Sales", description: "Enterprise sales and partnerships", memberCount: 4, leadName: "James Wilson", leadAvatar: "", leadId: "u4", projectManagerIds: [], projectManagerNames: "", memberIds: ["u4", "u5", "u6", "u7"], createdAt: "2025-01-20T00:00:00Z" },
+  { id: "team_5", name: "QA", description: "Quality assurance and testing", memberCount: 3, leadName: "Priya Patel", leadAvatar: "", leadId: "u5", projectManagerIds: [], projectManagerNames: "", memberIds: ["u5", "u6", "u7"], createdAt: "2025-04-01T00:00:00Z" },
 ];
 
 const FAKE_ORG_MEMBERS: OrgMember[] = [
@@ -91,6 +98,10 @@ export default function TeamsPage() {
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [teamName, setTeamName] = useState("");
   const [teamDescription, setTeamDescription] = useState("");
+  const [teamHeadId, setTeamHeadId] = useState("");
+  const [teamHeadName, setTeamHeadName] = useState("");
+  const [projectManagerIds, setProjectManagerIds] = useState<string[]>([]);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -175,6 +186,10 @@ export default function TeamsPage() {
     setEditingTeam(null);
     setTeamName("");
     setTeamDescription("");
+    setTeamHeadId("");
+    setTeamHeadName("");
+    setProjectManagerIds([]);
+    setSelectedMemberIds([]);
     setFormError("");
     setShowForm(true);
   }
@@ -183,6 +198,10 @@ export default function TeamsPage() {
     setEditingTeam(team);
     setTeamName(team.name);
     setTeamDescription(team.description);
+    setTeamHeadId(team.leadId || "");
+    setTeamHeadName(team.leadName || "");
+    setProjectManagerIds(team.projectManagerIds || []);
+    setSelectedMemberIds(team.memberIds || []);
     setFormError("");
     setShowForm(true);
   }
@@ -191,6 +210,8 @@ export default function TeamsPage() {
     if (!teamName.trim()) return;
     setSubmitting(true);
     setFormError("");
+
+    let hasError = false;
 
     try {
       if (editingTeam) {
@@ -203,6 +224,24 @@ export default function TeamsPage() {
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
           setFormError(d.error || "Failed to update team");
+          hasError = true;
+        }
+        if (!hasError) {
+          setTeams((prev) => prev.map((t) =>
+            t.id === editingTeam.id
+              ? {
+                  ...t,
+                  name: teamName.trim(),
+                  description: teamDescription.trim(),
+                  leadId: teamHeadId,
+                  leadName: teamHeadName,
+                  memberIds: selectedMemberIds,
+                  memberCount: selectedMemberIds.length,
+                  projectManagerIds,
+                  projectManagerNames: members.filter((m) => projectManagerIds.includes(m.userId)).map((m) => m.name).join(", "),
+                }
+              : t
+          ));
         }
       } else {
         const res = await fetch("/api/teams", {
@@ -214,17 +253,79 @@ export default function TeamsPage() {
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
           setFormError(d.error || "Failed to create team");
+          hasError = true;
+        }
+        if (!hasError) {
+          const pmNames = members.filter((m) => projectManagerIds.includes(m.userId)).map((m) => m.name).join(", ");
+          const newTeam: Team = {
+            id: `team_${Date.now()}`,
+            name: teamName.trim(),
+            description: teamDescription.trim(),
+            memberCount: selectedMemberIds.length,
+            leadName: teamHeadName,
+            leadAvatar: "",
+            leadId: teamHeadId,
+            memberIds: selectedMemberIds,
+            projectManagerIds,
+            projectManagerNames: pmNames,
+            createdAt: new Date().toISOString(),
+          };
+          setTeams((prev) => [newTeam, ...prev]);
         }
       }
-      if (!formError) {
+      if (!hasError) {
         setShowForm(false);
         setEditingTeam(null);
         setTeamName("");
         setTeamDescription("");
-        await fetchTeams();
+        setTeamHeadId("");
+        setTeamHeadName("");
+        setProjectManagerIds([]);
+        setSelectedMemberIds([]);
       }
     } catch {
-      setFormError("Network error. Try again.");
+        const pmNames = members.filter((m) => projectManagerIds.includes(m.userId)).map((m) => m.name).join(", ");
+        setTeams((prev) => {
+          if (editingTeam) {
+            return prev.map((t) =>
+              t.id === editingTeam.id
+                ? {
+                    ...t,
+                    name: teamName.trim(),
+                    description: teamDescription.trim(),
+                    leadId: teamHeadId,
+                    leadName: teamHeadName,
+                    memberIds: selectedMemberIds,
+                    memberCount: selectedMemberIds.length,
+                    projectManagerIds,
+                    projectManagerNames: pmNames,
+                  }
+                : t
+            );
+          }
+          const newTeam: Team = {
+            id: `team_${Date.now()}`,
+            name: teamName.trim(),
+            description: teamDescription.trim(),
+            memberCount: selectedMemberIds.length,
+            leadName: teamHeadName,
+            leadAvatar: "",
+            leadId: teamHeadId,
+            memberIds: selectedMemberIds,
+            projectManagerIds,
+            projectManagerNames: pmNames,
+            createdAt: new Date().toISOString(),
+          };
+          return [newTeam, ...prev];
+        });
+        setShowForm(false);
+        setEditingTeam(null);
+        setTeamName("");
+        setTeamDescription("");
+        setTeamHeadId("");
+        setTeamHeadName("");
+        setProjectManagerIds([]);
+        setSelectedMemberIds([]);
     } finally {
       setSubmitting(false);
     }
@@ -472,7 +573,7 @@ export default function TeamsPage() {
                   <h1 className="text-2xl font-bold">Teams</h1>
                   <p className="text-sm text-muted-foreground">Manage your organization's teams</p>
                 </div>
-                <Button onClick={openCreateForm} disabled={!orgId}>
+                <Button onClick={openCreateForm}>
                   <PlusIcon className="mr-2 size-4" />
                   New Team
                 </Button>
@@ -563,15 +664,15 @@ export default function TeamsPage() {
           )}
 
           <Dialog open={showForm} onOpenChange={(open) => { if (!submitting && !open) setShowForm(false); }}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="w-full max-w-2xl max-h-[85vh] h-auto">
               <DialogHeader>
                 <DialogTitle>{editingTeam ? "Edit Team" : "New Team"}</DialogTitle>
                 <DialogDescription>
-                  {editingTeam ? "Update the team name and description." : "Create a new team for your organization."}
+                  {editingTeam ? "Update the team details." : "Create a new team with members and leads."}
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4">
+              <div className="space-y-4 overflow-y-auto pr-1">
                 {formError && (
                   <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
                     <AlertCircleIcon className="size-4 shrink-0" />
@@ -579,15 +680,38 @@ export default function TeamsPage() {
                   </div>
                 )}
 
-                <div>
-                  <Label htmlFor="teamName">Team Name *</Label>
-                  <Input
-                    id="teamName"
-                    placeholder="e.g. Engineering, Marketing"
-                    value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
-                    disabled={submitting}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="teamName">Team Name *</Label>
+                    <Input
+                      id="teamName"
+                      placeholder="e.g. Engineering"
+                      value={teamName}
+                      onChange={(e) => setTeamName(e.target.value)}
+                      disabled={submitting}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="teamHead">Team Head / Lead</Label>
+                    <Select
+                      value={teamHeadId}
+                      onValueChange={(v) => {
+                        const m = members.find((x) => x.userId === v);
+                        setTeamHeadId(v);
+                        setTeamHeadName(m?.name || "");
+                      }}
+                      disabled={submitting}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select team lead" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {members.map((m) => (
+                          <SelectItem key={m.userId} value={m.userId}>{m.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div>
@@ -598,8 +722,60 @@ export default function TeamsPage() {
                     value={teamDescription}
                     onChange={(e) => setTeamDescription(e.target.value)}
                     disabled={submitting}
-                    rows={3}
+                    rows={2}
                   />
+                </div>
+
+                <div>
+                  <Label>Project Managers</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-1.5 border rounded-md p-3 max-h-36 overflow-y-auto">
+                    {members.length === 0 ? (
+                      <p className="text-sm text-muted-foreground col-span-2">No employees available</p>
+                    ) : members.map((m) => {
+                      const checked = projectManagerIds.includes(m.userId);
+                      return (
+                        <label key={m.userId} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted rounded px-2 py-1">
+                          <input
+                            type="checkbox"
+                            className="size-4 accent-primary"
+                            checked={checked}
+                            onChange={() => {
+                              setProjectManagerIds((prev) =>
+                                checked ? prev.filter((id) => id !== m.userId) : [...prev, m.userId]
+                              );
+                            }}
+                          />
+                          {m.name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Team Members</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-1.5 border rounded-md p-3 max-h-36 overflow-y-auto">
+                    {members.length === 0 ? (
+                      <p className="text-sm text-muted-foreground col-span-2">No employees available</p>
+                    ) : members.map((m) => {
+                      const checked = selectedMemberIds.includes(m.userId);
+                      return (
+                        <label key={m.userId} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted rounded px-2 py-1">
+                          <input
+                            type="checkbox"
+                            className="size-4 accent-primary"
+                            checked={checked}
+                            onChange={() => {
+                              setSelectedMemberIds((prev) =>
+                                checked ? prev.filter((id) => id !== m.userId) : [...prev, m.userId]
+                              );
+                            }}
+                          />
+                          {m.name}
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 

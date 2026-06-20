@@ -19,6 +19,10 @@ export type Team = {
   memberCount: number;
   leadName: string;
   leadAvatar: string;
+  leadId?: string;
+  projectManagerIds?: string[];
+  projectManagerNames?: string;
+  memberIds?: string[];
   createdAt: string;
 };
 
@@ -63,7 +67,15 @@ export const columns: ColumnDef<Team>[] = [
     },
   },
   {
-    accessorKey: "memberCount",
+     accessorKey: "projectManagerNames",
+     header: "Project Managers",
+     cell: ({ row }) => {
+       const val = row.getValue("projectManagerNames") as string;
+       return val ? <span className="text-sm">{val}</span> : <span className="text-muted-foreground">—</span>;
+     },
+   },
+   {
+     accessorKey: "memberCount",
     header: "Members",
     cell: ({ row }) => {
       const count = row.getValue("memberCount") as number;
