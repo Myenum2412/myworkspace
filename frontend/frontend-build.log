@@ -9,5 +9,82 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 6.0s
+✓ Compiled successfully in 5.8s
   Running TypeScript ...
+  Finished TypeScript in 6.2s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/56) ...
+  Generating static pages using 11 workers (14/56) 
+  Generating static pages using 11 workers (28/56) 
+  Generating static pages using 11 workers (42/56) 
+✓ Generating static pages using 11 workers (56/56) in 647ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /addemployees
+├ ○ /addprojects
+├ ○ /alltasks
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/employees
+├ ○ /approvals
+├ ○ /approvals/approved
+├ ○ /approvals/rejected
+├ ○ /calendar
+├ ○ /clients
+├ ○ /dashboard
+├ ƒ /departments
+├ ƒ /employees
+├ ○ /files
+├ ƒ /forgot-password
+├ ƒ /login
+├ ○ /my-time
+├ ○ /mytasks
+├ ƒ /orgmenu
+├ ƒ /orgmenu/analytics
+├ ƒ /orgmenu/audit
+├ ƒ /orgmenu/audit/exports
+├ ƒ /orgmenu/members
+├ ƒ /orgmenu/members/invite
+├ ƒ /orgmenu/members/roles
+├ ƒ /orgmenu/org
+├ ƒ /orgmenu/org/billing
+├ ƒ /orgmenu/org/plans
+├ ƒ /orgmenu/reports
+├ ƒ /orgmenu/reports/activity
+├ ƒ /orgmenu/reports/usage
+├ ƒ /orgmenu/security
+├ ƒ /orgmenu/security/api-keys
+├ ƒ /orgmenu/security/policies
+├ ƒ /orgmenu/security/sso
+├ ƒ /orgmenu/settings
+├ ƒ /orgmenu/settings/integrations
+├ ƒ /orgmenu/settings/notifications
+├ ○ /overview
+├ ○ /pricing
+├ ○ /profile
+├ ○ /projects
+├ ○ /recycle-bin
+├ ○ /reports
+├ ○ /savedtasks
+├ ○ /settings
+├ ○ /shared
+├ ƒ /signup
+├ ƒ /signup-mongo
+├ ƒ /staffs
+├ ○ /team-time
+├ ○ /teams
+├ ○ /teamtasks
+├ ○ /terminated
+├ ○ /time-reports
+├ ○ /time-tracker
+├ ○ /upcomingtasks
+└ ○ /upload
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -91,7 +91,7 @@ const statusColors: Record<string, string> = {
 };
 
 export function getColumns(
-  onEdit: (emp: Employee) => void,
+  onEdit: ((emp: Employee) => void) | undefined,
   onTerminate: (emp: Employee) => void,
 ): ColumnDef<Employee>[] {
   return [
@@ -200,11 +200,15 @@ export function getColumns(
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(emp)}>
-                <PencilIcon className="mr-2 size-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              {onEdit && (
+                <>
+                  <DropdownMenuItem onClick={() => onEdit(emp)}>
+                    <PencilIcon className="mr-2 size-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem onClick={() => onTerminate(emp)} className="text-destructive">
                 <UserXIcon className="mr-2 size-4" />
                 Terminate

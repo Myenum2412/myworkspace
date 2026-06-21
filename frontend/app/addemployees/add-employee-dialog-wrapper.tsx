@@ -23,7 +23,7 @@ export function AddEmployeeDialogWrapper() {
     <Dialog open={open} onOpenChange={(isOpen) => {
       if (!isOpen) handleClose()
     }}>
-      <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
+      <DialogContent className="p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
           <DialogTitle>Add New Employee</DialogTitle>
         </DialogHeader>

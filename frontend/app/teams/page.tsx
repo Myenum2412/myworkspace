@@ -124,6 +124,8 @@ export default function TeamsPage() {
   const [members, setMembers] = useState<OrgMember[]>([]);
   const [showAddMember, setShowAddMember] = useState(false);
   const [addingMember, setAddingMember] = useState(false);
+  const [viewMemberOpen, setViewMemberOpen] = useState(false);
+  const [viewMember, setViewMember] = useState<TeamDetail["members"][0] | null>(null);
 
   const user = {
     name: session?.user?.name || "User",
@@ -270,16 +272,47 @@ export default function TeamsPage() {
           hasError = true;
         }
         if (!hasError) {
+          const data = await res.json().catch(() => ({}));
+          const teamId = data?.data?.id || `team_${Date.now()}`;
+
+          const memberIdsToAdd = teamHeadId
+            ? selectedMemberIds.includes(teamHeadId)
+              ? selectedMemberIds
+              : [...selectedMemberIds, teamHeadId]
+            : selectedMemberIds;
+
+          for (const uid of memberIdsToAdd) {
+            try {
+              await fetch(`/api/teams/${teamId}/members`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ userId: uid }),
+              });
+            } catch {}
+          }
+
+          if (teamHeadId) {
+            try {
+              await fetch(`/api/teams/${teamId}/members/${teamHeadId}/role`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ role: "lead" }),
+              });
+            } catch {}
+          }
+
           const pmNames = members.filter((m) => projectManagerIds.includes(m.userId)).map((m) => m.name).join(", ");
           const newTeam: Team = {
-            id: `team_${Date.now()}`,
+            id: teamId,
             name: teamName.trim(),
             description: teamDescription.trim(),
-            memberCount: selectedMemberIds.length,
+            memberCount: memberIdsToAdd.length,
             leadName: teamHeadName,
             leadAvatar: "",
             leadId: teamHeadId,
-            memberIds: selectedMemberIds,
+            memberIds: memberIdsToAdd,
             projectManagerIds,
             projectManagerNames: pmNames,
             createdAt: new Date().toISOString(),
@@ -359,6 +392,7 @@ export default function TeamsPage() {
   async function openTeamDetail(team: Team) {
     try {
       const res = await fetch(`/api/teams/${team.id}?orgId=${orgId}`, { credentials: "include" });
+      if (!res.ok) return;
       const data = await res.json();
       const detail = data.data || data;
       setSelectedTeam({
@@ -490,7 +524,7 @@ export default function TeamsPage() {
                   ) : (
                     <div className="space-y-2">
                       {selectedTeam.members.map((m) => (
-                        <div key={m.id} className="flex items-center justify-between rounded-lg border p-3">
+                        <div key={m.id} className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => { setViewMember(m); setViewMemberOpen(true); }}>
                           <div className="flex items-center gap-3">
                             <div className="size-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
                               {m.avatar ? (
@@ -546,7 +580,7 @@ export default function TeamsPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="h-7 text-xs"
-                                onClick={() => handleSetLead(m.userId)}
+                                onClick={(e) => { e.stopPropagation(); handleSetLead(m.userId); }}
                               >
                                 <CrownIcon className="size-3 mr-1" />
                                 Set Lead
@@ -556,7 +590,7 @@ export default function TeamsPage() {
                               variant="ghost"
                               size="sm"
                               className="h-7 text-xs text-destructive hover:text-destructive"
-                              onClick={() => handleRemoveMember(m.userId)}
+                              onClick={(e) => { e.stopPropagation(); handleRemoveMember(m.userId); }}
                             >
                               <Trash2Icon className="size-3" />
                             </Button>
@@ -678,22 +712,22 @@ export default function TeamsPage() {
                               const team = row.original;
                               return (
                                 <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
+                                  <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                                     <Button variant="ghost" size="icon-sm">
                                       <MoreHorizontalIcon className="size-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => openTeamDetail(team)}>
+                                    <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); openTeamDetail(team); }}>
                                       <UsersIcon className="mr-2 size-4" />
                                       View Members
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => openEditForm(team)}>
+                                    <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); openEditForm(team); }}>
                                       <PencilIcon className="mr-2 size-4" />
                                       Edit
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(team.id)}>
+                                    <DropdownMenuItem className="text-destructive" onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDelete(team.id); }}>
                                       <Trash2Icon className="mr-2 size-4" />
                                       Delete
                                     </DropdownMenuItem>
@@ -704,6 +738,7 @@ export default function TeamsPage() {
                           : col.cell,
                       }))}
                       data={teams}
+                      onRowClick={(team) => openTeamDetail(team)}
                     />
                   )}
                 </CardContent>
@@ -712,7 +747,7 @@ export default function TeamsPage() {
           )}
 
           <Dialog open={showForm} onOpenChange={(open) => { if (!submitting && !open) { setShowForm(false); setMemberSearch(""); } }}>
-            <DialogContent className="w-full max-w-2xl max-h-[90vh] h-auto p-0 flex flex-col">
+            <DialogContent className="p-0 flex flex-col">
               <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
                 <DialogTitle className="flex items-center gap-2 text-xl">
                   <UsersIcon className="size-5" />
@@ -947,24 +982,37 @@ export default function TeamsPage() {
                     </div>
                   </div>
                   {selectedMemberIds.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {selectedMemberIds.map((id) => {
                         const m = members.find((x) => x.userId === id);
                         if (!m) return null;
+                        const isLead = m.userId === teamHeadId;
                         return (
-                          <span key={id} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium">
-                            <span className="size-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold shrink-0">
-                              {getInitials(m.name)}
-                            </span>
-                            {m.name}
+                          <div key={id} className="inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs">
+                            <div className="size-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                              {m.avatar ? (
+                                <img src={m.avatar} alt={m.name} className="size-full object-cover" />
+                              ) : (
+                                <span className="text-[9px] font-bold text-muted-foreground">
+                                  {getInitials(m.name)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium truncate max-w-[120px] flex items-center gap-1">
+                                {m.name}
+                                {isLead && <CrownIcon className="size-3 text-amber-500 shrink-0" />}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{m.email}</p>
+                            </div>
                             <button
                               type="button"
                               onClick={() => setSelectedMemberIds((prev) => prev.filter((p) => p !== id))}
-                              className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
+                              className="ml-0.5 rounded-full hover:bg-destructive/10 p-0.5 text-muted-foreground hover:text-destructive shrink-0"
                             >
                               <XIcon className="size-3" />
                             </button>
-                          </span>
+                          </div>
                         );
                       })}
                     </div>
@@ -980,6 +1028,76 @@ export default function TeamsPage() {
                   {submitting ? <Loader2Icon className="size-4 animate-spin" /> : editingTeam ? "Save Changes" : "Create Team"}
                 </Button>
               </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* View Member Dialog */}
+          <Dialog open={viewMemberOpen} onOpenChange={(o) => { if (!o) { setViewMemberOpen(false); setViewMember(null); } }}>
+            <DialogContent className="p-0 flex flex-col">
+              {viewMember && (
+                <>
+                  <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
+                    <DialogTitle className="flex items-center gap-2 text-xl">
+                      <UsersIcon className="size-5" />
+                      {viewMember.name}
+                    </DialogTitle>
+                    <DialogDescription>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="capitalize text-xs bg-muted rounded-full px-2.5 py-0.5">{viewMember.role}</span>
+                        {viewMember.department && (
+                          <span className="text-xs text-muted-foreground">{viewMember.department}</span>
+                        )}
+                      </div>
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="flex-1 overflow-y-auto px-6 py-3 space-y-5">
+                    <div className="flex gap-6 items-start">
+                      <div className="size-20 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-border">
+                        {viewMember.avatar ? (
+                          <img src={viewMember.avatar} alt={viewMember.name} className="size-full object-cover" />
+                        ) : (
+                          <span className="text-lg font-bold text-muted-foreground">
+                            {viewMember.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 grid grid-cols-2 gap-3">
+                        <div className="rounded-lg border bg-card px-4 py-3">
+                          <p className="text-[11px] text-muted-foreground">Name</p>
+                          <p className="text-sm font-medium mt-0.5">{viewMember.name}</p>
+                        </div>
+                        <div className="rounded-lg border bg-card px-4 py-3">
+                          <p className="text-[11px] text-muted-foreground">Email</p>
+                          <p className="text-sm font-medium mt-0.5">{viewMember.email}</p>
+                        </div>
+                        <div className="rounded-lg border bg-card px-4 py-3">
+                          <p className="text-[11px] text-muted-foreground">Role</p>
+                          <p className="text-sm font-medium mt-0.5 capitalize">{viewMember.role}</p>
+                        </div>
+                        <div className="rounded-lg border bg-card px-4 py-3">
+                          <p className="text-[11px] text-muted-foreground">Department</p>
+                          <p className="text-sm font-medium mt-0.5">{viewMember.department || "\u2014"}</p>
+                        </div>
+                        <div className="rounded-lg border bg-card px-4 py-3">
+                          <p className="text-[11px] text-muted-foreground">Designation</p>
+                          <p className="text-sm font-medium mt-0.5">{viewMember.designation || "\u2014"}</p>
+                        </div>
+                        <div className="rounded-lg border bg-card px-4 py-3">
+                          <p className="text-[11px] text-muted-foreground">Status</p>
+                          <p className="text-sm font-medium mt-0.5 capitalize">{viewMember.status || "\u2014"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <DialogFooter className="shrink-0 border-t px-6 py-4 gap-2">
+                    <Button variant="outline" onClick={() => { setViewMemberOpen(false); setViewMember(null); }}>
+                      Close
+                    </Button>
+                  </DialogFooter>
+                </>
+              )}
             </DialogContent>
           </Dialog>
         </main>

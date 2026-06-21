@@ -128,3 +128,24 @@
 - （必要に応じて追記）
 
 ---
+
+## セッション: 2026-06-21T04:33:06Z
+
+- session_id: `session-1781967064816408258`
+- project: `myworkspace`
+- branch: `main`
+- started_at: `2026-06-20T14:51:04Z`
+- ended_at: `2026-06-21T04:33:06Z`
+- duration_minutes: 822
+- changes: 0
+
+### 変更ファイル
+- （なし）
+
+### 重要な変更（important=true）
+- （なし）
+
+### 次回への引き継ぎ（任意）
+- （必要に応じて追記）
+
+---

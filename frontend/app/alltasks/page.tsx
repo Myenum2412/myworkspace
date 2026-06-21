@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { PlusIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ListTodoIcon, Loader2Icon, PencilIcon, Trash2Icon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -24,7 +24,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontalIcon } from "lucide-react";
+import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import { TaskEditForm } from "@/components/task-edit-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ViewToggle } from "@/components/view-toggle";
 
 type Task = {
   _id: string;
@@ -41,17 +50,6 @@ type Task = {
   createdAt: string;
 };
 
-const FAKE_TASKS: Task[] = [
-  { _id: "1", title: "Design new dashboard layout", description: "Create wireframes for the main dashboard", status: "in_progress", priority: "high", dueDate: "2026-07-01T00:00:00Z", assigneeId: "u1", assigneeName: "Alice Chen", assigneeAvatar: "", creatorId: "u2", creatorName: "Bob Martinez", createdAt: "2026-06-10T00:00:00Z" },
-  { _id: "2", title: "Implement user authentication", description: "Set up OAuth and session management", status: "todo", priority: "urgent", dueDate: "2026-06-28T00:00:00Z", assigneeId: "u3", assigneeName: "Carol Williams", assigneeAvatar: "", creatorId: "u1", creatorName: "Alice Chen", createdAt: "2026-06-08T00:00:00Z" },
-  { _id: "3", title: "API integration for payment gateway", description: "Connect Stripe for subscription billing", status: "review", priority: "high", dueDate: "2026-06-30T00:00:00Z", assigneeId: "u2", assigneeName: "Bob Martinez", assigneeAvatar: "", creatorId: "u1", creatorName: "Alice Chen", createdAt: "2026-06-05T00:00:00Z" },
-  { _id: "4", title: "Write unit tests for user module", description: "Cover all user service functions", status: "done", priority: "medium", dueDate: "2026-06-25T00:00:00Z", assigneeId: "u1", assigneeName: "Alice Chen", assigneeAvatar: "", creatorId: "u3", creatorName: "Carol Williams", createdAt: "2026-06-01T00:00:00Z" },
-  { _id: "5", title: "Mobile responsive fixes", description: "Fix layout issues on mobile devices", status: "todo", priority: "medium", dueDate: "2026-07-05T00:00:00Z", assigneeId: "u4", assigneeName: "David Kim", assigneeAvatar: "", creatorId: "u1", creatorName: "Alice Chen", createdAt: "2026-06-12T00:00:00Z" },
-  { _id: "6", title: "Database optimization", description: "Add indexes and optimize slow queries", status: "in_progress", priority: "high", dueDate: "2026-07-02T00:00:00Z", assigneeId: "u3", assigneeName: "Carol Williams", assigneeAvatar: "", creatorId: "u2", creatorName: "Bob Martinez", createdAt: "2026-06-09T00:00:00Z" },
-  { _id: "7", title: "User onboarding flow", description: "Design and implement new user onboarding", status: "review", priority: "medium", dueDate: "2026-06-29T00:00:00Z", assigneeId: "u1", assigneeName: "Alice Chen", assigneeAvatar: "", creatorId: "u3", creatorName: "Carol Williams", createdAt: "2026-06-07T00:00:00Z" },
-  { _id: "8", title: "Security audit", description: "Review code for vulnerabilities", status: "cancelled", priority: "low", dueDate: "2026-06-20T00:00:00Z", assigneeId: "u2", assigneeName: "Bob Martinez", assigneeAvatar: "", creatorId: "u4", creatorName: "David Kim", createdAt: "2026-06-03T00:00:00Z" },
-];
-
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-100 text-gray-700",
   in_progress: "bg-amber-100 text-amber-700",
@@ -67,16 +65,28 @@ const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-600",
 };
 
+const FAKE_TASKS = [
+  { _id: "1", title: "Design new dashboard layout", description: "Create wireframes for the main dashboard", status: "in_progress", priority: "high", dueDate: "2026-07-01T00:00:00Z", assigneeId: "u1", assigneeName: "Alice Chen", assigneeAvatar: "", creatorId: "u2", creatorName: "Bob Martinez", createdAt: "2026-06-10T00:00:00Z" },
+  { _id: "2", title: "Implement user authentication", description: "Set up OAuth and session management", status: "todo", priority: "urgent", dueDate: "2026-06-28T00:00:00Z", assigneeId: "u3", assigneeName: "Carol Williams", assigneeAvatar: "", creatorId: "u1", creatorName: "Alice Chen", createdAt: "2026-06-08T00:00:00Z" },
+  { _id: "3", title: "API integration for payment gateway", description: "Connect Stripe for subscription billing", status: "review", priority: "high", dueDate: "2026-06-30T00:00:00Z", assigneeId: "u2", assigneeName: "Bob Martinez", assigneeAvatar: "", creatorId: "u1", creatorName: "Alice Chen", createdAt: "2026-06-05T00:00:00Z" },
+  { _id: "4", title: "Write unit tests for user module", description: "Cover all user service functions", status: "done", priority: "medium", dueDate: "2026-06-25T00:00:00Z", assigneeId: "u1", assigneeName: "Alice Chen", assigneeAvatar: "", creatorId: "u3", creatorName: "Carol Williams", createdAt: "2026-06-01T00:00:00Z" },
+  { _id: "5", title: "Mobile responsive fixes", description: "Fix layout issues on mobile devices", status: "todo", priority: "medium", dueDate: "2026-07-05T00:00:00Z", assigneeId: "u4", assigneeName: "David Kim", assigneeAvatar: "", creatorId: "u1", creatorName: "Alice Chen", createdAt: "2026-06-12T00:00:00Z" },
+  { _id: "6", title: "Database optimization", description: "Add indexes and optimize slow queries", status: "in_progress", priority: "high", dueDate: "2026-07-02T00:00:00Z", assigneeId: "u3", assigneeName: "Carol Williams", assigneeAvatar: "", creatorId: "u2", creatorName: "Bob Martinez", createdAt: "2026-06-09T00:00:00Z" },
+  { _id: "7", title: "User onboarding flow", description: "Design and implement new user onboarding", status: "review", priority: "medium", dueDate: "2026-06-29T00:00:00Z", assigneeId: "u1", assigneeName: "Alice Chen", assigneeAvatar: "", creatorId: "u3", creatorName: "Carol Williams", createdAt: "2026-06-07T00:00:00Z" },
+  { _id: "8", title: "Security audit", description: "Review code for vulnerabilities", status: "cancelled", priority: "low", dueDate: "2026-06-20T00:00:00Z", assigneeId: "u2", assigneeName: "Bob Martinez", assigneeAvatar: "", creatorId: "u4", creatorName: "David Kim", createdAt: "2026-06-03T00:00:00Z" },
+];
+
+const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
+
 export default function AllTasksPage() {
   const { data: session } = useSession();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(FAKE_TASKS);
   const [loading, setLoading] = useState(true);
-
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-  };
+  const [view, setView] = useState<"kanban" | "table">("table");
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   useEffect(() => {
     if (!session?.user) return;
@@ -84,19 +94,28 @@ export default function AllTasksPage() {
       .then((r) => r.json())
       .then((d) => {
         const profile = d.data || d;
-        const id = profile?.org?.id || profile?.org?._id?.toString() || "";
-        if (id) {
-          fetch(`/api/tasks?orgId=${id}`, { credentials: "include" })
-            .then((r) => r.json())
-            .then((res) => setTasks(res.data || res || []))
-            .catch(() => setTasks(FAKE_TASKS))
-            .finally(() => setLoading(false));
-        } else {
-          setLoading(false);
+        const orgId = profile?.org?.id || profile?.org?._id?.toString() || "";
+        if (orgId) {
+          return fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
+        }
+        return null;
+      })
+      .then((res) => res?.json())
+      .then((d) => {
+        if (d) {
+          const arr = Array.isArray(d) ? d : d.data || [];
+          if (arr.length > 0) setTasks(arr);
         }
       })
-      .catch(() => { setTasks(FAKE_TASKS); setLoading(false); });
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [session]);
+
+  const user = {
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "user@example.com",
+    avatar: session?.user?.image || "",
+  };
 
   return (
     <SidebarProvider>
@@ -104,18 +123,106 @@ export default function AllTasksPage() {
       <SidebarInset>
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center gap-2">
-            <ListTodoIcon className="size-6" />
-            <h1 className="text-2xl font-bold">All Tasks</h1>
-            <Badge variant="secondary" className="ml-auto">{tasks.length} tasks</Badge>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">All Tasks</h1>
+              <div className="flex gap-1 ml-2">
+                <ViewToggle
+                  options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
+                  value={view}
+                  onChange={(v) => setView(v as typeof view)}
+                />
+              </div>
+            </div>
+            <Button onClick={() => setShowTaskModal(true)}>
+              <PlusIcon className="mr-2 size-4" />
+              New Task
+            </Button>
           </div>
 
+          {loading ? (
+            <div className="flex items-center justify-center py-12"><AlertCircleIcon className="size-6 animate-spin text-muted-foreground" /></div>
+          ) : (
+          <><div className="grid gap-4 md:grid-cols-6 mb-6">
+            <Card className="bg-gray-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                  <ListTodoIcon className="size-4" /> Today Tasks
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tasks.filter((t) => t.status === "todo").length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                  <UsersIcon className="size-4" /> Team Task
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tasks.filter((t) => t.status === "assigned").length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-yellow-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                  <ClockIcon className="size-4" /> In Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tasks.filter((t) => t.status === "in_progress").length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                  <AlertCircleIcon className="size-4" /> Review
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tasks.filter((t) => t.status === "review").length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-green-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                  <CheckCircle2Icon className="size-4" /> Completed
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tasks.filter((t) => t.status === "done").length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-red-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                  <XCircleIcon className="size-4" /> In Completed
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tasks.filter((t) => t.status === "cancelled").length}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {view === "table" ? (
           <Card>
             <CardHeader><CardTitle>All Tasks</CardTitle></CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
-              ) : tasks.length === 0 ? (
+              {tasks.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No tasks found.</p>
               ) : (
                 <div className="overflow-x-auto">
@@ -179,7 +286,11 @@ export default function AllTasksPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
+                                  <EyeIcon className="mr-2 size-4" />
+                                  View
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setSelectedTask(t); setEditOpen(true); }}>
                                   <PencilIcon className="mr-2 size-4" />
                                   Edit
                                 </DropdownMenuItem>
@@ -199,8 +310,89 @@ export default function AllTasksPage() {
               )}
             </CardContent>
           </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-5">
+              {statusGroups.map((s) => {
+                const items = tasks.filter((t) => t.status === s);
+                return (
+                  <div key={s} className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold capitalize">{s.replace(/_/g, " ")}</h3>
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{items.length}</span>
+                    </div>
+                    <div className="flex flex-col gap-2 min-h-[120px]">
+                      {items.length === 0 ? (
+                        <p className="text-xs text-muted-foreground italic px-1">No tasks</p>
+                      ) : (
+                        items.map((t) => (
+                          <div key={t._id} className="rounded-lg border bg-card p-3 space-y-2 shadow-sm">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm font-medium leading-tight">{t.title}</p>
+                              <Badge className={priorityStyles[t.priority] || "" + " shrink-0"}>{t.priority}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <div className="size-5 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                                  {t.assigneeAvatar ? (
+                                    <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
+                                  ) : (
+                                    <span className="text-[8px] font-medium text-muted-foreground">
+                                      {(t.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[11px] text-muted-foreground">{t.assigneeName}</span>
+                              </div>
+                              {t.dueDate && (
+                                <span className="text-[10px] text-muted-foreground">{new Date(t.dueDate).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          </>
+          )}
         </main>
       </SidebarInset>
+
+      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+        <DialogContent className="p-0 flex flex-col">
+          {selectedTask && (
+            <TaskDetailedView
+              task={selectedTask}
+              onEdit={(t) => { setViewOpen(false); setSelectedTask(t); setEditOpen(true); }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="p-0 flex flex-col">
+          {selectedTask && (
+            <TaskEditForm
+              task={selectedTask}
+              onSave={(updated) => {
+                setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
+                setEditOpen(false);
+                setSelectedTask(null);
+              }}
+              onCancel={() => setEditOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <TaskAllocationModal
+        open={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+      />
     </SidebarProvider>
   );
 }

@@ -43,6 +43,18 @@ export function RecentEmployeesTable() {
 
   return (
     <>
+      {editEmp ? (
+        <Card className="flex flex-col bg-background">
+          <EmployeeEditForm
+            employee={editEmp}
+            onSave={(updated) => {
+              setEditOpen(false);
+              setEditEmp(null);
+            }}
+            onCancel={() => { setEditOpen(false); setEditEmp(null); }}
+          />
+        </Card>
+      ) : (
       <Card>
         <CardHeader>
           <CardTitle>Recently Added</CardTitle>
@@ -95,37 +107,16 @@ export function RecentEmployeesTable() {
           </div>
         </CardContent>
       </Card>
+      )}
 
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setViewEmp(null); } }}>
-        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
+        <DialogContent className="p-0 flex flex-col">
           <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
             <DialogTitle>Employee Details</DialogTitle>
             <DialogDescription>View all employee information</DialogDescription>
           </DialogHeader>
           <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
             {viewEmp && <EmployeeDetailedView employee={viewEmp} onEdit={handleEditFromView} />}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Dialog */}
-      <Dialog open={editOpen} onOpenChange={(o) => { if (!o) { setEditOpen(false); setEditEmp(null); } }}>
-        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
-          <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
-            <DialogTitle>Edit Employee</DialogTitle>
-            <DialogDescription>Update employee details — all sections</DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 min-h-0 overflow-hidden">
-            {editEmp && (
-              <EmployeeEditForm
-                employee={editEmp}
-                onSave={(updated) => {
-                  setEditOpen(false);
-                  setEditEmp(null);
-                }}
-                onCancel={() => { setEditOpen(false); setEditEmp(null); }}
-              />
-            )}
           </div>
         </DialogContent>
       </Dialog>

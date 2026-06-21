@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2Icon, UsersIcon, UserPlusIcon, UserMinusIcon, BuildingIcon, EyeIcon, XIcon, SearchIcon, PencilIcon } from "lucide-react";
+import { UsersIcon, UserPlusIcon, UserMinusIcon, BuildingIcon, XIcon, SearchIcon } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -20,19 +19,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getColumns, type Employee, type TerminatedEmployee } from "./columns";
 import { DataTable } from "./data-table";
 import { EmployeeDetailedView } from "./employee-detailed-view";
-import { EmployeeEditForm } from "./employee-edit-form";
 import { AddEmployeeForm } from "./add-employee-form";
 
 type Props = {
@@ -54,8 +44,6 @@ const getInitials = (name: string) =>
 
 export default function EmployeesPageClient({ employees: initialEmployees, user }: Props) {
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
-  const [editOpen, setEditOpen] = useState(false);
-  const [editEmp, setEditEmp] = useState<Employee | null>(null);
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [terminateEmp, setTerminateEmp] = useState<Employee | null>(null);
   const [terminateReason, setTerminateReason] = useState("");
@@ -71,18 +59,6 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
   const handleView = (emp: Employee) => {
     setViewEmp(emp);
     setViewOpen(true);
-  };
-
-  const handleEdit = (emp: Employee) => {
-    setEditEmp({ ...emp });
-    setEditOpen(true);
-  };
-
-  const handleEditFromView = (emp: Employee) => {
-    setViewOpen(false);
-    setViewEmp(null);
-    setEditEmp({ ...emp });
-    setEditOpen(true);
   };
 
   const handleTerminate = (emp: Employee) => {
@@ -125,7 +101,7 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
     setAddOpen(false);
   };
 
-  const columns = getColumns(handleEdit, handleTerminate);
+  const columns = getColumns(undefined, handleTerminate);
 
   return (
     <SidebarProvider>
@@ -133,16 +109,16 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
       <SidebarInset>
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">Employees</h1>
-              <p className="text-sm text-muted-foreground">Manage your organization&apos;s workforce</p>
-            </div>
-            <Button onClick={() => setAddOpen(true)}>
-              <UserPlusIcon className="mr-2 size-4" />
-              Add Employee
-            </Button>
-          </div>
+          <><div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold">Employees</h1>
+                  <p className="text-sm text-muted-foreground">Manage your organization&apos;s workforce</p>
+                </div>
+                <Button onClick={() => setAddOpen(true)}>
+                  <UserPlusIcon className="mr-2 size-4" />
+                  Add Employee
+                </Button>
+              </div>
 
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
@@ -204,54 +180,22 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
               <DataTable columns={columns} data={employees} searchQuery={searchQuery} onSearchChange={setSearchQuery} onRowClick={handleView} />
             </CardContent>
           </Card>
+          </>
         </main>
       </SidebarInset>
 
       {/* View Dialog */}
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setViewEmp(null); } }}>
-        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
-          <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
-            <DialogTitle>Employee Details</DialogTitle>
-            <DialogDescription>View all employee information</DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
-            {viewEmp && <EmployeeDetailedView employee={viewEmp} onEdit={handleEditFromView} />}
-          </div>
-          <div className="shrink-0 border-t px-6 py-4 flex justify-end">
-            <Button variant="outline" onClick={() => { setViewOpen(false); setViewEmp(null); }}>
-              <XIcon className="mr-2 size-4" />
-              Close
-            </Button>
-          </div>
+        <DialogContent className="p-0 flex flex-col">
+          {viewEmp && <EmployeeDetailedView employee={viewEmp} />}
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
-      <Dialog open={editOpen} onOpenChange={(o) => { if (!o) { setEditOpen(false); setEditEmp(null); } }}>
-        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
-          <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
-            <DialogTitle>Edit Employee</DialogTitle>
-            <DialogDescription>Update employee details — all sections</DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 min-h-0 overflow-hidden">
-            {editEmp && (
-              <EmployeeEditForm
-                employee={editEmp}
-                onSave={(updated) => {
-                  setEmployees((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
-                  setEditOpen(false);
-                  setEditEmp(null);
-                }}
-                onCancel={() => { setEditOpen(false); setEditEmp(null); }}
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+
 
       {/* Terminate Dialog */}
       <Dialog open={terminateOpen} onOpenChange={(o) => { if (!o) { setTerminateOpen(false); setTerminateEmp(null); setTerminateReason(""); } }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-destructive">Terminate Employee</DialogTitle>
             <DialogDescription>
@@ -280,7 +224,7 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
 
       {/* Add Employee Dialog */}
       <Dialog open={addOpen} onOpenChange={(o) => { if (!o) { setAddOpen(false); } }}>
-        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
+        <DialogContent className="p-0 flex flex-col">
           <div className="flex-1 min-h-0 overflow-hidden">
             <AddEmployeeForm
               onCancel={() => setAddOpen(false)}

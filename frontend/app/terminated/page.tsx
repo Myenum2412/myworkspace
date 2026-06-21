@@ -10,7 +10,18 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { UserX } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { UserX, Undo2, Loader2Icon } from "lucide-react";
 import type { TerminatedEmployee } from "../employees/columns";
 
 const staticTerminated: TerminatedEmployee[] = [
@@ -27,6 +38,9 @@ const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").
 export default function TerminatedPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
   const [terminated, setTerminated] = useState<TerminatedEmployee[]>(staticTerminated);
+  const [reactivateEmp, setReactivateEmp] = useState<TerminatedEmployee | null>(null);
+  const [reactivateReason, setReactivateReason] = useState("");
+  const [reactivating, setReactivating] = useState(false);
 
   useEffect(() => {
     fetch("/api/user/me", { credentials: "include" })
@@ -45,6 +59,34 @@ export default function TerminatedPage() {
       }
     } catch {}
   }, []);
+
+  function handleReactivateClick(emp: TerminatedEmployee) {
+    setReactivateEmp(emp);
+    setReactivateReason("");
+    setReactivating(false);
+  }
+
+  function handleReactivateConfirm() {
+    if (!reactivateEmp) return;
+    setReactivating(true);
+
+    const { terminateReason, terminateDate, ...employeeData } = reactivateEmp;
+    const reactivated = {
+      ...employeeData,
+      status: "active" as const,
+    };
+
+    const employees = JSON.parse(localStorage.getItem("employees") || "[]");
+    localStorage.setItem("employees", JSON.stringify([...employees, reactivated]));
+
+    setTerminated((prev) => prev.filter((e) => e.id !== reactivateEmp.id));
+    const stored = JSON.parse(localStorage.getItem("terminated_employees") || "[]") as TerminatedEmployee[];
+    localStorage.setItem("terminated_employees", JSON.stringify(stored.filter((e) => e.id !== reactivateEmp.id)));
+
+    setReactivateEmp(null);
+    setReactivateReason("");
+    setReactivating(false);
+  }
 
   return (
     <SidebarProvider>
@@ -76,6 +118,7 @@ export default function TerminatedPage() {
                         <th className="pb-3 font-medium">Role</th>
                         <th className="pb-3 font-medium">End Date</th>
                         <th className="pb-3 font-medium">Reason</th>
+                        <th className="pb-3 font-medium text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -103,6 +146,17 @@ export default function TerminatedPage() {
                           <td className="py-3">
                             <Badge variant="outline">{emp.terminateReason}</Badge>
                           </td>
+                          <td className="py-3 text-right">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => handleReactivateClick(emp)}
+                            >
+                              <Undo2 className="size-3 mr-1" />
+                              Reactive
+                            </Button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -113,6 +167,47 @@ export default function TerminatedPage() {
           </Card>
         </main>
       </SidebarInset>
+
+      <Dialog
+        open={!!reactivateEmp}
+        onOpenChange={(o) => { if (!o && !reactivating) { setReactivateEmp(null); setReactivateReason(""); } }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reactivate Employee</DialogTitle>
+            <DialogDescription>
+              This will move {reactivateEmp?.name} back to the active employees list.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-3">
+            <Label className="text-muted-foreground">Reason for reactivation</Label>
+            <Textarea
+              className="mt-2"
+              placeholder="Enter reactivation reason..."
+              value={reactivateReason}
+              onChange={(e) => setReactivateReason(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => { setReactivateEmp(null); setReactivateReason(""); }}
+              disabled={reactivating}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              disabled={!reactivateReason.trim() || reactivating}
+              onClick={handleReactivateConfirm}
+            >
+              {reactivating ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <Undo2 className="size-4 mr-1" />}
+              Reactivate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }

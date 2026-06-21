@@ -2,17 +2,15 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
+import { CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import {
   Field,
   FieldLabel,
-  FieldSet,
-  FieldLegend,
 } from "@/components/ui/field"
-import { cn } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
+import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, Share2Icon, HistoryIcon } from "lucide-react"
 
 import {
   ProfileImageUpload,
@@ -37,6 +35,18 @@ function toRow(arr: any[] | undefined, defaults: Record<string, any>): Row[] {
   return arr.map((item) => ({ id: generateId(), ...item }))
 }
 
+function Section({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
+        <Icon className="size-3.5" />
+        {title}
+      </h3>
+      {children}
+    </div>
+  )
+}
+
 interface EmployeeEditFormProps {
   employee: Employee
   onSave: (updated: Employee) => void
@@ -44,8 +54,8 @@ interface EmployeeEditFormProps {
 }
 
 export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFormProps) {
-  const [currentStep, setCurrentStep] = useState(1)
   const [formError, setFormError] = useState("")
+  const [submitting, setSubmitting] = useState(false)
 
   const [formData, setFormData] = useState<FirstSlideEmployeeForm>({
     displayId: employee.displayId || "",
@@ -112,25 +122,13 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
     setter((prev) => prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)))
   }
 
-  const nextStep = () => {
-    if (currentStep === 1) {
-      if (!formData.firstName.trim() || !formData.email.trim()) {
-        setFormError("First name and email address are required.")
-        return
-      }
-    }
-    setCurrentStep((prev) => Math.min(prev + 1, 5))
-  }
-
-  const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1))
-  }
-
   const handleSave = () => {
     if (!formData.firstName.trim() || !formData.email.trim()) {
       setFormError("First name and email address are required.")
       return
     }
+    setFormError("")
+    setSubmitting(true)
 
     const updated: Employee = {
       ...employee,
@@ -173,251 +171,219 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-hidden">
+    <>
+      <div className="px-6 pt-6 pb-2 shrink-0">
+        <h2 className="flex items-center gap-2 text-xl font-semibold">
+          <UserIcon className="size-5" />
+          Edit Employee
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Update employee details across all sections.
+        </p>
+      </div>
+
       {formError && (
-        <div className="mx-6 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+        <div className="mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <AlertCircleIcon className="size-4 shrink-0" />
           {formError}
         </div>
       )}
-      {/* Progress Indicator */}
-      <div className="px-6 pt-4">
-        <div className="flex items-center justify-between mb-4">
-          {[1, 2, 3, 4, 5].map((step) => (
-            <div key={step} className="flex flex-col items-center gap-2 flex-1 relative">
-              <div
-                className={cn(
-                  "size-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 z-10",
-                  currentStep >= step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                )}
-              >
-                {step}
-              </div>
-              <span className={cn(
-                "text-[9px] font-bold uppercase tracking-wider transition-colors duration-300",
-                currentStep >= step ? "text-foreground" : "text-muted-foreground"
-              )}>
-                {step === 1 ? "Profile" : step === 2 ? "Work Info" : step === 3 ? "Contact" : step === 4 ? "Social" : "History"}
-              </span>
-              {step < 5 && (
-                <div className="absolute top-4 left-[60%] right-[-40%] h-[2px] bg-muted -z-0">
-                  <div className="h-full bg-primary transition-all duration-500" />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="relative flex-1 overflow-hidden px-1">
-        <div className="h-full">
-          <ScrollArea className="h-full px-5">
-            <div className="space-y-8 py-4">
-              {currentStep === 1 && (
-                <div className="space-y-8">
-                  <div className="flex gap-12 items-start mb-6">
-                    <div className="flex-shrink-0">
-                      <ProfileImageUpload
-                        avatar={formData.avatar}
-                        onAvatarChange={(url: string) => updateField("avatar", url)}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <BasicInfoSection formData={formData} onChange={updateField} />
-                    </div>
+      <div className="flex-1 overflow-y-auto px-6 py-3 space-y-5">
+        {/* Profile */}
+        <Section icon={UserIcon} title="Profile">
+          <div className="flex gap-8 items-start">
+            <div className="shrink-0">
+              <ProfileImageUpload
+                avatar={formData.avatar}
+                onAvatarChange={(url: string) => updateField("avatar", url)}
+              />
+            </div>
+            <div className="flex-1">
+              <BasicInfoSection formData={formData} onChange={updateField} />
+            </div>
+          </div>
+        </Section>
+
+        <Separator />
+
+        {/* Work Info */}
+        <Section icon={BriefcaseIcon} title="Work Info">
+          <WorkInfoSection formData={formData} onChange={updateField} />
+          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel>Date of Exit</FieldLabel>
+              <Input type="date" placeholder="dd-MMM-yyyy" />
+            </Field>
+          </div>
+        </Section>
+
+        <Separator />
+
+        {/* Contact */}
+        <Section icon={PhoneIcon} title="Contact">
+          <ContactDetailsSection formData={formData} onChange={updateField} />
+        </Section>
+
+        <Separator />
+
+        {/* Social */}
+        <Section icon={Share2Icon} title="Social">
+          <SocialPresenceSection formData={formData} onChange={updateField} />
+        </Section>
+
+        <Separator />
+
+        {/* History */}
+        <Section icon={HistoryIcon} title="History">
+          <div className="space-y-6">
+            <DynamicRowSection
+              title="Work Experience"
+              rows={workExperience}
+              onAdd={() => addRow(setWorkExperience)}
+              onRemove={(id: string) => removeRow(setWorkExperience, id)}
+              renderRow={(row: Row) => (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel>Company name</FieldLabel>
+                    <Input
+                      value={row.company || ""}
+                      onChange={(e) => updateRow(setWorkExperience, row.id, "company", e.target.value)}
+                      placeholder="Company name"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Job Title</FieldLabel>
+                    <Input
+                      value={row.title || ""}
+                      onChange={(e) => updateRow(setWorkExperience, row.id, "title", e.target.value)}
+                      placeholder="Job Title"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>From Date</FieldLabel>
+                    <Input
+                      type="date"
+                      value={row.from || ""}
+                      onChange={(e) => updateRow(setWorkExperience, row.id, "from", e.target.value)}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>To Date</FieldLabel>
+                    <Input
+                      type="date"
+                      value={row.to || ""}
+                      onChange={(e) => updateRow(setWorkExperience, row.id, "to", e.target.value)}
+                    />
+                  </Field>
+                  <Field className="sm:col-span-2">
+                    <FieldLabel>Job Description</FieldLabel>
+                    <textarea
+                      className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
+                      placeholder="Job Description"
+                      value={row.description || ""}
+                      onChange={(e) => updateRow(setWorkExperience, row.id, "description", e.target.value)}
+                    />
+                  </Field>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id={`relevant-${row.id}`}
+                      checked={!!row.relevant}
+                      onCheckedChange={(checked) => updateRow(setWorkExperience, row.id, "relevant", !!checked)}
+                    />
+                    <label htmlFor={`relevant-${row.id}`} className="text-sm font-medium">Relevant</label>
                   </div>
-                  <Separator />
                 </div>
               )}
+            />
 
-              {currentStep === 2 && (
-                <div className="space-y-8">
-                  <WorkInfoSection formData={formData} onChange={updateField} />
-                  <Separator />
+            <DynamicRowSection
+              title="Education Details"
+              rows={educationDetails}
+              onAdd={() => addRow(setEducationDetails)}
+              onRemove={(id: string) => removeRow(setEducationDetails, id)}
+              renderRow={(row: Row) => (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel>Institute Name</FieldLabel>
+                    <Input
+                      value={row.institute || ""}
+                      onChange={(e) => updateRow(setEducationDetails, row.id, "institute", e.target.value)}
+                      placeholder="Institute Name"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Degree/Diploma</FieldLabel>
+                    <Input
+                      value={row.degree || ""}
+                      onChange={(e) => updateRow(setEducationDetails, row.id, "degree", e.target.value)}
+                      placeholder="Degree/Diploma"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Specialization</FieldLabel>
+                    <Input
+                      value={row.specialization || ""}
+                      onChange={(e) => updateRow(setEducationDetails, row.id, "specialization", e.target.value)}
+                      placeholder="Specialization"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Date of Completion</FieldLabel>
+                    <Input
+                      type="date"
+                      value={row.completionDate || ""}
+                      onChange={(e) => updateRow(setEducationDetails, row.id, "completionDate", e.target.value)}
+                    />
+                  </Field>
                 </div>
               )}
+            />
 
-              {currentStep === 3 && (
-                <div className="space-y-8">
-                  <ContactDetailsSection formData={formData} onChange={updateField} />
-                  <Separator />
-                  <FieldSet>
-                    <FieldLegend>Separation Information</FieldLegend>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <Field>
-                        <FieldLabel>Date of Exit</FieldLabel>
-                        <Input type="date" placeholder="dd-MMM-yyyy" />
-                      </Field>
-                    </div>
-                  </FieldSet>
-                </div>
-              )}
-
-              {currentStep === 4 && (
-                <div className="space-y-8">
-                  <SocialPresenceSection formData={formData} onChange={updateField} />
-                </div>
-              )}
-
-              {currentStep === 5 && (
-                <div className="space-y-8 pb-8">
-                  <DynamicRowSection
-                    title="Work experience"
-                    rows={workExperience}
-                    onAdd={() => addRow(setWorkExperience)}
-                    onRemove={(id: string) => removeRow(setWorkExperience, id)}
-                    renderRow={(row: Row) => (
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Field>
-                          <FieldLabel>Company name</FieldLabel>
-                          <Input
-                            value={row.company || ""}
-                            onChange={(e) => updateRow(setWorkExperience, row.id, "company", e.target.value)}
-                            placeholder="Company name"
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Job Title</FieldLabel>
-                          <Input
-                            value={row.title || ""}
-                            onChange={(e) => updateRow(setWorkExperience, row.id, "title", e.target.value)}
-                            placeholder="Job Title"
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>From Date</FieldLabel>
-                          <Input
-                            type="date"
-                            value={row.from || ""}
-                            onChange={(e) => updateRow(setWorkExperience, row.id, "from", e.target.value)}
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>To Date</FieldLabel>
-                          <Input
-                            type="date"
-                            value={row.to || ""}
-                            onChange={(e) => updateRow(setWorkExperience, row.id, "to", e.target.value)}
-                          />
-                        </Field>
-                        <Field className="sm:col-span-2">
-                          <FieldLabel>Job Description</FieldLabel>
-                          <textarea
-                            className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
-                            placeholder="Job Description"
-                            value={row.description || ""}
-                            onChange={(e) => updateRow(setWorkExperience, row.id, "description", e.target.value)}
-                          />
-                        </Field>
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            id={`relevant-${row.id}`}
-                            checked={!!row.relevant}
-                            onCheckedChange={(checked) => updateRow(setWorkExperience, row.id, "relevant", !!checked)}
-                          />
-                          <label htmlFor={`relevant-${row.id}`} className="text-sm font-medium">Relevant</label>
-                        </div>
-                      </div>
-                    )}
+            <DynamicRowSection
+              title="Dependent Details"
+              rows={dependentDetails}
+              onAdd={() => addRow(setDependentDetails)}
+              onRemove={(id: string) => removeRow(setDependentDetails, id)}
+              renderRow={(row: Row) => (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel>Name</FieldLabel>
+                    <Input
+                      value={row.name || ""}
+                      onChange={(e) => updateRow(setDependentDetails, row.id, "name", e.target.value)}
+                      placeholder="Name"
+                    />
+                  </Field>
+                  <SelectWithAdd
+                    label="Relationship"
+                    options={["Spouse", "Child", "Parent"]}
+                    value={row.relationship || ""}
+                    onChange={(value: string) => updateRow(setDependentDetails, row.id, "relationship", value)}
                   />
-                  <Separator />
-                  <DynamicRowSection
-                    title="Education Details"
-                    rows={educationDetails}
-                    onAdd={() => addRow(setEducationDetails)}
-                    onRemove={(id: string) => removeRow(setEducationDetails, id)}
-                    renderRow={(row: Row) => (
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Field>
-                          <FieldLabel>Institute Name</FieldLabel>
-                          <Input
-                            value={row.institute || ""}
-                            onChange={(e) => updateRow(setEducationDetails, row.id, "institute", e.target.value)}
-                            placeholder="Institute Name"
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Degree/Diploma</FieldLabel>
-                          <Input
-                            value={row.degree || ""}
-                            onChange={(e) => updateRow(setEducationDetails, row.id, "degree", e.target.value)}
-                            placeholder="Degree/Diploma"
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Specialization</FieldLabel>
-                          <Input
-                            value={row.specialization || ""}
-                            onChange={(e) => updateRow(setEducationDetails, row.id, "specialization", e.target.value)}
-                            placeholder="Specialization"
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Date of Completion</FieldLabel>
-                          <Input
-                            type="date"
-                            value={row.completionDate || ""}
-                            onChange={(e) => updateRow(setEducationDetails, row.id, "completionDate", e.target.value)}
-                          />
-                        </Field>
-                      </div>
-                    )}
-                  />
-                  <Separator />
-                  <DynamicRowSection
-                    title="Dependent Details"
-                    rows={dependentDetails}
-                    onAdd={() => addRow(setDependentDetails)}
-                    onRemove={(id: string) => removeRow(setDependentDetails, id)}
-                    renderRow={(row: Row) => (
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Field>
-                          <FieldLabel>Name</FieldLabel>
-                          <Input
-                            value={row.name || ""}
-                            onChange={(e) => updateRow(setDependentDetails, row.id, "name", e.target.value)}
-                            placeholder="Name"
-                          />
-                        </Field>
-                        <SelectWithAdd
-                          label="Relationship"
-                          options={["Spouse", "Child", "Parent"]}
-                          value={row.relationship || ""}
-                          onChange={(value: string) => updateRow(setDependentDetails, row.id, "relationship", value)}
-                        />
-                        <Field>
-                          <FieldLabel>Date of Birth</FieldLabel>
-                          <Input
-                            type="date"
-                            value={row.dob || ""}
-                            onChange={(e) => updateRow(setDependentDetails, row.id, "dob", e.target.value)}
-                          />
-                        </Field>
-                      </div>
-                    )}
-                  />
+                  <Field>
+                    <FieldLabel>Date of Birth</FieldLabel>
+                    <Input
+                      type="date"
+                      value={row.dob || ""}
+                      onChange={(e) => updateRow(setDependentDetails, row.id, "dob", e.target.value)}
+                    />
+                  </Field>
                 </div>
               )}
-            </div>
-          </ScrollArea>
-        </div>
+            />
+          </div>
+        </Section>
       </div>
 
-      <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/10">
-        <Button variant="ghost" onClick={currentStep === 1 ? onCancel : prevStep}>
-          {currentStep === 1 ? "Cancel" : "Back"}
+      <div className="shrink-0 border-t px-6 py-4 flex gap-2 justify-end bg-background mt-4">
+        <Button variant="outline" onClick={onCancel} disabled={submitting}>
+          Cancel
         </Button>
-        <div className="flex gap-3">
-          {currentStep < 5 ? (
-            <Button className="bg-primary hover:bg-primary/80 w-32" onClick={nextStep}>
-              Next Step
-            </Button>
-          ) : (
-            <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSave}>
-              Save Changes
-            </Button>
-          )}
-        </div>
+        <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()}>
+          {submitting ? <Loader2Icon className="size-4 animate-spin" /> : <><SaveIcon className="size-3.5 mr-1.5" />Save Changes</>}
+        </Button>
       </div>
-    </div>
+    </>
   )
 }

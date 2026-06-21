@@ -14,6 +14,9 @@ export type Project = {
   progress: number;
   access: "Public" | "Private";
   status: "Active" | "Inactive";
+  headId?: string;
+  headName?: string;
+  headAvatar?: string;
 };
 
 export const columns: ColumnDef<Project>[] = [
@@ -63,16 +66,32 @@ export const columns: ColumnDef<Project>[] = [
     accessorKey: "progress",
     header: "Progress",
     cell: ({ row }) => {
-      const progress = row.getValue<number>("progress");
+      const project = row.original;
+      if (project.headName) {
+        return (
+          <div className="flex items-center gap-2">
+            <div className="size-7 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+              {project.headAvatar ? (
+                <img src={project.headAvatar} alt={project.headName} className="size-full object-cover" />
+              ) : (
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  {project.headName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                </span>
+              )}
+            </div>
+            <span className="text-sm font-medium">{project.headName}</span>
+          </div>
+        );
+      }
       return (
         <div className="flex items-center gap-2">
           <div className="h-2 w-20 rounded-full bg-muted">
             <div
               className="h-2 rounded-full bg-primary transition-all"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${project.progress}%` }}
             />
           </div>
-          <span className="text-xs text-muted-foreground">{progress}%</span>
+          <span className="text-xs text-muted-foreground">{project.progress}%</span>
         </div>
       );
     },

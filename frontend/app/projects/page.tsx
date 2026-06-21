@@ -40,13 +40,13 @@ import { DataTable } from "./data-table";
 import { ProjectDetailedView } from "./project-detailed-view";
 
 const FAKE_PROJECTS: Project[] = [
-  { id: "proj_1", name: "Website Redesign", client: "Acme Corp", color: "#3b82f6", description: "Complete overhaul of corporate website", deadline: "2026-08-15", tracked: 120, progress: 65, access: "Public", status: "Active" },
-  { id: "proj_2", name: "Mobile App", client: "Globex Inc", color: "#ef4444", description: "Cross-platform mobile application", deadline: "2026-10-01", tracked: 85, progress: 30, access: "Private", status: "Active" },
-  { id: "proj_3", name: "Brand Identity", client: "Initech", color: "#10b981", description: "Brand guidelines and asset creation", deadline: "2026-06-30", tracked: 40, progress: 100, access: "Public", status: "Active" },
-  { id: "proj_4", name: "Cloud Migration", client: "Umbrella Corp", color: "#f59e0b", description: "Migrate on-prem infrastructure to AWS", deadline: "2026-12-20", tracked: 200, progress: 15, access: "Private", status: "Active" },
+  { id: "proj_1", name: "Website Redesign", client: "Acme Corp", color: "#3b82f6", description: "Complete overhaul of corporate website", deadline: "2026-08-15", tracked: 120, progress: 65, access: "Public", status: "Active", headName: "Alice Johnson", headAvatar: "" },
+  { id: "proj_2", name: "Mobile App", client: "Globex Inc", color: "#ef4444", description: "Cross-platform mobile application", deadline: "2026-10-01", tracked: 85, progress: 30, access: "Private", status: "Active", headName: "Bob Smith", headAvatar: "" },
+  { id: "proj_3", name: "Brand Identity", client: "Initech", color: "#10b981", description: "Brand guidelines and asset creation", deadline: "2026-06-30", tracked: 40, progress: 100, access: "Public", status: "Active", headName: "Carol Williams", headAvatar: "" },
+  { id: "proj_4", name: "Cloud Migration", client: "Umbrella Corp", color: "#f59e0b", description: "Migrate on-prem infrastructure to AWS", deadline: "2026-12-20", tracked: 200, progress: 15, access: "Private", status: "Active", headName: "Dave Brown", headAvatar: "" },
   { id: "proj_5", name: "SEO Audit", client: "Wayne Enterprises", color: "#8b5cf6", description: "Full SEO audit and recommendations", deadline: "2026-05-01", tracked: 0, progress: 0, access: "Public", status: "Inactive" },
-  { id: "proj_6", name: "Data Pipeline", client: "Acme Corp", color: "#06b6d4", description: "Real-time data processing pipeline", deadline: "2026-09-15", tracked: 60, progress: 45, access: "Private", status: "Active" },
-  { id: "proj_7", name: "Dashboard MVP", client: "Stark Industries", color: "#f97316", description: "Internal analytics dashboard", deadline: "2026-07-01", tracked: 30, progress: 100, access: "Public", status: "Active" },
+  { id: "proj_6", name: "Data Pipeline", client: "Acme Corp", color: "#06b6d4", description: "Real-time data processing pipeline", deadline: "2026-09-15", tracked: 60, progress: 45, access: "Private", status: "Active", headName: "Frank Miller", headAvatar: "" },
+  { id: "proj_7", name: "Dashboard MVP", client: "Stark Industries", color: "#f97316", description: "Internal analytics dashboard", deadline: "2026-07-01", tracked: 30, progress: 100, access: "Public", status: "Active", headName: "Grace Lee", headAvatar: "" },
 ];
 
 const FAKE_MEMBERS = [
@@ -299,7 +299,7 @@ export default function ProjectsPage() {
         </main>
 
         <Dialog open={showForm} onOpenChange={(open) => { if (!submitting) setShowForm(open); }}>
-          <DialogContent className="w-full max-w-xl max-h-[90vh] h-auto p-0 flex flex-col">
+          <DialogContent className="p-0 flex flex-col">
             <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
               <DialogTitle className="flex items-center gap-2 text-xl">
                 <PlusIcon className="size-5" />
@@ -512,7 +512,7 @@ export default function ProjectsPage() {
         </Dialog>
 
         <Dialog open={!!viewProject} onOpenChange={(open) => { if (!open) setViewProject(null); }}>
-          <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
+          <DialogContent className="p-0 flex flex-col">
             <DialogHeader className="px-6 pt-6 pb-0 shrink-0">
               <DialogTitle>Project Details</DialogTitle>
               <DialogDescription>View project information and performance.</DialogDescription>
@@ -529,7 +529,7 @@ export default function ProjectsPage() {
         </Dialog>
 
         <Dialog open={showEdit} onOpenChange={setShowEdit}>
-          <DialogContent className="w-full max-w-xl max-h-[90vh] h-auto p-0 flex flex-col">
+          <DialogContent className="p-0 flex flex-col">
             <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
               <DialogTitle className="flex items-center gap-2 text-xl">
                 Edit Project

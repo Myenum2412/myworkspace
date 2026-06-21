@@ -264,7 +264,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   return (
     <div className="flex flex-1 flex-col gap-6 overflow-hidden">
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Employee Created</DialogTitle>
             <DialogDescription>

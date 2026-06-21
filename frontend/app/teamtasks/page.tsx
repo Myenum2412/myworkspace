@@ -8,7 +8,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { UsersIcon, Loader2Icon, UserIcon, CheckCircle2Icon, PencilIcon, Trash2Icon } from "lucide-react";
+import { UsersIcon, Loader2Icon, UserIcon, CheckCircle2Icon, PencilIcon, Trash2Icon, MoreHorizontalIcon, EyeIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -24,7 +24,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontalIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import { TaskEditForm } from "@/components/task-edit-form";
 
 type Task = {
   _id: string;
@@ -69,9 +76,12 @@ const priorityStyles: Record<string, string> = {
 
 export default function TeamTasksPage() {
   const { data: session } = useSession();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(FAKE_TASKS);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"cards" | "table">("cards");
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const user = {
     name: session?.user?.name || "User",
@@ -85,18 +95,21 @@ export default function TeamTasksPage() {
       .then((r) => r.json())
       .then((d) => {
         const profile = d.data || d;
-        const id = profile?.org?.id || profile?.org?._id?.toString() || "";
-        if (id) {
-          fetch(`/api/tasks?orgId=${id}`, { credentials: "include" })
-            .then((r) => r.json())
-            .then((res) => setTasks(res.data || res || []))
-            .catch(() => setTasks(FAKE_TASKS))
-            .finally(() => setLoading(false));
-        } else {
-          setLoading(false);
+        const orgId = profile?.org?.id || profile?.org?._id?.toString() || "";
+        if (orgId) {
+          return fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
+        }
+        return null;
+      })
+      .then((res) => res?.json())
+      .then((d) => {
+        if (d) {
+          const arr = Array.isArray(d) ? d : d.data || [];
+          if (arr.length > 0) setTasks(arr);
         }
       })
-      .catch(() => { setTasks(FAKE_TASKS); setLoading(false); });
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [session]);
 
   const assigneeMap = new Map<string, { name: string; avatar: string; tasks: Task[] }>();
@@ -186,7 +199,8 @@ export default function TeamTasksPage() {
                                 <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setSelectedTask(t); setEditOpen(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="text-destructive"><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
                               </DropdownMenuContent>
@@ -241,6 +255,33 @@ export default function TeamTasksPage() {
           )}
         </main>
       </SidebarInset>
+
+      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+        <DialogContent className="p-0 flex flex-col">
+          {selectedTask && (
+            <TaskDetailedView
+              task={selectedTask}
+              onEdit={(t) => { setViewOpen(false); setSelectedTask(t); setEditOpen(true); }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="p-0 flex flex-col">
+          {selectedTask && (
+            <TaskEditForm
+              task={selectedTask}
+              onSave={(updated) => {
+                setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
+                setEditOpen(false);
+                setSelectedTask(null);
+              }}
+              onCancel={() => setEditOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }

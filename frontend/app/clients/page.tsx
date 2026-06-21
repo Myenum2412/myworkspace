@@ -44,15 +44,18 @@ const FAKE_CLIENTS: Client[] = [
 export default function ClientsPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<Client[]>(FAKE_CLIENTS);
   const [showForm, setShowForm] = useState(false);
   const [step, setStep] = useState(0);
 
   useEffect(() => {
     fetch("/api/clients", { credentials: "include" })
       .then((r) => r.json())
-      .then((d) => setClients(Array.isArray(d) ? d : d.data || []))
-      .catch(() => setClients(FAKE_CLIENTS));
+      .then((d) => {
+        const arr = Array.isArray(d) ? d : d.data || [];
+        if (arr.length > 0) setClients(arr);
+      })
+      .catch(() => {});
   }, []);
 
   // Client Information
@@ -265,7 +268,7 @@ export default function ClientsPage() {
         </main>
 
         <Dialog open={showForm} onOpenChange={(v) => { setShowForm(v); if (!v) setStep(0); }}>
-          <DialogContent className="max-w-4xl w-full max-h-[85vh] min-h-[50vh] p-0 flex flex-col">
+          <DialogContent className="p-0 flex flex-col">
             <DialogHeader className="px-6 pt-6 pb-0 shrink-0 w-full">
               <DialogTitle>Add Client</DialogTitle>
               <DialogDescription>
