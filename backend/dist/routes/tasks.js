@@ -33,6 +33,7 @@ router.get("/", async (req, res) => {
             _id: t._id.toString(),
             title: t.title,
             description: t.description || "",
+            project: t.project || "",
             status: t.status,
             priority: t.priority,
             dueDate: t.dueDate || null,
@@ -47,7 +48,7 @@ router.get("/", async (req, res) => {
     res.json({ success: true, data: result });
 });
 router.post("/", async (req, res) => {
-    const { orgId, title, description, priority, assigneeId, teamId, dueDate } = req.body;
+    const { orgId, title, description, priority, assigneeId, teamId, dueDate, project } = req.body;
     if (!title)
         throw new AppError(400, "Title is required");
     if (!orgId)
@@ -59,6 +60,7 @@ router.post("/", async (req, res) => {
         creatorId: req.user.userId,
         title,
         description: description || undefined,
+        project: project || undefined,
         priority: priority || "medium",
         dueDate: dueDate ? new Date(dueDate) : undefined,
     });
@@ -74,7 +76,7 @@ router.post("/", async (req, res) => {
 });
 router.put("/:id", async (req, res) => {
     const id = req.params.id;
-    const { title, status, priority, assigneeId, description, dueDate } = req.body;
+    const { title, status, priority, assigneeId, description, dueDate, project } = req.body;
     const userOrgId = await getUserOrgId(req.user.userId);
     const existing = await Task.findById(id).lean();
     if (!existing)
@@ -92,6 +94,8 @@ router.put("/:id", async (req, res) => {
         updates.assigneeId = assigneeId;
     if (description !== undefined)
         updates.description = description;
+    if (project !== undefined)
+        updates.project = project;
     if (dueDate !== undefined)
         updates.dueDate = dueDate ? new Date(dueDate) : null;
     await Task.findByIdAndUpdate(id, updates);

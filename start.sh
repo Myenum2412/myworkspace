@@ -56,10 +56,29 @@ echo -e "${GREEN}✅ Backend Build Successful${NC}"
 echo ""
 
 ########################################
+# Seed Admin
+########################################
+
+echo -e "${YELLOW}[3/6] Seeding Admin...${NC}"
+
+cd "$SCRIPT_DIR/backend"
+
+if ! npm run db:seed-admin 2>&1 | tee seed-admin.log; then
+    echo ""
+    echo -e "${RED}❌ Admin Seed Failed${NC}"
+    echo ""
+    grep -iE "error|failed|exception" seed-admin.log || true
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Admin Seed Successful${NC}"
+echo ""
+
+########################################
 # Frontend Build
 ########################################
 
-echo -e "${YELLOW}[3/5] Building Frontend...${NC}"
+echo -e "${YELLOW}[4/6] Building Frontend...${NC}"
 
 cd "$SCRIPT_DIR/frontend"
 
@@ -78,7 +97,7 @@ echo ""
 # Start Backend
 ########################################
 
-echo -e "${YELLOW}[4/5] Starting Backend on Port 5000...${NC}"
+echo -e "${YELLOW}[5/6] Starting Backend on Port 4000...${NC}"
 
 cd "$SCRIPT_DIR/backend"
 npm run start &
@@ -90,7 +109,7 @@ sleep 5
 # Start Frontend
 ########################################
 
-echo -e "${YELLOW}[5/5] Starting Frontend on Port 3000...${NC}"
+echo -e "${YELLOW}[6/6] Starting Frontend on Port 3000...${NC}"
 
 cd "$SCRIPT_DIR/frontend"
 npm run start &
@@ -98,7 +117,7 @@ FRONTEND_PID=$!
 
 echo ""
 echo "===================================="
-echo -e "${GREEN}Backend : http://localhost:5000${NC}"
+echo -e "${GREEN}Backend : http://localhost:4000${NC}"
 echo -e "${GREEN}Frontend: http://localhost:3000${NC}"
 echo "===================================="
 echo ""

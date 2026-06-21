@@ -8,7 +8,14 @@ export interface IUser extends Document {
   image?: string;
   password?: string;
   status: "online" | "offline" | "break";
-  role: "admin" | "manager" | "member";
+  role: "admin" | "manager" | "member" | "ORG_MENU_ADMIN";
+  permissions: string[];
+  isActive: boolean;
+  lastLogin?: Date;
+  failedLoginAttempts: number;
+  lockedUntil?: Date;
+  twoFactorEnabled: boolean;
+  twoFactorSecret?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,7 +29,14 @@ const userSchema = new Schema<IUser>(
     image: String,
     password: String,
     status: { type: String, enum: ["online", "offline", "break"], default: "offline" },
-    role: { type: String, enum: ["admin", "manager", "member"], default: "member" },
+    role: { type: String, enum: ["admin", "manager", "member", "ORG_MENU_ADMIN"], default: "member" },
+    permissions: { type: [String], default: [] },
+    isActive: { type: Boolean, default: true },
+    lastLogin: Date,
+    failedLoginAttempts: { type: Number, default: 0 },
+    lockedUntil: Date,
+    twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorSecret: String,
   },
   { timestamps: true }
 );

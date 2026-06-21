@@ -7,6 +7,13 @@ const userSchema = new Schema({
     image: String,
     password: String,
     status: { type: String, enum: ["online", "offline", "break"], default: "offline" },
-    role: { type: String, enum: ["admin", "manager", "member"], default: "member" },
+    role: { type: String, enum: ["admin", "manager", "member", "ORG_MENU_ADMIN"], default: "member" },
+    permissions: { type: [String], default: [] },
+    isActive: { type: Boolean, default: true },
+    lastLogin: Date,
+    failedLoginAttempts: { type: Number, default: 0 },
+    lockedUntil: Date,
+    twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorSecret: String,
 }, { timestamps: true });
 export const User = model("User", userSchema);

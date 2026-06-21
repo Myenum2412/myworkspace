@@ -7,7 +7,14 @@ export interface IUser extends Document {
     image?: string;
     password?: string;
     status: "online" | "offline" | "break";
-    role: "admin" | "manager" | "member";
+    role: "admin" | "manager" | "member" | "ORG_MENU_ADMIN";
+    permissions: string[];
+    isActive: boolean;
+    lastLogin?: Date;
+    failedLoginAttempts: number;
+    lockedUntil?: Date;
+    twoFactorEnabled: boolean;
+    twoFactorSecret?: string;
     createdAt: Date;
     updatedAt: Date;
 }

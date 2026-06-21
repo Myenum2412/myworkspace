@@ -4,18 +4,47 @@ import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Members" };
 
-const getMembers = cache(async (orgId: string) => {
-  return db
-    .collection(collections.orgMembers)
-    .find({ orgId })
-    .sort({ joinedAt: -1 })
-    .toArray();
+interface MemberData {
+  id: string;
+  userId: string;
+  role: string;
+  joinedAt?: Date;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
+  const cursor = await db.collection(collections.orgMembers).find({ orgId });
+  const members = await cursor.sort({ joinedAt: -1 }).toArray();
+
+  const userIds = members.map((m: Record<string, unknown>) => m.userId as string);
+  const users = userIds.length > 0
+    ? await (await db.collection(collections.users).find({ id: { $in: userIds } }))
+        .project({ id: 1, name: 1, email: 1, image: 1 })
+        .toArray()
+    : [];
+
+  const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
+
+  return members.map((m: Record<string, unknown>) => {
+    const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
+    return {
+      id: String(m._id || m.id || ""),
+      userId: String(m.userId || ""),
+      role: String(m.role || "member"),
+      joinedAt: m.joinedAt as Date | undefined,
+      name: (user?.name as string) || "Unknown",
+      email: (user?.email as string) || "",
+      avatar: (user?.image as string) || "",
+    };
+  });
 });
 
 export default async function MembersPage() {
@@ -40,11 +69,15 @@ export default async function MembersPage() {
               {members.map((member) => (
                 <div key={member.id} className="flex items-center gap-3 rounded-lg border p-3">
                   <Avatar>
-                    <AvatarFallback>{member.id.slice(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarImage src={member.avatar} alt={member.name} />
+                    <AvatarFallback>{member.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Member</p>
-                    <p className="text-xs text-muted-foreground">Joined {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : "Recently"}</p>
+                    <p className="text-sm font-medium">{member.name}</p>
+                    <p className="text-xs text-muted-foreground">{member.email}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Joined {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : "Recently"}
+                    </p>
                   </div>
                   <Badge variant={member.role === "admin" ? "default" : "secondary"}>
                     {member.role}

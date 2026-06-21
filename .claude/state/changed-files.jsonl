@@ -12,3 +12,4 @@
 {"file":"backend/src/lib/db/models/FileAttachment.ts","action":"Edit","timestamp":"2026-06-19T18:21:14Z","important":false}
 {"file":"backend/src/routes/files.ts","action":"Edit","timestamp":"2026-06-19T18:21:58Z","important":false}
 {"file":"frontend/app/recycle-bin/page.tsx","action":"Write","timestamp":"2026-06-19T18:25:08Z","important":false}
+{"file":"start.sh","action":"Edit","timestamp":"2026-06-21T11:59:16Z","important":false}

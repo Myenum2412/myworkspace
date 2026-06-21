@@ -7,6 +7,7 @@ export interface ITask extends Document {
   creatorId: Types.ObjectId;
   title: string;
   description?: string;
+  project?: string;
   status: "todo" | "in_progress" | "review" | "done" | "cancelled";
   priority: "low" | "medium" | "high" | "urgent";
   dueDate?: Date;
@@ -22,6 +23,7 @@ const taskSchema = new Schema<ITask>(
     creatorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     title: { type: String, required: true },
     description: String,
+    project: String,
     status: {
       type: String,
       enum: ["todo", "in_progress", "review", "done", "cancelled"],

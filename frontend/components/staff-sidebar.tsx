@@ -14,6 +14,7 @@ import {
   CalendarIcon,
   ClockIcon,
   ClipboardListIcon,
+  ListTodoIcon,
   Settings2Icon,
 } from "lucide-react";
 
@@ -53,6 +54,17 @@ export const defaultStaffNavData = [
     items: [
       { title: "Today", url: "/staffs/attendance" },
       { title: "Reports", url: "/staffs/attendance/reports" },
+    ],
+  },
+  {
+    title: "Tasks",
+    url: "/alltasks",
+    icon: <ListTodoIcon className="size-6" />,
+    items: [
+      { title: "All Tasks", url: "/alltasks" },
+      { title: "My Tasks", url: "/mytasks" },
+      { title: "Team Tasks", url: "/teamtasks" },
+      { title: "Upcoming", url: "/upcomingtasks" },
     ],
   },
   {

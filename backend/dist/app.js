@@ -16,6 +16,7 @@ import clientsRoutes from "./routes/clients.js";
 import projectsRoutes from "./routes/projects.js";
 import teamsRoutes from "./routes/teams.js";
 import timeEntriesRoutes from "./routes/time-entries.js";
+import adminRoutes from "./routes/admin.js";
 const app = express();
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json());
@@ -40,6 +41,7 @@ app.use("/api/clients", clientsRoutes);
 app.use("/api/projects", projectsRoutes);
 app.use("/api/teams", teamsRoutes);
 app.use("/api/time-entries", timeEntriesRoutes);
+app.use("/api/admin", adminRoutes);
 // Error handler
 app.use(errorHandler);
 export default app;

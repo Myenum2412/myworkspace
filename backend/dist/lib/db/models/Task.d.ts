@@ -6,6 +6,7 @@ export interface ITask extends Document {
     creatorId: Types.ObjectId;
     title: string;
     description?: string;
+    project?: string;
     status: "todo" | "in_progress" | "review" | "done" | "cancelled";
     priority: "low" | "medium" | "high" | "urgent";
     dueDate?: Date;

@@ -3,6 +3,24 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import LinkedIn from "next-auth/providers/linkedin";
 import { compare } from "bcryptjs";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name?: string;
+      email?: string;
+      image?: string;
+      role?: string;
+      permissions?: string[];
+    };
+  }
+  interface User {
+    role?: string;
+    permissions?: string[];
+  }
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
@@ -14,13 +32,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role;
+        token.permissions = (user as { permissions?: string[] }).permissions;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        (session.user as { role?: string }).role = token.role as string;
+        session.user.role = token.role as string;
+        session.user.permissions = token.permissions as string[];
       }
       return session;
     },
@@ -72,13 +92,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
         const { db } = await import("@/lib/db");
-        const users = await db.collection("users").find({ email }).toArray();
-        if (users.length === 0) return null;
-        const user = users[0];
+        const user = await db.collection("users").findOne({ email });
+        if (!user) return null;
         if (!user.password) return null;
         const valid = await compare(password, user.password);
         if (!valid) return null;
-        return { id: user.id, email: user.email, name: user.name, image: user.image, role: user.role };
+        const userId = user.id || user._id?.toString();
+        return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [] };
       },
     }),
   ],

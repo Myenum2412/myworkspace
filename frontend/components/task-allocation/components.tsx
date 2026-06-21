@@ -38,13 +38,6 @@ export function PrioritySelector({
           ))}
         </SelectContent>
       </Select>
-      <button
-        type="button"
-        onClick={() => onSelect("quick-add")}
-        className="text-xs text-primary hover:underline flex items-center gap-1"
-      >
-        <PlusIcon className="size-3" /> Add new
-      </button>
     </div>
   );
 }

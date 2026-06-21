@@ -26,24 +26,24 @@ export async function loginAction(formData: FormData) {
     throw error;
   }
 
-  const users = await db.collection(collections.users).find({ email }).toArray();
-
-  if (users.length > 0) {
+  const user = await db.collection(collections.users).findOne({ email });
+  if (user) {
+    const userId = user.id || user._id?.toString();
     await db.collection(collections.users).updateOne(
-      { id: users[0].id },
+      { _id: user._id },
       { $set: { status: "online", updatedAt: new Date() } }
     );
 
-    const member = await db.collection(collections.orgMembers).findOne({ userId: users[0].id });
+    const member = await db.collection(collections.orgMembers).findOne({ userId: user._id });
 
     await db.collection(collections.activityLogs).insertOne({
       id: uuid(),
       orgId: member?.orgId || "system",
-      userId: users[0].id,
+      userId,
       action: "user.login",
       entityType: "user",
-      entityId: users[0].id,
-      description: `${users[0].name} logged in`,
+      entityId: userId,
+      description: `${user.name} logged in`,
     });
   }
 

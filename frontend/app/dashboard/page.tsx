@@ -54,6 +54,7 @@ export default function DashboardPage() {
     name: session?.user?.name || "User",
     email: session?.user?.email || "",
     avatar: session?.user?.image || "",
+    role: session?.user?.role,
   };
 
   useEffect(() => {

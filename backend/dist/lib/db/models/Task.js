@@ -6,6 +6,7 @@ const taskSchema = new Schema({
     creatorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     title: { type: String, required: true },
     description: String,
+    project: String,
     status: {
         type: String,
         enum: ["todo", "in_progress", "review", "done", "cancelled"],

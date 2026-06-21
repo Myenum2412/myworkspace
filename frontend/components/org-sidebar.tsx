@@ -93,6 +93,8 @@ interface NavUserData {
   name: string;
   email: string;
   avatar: string;
+  role?: string;
+  permissions?: string[];
 }
 
 export function OrgSidebar({

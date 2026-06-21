@@ -10,6 +10,9 @@ import { AppError } from "../middleware/error.js";
 
 const router = Router();
 
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
+
 router.post("/login", async (req: AuthRequest, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -21,11 +24,27 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     throw new AppError(401, "Invalid email or password");
   }
 
+  if (!user.isActive) {
+    throw new AppError(403, "Account is deactivated");
+  }
+
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    throw new AppError(423, "Account is temporarily locked. Try again later.");
+  }
+
   const valid = await compare(password, user.password);
   if (!valid) {
+    user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+    if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
+      user.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
+    }
+    await user.save();
     throw new AppError(401, "Invalid email or password");
   }
 
+  user.failedLoginAttempts = 0;
+  user.lockedUntil = undefined;
+  user.lastLogin = new Date();
   user.status = "online";
   await user.save();
 
@@ -38,7 +57,12 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     description: `${user.name} logged in`,
   });
 
-  const token = signToken({ userId: user._id.toString(), email: user.email, role: user.role });
+  const token = signToken({
+    userId: user._id.toString(),
+    email: user.email,
+    role: user.role,
+    permissions: user.permissions || [],
+  });
 
   res.json({
     success: true,
@@ -50,6 +74,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
         email: user.email,
         image: user.image,
         role: user.role,
+        permissions: user.permissions || [],
         status: "online",
       },
     },
@@ -136,7 +161,9 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
       email: user.email,
       image: user.image,
       role: user.role,
+      permissions: user.permissions || [],
       status: user.status,
+      isActive: user.isActive,
       createdAt: user.createdAt,
     },
   });

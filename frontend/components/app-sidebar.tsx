@@ -17,6 +17,7 @@ import {
   FolderIcon,
   Settings2Icon,
   CheckCheckIcon,
+  ShieldIcon,
 } from "lucide-react";
 
 export const defaultNavData = {
@@ -110,10 +111,13 @@ export interface AppSidebarData {
   navMain: typeof defaultNavData.navMain;
 }
 
+const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "developer@myenum.in").toLowerCase().trim();
+
 interface NavUserData {
   name: string;
   email: string;
   avatar: string;
+  role?: string;
 }
 
 export function AppSidebar({
@@ -121,6 +125,20 @@ export function AppSidebar({
   data = defaultNavData,
   ...props
 }: React.ComponentProps<typeof Sidebar> & { data?: AppSidebarData; user: NavUserData }) {
+
+  const isAdmin = user.email?.toLowerCase().trim() === ADMIN_EMAIL;
+  const adminItem = isAdmin ? {
+    title: "Admin Panel",
+    url: "/orgmenu",
+    icon: <ShieldIcon className="size-6" />,
+    items: [
+      { title: "Dashboard", url: "/orgmenu" },
+      { title: "Organization", url: "/orgmenu/org" },
+      { title: "Members", url: "/orgmenu/members" },
+      { title: "Audit Logs", url: "/orgmenu/audit" },
+      { title: "Settings", url: "/orgmenu/settings" },
+    ],
+  } : null;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -140,6 +158,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain.slice(0, -1)} label="Platform" />
+        {adminItem && <NavMain items={[adminItem]} label="Administration" />}
         <NavMain items={data.navMain.slice(-1)} label="Settings" className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

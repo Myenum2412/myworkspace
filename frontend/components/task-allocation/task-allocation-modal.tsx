@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Loader2,
   ListTodoIcon,
   CalendarIcon,
   AlertCircleIcon,
-  UserIcon,
-  HashIcon,
-  PaperclipIcon,
 } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -17,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
+
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog,
@@ -34,8 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-
 import { PrioritySelector, AssigneeSelector } from "@/components/task-allocation/components";
 import type { AssigneeType } from "@/components/task-allocation/types";
 import TableUpload from "@/components/table-upload";
@@ -72,9 +68,11 @@ const priorities = [
 ];
 
 export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSaveTemplate }: TaskAllocationModalProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
+  const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
@@ -136,6 +134,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
 
   const resetForm = () => {
     setTitle("");
+    setProjectName("");
     setDescription("");
     setPriority("");
     setDueDate(undefined);
@@ -164,6 +163,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
       await taskService.createTask({
         task: title.trim(),
         description: description.trim(),
+        project: projectName.trim() || undefined,
         priority,
         status: "Open",
         assignedTo:
@@ -186,7 +186,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !isSubmitting) handleClose(); }}>
-      <DialogContent className="p-0 flex flex-col">
+      <DialogContent className="p-0 flex flex-col w-auto h-auto max-w-[90vw] max-h-[90vh]">
         <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <ListTodoIcon className="size-5" />
@@ -204,97 +204,81 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-6 py-3 space-y-5">
-          {/* Section: Basic Information */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <ListTodoIcon className="size-3.5" />
-              Basic Information
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="taskTitle" className="text-sm">Task Title *</Label>
-                <Input
-                  id="taskTitle"
-                  placeholder="e.g. Design new landing page"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="mt-1"
+        <div className="flex-1 overflow-y-auto px-6 py-3 space-y-4">
+          {taskDefinitions.length > 0 && (
+            <div className="flex items-center gap-3">
+              <Label className="text-xs font-medium text-muted-foreground shrink-0">Quick fill from saved task:</Label>
+              <Select onValueChange={(val) => {
+                const selected = taskDefinitions.find((d) => d.id === val);
+                if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
+              }}>
+                <SelectTrigger className="max-w-[220px] h-8 text-xs">
+                  <SelectValue placeholder="Select..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {taskDefinitions.filter((d) => d.isActive).map((def) => (
+                    <SelectItem key={def.id} value={def.id}>{def.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="taskTitle" className="text-sm font-medium">Task Title *</Label>
+              <Input
+                id="taskTitle"
+                placeholder="e.g. Design new landing page"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
+            <div>
+              <Label htmlFor="projectName" className="text-sm font-medium">Project Name</Label>
+              <Input
+                id="projectName"
+                placeholder="e.g. Marketing Site"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Priority *</Label>
+              <div className="mt-1.5">
+                <PrioritySelector
+                  selectedPriority={priority}
+                  priorities={priorities}
+                  onSelect={(val: string) => {
+                    if (val !== "quick-add") setPriority(val);
+                  }}
                 />
               </div>
-              <div>
-                <Label htmlFor="taskDescription" className="text-sm">Description *</Label>
-                <Textarea
-                  id="taskDescription"
-                  placeholder="Describe the task details..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  className="mt-1"
-                />
-              </div>
-              {taskDefinitions.length > 0 && (
-                <div className="flex items-center gap-3 pt-1">
-                  <Label className="text-xs font-medium text-muted-foreground shrink-0">Quick fill from saved task:</Label>
-                  <Select onValueChange={(val) => {
-                    const selected = taskDefinitions.find((d) => d.id === val);
-                    if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
-                  }}>
-                    <SelectTrigger className="max-w-[220px] h-8 text-xs">
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {taskDefinitions.filter((d) => d.isActive).map((def) => (
-                        <SelectItem key={def.id} value={def.id}>{def.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
           </div>
 
-          <Separator />
-
-          {/* Section: Priority & Assignment */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <HashIcon className="size-3.5" />
-              Priority & Assignment
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-sm">Priority *</Label>
-                <div className="mt-1">
-                  <PrioritySelector
-                    selectedPriority={priority}
-                    priorities={priorities}
-                    onSelect={(val: string) => {
-                      if (val !== "quick-add") setPriority(val);
-                    }}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label className="text-sm">Due Date</Label>
-                <div className="mt-1">
-                  <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
-                        {dueDate ? dueDate.toLocaleDateString() : "Select date"}
-                        <CalendarIcon className="size-4 ml-2" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 border" align="start">
-                      <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label className="text-sm font-medium">Due Date</Label>
+              <div className="mt-1.5">
+                <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      {dueDate ? dueDate.toLocaleDateString() : "Select date"}
+                      <CalendarIcon className="size-4 ml-2" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 border" align="start">
+                    <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div>
-              <Label className="text-sm">Assignee</Label>
-              <div className="mt-1">
+              <Label className="text-sm font-medium">Assignee</Label>
+              <div className="mt-1.5">
                 <AssigneeSelector
                   selectedAssignee={selectedAssignee}
                   selectedAssigneeType={selectedAssigneeType}
@@ -308,67 +292,61 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
                     setSelectedAssignee(null);
                     setSelectedAssigneeType(null);
                   }}
+                  onQuickAdd={(type) => router.push(type === "staff" ? "/staffs" : "/teams")}
                 />
               </div>
             </div>
-          </div>
-
-          <Separator />
-
-          {/* Section: Schedule */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <CalendarIcon className="size-3.5" />
-              Schedule
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-sm">Repeat</Label>
-                <Select
-                  value={isRepeatedTask ? repeatFrequency || "" : "no"}
-                  onValueChange={(v) => { setIsRepeatedTask(v !== "no"); setRepeatFrequency(v === "no" ? null : v); }}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="No Repeat" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no">No Repeat</SelectItem>
-                    <SelectItem value="Daily">Daily</SelectItem>
-                    <SelectItem value="Weekly">Weekly</SelectItem>
-                    <SelectItem value="Monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div>
+              <Label className="text-sm font-medium">Repeat</Label>
+              <Select
+                value={isRepeatedTask ? repeatFrequency || "" : "no"}
+                onValueChange={(v) => { setIsRepeatedTask(v !== "no"); setRepeatFrequency(v === "no" ? null : v); }}
+              >
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder="No Repeat" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no">No Repeat</SelectItem>
+                  <SelectItem value="Daily">Daily</SelectItem>
+                  <SelectItem value="Weekly">Weekly</SelectItem>
+                  <SelectItem value="Monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
               {isRepeatedTask && (
-                <div>
-                  <Label className="text-sm">Start Date</Label>
-                  <div className="mt-1">
-                    <Popover open={repeatStartDateOpen} onOpenChange={setRepeatStartDateOpen}>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-between">
-                          {repeatStartDate ? repeatStartDate.toLocaleDateString() : "Select start date"}
-                          <CalendarIcon className="size-4 ml-2" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 border" align="start">
-                        <Calendar mode="single" selected={repeatStartDate} onSelect={(d) => { setRepeatStartDate(d); setRepeatStartDateOpen(false); }} />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                <div className="mt-2">
+                  <Popover open={repeatStartDateOpen} onOpenChange={setRepeatStartDateOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between text-xs">
+                        {repeatStartDate ? repeatStartDate.toLocaleDateString() : "Start date"}
+                        <CalendarIcon className="size-3 ml-1" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 border" align="start">
+                      <Calendar mode="single" selected={repeatStartDate} onSelect={(d) => { setRepeatStartDate(d); setRepeatStartDateOpen(false); }} />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               )}
             </div>
           </div>
 
-          <Separator />
+          <div>
+            <Label htmlFor="taskDescription" className="text-sm font-medium">Description *</Label>
+            <Textarea
+              id="taskDescription"
+              placeholder="Describe the task details..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="mt-1.5"
+            />
+          </div>
 
-          {/* Section: Attachments */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <PaperclipIcon className="size-3.5" />
-              Attachments
-            </h3>
-            <TableUpload onFilesChange={setUploadedFiles} compactImage={true} />
+          <div>
+            <Label className="text-sm font-medium">Attachments</Label>
+            <div className="mt-1.5">
+              <TableUpload onFilesChange={setUploadedFiles} compactImage={true} />
+            </div>
           </div>
         </div>
 

@@ -9,12 +9,8 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Audit Logs" };
 
 const getLogs = cache(async (orgId: string) => {
-  return db
-    .collection(collections.activityLogs)
-    .find({ orgId })
-    .sort({ createdAt: -1 })
-    .limit(50)
-    .toArray();
+  const cursor = await db.collection(collections.activityLogs).find({ orgId });
+  return cursor.sort({ createdAt: -1 }).limit(50).toArray();
 });
 
 export default async function AuditPage() {
