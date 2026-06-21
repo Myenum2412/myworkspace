@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import {
@@ -10,26 +11,61 @@ import {
 } from "@/components/ui/sidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UploadIcon, FileIcon, XIcon, CheckCircleIcon, AlertCircleIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { UploadIcon, FileIcon, XIcon, CheckCircleIcon, AlertCircleIcon, FolderIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+type Project = {
+  id: string;
+  name: string;
+};
 
 export default function UploadPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const inputRef = useRef<HTMLInputElement>(null);
   const [user, setUser] = useState({ name: "Demo User", email: "demo@example.com", avatar: "" });
+  const [orgId, setOrgId] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedProject, setSelectedProject] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
   const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/user/me", { credentials: "include" })
+    const name = session?.user?.name || "User";
+    const email = session?.user?.email || "";
+    const avatar = session?.user?.image || "";
+    setUser({ name, email, avatar });
+
+    fetch("/api/user/profile", { credentials: "include" })
       .then((r) => r.json())
-      .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
+      .then((d) => {
+        const profile = d.data || d;
+        const id = profile?.org?.id || profile?.org?._id?.toString() || "";
+        if (id) {
+          setOrgId(id);
+          fetch(`/api/projects?orgId=${id}`, { credentials: "include" })
+            .then((r) => r.json())
+            .then((data) => {
+              const list = Array.isArray(data) ? data : data.data || [];
+              setProjects(list);
+            })
+            .catch(() => {});
+        }
+      })
       .catch(() => {});
-  }, []);
+  }, [session]);
 
   const handleSelect = (file: File | null) => {
     if (!file) return;
@@ -47,6 +83,10 @@ export default function UploadPage() {
 
     const formData = new FormData();
     formData.append("file", selectedFile);
+    formData.append("orgId", orgId);
+    if (selectedProject) {
+      formData.append("projectId", selectedProject);
+    }
 
     const xhr = new XMLHttpRequest();
     xhr.upload.addEventListener("progress", (e) => {
@@ -87,7 +127,7 @@ export default function UploadPage() {
         <main className="flex flex-1 flex-col gap-4 p-4">
           <h1 className="text-2xl font-bold">Upload File</h1>
 
-          <Card className="py-12">
+          <Card className="py-8">
             <CardContent className="flex flex-col items-center justify-center gap-4">
               {status === "success" ? (
                 <div className="flex flex-col items-center gap-3">
@@ -139,8 +179,8 @@ export default function UploadPage() {
                   />
                 </>
               ) : (
-                <>
-                  <div className="w-full max-w-md rounded-lg border p-4">
+                <div className="w-full max-w-md space-y-4">
+                  <div className="rounded-lg border p-4">
                     <div className="flex items-center gap-3">
                       <FileIcon className="size-6 text-muted-foreground shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -158,28 +198,54 @@ export default function UploadPage() {
                         </button>
                       )}
                     </div>
-                    {uploading && (
-                      <div className="mt-3">
-                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                          <span>Uploading...</span>
-                          <span>{progress}%</span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-muted">
-                          <div
-                            className="h-2 rounded-full bg-primary transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
-                  {!uploading && (
+
+                  {/* Project selector */}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="project" className="text-sm flex items-center gap-1.5">
+                      <FolderIcon className="size-3.5" />
+                      Associate with Project
+                    </Label>
+                    <Select value={selectedProject} onValueChange={setSelectedProject}>
+                      <SelectTrigger id="project">
+                        <SelectValue placeholder="Select a project (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[11px] text-muted-foreground">
+                      Files will appear under this project in the file manager.
+                    </p>
+                  </div>
+
+                  {uploading && (
+                    <div>
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>Uploading...</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-muted">
+                        <div
+                          className="h-2 rounded-full bg-primary transition-all duration-300"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 justify-end">
+                    <Button variant="outline" onClick={() => router.push("/files")} disabled={uploading}>
+                      Cancel
+                    </Button>
                     <Button onClick={handleUpload} disabled={uploading}>
                       <UploadIcon className="mr-2 size-4" />
-                      Upload
+                      {uploading ? "Uploading..." : "Upload"}
                     </Button>
-                  )}
-                </>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { UsersIcon, UserPlusIcon } from "lucide-react";
 import {
   ColumnDef,
   flexRender,
@@ -23,25 +21,23 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SearchIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { SearchIcon, ChevronLeftIcon, ChevronRightIcon, CheckCheckIcon } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  searchQuery?: string;
-  onSearchChange?: (value: string) => void;
   onRowClick?: (row: TData) => void;
+  emptyMessage?: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  searchQuery,
-  onSearchChange,
   onRowClick,
+  emptyMessage = "No results found.",
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const globalFilter = searchQuery || "";
+  const [globalFilter, setGlobalFilter] = useState("");
 
   const table = useReactTable({
     data,
@@ -51,20 +47,35 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
-    onGlobalFilterChange: (value) => {},
+    onGlobalFilterChange: setGlobalFilter,
     state: { sorting, globalFilter },
     initialState: { pagination: { pageSize: 10 } },
   });
 
   return (
     <div className="space-y-3">
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-sm">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Search..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {table.getFilteredRowModel().rows.length} item(s)
+        </div>
+      </div>
+
       <div className="flex w-full flex-col">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} style={{ width: header.getSize() }}>
+                  <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -79,7 +90,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className={onRowClick ? "cursor-pointer" : undefined}
+                  className={onRowClick ? "cursor-pointer" : ""}
                   onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -93,20 +104,10 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-auto">
                   <div className="flex flex-col items-center justify-center py-12 gap-3">
-                    <UsersIcon className="size-10 text-muted-foreground/30" />
-                    <p className="text-sm text-muted-foreground">
-                      {globalFilter ? "No employees match your search." : "No employees yet. Add your first employee to get started."}
-                    </p>
-                    {!globalFilter && (
-                      <Link href="/addemployees">
-                        <Button size="sm">
-                          <UserPlusIcon className="mr-2 size-4" />
-                          Add Employee
-                        </Button>
-                      </Link>
-                    )}
+                    <CheckCheckIcon className="size-10 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">{emptyMessage}</p>
                   </div>
-                 </TableCell>
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
