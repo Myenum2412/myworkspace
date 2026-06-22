@@ -21,20 +21,20 @@ export default async function OrgLayout({
   if (!session?.user) redirect("/login");
 
   let userEmail = session.user.email?.toLowerCase().trim();
-  let authorized = userEmail === ADMIN_EMAIL;
+  const sessionRole = session.user.role;
+  let authorized = sessionRole === "ORG_MENU_ADMIN" || sessionRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL;
 
-  // Fallback: query DB if session doesn't carry email
+  // Fallback: query DB if session doesn't carry email or role
   if (!authorized && userEmail) {
     try {
       const dbUser = await db.collection("users").findOne({ email: userEmail });
       if (dbUser) {
-        authorized = dbUser.email?.toLowerCase().trim() === ADMIN_EMAIL;
-        if (!authorized && dbUser.role === "ORG_MENU_ADMIN") {
-          authorized = dbUser.email?.toLowerCase().trim() === ADMIN_EMAIL;
-        }
+        authorized = dbUser.role === "ORG_MENU_ADMIN" || dbUser.role === "SUPER_ADMIN" || (dbUser.email?.toLowerCase().trim() === ADMIN_EMAIL);
       }
     } catch {}
   }
+
+  console.log(`[AUTH orgmenu/layout] email=${userEmail} sessionRole=${session.user.role} dbRole=${authorized ? 'N/A (session authorized)' : 'checked'} authorized=${authorized}`);
 
   if (!authorized) {
     return (
@@ -61,7 +61,7 @@ export default async function OrgLayout({
     name: userName,
     email: userEmailDisplay,
     avatar: userAvatar,
-    role: "ORG_MENU_ADMIN",
+    role: sessionRole || "ORG_MENU_ADMIN",
     permissions: session.user.permissions || [],
   };
 

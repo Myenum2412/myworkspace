@@ -17,12 +17,23 @@ echo ""
 cleanup() {
     echo ""
     echo "Shutting down..."
-    kill $BACKEND_PID $FRONTEND_PID 2>/dev/null || true
-    wait $BACKEND_PID $FRONTEND_PID 2>/dev/null || true
+    kill ${BACKEND_PID:-} ${FRONTEND_PID:-} 2>/dev/null || true
+    wait ${BACKEND_PID:-} ${FRONTEND_PID:-} 2>/dev/null || true
     exit 0
 }
 
 trap cleanup SIGINT SIGTERM
+
+stop_port() {
+    local port="$1"
+    local label="$2"
+
+    if command -v fuser >/dev/null 2>&1 && fuser "$port/tcp" >/dev/null 2>&1; then
+        echo -e "${YELLOW}Stopping existing ${label} process on port ${port}...${NC}"
+        fuser -k "$port/tcp" >/dev/null 2>&1 || true
+        sleep 1
+    fi
+}
 
 ########################################
 # Clean Next.js Cache
@@ -99,6 +110,8 @@ echo ""
 
 echo -e "${YELLOW}[5/6] Starting Backend on Port 4000...${NC}"
 
+stop_port 4000 "backend"
+
 cd "$SCRIPT_DIR/backend"
 npm run start &
 BACKEND_PID=$!
@@ -110,6 +123,8 @@ sleep 5
 ########################################
 
 echo -e "${YELLOW}[6/6] Starting Frontend on Port 3000...${NC}"
+
+stop_port 3000 "frontend"
 
 cd "$SCRIPT_DIR/frontend"
 npm run start &

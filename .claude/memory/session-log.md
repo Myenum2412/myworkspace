@@ -169,3 +169,86 @@
 - （必要に応じて追記）
 
 ---
+
+## セッション: 2026-06-21T14:26:32Z
+
+- session_id: `session-1782051892235858778`
+- project: `myworkspace`
+- branch: `main`
+- started_at: `2026-06-21T14:24:52Z`
+- ended_at: `2026-06-21T14:26:32Z`
+- duration_minutes: 1
+- changes: 0
+
+### 変更ファイル
+- （なし）
+
+### 重要な変更（important=true）
+- （なし）
+
+### 次回への引き継ぎ（任意）
+- （必要に応じて追記）
+
+---
+
+## セッション: 2026-06-21T14:39:16Z
+
+- session_id: `session-1782052417670767738`
+- project: `myworkspace`
+- branch: `main`
+- started_at: `2026-06-21T14:33:37Z`
+- ended_at: `2026-06-21T14:39:16Z`
+- duration_minutes: 5
+- changes: 0
+
+### 変更ファイル
+- （なし）
+
+### 重要な変更（important=true）
+- （なし）
+
+### 次回への引き継ぎ（任意）
+- （必要に応じて追記）
+
+---
+
+## セッション: 2026-06-21T15:02:36Z
+
+- session_id: `session-1782054117455745920`
+- project: `myworkspace`
+- branch: `main`
+- started_at: `2026-06-21T15:01:57Z`
+- ended_at: `2026-06-21T15:02:36Z`
+- changes: 0
+
+### 変更ファイル
+- （なし）
+
+### 重要な変更（important=true）
+- （なし）
+
+### 次回への引き継ぎ（任意）
+- （必要に応じて追記）
+
+---
+
+## セッション: 2026-06-21T15:06:54Z
+
+- session_id: `session-1782054117455745920`
+- project: `myworkspace`
+- branch: `main`
+- started_at: `2026-06-21T15:01:57Z`
+- ended_at: `2026-06-21T15:06:54Z`
+- duration_minutes: 4
+- changes: 0
+
+### 変更ファイル
+- （なし）
+
+### 重要な変更（important=true）
+- （なし）
+
+### 次回への引き継ぎ（任意）
+- （必要に応じて追記）
+
+---

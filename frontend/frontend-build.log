@@ -9,15 +9,15 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 14.9s
+✓ Compiled successfully in 20.5s
   Running TypeScript ...
-  Finished TypeScript in 6.0s ...
+  Finished TypeScript in 6.8s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/57) ...
-  Generating static pages using 11 workers (14/57) 
-  Generating static pages using 11 workers (28/57) 
-  Generating static pages using 11 workers (42/57) 
-✓ Generating static pages using 11 workers (57/57) in 451ms
+  Generating static pages using 11 workers (0/60) ...
+  Generating static pages using 11 workers (15/60) 
+  Generating static pages using 11 workers (30/60) 
+  Generating static pages using 11 workers (45/60) 
+✓ Generating static pages using 11 workers (60/60) in 678ms
   Finalizing page optimization ...
 
 Route (app)
@@ -31,9 +31,13 @@ Route (app)
 ├ ƒ /api/files
 ├ ƒ /api/files/[id]
 ├ ƒ /api/tasks/[id]
+├ ƒ /api/user/banner
+├ ƒ /api/user/profile
+├ ƒ /api/user/profile-image
 ├ ○ /approvals
 ├ ○ /approvals/approved
 ├ ○ /approvals/rejected
+├ ƒ /auth/role-redirect
 ├ ○ /calendar
 ├ ○ /clients
 ├ ○ /dashboard
@@ -54,6 +58,7 @@ Route (app)
 ├ ƒ /orgmenu/org
 ├ ƒ /orgmenu/org/billing
 ├ ƒ /orgmenu/org/plans
+├ ƒ /orgmenu/profile
 ├ ƒ /orgmenu/reports
 ├ ƒ /orgmenu/reports/activity
 ├ ƒ /orgmenu/reports/usage

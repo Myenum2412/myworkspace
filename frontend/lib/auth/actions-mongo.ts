@@ -58,6 +58,10 @@ export async function signupActionMongo(formData: FormData) {
   await organizations.insertOne(orgDoc as never);
 
   await signIn("credentials", { email, password, redirect: false });
-  revalidatePath("/dashboard");
-  redirect("/dashboard");
+  const createdUser = await db.collection("users").findOne({ email });
+  const role = createdUser?.role;
+  const redirectPath = role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN" ? "/orgmenu" : "/dashboard";
+  console.log(`[AUTH] signupActionMongo: ${email} role=${role} → ${redirectPath}`);
+  revalidatePath(redirectPath);
+  redirect(redirectPath);
 }

@@ -1,13 +1,17 @@
 "use server";
 
 import { signIn, signOut } from "./config";
-import { AuthError } from "next-auth";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
+function getRedirectPath(role?: string): string {
+  if (role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN") return "/orgmenu";
+  return "/dashboard";
+}
 
 export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string;
@@ -17,38 +21,44 @@ export async function loginAction(formData: FormData) {
     redirect("/login?error=Email+and+password+are+required");
   }
 
+  console.log(`[AUTH] loginAction: attempting signIn for ${email}`);
+
   try {
     await signIn("credentials", { email, password, redirect: false });
-  } catch (error) {
-    if (error instanceof AuthError) {
-      redirect("/login?error=Invalid+email+or+password");
-    }
-    throw error;
+  } catch (err) {
+    console.error(`[AUTH] loginAction: signIn failed for ${email}:`, err);
+    redirect("/login?error=Invalid+email+or+password");
   }
 
   const user = await db.collection(collections.users).findOne({ email });
-  if (user) {
-    const userId = user.id || user._id?.toString();
-    await db.collection(collections.users).updateOne(
-      { _id: user._id },
-      { $set: { status: "online", updatedAt: new Date() } }
-    );
-
-    const member = await db.collection(collections.orgMembers).findOne({ userId: user._id });
-
-    await db.collection(collections.activityLogs).insertOne({
-      id: uuid(),
-      orgId: member?.orgId || "system",
-      userId,
-      action: "user.login",
-      entityType: "user",
-      entityId: userId,
-      description: `${user.name} logged in`,
-    });
+  if (!user) {
+    console.error(`[AUTH] loginAction: user not found in DB after signIn: ${email}`);
+    redirect("/login?error=User+not+found");
   }
 
-  revalidatePath("/dashboard");
-  redirect("/dashboard");
+  const userId = user.id || user._id?.toString();
+  await db.collection(collections.users).updateOne(
+    { _id: user._id },
+    { $set: { status: "online", updatedAt: new Date() } }
+  );
+
+  const member = await db.collection(collections.orgMembers).findOne({ userId: user._id });
+
+  await db.collection(collections.activityLogs).insertOne({
+    id: uuid(),
+    orgId: member?.orgId || "system",
+    userId,
+    action: "user.login",
+    entityType: "user",
+    entityId: userId,
+    description: `${user.name} logged in`,
+  });
+
+  const role = user?.role;
+  const redirectPath = getRedirectPath(role);
+  console.log(`[AUTH] loginAction: ${email} role=${role} → ${redirectPath}`);
+  revalidatePath(redirectPath);
+  redirect(redirectPath);
 }
 
 export async function signupAction(formData: FormData) {
@@ -104,8 +114,11 @@ export async function signupAction(formData: FormData) {
   });
 
   await signIn("credentials", { email, password, redirect: false });
-  revalidatePath("/dashboard");
-  redirect("/dashboard");
+  const session = await import("./config").then(m => m.auth());
+  const redirectPath = getRedirectPath(session?.user?.role);
+  console.log(`[AUTH] signupAction: ${email} role=${session?.user?.role} → ${redirectPath}`);
+  revalidatePath(redirectPath);
+  redirect(redirectPath);
 }
 
 export async function logoutAction() {

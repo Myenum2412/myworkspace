@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { loginAction } from "@/lib/auth/actions";
 import { signIn } from "next-auth/react";
 
@@ -29,6 +31,8 @@ function LinkedInIcon() {
 }
 
 export function LoginForm({ className, error, ...props }: React.ComponentProps<"div"> & { error?: string }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-2 text-center">
@@ -55,7 +59,25 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
               Forgot password?
             </Link>
           </div>
-          <Input id="password" name="password" type="password" required autoComplete="current-password" className="h-10" />
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
+              autoComplete="current-password"
+              className="h-10 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
+            </button>
+          </div>
         </div>
         <Button type="submit" className="w-full mt-1 font-semibold h-10">
           Sign in
@@ -69,10 +91,10 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
       </div>
 
       <div className="flex flex-col gap-3">
-        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}>
+        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with Google" onClick={() => signIn("google", { callbackUrl: "/auth/role-redirect" })}>
           <GoogleIcon /> Continue with Google
         </Button>
-        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}>
+        <Button variant="outline" type="button" className="w-full flex items-center justify-center gap-3 h-11 text-sm font-medium" aria-label="Sign in with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/auth/role-redirect" })}>
           <LinkedInIcon /> Continue with LinkedIn
         </Button>
       </div>

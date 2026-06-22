@@ -33,6 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.role = (user as { role?: string }).role;
         token.permissions = (user as { permissions?: string[] }).permissions;
+        console.log(`[AUTH jwt] token updated: id=${user.id} role=${token.role}`);
       }
       return token;
     },
@@ -41,8 +42,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.permissions = token.permissions as string[];
+        console.log(`[AUTH session] session built: email=${session.user.email} role=${session.user.role}`);
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allow relative URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allow URLs to the same origin
+      if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
+    async signIn({ user }) {
+      console.log(`[AUTH config] signIn event: email=${user?.email} role=${(user as { role?: string })?.role}`);
+      return true;
     },
   },
   events: {

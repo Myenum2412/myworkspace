@@ -32,6 +32,15 @@ app.prepare().then(async () => {
 
   wsManager.initialize(server);
 
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`> Port ${port} is already in use. Stop the existing server or start with PORT=<free-port>.`);
+    } else {
+      console.error("> Server failed to start:", err.message);
+    }
+    process.exit(1);
+  });
+
   server.listen(port, () => {
     console.log(`> Ready on http://${hostname}:${port}`);
     console.log(`> WebSocket server ready on ws://${hostname}:${port}/api/ws`);

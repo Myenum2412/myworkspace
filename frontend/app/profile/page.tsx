@@ -26,11 +26,16 @@ import {
   CameraIcon,
   XIcon,
   Loader2Icon,
+  UserIcon,
 } from "lucide-react";
 
 import nextDynamic from "next/dynamic";
 const BannerUpload = nextDynamic(
   () => import("@/components/ui/file-upload-1").then((m) => m.BannerUpload),
+  { ssr: false }
+);
+const ProfileImageUpload = nextDynamic(
+  () => import("@/components/ui/profile-image-upload").then((m) => m.ProfileImageUpload),
   { ssr: false }
 );
 
@@ -85,17 +90,24 @@ export default function ProfilePage() {
   const { data: session } = useSession();
   const [data, setData] = useState<ProfileData | null>(null);
   const [showBannerEditor, setShowBannerEditor] = useState(false);
+  const [showImageEditor, setShowImageEditor] = useState(false);
   const [urlInput, setUrlInput] = useState("");
+  const [imageUrlInput, setImageUrlInput] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [bannerUrl, setBannerUrl] = useState("");
+  const [profileImage, setProfileImage] = useState("");
   const [fileKey, setFileKey] = useState(0);
+  const [imageFileKey, setImageFileKey] = useState(0);
 
   useEffect(() => {
     fetch("/api/user/profile", { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
-        setData(d.data || d);
-        setBannerUrl((d.data || d)?.user?.bannerUrl || "");
+        const result = d.data || d;
+        setData(result);
+        setBannerUrl(result?.user?.bannerUrl || "");
+        setProfileImage(result?.user?.image || "");
       })
       .catch(() => setData(FAKE_PROFILE));
   }, []);
@@ -107,7 +119,7 @@ export default function ProfilePage() {
   const user = {
     name: session?.user?.name || dbUser?.name || "User",
     email: session?.user?.email || dbUser?.email || "user@example.com",
-    avatar: session?.user?.image || dbUser?.image || "",
+    avatar: profileImage || session?.user?.image || dbUser?.image || "",
   };
 
   async function updateBanner(url: string) {
@@ -141,6 +153,39 @@ export default function ProfilePage() {
       setFileKey((k) => k + 1);
     }
     setUploading(false);
+  }
+
+  async function updateProfileImage(url: string) {
+    const res = await fetch("/api/user/profile-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ url }),
+    });
+    if (res.ok) {
+      const result = await res.json();
+      setProfileImage(result.image);
+      setShowImageEditor(false);
+      setImageUrlInput("");
+    }
+  }
+
+  async function handleProfileImageFile(file: File) {
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await fetch("/api/user/profile-image", {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+    if (res.ok) {
+      const result = await res.json();
+      setProfileImage(result.image);
+      setShowImageEditor(false);
+      setImageFileKey((k) => k + 1);
+    }
+    setUploadingImage(false);
   }
 
   if (!data) {
@@ -177,10 +222,19 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex flex-col items-center -mt-12 px-6">
-            <Avatar className="size-24 ring-4 ring-background shadow-xl">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="text-2xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <Avatar className="size-24 ring-4 ring-background shadow-xl">
+                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarFallback className="text-2xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => setShowImageEditor(true)}
+                className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                aria-label="Edit profile photo"
+              >
+                <CameraIcon className="size-4" />
+              </button>
+            </div>
 
             <h1 className="mt-3 text-2xl font-bold">{user.name}</h1>
             <div className="flex items-center gap-2 mt-1 text-muted-foreground">
@@ -199,7 +253,7 @@ export default function ProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <ShieldIcon className="size-5" />
+                  <UserIcon className="size-5" />
                   User Details
                 </CardTitle>
               </CardHeader>
@@ -312,6 +366,7 @@ export default function ProfilePage() {
           </div>
         </main>
 
+        {/* Banner editor modal */}
         {showBannerEditor && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBannerEditor(false)}>
             <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
@@ -374,6 +429,77 @@ export default function ProfilePage() {
                       onClick={() => updateBanner("")}
                     >
                       Remove banner
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Profile image editor modal */}
+        {showImageEditor && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageEditor(false)}>
+            <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold">Update profile photo</h2>
+                <button
+                  onClick={() => setShowImageEditor(false)}
+                  className="rounded-md p-1 hover:bg-muted transition-colors"
+                >
+                  <XIcon className="size-3.5" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Paste image URL"
+                    value={imageUrlInput}
+                    onChange={(e) => setImageUrlInput(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs shrink-0"
+                    disabled={!imageUrlInput}
+                    onClick={() => updateProfileImage(imageUrlInput)}
+                  >
+                    Set
+                  </Button>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <span className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">or</span>
+                  </span>
+                </div>
+
+                <ProfileImageUpload
+                  key={imageFileKey}
+                  onFile={handleProfileImageFile}
+                  disabled={uploadingImage}
+                />
+
+                {profileImage && (
+                  <>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <span className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">or</span>
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      className="w-full h-8 text-xs text-destructive hover:text-destructive"
+                      onClick={() => updateProfileImage("")}
+                    >
+                      Remove photo
                     </Button>
                   </>
                 )}
