@@ -10,7 +10,7 @@ async function seedAdmin() {
   await connectDb();
 
   const email = env.ADMIN_EMAIL;
-  const password = "@Meenu2412";
+  const password = process.env.ADMIN_PASSWORD || "change-me-immediately";
   const hashedPassword = await bcrypt.hash(password, 12);
 
   const existing = await User.findOne({ email });

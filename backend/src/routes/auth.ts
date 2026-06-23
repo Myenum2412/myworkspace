@@ -7,11 +7,30 @@ import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { signToken } from "../config/auth.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { mongoose } from "../lib/db/index.js";
 
 const router = Router();
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
+
+// Helper: generate unique slug
+async function generateUniqueSlug(base: string): Promise<string> {
+  const slugBase = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "org";
+  let slug = slugBase;
+  let counter = 0;
+  while (await Organization.exists({ slug })) {
+    counter++;
+    slug = `${slugBase}-${counter}`;
+  }
+  return slug;
+}
+
+// Helper: get user's primary orgId
+async function getUserPrimaryOrgId(userId: string): Promise<string | null> {
+  const member = await OrgMember.findOne({ userId }).lean();
+  return member ? member.orgId.toString() : null;
+}
 
 router.post("/login", async (req: AuthRequest, res: Response) => {
   const { email, password } = req.body;
@@ -48,8 +67,11 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   user.status = "online";
   await user.save();
 
+  // Resolve org context
+  const orgId = await getUserPrimaryOrgId(user._id.toString());
+
   await ActivityLog.create({
-    orgId: (await OrgMember.findOne({ userId: user._id }))?.orgId,
+    orgId: orgId || user._id, // fallback to userId if no org
     userId: user._id,
     action: "user.login",
     entityType: "user",
@@ -62,6 +84,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     email: user.email,
     role: user.role,
     permissions: user.permissions || [],
+    orgId: orgId || undefined,
   });
 
   res.json({
@@ -77,6 +100,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
         permissions: user.permissions || [],
         status: "online",
       },
+      orgId: orgId || undefined,
     },
   });
 });
@@ -96,28 +120,57 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
   }
 
   const hashedPassword = await hash(password, 12);
+  const orgName = company || `${name}'s Organization`;
+  const slug = await generateUniqueSlug(company || `${name}-org`);
 
-  const user = await User.create({
-    name,
+  // Use transaction to ensure atomicity
+  const session = await mongoose.startSession();
+  let user: any;
+  let org: any;
+
+  try {
+    await session.withTransaction(async () => {
+      // Create user
+      const [createdUser] = await User.create([{
+        name,
+        email,
+        password: hashedPassword,
+        status: "online",
+        role: "admin",
+      }], { session });
+      user = createdUser;
+
+      // Create organization
+      const [createdOrg] = await Organization.create([{
+        name: orgName,
+        slug,
+        plan: "starter",
+        ownerId: user._id,
+      }], { session });
+      org = createdOrg;
+
+      // Create org membership
+      await OrgMember.create([{
+        orgId: org._id,
+        userId: user._id,
+        role: "admin",
+      }], { session });
+    }, {
+      readPreference: "primary",
+      readConcern: { level: "local" },
+      writeConcern: { w: "majority" },
+    });
+  } finally {
+    await session.endSession();
+  }
+
+  const token = signToken({
+    userId: user._id.toString(),
     email,
-    password: hashedPassword,
-    status: "online",
     role: "admin",
+    permissions: [],
+    orgId: org._id.toString(),
   });
-
-  const org = await Organization.create({
-    name: company || `${name}'s Organization`,
-    slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${user._id.toString().slice(0, 8)}`,
-    plan: "starter",
-  });
-
-  await OrgMember.create({
-    orgId: org._id,
-    userId: user._id,
-    role: "admin",
-  });
-
-  const token = signToken({ userId: user._id.toString(), email, role: "admin" });
 
   res.status(201).json({
     success: true,
@@ -153,6 +206,13 @@ router.post("/forgot-password", async (req: AuthRequest, res: Response) => {
 router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
   const user = await User.findById(req.user!.userId);
   if (!user) throw new AppError(404, "User not found");
+
+  // Resolve org context (use token orgId or look up fresh)
+  let orgId = req.user!.orgId;
+  if (!orgId) {
+    orgId = await getUserPrimaryOrgId(user._id.toString()) || undefined;
+  }
+
   res.json({
     success: true,
     data: {
@@ -165,6 +225,7 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
       status: user.status,
       isActive: user.isActive,
       createdAt: user.createdAt,
+      orgId: orgId || undefined,
     },
   });
 });

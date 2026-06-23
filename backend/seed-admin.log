@@ -1,6 +1,6 @@
 
 > myworkspace-backend@1.0.0 db:seed-admin
-> tsx src/lib/db/seed-admin.ts
+> tsx --env-file=.env src/lib/db/seed-admin.ts
 
 ✦ Connected to MongoDB Atlas
 Admin user already exists: developer@myenum.in

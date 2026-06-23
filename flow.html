@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyWorkSpace — Complete Route Inventory & Breaking Points</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #e6edf3; font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 12px; line-height: 1.6; padding: 20px 30px; }
+  h1 { font-size: 20px; font-weight: 700; color: #58a6ff; text-align: center; padding: 15px 0; border-bottom: 2px solid #30363d; margin-bottom: 20px; font-family: system-ui, sans-serif; }
+  h2 { font-size: 15px; font-weight: 600; color: #f0883e; margin: 25px 0 12px 0; font-family: system-ui, sans-serif; border-left: 3px solid #f0883e; padding-left: 10px; }
+  h3 { font-size: 13px; font-weight: 600; color: #8b949e; margin: 18px 0 10px 0; font-family: system-ui, sans-serif; }
+  .mermaid-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin: 10px 0; display: flex; justify-content: center; overflow-x: auto; min-width: 0; }
+  .mermaid-box svg { max-width: 100%; height: auto; }
+  .mermaid-box.wide svg { min-width: 900px; }
+  .mermaid-box.full svg { min-width: 1100px; }
+  .mermaid-box svg text { font-size: 14px !important; }
+  .mermaid-box svg .label { font-size: 14px !important; }
+  .mermaid-box svg .nodeLabel { font-size: 14px !important; }
+  .tree-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 18px; margin: 10px 0; overflow-x: auto; }
+  pre { white-space: pre; margin: 0; padding: 0; }
+  .e { color: #3fb950; }
+  .m { color: #f85149; }
+  .g { color: #d29922; }
+  .i { color: #8b949e; }
+  .c { color: #484f58; font-style: italic; }
+  .r { color: #58a6ff; font-weight: bold; }
+  .a { color: #bc8cff; }
+  .lg { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 10px 16px; margin: 10px 0; font-family: system-ui, sans-serif; font-size: 12px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  .li { display: inline-flex; align-items: center; gap: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-family: system-ui, sans-serif; font-size: 11px; }
+  th { text-align: left; padding: 6px 8px; border-bottom: 2px solid #30363d; color: #8b949e; font-weight: 600; background: #0d1117; }
+  td { padding: 4px 8px; border-bottom: 1px solid #21262d; }
+  tr:hover td { background: #161b22; }
+  .b { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; font-family: system-ui, sans-serif; }
+  .br { background: #2d1b1b; color: #f85149; }
+  .bg { background: #1b2d1f; color: #3fb950; }
+  .bo { background: #2d1f1b; color: #d29922; }
+  .bb { background: #1b2d3d; color: #58a6ff; }
+  .srow { display: flex; gap: 12px; margin: 10px 0; font-family: system-ui, sans-serif; flex-wrap: wrap; }
+  .sbox { border-radius: 6px; padding: 10px 16px; flex: 1; min-width: 110px; }
+  .sn { font-size: 24px; font-weight: 700; }
+  .sl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+  .sb1 { background: #2d1b1b; border: 1px solid #f85149; }
+  .sb2 { background: #1b2d1f; border: 1px solid #3fb950; }
+  .sb3 { background: #1b2d3d; border: 1px solid #58a6ff; }
+  .sb4 { background: #2d1f1b; border: 1px solid #d29922; }
+</style>
+</head>
+<body>
+
+<h1>📂 MyWorkSpace — Complete Inventory: All 88 Routes + Status</h1>
+
+<div class="lg">
+  <div class="li"><span style="color:#3fb950">&#9679;</span> Exists (page.tsx found)</div>
+  <div class="li"><span style="color:#f85149">&#9679;</span> Missing / Broken</div>
+  <div class="li"><span style="color:#d29922">&#9679;</span> Gated / Needs fix</div>
+  <div class="li"><span style="color:#58a6ff">&#9679;</span> API route</div>
+  <div class="li"><span style="color:#bc8cff">&#9679;</span> Layout / Special</div>
+</div>
+
+<div class="srow">
+  <div class="sbox sb2"><div class="sn" style="color:#3fb950">59</div><div class="sl" style="color:#3fb950">Page Routes (page.tsx)</div></div>
+  <div class="sbox sb3"><div class="sn" style="color:#58a6ff">8</div><div class="sl" style="color:#58a6ff">API Routes (route.ts)</div></div>
+  <div class="sbox sb4"><div class="sn" style="color:#d29922">6</div><div class="sl" style="color:#d29922">Layouts</div></div>
+  <div class="sbox sb4"><div class="sn" style="color:#d29922">1</div><div class="sl" style="color:#d29922">Missing Routes</div></div>
+  <div class="sbox sb2"><div class="sn" style="color:#3fb950">3</div><div class="sl" style="color:#3fb950">Navigation Gaps</div></div>
+  <div class="sbox sb2"><div class="sn" style="color:#3fb950">0</div><div class="sl" style="color:#3fb950">Broken Sidebar Links</div></div>
+</div>
+
+<!-- ================================================================== -->
+<h2>1. 🗂️ Complete Route Tree — All 68 Routes</h2>
+<div class="tree-box">
+<pre>
+<span class="r">All Route Paths</span>
+│
+├── <span class="a">[ROOT & SPECIAL]</span>
+│   ├── <span class="e">✅  /</span>                     <span class="c">page</span>
+│   ├── <span class="a">💠  / (layout)</span>            <span class="c">root layout</span>
+│   └── <span class="a">💠  / (404)</span>               <span class="c">not-found fallback</span>
+│
+├── <span class="a">[PUBLIC — no auth required]</span>
+│   ├── <span class="e">✅  /login</span>                <span class="c">credentials + OAuth</span>
+│   ├── <span class="e">✅  /signup</span>               <span class="c">create account</span>
+│   ├── <span class="e">✅  /signup-mongo</span>         <span class="c">alt signup</span>
+│   ├── <span class="e">✅  /forgot-password</span>      <span class="c">password reset</span>
+│   ├── <span class="e">✅  /pricing</span>              <span class="c">view plans</span>
+│   └── <span class="e">✅  /auth/role-redirect</span>    <span class="c">post-auth redirect</span>
+│
+├── <span class="a">[DASHBOARD & OVERVIEW]</span>
+│   ├── <span class="e">✅  /dashboard</span>            <span class="c">main PLATFORM root</span>
+│   ├── <span class="e">✅  /overview</span>             <span class="c">task allocation</span>
+│   └── <span class="e">✅  /reports</span>              <span class="c">aggregated data</span>
+│
+├── <span class="a">[EMPLOYEE MANAGEMENT]</span>
+│   ├── <span class="e">✅  /employees</span>            <span class="c">all employees (AppSidebar)</span>
+│   ├── <span class="e">✅  /addemployees</span>         <span class="c">add employee form</span>
+│   ├── <span class="e">✅  /staffs</span>               <span class="c">staff overview (StaffSidebar)</span>
+│   ├── <span class="a">💠  /staffs (layout)</span>       <span class="c">shared StaffSidebar layout</span>
+│   ├── <span class="e">✅  /staffs/list</span>           <span class="c">staff directory</span>
+│   ├── <span class="e">✅  /staffs/add</span>            <span class="c">add staff form</span>
+│   ├── <span class="e">✅  /staffs/activity</span>       <span class="c">staff activity feed</span>
+│   ├── <span class="e">✅  /staffs/schedule</span>       <span class="c">shift schedule</span>
+│   ├── <span class="e">✅  /staffs/time-off</span>       <span class="c">time-off requests</span>
+│   ├── <span class="e">✅  /staffs/attendance</span>     <span class="c">attendance tracking</span>
+│   │   └── <span class="e">✅  /staffs/attendance/reports</span>  <span class="c">attendance reports</span>
+│   ├── <span class="e">✅  /staffs/performance</span>    <span class="c">performance reviews</span>
+│   │   └── <span class="e">✅  /staffs/performance/goals</span>  <span class="c">goals tracking</span>
+│   ├── <span class="e">✅  /staffs/settings</span>       <span class="c">staff settings</span>
+│   │   └── <span class="e">✅  /staffs/settings/roles</span>  <span class="c">role management</span>
+│   ├── <span class="e">✅  /teams</span>                <span class="c">team management</span>
+│   ├── <span class="e">✅  /departments</span>          <span class="c">department management</span>
+│   └── <span class="e">✅  /terminated</span>           <span class="c">terminated employees</span>
+│
+├── <span class="a">[PROJECTS & CLIENTS]</span>
+│   ├── <span class="e">✅  /projects</span>             <span class="c">project list</span>
+│   ├── <span class="e">✅  /addprojects</span>          <span class="c">add project form</span>
+│   └── <span class="e">✅  /clients</span>              <span class="c">client CRM</span>
+│
+├── <span class="a">[TASK MANAGEMENT]</span>
+│   ├── <span class="e">✅  /alltasks</span>             <span class="c">all tasks view</span>
+│   ├── <span class="e">✅  /mytasks</span>              <span class="c">my assigned tasks</span>
+│   ├── <span class="e">✅  /teamtasks</span>            <span class="c">team tasks view</span>
+│   ├── <span class="e">✅  /savedtasks</span>           <span class="c">saved tasks</span>
+│   └── <span class="e">✅  /upcomingtasks</span>        <span class="c">upcoming tasks</span>
+│
+├── <span class="a">[TIME TRACKING]</span>
+│   ├── <span class="e">✅  /time-tracker</span>         <span class="c">start/stop timer</span>
+│   ├── <span class="e">✅  /my-time</span>              <span class="c">personal entries</span>
+│   ├── <span class="e">✅  /team-time</span>            <span class="c">team entries</span>
+│   └── <span class="e">✅  /time-reports</span>         <span class="c">time reports</span>
+│
+├── <span class="a">[APPROVALS]</span>
+│   ├── <span class="e">✅  /approvals</span>            <span class="c">pending approvals</span>
+│   ├── <span class="e">✅  /approvals/approved</span>   <span class="c">approved time entries</span>
+│   └── <span class="e">✅  /approvals/rejected</span>   <span class="c">rejected time entries</span>
+│
+├── <span class="a">[FILE MANAGEMENT]</span>
+│   ├── <span class="e">✅  /files</span>                <span class="c">all files list</span>
+│   ├── <span class="e">✅  /upload</span>               <span class="c">upload file</span>
+│   ├── <span class="e">✅  /shared</span>               <span class="c">shared with me</span>
+│   └── <span class="e">✅  /recycle-bin</span>          <span class="c">soft-deleted files</span>
+│
+├── <span class="a">[UTILITY PAGES]</span>
+│   ├── <span class="e">✅  /calendar</span>             <span class="c">calendar view</span>
+│   ├── <span class="e">✅  /profile</span>              <span class="c">user profile</span>
+│   └── <span class="e">✅  /settings</span>             <span class="c">user settings</span>
+│
+├── <span class="a">[ADMIN PANEL — gated]</span>
+│   ├── <span class="g">🔐  /orgmenu</span>              <span class="c">admin dashboard</span>
+│   ├── <span class="e">✅  /orgmenu/analytics</span>   <span class="c">analytics</span>
+│   ├── <span class="e">✅  /orgmenu/org</span>          <span class="c">org details</span>
+│   │   ├── <span class="e">✅  /orgmenu/org/billing</span>  <span class="c">billing</span>
+│   │   └── <span class="e">✅  /orgmenu/org/plans</span>    <span class="c">plans</span>
+│   ├── <span class="e">✅  /orgmenu/members</span>       <span class="c">all members</span>
+│   │   ├── <span class="e">✅  /orgmenu/members/invite</span> <span class="c">invite</span>
+│   │   └── <span class="e">✅  /orgmenu/members/roles</span> <span class="c">roles</span>
+│   ├── <span class="e">✅  /orgmenu/audit</span>         <span class="c">audit logs</span>
+│   │   └── <span class="e">✅  /orgmenu/audit/exports</span> <span class="c">exports</span>
+│   ├── <span class="e">✅  /orgmenu/reports</span>        <span class="c">reports</span>
+│   │   ├── <span class="e">✅  /orgmenu/reports/usage</span>  <span class="c">usage</span>
+│   │   └── <span class="e">✅  /orgmenu/reports/activity</span> <span class="c">activity</span>
+│   ├── <span class="e">✅  /orgmenu/security</span>       <span class="c">security</span>
+│   │   ├── <span class="e">✅  /orgmenu/security/policies</span> <span class="c">policies</span>
+│   │   ├── <span class="e">✅  /orgmenu/security/sso</span>  <span class="c">SSO config</span>
+│   │   └── <span class="e">✅  /orgmenu/security/api-keys</span> <span class="c">API keys</span>
+│   ├── <span class="e">✅  /orgmenu/settings</span>       <span class="c">settings</span>
+│   │   ├── <span class="e">✅  /orgmenu/settings/integrations</span> <span class="c">integrations</span>
+│   │   └── <span class="e">✅  /orgmenu/settings/notifications</span> <span class="c">notifications</span>
+│   └── <span class="e">✅  /orgmenu/profile</span>        <span class="c">admin profile</span>
+│
+├── <span class="a">[API ROUTES]</span>
+│   ├── <span class="bb">🔵  /api/auth/[...nextauth]</span>
+│   ├── <span class="bb">🔵  /api/employees</span>
+│   ├── <span class="bb">🔵  /api/files</span>
+│   ├── <span class="bb">🔵  /api/files/[id]</span>
+│   ├── <span class="bb">🔵  /api/tasks/[id]</span>
+│   ├── <span class="bb">🔵  /api/user/banner</span>
+│   ├── <span class="bb">🔵  /api/user/profile</span>
+│   └── <span class="bb">🔵  /api/user/profile-image</span>
+│
+└── <span class="a">[EMPTY]</span>
+    └── <span class="c">appstore/ (empty)</span></pre>
+</div>
+
+<!-- ================================================================== -->
+<h2>2. 🗺️ Full Route Dependency Graph</h2>
+<div class="mermaid-box full">
+<pre class="mermaid">
+flowchart TB
+    subgraph PUBLIC["🌐 Public (no auth)"]
+        LOGIN["/login"]
+        SIGNUP["/signup"]
+        SIGNUPM["/signup-mongo"]
+        FP["/forgot-password"]
+        PRICE["/pricing"]
+        RR["/auth/role-redirect"]
+    end
+
+    subgraph MAIN["📊 Main App (AppSidebar)"]
+        DASH["/dashboard"]
+        OV["/overview"]
+        REP["/reports"]
+        CAL["/calendar"]
+        PROF["/profile"]
+        SETT["/settings"]
+        
+        subgraph TASKS["✅ Tasks"]
+            AT["/alltasks"]
+            MT["/mytasks"]
+            TT["/teamtasks"]
+            ST["/savedtasks"]
+            UT["/upcomingtasks"]
+        end
+        
+        subgraph EMP["👥 Employees"]
+            EMPL["/employees"]
+            AE["/addemployees"]
+            STAFF["/staffs + 11 sub-routes ✅"]
+            TEAMS["/teams"]
+            DEP["/departments"]
+            TERM["/terminated"]
+        end
+        
+        subgraph PROJ["📋 Projects"]
+            PROJS["/projects"]
+            AP["/addprojects"]
+            CLI["/clients"]
+        end
+        
+        subgraph TIME["⏱ Time"]
+            TRACK["/time-tracker"]
+            MYT["/my-time"]
+            TEAMT["/team-time"]
+            TREP["/time-reports"]
+        end
+        
+        subgraph APR["✅ Approvals"]
+            APRS["/approvals"]
+            APPA["/approvals/approved"]
+            APPR["/approvals/rejected"]
+        end
+        
+        subgraph FILE["📁 Files"]
+            FILES["/files"]
+            UPL["/upload"]
+            SHR["/shared"]
+            RB["/recycle-bin"]
+        end
+    end
+
+    subgraph ADMIN["🔐 Admin Panel (gated)"]
+        ORG["/orgmenu"]
+        ORG_A["/orgmenu/analytics"]
+        ORG_O["/orgmenu/org"]
+        ORG_OB["/orgmenu/org/billing"]
+        ORG_OP["/orgmenu/org/plans"]
+        ORG_M["/orgmenu/members"]
+        ORG_MI["/orgmenu/members/invite"]
+        ORG_MR["/orgmenu/members/roles"]
+        ORG_AU["/orgmenu/audit"]
+        ORG_AE["/orgmenu/audit/exports"]
+        ORG_R["/orgmenu/reports"]
+        ORG_RU["/orgmenu/reports/usage"]
+        ORG_RA["/orgmenu/reports/activity"]
+        ORG_S["/orgmenu/security"]
+        ORG_SP["/orgmenu/security/policies"]
+        ORG_SS["/orgmenu/security/sso"]
+        ORG_SA["/orgmenu/security/api-keys"]
+        ORG_ST["/orgmenu/settings"]
+        ORG_SI["/orgmenu/settings/integrations"]
+        ORG_SN["/orgmenu/settings/notifications"]
+        ORG_P["/orgmenu/profile"]
+    end
+
+    subgraph MISSING_R["🔴 1 Missing Route"]
+        W["/workspace"]
+    end
+
+    LOGIN --> DASH
+    SIGNUP --> DASH
+    DASH --> OV
+    DASH --> REP
+    DASH --> AT & MT & TT & ST & UT
+    DASH --> EMPL & AE & TEAMS & DEP & TERM
+    DASH --> PROJS & AP
+    DASH --> CLI
+    DASH --> TRACK & MYT & TEAMT & TREP
+    DASH --> APRS & APPA & APPR
+    DASH --> FILES & UPL & SHR & RB
+    DASH --> CAL
+    DASH --> SETT
+    DASH --> PROF
+    DASH -.-> ORG
+
+    EMPL --> STAFF
+    DASH --> STAFF
+
+    style MISSING_R fill:#2d1b1b,stroke:#f85149,color:#f85149
+    style W fill:#2d1b1b,stroke:#f85149
+</pre>
+</div>
+
+<!-- ================================================================== -->
+<h2>3. 🗺️ Admin Panel Full Tree — All 22 Routes ✅</h2>
+<div class="mermaid-box full">
+<pre class="mermaid">
+flowchart TD
+    ORG["🔐 /orgmenu<br/>(gated)"] --> DASH["/orgmenu ✅"]
+    ORG --> ANALYTICS["/orgmenu/analytics ✅"]
+    ORG --> ORG_SECTION["Organization"]
+    ORG --> MEMBERS["Members"]
+    ORG --> AUDIT["Audit Logs"]
+    ORG --> RPT["Reports"]
+    ORG --> SEC["Security"]
+    ORG --> SETTINGS["Settings"]
+    ORG --> PROFILE["/orgmenu/profile ✅"]
+    
+    ORG_SECTION --> O1["/orgmenu/org ✅"]
+    ORG_SECTION --> O2["/orgmenu/org/billing ✅"]
+    ORG_SECTION --> O3["/orgmenu/org/plans ✅"]
+    
+    MEMBERS --> M1["/orgmenu/members ✅"]
+    MEMBERS --> M2["/orgmenu/members/invite ✅"]
+    MEMBERS --> M3["/orgmenu/members/roles ✅"]
+    
+    AUDIT --> A1["/orgmenu/audit ✅"]
+    AUDIT --> A2["/orgmenu/audit/exports ✅"]
+    
+    RPT --> R1["/orgmenu/reports/usage ✅"]
+    RPT --> R2["/orgmenu/reports/activity ✅"]
+    
+    SEC --> S1["/orgmenu/security/policies ✅"]
+    SEC --> S2["/orgmenu/security/sso ✅"]
+    SEC --> S3["/orgmenu/security/api-keys ✅"]
+    
+    SETTINGS --> T1["/orgmenu/settings ✅"]
+    SETTINGS --> T2["/orgmenu/settings/integrations ✅"]
+    SETTINGS --> T3["/orgmenu/settings/notifications ✅"]
+
+    style ORG fill:#2d1f1b,stroke:#d29922,color:#d29922
+</pre>
+</div>
+
+<!-- ================================================================== -->
+<h2>4. 🟡 Remaining Issue — 1 Missing Route</h2>
+<div class="mermaid-box">
+<pre class="mermaid">
+flowchart TD
+    subgraph CRITICAL["🔴 1 MISSING ROUTE"]
+        W["❌ /workspace<br/>Entirely absent"]
+    end
+    
+    subgraph FIXED["✅ 11 STAFF ROUTES — NOW FIXED"]
+        S1["/staffs/activity ✅"]
+        S2["/staffs/list ✅"]
+        S3["/staffs/add ✅"]
+        S4["/staffs/schedule ✅"]
+        S5["/staffs/time-off ✅"]
+        S6["/staffs/attendance ✅"]
+        S7["/staffs/attendance/reports ✅"]
+        S8["/staffs/performance ✅"]
+        S9["/staffs/performance/goals ✅"]
+        S10["/staffs/settings ✅"]
+        S11["/staffs/settings/roles ✅"]
+    end
+    
+    subgraph NAVGAPS["🟠 3 NAVIGATION GAPS REMAINING"]
+        G2["/orgmenu → /dashboard<br/>No back-link"]
+        G3["/calendar<br/>Standalone"]
+    end
+
+    style CRITICAL fill:#2d1b1b,stroke:#f85149,color:#f85149
+    style W fill:#2d1b1b,stroke:#f85149
+    style FIXED fill:#1b2d1f,stroke:#3fb950,color:#3fb950
+    style S1 fill:#1b2d1f,stroke:#3fb950
+    style S2 fill:#1b2d1f,stroke:#3fb950
+    style S3 fill:#1b2d1f,stroke:#3fb950
+    style S4 fill:#1b2d1f,stroke:#3fb950
+    style S5 fill:#1b2d1f,stroke:#3fb950
+    style S6 fill:#1b2d1f,stroke:#3fb950
+    style S7 fill:#1b2d1f,stroke:#3fb950
+    style S8 fill:#1b2d1f,stroke:#3fb950
+    style S9 fill:#1b2d1f,stroke:#3fb950
+    style S10 fill:#1b2d1f,stroke:#3fb950
+    style S11 fill:#1b2d1f,stroke:#3fb950
+    style NAVGAPS fill:#2d1f1b,stroke:#d29922,color:#d29922
+</pre>
+</div>
+
+<!-- ================================================================== -->
+<h2>5. ✅ StaffSidebar — All 16 Routes Now Resolve</h2>
+<div class="tree-box">
+<pre>
+<span class="r">staff-sidebar.tsx — ALL ROUTES FIXED</span>
+<span class="i">All 16 sidebar nav items now have corresponding page.tsx files</span>
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ <span class="r">ROUTE</span>                         <span class="r">SIDEBAR LABEL</span>      <span class="r">STATUS</span>           │
+├──────────────────────────────────────────────────────────────────────┤
+│ <span class="e">/staffs</span>                         Dashboard        <span class="b bg">✅ EXISTS</span>     │
+│ <span class="e">/staffs/activity</span>                Activity         <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/staffs/list</span>                    Directory        <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/staffs/add</span>                     Add Staff        <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/staffs/schedule</span>                Shifts           <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/staffs/time-off</span>                Time Off         <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/staffs/attendance</span>              Today            <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/staffs/attendance/reports</span>       Reports          <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/alltasks</span>                       All Tasks        <span class="b bg">✅ EXISTS</span>     │
+│ <span class="e">/mytasks</span>                        My Tasks         <span class="b bg">✅ EXISTS</span>     │
+│ <span class="e">/teamtasks</span>                      Team Tasks       <span class="b bg">✅ EXISTS</span>     │
+│ <span class="e">/upcomingtasks</span>                  Upcoming         <span class="b bg">✅ EXISTS</span>     │
+│ <span class="e">/staffs/performance</span>             Reviews          <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/staffs/performance/goals</span>        Goals            <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/staffs/settings</span>                 General          <span class="b bg">✅ FIXED</span>     │
+│ <span class="e">/staffs/settings/roles</span>           Roles            <span class="b bg">✅ FIXED</span>     │
+└──────────────────────────────────────────────────────────────────────┘
+
+<span class="e">All 11 missing staff routes have been created as page.tsx files.</span>
+<span class="e">Sidebar clicks now resolve to functional pages instead of 404.</span></pre>
+</div>
+
+<!-- ================================================================== -->
+<h2>6. 🟠 Navigation Gaps — Routes Exist But No Links</h2>
+<div class="tree-box">
+<pre>
+<span class="r">NAVIGATION GAPS — Routes exist but no navigation links between them</span>
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ <span class="r">GAP</span>                              <span class="r">FROM</span>            <span class="r">IMPACT</span>              │
+├──────────────────────────────────────────────────────────────────────┤
+│ <span class="g">1. ✅ FIXED — Staff nav added</span>    /employees      <span class="i">AppSidebar now has a</span>     │
+│                                   →              <span class="i">"Staff" section linking</span>      │
+│                                   /staffs        <span class="i">to /staffs pages</span>   │
+│                                                                      │
+│ <span class="g">2. No back-link</span>                 /orgmenu        <span class="i">Admin panel is a</span>      │
+│                                   →              <span class="i">walled garden — no</span>     │
+│                                   /dashboard     <span class="i">way back to main app</span>  │
+│                                                                      │
+│ <span class="g">3. Standalone</span>                   /calendar       <span class="i">No connections to</span>     │
+│                                                              <span class="i">tasks, projects,</span>    │
+│                                                              <span class="i">or time entries</span>      │
+└──────────────────────────────────────────────────────────────────────┘</pre>
+</div>
+
+<!-- ================================================================== -->
+<h2>7. 🟠 Entity Connection Gaps — Data Model Missing Links</h2>
+<div class="tree-box">
+<pre>
+<span class="r">ENTITY CONNECTION GAPS — Missing foreign keys in data models</span>
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ <span class="r">GAP</span>                              <span class="r">MISSING FIELD</span>           <span class="r">IMPACT</span>         │
+├──────────────────────────────────────────────────────────────────────┤
+│ <span class="g">Teams → Files</span>                   <span class="m">teamId on FileAttachment</span>  <span class="i">Can't share files</span>  │
+│                                                                      │
+│ <span class="g">Projects → Files</span>                <span class="m">projectId on FileAttachment</span><span class="i">Can't attach files</span>  │
+│                                                                      │
+│ <span class="g">Projects → Time</span>                 <span class="m">No direct time tracking</span>  <span class="i">No per-project</span>     │
+│                                       on Project model  │           <span class="i">time totals</span>       │
+│                                                                      │
+│ <span class="g">Clients → Tasks</span>                 <span class="m">clientId on Task</span>         <span class="i">Can't list tasks</span>   │
+│                                                                      │
+│ <span class="g">Clients → Time</span>                  <span class="m">No per-client billing</span>    <span class="i">Can't bill by</span>      │
+│                                       aggregation      │           <span class="i">client</span>               │
+│                                                                      │
+│ <span class="g">Tasks → Files</span>                   <span class="m">taskId on FileAttachment</span>  <span class="i">Can't attach files</span>  │
+│                                                                      │
+│ <span class="g">Files → Dashboard</span>               <span class="m">No file metrics</span>          <span class="i">No file storage</span>     │
+│                                       on dashboard    │           <span class="i">insights</span>             │
+└──────────────────────────────────────────────────────────────────────┘</pre>
+</div>
+
+<!-- ================================================================== -->
+<h2>8. 📋 All Routes — Table View (68 Total)</h2>
+<div class="tree-box">
+<table>
+<tr><th>#</th><th>Route</th><th>Type</th><th>Status</th></tr>
+<tr><td>1</td><td>/</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>2</td><td>/login</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>3</td><td>/login</td><td>layout</td><td><span class="b bb">💠</span></td></tr>
+<tr><td>4</td><td>/signup</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>5</td><td>/signup</td><td>layout</td><td><span class="b bb">💠</span></td></tr>
+<tr><td>6</td><td>/signup-mongo</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>7</td><td>/signup-mongo</td><td>layout</td><td><span class="b bb">💠</span></td></tr>
+<tr><td>8</td><td>/forgot-password</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>9</td><td>/pricing</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>10</td><td>/auth/role-redirect</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>11</td><td>/dashboard</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>12</td><td>/overview</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>13</td><td>/reports</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>14</td><td>/employees</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>15</td><td>/addemployees</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>16</td><td>/staffs</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>17</td><td>/staffs</td><td>layout</td><td><span class="b bb">💠</span></td></tr>
+<tr><td>18</td><td>/teams</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>19</td><td>/departments</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>20</td><td>/terminated</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>21</td><td>/projects</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>22</td><td>/addprojects</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>23</td><td>/clients</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>24</td><td>/alltasks</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>25</td><td>/mytasks</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>26</td><td>/teamtasks</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>27</td><td>/savedtasks</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>28</td><td>/upcomingtasks</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>29</td><td>/time-tracker</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>30</td><td>/my-time</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>31</td><td>/team-time</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>32</td><td>/time-reports</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>33</td><td>/approvals</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>34</td><td>/approvals/approved</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>35</td><td>/approvals/rejected</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>36</td><td>/files</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>37</td><td>/upload</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>38</td><td>/shared</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>39</td><td>/recycle-bin</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>40</td><td>/calendar</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>41</td><td>/profile</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>42</td><td>/settings</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td colspan="4" style="color:#d29922;text-align:center;background:#1a1510;">───── ADMIN PANEL (22 routes) ─────</td></tr>
+<tr><td>43</td><td>/orgmenu</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>44</td><td>/orgmenu</td><td>layout</td><td><span class="b bb">💠</span></td></tr>
+<tr><td>45</td><td>/orgmenu/analytics</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>46</td><td>/orgmenu/org</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>47</td><td>/orgmenu/org/billing</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>48</td><td>/orgmenu/org/plans</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>49</td><td>/orgmenu/members</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>50</td><td>/orgmenu/members/invite</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>51</td><td>/orgmenu/members/roles</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>52</td><td>/orgmenu/audit</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>53</td><td>/orgmenu/audit/exports</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>54</td><td>/orgmenu/reports</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>55</td><td>/orgmenu/reports/usage</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>56</td><td>/orgmenu/reports/activity</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>57</td><td>/orgmenu/security</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>58</td><td>/orgmenu/security/policies</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>59</td><td>/orgmenu/security/sso</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>60</td><td>/orgmenu/security/api-keys</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>61</td><td>/orgmenu/settings</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>62</td><td>/orgmenu/settings/integrations</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>63</td><td>/orgmenu/settings/notifications</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td>64</td><td>/orgmenu/profile</td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td colspan="4" style="color:#3fb950;text-align:center;background:#1a2215;">───── ALL 11 STAFF ROUTES NOW FIXED ✅ ─────</td></tr>
+<tr style="background:#1a2215;"><td>65</td><td><span class="e">/staffs/activity</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>66</td><td><span class="e">/staffs/list</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>67</td><td><span class="e">/staffs/add</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>68</td><td><span class="e">/staffs/schedule</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>69</td><td><span class="e">/staffs/time-off</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>70</td><td><span class="e">/staffs/attendance</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>71</td><td><span class="e">/staffs/attendance/reports</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>72</td><td><span class="e">/staffs/performance</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>73</td><td><span class="e">/staffs/performance/goals</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>74</td><td><span class="e">/staffs/settings</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr style="background:#1a2215;"><td>75</td><td><span class="e">/staffs/settings/roles</span></td><td>page</td><td><span class="b bg">✅</span></td></tr>
+<tr><td colspan="4" style="color:#f85149;text-align:center;background:#1a1111;">───── REMAINING MISSING ROUTE (1) ─────</td></tr>
+<tr style="background:#1a1111;"><td>76</td><td><span class="m">/workspace</span></td><td>page</td><td><span class="b br">❌</span></td></tr>
+<tr><td colspan="4" style="color:#58a6ff;text-align:center;">───── API ROUTES (8) ─────</td></tr>
+<tr><td>77</td><td>/api/auth/[...nextauth]</td><td>api</td><td><span class="b bb">🔵</span></td></tr>
+<tr><td>78</td><td>/api/employees</td><td>api</td><td><span class="b bb">🔵</span></td></tr>
+<tr><td>79</td><td>/api/files</td><td>api</td><td><span class="b bb">🔵</span></td></tr>
+<tr><td>80</td><td>/api/files/[id]</td><td>api</td><td><span class="b bb">🔵</span></td></tr>
+<tr><td>81</td><td>/api/tasks/[id]</td><td>api</td><td><span class="b bb">🔵</span></td></tr>
+<tr><td>82</td><td>/api/user/banner</td><td>api</td><td><span class="b bb">🔵</span></td></tr>
+<tr><td>83</td><td>/api/user/profile</td><td>api</td><td><span class="b bb">🔵</span></td></tr>
+<tr><td>84</td><td>/api/user/profile-image</td><td>api</td><td><span class="b bb">🔵</span></td></tr>
+<tr><td colspan="4" style="color:#bc8cff;text-align:center;">───── SPECIAL FILES ─────</td></tr>
+<tr><td>85</td><td>/</td><td>layout</td><td><span class="b bb">💠</span></td></tr>
+<tr><td>86</td><td>/</td><td>not-found</td><td><span class="b bb">💠</span></td></tr>
+<tr><td>87</td><td>/addemployees</td><td>error boundary</td><td><span class="b bb">💠</span></td></tr>
+<tr><td>88</td><td>middleware.ts</td><td>middleware</td><td><span class="b bb">💠</span></td></tr>
+</table>
+</div>
+
+<!-- ================================================================== -->
+<h2>9. ✅ Broken Paths — All Staff Routes Fixed</h2>
+<div class="mermaid-box full">
+<pre class="mermaid">
+flowchart TD
+    subgraph SOURCE["Where links come from"]
+        SIDEBAR["staff-sidebar.tsx — ALL 16 ROUTES FIXED"]
+        APP_SIDEBAR["app-sidebar.tsx — Staff nav added"]
+    end
+    
+    subgraph FIXED_PATHS["✅ All 11 Staff Routes Now Working"]
+        SA["/staffs/activity ✅"]
+        SL["/staffs/list ✅"]
+        SAD["/staffs/add ✅"]
+        SCH["/staffs/schedule ✅"]
+        STO["/staffs/time-off ✅"]
+        SAT["/staffs/attendance ✅"]
+        SAR["/staffs/attendance/reports ✅"]
+        SP["/staffs/performance ✅"]
+        SPG["/staffs/performance/goals ✅"]
+        SS["/staffs/settings ✅"]
+        SSR["/staffs/settings/roles ✅"]
+    end
+    
+    subgraph REMAINING["🔴 1 Still Missing"]
+        W["/workspace"]
+    end
+
+    SIDEBAR --> SA & SL & SAD & SCH & STO & SAT & SAR & SP & SPG & SS & SSR
+    APP_SIDEBAR -->|"new Staff nav item"| SL
+
+    style SOURCE fill:#1b2d3d,stroke:#58a6ff
+    style FIXED_PATHS fill:#1b2d1f,stroke:#3fb950,color:#3fb950
+    style SA fill:#1b2d1f
+    style SL fill:#1b2d1f
+    style SAD fill:#1b2d1f
+    style SCH fill:#1b2d1f
+    style STO fill:#1b2d1f
+    style SAT fill:#1b2d1f
+    style SAR fill:#1b2d1f
+    style SP fill:#1b2d1f
+    style SPG fill:#1b2d1f
+    style SS fill:#1b2d1f
+    style SSR fill:#1b2d1f
+    style REMAINING fill:#2d1b1b,stroke:#f85149
+    style W fill:#2d1b1b,stroke:#f85149
+</pre>
+</div>
+
+<h2>10. 📋 All Broken Paths — Table (1 Remaining, 11 Fixed)</h2>
+<div class="tree-box">
+<table>
+<tr><th>#</th><th>Route</th><th>Referenced From</th><th>Status</th><th>What Should Be There</th><th>Impact</th></tr>
+<tr style="background:#1a1111;"><td>1</td><td><span class="m">/workspace</span></td><td>App brand name "MyWorkSpace",<br/>orgSlug default, metadataBase URL</td><td><span class="b br">❌ MISSING</span></td><td>Workspace dashboard / overview page</td><td><span class="b br">HIGH</span><br/><span class="i">Brand promises workspace</span></td></tr>
+<tr style="background:#1a2215;"><td colspan="6" style="color:#3fb950;text-align:center;">───── ALL 11 STAFF ROUTES ✅ FIXED ─────</td></tr>
+<tr style="background:#1a2215;"><td>2</td><td><span class="e">/staffs/activity</span></td><td>staff-sidebar.tsx → "Activity" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Staff activity feed page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>3</td><td><span class="e">/staffs/list</span></td><td>staff-sidebar.tsx → "Directory" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Staff directory list page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>4</td><td><span class="e">/staffs/add</span></td><td>staff-sidebar.tsx → "Add Staff" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Add staff form page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>5</td><td><span class="e">/staffs/schedule</span></td><td>staff-sidebar.tsx → "Shifts" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Shift schedule view page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>6</td><td><span class="e">/staffs/time-off</span></td><td>staff-sidebar.tsx → "Time Off" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Time-off requests page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>7</td><td><span class="e">/staffs/attendance</span></td><td>staff-sidebar.tsx → "Today" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Attendance tracking page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>8</td><td><span class="e">/staffs/attendance/reports</span></td><td>staff-sidebar.tsx → "Reports" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Attendance reports page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>9</td><td><span class="e">/staffs/performance</span></td><td>staff-sidebar.tsx → "Reviews" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Staff performance reviews page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>10</td><td><span class="e">/staffs/performance/goals</span></td><td>staff-sidebar.tsx → "Goals" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Goals tracking page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>11</td><td><span class="e">/staffs/settings</span></td><td>staff-sidebar.tsx → "General" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Staff settings page</td><td><span class="b bg">RESOLVED</span></td></tr>
+<tr style="background:#1a2215;"><td>12</td><td><span class="e">/staffs/settings/roles</span></td><td>staff-sidebar.tsx → "Roles" nav item</td><td><span class="b bg">✅ FIXED</span></td><td>Staff role management page</td><td><span class="b bg">RESOLVED</span></td></tr>
+</table>
+</div>
+
+<h2>11. 🟠 Navigation Form Gaps — Missing Cross-Links</h2>
+<div class="tree-box">
+<table>
+<tr><th>#</th><th>Gap</th><th>From</th><th>To</th><th>Impact</th><th>Fix</th></tr>
+<tr style="background:#1b2d1f;"><td>1</td><td><span class="e">✅ FIXED — Staff nav in AppSidebar</span></td><td>/employees<br/>(AppSidebar)</td><td>/staffs<br/>(StaffSidebar)</td><td><span class="b bg">FIXED</span><br/><span class="i">"Staff" section with 5 sub-links<br/>added to AppSidebar</span></td><td><span class="b bg">✅ Done</span><br/><span class="i">User icon + Overview / Directory /<br/>Schedule / Attendance / Performance</span></td></tr>
+<tr style="background:#1a1111;"><td>2</td><td><span class="m">Admin back-link</span></td><td>/orgmenu<br/>(OrgSidebar)</td><td>/dashboard<br/>(main app)</td><td><span class="bo">MEDIUM</span><br/><span class="i">Admin panel is a<br/>walled garden</span></td><td>Add "Back to Dashboard"<br/>link in OrgSidebar</td></tr>
+<tr style="background:#1a1111;"><td>3</td><td><span class="m">Calendar standalone</span></td><td>/calendar</td><td>Tasks, Time,<br/>Projects</td><td><span class="bo">LOW</span><br/><span class="i">No links to any<br/>other section</span></td><td>Add task/time/project<br/>links to calendar</td></tr>
+<tr style="background:#1a1111;"><td>4</td><td><span class="m">Staff → Employee</span></td><td>/staffs<br/>(StaffSidebar)</td><td>/employees<br/>(AppSidebar)</td><td><span class="bo">MEDIUM</span><br/><span class="i">Staff can't reach<br/>main employee view</span></td><td>Add cross-link in<br/>StaffSidebar</td></tr>
+</table>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { background: '#161b22', primaryColor: '#1f2937', primaryTextColor: '#e6edf3', primaryBorderColor: '#30363d', secondaryColor: '#0d1117', tertiaryColor: '#161b22', lineColor: '#58a6ff', fontSize: '14px' } });
+
+  function createPopup(container) {
+    const content = container.innerHTML;
+    const title = container.closest('div')?.previousElementSibling?.textContent || 'Diagram';
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;';
+
+    const toolbar = document.createElement('div');
+    toolbar.style.cssText = 'position:fixed;top:16px;right:20px;z-index:10000;display:flex;gap:8px;align-items:center;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:8px 14px;font-family:system-ui,sans-serif;';
+
+    toolbar.innerHTML = `
+      <span id="zoom-label" style="color:#8b949e;font-size:12px;min-width:40px;text-align:center;">100%</span>
+      <button id="zoom-out" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:16px;">−</button>
+      <button id="zoom-reset" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">Reset</button>
+      <button id="zoom-in" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:16px;">+</button>
+      <span style="color:#30363d;margin:0 4px;">|</span>
+      <button id="close-popup" style="background:#f85149;color:#fff;border:none;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:14px;">✕</button>
+    `;
+    overlay.appendChild(toolbar);
+
+    const titleBar = document.createElement('div');
+    titleBar.style.cssText = 'position:fixed;top:16px;left:20px;z-index:10000;color:#58a6ff;font-family:system-ui,sans-serif;font-size:14px;font-weight:600;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:8px 16px;';
+    titleBar.textContent = title;
+    overlay.appendChild(titleBar);
+
+    const scrollWrapper = document.createElement('div');
+    scrollWrapper.style.cssText = 'width:90vw;height:80vh;overflow:auto;display:flex;justify-content:center;align-items:flex-start;margin-top:60px;cursor:grab;';
+    scrollWrapper.tabIndex = 0;
+
+    const scaleContainer = document.createElement('div');
+    scaleContainer.style.cssText = 'transform-origin:center center;transition:transform 0.1s ease;';
+    scaleContainer.innerHTML = content;
+
+    const svg = scaleContainer.querySelector('svg');
+    if (svg) {
+      svg.style.maxWidth = 'none';
+      svg.style.width = 'auto';
+      svg.style.height = 'auto';
+      svg.style.minWidth = '1100px';
+      svg.querySelectorAll('text, .label, .nodeLabel').forEach(el => {
+        el.style.fontSize = '16px';
+      });
+    }
+
+    scrollWrapper.appendChild(scaleContainer);
+    overlay.appendChild(scrollWrapper);
+
+    let scale = 1;
+    let panX = 0, panY = 0;
+    let isPanning = false, startX, startY;
+
+    function updateTransform() {
+      scaleContainer.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + scale + ')';
+      document.getElementById('zoom-label').textContent = Math.round(scale * 100) + '%';
+    }
+
+    function zoomIn() { scale = Math.min(5, scale + 0.2); updateTransform(); }
+    function zoomOut() { scale = Math.max(0.2, scale - 0.2); updateTransform(); }
+    function zoomReset() { scale = 1; panX = 0; panY = 0; updateTransform(); }
+
+    document.getElementById('zoom-in').addEventListener('click', zoomIn);
+    document.getElementById('zoom-out').addEventListener('click', zoomOut);
+    document.getElementById('zoom-reset').addEventListener('click', zoomReset);
+    document.getElementById('close-popup').addEventListener('click', () => overlay.remove());
+
+    scrollWrapper.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) {
+        scale = Math.max(0.2, Math.min(5, scale - e.deltaY * 0.005));
+        updateTransform();
+      } else {
+        this.scrollTop += e.deltaY;
+        this.scrollLeft += e.deltaX;
+      }
+    }, { passive: false });
+
+    scrollWrapper.addEventListener('mousedown', function(e) {
+      isPanning = true;
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+      this.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', function(e) {
+      if (!isPanning) return;
+      panX = e.clientX - startX;
+      panY = e.clientY - startY;
+      updateTransform();
+    });
+
+    window.addEventListener('mouseup', function() {
+      isPanning = false;
+      scrollWrapper.style.cursor = 'grab';
+    });
+
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.remove();
+    });
+
+    overlay.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') overlay.remove();
+      if (e.key === '+' || e.key === '=') zoomIn();
+      if (e.key === '-') zoomOut();
+      if (e.key === '0') zoomReset();
+    });
+
+    document.body.appendChild(overlay);
+    overlay.focus();
+    updateTransform();
+  }
+
+  document.querySelectorAll('.mermaid-box, .break-box').forEach(box => {
+    box.style.cursor = 'zoom-in';
+    box.title = 'Click to view full size (scroll to zoom, drag to pan)';
+    box.addEventListener('click', function(e) {
+      if (e.target.closest('a') || e.target.closest('button')) return;
+      createPopup(this);
+    });
+  });
+</script>
+</body>
+</html>

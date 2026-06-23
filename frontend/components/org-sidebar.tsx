@@ -75,7 +75,7 @@ export const defaultOrgNavData = [
     items: [
       { title: "Policies", url: "/orgmenu/security/policies" },
       { title: "SSO", url: "/orgmenu/security/sso" },
-      { title: "API Keys", url: "/orgmenu/security/api-keys" },
+
     ],
   },
   {
@@ -84,7 +84,7 @@ export const defaultOrgNavData = [
     icon: <Settings2Icon className="size-6" />,
     items: [
       { title: "General", url: "/orgmenu/settings" },
-      { title: "Integrations", url: "/orgmenu/settings/integrations" },
+
       { title: "Notifications", url: "/orgmenu/settings/notifications" },
     ],
   },

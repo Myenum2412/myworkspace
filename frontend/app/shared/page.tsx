@@ -42,19 +42,11 @@ export default function SharedPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
-  const FAKE_FILES: SharedFile[] = [
-    { id: "sfake-1", fileId: "fid-1", originalName: "Q4-Report.pdf", mimeType: "application/pdf", size: 2_400_000, sharedByUserId: "uid-1", sharedByName: "Alice Chen", createdAt: "2025-12-01T10:00:00Z" },
-    { id: "sfake-2", fileId: "fid-2", originalName: "Proposal-Draft.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", size: 860_000, sharedByUserId: "uid-2", sharedByName: "Bob Kumar", createdAt: "2025-11-28T14:30:00Z" },
-    { id: "sfake-3", fileId: "fid-3", originalName: "Budget-2026.xlsx", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", size: 1_200_000, sharedByUserId: "uid-3", sharedByName: "Carol Davis", createdAt: "2025-11-25T09:15:00Z" },
-    { id: "sfake-4", fileId: "fid-4", originalName: "Screenshot-Mockup.png", mimeType: "image/png", size: 3_100_000, sharedByUserId: "uid-4", sharedByName: "David Park", createdAt: "2025-11-22T16:45:00Z" },
-    { id: "sfake-5", fileId: "fid-5", originalName: "Archive-Backup.zip", mimeType: "application/zip", size: 15_800_000, sharedByUserId: "uid-5", sharedByName: "Eve Torres", createdAt: "2025-11-20T08:00:00Z" },
-  ];
-
   useEffect(() => {
     fetch("/api/files/shared", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => { setFiles(Array.isArray(data) ? data : data.data || []); setLoading(false); })
-      .catch(() => { setFiles(FAKE_FILES); setLoading(false); });
+      .catch(() => { setLoading(false); });
   }, []);
 
   useEffect(() => {

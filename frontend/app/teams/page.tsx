@@ -55,29 +55,6 @@ import {
 import { columns, type Team } from "./columns";
 import { DataTable } from "./data-table";
 
-const FAKE_TEAMS: Team[] = [
-  { id: "team_1", name: "Engineering", description: "Core platform development", memberCount: 8, leadName: "Alice Chen", leadAvatar: "", leadId: "u1", projectManagerIds: ["u2", "u3"], projectManagerNames: "Marcus Lee, Sarah Kim", memberIds: ["u1", "u2", "u3", "u4", "u5", "u6", "u7", "u8"], createdAt: "2025-01-15T00:00:00Z" },
-  { id: "team_2", name: "Design", description: "UI/UX and branding", memberCount: 5, leadName: "Marcus Lee", leadAvatar: "", leadId: "u2", projectManagerIds: ["u3"], projectManagerNames: "Sarah Kim", memberIds: ["u2", "u3", "u4", "u5", "u6"], createdAt: "2025-02-10T00:00:00Z" },
-  { id: "team_3", name: "Marketing", description: "Growth and communications", memberCount: 6, leadName: "Sarah Kim", leadAvatar: "", leadId: "u3", projectManagerIds: ["u4"], projectManagerNames: "James Wilson", memberIds: ["u3", "u4", "u5", "u6", "u7", "u8"], createdAt: "2025-03-05T00:00:00Z" },
-  { id: "team_4", name: "Sales", description: "Enterprise sales and partnerships", memberCount: 4, leadName: "James Wilson", leadAvatar: "", leadId: "u4", projectManagerIds: [], projectManagerNames: "", memberIds: ["u4", "u5", "u6", "u7"], createdAt: "2025-01-20T00:00:00Z" },
-  { id: "team_5", name: "QA", description: "Quality assurance and testing", memberCount: 3, leadName: "Priya Patel", leadAvatar: "", leadId: "u5", projectManagerIds: [], projectManagerNames: "", memberIds: ["u5", "u6", "u7"], createdAt: "2025-04-01T00:00:00Z" },
-];
-
-const FAKE_ORG_MEMBERS: OrgMember[] = [
-  { userId: "u1", name: "Alice Chen", email: "alice@company.com", avatar: "", role: "admin", designation: "Engineering Manager", department: "Engineering" },
-  { userId: "u2", name: "Marcus Lee", email: "marcus@company.com", avatar: "", role: "member", designation: "Senior Designer", department: "Design" },
-  { userId: "u3", name: "Sarah Kim", email: "sarah@company.com", avatar: "", role: "member", designation: "Marketing Lead", department: "Marketing" },
-  { userId: "u4", name: "James Wilson", email: "james@company.com", avatar: "", role: "member", designation: "Sales Director", department: "Sales" },
-  { userId: "u5", name: "Priya Patel", email: "priya@company.com", avatar: "", role: "member", designation: "QA Lead", department: "QA" },
-  { userId: "u6", name: "Tom Rodriguez", email: "tom@company.com", avatar: "", role: "member", designation: "Full Stack Developer", department: "Engineering" },
-  { userId: "u7", name: "Emma Davis", email: "emma@company.com", avatar: "", role: "member", designation: "UX Researcher", department: "Design" },
-  { userId: "u8", name: "Lisa Wang", email: "lisa@company.com", avatar: "", role: "member", designation: "Content Strategist", department: "Marketing" },
-  { userId: "u9", name: "David Park", email: "david@company.com", avatar: "", role: "member", designation: "Backend Developer", department: "Engineering" },
-  { userId: "u10", name: "Maya Johnson", email: "maya@company.com", avatar: "", role: "member", designation: "Data Analyst", department: "Marketing" },
-  { userId: "u11", name: "Kevin Brown", email: "kevin@company.com", avatar: "", role: "member", designation: "DevOps Engineer", department: "Engineering" },
-  { userId: "u12", name: "Nina Patel", email: "nina@company.com", avatar: "", role: "member", designation: "Product Manager", department: "Product" },
-];
-
 type OrgMember = {
   userId: string;
   name: string;
@@ -104,7 +81,7 @@ type TeamDetail = Team & {
 
 export default function TeamsPage() {
   const { data: session } = useSession();
-  const [teams, setTeams] = useState<Team[]>(FAKE_TEAMS);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [orgId, setOrgId] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -134,33 +111,21 @@ export default function TeamsPage() {
   };
 
   const fetchTeams = useCallback(async () => {
-    if (!orgId) {
-      setTeams(FAKE_TEAMS);
-      return;
-    }
+    if (!orgId) return;
     try {
       const res = await fetch(`/api/teams?orgId=${orgId}`, { credentials: "include" });
       const data = await res.json();
       const result = Array.isArray(data) ? data : data.data || [];
-      setTeams(result.length > 0 ? result : FAKE_TEAMS);
-    } catch {
-      setTeams(FAKE_TEAMS);
-    }
+      setTeams(result);
+    } catch {}
   }, [orgId]);
 
   const fetchOrgMembers = useCallback(async () => {
-    if (!orgId) {
-      setMembers(FAKE_ORG_MEMBERS);
-      return;
-    }
+    if (!orgId) return;
     try {
       const res = await fetch(`/api/organizations/${orgId}/members`, { credentials: "include" });
       const data = await res.json();
       const raw = Array.isArray(data) ? data : data.data || [];
-      if (raw.length === 0) {
-        setMembers(FAKE_ORG_MEMBERS);
-        return;
-      }
       setMembers(
         raw.map((m: Record<string, unknown>) => ({
           userId: (m.userId as Record<string, unknown>)?._id?.toString?.() || (m.userId as string) || "",
@@ -170,9 +135,7 @@ export default function TeamsPage() {
           role: (m.role as string) || "member",
         }))
       );
-    } catch {
-      setMembers(FAKE_ORG_MEMBERS);
-    }
+    } catch {}
   }, [orgId]);
 
   useEffect(() => {

@@ -3,11 +3,18 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { SearchIcon } from "lucide-react";
+import { SearchIcon, CheckCircle2Icon, XCircleIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Members" };
@@ -22,6 +29,12 @@ interface MemberData {
   email: string;
   avatar: string;
   orgName: string;
+  status: string;
+  provider: string;
+  emailVerified: boolean;
+  isActive: boolean;
+  createdAt?: Date;
+  lastLogin?: Date;
 }
 
 const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
@@ -30,7 +43,7 @@ const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
   const userIds = members.map((m: Record<string, unknown>) => m.userId as string);
   const users = userIds.length > 0
     ? await (await db.collection(collections.users).find({ id: { $in: userIds } }))
-        .project({ id: 1, name: 1, email: 1, image: 1 })
+        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1 })
         .toArray()
     : [];
   const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
@@ -49,6 +62,12 @@ const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
       email: (user?.email as string) || "",
       avatar: (user?.image as string) || "",
       orgName,
+      status: (user?.status as string) || "offline",
+      provider: (user?.provider as string) || "credentials",
+      emailVerified: Boolean(user?.emailVerified),
+      isActive: user?.isActive !== false,
+      createdAt: user?.createdAt as Date | undefined,
+      lastLogin: user?.lastLogin as Date | undefined,
     };
   });
 });
@@ -61,13 +80,13 @@ const getAllMembers = cache(async (): Promise<MemberData[]> => {
 
   const users = userIds.length > 0
     ? await (await db.collection(collections.users).find({ id: { $in: userIds } }))
-        .project({ id: 1, name: 1, email: 1, image: 1 })
+        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1 })
         .toArray()
     : [];
   const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
 
   const orgs = orgIds.length > 0
-    ? await db.collection(collections.organizations).find({ id: { $in: orgIds } }).project({ id: 1, name: 1 }).toArray()
+    ? await (await db.collection(collections.organizations).find({ id: { $in: orgIds } })).project({ id: 1, name: 1 }).toArray()
     : [];
   const orgMap = new Map(orgs.map((o: Record<string, unknown>) => [o.id, o]));
 
@@ -84,9 +103,33 @@ const getAllMembers = cache(async (): Promise<MemberData[]> => {
       email: (user?.email as string) || "",
       avatar: (user?.image as string) || "",
       orgName: (org?.name as string) || "Unknown",
+      status: (user?.status as string) || "offline",
+      provider: (user?.provider as string) || "credentials",
+      emailVerified: Boolean(user?.emailVerified),
+      isActive: user?.isActive !== false,
+      createdAt: user?.createdAt as Date | undefined,
+      lastLogin: user?.lastLogin as Date | undefined,
     };
   });
 });
+
+const providerColors: Record<string, string> = {
+  google: "text-[#4285F4]",
+  github: "text-[#333] dark:text-[#f0f0f0]",
+  linkedin: "text-[#0A66C2]",
+  credentials: "text-muted-foreground",
+};
+
+const statusVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+  online: "default",
+  offline: "outline",
+  break: "secondary",
+};
+
+function fmt(d?: Date): string {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
 
 export default async function MembersPage() {
   const session = await auth();
@@ -112,40 +155,76 @@ export default async function MembersPage() {
         <Input placeholder="Search members..." className="pl-9 h-9" />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Member List ({members.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {members.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No members found</p>
-          ) : (
-            <div className="space-y-2">
-              {members.map((member) => (
-                <div key={member.id} className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors">
-                  <Avatar>
-                    <AvatarImage src={member.avatar} alt={member.name} />
-                    <AvatarFallback>{member.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{member.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{member.email}</p>
-                  </div>
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Provider</TableHead>
+              <TableHead>Verified</TableHead>
+              <TableHead>Joined</TableHead>
+              <TableHead>Last Login</TableHead>
+              {isSuperAdmin && <TableHead>Organization</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {members.length === 0 ? (
+                <TableRow>
+                <TableCell colSpan={isSuperAdmin ? 10 : 9} className="h-32 text-center text-muted-foreground">
+                  No members found
+                </TableCell>
+              </TableRow>
+            ) : (
+              members.map((member) => (
+                <TableRow key={member.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="size-7">
+                        <AvatarImage src={member.avatar} alt={member.name} />
+                        <AvatarFallback className="text-[10px]">{member.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium text-sm">{member.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm">{member.email}</TableCell>
+                  <TableCell>
+                    <Badge variant={member.role === "admin" ? "default" : member.role === "manager" ? "secondary" : "outline"} className="text-xs">
+                      {member.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={statusVariant[member.status] || "outline"} className="text-xs capitalize">
+                      {member.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`text-xs font-medium capitalize ${providerColors[member.provider] || "text-muted-foreground"}`}>
+                      {member.provider}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {member.emailVerified ? (
+                      <CheckCircle2Icon className="size-4 text-green-500" />
+                    ) : (
+                      <XCircleIcon className="size-4 text-muted-foreground" />
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{fmt(member.createdAt || member.joinedAt)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{fmt(member.lastLogin)}</TableCell>
                   {isSuperAdmin && (
-                    <Badge variant="outline" className="shrink-0 text-xs">{member.orgName}</Badge>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">{member.orgName}</Badge>
+                    </TableCell>
                   )}
-                  <Badge variant={member.role === "admin" ? "default" : member.role === "manager" ? "secondary" : "outline"} className="shrink-0">
-                    {member.role}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground shrink-0 hidden md:block">
-                    {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : "Recent"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

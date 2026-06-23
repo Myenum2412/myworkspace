@@ -9,15 +9,15 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 20.5s
+✓ Compiled successfully in 7.9s
   Running TypeScript ...
-  Finished TypeScript in 6.8s ...
+  Finished TypeScript in 13.7s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/60) ...
-  Generating static pages using 11 workers (15/60) 
-  Generating static pages using 11 workers (30/60) 
-  Generating static pages using 11 workers (45/60) 
-✓ Generating static pages using 11 workers (60/60) in 678ms
+  Generating static pages using 11 workers (0/69) ...
+  Generating static pages using 11 workers (17/69) 
+  Generating static pages using 11 workers (34/69) 
+  Generating static pages using 11 workers (51/69) 
+✓ Generating static pages using 11 workers (69/69) in 643ms
   Finalizing page optimization ...
 
 Route (app)
@@ -63,11 +63,9 @@ Route (app)
 ├ ƒ /orgmenu/reports/activity
 ├ ƒ /orgmenu/reports/usage
 ├ ƒ /orgmenu/security
-├ ƒ /orgmenu/security/api-keys
 ├ ƒ /orgmenu/security/policies
 ├ ƒ /orgmenu/security/sso
 ├ ƒ /orgmenu/settings
-├ ƒ /orgmenu/settings/integrations
 ├ ƒ /orgmenu/settings/notifications
 ├ ○ /overview
 ├ ○ /pricing
@@ -81,6 +79,17 @@ Route (app)
 ├ ƒ /signup
 ├ ƒ /signup-mongo
 ├ ƒ /staffs
+├ ƒ /staffs/activity
+├ ƒ /staffs/add
+├ ƒ /staffs/attendance
+├ ƒ /staffs/attendance/reports
+├ ƒ /staffs/list
+├ ƒ /staffs/performance
+├ ƒ /staffs/performance/goals
+├ ƒ /staffs/schedule
+├ ƒ /staffs/settings
+├ ƒ /staffs/settings/roles
+├ ƒ /staffs/time-off
 ├ ○ /team-time
 ├ ○ /teams
 ├ ○ /teamtasks

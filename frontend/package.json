@@ -9,7 +9,13 @@
     "start": "NODE_ENV=production tsx server.ts",
     "start:next": "next start",
     "lint": "eslint",
-    "db:seed": "tsx lib/db/migrate.ts"
+    "db:seed": "tsx lib/db/migrate.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:report": "vitest run --reporter=html --outputFile=./test-reports/index.html",
+    "test:report:serve": "vite preview --outDir test-reports --port 4173",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@ark-ui/react": "^5.37.2",
@@ -42,6 +48,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/http-proxy-middleware": "^0.19.3",
     "@types/node": "^20",
@@ -49,10 +57,14 @@
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^6.0.2",
+    "@vitest/ui": "^4.1.9",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "jsdom": "^29.1.1",
     "mongodb-memory-server": "^11.2.0",
     "tsx": "^4.22.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.9"
   }
 }

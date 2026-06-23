@@ -30,19 +30,10 @@ interface TimeEntry {
   createdAt: string;
 }
 
-const FAKE_ENTRIES: TimeEntry[] = [
-  { id: "te1", userId: "u1", date: new Date().toISOString().slice(0, 10), startTime: "09:00", endTime: "12:00", duration: 180, description: "Dashboard UI design and prototyping", billable: true, status: "approved", createdAt: "2026-06-20T09:00:00Z" },
-  { id: "te2", userId: "u1", date: new Date().toISOString().slice(0, 10), startTime: "13:00", endTime: "15:30", duration: 150, description: "API integration for payment gateway", billable: true, status: "pending", createdAt: "2026-06-20T13:00:00Z" },
-  { id: "te3", userId: "u1", date: new Date().toISOString().slice(0, 10), startTime: "16:00", endTime: "17:00", duration: 60, description: "Team standup and code review", billable: false, status: "pending", createdAt: "2026-06-20T16:00:00Z" },
-  { id: "te4", userId: "u1", date: new Date(Date.now() - 86400000).toISOString().slice(0, 10), startTime: "10:00", endTime: "12:30", duration: 150, description: "Database optimization - query indexing", billable: true, status: "approved", createdAt: "2026-06-19T10:00:00Z" },
-  { id: "te5", userId: "u1", date: new Date(Date.now() - 86400000).toISOString().slice(0, 10), startTime: "14:00", endTime: "16:00", duration: 120, description: "Write unit tests for user module", billable: true, status: "rejected", createdAt: "2026-06-19T14:00:00Z" },
-  { id: "te6", userId: "u1", date: new Date(Date.now() - 86400000).toISOString().slice(0, 10), startTime: "16:30", endTime: "18:00", duration: 90, description: "Bug fixes - mobile responsive layout", billable: false, status: "approved", createdAt: "2026-06-19T16:30:00Z" },
-];
-
 export default function MyTimePage() {
-  const [user, setUser] = useState({ name: "Demo User", email: "demo@example.com", avatar: "", id: "u1" });
-  const [orgId, setOrgId] = useState("org1");
-  const [entries, setEntries] = useState<TimeEntry[]>(FAKE_ENTRIES);
+  const [user, setUser] = useState({ name: "", email: "", avatar: "", id: "" });
+  const [orgId, setOrgId] = useState("");
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
 

@@ -3,21 +3,105 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Audit Logs" };
 
-const getLogs = cache(async (orgId: string) => {
-  const cursor = await db.collection(collections.activityLogs).find({ orgId });
-  return cursor.sort({ createdAt: -1 }).limit(100).toArray();
+interface AuditLog {
+  id: string;
+  action: string;
+  description: string;
+  entityType: string;
+  entityId: string;
+  createdAt?: string;
+  userName: string;
+  orgName?: string;
+}
+
+const getLogs = cache(async (orgId: string): Promise<AuditLog[]> => {
+  const cursor = await db.collection(collections.activityLogs).find(
+    { orgId },
+    { sort: { createdAt: -1 } },
+  );
+  const logs = await cursor.toArray();
+  return enrichLogs(logs, orgId);
 });
 
-const getAllLogs = cache(async () => {
-  const cursor = await db.collection(collections.activityLogs).find({});
-  return cursor.sort({ createdAt: -1 }).limit(100).toArray();
+const getAllLogs = cache(async (): Promise<AuditLog[]> => {
+  const cursor = await db.collection(collections.activityLogs).find(
+    {},
+    { sort: { createdAt: -1 } },
+  );
+  const logs = await cursor.toArray();
+  const orgIds = [...new Set(logs.map((l: Record<string, unknown>) => l.orgId as string))];
+  return enrichLogs(logs, null, orgIds);
 });
+
+async function enrichLogs(logs: Record<string, unknown>[], scopeOrgId: string | null, orgIds?: string[]): Promise<AuditLog[]> {
+  const userIds = [...new Set(logs.map((l: Record<string, unknown>) => l.userId as string))];
+  const users = userIds.length > 0
+    ? await (await db.collection(collections.users).find(
+        { id: { $in: userIds } },
+        { projection: { id: 1, name: 1, email: 1 } },
+      )).toArray()
+    : [];
+  const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u.name as string]));
+
+  const orgMap = new Map<string, string>();
+  const ids = orgIds || (scopeOrgId ? [scopeOrgId] : []);
+  if (ids.length > 0) {
+    const orgs = await (await db.collection(collections.organizations).find(
+      { id: { $in: ids } },
+      { projection: { id: 1, name: 1 } },
+    )).toArray();
+    for (const o of orgs) {
+      orgMap.set(o.id as string, o.name as string);
+    }
+  }
+
+  return logs
+    .map((l: Record<string, unknown>) => ({
+      id: String(l.id || l._id || ""),
+      action: String(l.action || ""),
+      description: String(l.description || ""),
+      entityType: String(l.entityType || ""),
+      entityId: String(l.entityId || ""),
+      createdAt: l.createdAt ? new Date(l.createdAt as string).toISOString() : undefined,
+      userName: userMap.get(l.userId as string) || "Unknown",
+      orgName: orgMap.get(l.orgId as string),
+    }))
+    .filter((a) => a.userName !== "Unknown");
+}
+
+const actionColors: Record<string, string> = {
+  "user.login": "bg-blue-100 text-blue-700",
+  "user.logout": "bg-slate-100 text-slate-700",
+  "user.joined": "bg-emerald-100 text-emerald-700",
+  "task.created": "bg-violet-100 text-violet-700",
+  "task.completed": "bg-emerald-100 text-emerald-700",
+  "task.assigned": "bg-amber-100 text-amber-700",
+  "file.uploaded": "bg-cyan-100 text-cyan-700",
+  "member.invited": "bg-indigo-100 text-indigo-700",
+  "member.role_changed": "bg-orange-100 text-orange-700",
+  "settings.updated": "bg-pink-100 text-pink-700",
+};
+
+function fmt(d?: string): string {
+  if (!d) return "—";
+  return new Date(d).toLocaleString("en-US", {
+    year: "numeric", month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+}
 
 export default async function AuditPage() {
   const session = await auth();
@@ -37,33 +121,51 @@ export default async function AuditPage() {
           </p>
         </div>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Activity Log</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {logs.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">No audit logs found</div>
-          ) : (
-            <div className="divide-y">
-              {logs.map((log) => (
-                <div key={log.id as string} className="flex items-start gap-3 p-4 text-sm">
-                  <div className="size-2 rounded-full bg-primary mt-1.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium">{log.description as string}</p>
-                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <Badge variant="outline" className="text-xs">{log.action as string}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {log.createdAt ? new Date(log.createdAt as string).toLocaleString() : ""}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Action</TableHead>
+              <TableHead className="max-w-md">Description</TableHead>
+              <TableHead>Entity</TableHead>
+              <TableHead>Timestamp</TableHead>
+              {isSuperAdmin && <TableHead>Organization</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {logs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={isSuperAdmin ? 6 : 5} className="h-32 text-center text-muted-foreground">
+                  No audit logs found
+                </TableCell>
+              </TableRow>
+            ) : (
+              logs.map((log) => (
+                <TableRow key={log.id}>
+                  <TableCell className="text-sm font-medium">{log.userName}</TableCell>
+                  <TableCell>
+                    <Badge className={`text-xs ${actionColors[log.action] || "bg-muted text-muted-foreground"}`}>
+                      {log.action.replace(/^[^.]+\./, "")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm max-w-md truncate" title={log.description}>
+                    {log.description}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {log.entityType ? `${log.entityType}${log.entityId ? ` #${log.entityId.slice(0, 8)}` : ""}` : "—"}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{fmt(log.createdAt)}</TableCell>
+                  {isSuperAdmin && (
+                    <TableCell className="text-sm text-muted-foreground">{log.orgName || "—"}</TableCell>
+                  )}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

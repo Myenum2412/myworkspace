@@ -38,6 +38,7 @@ async function tryNextAuthCookie(req) {
                     email: (payload.email || ""),
                     role: (payload.role || "member"),
                     permissions: (payload.permissions || []),
+                    orgId: (payload.orgId || undefined),
                 };
             }
             catch {

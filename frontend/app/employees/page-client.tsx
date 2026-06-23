@@ -84,12 +84,12 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
 
   const handleEmployeeAdded = (employee: Record<string, unknown>) => {
     const newEmp: Employee = {
-      id: `emp_${Date.now()}`,
-      name: `${employee.firstName} ${employee.lastName}`,
+      id: (employee.id as string) || `emp_${Date.now()}`,
+      name: (employee.name as string) || `${employee.firstName || ""} ${employee.lastName || ""}`.trim() || "Unknown",
       email: employee.email as string,
       phone: (employee.phone as string) || "",
       department: (employee.department as string) || "",
-      designation: (employee.roleName as string) || "",
+      designation: (employee.role as string) || (employee.roleName as string) || "",
       employmentType: (employee.employmentType as string) || "",
       branchName: (employee.branchName as string) || "",
       joiningDate: (employee.joiningDate as string) || "",

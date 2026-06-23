@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface IOrganization extends Document {
   name: string;
@@ -6,6 +6,7 @@ export interface IOrganization extends Document {
   logo?: string;
   domain?: string;
   plan: "starter" | "pro" | "enterprise";
+  ownerId?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,6 +18,7 @@ const organizationSchema = new Schema<IOrganization>(
     logo: String,
     domain: String,
     plan: { type: String, enum: ["starter", "pro", "enterprise"], default: "starter" },
+    ownerId: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }
 );

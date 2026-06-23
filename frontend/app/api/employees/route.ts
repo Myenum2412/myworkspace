@@ -23,14 +23,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "First name and email are required" }, { status: 400 });
   }
 
-  const existing = await db.collection(collections.users).find({ email }).toArray();
-  if (existing.length > 0) {
+  const existing = await db.collection(collections.users).findOne({ email });
+  if (existing) {
     return NextResponse.json({ error: "User with this email already exists" }, { status: 409 });
   }
 
-  const orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+  let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
   if (!orgMember) {
-    return NextResponse.json({ error: "No organization found" }, { status: 400 });
+    const org = await db.collection(collections.organizations).findOne({ ownerId: session.user.id });
+    if (!org) {
+      return NextResponse.json({ error: "No organization found" }, { status: 400 });
+    }
+    await db.collection(collections.orgMembers).insertOne({
+      id: uuid(),
+      orgId: org.id || org._id.toString(),
+      userId: session.user.id,
+      role: "admin",
+      joinedAt: new Date(),
+    });
+    orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
   }
 
   const userId = uuid();
@@ -54,13 +65,14 @@ export async function POST(request: Request) {
     phone: phone || null,
     currentExperience: currentExperience || null,
     totalExperience: totalExperience || null,
+    createdBy: session.user.id,
     createdAt: new Date(),
     updatedAt: new Date(),
   });
 
   await db.collection(collections.orgMembers).insertOne({
     id: uuid(),
-    orgId: orgMember.orgId,
+    orgId: orgMember!.orgId,
     userId,
     role: roleName?.toLowerCase() || "member",
   });

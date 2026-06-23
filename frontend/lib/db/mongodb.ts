@@ -18,9 +18,10 @@ export async function connectToMongo() {
         uri.includes("retryWrites=")
           ? uri
           : uri + (uri.includes("?") ? "&" : "?") + "retryWrites=true&w=majority",
-        { serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000, tlsInsecure: true },
+        { serverSelectionTimeoutMS: 10000, connectTimeoutMS: 10000, tlsInsecure: true },
       );
       await atlasClient.connect();
+      await atlasClient.db(dbName).command({ ping: 1 });
       globalWithMongo._mongoClient = atlasClient;
       globalWithMongo._mongoDatabase = atlasClient.db(dbName);
       console.log("> Connected to MongoDB Atlas");

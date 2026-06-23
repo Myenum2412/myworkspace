@@ -24,20 +24,11 @@ import {
 import { UserX, Undo2, Loader2Icon } from "lucide-react";
 import type { TerminatedEmployee } from "../employees/columns";
 
-const staticTerminated: TerminatedEmployee[] = [
-  { id: "term_1", name: "Michael Scott", email: "m.scott@company.com", role: "Regional Manager", status: "terminated", department: "Sales", designation: "Manager", employmentType: "Full-time", phone: "", branchName: "", joiningDate: "", avatar: "", terminateReason: "Resignation", terminateDate: "2025-11-15T00:00:00Z" },
-  { id: "term_2", name: "Pam Beesly", email: "p.beesly@company.com", role: "Receptionist", status: "terminated", department: "Operations", designation: "", employmentType: "Full-time", phone: "", branchName: "", joiningDate: "", avatar: "", terminateReason: "Resignation", terminateDate: "2025-09-30T00:00:00Z" },
-  { id: "term_3", name: "Ryan Howard", email: "r.howard@company.com", role: "Marketing Specialist", status: "terminated", department: "Marketing", designation: "", employmentType: "Contract", phone: "", branchName: "", joiningDate: "", avatar: "", terminateReason: "Contract Ended", terminateDate: "2025-06-20T00:00:00Z" },
-  { id: "term_4", name: "Kelly Kapoor", email: "k.kapoor@company.com", role: "Customer Relations", status: "terminated", department: "Customer Success", designation: "", employmentType: "Full-time", phone: "", branchName: "", joiningDate: "", avatar: "", terminateReason: "Resignation", terminateDate: "2025-04-10T00:00:00Z" },
-  { id: "term_5", name: "Toby Flenderson", email: "t.flenderson@company.com", role: "HR Manager", status: "terminated", department: "HR", designation: "", employmentType: "Full-time", phone: "", branchName: "", joiningDate: "", avatar: "", terminateReason: "Retirement", terminateDate: "2025-02-28T00:00:00Z" },
-  { id: "term_6", name: "Angela Martin", email: "a.martin@company.com", role: "Accountant", status: "terminated", department: "Finance", designation: "", employmentType: "Full-time", phone: "", branchName: "", joiningDate: "", avatar: "", terminateReason: "Resignation", terminateDate: "2025-01-15T00:00:00Z" },
-];
-
 const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
 export default function TerminatedPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
-  const [terminated, setTerminated] = useState<TerminatedEmployee[]>(staticTerminated);
+  const [terminated, setTerminated] = useState<TerminatedEmployee[]>([]);
   const [reactivateEmp, setReactivateEmp] = useState<TerminatedEmployee | null>(null);
   const [reactivateReason, setReactivateReason] = useState("");
   const [reactivating, setReactivating] = useState(false);
@@ -53,9 +44,7 @@ export default function TerminatedPage() {
     try {
       const stored = JSON.parse(localStorage.getItem("terminated_employees") || "[]") as TerminatedEmployee[];
       if (stored.length > 0) {
-        const existingIds = new Set(staticTerminated.map((e) => e.id));
-        const newOnes = stored.filter((e) => !existingIds.has(e.id));
-        setTerminated([...staticTerminated, ...newOnes]);
+        setTerminated(stored);
       }
     } catch {}
   }, []);

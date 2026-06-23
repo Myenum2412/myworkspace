@@ -18,6 +18,7 @@ import {
   Settings2Icon,
   CheckCheckIcon,
   ShieldIcon,
+  UserCheckIcon,
 } from "lucide-react";
 
 export const defaultNavData = {
@@ -52,6 +53,18 @@ export const defaultNavData = {
         { title: "All Employees", url: "/employees" },
         { title: "Teams", url: "/teams" },
         { title: "Terminated", url: "/terminated" },
+      ],
+    },
+    {
+      title: "Staff",
+      url: "/staffs",
+      icon: <UserCheckIcon className="size-6" />,
+      items: [
+        { title: "Overview", url: "/staffs" },
+        { title: "Directory", url: "/staffs/list" },
+        { title: "Schedule", url: "/staffs/schedule" },
+        { title: "Attendance", url: "/staffs/attendance" },
+        { title: "Performance", url: "/staffs/performance" },
       ],
     },
     {

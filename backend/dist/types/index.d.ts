@@ -4,9 +4,11 @@ export interface JwtPayload {
     email: string;
     role: string;
     permissions?: string[];
+    orgId?: string;
 }
 export interface AuthRequest extends Request {
     user?: JwtPayload;
+    orgId?: string;
 }
 export interface ApiResponse<T = unknown> {
     success: boolean;

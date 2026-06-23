@@ -23,3 +23,8 @@
 {"file":"frontend/app/api/user/profile-image/route.ts","action":"Write","timestamp":"2026-06-21T15:33:39Z","important":false}
 {"file":"frontend/components/ui/profile-image-upload.tsx","action":"Write","timestamp":"2026-06-21T15:34:10Z","important":false}
 {"file":"frontend/app/profile/page.tsx","action":"Write","timestamp":"2026-06-21T15:36:02Z","important":false}
+{"file":"frontend/app/api/user/profile/route.ts","action":"Write","timestamp":"2026-06-23T10:56:19Z","important":false}
+{"file":"frontend/lib/org.ts","action":"Edit","timestamp":"2026-06-23T10:57:22Z","important":false}
+{"file":"frontend/app/profile/page.tsx","action":"Write","timestamp":"2026-06-23T11:02:07Z","important":false}
+{"file":"frontend/app/api/user/profile-image/route.ts","action":"Write","timestamp":"2026-06-23T11:03:17Z","important":false}
+{"file":"frontend/app/api/user/banner/route.ts","action":"Write","timestamp":"2026-06-23T11:04:00Z","important":false}

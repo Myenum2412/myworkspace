@@ -26,14 +26,7 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-const FAKE_FILES: RecycledFile[] = [
-  { id: "rfake-1", originalName: "Old-Proposal-v1.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", size: 720_000, createdAt: "2025-10-01T09:00:00Z", deletedAt: "2025-12-15T11:00:00Z", uploaderName: "Alice Chen" },
-  { id: "rfake-2", originalName: "Logo-Iteration-3.png", mimeType: "image/png", size: 4_200_000, createdAt: "2025-09-20T15:30:00Z", deletedAt: "2025-12-14T16:20:00Z", uploaderName: "David Park" },
-  { id: "rfake-3", originalName: "Temp-Notes.txt", mimeType: "text/plain", size: 12_000, createdAt: "2025-12-10T08:00:00Z", deletedAt: "2025-12-13T10:00:00Z", uploaderName: "Bob Kumar" },
-  { id: "rfake-4", originalName: "Draft-Contract.pdf", mimeType: "application/pdf", size: 1_800_000, createdAt: "2025-11-05T13:00:00Z", deletedAt: "2025-12-12T09:45:00Z", uploaderName: "Carol Davis" },
-  { id: "rfake-5", originalName: "Duplicates-Cleanup.zip", mimeType: "application/zip", size: 9_500_000, createdAt: "2025-08-15T11:00:00Z", deletedAt: "2025-12-10T14:30:00Z", uploaderName: "Frank Lee" },
-  { id: "rfake-6", originalName: "Screenshot-20251001.png", mimeType: "image/png", size: 2_100_000, createdAt: "2025-10-01T12:00:00Z", deletedAt: "2025-12-09T18:00:00Z", uploaderName: "Eve Torres" },
-];
+
 
 export default function RecycleBinPage() {
   const { data: session } = useSession();
@@ -61,7 +54,6 @@ export default function RecycleBinPage() {
         setFiles(Array.isArray(data) ? data : data.data || []);
       }
     } catch {
-      setFiles(FAKE_FILES);
     } finally {
       setLoading(false);
     }

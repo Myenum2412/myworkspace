@@ -49,16 +49,7 @@ type FileItem = {
   storagePath: string;
 };
 
-const FAKE_FILES: FileItem[] = [
-  { id: "fake-1", originalName: "Q4-Report.pdf", mimeType: "application/pdf", size: 2_400_000, createdAt: "2025-12-01T10:00:00Z", uploaderName: "Alice Chen", uploaderAvatar: "", projectId: "p1", projectName: "Website Redesign", description: "Quarterly performance report", storagePath: "" },
-  { id: "fake-2", originalName: "Proposal-Draft.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", size: 860_000, createdAt: "2025-11-28T14:30:00Z", uploaderName: "Bob Kumar", uploaderAvatar: "", projectId: "p2", projectName: "Mobile App", description: "Initial proposal draft for client review", storagePath: "" },
-  { id: "fake-3", originalName: "Budget-2026.xlsx", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", size: 1_200_000, createdAt: "2025-11-25T09:15:00Z", uploaderName: "Carol Davis", uploaderAvatar: "", projectId: "p1", projectName: "Website Redesign", description: "Annual budget breakdown", storagePath: "" },
-  { id: "fake-4", originalName: "Screenshot-Mockup.png", mimeType: "image/png", size: 3_100_000, createdAt: "2025-11-22T16:45:00Z", uploaderName: "David Park", uploaderAvatar: "", projectId: "p3", projectName: "Marketing Campaign", description: "Homepage mockup screenshot", storagePath: "" },
-  { id: "fake-5", originalName: "Archive-Backup.zip", mimeType: "application/zip", size: 15_800_000, createdAt: "2025-11-20T08:00:00Z", uploaderName: "Eve Torres", uploaderAvatar: "", projectId: null, projectName: null, description: "Project backup archive", storagePath: "" },
-  { id: "fake-6", originalName: "Meeting-Notes.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", size: 320_000, createdAt: "2025-11-18T11:20:00Z", uploaderName: "Frank Lee", uploaderAvatar: "", projectId: "p2", projectName: "Mobile App", description: "Sprint planning meeting notes", storagePath: "" },
-  { id: "fake-7", originalName: "API-Specs.pdf", mimeType: "application/pdf", size: 1_800_000, createdAt: "2025-11-15T13:00:00Z", uploaderName: "Alice Chen", uploaderAvatar: "", projectId: "p1", projectName: "Website Redesign", description: "REST API specification document", storagePath: "" },
-  { id: "fake-8", originalName: "Brand-Guidelines.pdf", mimeType: "application/pdf", size: 5_200_000, createdAt: "2025-11-10T09:30:00Z", uploaderName: "Carol Davis", uploaderAvatar: "", projectId: "p3", projectName: "Marketing Campaign", description: "Brand style guide and assets", storagePath: "" },
-];
+
 
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -114,16 +105,15 @@ export default function FilesPage() {
             .then((r) => r.json())
             .then((data) => {
               const list = Array.isArray(data) ? data : data.data || [];
-              setFiles(list.length > 0 ? list : FAKE_FILES);
+              setFiles(list);
             })
-            .catch(() => setFiles(FAKE_FILES))
+            .catch(() => {})
             .finally(() => setLoading(false));
         } else {
-          setFiles(FAKE_FILES);
           setLoading(false);
         }
       })
-      .catch(() => { setFiles(FAKE_FILES); setLoading(false); });
+      .catch(() => { setLoading(false); });
   }, [session]);
 
   useEffect(() => { fetchFiles(); }, [fetchFiles]);

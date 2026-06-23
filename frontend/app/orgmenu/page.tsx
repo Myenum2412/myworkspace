@@ -4,7 +4,10 @@ import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UsersIcon, ClipboardListIcon, ActivityIcon, Building2Icon, CheckCircle2Icon, ClockIcon } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { NewUsersChart } from "@/components/NewUsersChart";
+import { UsersIcon, ClipboardListIcon, ActivityIcon, Building2Icon, CheckCircle2Icon, ClockIcon, UserPlusIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Organization Dashboard" };
@@ -28,13 +31,85 @@ const getAllMetrics = cache(async () => {
   return { orgCount, memberCount, taskCount, completedTasks, inProgressTasks, activityCount };
 });
 
+const getNewUsersByMonth = cache(async (orgId?: string | null) => {
+  const pipeline = orgId
+    ? [
+        { $match: { orgId } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "id",
+            as: "user",
+          },
+        },
+        { $unwind: "$user" },
+        { $match: { "user.createdAt": { $exists: true } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$user.createdAt" } },
+            users: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]
+    : [
+        { $match: { createdAt: { $exists: true } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            users: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ];
+  const cursor = await db
+    .collection(orgId ? collections.orgMembers : collections.users)
+    .aggregate(pipeline);
+  const raw = await cursor.toArray();
+  return raw.map((r) => ({
+    month: r._id as string,
+    users: r.users as number,
+  }));
+});
+
+const getRecentUsers = cache(async (orgId?: string | null) => {
+  const cursor = await db.collection(
+    orgId ? collections.orgMembers : collections.users,
+  ).find(
+    orgId ? { orgId } : {},
+    { sort: { createdAt: -1 }, limit: 10, projection: orgId ? { userId: 1, joinedAt: 1 } : { id: 1, name: 1, email: 1, role: 1, status: 1, createdAt: 1 } },
+  );
+  const raw = await cursor.toArray();
+
+  if (orgId) {
+    const userIds = raw.map((r: Record<string, unknown>) => r.userId as string);
+    const users = await (await db.collection(collections.users).find(
+      { id: { $in: userIds } },
+      { projection: { id: 1, name: 1, email: 1, role: 1, status: 1, createdAt: 1 } },
+    )).toArray();
+    const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
+    return raw.map((r: Record<string, unknown>) => {
+      const u = userMap.get(r.userId as string) as Record<string, unknown> | undefined;
+      return { name: u?.name as string || "Unknown", email: u?.email as string || "", role: u?.role as string || "", status: u?.status as string || "offline", createdAt: r.joinedAt as string || u?.createdAt as string };
+    });
+  }
+
+  return raw.map((r: Record<string, unknown>) => ({
+    name: r.name as string,
+    email: r.email as string,
+    role: r.role as string,
+    status: r.status as string || "offline",
+    createdAt: r.createdAt as string,
+  }));
+});
+
 const getRecentOrgs = cache(async () => {
-  const orgs = await db.collection(collections.organizations)
-    .find({})
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .project({ id: 1, name: 1, plan: 1, createdAt: 1 })
-    .toArray();
+  const cursor = await db.collection(collections.organizations).find(
+    {},
+    { sort: { createdAt: -1 }, limit: 5, projection: { id: 1, name: 1, plan: 1, createdAt: 1 } },
+  );
+  const orgs = await cursor.toArray();
   return orgs;
 });
 
@@ -47,12 +122,18 @@ export default async function OrgDashboardPage() {
 
   let metrics: Awaited<ReturnType<typeof getOrgMetrics>>;
   let recentOrgs: Awaited<ReturnType<typeof getRecentOrgs>> = [];
+  let newUsersData: { month: string; users: number }[] = [];
+  let recentUsers: { name: string; email: string; role: string; status: string; createdAt: string }[] = [];
 
   if (isSuperAdmin) {
     metrics = await getAllMetrics();
     recentOrgs = await getRecentOrgs();
+    newUsersData = await getNewUsersByMonth();
+    recentUsers = await getRecentUsers();
   } else {
     metrics = await getOrgMetrics(orgId || "null");
+    newUsersData = await getNewUsersByMonth(orgId);
+    recentUsers = await getRecentUsers(orgId);
   }
 
   return (
@@ -125,28 +206,79 @@ export default async function OrgDashboardPage() {
         </Card>
       </div>
 
-      {isSuperAdmin && recentOrgs.length > 0 && (
+      <div className="grid gap-4 lg:grid-cols-2">
+        {isSuperAdmin && recentOrgs.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2Icon className="size-5" />
+                Recent Organizations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead className="text-right">Created</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentOrgs.map((org) => (
+                    <TableRow key={org.id as string}>
+                      <TableCell className="font-medium">{org.name as string}</TableCell>
+                      <TableCell>{(org.plan as string) || "starter"}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {org.createdAt ? new Date(org.createdAt as string).toLocaleDateString() : "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+        {newUsersData.length > 0 && <NewUsersChart data={newUsersData} />}
+      </div>
+
+      {recentUsers.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building2Icon className="size-5" />
-              Recent Organizations
+              <UserPlusIcon className="size-5" />
+              Recent Signups
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="divide-y">
-              {recentOrgs.map((org) => (
-                <div key={org.id as string} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                  <div>
-                    <p className="text-sm font-medium">{org.name as string}</p>
-                    <p className="text-xs text-muted-foreground">Plan: {(org.plan as string) || "starter"}</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {org.createdAt ? new Date(org.createdAt as string).toLocaleDateString() : "—"}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Signed Up</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentUsers.map((u, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="font-medium">{u.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                    <TableCell>{u.role}</TableCell>
+                    <TableCell>
+                      <Badge className={u.status === "online" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}>
+                        {u.status === "online" ? "Online" : "Offline"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">
+                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}

@@ -39,31 +39,6 @@ import { columns, type Project } from "./columns";
 import { DataTable } from "./data-table";
 import { ProjectDetailedView } from "./project-detailed-view";
 
-const FAKE_PROJECTS: Project[] = [
-  { id: "proj_1", name: "Website Redesign", client: "Acme Corp", color: "#3b82f6", description: "Complete overhaul of corporate website", deadline: "2026-08-15", tracked: 120, progress: 65, access: "Public", status: "Active", headName: "Alice Johnson", headAvatar: "" },
-  { id: "proj_2", name: "Mobile App", client: "Globex Inc", color: "#ef4444", description: "Cross-platform mobile application", deadline: "2026-10-01", tracked: 85, progress: 30, access: "Private", status: "Active", headName: "Bob Smith", headAvatar: "" },
-  { id: "proj_3", name: "Brand Identity", client: "Initech", color: "#10b981", description: "Brand guidelines and asset creation", deadline: "2026-06-30", tracked: 40, progress: 100, access: "Public", status: "Active", headName: "Carol Williams", headAvatar: "" },
-  { id: "proj_4", name: "Cloud Migration", client: "Umbrella Corp", color: "#f59e0b", description: "Migrate on-prem infrastructure to AWS", deadline: "2026-12-20", tracked: 200, progress: 15, access: "Private", status: "Active", headName: "Dave Brown", headAvatar: "" },
-  { id: "proj_5", name: "SEO Audit", client: "Wayne Enterprises", color: "#8b5cf6", description: "Full SEO audit and recommendations", deadline: "2026-05-01", tracked: 0, progress: 0, access: "Public", status: "Inactive" },
-  { id: "proj_6", name: "Data Pipeline", client: "Acme Corp", color: "#06b6d4", description: "Real-time data processing pipeline", deadline: "2026-09-15", tracked: 60, progress: 45, access: "Private", status: "Active", headName: "Frank Miller", headAvatar: "" },
-  { id: "proj_7", name: "Dashboard MVP", client: "Stark Industries", color: "#f97316", description: "Internal analytics dashboard", deadline: "2026-07-01", tracked: 30, progress: 100, access: "Public", status: "Active", headName: "Grace Lee", headAvatar: "" },
-];
-
-const FAKE_MEMBERS = [
-  { value: "mem_1", label: "Alice Johnson", designation: "Senior Developer", department: "Engineering" },
-  { value: "mem_2", label: "Bob Smith", designation: "Project Manager", department: "Product" },
-  { value: "mem_3", label: "Carol Williams", designation: "Designer", department: "Design" },
-  { value: "mem_4", label: "Dave Brown", designation: "Backend Developer", department: "Engineering" },
-  { value: "mem_5", label: "Eve Davis", designation: "QA Engineer", department: "Quality" },
-  { value: "mem_6", label: "Frank Miller", designation: "DevOps Engineer", department: "Infrastructure" },
-  { value: "mem_7", label: "Grace Lee", designation: "Frontend Developer", department: "Engineering" },
-  { value: "mem_8", label: "Henry Wilson", designation: "Data Analyst", department: "Data" },
-  { value: "mem_9", label: "Ivy Chen", designation: "UX Researcher", department: "Design" },
-  { value: "mem_10", label: "Jack Taylor", designation: "Full Stack Developer", department: "Engineering" },
-  { value: "mem_11", label: "Karen White", designation: "Scrum Master", department: "Product" },
-  { value: "mem_12", label: "Leo Martinez", designation: "Security Engineer", department: "Infrastructure" },
-];
-
 const clients = [
   "Acme Corp",
   "Globex Inc",
@@ -117,14 +92,14 @@ export default function ProjectsPage() {
           setOrgId(id);
           return fetch(`/api/projects?orgId=${id}`, { credentials: "include" });
         }
-        setProjects(FAKE_PROJECTS);
+        setProjects([]);
         return null;
       })
       .then((res) => res?.json())
       .then((data) => {
         if (data) setProjects(data.data || []);
       })
-      .catch(() => setProjects(FAKE_PROJECTS))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -410,54 +385,9 @@ export default function ProjectsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
                           </svg>
                         </div>
-                        <div className="max-h-48 space-y-1 overflow-y-auto">
-                          {FAKE_MEMBERS.filter(
-                            (m) => m.label.toLowerCase().includes(memberSearch.toLowerCase()) || m.department.toLowerCase().includes(memberSearch.toLowerCase())
-                          ).map((member) => {
-                            const checked = projectMembers.includes(member.value);
-                            return (
-                              <label
-                                key={member.value}
-                                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
-                              >
-                                <Checkbox
-                                  checked={checked}
-                                  onCheckedChange={() => {
-                                    setProjectMembers((prev) =>
-                                      checked ? prev.filter((v) => v !== member.value) : [...prev, member.value]
-                                    );
-                                  }}
-                                />
-                                <div className="flex flex-col">
-                                  <span>{member.label}</span>
-                                  <span className="text-xs text-muted-foreground">{member.designation} · {member.department}</span>
-                                </div>
-                              </label>
-                            );
-                          })}
-                        </div>
-                        {projectMembers.length > 0 && (
-                          <>
-                            <Separator className="my-2" />
-                            <div className="flex flex-wrap gap-1">
-                              {projectMembers.map((id) => {
-                                const m = FAKE_MEMBERS.find((x) => x.value === id);
-                                return m ? (
-                                  <span key={id} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                    {m.label}
-                                    <button
-                                      type="button"
-                                      onClick={() => setProjectMembers((prev) => prev.filter((v) => v !== id))}
-                                      className="ml-0.5 hover:text-destructive"
-                                    >
-                                      <XIcon className="size-3" />
-                                    </button>
-                                  </span>
-                                ) : null;
-                              })}
-                            </div>
-                          </>
-                        )}
+                          <div className="flex items-center justify-center py-6">
+                            <p className="text-sm text-muted-foreground">No members available</p>
+                          </div>
                       </PopoverContent>
                     </Popover>
                   </div>

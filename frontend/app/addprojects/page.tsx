@@ -13,14 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2Icon, AlertCircleIcon } from "lucide-react";
-
-const clients = [
-  "Acme Corp",
-  "Globex Inc",
-  "Initech",
-  "Umbrella Corp",
-  "Wayne Enterprises",
-];
+import { getProjects } from "@/actions/projects";
 
 const colors = [
   "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
@@ -38,6 +31,7 @@ export default function AddProjectPage() {
   const [color, setColor] = useState("#3b82f6");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [clientList, setClientList] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/user/me", { credentials: "include" })
@@ -55,6 +49,13 @@ export default function AddProjectPage() {
         if (id) setOrgId(id);
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    getProjects().then((projects) => {
+      const unique = [...new Set(projects.map((p) => p.client).filter(Boolean))] as string[];
+      setClientList(unique);
+    }).catch(() => {});
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -131,7 +132,7 @@ export default function AddProjectPage() {
                     className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="">Select a client</option>
-                    {clients.map((c) => (
+                    {clientList.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>

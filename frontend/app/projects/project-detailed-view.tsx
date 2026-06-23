@@ -6,21 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Project } from "./columns";
 
-const FAKE_MEMBERS = [
-  { value: "mem_1", label: "Alice Johnson", designation: "Senior Developer", department: "Engineering" },
-  { value: "mem_2", label: "Bob Smith", designation: "Project Manager", department: "Product" },
-  { value: "mem_3", label: "Carol Williams", designation: "Designer", department: "Design" },
-  { value: "mem_4", label: "Dave Brown", designation: "Backend Developer", department: "Engineering" },
-  { value: "mem_5", label: "Eve Davis", designation: "QA Engineer", department: "Quality" },
-  { value: "mem_6", label: "Frank Miller", designation: "DevOps Engineer", department: "Infrastructure" },
-  { value: "mem_7", label: "Grace Lee", designation: "Frontend Developer", department: "Engineering" },
-  { value: "mem_8", label: "Henry Wilson", designation: "Data Analyst", department: "Data" },
-  { value: "mem_9", label: "Ivy Chen", designation: "UX Researcher", department: "Design" },
-  { value: "mem_10", label: "Jack Taylor", designation: "Full Stack Developer", department: "Engineering" },
-  { value: "mem_11", label: "Karen White", designation: "Scrum Master", department: "Product" },
-  { value: "mem_12", label: "Leo Martinez", designation: "Security Engineer", department: "Infrastructure" },
-];
-
 const TABS = ["Project Info", "Team", "Performance Report"];
 
 function FieldRow({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -110,20 +95,9 @@ export function ProjectDetailedView({ project, onEdit }: { project: Project; onE
 
         {tab === 1 && (
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Team Members ({FAKE_MEMBERS.length})</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {FAKE_MEMBERS.map((m) => (
-                <div key={m.value} className="flex items-center gap-3 rounded-lg border p-3">
-                  <div className="size-9 rounded-full bg-muted flex items-center justify-center text-xs font-medium shrink-0">
-                    {m.label.split(" ").map((n) => n[0]).join("")}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{m.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">{m.designation}</p>
-                  </div>
-                  <Badge variant="outline" className="ml-auto text-[10px] shrink-0">{m.department}</Badge>
-                </div>
-              ))}
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Team Members</h3>
+            <div className="flex items-center justify-center py-12">
+              <p className="text-sm text-muted-foreground">No team members available</p>
             </div>
           </div>
         )}
@@ -194,27 +168,8 @@ export function ProjectDetailedView({ project, onEdit }: { project: Project; onE
             {/* Team Performance */}
             <div className="rounded-lg border p-4 space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Team Performance</h3>
-              <div className="space-y-2.5">
-                {FAKE_MEMBERS.slice(0, 5).map((m) => {
-                  const hours = Math.floor(Math.random() * 40) + 10;
-                  const pct = Math.min(100, Math.round((hours / 50) * 100));
-                  return (
-                    <div key={m.value} className="flex items-center gap-3">
-                      <div className="size-7 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium shrink-0">
-                        {m.label.split(" ").map((n) => n[0]).join("")}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="text-xs font-medium truncate">{m.label}</span>
-                          <span className="text-[10px] text-muted-foreground">{hours}h</span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full bg-primary/60" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="flex items-center justify-center py-8">
+                <p className="text-sm text-muted-foreground">No performance data available</p>
               </div>
             </div>
           </div>

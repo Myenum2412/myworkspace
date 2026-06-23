@@ -26,28 +26,11 @@ type ActivityItem = {
   createdAt: string;
 };
 
-const FAKE_METRICS: Metrics = {
-  totalTasks: 45,
-  completedTasks: 18,
-  inProgressTasks: 15,
-  overdueTasks: 5,
-  activeMembers: 24,
-  recentActivity: 12,
-};
 
-const FAKE_ACTIVITIES: ActivityItem[] = [
-  { _id: "act_1", action: "task.completed", description: "Completed homepage redesign", userId: "user_1", createdAt: "2026-06-19T10:30:00Z" },
-  { _id: "act_2", action: "user.joined", description: "Sarah Kim joined Engineering team", userId: "user_2", createdAt: "2026-06-19T09:15:00Z" },
-  { _id: "act_3", action: "file.uploaded", description: "Uploaded Q2 financial report", userId: "user_3", createdAt: "2026-06-19T08:45:00Z" },
-  { _id: "act_4", action: "task.created", description: "Created new task: API integration", userId: "user_4", createdAt: "2026-06-18T16:20:00Z" },
-  { _id: "act_5", action: "user.updated", description: "James Wilson promoted to Team Lead", userId: "user_5", createdAt: "2026-06-18T14:10:00Z" },
-  { _id: "act_6", action: "task.completed", description: "Database migration script finished", userId: "user_1", createdAt: "2026-06-18T11:00:00Z" },
-  { _id: "act_7", action: "task.created", description: "New project: Cloud Migration initiated", userId: "user_3", createdAt: "2026-06-18T09:30:00Z" },
-];
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [metrics, setMetrics] = useState<Metrics>({totalTasks:0,completedTasks:0,inProgressTasks:0,overdueTasks:0,activeMembers:0,recentActivity:0});
   const [activities, setActivities] = useState<ActivityItem[]>([]);
 
   const user = {
@@ -68,14 +51,14 @@ export default function DashboardPage() {
           fetch(`/api/dashboard/metrics?orgId=${id}`, { credentials: "include" })
             .then((r) => r.json())
             .then((m) => setMetrics(m.data || m))
-            .catch(() => setMetrics(FAKE_METRICS));
+            .catch(() => {});
           fetch(`/api/activity?orgId=${id}`, { credentials: "include" })
             .then((r) => r.json())
             .then((a) => setActivities(a.data || a || []))
-            .catch(() => setActivities(FAKE_ACTIVITIES));
+            .catch(() => {});
         }
       })
-      .catch(() => { setMetrics(FAKE_METRICS); setActivities(FAKE_ACTIVITIES); });
+      .catch(() => {});
   }, [session]);
 
   const cards = [

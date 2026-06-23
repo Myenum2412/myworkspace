@@ -45,6 +45,7 @@ async function tryNextAuthCookie(req: AuthRequest): Promise<JwtPayload | null> {
           email: (payload.email || "") as string,
           role: (payload.role || "member") as string,
           permissions: (payload.permissions || []) as string[],
+          orgId: (payload.orgId || undefined) as string | undefined,
         };
       } catch {
         return null;

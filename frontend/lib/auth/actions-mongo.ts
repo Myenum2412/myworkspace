@@ -48,6 +48,7 @@ export async function signupActionMongo(formData: FormData) {
   const organizations = db.collection("organizations");
   const orgDoc: Record<string, unknown> = {
     _id: orgId,
+    id: orgId,
     name: company || `${name}'s Organization`,
     slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${userId.slice(0, 8)}`,
     ownerId: userId,
@@ -56,6 +57,14 @@ export async function signupActionMongo(formData: FormData) {
     updatedAt: new Date(),
   };
   await organizations.insertOne(orgDoc as never);
+
+  await db.collection("org_members").insertOne({
+    id: uuid(),
+    orgId,
+    userId,
+    role: "admin",
+    joinedAt: new Date(),
+  });
 
   await signIn("credentials", { email, password, redirect: false });
   const createdUser = await db.collection("users").findOne({ email });

@@ -8,21 +8,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
+import { getUserOrgId } from "@/lib/org";
 import { Building2, Users } from "lucide-react";
 
 export const metadata = {
   title: "Departments",
 };
 
-const departments = [
-  { name: "Engineering", head: "Alice Chen", headAvatar: "", memberCount: 24, openPositions: 3, budget: "$1.2M", color: "bg-blue-500" },
-  { name: "Design", head: "Bob Martinez", headAvatar: "", memberCount: 12, openPositions: 2, budget: "$650K", color: "bg-purple-500" },
-  { name: "Marketing", head: "Carol Williams", headAvatar: "", memberCount: 18, openPositions: 1, budget: "$890K", color: "bg-emerald-500" },
-  { name: "Sales", head: "David Kim", headAvatar: "", memberCount: 22, openPositions: 4, budget: "$1.5M", color: "bg-orange-500" },
-  { name: "Human Resources", head: "Eve Johnson", headAvatar: "", memberCount: 8, openPositions: 1, budget: "$420K", color: "bg-pink-500" },
-  { name: "Finance", head: "Frank Lee", headAvatar: "", memberCount: 6, openPositions: 0, budget: "$380K", color: "bg-cyan-500" },
-  { name: "Operations", head: "Grace Patel", headAvatar: "", memberCount: 10, openPositions: 2, budget: "$560K", color: "bg-amber-500" },
-  { name: "Customer Success", head: "Henry Garcia", headAvatar: "", memberCount: 15, openPositions: 3, budget: "$720K", color: "bg-indigo-500" },
+const deptColors = [
+  "bg-blue-500", "bg-purple-500", "bg-emerald-500", "bg-orange-500",
+  "bg-pink-500", "bg-cyan-500", "bg-amber-500", "bg-indigo-500",
 ];
 
 const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -34,6 +31,37 @@ export default async function DepartmentsPage() {
     email: session?.user?.email || "user@example.com",
     avatar: session?.user?.image || "",
   };
+
+  const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
+
+  let departments: Array<{ name: string; head: string; headAvatar: string; memberCount: number; openPositions: number; budget: string; color: string }> = [];
+
+  try {
+    if (orgId) {
+      const teamsData = await db.collection(collections.teams).find({ orgId }).toArray();
+      const members = await db.collection(collections.orgMembers).find({ orgId }).toArray();
+      const userIds = members.map((m: Record<string, unknown>) => m.userId as string);
+      const usersData = userIds.length > 0
+        ? await db.collection(collections.users).find({ id: { $in: userIds } }).project({ id: 1, name: 1, image: 1 }).toArray()
+        : [];
+      const userMap = new Map(usersData.map((u: Record<string, unknown>) => [u.id, u]));
+
+      const adminMember = members.find((m: Record<string, unknown>) => m.role === "admin" || m.role === "manager");
+      const headUser = adminMember ? userMap.get(adminMember.userId as string) as Record<string, unknown> | undefined : undefined;
+
+      departments = teamsData.map((t: Record<string, unknown>, i: number) => ({
+        name: (t.name as string) || "Unknown",
+        head: (headUser?.name as string) || "Unassigned",
+        headAvatar: (headUser?.image as string) || "",
+        memberCount: members.length,
+        openPositions: 0,
+        budget: "$0",
+        color: deptColors[i % deptColors.length],
+      }));
+    }
+  } catch {
+    // departments stays empty on error
+  }
 
   const totalMembers = departments.reduce((s, d) => s + d.memberCount, 0);
   const totalOpen = departments.reduce((s, d) => s + d.openPositions, 0);

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { ObjectId } from "mongodb";
 
 export async function POST(request: Request) {
   let session;
@@ -13,30 +14,55 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const userId = session.user.id;
   const contentType = request.headers.get("content-type") || "";
   let imageUrl = "";
 
   if (contentType.includes("multipart/form-data")) {
     const formData = await request.formData();
     const file = formData.get("image") as File | null;
-    if (file) {
+    if (file && file.size > 0) {
+      if (file.size > 5 * 1024 * 1024) {
+        return NextResponse.json({ error: "Image must be under 5MB" }, { status: 400 });
+      }
+      if (!file.type.startsWith("image/")) {
+        return NextResponse.json({ error: "File must be an image" }, { status: 400 });
+      }
       const bytes = await file.arrayBuffer();
       const base64 = Buffer.from(bytes).toString("base64");
       imageUrl = `data:${file.type};base64,${base64}`;
+      console.log(`[profile-image] uploaded file: size=${file.size} type=${file.type}`);
+    } else {
+      return NextResponse.json({ error: "No image file provided" }, { status: 400 });
     }
   } else {
-    const body = await request.json();
-    imageUrl = body.url || "";
+    let body: { image?: string; url?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+    // Accept both `image` and `url` keys for backward compat
+    imageUrl = body.image || body.url || "";
+    console.log(`[profile-image] JSON update: url length=${imageUrl.length}`);
   }
 
   try {
-    await db.collection("users").updateOne(
-      { id: session.user.id },
-      { $set: { image: imageUrl, updatedAt: new Date() } }
-    );
+    const userQuery: { $or: Record<string, unknown>[] } = { $or: [{ id: userId }] };
+    if (ObjectId.isValid(userId)) {
+      userQuery.$or!.push({ _id: new ObjectId(userId) });
+    } else {
+      userQuery.$or!.push({ _id: userId });
+    }
+    const result = await db.collection("users").updateOne(userQuery as never, { $set: { image: imageUrl, updatedAt: new Date() } });
+    if (result.matchedCount === 0) {
+      console.warn(`[profile-image] user not found for userId=${userId}`);
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    console.log(`[profile-image] updated for userId=${userId}`);
     return NextResponse.json({ image: imageUrl });
   } catch (e) {
-    console.error("Failed to update profile image:", e);
+    console.error("[profile-image] Failed:", e);
     return NextResponse.json({ error: "Failed to update profile image" }, { status: 500 });
   }
 }

@@ -20,7 +20,8 @@ const getOrg = cache(async (orgId: string) => {
 
 const getAllOrgs = cache(async () => {
   try {
-    return await db.collection(collections.organizations).find({}).sort({ createdAt: -1 }).toArray();
+    const cursor = await db.collection(collections.organizations).find({});
+    return await cursor.sort({ createdAt: -1 }).toArray();
   } catch {
     return [];
   }

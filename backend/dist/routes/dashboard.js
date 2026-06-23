@@ -6,10 +6,17 @@ import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 const router = Router();
 router.use(authenticate);
+// Helper: resolve orgId from token or membership
+async function resolveOrgId(req) {
+    if (req.user.orgId)
+        return req.user.orgId;
+    const member = await OrgMember.findOne({ userId: req.user.userId }).lean();
+    if (member)
+        return member.orgId.toString();
+    throw new AppError(400, "User is not associated with an organization");
+}
 router.get("/metrics", async (req, res) => {
-    const orgId = req.query.orgId || "";
-    if (!orgId)
-        throw new AppError(400, "orgId is required");
+    const orgId = req.query.orgId || await resolveOrgId(req);
     const [totalTasks, completedTasks, inProgressTasks, overdueTasks, activeMembers, recentActivity,] = await Promise.all([
         Task.countDocuments({ orgId }),
         Task.countDocuments({ orgId, status: "done" }),
