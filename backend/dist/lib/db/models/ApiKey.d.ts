@@ -1,6 +1,6 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 export interface IApiKey extends Document {
-    orgId: Types.ObjectId;
+    orgId: string;
     name: string;
     key: string;
     lastUsedAt?: Date;
@@ -8,7 +8,7 @@ export interface IApiKey extends Document {
     createdAt: Date;
 }
 export declare const ApiKey: import("mongoose").Model<IApiKey, {}, {}, {}, Document<unknown, {}, IApiKey, {}, {}> & IApiKey & Required<{
-    _id: Types.ObjectId;
+    _id: import("mongoose").Types.ObjectId;
 }> & {
     __v: number;
 }, any>;

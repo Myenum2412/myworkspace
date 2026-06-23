@@ -1,10 +1,12 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import path from "path";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
 import authRoutes from "./routes/auth.js";
 import tasksRoutes from "./routes/tasks.js";
+import sessionsRoutes from "./routes/sessions.js";
 import notificationsRoutes from "./routes/notifications.js";
 import activityRoutes from "./routes/activity.js";
 import dashboardRoutes from "./routes/dashboard.js";
@@ -18,6 +20,10 @@ import teamsRoutes from "./routes/teams.js";
 import timeEntriesRoutes from "./routes/time-entries.js";
 import adminRoutes from "./routes/admin.js";
 const app = express();
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+}));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json());
 // Serve uploads and banners statically
@@ -30,6 +36,7 @@ app.get("/api/health", (_req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", tasksRoutes);
+app.use("/api/sessions", sessionsRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/activity", activityRoutes);
 app.use("/api/dashboard", dashboardRoutes);

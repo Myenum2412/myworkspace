@@ -30,6 +30,13 @@ export type EducationRow = {
   completionDate?: string;
 };
 
+export type FileAttachment = {
+  id: string;
+  name: string;
+  size: number;
+  mimeType?: string;
+};
+
 export type DependentRow = {
   id: string;
   name?: string;
@@ -73,6 +80,7 @@ export type Employee = {
   workExperience?: ExperienceRow[];
   educationDetails?: EducationRow[];
   dependentDetails?: DependentRow[];
+  files?: FileAttachment[];
 };
 
 export type TerminatedEmployee = Employee & {

@@ -1,202 +1,132 @@
-import { Check, MoveRight, PhoneCall } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Check, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-function Pricing() {
+const plans = [
+  {
+    name: "Starter",
+    price: "$29",
+    description: "Perfect for small teams getting started with project management.",
+    features: [
+      "Up to 10 team members",
+      "5 projects",
+      "Basic time tracking",
+      "Task management",
+      "Email notifications",
+      "7-day history",
+    ],
+    popular: false,
+  },
+  {
+    name: "Growth",
+    price: "$79",
+    description: "For growing teams that need advanced collaboration tools.",
+    features: [
+      "Up to 50 team members",
+      "Unlimited projects",
+      "Advanced time tracking",
+      "Custom workflows",
+      "Analytics & reports",
+      "Priority support",
+      "Integrations",
+      "90-day history",
+    ],
+    popular: true,
+  },
+  {
+    name: "Enterprise",
+    price: "$199",
+    description: "For organizations requiring enterprise-grade security and control.",
+    features: [
+      "Unlimited team members",
+      "Unlimited projects",
+      "Dedicated account manager",
+      "SSO & SAML",
+      "Audit logs",
+      "Custom integrations",
+      "SLA guarantee",
+      "Unlimited history",
+    ],
+    popular: false,
+  },
+];
+
+export function Pricing() {
   return (
-    <div className="w-full py-8">
-      <div className="container mx-auto">
-        <div className="flex text-center justify-center items-center gap-4 flex-col">
-          <Badge>Pricing</Badge>
-          <div className="flex gap-2 flex-col">
-            <h2 className="text-3xl md:text-5xl tracking-tighter max-w-xl text-center font-regular">
-              Prices that make sense!
-            </h2>
-            <p className="text-lg leading-relaxed tracking-tight text-muted-foreground max-w-xl text-center">
-              Managing a small business today is already tough.
-            </p>
+    <div className="py-20 sm:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-sm font-medium text-brand-600 shadow-xs">
+            Pricing
           </div>
-          <div className="grid pt-20 text-left grid-cols-1 lg:grid-cols-3 w-full gap-8">
-            <Card className="w-full rounded-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-primary/50">
-              <CardHeader>
-                <CardTitle>
-                  <span className="flex flex-row gap-4 items-center font-normal">
-                    Startup
+          <h2 className="text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+            Simple, transparent pricing
+          </h2>
+          <p className="mt-4 text-lg text-brand-600">
+            Choose the plan that fits your team. No hidden fees, no surprises.
+          </p>
+        </div>
+
+        <div className="mt-16 grid gap-8 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`relative flex flex-col rounded-xl border bg-white p-8 transition-all duration-200 hover:shadow-lg ${
+                plan.popular
+                  ? "border-brand-500 shadow-md ring-1 ring-brand-500/20 scale-105 lg:scale-110"
+                  : "border-brand-200/60 hover:border-brand-300"
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="inline-flex items-center rounded-full bg-brand-800 px-4 py-1 text-xs font-semibold text-white">
+                    Most Popular
                   </span>
-                </CardTitle>
-                <CardDescription>
-                  Our goal is to streamline SMB trade, making it easier and faster
-                  than ever for everyone and everywhere.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col gap-8 justify-start">
-                  <p className="flex flex-row  items-center gap-2 text-xl">
-                    <span className="text-4xl">$40</span>
-                    <span className="text-sm text-muted-foreground">
-                      {" "}
-                      / month
-                    </span>
-                  </p>
-                  <div className="flex flex-col gap-4 justify-start">
-                    <div className="flex flex-row gap-4">
-                      <Check className="w-4 h-4 mt-2 text-primary" />
-                      <div className="flex flex-col">
-                        <p>Fast and reliable</p>
-                        <p className="text-muted-foreground text-sm">
-                          We&apos;ve made it fast and reliable.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-row gap-4">
-                      <Check className="w-4 h-4 mt-2 text-primary" />
-                      <div className="flex flex-col">
-                        <p>Fast and reliable</p>
-                        <p className="text-muted-foreground text-sm">
-                          We&apos;ve made it fast and reliable.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-row gap-4">
-                      <Check className="w-4 h-4 mt-2 text-primary" />
-                      <div className="flex flex-col">
-                        <p>Fast and reliable</p>
-                        <p className="text-muted-foreground text-sm">
-                          We&apos;ve made it fast and reliable.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="gap-4">
-                    Sign up today <MoveRight className="w-4 h-4" />
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-            <Card className="w-full shadow-2xl rounded-md transition-all duration-300 hover:-translate-y-2 hover:shadow-primary/20 hover:border-primary">
-              <CardHeader>
-                <CardTitle>
-                  <span className="flex flex-row gap-4 items-center font-normal">
-                    Growth
+              )}
+
+              <div className="mb-6">
+                <h3 className="text-xl font-semibold text-brand-900">
+                  {plan.name}
+                </h3>
+                <p className="mt-2 text-sm text-brand-600">
+                  {plan.description}
+                </p>
+              </div>
+
+              <div className="mb-8">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold tracking-tight text-brand-900">
+                    {plan.price}
                   </span>
-                </CardTitle>
-                <CardDescription>
-                  Our goal is to streamline SMB trade, making it easier and faster
-                  than ever for everyone and everywhere.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col gap-8 justify-start">
-                  <p className="flex flex-row  items-center gap-2 text-xl">
-                    <span className="text-4xl">$40</span>
-                    <span className="text-sm text-muted-foreground">
-                      {" "}
-                      / month
-                    </span>
-                  </p>
-                  <div className="flex flex-col gap-4 justify-start">
-                    <div className="flex flex-row gap-4">
-                      <Check className="w-4 h-4 mt-2 text-primary" />
-                      <div className="flex flex-col">
-                        <p>Fast and reliable</p>
-                        <p className="text-muted-foreground text-sm">
-                          We&apos;ve made it fast and reliable.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-row gap-4">
-                      <Check className="w-4 h-4 mt-2 text-primary" />
-                      <div className="flex flex-col">
-                        <p>Fast and reliable</p>
-                        <p className="text-muted-foreground text-sm">
-                          We&apos;ve made it fast and reliable.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-row gap-4">
-                      <Check className="w-4 h-4 mt-2 text-primary" />
-                      <div className="flex flex-col">
-                        <p>Fast and reliable</p>
-                        <p className="text-muted-foreground text-sm">
-                          We&apos;ve made it fast and reliable.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <Button className="gap-4">
-                    Sign up today <MoveRight className="w-4 h-4" />
-                  </Button>
+                  <span className="text-sm text-brand-400">/month</span>
                 </div>
-              </CardContent>
-            </Card>
-            <Card className="w-full rounded-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-primary/50">
-              <CardHeader>
-                <CardTitle>
-                  <span className="flex flex-row gap-4 items-center font-normal">
-                    Enterprise
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  Our goal is to streamline SMB trade, making it easier and faster
-                  than ever for everyone and everywhere.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col gap-8 justify-start">
-                  <p className="flex flex-row  items-center gap-2 text-xl">
-                    <span className="text-4xl">$40</span>
-                    <span className="text-sm text-muted-foreground">
-                      {" "}
-                      / month
-                    </span>
-                  </p>
-                  <div className="flex flex-col gap-4 justify-start">
-                    <div className="flex flex-row gap-4">
-                      <Check className="w-4 h-4 mt-2 text-primary" />
-                      <div className="flex flex-col">
-                        <p>Fast and reliable</p>
-                        <p className="text-muted-foreground text-sm">
-                          We&apos;ve made it fast and reliable.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-row gap-4">
-                      <Check className="w-4 h-4 mt-2 text-primary" />
-                      <div className="flex flex-col">
-                        <p>Fast and reliable</p>
-                        <p className="text-muted-foreground text-sm">
-                          We&apos;ve made it fast and reliable.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-row gap-4">
-                      <Check className="w-4 h-4 mt-2 text-primary" />
-                      <div className="flex flex-col">
-                        <p>Fast and reliable</p>
-                        <p className="text-muted-foreground text-sm">
-                          We&apos;ve made it fast and reliable.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="gap-4">
-                    Book a meeting <PhoneCall className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+
+              <Button
+                asChild
+                variant={plan.popular ? "default" : "outline"}
+                className={`mb-8 h-11 w-full text-base font-medium ${
+                  plan.popular ? "" : "border-brand-200 text-brand-800 hover:bg-brand-50"
+                }`}
+              >
+                <a href="/signup">
+                  Get started
+                  <ArrowRight className="ml-2 size-4" />
+                </a>
+              </Button>
+
+              <ul className="space-y-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-3">
+                    <Check className="mt-0.5 size-4 shrink-0 text-brand-500" />
+                    <span className="text-sm text-brand-700">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 }
-
-export { Pricing };

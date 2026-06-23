@@ -9,15 +9,15 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 7.9s
+✓ Compiled successfully in 6.4s
   Running TypeScript ...
-  Finished TypeScript in 13.7s ...
+  Finished TypeScript in 7.7s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/69) ...
-  Generating static pages using 11 workers (17/69) 
-  Generating static pages using 11 workers (34/69) 
-  Generating static pages using 11 workers (51/69) 
-✓ Generating static pages using 11 workers (69/69) in 643ms
+  Generating static pages using 11 workers (0/71) ...
+  Generating static pages using 11 workers (17/71) 
+  Generating static pages using 11 workers (35/71) 
+  Generating static pages using 11 workers (53/71) 
+✓ Generating static pages using 11 workers (71/71) in 538ms
   Finalizing page optimization ...
 
 Route (app)
@@ -25,12 +25,15 @@ Route (app)
 ├ ○ /_not-found
 ├ ƒ /addemployees
 ├ ○ /addprojects
+├ ○ /admin/profile
 ├ ○ /alltasks
 ├ ƒ /api/auth/[...nextauth]
 ├ ƒ /api/employees
 ├ ƒ /api/files
 ├ ƒ /api/files/[id]
+├ ƒ /api/org/limits
 ├ ƒ /api/tasks/[id]
+├ ƒ /api/time-entries/summary
 ├ ƒ /api/user/banner
 ├ ƒ /api/user/profile
 ├ ƒ /api/user/profile-image
@@ -86,6 +89,7 @@ Route (app)
 ├ ƒ /staffs/list
 ├ ƒ /staffs/performance
 ├ ƒ /staffs/performance/goals
+├ ƒ /staffs/profile
 ├ ƒ /staffs/schedule
 ├ ƒ /staffs/settings
 ├ ƒ /staffs/settings/roles

@@ -3,7 +3,7 @@ import { defaultNavData } from "@/components/app-sidebar";
 
 describe("AppSidebar nav data", () => {
   it("has correct number of top-level sections", () => {
-    expect(defaultNavData.navMain.length).toBe(9);
+    expect(defaultNavData.navMain.length).toBe(8);
   });
 
   it("all sections have required fields", () => {
@@ -33,20 +33,5 @@ describe("AppSidebar nav data", () => {
     }
   });
 
-  it("includes Staff section", () => {
-    const staff = defaultNavData.navMain.find((s) => s.title === "Staff");
-    expect(staff).toBeTruthy();
-    expect(staff!.url).toBe("/staffs");
-    expect(staff!.items?.length).toBe(5);
-  });
 
-  it("Staff section has expected sub-items", () => {
-    const staff = defaultNavData.navMain.find((s) => s.title === "Staff")!;
-    const subTitles = staff.items!.map((i) => i.title);
-    expect(subTitles).toContain("Overview");
-    expect(subTitles).toContain("Directory");
-    expect(subTitles).toContain("Schedule");
-    expect(subTitles).toContain("Attendance");
-    expect(subTitles).toContain("Performance");
-  });
 });

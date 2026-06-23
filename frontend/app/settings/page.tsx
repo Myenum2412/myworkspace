@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import {
@@ -34,7 +34,11 @@ import {
   ClockIcon,
   PaletteIcon,
   ShieldIcon,
+  ListIcon,
+  PlusIcon,
+  Trash2Icon,
 } from "lucide-react";
+import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
 
 const tabs = [
   { id: "general", label: "General", icon: Settings2Icon },
@@ -42,6 +46,7 @@ const tabs = [
   { id: "billing", label: "Billing", icon: CreditCardIcon },
   { id: "limits", label: "Limits", icon: GaugeIcon },
   { id: "notifications", label: "Notifications", icon: BellIcon },
+  { id: "employee-fields", label: "Employee Fields", icon: ListIcon },
 ];
 
 export default function SettingsPage() {
@@ -72,6 +77,71 @@ export default function SettingsPage() {
   const [storageLimit, setStorageLimit] = useState(10);
   const [memberLimit, setMemberLimit] = useState(25);
   const [projectLimit, setProjectLimit] = useState(10);
+
+  // Employee Fields
+  const [dropdownOptions, setDropdownOptionsState] = useState<Record<string, string[]>>(DEFAULT_DROPDOWN_OPTIONS);
+  const [newOptionInputs, setNewOptionInputs] = useState<Record<string, string>>({});
+  const [editingOption, setEditingOption] = useState<{ field: string; index: number; value: string } | null>(null);
+  const editingInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setDropdownOptionsState(getDropdownOptions());
+  }, []);
+
+  useEffect(() => {
+    if (editingOption && editingInputRef.current) {
+      editingInputRef.current.focus();
+      editingInputRef.current.setSelectionRange(editingInputRef.current.value.length, editingInputRef.current.value.length);
+    }
+  }, [editingOption]);
+
+  const persistOptions = (options: Record<string, string[]>) => {
+    saveDropdownOptions(options);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const addOption = (field: string) => {
+    const value = newOptionInputs[field]?.trim();
+    if (!value) return;
+    const updated = {
+      ...dropdownOptions,
+      [field]: [...(dropdownOptions[field] || []), value],
+    };
+    setDropdownOptionsState(updated);
+    persistOptions(updated);
+    setNewOptionInputs((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const removeOption = (field: string, index: number) => {
+    const updated = {
+      ...dropdownOptions,
+      [field]: (dropdownOptions[field] || []).filter((_: string, i: number) => i !== index),
+    };
+    setDropdownOptionsState(updated);
+    persistOptions(updated);
+  };
+
+  const startEditing = (field: string, index: number, currentValue: string) => {
+    setEditingOption({ field, index, value: currentValue });
+  };
+
+  const saveEditing = () => {
+    if (!editingOption) return;
+    const trimmed = editingOption.value.trim();
+    if (!trimmed) {
+      setEditingOption(null);
+      return;
+    }
+    const arr = [...(dropdownOptions[editingOption.field] || [])];
+    arr[editingOption.index] = trimmed;
+    const updated = { ...dropdownOptions, [editingOption.field]: arr };
+    setDropdownOptionsState(updated);
+    persistOptions(updated);
+    setEditingOption(null);
+  };
+
+  const cancelEditing = () => setEditingOption(null);
 
   // Notifications
   const [notifSettings, setNotifSettings] = useState({
@@ -153,84 +223,6 @@ export default function SettingsPage() {
           {/* General */}
           {activeTab === "general" && (
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <GlobeIcon className="size-4" />
-                    Regional Settings
-                  </CardTitle>
-                  <CardDescription>Configure timezone and language preferences</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm">Timezone</Label>
-                    <Select value={timezone} onValueChange={setTimezone}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="UTC">UTC</SelectItem>
-                        <SelectItem value="EST">EST (UTC-5)</SelectItem>
-                        <SelectItem value="PST">PST (UTC-8)</SelectItem>
-                        <SelectItem value="IST">IST (UTC+5:30)</SelectItem>
-                        <SelectItem value="CET">CET (UTC+1)</SelectItem>
-                        <SelectItem value="AEST">AEST (UTC+10)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-sm">Language</Label>
-                    <Select value={language} onValueChange={setLanguage}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="es">Spanish</SelectItem>
-                        <SelectItem value="fr">French</SelectItem>
-                        <SelectItem value="de">German</SelectItem>
-                        <SelectItem value="ja">Japanese</SelectItem>
-                        <SelectItem value="zh">Chinese</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PaletteIcon className="size-4" />
-                    Branding
-                  </CardTitle>
-                  <CardDescription>Customize your workspace appearance</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-6">
-                    <div>
-                      <Label className="text-sm">Primary Color</Label>
-                      <div className="flex items-center gap-2 mt-1">
-                        {["#3b82f6", "#6366f1", "#8b5cf6", "#ec4899", "#ef4444", "#f59e0b", "#10b981", "#06b6d4"].map((c) => (
-                          <button
-                            key={c}
-                            type="button"
-                            className="size-7 rounded-full ring-offset-2 ring-offset-background"
-                            style={{ backgroundColor: c }}
-                          />
-                        ))}
-                        <input type="color" value="#3b82f6" className="size-7 cursor-pointer rounded border border-border p-0.5" />
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-sm">Dark Mode</Label>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Switch defaultChecked />
-                        <span className="text-sm text-muted-foreground">Enable dark mode</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           )}
 
@@ -326,27 +318,6 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CreditCardIcon className="size-4" />
-                    Payment Method
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="rounded-lg border p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="size-8 rounded bg-muted flex items-center justify-center text-xs font-bold">VISA</div>
-                      <div>
-                        <p className="text-sm font-medium">Visa ending in 4242</p>
-                        <p className="text-xs text-muted-foreground">Expires 12/27</p>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="text-xs">Default</Badge>
-                  </div>
-                  <Button variant="outline" size="sm">Add Payment Method</Button>
-                </CardContent>
-              </Card>
             </div>
           )}
 
@@ -387,20 +358,6 @@ export default function SettingsPage() {
                     </div>
                     <div className="h-2 rounded-full bg-muted">
                       <div className="h-2 rounded-full bg-emerald-500" style={{ width: `${(7 / projectLimit) * 100}%` }} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-                    <div className="rounded-lg border p-3">
-                      <p className="text-xs text-muted-foreground">Storage Limit</p>
-                      <Input type="number" value={storageLimit} onChange={(e) => setStorageLimit(Number(e.target.value))} className="mt-1 h-8 text-sm" />
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <p className="text-xs text-muted-foreground">Member Limit</p>
-                      <Input type="number" value={memberLimit} onChange={(e) => setMemberLimit(Number(e.target.value))} className="mt-1 h-8 text-sm" />
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <p className="text-xs text-muted-foreground">Project Limit</p>
-                      <Input type="number" value={projectLimit} onChange={(e) => setProjectLimit(Number(e.target.value))} className="mt-1 h-8 text-sm" />
                     </div>
                   </div>
                 </CardContent>
@@ -486,6 +443,104 @@ export default function SettingsPage() {
                       ))}
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Employee Fields */}
+          {activeTab === "employee-fields" && (
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ListIcon className="size-4" />
+                    Employee Field Options
+                  </CardTitle>
+                  <CardDescription>
+                    Manage dropdown options used in the Add Employee form. Changes are saved automatically.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {[
+                    { key: "departments", label: "Departments" },
+                    { key: "locations", label: "Locations" },
+                    { key: "designations", label: "Designations" },
+                    { key: "employmentTypes", label: "Employment Types" },
+                    { key: "statuses", label: "Statuses" },
+                    { key: "branches", label: "Branches" },
+                    { key: "shifts", label: "Shifts" },
+                    { key: "sourceOfHires", label: "Source of Hire" },
+                    { key: "countries", label: "Countries" },
+                  ].map((field) => (
+                    <div key={field.key} className="rounded-lg border p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-semibold">{field.label}</h3>
+                        <span className="text-xs text-muted-foreground">
+                          {(dropdownOptions[field.key] || []).length} options
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {(dropdownOptions[field.key] || []).map((opt: string, idx: number) =>
+                          editingOption?.field === field.key && editingOption.index === idx ? (
+                            <div key={idx} className="flex gap-1 items-center">
+                              <Input
+                                ref={editingInputRef}
+                                value={editingOption.value}
+                                onChange={(e) =>
+                                  setEditingOption((prev) => prev ? { ...prev, value: e.target.value } : null)
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") { e.preventDefault(); saveEditing(); }
+                                  if (e.key === "Escape") { e.preventDefault(); cancelEditing(); }
+                                }}
+                                onBlur={saveEditing}
+                                className="h-7 w-40 text-sm"
+                              />
+                            </div>
+                          ) : (
+                            <Badge key={idx} variant="secondary" className="gap-1 pr-1 cursor-pointer">
+                              <span
+                                onClick={() => startEditing(field.key, idx, opt)}
+                                className="hover:underline"
+                              >
+                                {opt}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => removeOption(field.key, idx)}
+                                className="ml-1 rounded-full hover:bg-destructive/20 p-0.5"
+                              >
+                                <Trash2Icon className="size-3" />
+                              </button>
+                            </Badge>
+                          )
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder={`Add ${field.label.toLowerCase()}`}
+                          value={newOptionInputs[field.key] || ""}
+                          onChange={(e) =>
+                            setNewOptionInputs((prev) => ({ ...prev, [field.key]: e.target.value }))
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") { e.preventDefault(); addOption(field.key); }
+                          }}
+                          className="h-8 text-sm"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => addOption(field.key)}
+                          disabled={!newOptionInputs[field.key]?.trim()}
+                        >
+                          <PlusIcon className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
             </div>

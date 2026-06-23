@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 const ssoConfigSchema = new Schema({
-    orgId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
+    orgId: { type: String, required: true },
     provider: { type: String, enum: ["saml", "oidc"], required: true },
     issuer: String,
     clientId: String,

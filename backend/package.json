@@ -11,14 +11,20 @@
     "db:seed-admin": "tsx --env-file=.env src/lib/db/seed-admin.ts"
   },
   "dependencies": {
+    "@agendajs/mongo-backend": "^4.0.2",
+    "@aws-sdk/client-s3": "^3.1075.0",
     "@panva/hkdf": "^1.2.1",
+    "agenda": "^6.2.5",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "helmet": "^8.2.0",
     "jose": "^6.2.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.14.1",
     "multer": "^2.2.0",
+    "resend": "^2.0.0",
+    "socket.io": "^4.8.3",
     "uuid": "^14.0.0",
     "ws": "^8.21.0",
     "zod": "^4.4.3"

@@ -77,8 +77,17 @@ export default async function EmployeesPage() {
         const usersCursor = await db.collection(collections.users).find({ id: { $in: userIds } });
         const users = await usersCursor.toArray();
         const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
+
+        const allFileIds = users.flatMap((u: Record<string, unknown>) => (u.files as string[]) || []);
+        let fileMap = new Map<string, Record<string, unknown>>();
+        if (allFileIds.length > 0) {
+          const fileDocs = await db.collection(collections.fileAttachments).find({ id: { $in: allFileIds } }).toArray();
+          fileMap = new Map(fileDocs.map((f: Record<string, unknown>) => [f.id as string, f]));
+        }
+
         employees = visibleMembers.map((m: Record<string, unknown>) => {
           const u = userMap.get(m.userId as string) as Record<string, unknown> || {};
+          const userFiles = (u.files as string[]) || [];
           return {
             id: (m.userId as string) || (u.id as string) || "",
             name: (u.name as string) || "Unknown",
@@ -92,6 +101,10 @@ export default async function EmployeesPage() {
             branchName: (u.branchName as string) || "",
             joiningDate: u.joiningDate ? (u.joiningDate as Date).toISOString() : "",
             avatar: (u.image as string) || "",
+            files: userFiles.map((fid: string) => {
+              const file = fileMap.get(fid);
+              return file ? { id: file.id as string, name: file.originalName as string, size: file.size as number, mimeType: file.mimeType as string } : { id: fid, name: fid, size: 0 };
+            }),
           };
         });
       }

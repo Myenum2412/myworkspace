@@ -7,7 +7,8 @@ import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { saveFile, getFilePath, deleteFile as deleteStorageFile } from "../lib/storage/index.js";
+import { saveFile, getFilePath, getFileBuffer, deleteFile as deleteStorageFile } from "../lib/storage/index.js";
+import { env } from "../config/env.js";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
@@ -88,7 +89,7 @@ router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) 
   if (!orgId) throw new AppError(400, "orgId is required");
 
   const buffer = req.file.buffer;
-  const storagePath = saveFile(buffer, req.file.originalname);
+  const storagePath = await saveFile(buffer, req.file.originalname);
 
   const fileId = uuid();
   await FileAttachment.create({
@@ -121,6 +122,15 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 
   const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: file.orgId }).lean();
   if (!membership) throw new AppError(403, "Not authorized to access this file");
+
+  if (env.R2_ENDPOINT && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY) {
+    const buf = await getFileBuffer(file.storagePath);
+    if (!buf) throw new AppError(404, "File not found in storage");
+    res.set("Content-Type", file.mimeType || "application/octet-stream");
+    res.set("Content-Disposition", `inline; filename="${file.originalName}"`);
+    res.send(buf);
+    return;
+  }
 
   const filePath = getFilePath(file.storagePath);
   if (!filePath) throw new AppError(404, "File not found on disk");
@@ -159,7 +169,7 @@ router.delete("/:id/permanent", async (req: AuthRequest, res: Response) => {
   const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: file.orgId }).lean();
   if (!membership) throw new AppError(403, "Not authorized");
 
-  deleteStorageFile(file.storagePath);
+  await deleteStorageFile(file.storagePath);
   await FileAttachment.deleteOne({ id: req.params.id });
   await FileShare.deleteMany({ fileId: req.params.id });
 

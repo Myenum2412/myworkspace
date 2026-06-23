@@ -23,13 +23,12 @@ export default auth((req) => {
 
   if (pathname === "/") {
     const home = getHomePath(userRole);
-    console.log(`[AUTH middleware] root: ${userEmail} role=${userRole} → ${home}`);
-    return NextResponse.redirect(new URL(isLoggedIn ? home : "/login", req.url));
+    const dest = isLoggedIn ? home : "/login";
+    return NextResponse.redirect(new URL(dest, req.url));
   }
 
   if (isLoggedIn && isPublic) {
     const home = getHomePath(userRole);
-    console.log(`[AUTH middleware] public-page: ${userEmail} role=${userRole} → ${home}`);
     return NextResponse.redirect(new URL(home, req.url));
   }
 
@@ -37,21 +36,13 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Strict orgmenu protection: allowed by role or by designated admin email
   if (pathname.startsWith("/orgmenu")) {
-    console.log(`[AUTH middleware] orgmenu access attempt: ${userEmail} role=${userRole} loggedIn=${isLoggedIn}`);
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login?error=Please+sign+in+to+access+this+area", req.url));
     }
-    if (userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN") {
-      console.log(`[AUTH middleware] orgmenu GRANTED by role: ${userEmail} role=${userRole}`);
+    if (userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL) {
       return;
     }
-    if (userEmail === ADMIN_EMAIL) {
-      console.log(`[AUTH middleware] orgmenu GRANTED by admin email: ${userEmail}`);
-      return;
-    }
-    console.warn(`[AUTH middleware] UNAUTHORIZED orgmenu access by ${userEmail} role=${userRole}`);
     return NextResponse.redirect(new URL("/login?error=Access+denied.+You+do+not+have+permission+to+view+this+page", req.url));
   }
 });

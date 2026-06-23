@@ -1,10 +1,10 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 export interface ITask extends Document {
-  orgId: Types.ObjectId;
-  teamId?: Types.ObjectId;
-  assigneeId?: Types.ObjectId;
-  creatorId: Types.ObjectId;
+  orgId: string;
+  teamId?: string;
+  assigneeId?: string;
+  creatorId: string;
   title: string;
   description?: string;
   project?: string;
@@ -17,10 +17,10 @@ export interface ITask extends Document {
 
 const taskSchema = new Schema<ITask>(
   {
-    orgId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
-    teamId: { type: Schema.Types.ObjectId, ref: "Team" },
-    assigneeId: { type: Schema.Types.ObjectId, ref: "User" },
-    creatorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    orgId: { type: String, required: true },
+    teamId: { type: String },
+    assigneeId: { type: String },
+    creatorId: { type: String, required: true },
     title: { type: String, required: true },
     description: String,
     project: String,

@@ -1,13 +1,13 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 export interface IMessage extends Document {
-    orgId: Types.ObjectId;
-    senderId: Types.ObjectId;
-    teamId?: Types.ObjectId;
+    orgId: string;
+    senderId: string;
+    teamId?: string;
     content: string;
     createdAt: Date;
 }
 export declare const Message: import("mongoose").Model<IMessage, {}, {}, {}, Document<unknown, {}, IMessage, {}, {}> & IMessage & Required<{
-    _id: Types.ObjectId;
+    _id: import("mongoose").Types.ObjectId;
 }> & {
     __v: number;
 }, any>;

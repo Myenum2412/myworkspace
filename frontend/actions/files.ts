@@ -27,7 +27,7 @@ export async function deleteFileAction(fileId: string) {
   if (!session?.user?.id) return { error: "Unauthorized" };
   if (file.uploaderId !== session.user.id) return { error: "Not your file" };
 
-  deleteFile(file.storagePath);
+  await deleteFile(file.storagePath);
   await db.collection(collections.fileAttachments).deleteOne({ id: fileId });
 
   await db.collection(collections.activityLogs).insertOne({

@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 export interface ISsoConfig extends Document {
-  orgId: Types.ObjectId;
+  orgId: string;
   provider: "saml" | "oidc";
   issuer?: string;
   clientId?: string;
@@ -12,7 +12,7 @@ export interface ISsoConfig extends Document {
 }
 
 const ssoConfigSchema = new Schema<ISsoConfig>({
-  orgId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
+  orgId: { type: String, required: true },
   provider: { type: String, enum: ["saml", "oidc"], required: true },
   issuer: String,
   clientId: String,

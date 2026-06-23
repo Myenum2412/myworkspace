@@ -1,7 +1,19 @@
 import { Schema, model } from "mongoose";
+const statusTransitionSchema = new Schema({
+    status: { type: String, enum: ["online", "break", "offline"], required: true },
+    timestamp: { type: Date, required: true },
+}, { _id: false });
 const sessionSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userId: { type: String, required: true, index: true },
+    orgId: { type: String, index: true },
+    loginTime: { type: Date, required: true, default: Date.now },
+    logoutTime: { type: Date },
+    currentStatus: { type: String, enum: ["online", "break", "offline"], default: "online" },
+    statusTransitions: { type: [statusTransitionSchema], default: [] },
+    totalBreakDuration: { type: Number, default: 0 },
+    duration: { type: Number },
     expiresAt: { type: Date, required: true },
-    createdAt: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
+sessionSchema.index({ userId: 1, loginTime: -1 });
+sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 export const Session = model("Session", sessionSchema);

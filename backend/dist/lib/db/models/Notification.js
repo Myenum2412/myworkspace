@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 const notificationSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userId: { type: String, required: true },
     type: {
         type: String,
         enum: ["task_assigned", "task_updated", "mention", "invite", "system", "comment", "status_change"],

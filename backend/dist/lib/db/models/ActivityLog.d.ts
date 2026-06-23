@@ -1,7 +1,7 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 export interface IActivityLog extends Document {
-    orgId: Types.ObjectId;
-    userId: Types.ObjectId;
+    orgId: string;
+    userId: string;
     action: string;
     entityType: string;
     entityId?: string;
@@ -10,7 +10,7 @@ export interface IActivityLog extends Document {
     createdAt: Date;
 }
 export declare const ActivityLog: import("mongoose").Model<IActivityLog, {}, {}, {}, Document<unknown, {}, IActivityLog, {}, {}> & IActivityLog & Required<{
-    _id: Types.ObjectId;
+    _id: import("mongoose").Types.ObjectId;
 }> & {
     __v: number;
 }, any>;

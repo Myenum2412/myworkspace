@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PencilIcon, UserIcon, BriefcaseIcon, PhoneIcon, Share2Icon, HistoryIcon } from "lucide-react";
+import { PencilIcon, UserIcon, BriefcaseIcon, PhoneIcon, Share2Icon, HistoryIcon, FileIcon, DownloadIcon, ExternalLinkIcon } from "lucide-react";
 import type { Employee } from "./columns";
 
 const statusColors: Record<string, string> = {
@@ -136,6 +136,41 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
             <InfoCard label="Twitter / X" value={employee.twitter} />
             <InfoCard label="Website" value={employee.website} />
           </div>
+        </Section>
+
+        <Separator />
+
+        {/* Documents */}
+        <Section icon={FileIcon} title="Documents">
+          {employee.files && employee.files.length > 0 ? (
+            <div className="space-y-2">
+              {employee.files.map((f) => (
+                <div key={f.id} className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileIcon className="size-5 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{f.name}</p>
+                      <p className="text-xs text-muted-foreground">{(f.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button variant="ghost" size="icon" className="size-8" asChild>
+                      <a href={`/api/files/${f.id}`} target="_blank" rel="noopener noreferrer" title="View">
+                        <ExternalLinkIcon className="size-4" />
+                      </a>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="size-8" asChild>
+                      <a href={`/api/files/${f.id}?download=true`} title="Download">
+                        <DownloadIcon className="size-4" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">No documents uploaded.</p>
+          )}
         </Section>
 
         <Separator />

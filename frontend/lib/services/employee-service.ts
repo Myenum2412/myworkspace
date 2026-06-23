@@ -27,6 +27,7 @@ type CreateEmployeeInput = {
   github?: string | null;
   twitter?: string | null;
   website?: string | null;
+  files?: string[];
 };
 
 async function createEmployee(data: CreateEmployeeInput): Promise<Record<string, unknown>> {

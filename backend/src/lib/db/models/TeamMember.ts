@@ -1,14 +1,14 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 export interface ITeamMember extends Document {
-  teamId: Types.ObjectId;
-  userId: Types.ObjectId;
+  teamId: string;
+  userId: string;
   role: "lead" | "member";
 }
 
 const teamMemberSchema = new Schema<ITeamMember>({
-  teamId: { type: Schema.Types.ObjectId, ref: "Team", required: true },
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  teamId: { type: String, required: true },
+  userId: { type: String, required: true },
   role: { type: String, enum: ["lead", "member"], default: "member" },
 });
 

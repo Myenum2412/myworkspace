@@ -293,3 +293,24 @@
 - （必要に応じて追記）
 
 ---
+
+## セッション: 2026-06-23T18:00:02Z
+
+- session_id: `session-1782237347952836412`
+- project: `myworkspace`
+- branch: `main`
+- started_at: `2026-06-23T17:55:47Z`
+- ended_at: `2026-06-23T18:00:02Z`
+- duration_minutes: 4
+- changes: 0
+
+### 変更ファイル
+- （なし）
+
+### 重要な変更（important=true）
+- （なし）
+
+### 次回への引き継ぎ（任意）
+- （必要に応じて追記）
+
+---

@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUserStatus } from "@/hooks/use-user-status";
+import { SessionTracker } from "@/components/session-tracker";
 import { Fragment } from "react";
 
 export function Header() {
@@ -82,6 +83,8 @@ export function Header() {
         </div>
 
         <Separator orientation="vertical" className="hidden md:block h-6" />
+
+        <SessionTracker />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none">

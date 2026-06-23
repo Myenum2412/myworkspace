@@ -3,6 +3,13 @@
 import React, { useState, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CameraIcon, XIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -166,7 +173,7 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
   );
 }
 
-export function BasicInfoSection({ formData, onChange }: any) {
+export function BasicInfoSection({ formData, onChange, options }: any) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Field>
@@ -221,82 +228,114 @@ export function BasicInfoSection({ formData, onChange }: any) {
       </Field>
       <Field>
         <FieldLabel>Department</FieldLabel>
-        <Input
-          value={formData.department}
-          onChange={(e) => onChange("department", e.target.value)}
-          placeholder="Department"
-        />
+        <Select value={formData.department} onValueChange={(v) => onChange("department", v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select department" />
+          </SelectTrigger>
+          <SelectContent>
+            {(options?.departments || []).map((opt: string) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
       <Field>
         <FieldLabel>Location</FieldLabel>
-        <Input
-          value={formData.location}
-          onChange={(e) => onChange("location", e.target.value)}
-          placeholder="Location"
-        />
+        <Select value={formData.location} onValueChange={(v) => onChange("location", v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select location" />
+          </SelectTrigger>
+          <SelectContent>
+            {(options?.locations || []).map((opt: string) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
     </div>
   );
 }
 
-export function WorkInfoSection({ formData, onChange }: any) {
+export function WorkInfoSection({ formData, onChange, options }: any) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Field>
         <FieldLabel>Designation</FieldLabel>
-        <Input
-          value={formData.designation}
-          onChange={(e) => onChange("designation", e.target.value)}
-          placeholder="Designation"
-        />
-      </Field>
-      <Field>
-        <FieldLabel>Role</FieldLabel>
-        <Input
-          value={formData.roleName}
-          onChange={(e) => onChange("roleName", e.target.value)}
-          placeholder="Role"
-        />
+        <Select value={formData.designation} onValueChange={(v) => onChange("designation", v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select designation" />
+          </SelectTrigger>
+          <SelectContent>
+            {(options?.designations || []).map((opt: string) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
       <Field>
         <FieldLabel>Employment Type</FieldLabel>
-        <Input
-          value={formData.employmentType}
-          onChange={(e) => onChange("employmentType", e.target.value)}
-          placeholder="Employment Type"
-        />
+        <Select value={formData.employmentType} onValueChange={(v) => onChange("employmentType", v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            {(options?.employmentTypes || []).map((opt: string) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
       <Field>
         <FieldLabel>Status</FieldLabel>
-        <Input
-          value={formData.status}
-          onChange={(e) => onChange("status", e.target.value)}
-          placeholder="Status"
-        />
+        <Select value={formData.status} onValueChange={(v) => onChange("status", v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select status" />
+          </SelectTrigger>
+          <SelectContent>
+            {(options?.statuses || []).map((opt: string) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
       <Field>
         <FieldLabel>Branch</FieldLabel>
-        <Input
-          value={formData.branchName}
-          onChange={(e) => onChange("branchName", e.target.value)}
-          placeholder="Branch"
-        />
+        <Select value={formData.branchName} onValueChange={(v) => onChange("branchName", v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select branch" />
+          </SelectTrigger>
+          <SelectContent>
+            {(options?.branches || []).map((opt: string) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
       <Field>
         <FieldLabel>Shift</FieldLabel>
-        <Input
-          value={formData.shift}
-          onChange={(e) => onChange("shift", e.target.value)}
-          placeholder="Shift"
-        />
+        <Select value={formData.shift} onValueChange={(v) => onChange("shift", v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select shift" />
+          </SelectTrigger>
+          <SelectContent>
+            {(options?.shifts || []).map((opt: string) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
       <Field>
         <FieldLabel>Source of Hire</FieldLabel>
-        <Input
-          value={formData.sourceOfHire}
-          onChange={(e) => onChange("sourceOfHire", e.target.value)}
-          placeholder="Source of Hire"
-        />
+        <Select value={formData.sourceOfHire} onValueChange={(v) => onChange("sourceOfHire", v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select source" />
+          </SelectTrigger>
+          <SelectContent>
+            {(options?.sourceOfHires || []).map((opt: string) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
       <Field>
         <FieldLabel>Joining Date</FieldLabel>
@@ -326,7 +365,7 @@ export function WorkInfoSection({ formData, onChange }: any) {
   );
 }
 
-export function ContactDetailsSection({ formData, onChange }: any) {
+export function ContactDetailsSection({ formData, onChange, options }: any) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Field>
@@ -372,11 +411,16 @@ export function ContactDetailsSection({ formData, onChange }: any) {
       </Field>
       <Field>
         <FieldLabel>Country</FieldLabel>
-        <Input
-          value={formData.country}
-          onChange={(e) => onChange("country", e.target.value)}
-          placeholder="Country"
-        />
+        <Select value={formData.country} onValueChange={(v) => onChange("country", v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select country" />
+          </SelectTrigger>
+          <SelectContent>
+            {(options?.countries || []).map((opt: string) => (
+              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Field>
       <Field>
         <FieldLabel>Zip Code</FieldLabel>

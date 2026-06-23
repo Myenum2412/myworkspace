@@ -39,6 +39,7 @@ export function NavUser({
     name: string;
     email: string;
     avatar: string;
+    role?: string;
   };
 }) {
   const { isMobile } = useSidebar();
@@ -56,7 +57,7 @@ export function NavUser({
         <DropdownMenu>
           <div className="flex items-center">
             <SidebarMenuButton size="lg" asChild className="flex-1">
-              <Link href="/profile">
+              <Link href={user.role === "member" ? "/staffs/profile" : user.role === "admin" || user.role === "manager" ? "/admin/profile" : "/profile"}>
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="rounded-lg">

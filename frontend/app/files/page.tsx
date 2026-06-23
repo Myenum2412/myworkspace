@@ -299,10 +299,10 @@ export default function FilesPage() {
 
       {/* View File Dialog */}
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setViewFile(null); } }}>
-        <DialogContent className="p-0 flex flex-col max-w-3xl">
+        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
           {viewFile && (
             <>
-              <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
+              <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
                 <DialogTitle className="flex items-center gap-2 text-lg">
                   {getFileIcon(viewFile.mimeType)}
                   {viewFile.originalName}
@@ -315,78 +315,24 @@ export default function FilesPage() {
                   Uploaded {new Date(viewFile.createdAt).toLocaleDateString()} by {viewFile.uploaderName}
                 </DialogDescription>
               </DialogHeader>
-
-              <div className="flex-1 overflow-y-auto px-6 py-3 space-y-4">
-                {viewFile.description && (
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Description</p>
-                    <p className="text-sm">{viewFile.description}</p>
+              <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
+                {isPreviewable(viewFile.mimeType) ? (
+                  <iframe
+                    src={`/api/files/${viewFile.id}`}
+                    className="w-full h-full border rounded-md"
+                    title={viewFile.originalName}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
+                    <FileIcon className="size-12" />
+                    <p className="text-sm">Preview not available for this file type</p>
+                    <Button variant="outline" onClick={() => handleDownload(viewFile)}>
+                      <DownloadIcon className="mr-2 size-4" />
+                      Download to view
+                    </Button>
                   </div>
                 )}
-
-                <Separator />
-
-                {/* Preview */}
-                <div className="rounded-lg border bg-muted/20 overflow-hidden">
-                  {isPreviewable(viewFile.mimeType) ? (
-                    <iframe
-                      src={`/api/files/${viewFile.id}`}
-                      className="w-full h-[400px] border-0"
-                      title={viewFile.originalName}
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
-                      <FileIcon className="size-12" />
-                      <p className="text-sm">Preview not available for this file type</p>
-                      <Button variant="outline" onClick={() => handleDownload(viewFile)}>
-                        <DownloadIcon className="mr-2 size-4" />
-                        Download to view
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                <Separator />
-
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-lg border bg-card px-3 py-2">
-                    <p className="text-[11px] text-muted-foreground">Type</p>
-                    <p className="font-medium mt-0.5">{viewFile.mimeType}</p>
-                  </div>
-                  <div className="rounded-lg border bg-card px-3 py-2">
-                    <p className="text-[11px] text-muted-foreground">Size</p>
-                    <p className="font-medium mt-0.5">{formatSize(viewFile.size)}</p>
-                  </div>
-                  <div className="rounded-lg border bg-card px-3 py-2">
-                    <p className="text-[11px] text-muted-foreground">Uploaded By</p>
-                    <p className="font-medium mt-0.5">{viewFile.uploaderName}</p>
-                  </div>
-                  <div className="rounded-lg border bg-card px-3 py-2">
-                    <p className="text-[11px] text-muted-foreground">Uploaded At</p>
-                    <p className="font-medium mt-0.5">{new Date(viewFile.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  {viewFile.projectName && (
-                    <div className="rounded-lg border bg-card px-3 py-2">
-                      <p className="text-[11px] text-muted-foreground">Project</p>
-                      <p className="font-medium mt-0.5">{viewFile.projectName}</p>
-                    </div>
-                  )}
-                </div>
               </div>
-
-              <DialogFooter className="shrink-0 border-t px-6 py-4 gap-2">
-                <Button variant="outline" onClick={() => openEdit(viewFile)}>
-                  <PencilIcon className="size-3.5 mr-1.5" />
-                  Edit
-                </Button>
-                <Button onClick={() => handleDownload(viewFile)}>
-                  <DownloadIcon className="size-3.5 mr-1.5" />
-                  Download
-                </Button>
-                <Button variant="outline" onClick={() => { setViewOpen(false); setViewFile(null); }}>
-                  Close
-                </Button>
-              </DialogFooter>
             </>
           )}
         </DialogContent>

@@ -1,11 +1,11 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 export interface ITeamMember extends Document {
-    teamId: Types.ObjectId;
-    userId: Types.ObjectId;
+    teamId: string;
+    userId: string;
     role: "lead" | "member";
 }
 export declare const TeamMember: import("mongoose").Model<ITeamMember, {}, {}, {}, Document<unknown, {}, ITeamMember, {}, {}> & ITeamMember & Required<{
-    _id: Types.ObjectId;
+    _id: import("mongoose").Types.ObjectId;
 }> & {
     __v: number;
 }, any>;

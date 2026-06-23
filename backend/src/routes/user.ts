@@ -3,10 +3,12 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { User } from "../lib/db/models/User.js";
+import { Session } from "../lib/db/models/Session.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -75,6 +77,7 @@ router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {
 router.post("/status", authenticate, async (req: AuthRequest, res: Response) => {
   const { status, userId: bodyUserId } = req.body;
   if (!status) throw new AppError(400, "Status is required");
+  if (!["online", "offline", "break"].includes(status)) throw new AppError(400, "Invalid status");
 
   const targetUserId = bodyUserId || req.user?.userId;
   if (!targetUserId) throw new AppError(400, "userId is required");
@@ -84,6 +87,34 @@ router.post("/status", authenticate, async (req: AuthRequest, res: Response) => 
   } else {
     await User.findOneAndUpdate({ id: targetUserId }, { status });
   }
+
+  // Update active session if this is the current user
+  if (!bodyUserId || bodyUserId === req.user?.userId) {
+    const activeSession = await Session.findOne({
+      userId: isObjectId(targetUserId) ? targetUserId : req.user?.userId,
+      logoutTime: { $exists: false },
+    }).sort({ loginTime: -1 });
+
+    if (activeSession && activeSession.currentStatus !== status) {
+      if (activeSession.currentStatus === "break" && status !== "break") {
+        const breakStart = [...activeSession.statusTransitions].reverse().find(t => t.status === "break");
+        if (breakStart) {
+          activeSession.totalBreakDuration += Date.now() - breakStart.timestamp.getTime();
+        }
+      }
+      activeSession.statusTransitions.push({ status, timestamp: new Date() });
+      activeSession.currentStatus = status;
+      await activeSession.save();
+
+      socketIOManager.emitToUser(targetUserId, "session:status:updated", {
+        sessionId: activeSession._id.toString(),
+        status,
+        previousStatus: activeSession.currentStatus,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
   res.json({ success: true });
 });
 

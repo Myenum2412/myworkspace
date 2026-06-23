@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 export interface IApiKey extends Document {
-  orgId: Types.ObjectId;
+  orgId: string;
   name: string;
   key: string;
   lastUsedAt?: Date;
@@ -10,7 +10,7 @@ export interface IApiKey extends Document {
 }
 
 const apiKeySchema = new Schema<IApiKey>({
-  orgId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
+  orgId: { type: String, required: true },
   name: { type: String, required: true },
   key: { type: String, required: true, unique: true },
   lastUsedAt: Date,

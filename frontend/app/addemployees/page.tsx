@@ -7,8 +7,6 @@ import {
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { AddEmployeeDialogWrapper } from "./add-employee-dialog-wrapper";
-import { RecentEmployeesTable } from "./recent-employees-table";
-
 export const metadata = {
   title: "Add Employee",
 };
@@ -42,8 +40,6 @@ export default async function AddEmployeePage() {
             <p className="text-muted-foreground">Manage your organization&apos;s employees</p>
           </div>
           <AddEmployeeDialogWrapper />
-
-          <RecentEmployeesTable />
         </main>
       </SidebarInset>
     </SidebarProvider>

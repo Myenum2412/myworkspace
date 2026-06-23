@@ -1,9 +1,9 @@
 import { Schema, model } from "mongoose";
 const taskSchema = new Schema({
-    orgId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
-    teamId: { type: Schema.Types.ObjectId, ref: "Team" },
-    assigneeId: { type: Schema.Types.ObjectId, ref: "User" },
-    creatorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    orgId: { type: String, required: true },
+    teamId: { type: String },
+    assigneeId: { type: String },
+    creatorId: { type: String, required: true },
     title: { type: String, required: true },
     description: String,
     project: String,

@@ -19,9 +19,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { CopyIcon } from "lucide-react"
+import { CopyIcon, Loader2 } from "lucide-react"
+import { getDropdownOptions } from "@/lib/dropdown-options"
 
-import { cn } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAnalytics } from "@/hooks/use-analytics"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -38,7 +38,6 @@ import {
   Row,
 } from "./employee-form-sections"
 
-/** Generate a short unique ID for dynamic rows. */
 function generateId(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID()
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -52,11 +51,9 @@ interface AddEmployeeFormProps {
 export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormProps) {
   const { trackEvent } = useAnalytics("AddEmployeeForm")
   const queryClient = useQueryClient()
-  const [currentStep, setCurrentStep] = React.useState(1)
-  const [direction, setDirection] = React.useState(0)
   const [savedEmployee, setSavedEmployee] = React.useState<Record<string, unknown> | null>(null)
   const [formError, setFormError] = React.useState("")
-  const [firstSlideData, setFirstSlideData] = React.useState<FirstSlideEmployeeForm>({
+  const [formData, setFormData] = React.useState<FirstSlideEmployeeForm>({
     displayId: "",
     firstName: "",
     lastName: "",
@@ -82,7 +79,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
     if (prefix) {
       const count = parseInt(localStorage.getItem("employeeIdCount") || "1", 10)
       const displayId = `${prefix}${String(count).padStart(3, '0')}`
-      setFirstSlideData(prev => ({ ...prev, displayId }))
+      setFormData(prev => ({ ...prev, displayId }))
     }
   }, [])
 
@@ -96,23 +93,11 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
     { id: "1", name: "", relationship: "", dob: "" },
   ])
 
-  const [contactDetails, setContactDetails] = React.useState({
-    phone: "",
-    secondaryPhone: "",
-    address: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "",
-    exitDate: "",
-  })
+  const [dropdownOptions, setDropdownOptions] = React.useState<Record<string, string[]>>({})
 
-  const [socialPresence, setSocialPresence] = React.useState({
-    linkedin: "",
-    twitter: "",
-    github: "",
-    portfolio: "",
-  })
+  React.useEffect(() => {
+    setDropdownOptions(getDropdownOptions())
+  }, [])
 
   const addRow = (setter: React.Dispatch<React.SetStateAction<Row[]>>, type: string) => {
     setter((prev) => [...prev, { id: generateId() }])
@@ -122,11 +107,6 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   const removeRow = (setter: React.Dispatch<React.SetStateAction<Row[]>>, id: string, type: string) => {
     setter((prev) => prev.filter((row) => row.id !== id))
     trackEvent('remove_form_row', { rowType: type, rowId: id })
-  }
-
-  const updateFirstSlideField = (field: keyof FirstSlideEmployeeForm, value: string) => {
-    setFirstSlideData((prev) => ({ ...prev, [field]: value }))
-    setFormError("")
   }
 
   const updateRowField = (
@@ -142,115 +122,57 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
     )
   }
 
+  const updateField = (field: keyof FirstSlideEmployeeForm, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormError("")
+  }
+
+  const [successModalOpen, setSuccessModalOpen] = React.useState(false)
+
   const createEmployeeMutation = useMutation({
     mutationFn: () => employeeService.createEmployee({
-      empId: firstSlideData.displayId.trim() || undefined,
-      firstName: firstSlideData.firstName.trim(),
-      lastName: firstSlideData.lastName.trim(),
-      email: firstSlideData.email.trim(),
-      avatar: firstSlideData.avatar || "",
-      department: firstSlideData.department || null,
-      phone: contactDetails.phone || null,
-      roleName: firstSlideData.roleName || firstSlideData.designation || null,
-      branchName: firstSlideData.branchName || firstSlideData.location || null,
-      employmentType: firstSlideData.employmentType || null,
-      status: firstSlideData.status.toLowerCase() === "inactive" ? "inactive" : "active",
-      sourceOfHire: firstSlideData.sourceOfHire || null,
+      empId: formData.displayId.trim() || undefined,
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      email: formData.email.trim(),
+      avatar: formData.avatar || "",
+      password: formData.password || Math.random().toString(36).slice(-8) + "A1!",
+      department: formData.department || null,
+      phone: formData.phone || null,
+      roleName: formData.roleName || formData.designation || null,
+      branchName: formData.branchName || formData.location || null,
+      employmentType: formData.employmentType || null,
+      status: formData.status.toLowerCase() === "inactive" ? "inactive" : "active",
+      sourceOfHire: formData.sourceOfHire || null,
       workExperience: workExperience.filter(w => w.company || w.title),
       educationDetails: educationDetails.filter(e => e.institute || e.degree),
       dependentDetails: dependentDetails.filter(d => d.name),
-      currentExperience: firstSlideData.currentExperience || null,
-      totalExperience: firstSlideData.totalExperience || null,
+      currentExperience: formData.currentExperience || null,
+      totalExperience: formData.totalExperience || null,
     }),
     onSuccess: (employee) => {
       setSavedEmployee(employee)
       queryClient.invalidateQueries({ queryKey: ["employee"] })
       queryClient.invalidateQueries({ queryKey: ["employee-stats"] })
       trackEvent('save_employee_success')
+
+      const currentCount = parseInt(localStorage.getItem("employeeIdCount") || "1", 10)
+      localStorage.setItem("employeeIdCount", String(currentCount + 1))
+
+      setSuccessModalOpen(true)
     },
     onError: (error: any) => {
       setFormError(error?.message || "Failed to create employee. Please try again.")
     },
   })
 
-  const [successModalOpen, setSuccessModalOpen] = React.useState(false)
-
-  const saveFirstSlide = async () => {
-    if (savedEmployee) return savedEmployee
-
-    if (!firstSlideData.firstName.trim() || !firstSlideData.email.trim()) {
+  const handleSave = () => {
+    if (!formData.firstName.trim() || !formData.email.trim()) {
       setFormError("First name and email address are required.")
-      return null
+      return
     }
-
-    const finalPassword = firstSlideData.password || Math.random().toString(36).slice(-8) + "A1!"
-    if (!firstSlideData.password) {
-      setFirstSlideData(prev => ({ ...prev, password: finalPassword }))
-    }
-
     trackEvent('save_employee_start')
-    try {
-      return await employeeService.createEmployee({
-        empId: firstSlideData.displayId.trim() || undefined,
-        firstName: firstSlideData.firstName.trim(),
-        lastName: firstSlideData.lastName.trim(),
-        email: firstSlideData.email.trim(),
-        avatar: firstSlideData.avatar || "",
-        password: finalPassword,
-        department: firstSlideData.department || null,
-        phone: contactDetails.phone || null,
-        roleName: firstSlideData.roleName || firstSlideData.designation || null,
-        branchName: firstSlideData.branchName || firstSlideData.location || null,
-        employmentType: firstSlideData.employmentType || null,
-        status: firstSlideData.status.toLowerCase() === "inactive" ? "inactive" : "active",
-        sourceOfHire: firstSlideData.sourceOfHire || null,
-        workExperience: workExperience.filter(w => w.company || w.title),
-        educationDetails: educationDetails.filter(e => e.institute || e.degree),
-        dependentDetails: dependentDetails.filter(d => d.name),
-        currentExperience: firstSlideData.currentExperience || null,
-        totalExperience: firstSlideData.totalExperience || null,
-      }).then(employee => {
-        setSavedEmployee(employee)
-
-        // Increment the employee ID count in localStorage
-        const currentCount = parseInt(localStorage.getItem("employeeIdCount") || "1", 10)
-        localStorage.setItem("employeeIdCount", String(currentCount + 1))
-
-        queryClient.invalidateQueries({ queryKey: ["employee"] })
-        queryClient.invalidateQueries({ queryKey: ["employee-stats"] })
-        trackEvent('save_employee_success')
-        return employee
-      })
-    } catch (err: any) {
-      setFormError(err?.message || "Failed to create employee. Please try again.")
-      return null
-    }
-  }
-
-  const nextStep = async () => {
-    if (currentStep === 1) {
-      if (!firstSlideData.firstName.trim() || !firstSlideData.email.trim()) {
-        setFormError("First name and email address are required.")
-        return
-      }
-    }
-
-    setDirection(1)
-    setCurrentStep((prev) => Math.min(prev + 1, 5))
-    trackEvent('form_next_step', { from: currentStep, to: currentStep + 1 })
-  }
-
-  const prevStep = () => {
-    setDirection(-1)
-    setCurrentStep((prev) => Math.max(prev - 1, 1))
-    trackEvent('form_prev_step', { from: currentStep, to: currentStep - 1 })
-  }
-
-  const handleSave = async () => {
-    const employee = await saveFirstSlide()
-    if (employee) {
-      setSuccessModalOpen(true)
-    }
+    createEmployeeMutation.mutate()
   }
 
   const completeAndClose = () => {
@@ -262,7 +184,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden">
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -274,14 +196,14 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
           <div className="flex items-center space-x-2 my-4 bg-muted/50 p-4 rounded-lg">
             <div className="grid flex-1 gap-2">
               <div className="text-sm">
-                <span className="font-semibold">Email:</span> {firstSlideData.email}
+                <span className="font-semibold">Email:</span> {formData.email}
               </div>
               <div className="text-sm">
-                <span className="font-semibold">Password:</span> {firstSlideData.password}
+                <span className="font-semibold">Password:</span> {formData.password || "(auto-generated)"}
               </div>
             </div>
             <Button size="sm" className="px-3" onClick={() => {
-              navigator.clipboard.writeText(`Email: ${firstSlideData.email}\nPassword: ${firstSlideData.password}`)
+              navigator.clipboard.writeText(`Email: ${formData.email}\nPassword: ${formData.password}`)
             }}>
               <span className="sr-only">Copy</span>
               <CopyIcon className="h-4 w-4" />
@@ -294,289 +216,244 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {formError && (
         <div className="mx-6 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
           {formError}
         </div>
       )}
-      {/* Progress Indicator */}
-      <div className="px-6 pt-4">
-        <div className="flex items-center justify-between mb-4">
-          {[1, 2, 3, 4, 5].map((step) => (
-            <div key={step} className="flex flex-col items-center gap-2 flex-1 relative">
-              <div 
-                className={cn(
-                  "size-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 z-10",
-                  currentStep >= step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                )}
-              >
-                {step}
-              </div>
-              <span className={cn(
-                "text-[9px] font-bold uppercase tracking-wider transition-colors duration-300",
-                currentStep >= step ? "text-foreground" : "text-muted-foreground"
-              )}>
-                {step === 1 ? "Profile" : step === 2 ? "Work Info" : step === 3 ? "Contact" : step === 4 ? "Social" : "History"}
-              </span>
-              {step < 5 && (
-                <div className="absolute top-4 left-[60%] right-[-40%] h-[2px] bg-muted -z-0">
-                  <div 
-                    className="h-full bg-primary transition-all duration-500"
+
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full px-6">
+          <div className="space-y-8 py-6">
+            <div>
+              <h2 className="text-lg font-semibold mb-6">Profile</h2>
+              <div className="flex gap-12 items-start">
+                <div className="flex-shrink-0">
+                  <ProfileImageUpload
+                    avatar={formData.avatar}
+                    onAvatarChange={(url) => updateField("avatar", url)}
                   />
                 </div>
-              )}
+                <div className="flex-1">
+                  <BasicInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="relative flex-1 overflow-hidden px-1">
-        <div className="h-full">
-          <ScrollArea className="h-full px-5">
-            <div className="space-y-8 py-4">
-              {currentStep === 1 && (
-                <div className="space-y-8">
-                  <div className="flex gap-12 items-start mb-6">
-                    <div className="flex-shrink-0">
-                      <ProfileImageUpload 
-                        avatar={firstSlideData.avatar} 
-                        onAvatarChange={(url) => updateFirstSlideField("avatar", url)} 
+            <Separator />
+
+            <div>
+              <h2 className="text-lg font-semibold mb-6">Work Information</h2>
+              <WorkInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
+            </div>
+
+            <Separator />
+
+            <div>
+              <h2 className="text-lg font-semibold mb-6">Contact Details</h2>
+              <ContactDetailsSection
+                phone={formData.phone}
+                address={formData.address}
+                city={formData.city}
+                state={formData.state}
+                country={formData.country}
+                onPhoneChange={(value) => updateField("phone", value)}
+                onAddressChange={(value) => updateField("address", value)}
+                onCityChange={(value) => updateField("city", value)}
+                onStateChange={(value) => updateField("state", value)}
+                onCountryChange={(value) => updateField("country", value)}
+              />
+            </div>
+
+            <Separator />
+
+            <div>
+              <h2 className="text-lg font-semibold mb-6">Social Presence</h2>
+              <SocialPresenceSection
+                linkedin={formData.linkedin}
+                github={formData.github}
+                twitter={formData.twitter}
+                onLinkedinChange={(value) => updateField("linkedin", value)}
+                onGithubChange={(value) => updateField("github", value)}
+                onTwitterChange={(value) => updateField("twitter", value)}
+              />
+            </div>
+
+            <Separator />
+
+            <div>
+              <h2 className="text-lg font-semibold mb-6">Work Experience</h2>
+              <DynamicRowSection
+                title="Work experience"
+                rows={workExperience}
+                onAdd={() => addRow(setWorkExperience, 'work_experience')}
+                onRemove={(id) => removeRow(setWorkExperience, id, 'work_experience')}
+                renderRow={(row) => (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field>
+                      <FieldLabel>Company name</FieldLabel>
+                      <Input
+                        placeholder="Company name"
+                        value={row.company || ""}
+                        onChange={(e) => updateRowField(setWorkExperience, row.id, "company", e.target.value)}
                       />
-                    </div>
-                    <div className="flex-1">
-                      <BasicInfoSection formData={firstSlideData} onChange={updateFirstSlideField} />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Job Title</FieldLabel>
+                      <Input
+                        placeholder="Job Title"
+                        value={row.title || ""}
+                        onChange={(e) => updateRowField(setWorkExperience, row.id, "title", e.target.value)}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>From Date</FieldLabel>
+                      <Input
+                        type="date"
+                        value={row.from || ""}
+                        onChange={(e) => updateRowField(setWorkExperience, row.id, "from", e.target.value)}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>To Date</FieldLabel>
+                      <Input
+                        type="date"
+                        value={row.to || ""}
+                        onChange={(e) => updateRowField(setWorkExperience, row.id, "to", e.target.value)}
+                      />
+                    </Field>
+                    <Field className="sm:col-span-2">
+                      <FieldLabel>Job Description</FieldLabel>
+                      <textarea
+                        className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
+                        placeholder="Job Description"
+                        value={row.description || ""}
+                        onChange={(e) => updateRowField(setWorkExperience, row.id, "description", e.target.value)}
+                      />
+                    </Field>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id={`relevant-${row.id}`}
+                        checked={row.relevant || false}
+                        onCheckedChange={(checked) => updateRowField(setWorkExperience, row.id, "relevant", checked)}
+                      />
+                      <label htmlFor={`relevant-${row.id}`} className="text-sm font-medium">Relevant</label>
                     </div>
                   </div>
-                  <Separator />
-                </div>
-              )}
-
-              {currentStep === 2 && (
-                <div className="space-y-8">
-                  <WorkInfoSection formData={firstSlideData} onChange={updateFirstSlideField} />
-                  <Separator />
-                </div>
-              )}
-
-              {currentStep === 3 && (
-                <div className="space-y-8">
-                  <ContactDetailsSection
-                    phone={contactDetails.phone}
-                    secondaryPhone={contactDetails.secondaryPhone}
-                    address={contactDetails.address}
-                    city={contactDetails.city}
-                    state={contactDetails.state}
-                    postalCode={contactDetails.postalCode}
-                    country={contactDetails.country}
-                    onPhoneChange={(value) => setContactDetails(prev => ({ ...prev, phone: value }))}
-                    onSecondaryPhoneChange={(value) => setContactDetails(prev => ({ ...prev, secondaryPhone: value }))}
-                    onAddressChange={(value) => setContactDetails(prev => ({ ...prev, address: value }))}
-                    onCityChange={(value) => setContactDetails(prev => ({ ...prev, city: value }))}
-                    onStateChange={(value) => setContactDetails(prev => ({ ...prev, state: value }))}
-                    onPostalCodeChange={(value) => setContactDetails(prev => ({ ...prev, postalCode: value }))}
-                    onCountryChange={(value) => setContactDetails(prev => ({ ...prev, country: value }))}
-                  />
-                  <Separator />
-                  <FieldSet>
-                    <FieldLegend>Separation Information</FieldLegend>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <Field>
-                        <FieldLabel>Date of Exit</FieldLabel>
-                        <Input 
-                          type="date" 
-                          placeholder="dd-MMM-yyyy"
-                          value={contactDetails.exitDate}
-                          onChange={(e) => setContactDetails(prev => ({ ...prev, exitDate: e.target.value }))}
-                        />
-                      </Field>
-                    </div>
-                  </FieldSet>
-                </div>
-              )}
-
-              {currentStep === 4 && (
-                <div className="space-y-8">
-                  <SocialPresenceSection
-                    linkedin={socialPresence.linkedin}
-                    twitter={socialPresence.twitter}
-                    github={socialPresence.github}
-                    portfolio={socialPresence.portfolio}
-                    onLinkedinChange={(value) => setSocialPresence(prev => ({ ...prev, linkedin: value }))}
-                    onTwitterChange={(value) => setSocialPresence(prev => ({ ...prev, twitter: value }))}
-                    onGithubChange={(value) => setSocialPresence(prev => ({ ...prev, github: value }))}
-                    onPortfolioChange={(value) => setSocialPresence(prev => ({ ...prev, portfolio: value }))}
-                  />
-                </div>
-              )}
-
-              {currentStep === 5 && (
-                <div className="space-y-8 pb-8">
-                  <DynamicRowSection
-                    title="Work experience"
-                    rows={workExperience}
-                    onAdd={() => addRow(setWorkExperience, 'work_experience')}
-                    onRemove={(id) => removeRow(setWorkExperience, id, 'work_experience')}
-                    renderRow={(row) => (
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Field>
-                          <FieldLabel>Company name</FieldLabel>
-                          <Input 
-                            placeholder="Company name"
-                            value={row.company || ""}
-                            onChange={(e) => updateRowField(setWorkExperience, row.id, "company", e.target.value)}
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Job Title</FieldLabel>
-                          <Input 
-                            placeholder="Job Title"
-                            value={row.title || ""}
-                            onChange={(e) => updateRowField(setWorkExperience, row.id, "title", e.target.value)}
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>From Date</FieldLabel>
-                          <Input 
-                            type="date"
-                            value={row.from || ""}
-                            onChange={(e) => updateRowField(setWorkExperience, row.id, "from", e.target.value)}
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>To Date</FieldLabel>
-                          <Input 
-                            type="date"
-                            value={row.to || ""}
-                            onChange={(e) => updateRowField(setWorkExperience, row.id, "to", e.target.value)}
-                          />
-                        </Field>
-                        <Field className="sm:col-span-2">
-                          <FieldLabel>Job Description</FieldLabel>
-                          <textarea 
-                            className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring" 
-                            placeholder="Job Description"
-                            value={row.description || ""}
-                            onChange={(e) => updateRowField(setWorkExperience, row.id, "description", e.target.value)}
-                          />
-                        </Field>
-                        <div className="flex items-center gap-2">
-                          <Checkbox 
-                            id={`relevant-${row.id}`}
-                            checked={row.relevant || false}
-                            onCheckedChange={(checked) => updateRowField(setWorkExperience, row.id, "relevant", checked)}
-                          />
-                          <label htmlFor={`relevant-${row.id}`} className="text-sm font-medium">Relevant</label>
-                        </div>
-                      </div>
-                    )}
-                  />
-                  <Separator />
-                  <DynamicRowSection
-                    title="Education Details"
-                    rows={educationDetails}
-                    onAdd={() => addRow(setEducationDetails, 'education')}
-                    onRemove={(id) => removeRow(setEducationDetails, id, 'education')}
-                    renderRow={(row) => (
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Field>
-                          <FieldLabel>Institute Name</FieldLabel>
-                          <Input 
-                            placeholder="Institute Name"
-                            value={row.institute || ""}
-                            onChange={(e) => updateRowField(setEducationDetails, row.id, "institute", e.target.value)}
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Degree/Diploma</FieldLabel>
-                          <Input 
-                            placeholder="Degree/Diploma"
-                            value={row.degree || ""}
-                            onChange={(e) => updateRowField(setEducationDetails, row.id, "degree", e.target.value)}
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Specialization</FieldLabel>
-                          <Input 
-                            placeholder="Specialization"
-                            value={row.specialization || ""}
-                            onChange={(e) => updateRowField(setEducationDetails, row.id, "specialization", e.target.value)}
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Date of Completion</FieldLabel>
-                          <Input 
-                            type="date"
-                            value={row.completionDate || ""}
-                            onChange={(e) => updateRowField(setEducationDetails, row.id, "completionDate", e.target.value)}
-                          />
-                        </Field>
-                      </div>
-                    )}
-                  />
-                  <Separator />
-                  <DynamicRowSection
-                    title="Dependent Details"
-                    rows={dependentDetails}
-                    onAdd={() => addRow(setDependentDetails, 'dependents')}
-                    onRemove={(id) => removeRow(setDependentDetails, id, 'dependents')}
-                    renderRow={(row) => (
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Field>
-                          <FieldLabel>Name</FieldLabel>
-                          <Input 
-                            placeholder="Name"
-                            value={row.name || ""}
-                            onChange={(e) => updateRowField(setDependentDetails, row.id, "name", e.target.value)}
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Relationship</FieldLabel>
-                          <select 
-                            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
-                            value={row.relationship || ""}
-                            onChange={(e) => updateRowField(setDependentDetails, row.id, "relationship", e.target.value)}
-                          >
-                            <option value="">Select relationship</option>
-                            <option value="Spouse">Spouse</option>
-                            <option value="Child">Child</option>
-                            <option value="Parent">Parent</option>
-                            <option value="Sibling">Sibling</option>
-                            <option value="Other">Other</option>
-                          </select>
-                        </Field>
-                        <Field>
-                          <FieldLabel>Date of Birth</FieldLabel>
-                          <Input 
-                            type="date"
-                            value={row.dob || ""}
-                            onChange={(e) => updateRowField(setDependentDetails, row.id, "dob", e.target.value)}
-                          />
-                        </Field>
-                      </div>
-                    )}
-                  />
-                </div>
-              )}
+                )}
+              />
             </div>
-          </ScrollArea>
-        </div>
+
+            <Separator />
+
+            <div>
+              <h2 className="text-lg font-semibold mb-6">Education Details</h2>
+              <DynamicRowSection
+                title="Education Details"
+                rows={educationDetails}
+                onAdd={() => addRow(setEducationDetails, 'education')}
+                onRemove={(id) => removeRow(setEducationDetails, id, 'education')}
+                renderRow={(row) => (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field>
+                      <FieldLabel>Institute Name</FieldLabel>
+                      <Input
+                        placeholder="Institute Name"
+                        value={row.institute || ""}
+                        onChange={(e) => updateRowField(setEducationDetails, row.id, "institute", e.target.value)}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Degree/Diploma</FieldLabel>
+                      <Input
+                        placeholder="Degree/Diploma"
+                        value={row.degree || ""}
+                        onChange={(e) => updateRowField(setEducationDetails, row.id, "degree", e.target.value)}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Specialization</FieldLabel>
+                      <Input
+                        placeholder="Specialization"
+                        value={row.specialization || ""}
+                        onChange={(e) => updateRowField(setEducationDetails, row.id, "specialization", e.target.value)}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Date of Completion</FieldLabel>
+                      <Input
+                        type="date"
+                        value={row.completionDate || ""}
+                        onChange={(e) => updateRowField(setEducationDetails, row.id, "completionDate", e.target.value)}
+                      />
+                    </Field>
+                  </div>
+                )}
+              />
+            </div>
+
+            <Separator />
+
+            <div>
+              <h2 className="text-lg font-semibold mb-6">Dependent Details</h2>
+              <DynamicRowSection
+                title="Dependent Details"
+                rows={dependentDetails}
+                onAdd={() => addRow(setDependentDetails, 'dependents')}
+                onRemove={(id) => removeRow(setDependentDetails, id, 'dependents')}
+                renderRow={(row) => (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field>
+                      <FieldLabel>Name</FieldLabel>
+                      <Input
+                        placeholder="Name"
+                        value={row.name || ""}
+                        onChange={(e) => updateRowField(setDependentDetails, row.id, "name", e.target.value)}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Relationship</FieldLabel>
+                      <select
+                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
+                        value={row.relationship || ""}
+                        onChange={(e) => updateRowField(setDependentDetails, row.id, "relationship", e.target.value)}
+                      >
+                        <option value="">Select relationship</option>
+                        <option value="Spouse">Spouse</option>
+                        <option value="Child">Child</option>
+                        <option value="Parent">Parent</option>
+                        <option value="Sibling">Sibling</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </Field>
+                    <Field>
+                      <FieldLabel>Date of Birth</FieldLabel>
+                      <Input
+                        type="date"
+                        value={row.dob || ""}
+                        onChange={(e) => updateRowField(setDependentDetails, row.id, "dob", e.target.value)}
+                      />
+                    </Field>
+                  </div>
+                )}
+              />
+            </div>
+          </div>
+        </ScrollArea>
       </div>
 
       <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/10">
-        <Button variant="ghost" onClick={currentStep === 1 ? onCancel : prevStep}>
-          {currentStep === 1 ? "Cancel" : "Back"}
+        <Button variant="ghost" onClick={onCancel}>
+          Cancel
         </Button>
-        <div className="flex gap-3">
-          {currentStep < 5 ? (
-            <Button className="bg-primary hover:bg-primary/80 w-32" onClick={nextStep} disabled={createEmployeeMutation.isPending}>
-              {createEmployeeMutation.isPending ? "Saving..." : "Next Step"}
-            </Button>
+        <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSave} disabled={createEmployeeMutation.isPending}>
+          {createEmployeeMutation.isPending ? (
+            <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</>
           ) : (
-            <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSave} disabled={createEmployeeMutation.isPending}>
-              {createEmployeeMutation.isPending ? "Saving..." : "Save Employee"}
-            </Button>
+            "Save Employee"
           )}
-        </div>
+        </Button>
       </div>
     </div>
   )

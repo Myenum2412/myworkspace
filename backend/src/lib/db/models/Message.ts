@@ -1,17 +1,17 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 export interface IMessage extends Document {
-  orgId: Types.ObjectId;
-  senderId: Types.ObjectId;
-  teamId?: Types.ObjectId;
+  orgId: string;
+  senderId: string;
+  teamId?: string;
   content: string;
   createdAt: Date;
 }
 
 const messageSchema = new Schema<IMessage>({
-  orgId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
-  senderId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  teamId: { type: Schema.Types.ObjectId, ref: "Team" },
+  orgId: { type: String, required: true },
+  senderId: { type: String, required: true },
+  teamId: { type: String },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });

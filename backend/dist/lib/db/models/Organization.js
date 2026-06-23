@@ -5,6 +5,6 @@ const organizationSchema = new Schema({
     logo: String,
     domain: String,
     plan: { type: String, enum: ["starter", "pro", "enterprise"], default: "starter" },
-    ownerId: { type: Schema.Types.ObjectId, ref: "User" },
+    ownerId: { type: String },
 }, { timestamps: true });
 export const Organization = model("Organization", organizationSchema);

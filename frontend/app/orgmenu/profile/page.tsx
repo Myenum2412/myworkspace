@@ -457,13 +457,6 @@ export default function OrgProfilePage() {
         className="relative h-[200px] bg-gradient-to-b from-primary/90 via-primary/40 to-background bg-cover bg-center"
         style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
       >
-        <button
-          onClick={() => setShowBannerEditor(true)}
-          className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-md bg-background/80 px-3 py-1.5 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm hover:bg-background/90 transition-colors"
-        >
-          <CameraIcon className="size-3.5" />
-          Edit banner
-        </button>
       </div>
 
       <div className="flex flex-col items-center -mt-12 px-6">

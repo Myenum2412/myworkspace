@@ -1,14 +1,14 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 export interface ITeam extends Document {
-  orgId: Types.ObjectId;
+  orgId: string;
   name: string;
   description?: string;
   createdAt: Date;
 }
 
 const teamSchema = new Schema<ITeam>({
-  orgId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
+  orgId: { type: String, required: true },
   name: { type: String, required: true },
   description: String,
   createdAt: { type: Date, default: Date.now },

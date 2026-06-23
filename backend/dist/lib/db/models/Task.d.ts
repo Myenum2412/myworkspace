@@ -1,9 +1,9 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 export interface ITask extends Document {
-    orgId: Types.ObjectId;
-    teamId?: Types.ObjectId;
-    assigneeId?: Types.ObjectId;
-    creatorId: Types.ObjectId;
+    orgId: string;
+    teamId?: string;
+    assigneeId?: string;
+    creatorId: string;
     title: string;
     description?: string;
     project?: string;
@@ -14,7 +14,7 @@ export interface ITask extends Document {
     updatedAt: Date;
 }
 export declare const Task: import("mongoose").Model<ITask, {}, {}, {}, Document<unknown, {}, ITask, {}, {}> & ITask & Required<{
-    _id: Types.ObjectId;
+    _id: import("mongoose").Types.ObjectId;
 }> & {
     __v: number;
 }, any>;

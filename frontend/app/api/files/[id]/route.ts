@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
-import { getFilePath } from "@/lib/storage";
+import { getFileBuffer, isR2Configured } from "@/lib/storage";
 import fs from "fs";
+import path from "path";
+
+const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
 
 export async function GET(
   request: Request,
@@ -29,32 +32,40 @@ export async function GET(
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
-    const path = getFilePath(file.storagePath);
-    if (!fs.existsSync(path)) {
-      return NextResponse.json({ error: "File not found on disk" }, { status: 404 });
-    }
-
-    const buffer = fs.readFileSync(path);
-    const ext = file.originalName?.split(".").pop() || "";
     const mime = file.mimeType || "application/octet-stream";
 
-    if (download) {
-      return new NextResponse(buffer, {
-        headers: {
-          "Content-Type": mime,
-          "Content-Disposition": `attachment; filename="${file.originalName}"`,
-          "Content-Length": String(buffer.length),
-        },
-      });
+    if (isR2Configured()) {
+      const buffer = await getFileBuffer(file.storagePath);
+      if (!buffer) {
+        return NextResponse.json({ error: "File not found in storage" }, { status: 404 });
+      }
+      const headers: Record<string, string> = {
+        "Content-Type": mime,
+        "Content-Length": String(buffer.length),
+      };
+      if (download) {
+        headers["Content-Disposition"] = `attachment; filename="${file.originalName}"`;
+      } else {
+        headers["Content-Disposition"] = `inline; filename="${file.originalName}"`;
+      }
+      return new NextResponse(new Uint8Array(buffer), { headers });
     }
 
-    return new NextResponse(buffer, {
-      headers: {
-        "Content-Type": mime,
-        "Content-Disposition": `inline; filename="${file.originalName}"`,
-        "Content-Length": String(buffer.length),
-      },
-    });
+    const localPath = path.join(UPLOADS_DIR, file.storagePath);
+    if (!fs.existsSync(localPath)) {
+      return NextResponse.json({ error: "File not found on disk" }, { status: 404 });
+    }
+    const buffer = fs.readFileSync(localPath);
+    const headers: Record<string, string> = {
+      "Content-Type": mime,
+      "Content-Length": String(buffer.length),
+    };
+    if (download) {
+      headers["Content-Disposition"] = `attachment; filename="${file.originalName}"`;
+    } else {
+      headers["Content-Disposition"] = `inline; filename="${file.originalName}"`;
+    }
+    return new NextResponse(new Uint8Array(buffer), { headers });
   } catch {
     return NextResponse.json({ error: "Failed to read file" }, { status: 500 });
   }

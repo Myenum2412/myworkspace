@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 const activityLogSchema = new Schema({
-    orgId: { type: Schema.Types.ObjectId, ref: "Organization", required: true, index: true },
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    orgId: { type: String, required: true, index: true },
+    userId: { type: String, required: true, index: true },
     action: { type: String, required: true },
     entityType: { type: String, required: true },
     entityId: String,

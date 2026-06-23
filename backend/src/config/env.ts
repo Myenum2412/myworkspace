@@ -10,4 +10,11 @@ export const env = {
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || "developer@myenum.in",
   CORS_ORIGIN: (process.env.CORS_ORIGIN || "http://localhost:3000,https://myworkspace.myenum.in").split(",").map(s => s.trim()),
   NODE_ENV: process.env.NODE_ENV || "development",
+  R2_ENDPOINT: process.env.R2_ENDPOINT || "",
+  R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || "myworkspace",
+  R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID || "",
+  R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY || "",
+  RESEND_API_KEY: process.env.RESEND_API_KEY || "",
+  MAIL_FROM: process.env.MAIL_FROM || "MyWorkspace <welcome@myworkspace.myenum.in>",
+  APP_URL: process.env.APP_URL || "http://localhost:3000",
 };

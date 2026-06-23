@@ -3,11 +3,14 @@ import { hash, compare } from "bcryptjs";
 import { User } from "../lib/db/models/User.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { Session } from "../lib/db/models/Session.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { signToken } from "../config/auth.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { sendWelcomeEmail } from "../lib/mail/index.js";
 import { mongoose } from "../lib/db/index.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 
 const router = Router();
 
@@ -71,13 +74,47 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   const orgId = await getUserPrimaryOrgId(user._id.toString());
 
   await ActivityLog.create({
-    orgId: orgId || user._id, // fallback to userId if no org
+    orgId: orgId || user._id,
     userId: user._id,
     action: "user.login",
     entityType: "user",
     entityId: user._id.toString(),
     description: `${user.name} logged in`,
   });
+
+  // Create session tracking entry
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const session = await Session.create({
+    userId: user._id,
+    orgId: orgId || undefined,
+    loginTime: new Date(),
+    currentStatus: "online",
+    statusTransitions: [{ status: "online", timestamp: new Date() }],
+    totalBreakDuration: 0,
+    expiresAt,
+  });
+
+  await ActivityLog.create({
+    orgId: orgId || user._id,
+    userId: user._id,
+    action: "session.start",
+    entityType: "session",
+    entityId: session._id.toString(),
+    description: `Session started for ${user.name}`,
+  });
+
+  socketIOManager.emitToUser(user._id.toString(), "session:started", {
+    sessionId: session._id.toString(),
+    loginTime: session.loginTime,
+  });
+
+  if (orgId) {
+    socketIOManager.emitToOrg(orgId, "user:status:changed", {
+      userId: user._id.toString(),
+      status: "online",
+      timestamp: new Date().toISOString(),
+    });
+  }
 
   const token = signToken({
     userId: user._id.toString(),
@@ -91,6 +128,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     success: true,
     data: {
       token,
+      sessionId: session._id.toString(),
       user: {
         id: user._id,
         name: user.name,
@@ -172,6 +210,10 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
     orgId: org._id.toString(),
   });
 
+  sendWelcomeEmail(email, name).catch((err) => {
+    console.error("[mail] welcome email failed:", err?.message || err);
+  });
+
   res.status(201).json({
     success: true,
     data: {
@@ -183,9 +225,50 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/logout", authenticate, async (req: AuthRequest, res: Response) => {
-  if (req.user) {
-    await User.findByIdAndUpdate(req.user.userId, { status: "offline" });
+  const userId = req.user!.userId;
+  const orgId = req.user!.orgId;
+
+  // Close active session
+  const activeSession = await Session.findOne({ userId, logoutTime: { $exists: false } }).sort({ loginTime: -1 });
+  if (activeSession) {
+    if (activeSession.currentStatus === "break") {
+      const breakStart = [...activeSession.statusTransitions].reverse().find(t => t.status === "break");
+      if (breakStart) {
+        activeSession.totalBreakDuration += Date.now() - breakStart.timestamp.getTime();
+      }
+    }
+    activeSession.statusTransitions.push({ status: "offline", timestamp: new Date() });
+    activeSession.logoutTime = new Date();
+    activeSession.currentStatus = "offline";
+    activeSession.duration = activeSession.logoutTime.getTime() - activeSession.loginTime.getTime() - activeSession.totalBreakDuration;
+    await activeSession.save();
+
+    await ActivityLog.create({
+      orgId: orgId || userId,
+      userId,
+      action: "session.end",
+      entityType: "session",
+      entityId: activeSession._id.toString(),
+      description: `Session ended via logout. Active: ${Math.round((activeSession.duration || 0) / 60000)} min`,
+    });
+
+    socketIOManager.emitToUser(userId, "session:ended", {
+      sessionId: activeSession._id.toString(),
+      logoutTime: activeSession.logoutTime,
+      duration: activeSession.duration,
+    });
   }
+
+  await User.findByIdAndUpdate(userId, { status: "offline" });
+
+  if (orgId) {
+    socketIOManager.emitToOrg(orgId, "user:status:changed", {
+      userId,
+      status: "offline",
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   res.json({ success: true });
 });
 

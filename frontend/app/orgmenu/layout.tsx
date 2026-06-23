@@ -34,8 +34,6 @@ export default async function OrgLayout({
     } catch {}
   }
 
-  console.log(`[AUTH orgmenu/layout] email=${userEmail} sessionRole=${session.user.role} dbRole=${authorized ? 'N/A (session authorized)' : 'checked'} authorized=${authorized}`);
-
   if (!authorized) {
     return (
       <div className="flex items-center justify-center min-h-screen p-8">

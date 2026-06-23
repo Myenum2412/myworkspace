@@ -1,8 +1,8 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 export interface ITimeEntry extends Document {
-  orgId: Types.ObjectId;
-  userId: Types.ObjectId;
+  orgId: string;
+  userId: string;
   date: Date;
   startTime?: string;
   endTime?: string;
@@ -16,8 +16,8 @@ export interface ITimeEntry extends Document {
 
 const timeEntrySchema = new Schema<ITimeEntry>(
   {
-    orgId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    orgId: { type: String, required: true },
+    userId: { type: String, required: true },
     date: { type: Date, required: true },
     startTime: String,
     endTime: String,
