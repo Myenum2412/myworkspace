@@ -208,7 +208,6 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-
+    </>
   );
 }
