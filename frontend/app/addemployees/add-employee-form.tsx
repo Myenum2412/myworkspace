@@ -15,9 +15,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog"
 import { CopyIcon, Loader2, UploadIcon, FileIcon, XIcon } from "lucide-react"
 import { getDropdownOptions } from "@/lib/dropdown-options"
@@ -132,6 +132,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       const fd = new FormData()
       fd.append("file", file)
       fd.append("orgId", orgId)
+      fd.append("category", "profile")
       const res = await fetch("/api/files", { method: "POST", body: fd })
       if (!res.ok) throw new Error("Upload failed")
       const data = await res.json()
@@ -233,12 +234,12 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   }
 
   const completeAndClose = () => {
-    setSuccessModalOpen(false)
+    setSuccessModalOpen(false);
     if (savedEmployee) {
-      onEmployeeAdded?.(savedEmployee)
-      if (onCancel) onCancel()
+      onEmployeeAdded?.(savedEmployee);
     }
-  }
+    onCancel?.();
+  };
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -256,7 +257,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                 <span className="font-semibold">Email:</span> {formData.email}
               </div>
               <div className="text-sm">
-                <span className="font-semibold">Password:</span> {formData.password || "(auto-generated)"}
+                <span className="font-semibold">Password:</span> {(savedEmployee?.password as string) || formData.password || "(auto-generated)"}
               </div>
             </div>
             <Button size="sm" className="px-3" onClick={() => {

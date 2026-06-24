@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, Loader2Icon } from "lucide-react";
@@ -20,15 +17,10 @@ type Task = {
 
 export default function CalendarPage() {
   const { data: session } = useSession();
-  const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-  };
-
+  
   useEffect(() => {
     if (!session?.user) return;
     fetch("/api/user/profile", { credentials: "include" })
@@ -59,11 +51,7 @@ export default function CalendarPage() {
   const later = tasks.filter((t) => new Date(t.dueDate!) > new Date(today.getTime() + 7 * 86400000));
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center gap-2">
             <CalendarIcon className="size-6" />
             <h1 className="text-2xl font-bold">Calendar</h1>
@@ -115,7 +103,5 @@ export default function CalendarPage() {
           </div>
           )}
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+            );
 }

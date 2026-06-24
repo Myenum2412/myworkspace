@@ -11,7 +11,7 @@ export const metadata = {
 
 const goalStyles: Record<string, string> = {
   on_track: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  in_progress: "bg-blue-100 text-blue-700 border-blue-200",
+  in_progress: "bg-[#e8ece4] text-[#3a5234] border-[#c5cec0]",
   not_started: "bg-gray-100 text-gray-700 border-gray-200",
   at_risk: "bg-amber-100 text-amber-700 border-amber-200",
   completed: "bg-green-100 text-green-700 border-green-200",

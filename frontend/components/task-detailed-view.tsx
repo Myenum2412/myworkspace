@@ -24,7 +24,7 @@ type Task = {
 const statusColors: Record<string, string> = {
   todo: "bg-gray-100 text-gray-700 border-gray-200",
   in_progress: "bg-amber-50 text-amber-700 border-amber-200",
-  review: "bg-blue-50 text-blue-700 border-blue-200",
+  review: "bg-[#e8ece4] text-[#3a5234] border-[#c5cec0]",
   done: "bg-emerald-50 text-emerald-700 border-emerald-200",
   cancelled: "bg-red-50 text-red-700 border-red-200",
 };
@@ -32,14 +32,14 @@ const statusColors: Record<string, string> = {
 const statusDots: Record<string, string> = {
   todo: "bg-gray-400",
   in_progress: "bg-amber-500",
-  review: "bg-blue-500",
+  review: "bg-[#5f7d56]",
   done: "bg-emerald-500",
   cancelled: "bg-red-500",
 };
 
 const priorityColors: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
-  medium: "bg-blue-50 text-blue-600",
+  medium: "bg-[#e8ece4] text-[#4c6a45]",
   high: "bg-orange-50 text-orange-600",
   urgent: "bg-red-50 text-red-600",
 };

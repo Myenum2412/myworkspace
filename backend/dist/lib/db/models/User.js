@@ -1,9 +1,11 @@
 import { Schema, model } from "mongoose";
+import { v4 as uuid } from "uuid";
 const userSchema = new Schema({
-    id: { type: String, unique: true, sparse: true },
+    id: { type: String, required: true, unique: true, default: () => uuid() },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     emailVerified: { type: Boolean, default: false },
+    orgId: { type: String, index: true },
     image: String,
     password: String,
     status: { type: String, enum: ["online", "offline", "break"], default: "offline" },
@@ -15,5 +17,18 @@ const userSchema = new Schema({
     lockedUntil: Date,
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorSecret: String,
+    phone: String,
+    department: String,
+    company: String,
+    address: String,
+    city: String,
+    state: String,
+    country: String,
+    zipCode: String,
+    linkedin: String,
+    github: String,
+    twitter: String,
+    website: String,
+    bannerUrl: String,
 }, { timestamps: true });
 export const User = model("User", userSchema);

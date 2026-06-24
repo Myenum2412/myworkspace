@@ -1,12 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -78,11 +72,8 @@ export default function TerminatedPage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <>
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div>
             <h1 className="text-2xl font-bold">Terminated</h1>
             <p className="text-sm text-muted-foreground mt-1">{terminated.length} former employees</p>
@@ -155,8 +146,7 @@ export default function TerminatedPage() {
             </CardContent>
           </Card>
         </main>
-      </SidebarInset>
-
+      
       <Dialog
         open={!!reactivateEmp}
         onOpenChange={(o) => { if (!o && !reactivating) { setReactivateEmp(null); setReactivateReason(""); } }}
@@ -197,6 +187,6 @@ export default function TerminatedPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
-  );
+      </>
+      );
 }

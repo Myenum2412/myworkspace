@@ -2,28 +2,15 @@ import { describe, it, expect } from "vitest";
 
 describe("middleware utilities", () => {
   describe("getHomePath", () => {
-    function getHomePath(role?: string): string {
-      if (role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN") return "/orgmenu";
+    function getHomePath(_role?: string): string {
       return "/dashboard";
     }
 
-    it("returns /orgmenu for ORG_MENU_ADMIN", () => {
-      expect(getHomePath("ORG_MENU_ADMIN")).toBe("/orgmenu");
-    });
-
-    it("returns /orgmenu for SUPER_ADMIN", () => {
-      expect(getHomePath("SUPER_ADMIN")).toBe("/orgmenu");
-    });
-
-    it("returns /dashboard for admin", () => {
+    it("always returns /dashboard for any role", () => {
+      expect(getHomePath("ORG_MENU_ADMIN")).toBe("/dashboard");
+      expect(getHomePath("SUPER_ADMIN")).toBe("/dashboard");
       expect(getHomePath("admin")).toBe("/dashboard");
-    });
-
-    it("returns /dashboard for member", () => {
       expect(getHomePath("member")).toBe("/dashboard");
-    });
-
-    it("returns /dashboard for undefined", () => {
       expect(getHomePath(undefined)).toBe("/dashboard");
     });
   });
@@ -102,6 +89,77 @@ describe("middleware utilities", () => {
 
     it("denies when no email", () => {
       expect(canAccessOrgmenu("member", undefined, "admin@co.com")).toBe("denied");
+    });
+  });
+
+  describe("route context detection", () => {
+    const ORIGIN_ROUTES = ["/orgmenu"];
+    const STAFF_ROUTES = ["/staffs"];
+    const PUBLIC_ROUTES = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing"];
+    const WORKSPACE_ROUTES = [
+      "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
+      "/projects", "/teams", "/clients", "/approvals", "/reports",
+      "/calendar", "/time-tracker", "/time-reports", "/my-time",
+      "/teamtasks", "/team-time", "/settings", "/profile", "/admin",
+      "/departments", "/addemployees", "/addprojects", "/files",
+      "/savedtasks", "/upcomingtasks", "/terminated",
+      "/recycle-bin", "/upload",
+    ];
+
+    function getRouteContext(pathname: string): "origin" | "staff" | "workspace" | "public" | "unknown" {
+      if (ORIGIN_ROUTES.some((r) => pathname.startsWith(r))) return "origin";
+      if (STAFF_ROUTES.some((r) => pathname.startsWith(r))) return "staff";
+      if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "public";
+      if (WORKSPACE_ROUTES.some((r) => pathname.startsWith(r))) return "workspace";
+      if (pathname === "/") return "public";
+      return "unknown";
+    }
+
+    it("detects origin context", () => {
+      expect(getRouteContext("/orgmenu")).toBe("origin");
+      expect(getRouteContext("/orgmenu/analytics")).toBe("origin");
+      expect(getRouteContext("/orgmenu/settings")).toBe("origin");
+    });
+
+    it("detects staff context", () => {
+      expect(getRouteContext("/staffs")).toBe("staff");
+      expect(getRouteContext("/staffs/schedule")).toBe("staff");
+    });
+
+    it("detects public context", () => {
+      expect(getRouteContext("/login")).toBe("public");
+      expect(getRouteContext("/signup")).toBe("public");
+      expect(getRouteContext("/pricing")).toBe("public");
+      expect(getRouteContext("/")).toBe("public");
+    });
+
+    it("detects workspace context", () => {
+      expect(getRouteContext("/dashboard")).toBe("workspace");
+      expect(getRouteContext("/employees")).toBe("workspace");
+      expect(getRouteContext("/settings")).toBe("workspace");
+      expect(getRouteContext("/profile")).toBe("workspace");
+      expect(getRouteContext("/files")).toBe("workspace");
+    });
+
+    it("returns unknown for unrecognized paths", () => {
+      expect(getRouteContext("/unknown")).toBe("unknown");
+      expect(getRouteContext("/some-random-path")).toBe("unknown");
+    });
+
+    it("no route matches multiple contexts", () => {
+      const testRoutes = [
+        "/orgmenu", "/staffs", "/dashboard", "/login", "/",
+      ];
+
+      for (const route of testRoutes) {
+        const contexts = [
+          getRouteContext(route) === "origin" ? 1 : 0,
+          getRouteContext(route) === "staff" ? 1 : 0,
+          getRouteContext(route) === "workspace" ? 1 : 0,
+          getRouteContext(route) === "public" ? 1 : 0,
+        ].reduce((a, b) => a + b, 0);
+        expect(contexts, `${route} matched ${contexts} contexts`).toBe(1);
+      }
     });
   });
 });

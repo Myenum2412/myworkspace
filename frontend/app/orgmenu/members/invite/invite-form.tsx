@@ -25,11 +25,28 @@ export function InviteMemberForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const validEmails = emails.filter((e) => e.trim());
+    if (validEmails.length === 0) return;
+
     setSending(true);
-    // Simulate sending invites
-    await new Promise((r) => setTimeout(r, 1000));
-    setSending(false);
-    setSent(true);
+    try {
+      const res = await fetch("/api/organizations/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails: validEmails }),
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Failed to send invitations" }));
+        throw new Error(err.error || err.message || `HTTP ${res.status}`);
+      }
+      setSending(false);
+      setSent(true);
+    } catch (err: any) {
+      console.error("[INVITE FORM] Failed to send invitations:", err);
+      alert(err.message || "Failed to send invitations. Please try again.");
+      setSending(false);
+    }
   }
 
   if (sent) {

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -20,8 +19,6 @@ import {
   FolderIcon,
   Settings2Icon,
   CheckCheckIcon,
-  ShieldIcon,
-  UserCheckIcon,
   CalendarIcon,
   ClipboardListIcon,
 } from "lucide-react";
@@ -95,6 +92,8 @@ export const defaultNavData = {
       icon: <FolderIcon className="size-6" />,
       items: [
         { title: "All Files", url: "/files" },
+        { title: "Upload", url: "/files?upload=true" },
+        { title: "Shared with Me", url: "/shared" },
         { title: "Recycle Bin", url: "/recycle-bin" },
       ],
     },
@@ -132,23 +131,7 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { data?: AppSidebarData; user: NavUserData }) {
 
-  const pathname = usePathname();
-  const isAdmin = user.email?.toLowerCase().trim() === ADMIN_EMAIL;
   const isEmployee = user.role === "member";
-  const isSettingsPage = pathname.startsWith("/settings");
-
-  const adminItem = isAdmin && !isSettingsPage ? {
-    title: "Admin Panel",
-    url: "/orgmenu",
-    icon: <ShieldIcon className="size-6" />,
-    items: [
-      { title: "Dashboard", url: "/orgmenu" },
-      { title: "Organization", url: "/orgmenu/org" },
-      { title: "Members", url: "/orgmenu/members" },
-      { title: "Audit Logs", url: "/orgmenu/audit" },
-      { title: "Settings", url: "/orgmenu/settings" },
-    ],
-  } : null;
 
   const employeeNav = [
     {
@@ -240,7 +223,7 @@ export function AppSidebar({
           </>
         ) : (
           <>
-            <NavMain items={adminItem ? [...data.navMain.slice(0, -1), adminItem] : data.navMain.slice(0, -1)} label="Platform" />
+            <NavMain items={data.navMain.slice(0, -1)} label="Platform" />
             <NavMain items={data.navMain.slice(-1)} label="Settings" className="mt-auto" />
           </>
         )}

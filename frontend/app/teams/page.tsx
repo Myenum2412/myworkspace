@@ -2,9 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,12 +101,7 @@ export default function TeamsPage() {
   const [viewMemberOpen, setViewMemberOpen] = useState(false);
   const [viewMember, setViewMember] = useState<TeamDetail["members"][0] | null>(null);
 
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-  };
-
+  
   const fetchTeams = useCallback(async () => {
     if (!orgId) return;
     try {
@@ -439,11 +431,7 @@ export default function TeamsPage() {
     : members;
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           {selectedTeam ? (
             <>
               <div className="flex items-center justify-between">
@@ -652,7 +640,7 @@ export default function TeamsPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-blue-500">{loading ? <Loader2Icon className="size-5 animate-spin" /> : avgTeamSize}</div>
+                    <div className="text-2xl font-bold text-[#5f7d56]">{loading ? <Loader2Icon className="size-5 animate-spin" /> : avgTeamSize}</div>
                   </CardContent>
                 </Card>
               </div>
@@ -1064,7 +1052,5 @@ export default function TeamsPage() {
             </DialogContent>
           </Dialog>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+            );
 }

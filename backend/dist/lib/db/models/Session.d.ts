@@ -5,7 +5,7 @@ export interface IStatusTransition {
 }
 export interface ISession extends Document {
     userId: string;
-    orgId?: string;
+    orgId: string;
     loginTime: Date;
     logoutTime?: Date;
     currentStatus: "online" | "break" | "offline";

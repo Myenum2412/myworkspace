@@ -2,6 +2,7 @@ import { Document } from "mongoose";
 export interface IActivityLog extends Document {
     orgId: string;
     userId: string;
+    createdBy: string;
     action: string;
     entityType: string;
     entityId?: string;

@@ -44,8 +44,13 @@ router.get("/shared", async (req: AuthRequest, res: Response) => {
 router.get("/", async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || "";
   if (!orgId) { res.json([]); return; }
-  const files = await FileAttachment.find({ orgId, deletedAt: null })
-    .select("id originalName mimeType size createdAt uploaderId")
+  const category = req.query.category as string | undefined;
+  const filter: Record<string, unknown> = { orgId, deletedAt: null };
+  if (category && ["profile", "report", "general"].includes(category)) {
+    filter.category = category;
+  }
+  const files = await FileAttachment.find(filter)
+    .select("id originalName mimeType size createdAt uploaderId category")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -88,6 +93,11 @@ router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) 
   const orgId = req.body.orgId as string;
   if (!orgId) throw new AppError(400, "orgId is required");
 
+  const category = (req.body.category as string) || "general";
+  if (!["profile", "report", "general"].includes(category)) {
+    throw new AppError(400, "category must be one of: profile, report, general");
+  }
+
   const buffer = req.file.buffer;
   const storagePath = await saveFile(buffer, req.file.originalname);
 
@@ -101,6 +111,7 @@ router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) 
     mimeType: req.file.mimetype || "application/octet-stream",
     size: req.file.size,
     storagePath,
+    category,
   });
 
   await ActivityLog.create({

@@ -25,7 +25,6 @@ import {
   GlobeIcon,
   CreditCardIcon,
   UsersIcon,
-  CircleIcon,
   CameraIcon,
   XIcon,
   Loader2Icon,
@@ -53,12 +52,6 @@ const planLabels: Record<string, string> = {
   starter: "Starter",
   pro: "Pro",
   enterprise: "Enterprise",
-};
-
-const statusColors: Record<string, string> = {
-  online: "bg-emerald-500",
-  offline: "bg-gray-400",
-  break: "bg-amber-500",
 };
 
 const roleBadge: Record<string, "default" | "secondary" | "outline"> = {
@@ -332,7 +325,10 @@ export default function OrgProfilePage() {
       } : prev);
       setEditing(false);
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : "Network error");
+      console.error("[profile save] Error:", e);
+      setSaveError(e instanceof TypeError && e.message === "Failed to fetch"
+        ? "Cannot connect to server. Please check your connection and try again."
+        : (e instanceof Error ? e.message : "Network error"));
     } finally {
       setSaving(false);
     }
@@ -476,11 +472,6 @@ export default function OrgProfilePage() {
 
         <h1 className="mt-3 text-2xl font-bold">{displayName}</h1>
         <div className="flex items-center gap-2 mt-1 text-muted-foreground">
-          <span className="flex items-center gap-1.5 text-sm">
-            <span className={`inline-block size-2 rounded-full ${statusColors[dbUser?.status || "offline"]}`} />
-            {dbUser?.status ? dbUser.status.charAt(0).toUpperCase() + dbUser.status.slice(1) : "Offline"}
-          </span>
-          <span aria-hidden>&middot;</span>
           <Badge variant={roleBadge[dbUser?.role || "member"]}>
             {dbUser?.role ? dbUser.role.charAt(0).toUpperCase() + dbUser.role.slice(1) : "Member"}
           </Badge>
@@ -586,14 +577,6 @@ export default function OrgProfilePage() {
               </div>
             </div>
             <Separator />
-            <div className="flex items-center gap-3">
-              <CircleIcon className="size-4 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <p className="text-sm font-medium capitalize">{dbUser?.status || "Offline"}</p>
-              </div>
-            </div>
-                <Separator />
                 <div className="flex items-center gap-3">
                   <CalendarIcon className="size-4 text-muted-foreground shrink-0" />
                   <div>

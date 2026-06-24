@@ -2,9 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,17 +20,12 @@ import {
 
 export default function RejectedPage() {
   const { data: session } = useSession();
-  const [tasks, setTasks] = useState<ApprovalTask[]>([]);
+    const [tasks, setTasks] = useState<ApprovalTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<ApprovalTask | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
 
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-  };
-
+  
   const fetchRejected = useCallback(() => {
     if (!session?.user) return;
     fetch("/api/user/profile", { credentials: "include" })
@@ -62,11 +54,8 @@ export default function RejectedPage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+    <>
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center gap-2">
             <XCircleIcon className="size-6 text-red-600" />
             <h1 className="text-2xl font-bold">Rejected</h1>
@@ -89,8 +78,7 @@ export default function RejectedPage() {
             </CardContent>
           </Card>
         </main>
-      </SidebarInset>
-
+      
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setSelectedTask(null); } }}>
         <DialogContent className="p-0 flex flex-col">
           {selectedTask && (
@@ -166,6 +154,6 @@ export default function RejectedPage() {
           )}
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
-  );
+    </>
+      );
 }

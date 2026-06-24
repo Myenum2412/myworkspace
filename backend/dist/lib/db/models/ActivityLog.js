@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 const activityLogSchema = new Schema({
     orgId: { type: String, required: true, index: true },
     userId: { type: String, required: true, index: true },
+    createdBy: { type: String, required: true },
     action: { type: String, required: true },
     entityType: { type: String, required: true },
     entityId: String,

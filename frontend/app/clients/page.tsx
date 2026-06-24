@@ -1,17 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectValue,
@@ -25,17 +21,37 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { PlusIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Field,
+  FieldSet,
+  FieldLegend,
+} from "@/components/ui/field";
+import { PlusIcon, Loader2, CheckCircle2, Copy, Eye, EyeOff, RefreshCw, AlertCircle, X } from "lucide-react";
 import { columns, type Client } from "./columns";
 import { DataTable } from "./data-table";
 
+type Credentials = {
+  username: string;
+  email: string;
+  password: string;
+  loginUrl: string;
+};
+
 export default function ClientsPage() {
+  const router = useRouter();
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
 
   const [clients, setClients] = useState<Client[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [step, setStep] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [credentials, setCredentials] = useState<Credentials | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [copied, setCopied] = useState("");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState("");
 
   useEffect(() => {
     fetch("/api/clients", { credentials: "include" })
@@ -53,11 +69,33 @@ export default function ClientsPage() {
   const [clientType, setClientType] = useState("");
   const [industry, setIndustry] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [email, setEmail] = useState("");
+  const [generatedPassword, setGeneratedPassword] = useState("");
+
+  function generateRandomPassword(length = 12) {
+    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lower = "abcdefghijklmnopqrstuvwxyz";
+    const digits = "0123456789";
+    const special = "!@#$%^&*";
+    const all = upper + lower + digits + special;
+    let pwd = "";
+    pwd += upper[Math.floor(Math.random() * upper.length)];
+    pwd += lower[Math.floor(Math.random() * lower.length)];
+    pwd += digits[Math.floor(Math.random() * digits.length)];
+    pwd += special[Math.floor(Math.random() * special.length)];
+    for (let i = 4; i < length; i++) {
+      pwd += all[Math.floor(Math.random() * all.length)];
+    }
+    return pwd.split("").sort(() => Math.random() - 0.5).join("");
+  }
+
+  useEffect(() => {
+    setGeneratedPassword(generateRandomPassword());
+  }, []);
 
   // Contact Information
   const [primaryContact, setPrimaryContact] = useState("");
   const [designation, setDesignation] = useState("");
-  const [email, setEmail] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const [alternatePhone, setAlternatePhone] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
@@ -114,27 +152,6 @@ export default function ClientsPage() {
   // System Fields
   const [assignedSalesPerson, setAssignedSalesPerson] = useState("");
   const [assignedProjectManager, setAssignedProjectManager] = useState("");
-  const [createdBy, setCreatedBy] = useState("");
-  const [createdDate, setCreatedDate] = useState("");
-  const [lastUpdatedDate, setLastUpdatedDate] = useState("");
-
-  const steps = [
-    { label: "Client Info" },
-    { label: "Contact & Address" },
-    { label: "Business" },
-    { label: "Project" },
-    { label: "Billing & Bank" },
-    { label: "Preferences" },
-    { label: "Additional" },
-  ];
-
-  function goToNext() {
-    if (step < steps.length - 1) setStep(step + 1);
-  }
-
-  function goToPrev() {
-    if (step > 0) setStep(step - 1);
-  }
 
   useEffect(() => {
     fetch("/api/user/me", { credentials: "include" })
@@ -144,9 +161,9 @@ export default function ClientsPage() {
   }, []);
 
   function resetForm() {
-    setStep(0);
     setClientName(""); setCompanyName(""); setClientType(""); setIndustry(""); setWebsiteUrl("");
-    setPrimaryContact(""); setDesignation(""); setEmail(""); setMobileNumber(""); setAlternatePhone(""); setWhatsappNumber("");
+    setEmail(""); setGeneratedPassword(generateRandomPassword());
+    setPrimaryContact(""); setDesignation(""); setMobileNumber(""); setAlternatePhone(""); setWhatsappNumber("");
     setAddressLine1(""); setAddressLine2(""); setCity(""); setStateProvince(""); setCountry(""); setPostalCode("");
     setGstNumber(""); setPanNumber(""); setCompanyRegNumber(""); setTaxId("");
     setProjectName(""); setServiceRequired(""); setProjectBudget(""); setExpectedStartDate(""); setExpectedEndDate("");
@@ -155,14 +172,30 @@ export default function ClientsPage() {
     setPreferredContactMethod(""); setPreferredTimeZone("");
     setStatus("");
     setSourceOfLead(""); setNotes("");
-    setAssignedSalesPerson(""); setAssignedProjectManager(""); setCreatedBy(""); setCreatedDate(""); setLastUpdatedDate("");
+    setAssignedSalesPerson(""); setAssignedProjectManager("");
+    setFormErrors({});
+    setApiError("");
+  }
+
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+    if (!clientName.trim()) errors.name = "Client name is required";
+    if (!email.trim()) errors.email = "Email address is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Invalid email format";
+    if (!primaryContact.trim()) errors.primaryContact = "Primary contact is required";
+    if (!companyName.trim()) errors.company = "Company name is required";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   }
 
   async function handleSubmit() {
-    if (!clientName || !email || !primaryContact) return;
+    if (!validate()) return;
+    setSaving(true);
+    setApiError("");
     const payload = {
       name: clientName,
       email,
+      password: generatedPassword,
       company: companyName,
       projects: 0,
       status,
@@ -175,7 +208,7 @@ export default function ClientsPage() {
       bankName, accountHolderName, accountNumber, confirmAccountNumber, ifscCode, branchName, accountType, upiId,
       preferredContactMethod, preferredTimeZone,
       sourceOfLead, notes,
-      assignedSalesPerson, assignedProjectManager, createdBy, createdDate, lastUpdatedDate,
+      assignedSalesPerson, assignedProjectManager,
     };
     const res = await fetch("/api/clients", {
       method: "POST",
@@ -183,523 +216,585 @@ export default function ClientsPage() {
       credentials: "include",
       body: JSON.stringify(payload),
     });
+    const result = await res.json();
     if (res.ok) {
-      const created = await res.json();
+      const created = result.data?.client || result;
       setClients((prev) => [...prev, created]);
+      if (result.data?.credentials) {
+        setCredentials(result.data.credentials);
+        setShowSuccess(true);
+      }
       setShowForm(false);
       resetForm();
+      router.push(result.data?.workspaceUrl || `/clients/${created.id}`);
+    } else {
+      if (result.fields) {
+        setFormErrors(result.fields);
+      }
+      setApiError(result.error || "Failed to create client");
     }
+    setSaving(false);
+  }
+
+  function handleCloseForm(open: boolean) {
+    setShowForm(open);
+    if (!open) resetForm();
+  }
+
+  function copyToClipboard(text: string, label: string) {
+    navigator.clipboard.writeText(text);
+    setCopied(label);
+    setTimeout(() => setCopied(""), 2000);
+  }
+
+  function fieldClass(fieldName: string): string {
+    return formErrors[fieldName]
+      ? "border-red-500 focus-visible:ring-red-500"
+      : "";
+  }
+
+  function fieldError(fieldName: string): string | null {
+    return formErrors[fieldName] || null;
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Clients</h1>
-            <Button onClick={() => setShowForm(true)}>
-              <PlusIcon className="mr-2 size-4" />
-              Add Client
-            </Button>
-          </div>
+    <>
+      <main className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Clients</h1>
+          <Button onClick={() => setShowForm(true)}>
+            <PlusIcon className="mr-2 size-4" />
+            Add Client
+          </Button>
+        </div>
 
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Total Clients</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{clients.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Active</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-emerald-500">
-                  {clients.filter((c) => c.status === "Active Client").length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Inactive / Lead</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-500">
-                  {clients.filter((c) => c.status === "Inactive Client" || c.status === "Lead").length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Projects</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {clients.reduce((acc, c) => acc + c.projects, 0)}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Client List</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Total Clients</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <DataTable columns={columns} data={clients} />
+            <CardContent>
+              <div className="text-2xl font-bold">{clients.length}</div>
             </CardContent>
           </Card>
-        </main>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Active</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-500">
+                {clients.filter((c) => c.status === "Active Client").length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Inactive / Lead</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-500">
+                {clients.filter((c) => c.status === "Inactive Client" || c.status === "Lead").length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Projects</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {clients.reduce((acc, c) => acc + c.projects, 0)}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Dialog open={showForm} onOpenChange={(v) => { setShowForm(v); if (!v) setStep(0); }}>
-          <DialogContent className="p-0 flex flex-col">
-            <DialogHeader className="px-6 pt-6 pb-0 shrink-0 w-full">
-              <DialogTitle>Add Client</DialogTitle>
-              <DialogDescription>
-                Fill in the details below to add a new client.
-              </DialogDescription>
-            </DialogHeader>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Client List</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <DataTable columns={columns} data={clients} />
+          </CardContent>
+        </Card>
+      </main>
 
-            {/* Step Indicator */}
-            <div className="flex items-center gap-1 px-6 py-4 shrink-0 overflow-x-auto">
-              {steps.map((s, i) => (
-                <div key={i} className="flex items-center gap-1 min-w-0">
-                  <div
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                      i === step
-                        ? "bg-primary text-primary-foreground"
-                        : i < step
-                        ? "bg-primary/10 text-primary"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                    onClick={() => setStep(i)}
-                  >
-                    <span className={`flex items-center justify-center size-5 rounded-full text-[10px] font-bold ${
-                      i === step
-                        ? "bg-primary-foreground/20 text-primary-foreground"
-                        : i < step
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted-foreground/20 text-muted-foreground"
-                    }`}>
-                      {i < step ? "✓" : i + 1}
-                    </span>
-                    <span className="hidden sm:inline">{s.label}</span>
+      <Dialog open={showForm} onOpenChange={handleCloseForm}>
+        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
+          <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
+            <DialogTitle>Add Client</DialogTitle>
+            <DialogDescription>
+              Fill in the details below to add a new client. An account will be created and credentials sent via email.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="space-y-8 py-2">
+                {apiError && (
+                  <div className="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 p-4">
+                    <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-red-800">{apiError}</p>
+                      {Object.keys(formErrors).length > 0 && (
+                        <ul className="mt-1 text-xs text-red-600 list-disc list-inside">
+                          {Object.entries(formErrors).map(([key, msg]) => (
+                            <li key={key}>{key}: {msg}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <button onClick={() => setApiError("")} className="shrink-0 text-red-400 hover:text-red-600">
+                      <X className="size-4" />
+                    </button>
                   </div>
-                  {i < steps.length - 1 && (
-                    <div className={`h-px w-4 ${i < step ? "bg-primary" : "bg-border"}`} />
-                  )}
+                )}
+
+                <FieldSet>
+                  <FieldLegend>Client Information</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground">Client ID</Label>
+                      <Input value="Auto Generated" disabled className="text-muted-foreground" />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Client Name *</Label>
+                      <Input placeholder="Enter client name" value={clientName} onChange={(e) => setClientName(e.target.value)} className={fieldClass("name")} />
+                      {fieldError("name") && <p className="text-xs text-red-500 mt-1">{fieldError("name")}</p>}
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
+                      <Input placeholder="Enter company name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={fieldClass("company")} />
+                      {fieldError("company") && <p className="text-xs text-red-500 mt-1">{fieldError("company")}</p>}
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
+                      <Input placeholder="client@company.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass("email")} />
+                      {fieldError("email") && <p className="text-xs text-red-500 mt-1">{fieldError("email")}</p>}
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Generated Password</Label>
+                      <div className="flex gap-2">
+                        <Input value={generatedPassword} readOnly className="font-mono text-xs flex-1" />
+                        <Button type="button" variant="outline" size="icon" className="size-9 shrink-0"
+                          onClick={() => setGeneratedPassword(generateRandomPassword())}
+                          title="Regenerate password">
+                          <RefreshCw className="size-4" />
+                        </Button>
+                      </div>
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Client Type</Label>
+                      <Select value={clientType} onValueChange={setClientType}>
+                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Individual">Individual</SelectItem>
+                          <SelectItem value="Business">Business</SelectItem>
+                          <SelectItem value="Government">Government</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Industry</Label>
+                      <Input placeholder="Enter industry" value={industry} onChange={(e) => setIndustry(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Website URL</Label>
+                      <Input placeholder="https://example.com" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} />
+                    </Field>
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>Contact Information</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Primary Contact Person *</Label>
+                      <Input placeholder="Enter contact person" value={primaryContact} onChange={(e) => setPrimaryContact(e.target.value)} className={fieldClass("primaryContact")} />
+                      {fieldError("primaryContact") && <p className="text-xs text-red-500 mt-1">{fieldError("primaryContact")}</p>}
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Designation</Label>
+                      <Input placeholder="Enter designation" value={designation} onChange={(e) => setDesignation(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile Number *</Label>
+                      <Input placeholder="Enter mobile number" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Alternate Phone Number</Label>
+                      <Input placeholder="Enter alternate phone" value={alternatePhone} onChange={(e) => setAlternatePhone(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">WhatsApp Number</Label>
+                      <Input placeholder="Enter WhatsApp number" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
+                    </Field>
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>Address Details</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 1 *</Label>
+                      <Input placeholder="Enter address" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 2</Label>
+                      <Input placeholder="Enter address line 2" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">City *</Label>
+                      <Input placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">State/Province *</Label>
+                      <Input placeholder="Enter state/province" value={stateProvince} onChange={(e) => setStateProvince(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Country *</Label>
+                      <Input placeholder="Enter country" value={country} onChange={(e) => setCountry(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Postal Code *</Label>
+                      <Input placeholder="Enter postal code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+                    </Field>
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>Business Details</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">GST Number</Label>
+                      <Input placeholder="Enter GST number" value={gstNumber} onChange={(e) => setGstNumber(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">PAN Number</Label>
+                      <Input placeholder="Enter PAN number" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Company Registration Number</Label>
+                      <Input placeholder="Enter registration number" value={companyRegNumber} onChange={(e) => setCompanyRegNumber(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Tax ID</Label>
+                      <Input placeholder="Enter tax ID" value={taxId} onChange={(e) => setTaxId(e.target.value)} />
+                    </Field>
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>Project Information</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Project Name</Label>
+                      <Input placeholder="Enter project name" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Service Required</Label>
+                      <Select value={serviceRequired} onValueChange={setServiceRequired}>
+                        <SelectTrigger><SelectValue placeholder="Select service" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Website Development">Website Development</SelectItem>
+                          <SelectItem value="Mobile App Development">Mobile App Development</SelectItem>
+                          <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
+                          <SelectItem value="SEO">SEO</SelectItem>
+                          <SelectItem value="Branding">Branding</SelectItem>
+                          <SelectItem value="Graphic Design">Graphic Design</SelectItem>
+                          <SelectItem value="Custom Software">Custom Software</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Project Budget</Label>
+                      <Input placeholder="Enter budget" value={projectBudget} onChange={(e) => setProjectBudget(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Expected Start Date</Label>
+                      <Input type="date" value={expectedStartDate} onChange={(e) => setExpectedStartDate(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Expected End Date</Label>
+                      <Input type="date" value={expectedEndDate} onChange={(e) => setExpectedEndDate(e.target.value)} />
+                    </Field>
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>Billing Information</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Contact Name</Label>
+                      <Input placeholder="Enter billing contact" value={billingContactName} onChange={(e) => setBillingContactName(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Email</Label>
+                      <Input placeholder="Enter billing email" type="email" value={billingEmail} onChange={(e) => setBillingEmail(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Payment Terms</Label>
+                      <Input placeholder="Enter payment terms" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Currency</Label>
+                      <Select value={currency} onValueChange={setCurrency}>
+                        <SelectTrigger><SelectValue placeholder="Select currency" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="USD">USD</SelectItem>
+                          <SelectItem value="EUR">EUR</SelectItem>
+                          <SelectItem value="GBP">GBP</SelectItem>
+                          <SelectItem value="INR">INR</SelectItem>
+                          <SelectItem value="AED">AED</SelectItem>
+                          <SelectItem value="AUD">AUD</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Credit Limit</Label>
+                      <Input placeholder="Enter credit limit" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />
+                    </Field>
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>Bank Details</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Bank Name</Label>
+                      <Input placeholder="Enter bank name" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Account Holder Name</Label>
+                      <Input placeholder="Enter account holder name" value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Account Number</Label>
+                      <Input placeholder="Enter account number" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Confirm Account Number</Label>
+                      <Input placeholder="Re-enter account number" value={confirmAccountNumber} onChange={(e) => setConfirmAccountNumber(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">IFSC Code / Routing No.</Label>
+                      <Input placeholder="Enter IFSC or routing number" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Branch Name</Label>
+                      <Input placeholder="Enter branch name" value={branchName} onChange={(e) => setBranchName(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Account Type</Label>
+                      <Select value={accountType} onValueChange={setAccountType}>
+                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Savings">Savings</SelectItem>
+                          <SelectItem value="Current">Current</SelectItem>
+                          <SelectItem value="Business">Business</SelectItem>
+                          <SelectItem value="Corporate">Corporate</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">UPI ID / PayPal Email</Label>
+                      <Input placeholder="Enter UPI ID or PayPal email" value={upiId} onChange={(e) => setUpiId(e.target.value)} />
+                    </Field>
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>Communication Preferences</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Contact Method</Label>
+                      <Select value={preferredContactMethod} onValueChange={setPreferredContactMethod}>
+                        <SelectTrigger><SelectValue placeholder="Select method" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Email">Email</SelectItem>
+                          <SelectItem value="Phone">Phone</SelectItem>
+                          <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                          <SelectItem value="Teams">Teams</SelectItem>
+                          <SelectItem value="Zoom">Zoom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Time Zone</Label>
+                      <Input placeholder="e.g. IST, EST, PST" value={preferredTimeZone} onChange={(e) => setPreferredTimeZone(e.target.value)} />
+                    </Field>
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>Client Status</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Status</Label>
+                      <Select value={status} onValueChange={setStatus}>
+                        <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Lead">Lead</SelectItem>
+                          <SelectItem value="Prospect">Prospect</SelectItem>
+                          <SelectItem value="Active Client">Active Client</SelectItem>
+                          <SelectItem value="Inactive Client">Inactive Client</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>Additional Information</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Source of Lead</Label>
+                      <Select value={sourceOfLead} onValueChange={setSourceOfLead}>
+                        <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Referral">Referral</SelectItem>
+                          <SelectItem value="Website">Website</SelectItem>
+                          <SelectItem value="Social Media">Social Media</SelectItem>
+                          <SelectItem value="BNI">BNI</SelectItem>
+                          <SelectItem value="Advertisement">Advertisement</SelectItem>
+                          <SelectItem value="Direct Contact">Direct Contact</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field />
+                  </div>
+                  <div className="mt-4">
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Notes</Label>
+                    <textarea
+                      className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
+                      placeholder="Enter notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                    />
+                  </div>
+                </FieldSet>
+
+                <Separator />
+
+                <FieldSet>
+                  <FieldLegend>System Fields</FieldLegend>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Sales Person</Label>
+                      <Input placeholder="Sales person" value={assignedSalesPerson} onChange={(e) => setAssignedSalesPerson(e.target.value)} />
+                    </Field>
+                    <Field>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Project Manager</Label>
+                      <Input placeholder="Project manager" value={assignedProjectManager} onChange={(e) => setAssignedProjectManager(e.target.value)} />
+                    </Field>
+                  </div>
+                </FieldSet>
+              </div>
+            </ScrollArea>
+          </div>
+
+          <DialogFooter className="flex items-center justify-between px-6 py-4 border-t shrink-0">
+            <Button variant="outline" onClick={() => setShowForm(false)}>
+              Cancel
+            </Button>
+            <Button disabled={saving} onClick={handleSubmit}>
+              {saving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Creating...</> : "Create Client & Send Invite"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="size-6 text-emerald-500" />
+              Client Created Successfully
+            </DialogTitle>
+            <DialogDescription>
+              A welcome email has been sent to {credentials?.email}. Share these credentials with the client.
+            </DialogDescription>
+          </DialogHeader>
+
+          {credentials && (
+            <div className="space-y-4">
+              <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Login URL</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="flex-1 rounded bg-muted px-2 py-1 text-sm break-all">{credentials.loginUrl}</code>
+                    <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => copyToClipboard(credentials.loginUrl, "url")}>
+                      <Copy className="size-4" />
+                    </Button>
+                  </div>
+                  {copied === "url" && <span className="text-xs text-emerald-500 mt-1 block">Copied!</span>}
                 </div>
-              ))}
-            </div>
 
-            {/* Slide Content */}
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <div
-                className="flex h-full transition-transform duration-300 ease-in-out"
-                style={{ transform: `translateX(-${step * 100}%)` }}
-              >
-                {/* Slide 1 - Client Info */}
-                <div className="min-w-full h-full overflow-y-auto px-6 pb-4 space-y-6">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Client Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Client ID</Label>
-                        <Input value="Auto Generated" disabled className="text-muted-foreground" />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Client Name *</Label>
-                        <Input placeholder="Enter client name" value={clientName} onChange={(e) => setClientName(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
-                        <Input placeholder="Enter company name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Client Type</Label>
-                        <Select value={clientType} onValueChange={setClientType}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Individual">Individual</SelectItem>
-                            <SelectItem value="Business">Business</SelectItem>
-                            <SelectItem value="Government">Government</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Industry</Label>
-                        <Input placeholder="Enter industry" value={industry} onChange={(e) => setIndustry(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Website URL</Label>
-                        <Input placeholder="https://example.com" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} />
-                      </div>
-                    </div>
+                <Separator />
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Username / Email</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">{credentials.email}</code>
+                    <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => copyToClipboard(credentials.email, "email")}>
+                      <Copy className="size-4" />
+                    </Button>
                   </div>
+                  {copied === "email" && <span className="text-xs text-emerald-500 mt-1 block">Copied!</span>}
                 </div>
 
-                {/* Slide 2 - Contact & Address */}
-                <div className="min-w-full h-full overflow-y-auto px-6 pb-4 space-y-6">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Contact Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Primary Contact Person *</Label>
-                        <Input placeholder="Enter contact person" value={primaryContact} onChange={(e) => setPrimaryContact(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Designation</Label>
-                        <Input placeholder="Enter designation" value={designation} onChange={(e) => setDesignation(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
-                        <Input placeholder="Enter email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile Number *</Label>
-                        <Input placeholder="Enter mobile number" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Alternate Phone Number</Label>
-                        <Input placeholder="Enter alternate phone" value={alternatePhone} onChange={(e) => setAlternatePhone(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">WhatsApp Number</Label>
-                        <Input placeholder="Enter WhatsApp number" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
-                      </div>
-                    </div>
+                <Separator />
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Temporary Password</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
+                      {showPassword ? credentials.password : "••••••••••••"}
+                    </code>
+                    <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </Button>
+                    <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => copyToClipboard(credentials.password, "password")}>
+                      <Copy className="size-4" />
+                    </Button>
                   </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Address Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 1 *</Label>
-                        <Input placeholder="Enter address" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 2</Label>
-                        <Input placeholder="Enter address line 2" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">City *</Label>
-                        <Input placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">State/Province *</Label>
-                        <Input placeholder="Enter state/province" value={stateProvince} onChange={(e) => setStateProvince(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Country *</Label>
-                        <Input placeholder="Enter country" value={country} onChange={(e) => setCountry(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Postal Code *</Label>
-                        <Input placeholder="Enter postal code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Slide 4 - Business */}
-                <div className="min-w-full h-full overflow-y-auto px-6 pb-4 space-y-6">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Business Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">GST Number (Optional)</Label>
-                        <Input placeholder="Enter GST number" value={gstNumber} onChange={(e) => setGstNumber(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">PAN Number (Optional)</Label>
-                        <Input placeholder="Enter PAN number" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Company Registration Number</Label>
-                        <Input placeholder="Enter registration number" value={companyRegNumber} onChange={(e) => setCompanyRegNumber(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Tax ID</Label>
-                        <Input placeholder="Enter tax ID" value={taxId} onChange={(e) => setTaxId(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Slide 5 - Project */}
-                <div className="min-w-full h-full overflow-y-auto px-6 pb-4 space-y-6">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Project Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Project Name</Label>
-                        <Input placeholder="Enter project name" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Service Required</Label>
-                        <Select value={serviceRequired} onValueChange={setServiceRequired}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Website Development">Website Development</SelectItem>
-                            <SelectItem value="Mobile App Development">Mobile App Development</SelectItem>
-                            <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
-                            <SelectItem value="SEO">SEO</SelectItem>
-                            <SelectItem value="Branding">Branding</SelectItem>
-                            <SelectItem value="Graphic Design">Graphic Design</SelectItem>
-                            <SelectItem value="Custom Software">Custom Software</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Project Budget</Label>
-                        <Input placeholder="Enter budget" value={projectBudget} onChange={(e) => setProjectBudget(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Expected Start Date</Label>
-                        <Input type="date" value={expectedStartDate} onChange={(e) => setExpectedStartDate(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Expected End Date</Label>
-                        <Input type="date" value={expectedEndDate} onChange={(e) => setExpectedEndDate(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Slide 5 - Billing & Bank */}
-                <div className="min-w-full h-full overflow-y-auto px-6 pb-4 space-y-6">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Billing Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Contact Name</Label>
-                        <Input placeholder="Enter billing contact" value={billingContactName} onChange={(e) => setBillingContactName(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Email</Label>
-                        <Input placeholder="Enter billing email" type="email" value={billingEmail} onChange={(e) => setBillingEmail(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Payment Terms</Label>
-                        <Input placeholder="Enter payment terms" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Currency</Label>
-                        <Select value={currency} onValueChange={setCurrency}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="USD">USD</SelectItem>
-                            <SelectItem value="EUR">EUR</SelectItem>
-                            <SelectItem value="GBP">GBP</SelectItem>
-                            <SelectItem value="INR">INR</SelectItem>
-                            <SelectItem value="AED">AED</SelectItem>
-                            <SelectItem value="AUD">AUD</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Credit Limit</Label>
-                        <Input placeholder="Enter credit limit" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Bank Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Bank Name</Label>
-                        <Input placeholder="Enter bank name" value={bankName} onChange={(e) => setBankName(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Account Holder Name</Label>
-                        <Input placeholder="Enter account holder name" value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Account Number</Label>
-                        <Input placeholder="Enter account number" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Confirm Account Number</Label>
-                        <Input placeholder="Re-enter account number" value={confirmAccountNumber} onChange={(e) => setConfirmAccountNumber(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">IFSC Code / Routing No.</Label>
-                        <Input placeholder="Enter IFSC or routing number" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Branch Name</Label>
-                        <Input placeholder="Enter branch name" value={branchName} onChange={(e) => setBranchName(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Account Type</Label>
-                        <Select value={accountType} onValueChange={setAccountType}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Savings">Savings</SelectItem>
-                            <SelectItem value="Current">Current</SelectItem>
-                            <SelectItem value="Business">Business</SelectItem>
-                            <SelectItem value="Corporate">Corporate</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">UPI ID / PayPal Email</Label>
-                        <Input placeholder="Enter UPI ID or PayPal email" value={upiId} onChange={(e) => setUpiId(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Slide 8 - Preferences & Status */}
-                <div className="min-w-full h-full overflow-y-auto px-6 pb-4 space-y-6">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Communication Preferences</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Contact Method</Label>
-                        <Select value={preferredContactMethod} onValueChange={setPreferredContactMethod}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Email">Email</SelectItem>
-                            <SelectItem value="Phone">Phone</SelectItem>
-                            <SelectItem value="WhatsApp">WhatsApp</SelectItem>
-                            <SelectItem value="Teams">Teams</SelectItem>
-                            <SelectItem value="Zoom">Zoom</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Time Zone</Label>
-                        <Input placeholder="Enter timezone (e.g. IST, EST, PST)" value={preferredTimeZone} onChange={(e) => setPreferredTimeZone(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Client Status</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Status</Label>
-                        <Select value={status} onValueChange={setStatus}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Lead">Lead</SelectItem>
-                            <SelectItem value="Prospect">Prospect</SelectItem>
-                            <SelectItem value="Active Client">Active Client</SelectItem>
-                            <SelectItem value="Inactive Client">Inactive Client</SelectItem>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Slide 9 - Additional & System */}
-                <div className="min-w-full h-full overflow-y-auto px-6 pb-4 space-y-6">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Additional Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Source of Lead</Label>
-                        <Select value={sourceOfLead} onValueChange={setSourceOfLead}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Referral">Referral</SelectItem>
-                            <SelectItem value="Website">Website</SelectItem>
-                            <SelectItem value="Social Media">Social Media</SelectItem>
-                            <SelectItem value="BNI">BNI</SelectItem>
-                            <SelectItem value="Advertisement">Advertisement</SelectItem>
-                            <SelectItem value="Direct Contact">Direct Contact</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Attachments/Documents</Label>
-                        <Input type="file" className="file:text-xs file:font-medium" />
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Notes</Label>
-                      <textarea
-                        className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
-                        placeholder="Enter notes"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-3">System Fields</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Sales Person</Label>
-                        <Input placeholder="Sales person" value={assignedSalesPerson} onChange={(e) => setAssignedSalesPerson(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Project Manager</Label>
-                        <Input placeholder="Project manager" value={assignedProjectManager} onChange={(e) => setAssignedProjectManager(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Created By</Label>
-                        <Input placeholder="Created by" value={createdBy} onChange={(e) => setCreatedBy(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Created Date</Label>
-                        <Input type="date" value={createdDate} onChange={(e) => setCreatedDate(e.target.value)} />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1.5 block">Last Updated Date</Label>
-                        <Input type="date" value={lastUpdatedDate} onChange={(e) => setLastUpdatedDate(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
+                  {copied === "password" && <span className="text-xs text-emerald-500 mt-1 block">Copied!</span>}
                 </div>
               </div>
-            </div>
 
-            {/* Navigation */}
-            <div className="flex items-center justify-between gap-3 px-6 py-4 border-t shrink-0">
-              <Button variant="outline" onClick={() => setShowForm(false)}>
-                Cancel
-              </Button>
-              <div className="flex items-center gap-2">
-                {step > 0 && (
-                  <Button variant="ghost" onClick={goToPrev}>
-                    <ChevronLeft className="size-4 mr-1" />
-                    Previous
-                  </Button>
-                )}
-                {step < steps.length - 1 ? (
-                  <Button onClick={goToNext}>
-                    Next
-                    <ChevronRight className="size-4 ml-1" />
-                  </Button>
-                ) : (
-                  <Button disabled={!clientName || !email || !primaryContact} onClick={handleSubmit}>
-                    Create Client
-                  </Button>
-                )}
+              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                <p className="text-xs text-amber-800">
+                  <strong>Note:</strong> The client will be required to change this password on first login.
+                  An email with these credentials has been sent to {credentials.email}.
+                </p>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </SidebarInset>
-    </SidebarProvider>
+          )}
+
+          <DialogFooter>
+            <Button onClick={() => setShowSuccess(false)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

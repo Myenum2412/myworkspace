@@ -1,397 +1,108 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { FileExplorer } from "@/components/file-explorer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  FileIcon,
-  FolderIcon,
-  Loader2Icon,
-  DownloadIcon,
-  PencilIcon,
-  EyeIcon,
-  UploadIcon,
-  SaveIcon,
-  AlertCircleIcon,
-  FileTextIcon,
-  ImageIcon,
-  ArchiveIcon,
-} from "lucide-react";
+import { Loader2Icon, HardDriveIcon, FileIcon, Trash2Icon, TrendingUpIcon } from "lucide-react";
+import Link from "next/link";
 
-type FileItem = {
-  id: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  createdAt: string;
-  uploaderName: string;
-  uploaderAvatar: string;
-  projectId: string | null;
-  projectName: string | null;
-  description: string;
-  storagePath: string;
-};
-
-
-
-function formatSize(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return <ImageIcon className="size-4 text-blue-500" />;
-  if (mimeType.includes("pdf")) return <FileTextIcon className="size-4 text-red-500" />;
-  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return <ArchiveIcon className="size-4 text-amber-500" />;
-  if (mimeType.includes("sheet") || mimeType.includes("excel") || mimeType.includes("spreadsheet")) return <FileTextIcon className="size-4 text-emerald-500" />;
-  if (mimeType.includes("document") || mimeType.includes("word")) return <FileTextIcon className="size-4 text-blue-600" />;
-  return <FileIcon className="size-4 text-muted-foreground" />;
-}
-
-function isPreviewable(mimeType: string) {
-  return mimeType.startsWith("image/") || mimeType.includes("pdf");
+function formatSizeMB(bytes: number) {
+  return (bytes / (1024 * 1024)).toFixed(1);
 }
 
 export default function FilesPage() {
   const { data: session } = useSession();
-  const [files, setFiles] = useState<FileItem[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // View dialog
-  const [viewFile, setViewFile] = useState<FileItem | null>(null);
-  const [viewOpen, setViewOpen] = useState(false);
+  useEffect(() => {
+    async function load() {
+      try {
+        const profileRes = await fetch("/api/user/profile", { credentials: "include" });
+        const profileData = await profileRes.json();
+        const p = profileData.data || profileData;
+        setProfile(p);
 
-  // Edit dialog
-  const [editFile, setEditFile] = useState<FileItem | null>(null);
-  const [editOpen, setEditOpen] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editDesc, setEditDesc] = useState("");
-  const [editError, setEditError] = useState("");
-  const [editSubmitting, setEditSubmitting] = useState(false);
-
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-  };
-
-  const fetchFiles = useCallback(() => {
-    if (!session?.user) return;
-    fetch("/api/user/profile", { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => {
-        const profile = d.data || d;
-        const id = profile?.org?.id || profile?.org?._id?.toString() || "";
-        if (id) {
-          fetch(`/api/files?orgId=${id}`, { credentials: "include" })
-            .then((r) => r.json())
-            .then((data) => {
-              const list = Array.isArray(data) ? data : data.data || [];
-              setFiles(list);
-            })
-            .catch(() => {})
-            .finally(() => setLoading(false));
-        } else {
-          setLoading(false);
+        const orgId = p?.org?.id || p?.org?._id?.toString() || "";
+        if (orgId) {
+          const statsRes = await fetch(`/api/files/stats`, { credentials: "include" });
+          const statsData = await statsRes.json();
+          setStats(statsData.data || null);
         }
-      })
-      .catch(() => { setLoading(false); });
-  }, [session]);
-
-  useEffect(() => { fetchFiles(); }, [fetchFiles]);
-
-  // Group files by project
-  const grouped = files.reduce<Record<string, { projectName: string; files: FileItem[] }>>((acc, f) => {
-    const key = f.projectId || "__unassigned";
-    if (!acc[key]) {
-      acc[key] = { projectName: f.projectName || "Unassigned", files: [] };
-    }
-    acc[key].files.push(f);
-    return acc;
-  }, {});
-
-  function openView(file: FileItem) {
-    setViewFile(file);
-    setViewOpen(true);
-  }
-
-  function openEdit(file: FileItem) {
-    setEditFile(file);
-    setEditName(file.originalName);
-    setEditDesc(file.description || "");
-    setEditError("");
-    setEditOpen(true);
-  }
-
-  async function handleEditSave() {
-    if (!editFile || !editName.trim()) {
-      setEditError("File name is required.");
-      return;
-    }
-    setEditError("");
-    setEditSubmitting(true);
-
-    try {
-      const res = await fetch(`/api/files/${editFile.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ originalName: editName.trim(), description: editDesc.trim() }),
-      });
-      if (res.ok) {
-        setFiles((prev) => prev.map((f) =>
-          f.id === editFile.id
-            ? { ...f, originalName: editName.trim(), description: editDesc.trim() }
-            : f
-        ));
-        setEditOpen(false);
-        setEditFile(null);
-      } else {
-        const d = await res.json().catch(() => ({}));
-        setEditError(d.error || "Failed to update file");
+      } catch {} finally {
+        setLoading(false);
       }
-    } catch {
-      setFiles((prev) => prev.map((f) =>
-        f.id === editFile.id
-          ? { ...f, originalName: editName.trim(), description: editDesc.trim() }
-          : f
-      ));
-      setEditOpen(false);
-      setEditFile(null);
-    } finally {
-      setEditSubmitting(false);
     }
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  function handleDownload(file: FileItem) {
-    window.open(`/api/files/${file.id}?download=true`, "_blank");
-  }
+  const orgId = profile?.org?.id || profile?.org?._id?.toString() || "";
+  const userId = session?.user?.id || "";
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <FolderIcon className="size-6" /> File Manager
-              </h1>
-              <p className="text-sm text-muted-foreground">Project-related files and reports</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">{files.length} files</Badge>
-              <Button onClick={() => window.location.href = "/upload"}>
-                <UploadIcon className="mr-2 size-4" />
-                Upload File
-              </Button>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : files.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
-                <FolderIcon className="size-12 text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">No files uploaded yet.</p>
-                <Button onClick={() => window.location.href = "/upload"} variant="outline">
-                  <UploadIcon className="mr-2 size-4" />
-                  Upload your first file
-                </Button>
+    <div className="space-y-6">
+      {/* Storage Dashboard */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <HardDriveIcon className="size-4" /> Total Storage
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{formatSizeMB(stats.totalSize || stats.totalSizeBytes || 0)} MB</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <FileIcon className="size-4" /> Total Files
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{stats.totalFiles || 0}</p>
+            </CardContent>
+          </Card>
+          <Link href="/recycle-bin">
+            <Card className="hover:border-muted-foreground/30 cursor-pointer transition-colors h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Trash2Icon className="size-4" /> Deleted
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{stats.deletedFiles || 0}</p>
               </CardContent>
             </Card>
-          ) : (
-            Object.entries(grouped).map(([projectId, group]) => (
-              <Card key={projectId}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2 text-muted-foreground">
-                    <FolderIcon className="size-4" />
-                    {group.projectName}
-                    <Badge variant="outline" className="ml-auto text-[10px]">{group.files.length} file(s)</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-y bg-muted/30 text-left text-xs text-muted-foreground">
-                          <th className="px-4 py-2.5 font-medium">Name</th>
-                          <th className="px-4 py-2.5 font-medium">Type</th>
-                          <th className="px-4 py-2.5 font-medium">Size</th>
-                          <th className="px-4 py-2.5 font-medium">Uploaded</th>
-                          <th className="px-4 py-2.5 font-medium">By</th>
-                          <th className="px-4 py-2.5 font-medium text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {group.files.map((f) => (
-                          <tr
-                            key={f.id}
-                            className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
-                            onClick={() => openView(f)}
-                          >
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2.5">
-                                {getFileIcon(f.mimeType)}
-                                <span className="font-medium text-sm">{f.originalName}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3">
-                              <Badge variant="outline" className="text-[10px] font-normal">
-                                {f.mimeType.split("/").pop()?.toUpperCase() || "FILE"}
-                              </Badge>
-                            </td>
-                            <td className="px-4 py-3 text-muted-foreground text-sm">{formatSize(f.size)}</td>
-                            <td className="px-4 py-3 text-muted-foreground text-sm">
-                              {new Date(f.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm">{f.uploaderName}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-1">
-                                <Button variant="ghost" size="icon-sm" onClick={() => openView(f)} title="View">
-                                  <EyeIcon className="size-3.5" />
-                                </Button>
-                                <Button variant="ghost" size="icon-sm" onClick={() => openEdit(f)} title="Edit">
-                                  <PencilIcon className="size-3.5" />
-                                </Button>
-                                <Button variant="ghost" size="icon-sm" onClick={() => handleDownload(f)} title="Download">
-                                  <DownloadIcon className="size-3.5" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </main>
-      </SidebarInset>
+          </Link>
+          <Link href="/shared">
+            <Card className="hover:border-muted-foreground/30 cursor-pointer transition-colors h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <TrendingUpIcon className="size-4" /> Shared
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">View</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      )}
 
-      {/* View File Dialog */}
-      <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setViewFile(null); } }}>
-        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
-          {viewFile && (
-            <>
-              <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
-                <DialogTitle className="flex items-center gap-2 text-lg">
-                  {getFileIcon(viewFile.mimeType)}
-                  {viewFile.originalName}
-                </DialogTitle>
-                <DialogDescription>
-                  {viewFile.projectName ? `Project: ${viewFile.projectName}` : "Unassigned"}
-                  {" · "}
-                  {formatSize(viewFile.size)}
-                  {" · "}
-                  Uploaded {new Date(viewFile.createdAt).toLocaleDateString()} by {viewFile.uploaderName}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
-                {isPreviewable(viewFile.mimeType) ? (
-                  <iframe
-                    src={`/api/files/${viewFile.id}`}
-                    className="w-full h-full border rounded-md"
-                    title={viewFile.originalName}
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
-                    <FileIcon className="size-12" />
-                    <p className="text-sm">Preview not available for this file type</p>
-                    <Button variant="outline" onClick={() => handleDownload(viewFile)}>
-                      <DownloadIcon className="mr-2 size-4" />
-                      Download to view
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit File Dialog */}
-      <Dialog open={editOpen} onOpenChange={(o) => { if (!o) { setEditOpen(false); setEditFile(null); setEditError(""); } }}>
-        <DialogContent className="p-0 flex flex-col">
-          <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <PencilIcon className="size-5" />
-              Edit File
-            </DialogTitle>
-            <DialogDescription>
-              Update file name and description.
-            </DialogDescription>
-          </DialogHeader>
-
-          {editError && (
-            <div className="mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              <AlertCircleIcon className="size-4 shrink-0" />
-              {editError}
-            </div>
-          )}
-
-          <div className="px-6 py-3 space-y-3">
-            <div>
-              <Label htmlFor="fileName" className="text-sm">File Name *</Label>
-              <Input
-                id="fileName"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                placeholder="Enter file name"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="fileDesc" className="text-sm">Description</Label>
-              <Textarea
-                id="fileDesc"
-                value={editDesc}
-                onChange={(e) => setEditDesc(e.target.value)}
-                placeholder="Brief description of the file"
-                rows={2}
-                className="mt-1"
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="shrink-0 border-t px-6 py-4 gap-2">
-            <Button variant="outline" onClick={() => { setEditOpen(false); setEditFile(null); setEditError(""); }} disabled={editSubmitting}>
-              Cancel
-            </Button>
-            <Button onClick={handleEditSave} disabled={editSubmitting || !editName.trim()}>
-              {editSubmitting ? <Loader2Icon className="size-4 animate-spin" /> : <><SaveIcon className="size-3.5 mr-1.5" />Save Changes</>}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </SidebarProvider>
+      {/* File Explorer */}
+      {orgId && <FileExplorer orgId={orgId} userId={userId} />}
+    </div>
   );
 }

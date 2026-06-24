@@ -30,8 +30,10 @@ export class SocketIOManager {
           socket.userId = decoded.userId;
           socket.orgId = decoded.orgId;
         } catch {
-          // allow unauthenticated connection but with limited scope
+          return next(new Error("Invalid token"));
         }
+      } else {
+        return next(new Error("Authentication required"));
       }
       next();
     });

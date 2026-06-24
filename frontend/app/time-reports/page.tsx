@@ -1,12 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, TrendingUp, Users, CalendarDays, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
@@ -55,11 +49,7 @@ export default function TimeReportsPage() {
   const changeDir = (data?.weeklyChange ?? 0) >= 0 ? "up" : "down";
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div>
             <h1 className="text-2xl font-bold">Time Reports</h1>
             <p className="text-sm text-muted-foreground mt-1">Weekly time tracking overview</p>
@@ -76,7 +66,7 @@ export default function TimeReportsPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
-                    <Clock className="size-4 text-blue-600" />
+                    <Clock className="size-4 text-[#4c6a45]" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">{data.totalHours.toFixed(1)}</div>
@@ -173,7 +163,5 @@ export default function TimeReportsPage() {
             </>
           )}
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+            );
 }

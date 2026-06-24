@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ListTodo, CheckCircle2, Clock, AlertCircle, Users, Activity } from "lucide-react";
@@ -33,13 +30,6 @@ export default function DashboardPage() {
   const [metrics, setMetrics] = useState<Metrics>({totalTasks:0,completedTasks:0,inProgressTasks:0,overdueTasks:0,activeMembers:0,recentActivity:0});
   const [activities, setActivities] = useState<ActivityItem[]>([]);
 
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-    role: session?.user?.role,
-  };
-
   useEffect(() => {
     if (!session?.user) return;
     fetch("/api/user/profile", { credentials: "include" })
@@ -61,21 +51,17 @@ export default function DashboardPage() {
       .catch(() => {});
   }, [session]);
 
-  const cards = [
-    { title: "Total Tasks", value: metrics?.totalTasks ?? 0, icon: ListTodo, color: "text-blue-600" },
+  const cards = useMemo(() => [
+    { title: "Total Tasks", value: metrics?.totalTasks ?? 0, icon: ListTodo, color: "text-[#4c6a45]" },
     { title: "Completed", value: metrics?.completedTasks ?? 0, icon: CheckCircle2, color: "text-emerald-600" },
     { title: "In Progress", value: metrics?.inProgressTasks ?? 0, icon: Clock, color: "text-amber-600" },
     { title: "Overdue", value: metrics?.overdueTasks ?? 0, icon: AlertCircle, color: "text-red-600" },
     { title: "Active Members", value: metrics?.activeMembers ?? 0, icon: Users, color: "text-violet-600" },
     { title: "Activity (24h)", value: metrics?.recentActivity ?? 0, icon: Activity, color: "text-cyan-600" },
-  ];
+  ], [metrics]);
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
           <h1 className="text-2xl font-bold">Dashboard Overview</h1>
 
           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
@@ -115,7 +101,5 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
   );
 }

@@ -11,7 +11,7 @@ export const metadata = {
 
 const ratingColor = (r: number) => {
   if (r >= 4.5) return "bg-emerald-100 text-emerald-700 border-emerald-200";
-  if (r >= 4.0) return "bg-blue-100 text-blue-700 border-blue-200";
+  if (r >= 4.0) return "bg-[#e8ece4] text-[#3a5234] border-[#c5cec0]";
   return "bg-amber-100 text-amber-700 border-amber-200";
 };
 

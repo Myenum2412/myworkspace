@@ -7,6 +7,7 @@ import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createUserWorkspace } from "@/actions/user-folder";
 
 function getRedirectPath(role?: string): string {
   if (role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN") return "/orgmenu";
@@ -44,6 +45,27 @@ export async function loginAction(formData: FormData) {
 
   const member = await db.collection(collections.orgMembers).findOne({ userId: user._id });
 
+  // Auto-create org if user has none
+  if (!member) {
+    const userName = user.name || email.split("@")[0];
+    const newOrgId = uuid();
+    await db.collection(collections.organizations).insertOne({
+      id: newOrgId,
+      name: `${userName}'s Organization`,
+      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
+      plan: "starter",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await db.collection(collections.orgMembers).insertOne({
+      id: uuid(),
+      orgId: newOrgId,
+      userId,
+      role: "admin",
+      joinedAt: new Date(),
+    });
+  }
+
   await db.collection(collections.activityLogs).insertOne({
     id: uuid(),
     orgId: member?.orgId || "system",
@@ -80,7 +102,7 @@ export async function signupAction(formData: FormData) {
     redirect("/signup?error=Passwords+do+not+match");
   }
 
-  const existing = await db.collection(collections.users).find({ email }).toArray();
+  const existing = await (await db.collection(collections.users).find({ email })).toArray();
 
   if (existing.length > 0) {
     redirect("/signup?error=An+account+with+this+email+already+exists");
@@ -97,13 +119,20 @@ export async function signupAction(formData: FormData) {
     password: hashedPassword,
     status: "online",
     role: "admin",
+    emailVerified: true,
+    isActive: true,
+    permissions: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   await db.collection(collections.organizations).insertOne({
     id: orgId,
     name: company || `${name}'s Organization`,
-    slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${userId.slice(0, 8)}`,
+    slug: company?.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
     plan: "starter",
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   await db.collection(collections.orgMembers).insertOne({
@@ -111,7 +140,10 @@ export async function signupAction(formData: FormData) {
     orgId,
     userId,
     role: "admin",
+    joinedAt: new Date(),
   });
+
+  await createUserWorkspace(userId, name, orgId);
 
   await signIn("credentials", { email, password, redirect: false });
   const session = await import("./config").then(m => m.auth());
@@ -131,7 +163,6 @@ export async function logoutAction() {
   }
   await signOut({ redirect: false });
   revalidatePath("/login");
-  redirect("/login");
 }
 
 export async function forgotPasswordAction(formData: FormData) {

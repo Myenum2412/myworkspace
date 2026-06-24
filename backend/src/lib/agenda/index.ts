@@ -23,31 +23,35 @@ export async function initializeAgenda() {
       logoutTime: { $exists: false },
       updatedAt: { $lt: staleThreshold },
       currentStatus: { $ne: "offline" },
+    }).lean();
+
+    if (staleSessions.length === 0) { done(); return; }
+
+    const now = new Date();
+    const bulkOps = staleSessions.map((session) => {
+      const lastTransition = session.statusTransitions?.[session.statusTransitions.length - 1];
+      const breakDuration = lastTransition?.status === "break"
+        ? now.getTime() - new Date(lastTransition.timestamp).getTime()
+        : 0;
+
+      return {
+        updateOne: {
+          filter: { _id: session._id },
+          update: {
+            $push: { statusTransitions: { status: "offline" as const, timestamp: now } },
+            $set: {
+              logoutTime: now,
+              currentStatus: "offline" as const,
+              totalBreakDuration: (session.totalBreakDuration || 0) + breakDuration,
+              duration: now.getTime() - new Date(session.loginTime).getTime() - ((session.totalBreakDuration || 0) + breakDuration),
+            },
+          },
+        },
+      };
     });
 
-    for (const session of staleSessions) {
-      const lastTransition = session.statusTransitions.length > 0
-        ? session.statusTransitions[session.statusTransitions.length - 1]
-        : null;
-
-      session.statusTransitions.push({
-        status: "offline",
-        timestamp: new Date(),
-      });
-
-      if (lastTransition && lastTransition.status === "break") {
-        session.totalBreakDuration += Date.now() - lastTransition.timestamp.getTime();
-      }
-
-      session.logoutTime = new Date();
-      session.currentStatus = "offline";
-      session.duration = session.logoutTime.getTime() - session.loginTime.getTime() - session.totalBreakDuration;
-      await session.save();
-    }
-
-    if (staleSessions.length > 0) {
-      console.log(`✦ Agenda: closed ${staleSessions.length} stale session(s)`);
-    }
+    await Session.bulkWrite(bulkOps);
+    console.log(`✦ Agenda: closed ${staleSessions.length} stale session(s)`);
     done();
   });
 
@@ -59,7 +63,9 @@ export async function initializeAgenda() {
 
     const sessions = await Session.find({
       loginTime: { $gte: today, $lt: tomorrow },
-    }).populate("userId", "name email");
+    })
+      .populate("userId", "name email")
+      .lean();
 
     if (sessions.length > 0) {
       console.log(`✦ Agenda: daily session report - ${sessions.length} session(s) today`);

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { defaultNavData } from "@/components/app-sidebar";
+import { WORKSPACE_ROUTES } from "@/lib/app-context";
 
 describe("AppSidebar nav data", () => {
   it("has correct number of top-level sections", () => {
@@ -33,5 +34,29 @@ describe("AppSidebar nav data", () => {
     }
   });
 
+  it("does NOT contain orgmenu cross-context links", () => {
+    const allUrls: string[] = [];
+    for (const section of defaultNavData.navMain) {
+      allUrls.push(section.url);
+      for (const item of section.items || []) {
+        allUrls.push(item.url);
+      }
+    }
+    const orgmenuLinks = allUrls.filter((url) => url.startsWith("/orgmenu"));
+    expect(orgmenuLinks).toHaveLength(0);
+  });
 
+  it("all URLs belong to workspace context", () => {
+    const allUrls: string[] = [];
+    for (const section of defaultNavData.navMain) {
+      allUrls.push(section.url);
+      for (const item of section.items || []) {
+        allUrls.push(item.url);
+      }
+    }
+    for (const url of allUrls) {
+      const belongsToWorkspace = WORKSPACE_ROUTES.some((r) => url.startsWith(r));
+      expect(belongsToWorkspace, `URL ${url} is not a workspace route`).toBe(true);
+    }
+  });
 });

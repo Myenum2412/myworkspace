@@ -1,12 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -175,11 +169,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Settings2Icon className="size-6 text-muted-foreground" />
@@ -546,7 +536,5 @@ export default function SettingsPage() {
             </div>
           )}
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+            );
 }

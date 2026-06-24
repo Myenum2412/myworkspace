@@ -15,27 +15,18 @@ type Limits = {
 
 export function OrgLimitsEditor() {
   const [limits, setLimits] = useState<Limits | null>(null);
-  const [draft, setDraft] = useState<Limits | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [draft, setDraft] = useState<Limits>({ storageLimit: 0, memberLimit: 0, projectLimit: 0 });
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
   useEffect(() => {
-    let alive = true;
     fetch("/api/org/limits")
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))
       .then((d) => {
-        if (!alive) return;
         setLimits(d);
         setDraft(d);
-        setLoading(false);
       })
-      .catch(() => {
-        if (alive) setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
+      .catch(() => {});
   }, []);
 
   async function save() {
@@ -52,19 +43,6 @@ export function OrgLimitsEditor() {
       setSavedAt(Date.now());
     }
     setSaving(false);
-  }
-
-  if (loading || !draft) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Limits</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">Loading…</p>
-        </CardContent>
-      </Card>
-    );
   }
 
   const dirty =

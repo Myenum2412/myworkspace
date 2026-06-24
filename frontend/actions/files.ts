@@ -11,8 +11,28 @@ import { getUserOrgId } from "@/lib/org";
 async function requireOrgId(): Promise<string> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
-  const orgId = await getUserOrgId(session.user.id);
-  if (!orgId) throw new Error("No organization found");
+  let orgId = await getUserOrgId(session.user.id);
+  if (!orgId) {
+    const user = await db.collection(collections.users).findOne({ id: session.user.id });
+    const userName = user?.name || user?.email?.split("@")[0] || "User";
+    const newOrgId = uuid();
+    await db.collection(collections.organizations).insertOne({
+      id: newOrgId,
+      name: `${userName}'s Organization`,
+      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
+      plan: "starter",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await db.collection(collections.orgMembers).insertOne({
+      id: uuid(),
+      orgId: newOrgId,
+      userId: session.user.id,
+      role: "admin",
+      joinedAt: new Date(),
+    });
+    orgId = newOrgId;
+  }
   return orgId;
 }
 

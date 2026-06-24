@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { hash, compare } from "bcryptjs";
+import { v4 as uuid } from "uuid";
 import { User } from "../lib/db/models/User.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
@@ -28,7 +29,7 @@ async function generateUniqueSlug(base) {
 // Helper: get user's primary orgId
 async function getUserPrimaryOrgId(userId) {
     const member = await OrgMember.findOne({ userId }).lean();
-    return member ? member.orgId.toString() : null;
+    return member ? member.orgId : null;
 }
 router.post("/login", async (req, res) => {
     const { email, password } = req.body;
@@ -59,21 +60,20 @@ router.post("/login", async (req, res) => {
     user.lastLogin = new Date();
     user.status = "online";
     await user.save();
-    // Resolve org context
-    const orgId = await getUserPrimaryOrgId(user._id.toString());
+    const resolvedOrgId = user.orgId || await getUserPrimaryOrgId(user.id) || "";
     await ActivityLog.create({
-        orgId: orgId || user._id,
-        userId: user._id,
+        orgId: resolvedOrgId,
+        userId: user.id,
+        createdBy: user.id,
         action: "user.login",
         entityType: "user",
-        entityId: user._id.toString(),
+        entityId: user.id,
         description: `${user.name} logged in`,
     });
-    // Create session tracking entry
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const session = await Session.create({
-        userId: user._id,
-        orgId: orgId || undefined,
+        userId: user.id,
+        orgId: resolvedOrgId,
         loginTime: new Date(),
         currentStatus: "online",
         statusTransitions: [{ status: "online", timestamp: new Date() }],
@@ -81,30 +81,29 @@ router.post("/login", async (req, res) => {
         expiresAt,
     });
     await ActivityLog.create({
-        orgId: orgId || user._id,
-        userId: user._id,
+        orgId: resolvedOrgId,
+        userId: user.id,
+        createdBy: user.id,
         action: "session.start",
         entityType: "session",
         entityId: session._id.toString(),
         description: `Session started for ${user.name}`,
     });
-    socketIOManager.emitToUser(user._id.toString(), "session:started", {
+    socketIOManager.emitToUser(user.id, "session:started", {
         sessionId: session._id.toString(),
         loginTime: session.loginTime,
     });
-    if (orgId) {
-        socketIOManager.emitToOrg(orgId, "user:status:changed", {
-            userId: user._id.toString(),
-            status: "online",
-            timestamp: new Date().toISOString(),
-        });
-    }
+    socketIOManager.emitToOrg(resolvedOrgId, "user:status:changed", {
+        userId: user.id,
+        status: "online",
+        timestamp: new Date().toISOString(),
+    });
     const token = signToken({
-        userId: user._id.toString(),
+        userId: user.id,
         email: user.email,
         role: user.role,
         permissions: user.permissions || [],
-        orgId: orgId || undefined,
+        orgId: resolvedOrgId,
     });
     res.json({
         success: true,
@@ -112,15 +111,16 @@ router.post("/login", async (req, res) => {
             token,
             sessionId: session._id.toString(),
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 image: user.image,
                 role: user.role,
                 permissions: user.permissions || [],
                 status: "online",
+                orgId: resolvedOrgId,
             },
-            orgId: orgId || undefined,
+            orgId: resolvedOrgId,
         },
     });
 });
@@ -139,14 +139,16 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await hash(password, 12);
     const orgName = company || `${name}'s Organization`;
     const slug = await generateUniqueSlug(company || `${name}-org`);
-    // Use transaction to ensure atomicity
     const session = await mongoose.startSession();
     let user;
     let org;
     try {
         await session.withTransaction(async () => {
-            // Create user
+            const userId = uuid();
+            const orgId = uuid();
             const [createdUser] = await User.create([{
+                    id: userId,
+                    orgId,
                     name,
                     email,
                     password: hashedPassword,
@@ -154,18 +156,17 @@ router.post("/signup", async (req, res) => {
                     role: "admin",
                 }], { session });
             user = createdUser;
-            // Create organization
             const [createdOrg] = await Organization.create([{
+                    id: orgId,
                     name: orgName,
                     slug,
                     plan: "starter",
-                    ownerId: user._id,
+                    ownerId: userId,
                 }], { session });
             org = createdOrg;
-            // Create org membership
             await OrgMember.create([{
-                    orgId: org._id,
-                    userId: user._id,
+                    orgId,
+                    userId,
                     role: "admin",
                 }], { session });
         }, {
@@ -178,11 +179,11 @@ router.post("/signup", async (req, res) => {
         await session.endSession();
     }
     const token = signToken({
-        userId: user._id.toString(),
+        userId: user.id,
         email,
         role: "admin",
         permissions: [],
-        orgId: org._id.toString(),
+        orgId: org.id,
     });
     sendWelcomeEmail(email, name).catch((err) => {
         console.error("[mail] welcome email failed:", err?.message || err);
@@ -191,8 +192,8 @@ router.post("/signup", async (req, res) => {
         success: true,
         data: {
             token,
-            user: { id: user._id, name, email, role: "admin", status: "online" },
-            orgId: org._id,
+            user: { id: user.id, name, email, role: "admin", status: "online", orgId: org.id },
+            orgId: org.id,
         },
     });
 });
@@ -216,6 +217,7 @@ router.post("/logout", authenticate, async (req, res) => {
         await ActivityLog.create({
             orgId: orgId || userId,
             userId,
+            createdBy: userId,
             action: "session.end",
             entityType: "session",
             entityId: activeSession._id.toString(),
@@ -227,7 +229,7 @@ router.post("/logout", authenticate, async (req, res) => {
             duration: activeSession.duration,
         });
     }
-    await User.findByIdAndUpdate(userId, { status: "offline" });
+    await User.findOneAndUpdate({ id: userId }, { status: "offline" });
     if (orgId) {
         socketIOManager.emitToOrg(orgId, "user:status:changed", {
             userId,
@@ -251,18 +253,14 @@ router.post("/forgot-password", async (req, res) => {
     });
 });
 router.get("/me", authenticate, async (req, res) => {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findOne({ id: req.user.userId });
     if (!user)
         throw new AppError(404, "User not found");
-    // Resolve org context (use token orgId or look up fresh)
-    let orgId = req.user.orgId;
-    if (!orgId) {
-        orgId = await getUserPrimaryOrgId(user._id.toString()) || undefined;
-    }
+    const orgId = user.orgId || req.user.orgId;
     res.json({
         success: true,
         data: {
-            id: user._id,
+            id: user.id,
             name: user.name,
             email: user.email,
             image: user.image,

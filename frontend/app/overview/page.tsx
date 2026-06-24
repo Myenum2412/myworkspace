@@ -1,11 +1,8 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { PlusIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon, BookmarkIcon, CalendarClockIcon, ChartNoAxesCombinedIcon } from "lucide-react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +36,7 @@ type Task = {
   creatorId: string;
   creatorName: string;
   createdAt: string;
+  isBookmarked?: boolean;
 };
 
 const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
@@ -46,14 +44,14 @@ const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-100 text-gray-700",
   in_progress: "bg-amber-100 text-amber-700",
-  review: "bg-blue-100 text-blue-700",
+  review: "bg-[#e8ece4] text-[#3a5234]",
   done: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
 const priorityStyles: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
-  medium: "bg-blue-100 text-blue-600",
+  medium: "bg-[#e8ece4] text-[#4c6a45]",
   high: "bg-orange-100 text-orange-600",
   urgent: "bg-red-100 text-red-600",
 };
@@ -61,14 +59,14 @@ const priorityStyles: Record<string, string> = {
 const statusInfo = [
   { key: "todo", label: "To Do", icon: ListTodoIcon, color: "bg-gray-500" },
   { key: "in_progress", label: "In Progress", icon: ClockIcon, color: "bg-amber-500" },
-  { key: "review", label: "Review", icon: AlertCircleIcon, color: "bg-blue-500" },
+  { key: "review", label: "Review", icon: AlertCircleIcon, color: "bg-[#5f7d56]" },
   { key: "done", label: "Completed", icon: CheckCircle2Icon, color: "bg-emerald-500" },
   { key: "cancelled", label: "Cancelled", icon: XCircleIcon, color: "bg-red-500" },
 ];
 
 const priorityColors: Record<string, string> = {
   low: "bg-gray-200",
-  medium: "bg-blue-200",
+  medium: "bg-[#c5cec0]",
   high: "bg-orange-200",
   urgent: "bg-red-200",
 };
@@ -108,16 +106,10 @@ export default function OverviewPage() {
       .finally(() => setLoading(false));
   }, [session]);
 
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "user@example.com",
-    avatar: session?.user?.image || "",
-  };
-
+  
   const total = tasks.length;
   const myTasks = currentUserId ? tasks.filter((t) => t.assigneeId === currentUserId).length : 0;
-  const savedIds = ["1", "3", "5", "7"];
-  const savedCount = tasks.filter((t) => savedIds.includes(t._id)).length;
+  const savedCount = tasks.filter((t) => t.isBookmarked).length;
   const upcomingCount = tasks.filter((t) => {
     if (!t.dueDate || t.status === "done" || t.status === "cancelled") return false;
     return new Date(t.dueDate) >= new Date();
@@ -150,11 +142,8 @@ export default function OverviewPage() {
   } satisfies ChartConfig;
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <>
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ListTodoIcon className="size-6" />
@@ -298,7 +287,7 @@ export default function OverviewPage() {
                               {t.assigneeName ? `Assigned to ${t.assigneeName}` : "Unassigned"}
                             </p>
                           </div>
-                          <Badge className={priorityStyles[t.priority] || "" + " shrink-0 ml-2 text-[10px] px-1.5 py-0"}>
+                          <Badge className={(priorityStyles[t.priority] || "") + " shrink-0 ml-2 text-[10px] px-1.5 py-0"}>
                             {t.priority}
                           </Badge>
                         </div>
@@ -326,7 +315,7 @@ export default function OverviewPage() {
                           <div key={t._id} className="rounded-lg border bg-card p-3 space-y-2 shadow-sm">
                             <div className="flex items-start justify-between gap-2">
                               <p className="text-sm font-medium leading-tight">{t.title}</p>
-                              <Badge className={priorityStyles[t.priority] || "" + " shrink-0"}>{t.priority}</Badge>
+                              <Badge className={(priorityStyles[t.priority] || "") + " shrink-0"}>{t.priority}</Badge>
                             </div>
                             <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
                             <div className="flex items-center justify-between">
@@ -357,8 +346,7 @@ export default function OverviewPage() {
           </>
           )}
         </main>
-      </SidebarInset>
-
+      
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent className="p-0 flex flex-col">
           {selectedTask && (
@@ -390,6 +378,6 @@ export default function OverviewPage() {
         open={showTaskModal}
         onClose={() => setShowTaskModal(false)}
       />
-    </SidebarProvider>
-  );
+      </>
+      );
 }

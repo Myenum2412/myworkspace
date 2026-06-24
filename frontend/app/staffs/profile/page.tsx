@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -131,8 +125,7 @@ type ProfileData = {
 };
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
-  const [data, setData] = useState<ProfileData | null>(null);
+    const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -261,12 +254,7 @@ export default function ProfilePage() {
   const org = data?.org;
   const memberCount = data?.memberCount ?? 0;
 
-  const user = {
-    name: dbUser?.name || session?.user?.name || "User",
-    email: dbUser?.email || session?.user?.email || "user@example.com",
-    avatar: profileImage || session?.user?.image || dbUser?.image || "",
-  };
-
+  
   async function handleSave() {
     setSaveError("");
     setSaveSuccess("");
@@ -350,7 +338,9 @@ export default function ProfilePage() {
       setTimeout(() => setSaveSuccess(""), 4000);
     } catch (e) {
       console.error("[profile] save error:", e);
-      setSaveError(e instanceof Error ? e.message : "Network error");
+      setSaveError(e instanceof TypeError && e.message === "Failed to fetch"
+        ? "Cannot connect to server. Please check your connection and try again."
+        : (e instanceof Error ? e.message : "Network error"));
     } finally {
       setSaving(false);
     }
@@ -500,24 +490,15 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <SidebarProvider>
-        <AppSidebar user={user} />
-        <SidebarInset>
-          <Header />
-          <main className="flex flex-1 flex-col items-center justify-center py-24">
+                                          <main className="flex flex-1 flex-col items-center justify-center py-24">
             <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
           </main>
-        </SidebarInset>
-      </SidebarProvider>
-    );
+                  );
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col">
+                                <>
+                                <main className="flex flex-1 flex-col">
           <div
             className="relative h-[200px] bg-gradient-to-b from-primary/90 via-primary/40 to-background bg-cover bg-center"
             style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
@@ -527,8 +508,8 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center -mt-12 px-6">
             <div className="relative group">
               <Avatar className="size-24 ring-4 ring-background shadow-xl">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="text-2xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarImage src={dbUser?.image || ""} alt={dbUser?.name || ""} />
+                <AvatarFallback className="text-2xl">{dbUser?.name?.charAt(0)?.toUpperCase() || "?"}</AvatarFallback>
               </Avatar>
               <button
                 onClick={() => setShowImageEditor(true)}
@@ -539,7 +520,7 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <h1 className="mt-3 text-2xl font-bold">{dbUser?.name || user.name}</h1>
+            <h1 className="mt-3 text-2xl font-bold">{dbUser?.name || "User"}</h1>
             <div className="flex items-center gap-2 mt-1 text-muted-foreground">
               <span className="flex items-center gap-1.5 text-sm">
                 <span className={`inline-block size-2 rounded-full ${statusColors[dbUser?.status || "offline"]}`} />
@@ -1163,7 +1144,6 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
-      </SidebarInset>
-    </SidebarProvider>
-  );
+        </>
+      );
 }

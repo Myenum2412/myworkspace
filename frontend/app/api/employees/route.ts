@@ -5,6 +5,35 @@ import { v4 as uuid } from "uuid";
 import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 
+export async function GET() {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id }) as any;
+    if (!orgMember) {
+      const org = await db.collection(collections.organizations).findOne({ ownerId: session.user.id }) as any;
+      if (org) {
+        orgMember = { orgId: org.id || org._id.toString() } as any;
+      }
+    }
+    if (!orgMember) {
+      return NextResponse.json({ data: [] });
+    }
+    const orgMembers = await (await db.collection(collections.orgMembers).find({ orgId: orgMember.orgId })).toArray();
+    const userIds = orgMembers.map((m: any) => m.userId);
+    const employees = await (await db.collection(collections.users).find(
+      { id: { $in: userIds } },
+      { projection: { password: 0 } }
+    )).sort({ createdAt: -1 }).toArray();
+    return NextResponse.json({ data: employees });
+  } catch (err: any) {
+    console.error("[API GET /api/employees] Error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     let session;
@@ -32,17 +61,38 @@ export async function POST(request: Request) {
     let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
     if (!orgMember) {
       const org = await db.collection(collections.organizations).findOne({ ownerId: session.user.id });
-      if (!org) {
-        return NextResponse.json({ error: "No organization found. Please create an organization first." }, { status: 400 });
+      if (org) {
+        await db.collection(collections.orgMembers).insertOne({
+          id: uuid(),
+          orgId: org.id || org._id.toString(),
+          userId: session.user.id,
+          role: "admin",
+          joinedAt: new Date(),
+        });
+        orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+      } else {
+        // Auto-create org for user
+        const user = await db.collection(collections.users).findOne({ id: session.user.id });
+        const userName = user?.name || user?.email?.split("@")[0] || "User";
+        const newOrgId = uuid();
+        await db.collection(collections.organizations).insertOne({
+          id: newOrgId,
+          name: `${userName}'s Organization`,
+          slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
+          ownerId: session.user.id,
+          plan: "starter",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await db.collection(collections.orgMembers).insertOne({
+          id: uuid(),
+          orgId: newOrgId,
+          userId: session.user.id,
+          role: "admin",
+          joinedAt: new Date(),
+        });
+        orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
       }
-      await db.collection(collections.orgMembers).insertOne({
-        id: uuid(),
-        orgId: org.id || org._id.toString(),
-        userId: session.user.id,
-        role: "admin",
-        joinedAt: new Date(),
-      });
-      orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
     }
 
     const userId = uuid();

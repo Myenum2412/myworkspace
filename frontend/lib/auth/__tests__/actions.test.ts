@@ -7,31 +7,19 @@ function getRedirectPath(role?: string): string {
 
 describe("auth utilities", () => {
   describe("getRedirectPath", () => {
-    it("returns /orgmenu for ORG_MENU_ADMIN", () => {
+    it("redirects ORG_MENU_ADMIN to /orgmenu", () => {
       expect(getRedirectPath("ORG_MENU_ADMIN")).toBe("/orgmenu");
     });
 
-    it("returns /orgmenu for SUPER_ADMIN", () => {
+    it("redirects SUPER_ADMIN to /orgmenu", () => {
       expect(getRedirectPath("SUPER_ADMIN")).toBe("/orgmenu");
     });
 
-    it("returns /dashboard for admin", () => {
+    it("redirects other roles to /dashboard", () => {
       expect(getRedirectPath("admin")).toBe("/dashboard");
-    });
-
-    it("returns /dashboard for member", () => {
       expect(getRedirectPath("member")).toBe("/dashboard");
-    });
-
-    it("returns /dashboard for undefined role", () => {
       expect(getRedirectPath(undefined)).toBe("/dashboard");
-    });
-
-    it("returns /dashboard for empty string", () => {
       expect(getRedirectPath("")).toBe("/dashboard");
-    });
-
-    it("returns /dashboard for manager", () => {
       expect(getRedirectPath("manager")).toBe("/dashboard");
     });
   });

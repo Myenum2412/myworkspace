@@ -4,6 +4,8 @@ const taskSchema = new Schema({
     teamId: { type: String },
     assigneeId: { type: String },
     creatorId: { type: String, required: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
     title: { type: String, required: true },
     description: String,
     project: String,

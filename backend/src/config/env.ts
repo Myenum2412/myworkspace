@@ -8,6 +8,7 @@ export const env = {
   })(),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || "developer@myenum.in",
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || "",
   CORS_ORIGIN: (process.env.CORS_ORIGIN || "http://localhost:3000,https://myworkspace.myenum.in").split(",").map(s => s.trim()),
   NODE_ENV: process.env.NODE_ENV || "development",
   R2_ENDPOINT: process.env.R2_ENDPOINT || "",
@@ -17,4 +18,16 @@ export const env = {
   RESEND_API_KEY: process.env.RESEND_API_KEY || "",
   MAIL_FROM: process.env.MAIL_FROM || "MyWorkspace <welcome@myworkspace.myenum.in>",
   APP_URL: process.env.APP_URL || "http://localhost:3000",
+
+  S3_ENDPOINT: process.env.S3_ENDPOINT || "",
+  S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || "",
+  S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || "",
+  S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || "",
+  S3_REGION: process.env.S3_REGION || "us-east-1",
+
+  GCS_BUCKET_NAME: process.env.GCS_BUCKET_NAME || "",
+  GCS_KEYFILE: process.env.GCS_KEYFILE || "",
+
+  AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING || "",
+  AZURE_STORAGE_CONTAINER: process.env.AZURE_STORAGE_CONTAINER || "",
 };

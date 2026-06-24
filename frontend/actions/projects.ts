@@ -21,7 +21,28 @@ export async function getProjects() {
   const session = await auth();
   if (!session?.user?.id) return [];
 
-  const orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+  let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+  if (!orgMember) {
+    const user = await db.collection(collections.users).findOne({ id: session.user.id });
+    const userName = user?.name || user?.email?.split("@")[0] || "User";
+    const newOrgId = uuid();
+    await db.collection(collections.organizations).insertOne({
+      id: newOrgId,
+      name: `${userName}'s Organization`,
+      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
+      plan: "starter",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await db.collection(collections.orgMembers).insertOne({
+      id: uuid(),
+      orgId: newOrgId,
+      userId: session.user.id,
+      role: "admin",
+      joinedAt: new Date(),
+    });
+    orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+  }
   if (!orgMember) return [];
 
   const projects = await db
@@ -41,7 +62,28 @@ export async function createProjectAction(formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Unauthorized" };
 
-  const orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+  let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+  if (!orgMember) {
+    const user = await db.collection(collections.users).findOne({ id: session.user.id });
+    const userName = user?.name || user?.email?.split("@")[0] || "User";
+    const newOrgId = uuid();
+    await db.collection(collections.organizations).insertOne({
+      id: newOrgId,
+      name: `${userName}'s Organization`,
+      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
+      plan: "starter",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await db.collection(collections.orgMembers).insertOne({
+      id: uuid(),
+      orgId: newOrgId,
+      userId: session.user.id,
+      role: "admin",
+      joinedAt: new Date(),
+    });
+    orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+  }
   if (!orgMember) return { error: "No organization found" };
 
   const name = formData.get("name") as string;

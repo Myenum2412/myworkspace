@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { signIn } from "./config";
 import { db } from "@/lib/db";
+import { createUserWorkspace } from "@/actions/user-folder";
 
 export async function signupActionMongo(formData: FormData) {
   const name = formData.get("name") as string;
@@ -33,6 +34,7 @@ export async function signupActionMongo(formData: FormData) {
   const userDoc: Record<string, unknown> = {
     _id: userId,
     id: userId,
+    orgId,
     name,
     email,
     password: hashedPassword,
@@ -65,6 +67,8 @@ export async function signupActionMongo(formData: FormData) {
     role: "admin",
     joinedAt: new Date(),
   });
+
+  await createUserWorkspace(userId, name, orgId);
 
   await signIn("credentials", { email, password, redirect: false });
   const createdUser = await db.collection("users").findOne({ email });

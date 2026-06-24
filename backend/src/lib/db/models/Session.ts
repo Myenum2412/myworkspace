@@ -7,7 +7,7 @@ export interface IStatusTransition {
 
 export interface ISession extends Document {
   userId: string;
-  orgId?: string;
+  orgId: string;
   loginTime: Date;
   logoutTime?: Date;
   currentStatus: "online" | "break" | "offline";
@@ -26,7 +26,7 @@ const statusTransitionSchema = new Schema<IStatusTransition>({
 
 const sessionSchema = new Schema<ISession>({
   userId: { type: String, required: true, index: true },
-  orgId: { type: String, index: true },
+  orgId: { type: String, required: true, index: true },
   loginTime: { type: Date, required: true, default: Date.now },
   logoutTime: { type: Date },
   currentStatus: { type: String, enum: ["online", "break", "offline"], default: "online" },
@@ -37,6 +37,7 @@ const sessionSchema = new Schema<ISession>({
 }, { timestamps: true });
 
 sessionSchema.index({ userId: 1, loginTime: -1 });
+sessionSchema.index({ orgId: 1, userId: 1 });
 sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const Session = model<ISession>("Session", sessionSchema);

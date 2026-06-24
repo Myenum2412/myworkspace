@@ -51,7 +51,7 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
-    onGlobalFilterChange: (value) => {},
+    onGlobalFilterChange: (value) => { onSearchChange?.(value); },
     state: { sorting, globalFilter },
     initialState: { pagination: { pageSize: 10 } },
   });

@@ -83,7 +83,7 @@ async function enrichLogs(logs: Record<string, unknown>[], scopeOrgId: string | 
 }
 
 const actionColors: Record<string, string> = {
-  "user.login": "bg-blue-100 text-blue-700",
+  "user.login": "bg-[#e8ece4] text-[#3a5234]",
   "user.logout": "bg-slate-100 text-slate-700",
   "user.joined": "bg-emerald-100 text-emerald-700",
   "task.created": "bg-violet-100 text-violet-700",

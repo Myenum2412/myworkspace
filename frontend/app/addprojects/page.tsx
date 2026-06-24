@@ -2,12 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +10,8 @@ import { Loader2Icon, AlertCircleIcon } from "lucide-react";
 import { getProjects } from "@/actions/projects";
 
 const colors = [
-  "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
-  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
+  "#93c5fd", "#fca5a5", "#86efac", "#fcd34d", "#c4b5fd",
+  "#f9a8d4", "#67e8f9", "#fdba74", "#6ee7b7", "#a5b4fc",
 ];
 
 export default function AddProjectPage() {
@@ -28,7 +22,7 @@ export default function AddProjectPage() {
   const [client, setClient] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [color, setColor] = useState("#3b82f6");
+  const [color, setColor] = useState("#93c5fd");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [clientList, setClientList] = useState<string[]>([]);
@@ -95,11 +89,7 @@ export default function AddProjectPage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+    <main className="flex flex-1 flex-col gap-4 p-4">
           <h1 className="text-2xl font-bold">Add Project</h1>
 
           <Card>
@@ -195,7 +185,5 @@ export default function AddProjectPage() {
             </CardContent>
           </Card>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+      );
 }

@@ -2,6 +2,8 @@ import { Schema, model, Document } from "mongoose";
 
 export interface INotification extends Document {
   userId: string;
+  orgId: string;
+  createdBy: string;
   type: "task_assigned" | "task_updated" | "mention" | "invite" | "system" | "comment" | "status_change";
   title: string;
   message?: string;
@@ -13,6 +15,8 @@ export interface INotification extends Document {
 
 const notificationSchema = new Schema<INotification>({
   userId: { type: String, required: true },
+  orgId: { type: String, required: true, index: true },
+  createdBy: { type: String, required: true },
   type: {
     type: String,
     enum: ["task_assigned", "task_updated", "mention", "invite", "system", "comment", "status_change"],

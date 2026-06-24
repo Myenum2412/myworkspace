@@ -13,8 +13,13 @@ import dashboardRoutes from "./routes/dashboard.js";
 import usersRoutes from "./routes/users.js";
 import organizationsRoutes from "./routes/organizations.js";
 import filesRoutes from "./routes/files.js";
+import filesEnhancedRoutes from "./routes/files-enhanced.js";
+import foldersRoutes from "./routes/folders.js";
+import sharesRoutes from "./routes/shares.js";
+import searchRoutes from "./routes/search.js";
 import userRoutes from "./routes/user.js";
 import clientsRoutes from "./routes/clients.js";
+import clientAuthRoutes from "./routes/client-auth.js";
 import projectsRoutes from "./routes/projects.js";
 import teamsRoutes from "./routes/teams.js";
 import timeEntriesRoutes from "./routes/time-entries.js";
@@ -43,12 +48,33 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/organizations", organizationsRoutes);
 app.use("/api/files", filesRoutes);
+app.use("/api/files", filesEnhancedRoutes);
+app.use("/api/folders", foldersRoutes);
+app.use("/api/shares", sharesRoutes);
+app.use("/api/search", searchRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/clients", clientsRoutes);
+app.use("/api/client-auth", clientAuthRoutes);
 app.use("/api/projects", projectsRoutes);
 app.use("/api/teams", teamsRoutes);
 app.use("/api/time-entries", timeEntriesRoutes);
 app.use("/api/admin", adminRoutes);
+// 404 catch-all — log unmatched routes with clear diagnostics
+app.use((req, res) => {
+    const method = req.method;
+    const url = req.originalUrl || req.url;
+    console.warn(`[BACKEND 404] ${method} ${url} — No backend route matches this path.`);
+    console.warn(`  Headers:`, JSON.stringify({
+        contentType: req.headers["content-type"],
+        accept: req.headers["accept"],
+        authorization: req.headers["authorization"] ? "[present]" : "[absent]",
+        origin: req.headers["origin"] || "[not set]",
+    }));
+    res.status(404).json({
+        success: false,
+        error: `Route not found: ${method} ${url}`,
+    });
+});
 // Error handler
 app.use(errorHandler);
 export default app;

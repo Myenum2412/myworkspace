@@ -1,0 +1,222 @@
+import { Router, Response } from "express";
+import { v4 as uuid } from "uuid";
+import { Folder } from "../lib/db/models/Folder.js";
+import { FileAttachment } from "../lib/db/models/FileAttachment.js";
+import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
+
+const router = Router();
+router.use(authenticate);
+
+async function verifyMembership(userId: string, orgId: string): Promise<void> {
+  const member = await OrgMember.findOne({ userId, orgId }).lean();
+  if (!member) throw new AppError(403, "Not a member of this organization");
+}
+
+router.get("/tree", async (req: AuthRequest, res: Response) => {
+  const orgId = req.query.orgId as string;
+  if (!orgId) throw new AppError(400, "orgId is required");
+  await verifyMembership(req.user!.userId, orgId);
+
+  const folders = await Folder.find({ orgId, deletedAt: null }).sort({ path: 1 }).lean();
+  const tree = buildTree(folders, null);
+  res.json({ data: tree });
+});
+
+router.get("/", async (req: AuthRequest, res: Response) => {
+  const orgId = req.query.orgId as string;
+  const parentId = (req.query.parentId as string) || null;
+  if (!orgId) throw new AppError(400, "orgId is required");
+  await verifyMembership(req.user!.userId, orgId);
+
+  const filter: Record<string, unknown> = { orgId, deletedAt: null };
+  if (parentId) filter.parentId = parentId;
+  else filter.parentId = null;
+
+  const folders = await Folder.find(filter).sort({ name: 1 }).lean();
+  res.json({ data: folders });
+});
+
+router.get("/:id", async (req: AuthRequest, res: Response) => {
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  if (!folder) throw new AppError(404, "Folder not found");
+  await verifyMembership(req.user!.userId, folder.orgId);
+  res.json({ data: folder });
+});
+
+router.post("/", async (req: AuthRequest, res: Response) => {
+  const { orgId, parentId, name } = req.body;
+  if (!orgId || !name) throw new AppError(400, "orgId and name are required");
+  await verifyMembership(req.user!.userId, orgId);
+
+  const parent = parentId ? await Folder.findOne({ id: parentId, deletedAt: null }).lean() : null;
+  const path = parent ? `${parent.path}/${name}` : `/${name}`;
+
+  const existing = await Folder.findOne({ orgId, path, deletedAt: null }).lean();
+  if (existing) throw new AppError(409, "A folder with this name already exists at this location");
+
+  const id = uuid();
+  await Folder.create({ id, orgId, parentId: parentId || null, name, path, createdBy: req.user!.userId });
+
+  await ActivityLog.create({
+    orgId, userId: req.user!.userId, action: "folder.created",
+    entityType: "folder", entityId: id,
+    description: `Folder "${name}" created`,
+  });
+
+  res.status(201).json({ success: true, folderId: id });
+});
+
+router.patch("/:id", async (req: AuthRequest, res: Response) => {
+  const { name } = req.body;
+  if (!name) throw new AppError(400, "name is required");
+
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  if (!folder) throw new AppError(404, "Folder not found");
+  await verifyMembership(req.user!.userId, folder.orgId);
+
+  const oldPath = folder.path;
+  const parent = folder.parentId ? await Folder.findOne({ id: folder.parentId }).lean() : null;
+  const newPath = parent ? `${parent.path}/${name}` : `/${name}`;
+
+  const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null, id: { $ne: folder.id } }).lean();
+  if (existing) throw new AppError(409, "A folder with this name already exists");
+
+  const oldPrefix = oldPath + "/";
+  const newPrefix = newPath + "/";
+  await Folder.updateOne({ id: folder.id }, { name, path: newPath });
+  const childFolders = await Folder.find({
+    orgId: folder.orgId,
+    path: { $regex: `^${escapeRegex(oldPrefix)}` },
+  }).lean();
+  for (const child of childFolders) {
+    const childNewPath = child.path.replace(oldPrefix, newPrefix);
+    await Folder.updateOne({ id: child.id }, { path: childNewPath });
+  }
+
+  // Emit update event (socket)
+  const { socketIOManager } = await import("../lib/socketio/index.js");
+  socketIOManager.emitToOrg(folder.orgId, "folder:updated", { folderId: folder.id, name, oldPath, newPath });
+
+  await ActivityLog.create({
+    orgId: folder.orgId, userId: req.user!.userId, action: "folder.renamed",
+    entityType: "folder", entityId: folder.id,
+    description: `Folder renamed from "${folder.name}" to "${name}"`,
+  });
+
+  res.json({ success: true });
+});
+
+router.post("/:id/move", async (req: AuthRequest, res: Response) => {
+  const { targetParentId } = req.body;
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  if (!folder) throw new AppError(404, "Source folder not found");
+  await verifyMembership(req.user!.userId, folder.orgId);
+
+  if (folder.id === targetParentId) throw new AppError(400, "Cannot move folder into itself");
+
+  const targetParent = targetParentId ? await Folder.findOne({ id: targetParentId, deletedAt: null }).lean() : null;
+  if (targetParentId && !targetParent) throw new AppError(404, "Target folder not found");
+
+  const oldPath = folder.path;
+  const newPath = targetParent ? `${targetParent.path}/${folder.name}` : `/${folder.name}`;
+
+  const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null, id: { $ne: folder.id } }).lean();
+  if (existing) throw new AppError(409, "A folder with this name already exists at target location");
+
+  await Folder.updateOne({ id: folder.id }, { parentId: targetParentId || null, path: newPath });
+  const oldPrefix = oldPath + "/";
+  const newPrefix = newPath + "/";
+  const childFolders = await Folder.find({ orgId: folder.orgId, path: { $regex: `^${escapeRegex(oldPrefix)}` } }).lean();
+  for (const child of childFolders) {
+    const childNewPath = child.path.replace(oldPrefix, newPrefix);
+    await Folder.updateOne({ id: child.id }, { path: childNewPath });
+  }
+
+  await FileAttachment.updateMany({ orgId: folder.orgId, folderId: folder.id }, { folderId: targetParentId || null });
+  res.json({ success: true });
+});
+
+router.post("/:id/copy", async (req: AuthRequest, res: Response) => {
+  const { targetParentId } = req.body;
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  if (!folder) throw new AppError(404, "Folder not found");
+  await verifyMembership(req.user!.userId, folder.orgId);
+
+  const targetParent = targetParentId ? await Folder.findOne({ id: targetParentId, deletedAt: null }).lean() : null;
+  if (targetParentId && !targetParent) throw new AppError(404, "Target folder not found");
+
+  const newPath = targetParent ? `${targetParent.path}/${folder.name}` : `/${folder.name}`;
+  const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null }).lean();
+  if (existing) throw new AppError(409, "A folder with this name already exists at target location");
+
+  const folderIdMap = new Map<string, string>();
+  const sources = await Folder.find({ orgId: folder.orgId, deletedAt: null, $or: [{ id: folder.id }, { path: { $regex: `^${escapeRegex(folder.path)}/` } }] }).sort({ path: 1 }).lean();
+
+  for (const src of sources) {
+    const newId = uuid();
+    folderIdMap.set(src.id, newId);
+    const relPath = src.path.replace(folder.path, "");
+    const copyPath = targetParent ? `${targetParent.path}/${folder.name}${relPath}` : `/${folder.name}${relPath}`;
+    const newParentId = src.parentId ? folderIdMap.get(src.parentId) || null : targetParentId || null;
+    await Folder.create({ id: newId, orgId: folder.orgId, parentId: newParentId, name: src.name, path: copyPath, createdBy: req.user!.userId });
+  }
+
+  const files = await FileAttachment.find({ orgId: folder.orgId, folderId: { $in: sources.map(s => s.id) }, deletedAt: null }).lean();
+  for (const file of files) {
+    const newFolderId = file.folderId ? folderIdMap.get(file.folderId) || null : null;
+    const copyId = uuid();
+    await FileAttachment.create({
+      ...file,
+      _id: undefined,
+      id: copyId,
+      folderId: newFolderId,
+      name: `${file.name}`,
+      originalName: file.originalName,
+      uploaderId: req.user!.userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  res.status(201).json({ success: true, folderId: folderIdMap.get(folder.id) });
+});
+
+router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  if (!folder) throw new AppError(404, "Folder not found");
+  await verifyMembership(req.user!.userId, folder.orgId);
+
+  const now = new Date();
+  await Folder.updateMany(
+    { orgId: folder.orgId, $or: [{ id: folder.id }, { path: { $regex: `^${escapeRegex(folder.path)}/` } }] },
+    { deletedAt: now, $set: { deletedAt: now } }
+  );
+
+  await FileAttachment.updateMany(
+    { orgId: folder.orgId, folderId: folder.id, deletedAt: null },
+    { deletedAt: now, deletedBy: req.user!.userId }
+  );
+
+  await ActivityLog.create({
+    orgId: folder.orgId, userId: req.user!.userId, action: "folder.deleted",
+    entityType: "folder", entityId: folder.id,
+    description: `Folder "${folder.name}" and contents deleted`,
+  });
+
+  res.json({ success: true });
+});
+
+function buildTree(folders: any[], parentId: string | null): any[] {
+  return folders
+    .filter(f => f.parentId === parentId)
+    .map(f => ({ ...f, children: buildTree(folders, f.id) }));
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export default router;

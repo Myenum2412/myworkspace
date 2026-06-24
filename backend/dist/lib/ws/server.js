@@ -1,4 +1,6 @@
 import { WebSocketServer, WebSocket as WsSocket } from "ws";
+import jwt from "jsonwebtoken";
+import { env } from "../../config/env.js";
 import { createEvent } from "./events.js";
 class WsManager {
     wss = null;
@@ -8,8 +10,18 @@ class WsManager {
         this.wss = new WebSocketServer({ server, path: "/api/ws" });
         this.wss.on("connection", (ws, req) => {
             const url = new URL(req.url || "", "http://localhost");
-            const userId = url.searchParams.get("userId") || "anonymous";
-            const orgId = url.searchParams.get("orgId") || "default";
+            const token = url.searchParams.get("token") || "";
+            let userId;
+            let orgId;
+            try {
+                const decoded = jwt.verify(token, env.JWT_SECRET);
+                userId = decoded.userId;
+                orgId = decoded.orgId;
+            }
+            catch {
+                ws.close(4001, "Authentication failed");
+                return;
+            }
             const clientId = `${userId}-${Date.now()}`;
             const client = {
                 ws,

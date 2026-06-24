@@ -22,10 +22,12 @@ describe("collections schema", () => {
     expect(collections.workExperience).toBe("work_experience");
     expect(collections.educationDetails).toBe("education_details");
     expect(collections.dependentDetails).toBe("dependent_details");
+    expect(collections.payments).toBe("payments");
+    expect(collections.subscriptions).toBe("subscriptions");
   });
 
-  it("has 19 collection keys", () => {
-    expect(Object.keys(collections).length).toBe(19);
+  it("has 21 collection keys", () => {
+    expect(Object.keys(collections).length).toBe(21);
   });
 
   it("all values are non-empty strings", () => {

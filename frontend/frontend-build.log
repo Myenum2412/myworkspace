@@ -9,15 +9,15 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 6.4s
+✓ Compiled successfully in 7.9s
   Running TypeScript ...
-  Finished TypeScript in 7.7s ...
+  Finished TypeScript in 9.3s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/71) ...
-  Generating static pages using 11 workers (17/71) 
-  Generating static pages using 11 workers (35/71) 
-  Generating static pages using 11 workers (53/71) 
-✓ Generating static pages using 11 workers (71/71) in 538ms
+  Generating static pages using 11 workers (0/89) ...
+  Generating static pages using 11 workers (22/89) 
+  Generating static pages using 11 workers (44/89) 
+  Generating static pages using 11 workers (66/89) 
+✓ Generating static pages using 11 workers (89/89) in 578ms
   Finalizing page optimization ...
 
 Route (app)
@@ -28,10 +28,26 @@ Route (app)
 ├ ○ /admin/profile
 ├ ○ /alltasks
 ├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/clients
+├ ƒ /api/clients/[id]/workspace
 ├ ƒ /api/employees
 ├ ƒ /api/files
 ├ ƒ /api/files/[id]
+├ ƒ /api/files/bulk-delete
+├ ƒ /api/files/bulk-move
+├ ƒ /api/files/bulk-restore
+├ ƒ /api/files/bulk-tag
+├ ƒ /api/files/members
+├ ƒ /api/files/recent
+├ ƒ /api/files/stats
+├ ƒ /api/folders
+├ ƒ /api/folders/[id]
 ├ ƒ /api/org/limits
+├ ƒ /api/search
+├ ƒ /api/shares/internal
+├ ƒ /api/shares/links/[token]
+├ ƒ /api/shares/links/[token]/download
+├ ƒ /api/shares/links/[token]/verify
 ├ ƒ /api/tasks/[id]
 ├ ƒ /api/time-entries/summary
 ├ ƒ /api/user/banner
@@ -42,7 +58,15 @@ Route (app)
 ├ ○ /approvals/rejected
 ├ ƒ /auth/role-redirect
 ├ ○ /calendar
+├ ○ /client/dashboard
+├ ○ /client/documents
+├ ○ /client/login
+├ ○ /client/notifications
+├ ○ /client/profile
+├ ○ /client/projects
+├ ○ /client/settings
 ├ ○ /clients
+├ ƒ /clients/[id]
 ├ ○ /dashboard
 ├ ƒ /departments
 ├ ƒ /employees
@@ -55,6 +79,7 @@ Route (app)
 ├ ƒ /orgmenu/analytics
 ├ ƒ /orgmenu/audit
 ├ ƒ /orgmenu/audit/exports
+├ ƒ /orgmenu/files
 ├ ƒ /orgmenu/members
 ├ ƒ /orgmenu/members/invite
 ├ ƒ /orgmenu/members/roles
@@ -78,6 +103,7 @@ Route (app)
 ├ ○ /reports
 ├ ○ /savedtasks
 ├ ○ /settings
+├ ƒ /share/[token]
 ├ ○ /shared
 ├ ƒ /signup
 ├ ƒ /signup-mongo

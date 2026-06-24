@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -17,6 +19,7 @@ import {
   ClipboardListIcon,
   BarChart3Icon,
   UserIcon,
+  FolderIcon,
 } from "lucide-react";
 
 export const defaultOrgNavData = [
@@ -79,6 +82,14 @@ export const defaultOrgNavData = [
     ],
   },
   {
+    title: "File Manager",
+    url: "/orgmenu/files",
+    icon: <FolderIcon className="size-6" />,
+    items: [
+      { title: "All Files", url: "/orgmenu/files" },
+    ],
+  },
+  {
     title: "Settings",
     url: "/orgmenu/settings",
     icon: <Settings2Icon className="size-6" />,
@@ -127,7 +138,7 @@ export function OrgSidebar({
             className="size-8 rounded-lg object-cover shadow-sm shrink-0"
           />
           <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">
-            My WorkSpace
+            Origin Menu
           </h1>
         </div>
       </SidebarHeader>

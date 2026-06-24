@@ -4,6 +4,7 @@ export interface IUser extends Document {
     name: string;
     email: string;
     emailVerified: boolean;
+    orgId?: string;
     image?: string;
     password?: string;
     status: "online" | "offline" | "break";
@@ -15,6 +16,19 @@ export interface IUser extends Document {
     lockedUntil?: Date;
     twoFactorEnabled: boolean;
     twoFactorSecret?: string;
+    phone?: string;
+    department?: string;
+    company?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipCode?: string;
+    linkedin?: string;
+    github?: string;
+    twitter?: string;
+    website?: string;
+    bannerUrl?: string;
     createdAt: Date;
     updatedAt: Date;
 }

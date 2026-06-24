@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,17 +27,12 @@ function formatSize(bytes: number) {
 
 export default function RecycleBinPage() {
   const { data: session } = useSession();
-  const [files, setFiles] = useState<RecycledFile[]>([]);
+    const [files, setFiles] = useState<RecycledFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-  };
-
+  
   async function fetchRecycled() {
     setLoading(true);
     try {
@@ -95,11 +87,7 @@ export default function RecycleBinPage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Trash2Icon className="size-6" />
@@ -217,7 +205,5 @@ export default function RecycleBinPage() {
             </CardContent>
           </Card>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+            );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { BarChart3, FolderOpen, MoreHorizontal, Pencil, Settings, Trash2, Workflow, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ export type Client = {
   id: string;
   name: string;
   email: string;
+  username?: string;
   company: string;
   projects: number;
   status: string;
@@ -105,6 +107,11 @@ export const columns: ColumnDef<Client>[] = [
     cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("email")}</span>,
   },
   {
+    accessorKey: "username",
+    header: "Username",
+    cell: ({ row }) => <span className="text-muted-foreground font-mono text-xs">{row.getValue("username") || "—"}</span>,
+  },
+  {
     accessorKey: "company",
     header: "Company",
     cell: ({ row }) => <span>{row.getValue("company")}</span>,
@@ -131,7 +138,7 @@ export const columns: ColumnDef<Client>[] = [
       const status = row.getValue<string>("status");
       const colorMap: Record<string, string> = {
         "Lead": "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-        "Prospect": "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+        "Prospect": "bg-[#e8ece4] text-[#3a5234] dark:bg-[#1e2d1d]/30 dark:text-[#7d9474]",
         "Active Client": "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
         "Inactive Client": "bg-gray-50 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
         "Completed": "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
@@ -142,6 +149,33 @@ export const columns: ColumnDef<Client>[] = [
         </span>
       );
     },
+  },
+  {
+    id: "quickAccess",
+    header: "Quick Access",
+    cell: ({ row }) => {
+      const client = row.original;
+      const links = [
+        { href: `/clients/${client.id}#dashboard`, label: "Dashboard", icon: BarChart3 },
+        { href: `/clients/${client.id}#files`, label: "Files", icon: FolderOpen },
+        { href: `/clients/${client.id}#projects`, label: "Projects", icon: Workflow },
+        { href: `/clients/${client.id}#reports`, label: "Reports", icon: FileText },
+        { href: `/clients/${client.id}#settings`, label: "Settings", icon: Settings },
+      ];
+
+      return (
+        <div className="flex items-center gap-1">
+          {links.map(({ href, label, icon: Icon }) => (
+            <Button key={label} asChild variant="ghost" size="icon" className="size-8" title={label}>
+              <Link href={href} aria-label={label}>
+                <Icon className="size-4" />
+              </Link>
+            </Button>
+          ))}
+        </div>
+      );
+    },
+    enableSorting: false,
   },
   {
     id: "actions",

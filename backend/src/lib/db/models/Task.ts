@@ -5,6 +5,8 @@ export interface ITask extends Document {
   teamId?: string;
   assigneeId?: string;
   creatorId: string;
+  createdBy: string;
+  updatedBy?: string;
   title: string;
   description?: string;
   project?: string;
@@ -21,6 +23,8 @@ const taskSchema = new Schema<ITask>(
     teamId: { type: String },
     assigneeId: { type: String },
     creatorId: { type: String, required: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
     title: { type: String, required: true },
     description: String,
     project: String,

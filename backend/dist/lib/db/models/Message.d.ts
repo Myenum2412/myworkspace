@@ -2,6 +2,7 @@ import { Document } from "mongoose";
 export interface IMessage extends Document {
     orgId: string;
     senderId: string;
+    createdBy: string;
     teamId?: string;
     content: string;
     createdAt: Date;

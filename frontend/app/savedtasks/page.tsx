@@ -3,9 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { PlusIcon, BookmarkIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon } from "lucide-react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,14 +50,14 @@ type Task = {
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-100 text-gray-700",
   in_progress: "bg-amber-100 text-amber-700",
-  review: "bg-blue-100 text-blue-700",
+  review: "bg-[#e8ece4] text-[#3a5234]",
   done: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
 const priorityStyles: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
-  medium: "bg-blue-100 text-blue-600",
+  medium: "bg-[#e8ece4] text-[#4c6a45]",
   high: "bg-orange-100 text-orange-600",
   urgent: "bg-red-100 text-red-600",
 };
@@ -100,12 +97,7 @@ export default function SavedTasksPage() {
       .finally(() => setLoading(false));
   }, [session]);
 
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "user@example.com",
-    avatar: session?.user?.image || "",
-  };
-
+  
   const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
 
   const grouped = statusGroups.map((s) => ({
@@ -114,11 +106,8 @@ export default function SavedTasksPage() {
   }));
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <>
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BookmarkIcon className="size-6" />
@@ -284,7 +273,7 @@ export default function SavedTasksPage() {
                         <div key={t._id} className="rounded-lg border bg-card p-3 space-y-2 shadow-sm">
                           <div className="flex items-start justify-between gap-2">
                             <p className="text-sm font-medium leading-tight">{t.title}</p>
-                            <Badge className={priorityStyles[t.priority] || "" + " shrink-0"}>{t.priority}</Badge>
+                            <Badge className={(priorityStyles[t.priority] || "") + " shrink-0"}>{t.priority}</Badge>
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
                           <div className="flex items-center justify-between">
@@ -313,8 +302,7 @@ export default function SavedTasksPage() {
             </div>
           )}
         </main>
-      </SidebarInset>
-
+      
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent className="p-0 flex flex-col">
           {selectedTask && (
@@ -346,6 +334,6 @@ export default function SavedTasksPage() {
         open={showTaskModal}
         onClose={() => setShowTaskModal(false)}
       />
-    </SidebarProvider>
-  );
+      </>
+    );
 }

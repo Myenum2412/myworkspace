@@ -23,9 +23,18 @@ import {
 import { useUserStatus } from "@/hooks/use-user-status";
 import { SessionTracker } from "@/components/session-tracker";
 import { Fragment } from "react";
+import { getAppContext, type AppContextType } from "@/lib/app-context";
 
-export function Header() {
+const CONTEXT_LABELS: Record<AppContextType, string> = {
+  origin: "Origin Menu",
+  workspace: "Workspace",
+  staff: "Staff Panel",
+  public: "",
+};
+
+export function Header({ context }: { context?: AppContextType }) {
   const pathname = usePathname() || "";
+  const appContext = context || getAppContext(pathname);
   const segments = pathname.split("/").filter(Boolean);
   const { data: session } = useSession();
   const { status, updateStatus } = useUserStatus(session?.user?.id);
@@ -36,6 +45,8 @@ export function Header() {
     break: "bg-amber-500",
   };
 
+  const contextLabel = CONTEXT_LABELS[appContext];
+
   return (
     <header className="flex w-full h-20 shrink-0 border-b items-center justify-between px-4 transition-[width,height] ease-linear">
       <div className="flex items-center gap-2">
@@ -43,14 +54,20 @@ export function Header() {
         <Separator orientation="vertical" className="mr-2 data-vertical:h-4 data-vertical:self-auto" />
         <Breadcrumb>
           <BreadcrumbList>
-            {segments.length === 0 ? (
-              <BreadcrumbItem>
-                <BreadcrumbPage>Home</BreadcrumbPage>
-              </BreadcrumbItem>
-            ) : (
-              segments.map((segment, index) => {
-                const href = `/${segments.slice(0, index + 1).join("/")}`;
-                const isLast = index === segments.length - 1;
+            {contextLabel && (
+              <Fragment>
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-semibold text-foreground">
+                    {contextLabel}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+                {segments.length > 1 && <BreadcrumbSeparator className="hidden md:block" />}
+              </Fragment>
+            )}
+            {segments.length > 1 ? (
+              segments.slice(1).map((segment, index) => {
+                const href = `/${segments.slice(0, index + 2).join("/")}`;
+                const isLast = index === segments.length - 2;
                 const title = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
                 return (
                   <Fragment key={href}>
@@ -65,6 +82,10 @@ export function Header() {
                   </Fragment>
                 );
               })
+            ) : (
+              <BreadcrumbItem>
+                <BreadcrumbPage>{contextLabel || "Home"}</BreadcrumbPage>
+              </BreadcrumbItem>
             )}
           </BreadcrumbList>
         </Breadcrumb>

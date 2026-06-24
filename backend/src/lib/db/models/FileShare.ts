@@ -6,6 +6,7 @@ export interface IFileShare extends Document {
   sharedByUserId: string;
   sharedWithUserId: string | null;
   orgId: string;
+  createdBy: string;
   createdAt: Date;
 }
 
@@ -15,6 +16,7 @@ const fileShareSchema = new Schema<IFileShare>({
   sharedByUserId: { type: String, required: true },
   sharedWithUserId: { type: String, default: null },
   orgId: { type: String, required: true },
+  createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 

@@ -21,6 +21,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   ChevronsUpDownIcon,
   SparklesIcon,
@@ -31,6 +32,7 @@ import {
 } from "lucide-react";
 import { logoutAction } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
+import { getAppContext } from "@/lib/app-context";
 
 export function NavUser({
   user,
@@ -44,6 +46,16 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const profileHref = (() => {
+    const context = getAppContext(pathname);
+    if (context === "origin") return "/orgmenu/profile";
+    if (context === "staff") return "/staffs/profile";
+    if (user.role === "member") return "/staffs/profile";
+    if (user.role === "admin" || user.role === "manager") return "/admin/profile";
+    return "/profile";
+  })();
 
   async function handleLogout() {
     await logoutAction();
@@ -57,7 +69,7 @@ export function NavUser({
         <DropdownMenu>
           <div className="flex items-center">
             <SidebarMenuButton size="lg" asChild className="flex-1">
-              <Link href={user.role === "member" ? "/staffs/profile" : user.role === "admin" || user.role === "manager" ? "/admin/profile" : "/profile"}>
+              <Link href={profileHref}>
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="rounded-lg">

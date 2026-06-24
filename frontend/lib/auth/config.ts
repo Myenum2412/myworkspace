@@ -55,7 +55,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signIn({ user, account }) {
       console.log(`[AUTH config] signIn event: email=${user?.email} provider=${account?.provider}`);
 
-      if (!account || account.provider === "credentials" || !user.email) return true;
+      if (!account || !user.email) return true;
 
       try {
         const { db } = await import("@/lib/db");
@@ -96,6 +96,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             role: "admin",
             joinedAt: new Date(),
           });
+        } else {
+          // Ensure existing user has an org
+          const userId = existing.id || existing._id?.toString();
+          const memberDoc = await db.collection("org_members").findOne({ userId });
+          if (!memberDoc) {
+            const { v4: uuid } = await import("uuid");
+            const orgId = uuid();
+            const userName = existing.name || user.email.split("@")[0];
+            await db.collection("organizations").insertOne({
+              id: orgId,
+              name: `${userName}'s Organization`,
+              slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
+              plan: "starter",
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await db.collection("org_members").insertOne({
+              id: uuid(),
+              orgId,
+              userId,
+              role: "admin",
+              joinedAt: new Date(),
+            });
+          }
         }
       } catch (err) {
         console.error("[AUTH] Failed to create OAuth user:", err);

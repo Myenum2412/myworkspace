@@ -3,16 +3,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2Icon } from "lucide-react";
+import { OrgsTable } from "@/components/orgs-table";
 import { OrgLimitsEditor } from "./limits";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +35,25 @@ export default async function OrgDetailsPage() {
   const org = orgId ? await getOrg(orgId) : null;
   const allOrgs = isSuperAdmin ? await getAllOrgs() : [];
 
-  const orgs = isSuperAdmin ? allOrgs : (org ? [org] : []);
+  const orgs = isSuperAdmin
+    ? allOrgs.map((o) => ({
+        id: o.id as string,
+        name: o.name as string,
+        plan: (o.plan as string) || "starter",
+        domain: (o.domain as string) || "",
+        slug: (o.slug as string) || "",
+        createdAt: o.createdAt ? new Date(o.createdAt as string).toLocaleDateString() : "—",
+      }))
+    : org
+      ? [{
+          id: org.id as string,
+          name: org.name as string,
+          plan: (org.plan as string) || "starter",
+          domain: (org.domain as string) || "",
+          slug: (org.slug as string) || "",
+          createdAt: org.createdAt ? new Date(org.createdAt as string).toLocaleDateString() : "—",
+        }]
+      : [];
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -57,49 +66,7 @@ export default async function OrgDetailsPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Domain</TableHead>
-              <TableHead>Slug</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orgs.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
-                  No organizations found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              orgs.map((o) => (
-                <TableRow key={o.id as string}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Building2Icon className="size-4 text-muted-foreground shrink-0" />
-                      <span className="font-medium">{o.name as string}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize">
-                      {(o.plan as string) || "starter"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{(o.domain as string) || "—"}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{(o.slug as string) || "—"}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {o.createdAt ? new Date(o.createdAt as string).toLocaleDateString() : "—"}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <OrgsTable orgs={orgs} />
 
       <OrgLimitsEditor />
     </div>

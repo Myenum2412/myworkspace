@@ -3,9 +3,32 @@ import { NextResponse } from "next/server";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "developer@myenum.in";
 
-function getHomePath(role?: string): string {
-  if (role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN") return "/orgmenu";
+const ORIGIN_ROUTES = ["/orgmenu"];
+const STAFF_ROUTES = ["/staffs"];
+const PUBLIC_ROUTES = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/share", "/client/login"];
+const CLIENT_ROUTES = ["/client/dashboard", "/client/profile", "/client/projects", "/client/documents", "/client/notifications", "/client/settings"];
+const WORKSPACE_ROUTES = [
+  "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
+  "/projects", "/teams", "/clients", "/approvals", "/reports",
+  "/calendar", "/time-tracker", "/time-reports", "/my-time",
+  "/teamtasks", "/team-time", "/settings", "/profile", "/admin",
+  "/departments", "/addemployees", "/addprojects", "/files",
+  "/savedtasks", "/upcomingtasks", "/terminated",
+  "/recycle-bin", "/upload",
+];
+
+function getHomePath(_role?: string): string {
   return "/dashboard";
+}
+
+function getRouteContext(pathname: string): "origin" | "staff" | "workspace" | "public" | "unknown" | "client" {
+  if (ORIGIN_ROUTES.some((r) => pathname.startsWith(r))) return "origin";
+  if (STAFF_ROUTES.some((r) => pathname.startsWith(r))) return "staff";
+  if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "public";
+  if (CLIENT_ROUTES.some((r) => pathname.startsWith(r))) return "client";
+  if (WORKSPACE_ROUTES.some((r) => pathname.startsWith(r))) return "workspace";
+  if (pathname === "/") return "public";
+  return "unknown";
 }
 
 export default auth((req) => {
@@ -13,9 +36,10 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const userEmail = req.auth?.user?.email?.toLowerCase().trim();
   const userRole = req.auth?.user?.role;
+  const routeContext = getRouteContext(pathname);
 
-  const publicPaths = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing"];
-  const isPublic = publicPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const publicPaths = PUBLIC_ROUTES;
+  const isPublic = routeContext === "public";
 
   if (pathname.startsWith("/api") || pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return;
@@ -36,7 +60,11 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (pathname.startsWith("/orgmenu")) {
+  if (routeContext === "client") {
+    return;
+  }
+
+  if (routeContext === "origin") {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login?error=Please+sign+in+to+access+this+area", req.url));
     }
@@ -44,6 +72,10 @@ export default auth((req) => {
       return;
     }
     return NextResponse.redirect(new URL("/login?error=Access+denied.+You+do+not+have+permission+to+view+this+page", req.url));
+  }
+
+  if (routeContext === "unknown") {
+    return NextResponse.rewrite(new URL("/not-found", req.url));
   }
 });
 

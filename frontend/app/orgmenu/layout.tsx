@@ -1,16 +1,11 @@
-import { OrgSidebar } from "@/components/org-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShieldAlertIcon } from "lucide-react";
+import { ShieldAlertIcon, HomeIcon } from "lucide-react";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "developer@myenum.in").toLowerCase().trim();
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@example.com").toLowerCase().trim();
 
 export default async function OrgLayout({
   children,
@@ -38,13 +33,20 @@ export default async function OrgLayout({
     return (
       <div className="flex items-center justify-center min-h-screen p-8">
         <Card className="max-w-md w-full">
-          <CardContent className="pt-6 text-center">
+          <CardContent className="pt-6 text-center space-y-4">
             <ShieldAlertIcon className="size-12 text-destructive mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
             <p className="text-muted-foreground">
               You do not have permission to access this area.
               This section is restricted to the authorized administrator.
             </p>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:underline mt-4"
+            >
+              <HomeIcon className="size-4" />
+              Return to Workspace
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -63,13 +65,5 @@ export default async function OrgLayout({
     permissions: session.user.permissions || [],
   };
 
-  return (
-    <SidebarProvider>
-      <OrgSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
-  );
+  return <>{children}</>;
 }

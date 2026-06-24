@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { AppLayout } from "@/components/app-layout";
+import { OfflineBanner } from "@/components/offline-banner";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -39,7 +41,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>
-          {children}
+          <AppLayout>
+            {children}
+          </AppLayout>
+          <OfflineBanner />
           <Analytics />
         </Providers>
       </body>

@@ -1,6 +1,12 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 import React from "react";
+import { indexedDB, IDBKeyRange } from "fake-indexeddb";
+
+if (typeof globalThis.indexedDB === "undefined") {
+  (globalThis as unknown as { indexedDB: IDBFactory }).indexedDB = indexedDB;
+  (globalThis as unknown as { IDBKeyRange: typeof IDBKeyRange }).IDBKeyRange = IDBKeyRange;
+}
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/staffs",

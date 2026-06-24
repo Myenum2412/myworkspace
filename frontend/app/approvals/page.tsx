@@ -2,9 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +24,7 @@ import {
 
 export default function ApprovalsPage() {
   const { data: session } = useSession();
-  const [pending, setPending] = useState<ApprovalTask[]>([]);
+    const [pending, setPending] = useState<ApprovalTask[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [selectedTask, setSelectedTask] = useState<ApprovalTask | null>(null);
@@ -39,12 +36,7 @@ export default function ApprovalsPage() {
   const [actionError, setActionError] = useState("");
   const [actionSubmitting, setActionSubmitting] = useState(false);
 
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-  };
-
+  
   const fetchPending = useCallback(() => {
     if (!session?.user) return;
     fetch("/api/user/profile", { credentials: "include" })
@@ -150,11 +142,8 @@ export default function ApprovalsPage() {
   ];
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+    <>
+      <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center gap-2">
             <ClockIcon className="size-6" />
             <h1 className="text-2xl font-bold">Pending Approvals</h1>
@@ -177,8 +166,7 @@ export default function ApprovalsPage() {
             </CardContent>
           </Card>
         </main>
-      </SidebarInset>
-
+      
       {/* View Task Detail Dialog */}
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setSelectedTask(null); } }}>
         <DialogContent className="p-0 flex flex-col">
@@ -332,6 +320,6 @@ export default function ApprovalsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </>
   );
 }

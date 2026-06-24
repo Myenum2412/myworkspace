@@ -3,6 +3,8 @@ import { Schema, model, Document } from "mongoose";
 export interface ITimeEntry extends Document {
   orgId: string;
   userId: string;
+  createdBy: string;
+  updatedBy?: string;
   date: Date;
   startTime?: string;
   endTime?: string;
@@ -18,6 +20,8 @@ const timeEntrySchema = new Schema<ITimeEntry>(
   {
     orgId: { type: String, required: true },
     userId: { type: String, required: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
     date: { type: Date, required: true },
     startTime: String,
     endTime: String,

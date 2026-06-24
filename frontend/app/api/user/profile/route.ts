@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { ObjectId } from "mongodb";
+import { v4 as uuid } from "uuid";
 
 export async function GET() {
   let session;
@@ -55,6 +56,30 @@ export async function GET() {
     } else {
       orgId = await getUserOrgId(userId);
       console.log(`[profile GET] resolved orgId=${orgId} for userId=${userId}`);
+
+      // Auto-create org if user has none
+      if (!orgId) {
+        const userName = user.name || user.email?.split("@")[0] || "User";
+        const newOrgId = uuid();
+        await db.collection(collections.organizations).insertOne({
+          id: newOrgId,
+          name: `${userName}'s Organization`,
+          slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
+          plan: "starter",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await db.collection(collections.orgMembers).insertOne({
+          id: uuid(),
+          orgId: newOrgId,
+          userId: userId,
+          role: "admin",
+          joinedAt: new Date(),
+        });
+        orgId = newOrgId;
+        console.log(`[profile GET] auto-created org=${newOrgId} for userId=${userId}`);
+      }
+
       if (orgId) {
         org = await db.collection(collections.organizations).findOne({ id: orgId });
         if (!org) {

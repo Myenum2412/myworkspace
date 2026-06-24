@@ -4,6 +4,8 @@ export interface ITask extends Document {
     teamId?: string;
     assigneeId?: string;
     creatorId: string;
+    createdBy: string;
+    updatedBy?: string;
     title: string;
     description?: string;
     project?: string;

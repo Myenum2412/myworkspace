@@ -5,7 +5,7 @@ const statusTransitionSchema = new Schema({
 }, { _id: false });
 const sessionSchema = new Schema({
     userId: { type: String, required: true, index: true },
-    orgId: { type: String, index: true },
+    orgId: { type: String, required: true, index: true },
     loginTime: { type: Date, required: true, default: Date.now },
     logoutTime: { type: Date },
     currentStatus: { type: String, enum: ["online", "break", "offline"], default: "online" },
@@ -15,5 +15,6 @@ const sessionSchema = new Schema({
     expiresAt: { type: Date, required: true },
 }, { timestamps: true });
 sessionSchema.index({ userId: 1, loginTime: -1 });
+sessionSchema.index({ orgId: 1, userId: 1 });
 sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 export const Session = model("Session", sessionSchema);

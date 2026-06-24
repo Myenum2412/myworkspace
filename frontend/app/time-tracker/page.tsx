@@ -1,12 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Tag, Calendar, Clock, List, Loader2 } from "lucide-react";
 import {
@@ -92,12 +86,8 @@ export default function TimeTrackerPage() {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        
-        <main className="flex flex-1 flex-col bg-[#f3f4f6] min-h-screen">
+                                
+        <main className="flex flex-1 flex-col bg-background min-h-screen">
           <div className="flex items-center bg-white border-b border-gray-200 px-4 py-[10px] shadow-sm w-full relative z-10 h-16">
             <div className="flex-1 h-full flex items-center">
               <input
@@ -114,7 +104,7 @@ export default function TimeTrackerPage() {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-[6px] text-[#03a9f4] hover:text-blue-600 font-medium text-[14px] transition-colors outline-none">
+                  <button className="flex items-center gap-[6px] text-primary hover:text-accent font-medium text-[14px] transition-colors outline-none">
                     <PlusCircle className="size-[15px]" />
                     Project
                   </button>
@@ -131,11 +121,11 @@ export default function TimeTrackerPage() {
                     Mobile App
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mr-2 shadow-sm"></div>
+                    <div className="w-2 h-2 rounded-full bg-[#5f7d56] mr-2 shadow-sm"></div>
                     Marketing Campaign
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer text-[#03a9f4] font-medium hover:text-[#03a9f4] focus:text-[#03a9f4] focus:bg-blue-50">
+                  <DropdownMenuItem className="cursor-pointer text-primary font-medium hover:text-primary focus:text-primary focus:bg-secondary">
                     <PlusCircle className="size-4 mr-2" />
                     Create new project
                   </DropdownMenuItem>
@@ -194,7 +184,7 @@ export default function TimeTrackerPage() {
               </div>
               
               <Button
-                className="bg-[#03a9f4] hover:bg-[#0288d1] text-white rounded-[3px] h-[34px] px-[22px] font-semibold shadow-none tracking-wide text-[13px] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary hover:bg-accent text-primary-foreground rounded-[3px] h-[34px] px-[22px] font-semibold shadow-none tracking-wide text-[13px] disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleAdd}
                 disabled={saving || !description.trim()}
               >
@@ -212,7 +202,5 @@ export default function TimeTrackerPage() {
           </div>
           
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+            );
 }

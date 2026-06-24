@@ -10,7 +10,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
-import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, Share2Icon, HistoryIcon } from "lucide-react"
+import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, Share2Icon, HistoryIcon, CheckCircle2Icon } from "lucide-react"
+import { employeeService } from "@/lib/services/employee-service"
 
 import {
   ProfileImageUpload,
@@ -55,6 +56,7 @@ interface EmployeeEditFormProps {
 
 export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFormProps) {
   const [formError, setFormError] = useState("")
+  const [formSuccess, setFormSuccess] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
   const [formData, setFormData] = useState<FirstSlideEmployeeForm>({
@@ -122,52 +124,59 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
     setter((prev) => prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)))
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.firstName.trim() || !formData.email.trim()) {
       setFormError("First name and email address are required.")
       return
     }
     setFormError("")
+    setFormSuccess("")
     setSubmitting(true)
 
-    const updated: Employee = {
-      ...employee,
-      displayId: formData.displayId,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      name: `${formData.firstName} ${formData.lastName}`.trim(),
-      nickname: formData.nickname,
-      email: formData.email,
-      role: formData.roleName || formData.designation,
-      status: formData.status.toLowerCase(),
-      department: formData.department,
-      designation: formData.designation,
-      employmentType: formData.employmentType,
-      phone: formData.phone,
-      branchName: formData.branchName,
-      location: formData.location,
-      shift: formData.shift,
-      sourceOfHire: formData.sourceOfHire,
-      joiningDate: formData.joiningDate || "",
-      currentExperience: formData.currentExperience,
-      totalExperience: formData.totalExperience,
-      avatar: formData.avatar || "",
-      alternateEmail: formData.alternateEmail,
-      address: formData.address,
-      city: formData.city,
-      state: formData.state,
-      country: formData.country,
-      zipCode: formData.zipCode,
-      linkedin: formData.linkedin,
-      github: formData.github,
-      twitter: formData.twitter,
-      website: formData.website,
-      workExperience: workExperience.map(({ id, ...rest }) => ({ id, ...rest })),
-      educationDetails: educationDetails.map(({ id, ...rest }) => ({ id, ...rest })),
-      dependentDetails: dependentDetails.map(({ id, ...rest }) => ({ id, ...rest })),
-    }
+    try {
+      const updated = await employeeService.updateEmployee({
+        id: employee.id,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        nickname: formData.nickname,
+        email: formData.email,
+        roleName: formData.roleName || formData.designation,
+        status: formData.status.toLowerCase(),
+        department: formData.department,
+        designation: formData.designation,
+        employmentType: formData.employmentType,
+        phone: formData.phone,
+        branchName: formData.branchName,
+        location: formData.location,
+        shift: formData.shift,
+        sourceOfHire: formData.sourceOfHire,
+        joiningDate: formData.joiningDate || null,
+        currentExperience: formData.currentExperience,
+        totalExperience: formData.totalExperience,
+        avatar: formData.avatar || "",
+        alternateEmail: formData.alternateEmail,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        country: formData.country,
+        zipCode: formData.zipCode,
+        linkedin: formData.linkedin,
+        github: formData.github,
+        twitter: formData.twitter,
+        website: formData.website,
+        workExperience: workExperience.filter(w => w.company || w.title),
+        educationDetails: educationDetails.filter(e => e.institute || e.degree),
+        dependentDetails: dependentDetails.filter(d => d.name),
+        files: [],
+      })
 
-    onSave(updated)
+      setFormSuccess("Employee updated successfully.")
+      onSave(updated as Employee)
+    } catch (err: any) {
+      setFormError(err?.message || "Failed to update employee. Please try again.")
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -182,6 +191,12 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
         </p>
       </div>
 
+      {formSuccess && (
+        <div className="mx-6 flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
+          <CheckCircle2Icon className="size-4 shrink-0" />
+          {formSuccess}
+        </div>
+      )}
       {formError && (
         <div className="mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
           <AlertCircleIcon className="size-4 shrink-0" />

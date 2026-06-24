@@ -2,6 +2,11 @@ import { Schema, model, Document } from "mongoose";
 
 export interface IClient extends Document {
   id: string;
+  orgId: string;
+  createdByAdminId: string;
+  createdBy: string;
+  updatedBy?: string;
+  clientUserId: string;
   name: string;
   email: string;
   company: string;
@@ -49,7 +54,6 @@ export interface IClient extends Document {
   notes?: string;
   assignedSalesPerson?: string;
   assignedProjectManager?: string;
-  createdBy?: string;
   createdDate?: string;
   lastUpdatedDate?: string;
   createdAt: Date;
@@ -59,6 +63,11 @@ export interface IClient extends Document {
 const clientSchema = new Schema<IClient>(
   {
     id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    createdByAdminId: { type: String, required: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
+    clientUserId: { type: String, required: true },
     name: { type: String, required: true },
     email: { type: String, required: true },
     company: { type: String, required: true },
@@ -106,7 +115,6 @@ const clientSchema = new Schema<IClient>(
     notes: String,
     assignedSalesPerson: String,
     assignedProjectManager: String,
-    createdBy: String,
     createdDate: String,
     lastUpdatedDate: String,
   },

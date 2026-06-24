@@ -19,14 +19,36 @@ export async function addEmployeeAction(formData: FormData) {
 
   if (!name || !email) return { error: "Name and email are required" };
 
-  const existing = await db.collection(collections.users).find({ email }).toArray();
+  const existing = await (await db.collection(collections.users).find({ email })).toArray();
   if (existing.length > 0) return { error: "User with this email already exists" };
 
   const orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
-  if (!orgMember) return { error: "No organization found" };
+  if (!orgMember) {
+    const user = await db.collection(collections.users).findOne({ id: session.user.id });
+    const userName = user?.name || user?.email?.split("@")[0] || "User";
+    const newOrgId = uuid();
+    await db.collection(collections.organizations).insertOne({
+      id: newOrgId,
+      name: `${userName}'s Organization`,
+      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
+      plan: "starter",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await db.collection(collections.orgMembers).insertOne({
+      id: uuid(),
+      orgId: newOrgId,
+      userId: session.user.id,
+      role: "admin",
+      joinedAt: new Date(),
+    });
+  }
+
+  const refreshedMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+  if (!refreshedMember) return { error: "No organization found" };
 
   const userId = uuid();
-  const defaultPassword = await hash("Welcome123", 12);
+  const defaultPassword = await hash(Math.random().toString(36).slice(-12) + "A1!", 12);
 
   await db.collection(collections.users).insertOne({
     id: userId,
@@ -42,7 +64,7 @@ export async function addEmployeeAction(formData: FormData) {
 
   await db.collection(collections.orgMembers).insertOne({
     id: uuid(),
-    orgId: orgMember.orgId,
+    orgId: refreshedMember.orgId,
     userId,
     role: role?.toLowerCase() || "member",
   });

@@ -3,18 +3,8 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { SearchIcon, CheckCircle2Icon, XCircleIcon } from "lucide-react";
+import { MembersTable } from "@/components/members-table";
+import { DashboardSignupsTable } from "@/components/dashboard-signups";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Members" };
@@ -43,7 +33,7 @@ const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
   const userIds = members.map((m: Record<string, unknown>) => m.userId as string);
   const users = userIds.length > 0
     ? await (await db.collection(collections.users).find({ id: { $in: userIds } }))
-        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1 })
+        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1, phone: 1, location: 1, department: 1, designation: 1 })
         .toArray()
     : [];
   const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
@@ -68,6 +58,72 @@ const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
       isActive: user?.isActive !== false,
       createdAt: user?.createdAt as Date | undefined,
       lastLogin: user?.lastLogin as Date | undefined,
+      phone: (user?.phone as string) || undefined,
+      location: (user?.location as string) || undefined,
+      department: (user?.department as string) || undefined,
+      designation: (user?.designation as string) || undefined,
+    };
+  });
+});
+
+const getRecentSignups = cache(async (orgId?: string | null) => {
+  const cursor = await db.collection(
+    orgId ? collections.orgMembers : collections.users,
+  ).find(
+    orgId ? { orgId } : {},
+    { sort: { createdAt: -1 }, limit: 10, projection: orgId ? { userId: 1, joinedAt: 1 } : { id: 1, name: 1, email: 1, role: 1, status: 1, createdAt: 1, provider: 1, image: 1, emailVerified: 1, lastLogin: 1 } },
+  );
+  const raw = await cursor.toArray();
+
+  if (orgId) {
+    const userIds = raw.map((r: Record<string, unknown>) => r.userId as string);
+    const users = await (await db.collection(collections.users).find(
+      { id: { $in: userIds } },
+      { projection: { id: 1, name: 1, email: 1, role: 1, status: 1, createdAt: 1, provider: 1, image: 1, emailVerified: 1, lastLogin: 1 } },
+    )).toArray();
+    const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
+    return raw.map((r: Record<string, unknown>) => {
+      const u = userMap.get(r.userId as string) as Record<string, unknown> | undefined;
+      return {
+        userId: (r.userId as string) || "",
+        name: (u?.name as string) || "Unknown",
+        email: (u?.email as string) || "",
+        role: (u?.role as string) || "",
+        status: (u?.status as string) || "offline",
+        provider: (u?.provider as string) || "credentials",
+        avatar: (u?.image as string) || "",
+        emailVerified: Boolean(u?.emailVerified),
+        createdAt: (r.joinedAt as string) || (u?.createdAt as string) || "",
+        lastLogin: (u?.lastLogin as string) || undefined,
+        orgId: orgId || undefined,
+      };
+    });
+  }
+
+  // Non-super-admin path: fetch users, then look up their org membership
+  const userIds = raw.map((r: Record<string, unknown>) => (r.id as string) || String(r._id));
+
+  const memberships = await (await db.collection(collections.orgMembers).find(
+    { userId: { $in: userIds } },
+    { projection: { userId: 1, orgId: 1 } },
+  )).toArray();
+  const memberOrgMap = new Map(memberships.map((m: Record<string, unknown>) => [m.userId, m.orgId]));
+
+  return raw.map((r: Record<string, unknown>) => {
+    const userId = (r.id as string) || String(r._id);
+    const userOrgId = memberOrgMap.get(userId) as string | undefined;
+    return {
+      userId,
+      name: (r.name as string) || "",
+      email: (r.email as string) || "",
+      role: (r.role as string) || "",
+      status: (r.status as string) || "offline",
+      provider: (r.provider as string) || "credentials",
+      avatar: (r.image as string) || "",
+      emailVerified: Boolean(r.emailVerified),
+      createdAt: (r.createdAt as string) || "",
+      lastLogin: (r.lastLogin as string) || undefined,
+      orgId: userOrgId || undefined,
     };
   });
 });
@@ -80,13 +136,13 @@ const getAllMembers = cache(async (): Promise<MemberData[]> => {
 
   const users = userIds.length > 0
     ? await (await db.collection(collections.users).find({ id: { $in: userIds } }))
-        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1 })
+        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1, phone: 1, location: 1, department: 1, designation: 1 })
         .toArray()
     : [];
   const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
 
   const orgs = orgIds.length > 0
-    ? await (await db.collection(collections.organizations).find({ id: { $in: orgIds } })).project({ id: 1, name: 1 }).toArray()
+    ? await (await db.collection(collections.organizations).find({ id: { $in: orgIds } }, { projection: { id: 1, name: 1 } })).toArray()
     : [];
   const orgMap = new Map(orgs.map((o: Record<string, unknown>) => [o.id, o]));
 
@@ -109,27 +165,13 @@ const getAllMembers = cache(async (): Promise<MemberData[]> => {
       isActive: user?.isActive !== false,
       createdAt: user?.createdAt as Date | undefined,
       lastLogin: user?.lastLogin as Date | undefined,
+      phone: (user?.phone as string) || undefined,
+      location: (user?.location as string) || undefined,
+      department: (user?.department as string) || undefined,
+      designation: (user?.designation as string) || undefined,
     };
   });
 });
-
-const providerColors: Record<string, string> = {
-  google: "text-[#4285F4]",
-  github: "text-[#333] dark:text-[#f0f0f0]",
-  linkedin: "text-[#0A66C2]",
-  credentials: "text-muted-foreground",
-};
-
-const statusVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-  online: "default",
-  offline: "outline",
-  break: "secondary",
-};
-
-function fmt(d?: Date): string {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-}
 
 export default async function MembersPage() {
   const session = await auth();
@@ -137,7 +179,14 @@ export default async function MembersPage() {
   const isSuperAdmin = role === "SUPER_ADMIN" || role === "ORG_MENU_ADMIN";
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
-  const members = isSuperAdmin ? await getAllMembers() : await getMembers(orgId || "null");
+  const [members, recentSignups] = await Promise.all([
+    isSuperAdmin ? getAllMembers() : getMembers(orgId || "null"),
+    isSuperAdmin ? getRecentSignups() : getRecentSignups(orgId),
+  ]);
+
+  const memberList = members.map((m) => ({
+    ...m,
+  }));
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -145,86 +194,18 @@ export default async function MembersPage() {
         <div>
           <h1 className="text-2xl font-bold">All Members</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {isSuperAdmin ? `${members.length} members across all organizations` : `${members.length} members in your organization`}
+            {isSuperAdmin ? `${memberList.length} members across all organizations` : `${memberList.length} members in your organization`}
           </p>
         </div>
       </div>
 
-      <div className="relative max-w-sm">
-        <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input placeholder="Search members..." className="pl-9 h-9" />
-      </div>
+      <MembersTable members={memberList} isSuperAdmin={isSuperAdmin} />
 
-      <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Provider</TableHead>
-              <TableHead>Verified</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead>Last Login</TableHead>
-              {isSuperAdmin && <TableHead>Organization</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {members.length === 0 ? (
-                <TableRow>
-                <TableCell colSpan={isSuperAdmin ? 10 : 9} className="h-32 text-center text-muted-foreground">
-                  No members found
-                </TableCell>
-              </TableRow>
-            ) : (
-              members.map((member) => (
-                <TableRow key={member.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="size-7">
-                        <AvatarImage src={member.avatar} alt={member.name} />
-                        <AvatarFallback className="text-[10px]">{member.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium text-sm">{member.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">{member.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={member.role === "admin" ? "default" : member.role === "manager" ? "secondary" : "outline"} className="text-xs">
-                      {member.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant[member.status] || "outline"} className="text-xs capitalize">
-                      {member.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`text-xs font-medium capitalize ${providerColors[member.provider] || "text-muted-foreground"}`}>
-                      {member.provider}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {member.emailVerified ? (
-                      <CheckCircle2Icon className="size-4 text-green-500" />
-                    ) : (
-                      <XCircleIcon className="size-4 text-muted-foreground" />
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{fmt(member.createdAt || member.joinedAt)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{fmt(member.lastLogin)}</TableCell>
-                  {isSuperAdmin && (
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs">{member.orgName}</Badge>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {recentSignups.length > 0 && (
+        <div className="mt-6">
+          <DashboardSignupsTable users={recentSignups} isSuperAdmin={isSuperAdmin} />
+        </div>
+      )}
     </div>
   );
 }

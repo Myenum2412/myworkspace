@@ -1,25 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DownloadIcon, UsersIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DownloadIcon, UsersIcon, FileIcon, Loader2Icon, ImageIcon, FileTextIcon, ArchiveIcon } from "lucide-react";
 
 interface SharedFile {
   id: string;
   fileId: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
   sharedByUserId: string;
   sharedByName: string;
   createdAt: string;
+  file?: { originalName: string; mimeType: string; size: number };
 }
 
 function formatSize(bytes: number) {
@@ -28,104 +22,97 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(createdAt: string | number) {
-  const ts = typeof createdAt === "string" ? new Date(createdAt).getTime() : Number(createdAt);
-  return new Date(ts || Date.now()).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+function getFileIcon(mimeType: string) {
+  if (mimeType.startsWith("image/")) return <ImageIcon className="size-5 text-[#5f7d56]" />;
+  if (mimeType.includes("pdf") || mimeType.includes("document")) return <FileTextIcon className="size-5 text-red-500" />;
+  if (mimeType.includes("zip") || mimeType.includes("rar")) return <ArchiveIcon className="size-5 text-amber-500" />;
+  return <FileIcon className="size-5 text-muted-foreground" />;
 }
 
 export default function SharedPage() {
+  const { data: session } = useSession();
   const [files, setFiles] = useState<SharedFile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState({ name: "", email: "", avatar: "" });
+  const [tab, setTab] = useState<"shared-with-me" | "shared-by-me">("shared-with-me");
 
   useEffect(() => {
-    fetch("/api/files/shared", { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) => { setFiles(Array.isArray(data) ? data : data.data || []); setLoading(false); })
-      .catch(() => { setLoading(false); });
-  }, []);
+    async function load() {
+      try {
+        const profileRes = await fetch("/api/user/profile", { credentials: "include" });
+        const profileData = await profileRes.json();
+        const profile = profileData.data || profileData;
+        const orgId = profile?.org?.id || profile?.org?._id?.toString() || "";
+        const userId = session?.user?.id;
 
-  useEffect(() => {
-    fetch("/api/user/me", { credentials: "include" })
-      .then((r) => r.json())
-      .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
-      .catch(() => {});
-  }, []);
+        if (orgId && userId) {
+          const [sharedWithRes, sharedByRes] = await Promise.all([
+            fetch(`/api/shares/internal?userId=${userId}`, { credentials: "include" }),
+            fetch(`/api/shares/internal?orgId=${orgId}`, { credentials: "include" }),
+          ]);
+          const sharedWith = await sharedWithRes.json();
+          const sharedBy = await sharedByRes.json();
+          setFiles([...(sharedWith.data || []), ...(sharedBy.data || [])]);
+        }
+      } catch {} finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [session]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <UsersIcon className="size-6" />
-            Shared with Me
-          </h1>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-bold">Shared Files</h1>
+        <Badge variant="secondary">{files.length} shared</Badge>
+      </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Shared Files</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
-              ) : files.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No files shared with you yet.</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-muted-foreground">
-                        <th className="pb-3 pr-4 font-medium">Name</th>
-                        <th className="pb-3 pr-4 font-medium">Type</th>
-                        <th className="pb-3 pr-4 font-medium">Size</th>
-                        <th className="pb-3 pr-4 font-medium">Shared By</th>
-                        <th className="pb-3 pr-4 font-medium">Date</th>
-                        <th className="pb-3 font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {files.map((file) => (
-                        <tr key={file.id} className="border-b last:border-0">
-                          <td className="py-3 pr-4 font-medium">{file.originalName}</td>
-                          <td className="py-3 pr-4">
-                            <Badge variant="outline">
-                              {file.mimeType.split("/").pop()?.toUpperCase() || "FILE"}
-                            </Badge>
-                          </td>
-                          <td className="py-3 pr-4 text-muted-foreground">
-                            {formatSize(file.size)}
-                          </td>
-                          <td className="py-3 pr-4 text-muted-foreground">
-                            {file.sharedByName}
-                          </td>
-                          <td className="py-3 pr-4 text-muted-foreground">
-                            {formatDate(file.createdAt)}
-                          </td>
-                          <td className="py-3">
-                            <a
-                              href={`/api/files/${file.fileId}`}
-                              download
-                              className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                            >
-                              <DownloadIcon className="size-4" />
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+      <div className="flex gap-2 border-b pb-2">
+        <button
+          className={`px-3 py-1 text-sm rounded-md ${tab === "shared-with-me" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+          onClick={() => setTab("shared-with-me")}
+        >Shared with Me</button>
+        <button
+          className={`px-3 py-1 text-sm rounded-md ${tab === "shared-by-me" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+          onClick={() => setTab("shared-by-me")}
+        >Shared by Me</button>
+      </div>
+
+      {files.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+          <UsersIcon className="size-16 mb-3" />
+          <p className="text-lg font-medium">No shared files</p>
+          <p className="text-sm">Share files from the File Manager to see them here.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {files.map((share) => (
+            <Card key={share.id} className="hover:border-muted-foreground/30 transition-colors">
+              <CardContent className="flex items-center gap-4 p-4">
+                {share.file ? getFileIcon(share.file.mimeType) : <FileIcon className="size-5 text-muted-foreground" />}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{share.file?.originalName || "Unknown file"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Shared by {share.sharedByName || "Unknown"} · {new Date(share.createdAt).toLocaleDateString()}
+                    {share.file?.size ? ` · ${formatSize(share.file.size)}` : ""}
+                  </p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+                <Button variant="outline" size="sm" onClick={() => window.open(`/api/files/${share.fileId}?download=true`, "_blank")}>
+                  <DownloadIcon className="mr-1 size-4" /> Download
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

@@ -22,7 +22,7 @@ const statusStyles: Record<string, string> = {
 const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-700 border-red-200",
   high: "bg-orange-100 text-orange-700 border-orange-200",
-  medium: "bg-blue-100 text-blue-700 border-blue-200",
+  medium: "bg-[#e8ece4] text-[#3a5234] border-[#c5cec0]",
   low: "bg-gray-100 text-gray-700 border-gray-200",
 };
 

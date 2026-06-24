@@ -1,14 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -28,8 +22,8 @@ type Project = {
 };
 
 export default function UploadPage() {
-  const router = useRouter();
   const { data: session } = useSession();
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [user, setUser] = useState({ name: "Demo User", email: "demo@example.com", avatar: "" });
   const [orgId, setOrgId] = useState("");
@@ -120,11 +114,7 @@ export default function UploadPage() {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+    <main className="flex flex-1 flex-col gap-4 p-4">
           <h1 className="text-2xl font-bold">Upload File</h1>
 
           <Card className="py-8">
@@ -250,7 +240,5 @@ export default function UploadPage() {
             </CardContent>
           </Card>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+      );
 }

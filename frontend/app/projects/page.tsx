@@ -1,12 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +49,7 @@ export default function ProjectsPage() {
   const [projectDescription, setProjectDescription] = useState("");
   const [projectDeadline, setProjectDeadline] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
-  const [projectColor, setProjectColor] = useState("#3b82f6");
+  const [projectColor, setProjectColor] = useState("#93c5fd");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [viewProject, setViewProject] = useState<Project | null>(null);
@@ -71,8 +65,8 @@ export default function ProjectsPage() {
   const [memberSearch, setMemberSearch] = useState("");
 
   const colors = [
-    "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
-    "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
+    "#93c5fd", "#fca5a5", "#86efac", "#fcd34d", "#c4b5fd",
+    "#f9a8d4", "#67e8f9", "#fdba74", "#6ee7b7", "#a5b4fc",
   ];
 
   useEffect(() => {
@@ -153,7 +147,7 @@ export default function ProjectsPage() {
       setSelectedClient("");
       setProjectDescription("");
       setProjectDeadline("");
-      setProjectColor("#3b82f6");
+      setProjectColor("#93c5fd");
       setProjectMembers([]);
       setSubmitting(false);
     }
@@ -205,11 +199,8 @@ export default function ProjectsPage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <>
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">All Projects</h1>
             <Button onClick={() => setShowForm(true)}>
@@ -232,7 +223,7 @@ export default function ProjectsPage() {
                 <CardTitle className="text-sm text-muted-foreground">On Going Project</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-500">
+                <div className="text-2xl font-bold text-[#5f7d56]">
                   {loading ? <Loader2Icon className="size-5 animate-spin" /> : projects.filter((p) => p.progress > 0 && p.progress < 100).length}
                 </div>
               </CardContent>
@@ -556,7 +547,6 @@ export default function ProjectsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </SidebarInset>
-    </SidebarProvider>
+      </>
   );
 }

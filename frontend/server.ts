@@ -14,7 +14,60 @@ const handle = app.getRequestHandler();
 const apiProxy = createProxyMiddleware({
   target: process.env.API_URL || "http://localhost:4000",
   changeOrigin: true,
+  on: {
+    proxyReq: (_proxyReq, req) => {
+      console.log(`[PROXY] ${req.method} ${req.url} -> backend`);
+    },
+    proxyRes: (proxyRes, req) => {
+      if (proxyRes.statusCode === 404) {
+        console.error(`[PROXY 404] ${req.method} ${req.url} -> Backend returned 404. No matching backend route.`);
+      }
+    },
+    error: (err, req, res: any) => {
+      console.error(`[PROXY ERROR] ${req.method} ${req.url} -> ${err.message}`);
+      if (res && typeof res.writeHead === "function") {
+        console.warn(`[PROXY ERROR FALLBACK] ${req.method} ${req.url} -> Backend unreachable, falling back to Next.js`);
+        handle(req, res);
+      }
+    },
+  },
 });
+
+const BACKEND_PROXY_PATHS = [
+  "/api/tasks",
+  "/api/sessions",
+  "/api/notifications",
+  "/api/activity",
+  "/api/dashboard",
+  "/api/users",
+  "/api/organizations",
+  "/api/files",
+  "/api/user",
+  "/api/clients",
+  "/api/projects",
+  "/api/teams",
+  "/api/time-entries",
+  "/api/admin",
+  "/api/health",
+  "/uploads",
+  "/banners",
+];
+
+const NEXTJS_ONLY_PATHS = [
+  "/api/employees",
+  "/api/org/limits",
+  "/api/time-entries/summary",
+  "/api/user/profile",
+  "/api/user/profile-image",
+  "/api/user/banner",
+];
+
+function shouldProxyToBackend(pathname: string): boolean {
+  if (NEXTJS_ONLY_PATHS.some((p) => pathname.startsWith(p))) {
+    return false;
+  }
+  return BACKEND_PROXY_PATHS.some((prefix) => pathname.startsWith(prefix));
+}
 
 app.prepare().then(async () => {
   await connectToMongo().catch((err) => {
@@ -23,9 +76,15 @@ app.prepare().then(async () => {
 
   const server = createServer((req, res) => {
     const pathname = new URL(req.url || "/", `http://${req.headers.host || hostname}`).pathname;
-    if (pathname.startsWith("/api") && !pathname.startsWith("/api/auth")) {
-      apiProxy(req, res, () => handle(req, res));
+    if (shouldProxyToBackend(pathname)) {
+      apiProxy(req, res, () => {
+        console.warn(`[PROXY FALLBACK] ${req.method} ${req.url} -> Proxy middleware did not handle, falling back to Next.js`);
+        handle(req, res);
+      });
     } else {
+      if (pathname.startsWith("/api")) {
+        console.warn(`[PROXY SKIP] ${req.method} ${req.url} -> No matching backend route prefix, handled by Next.js`);
+      }
       handle(req, res);
     }
   });

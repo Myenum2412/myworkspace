@@ -9,16 +9,7 @@ export default async function RoleRedirectPage() {
   }
 
   const role = session.user.role;
-  console.log(`[AUTH role-redirect] email=${session.user.email} role=${role}`);
+  console.log(`[AUTH role-redirect] email=${session.user.email} role=${role} -> /dashboard`);
 
-  if (role === "SUPER_ADMIN" || role === "ORG_MENU_ADMIN") {
-    redirect("/orgmenu");
-  }
-
-  if (role === "ADMIN") {
-    redirect("/dashboard");
-  }
-
-  // Fallback: any authenticated user lands on dashboard
   redirect("/dashboard");
 }

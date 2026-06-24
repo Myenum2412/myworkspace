@@ -21,7 +21,7 @@ export function ProjectDetailedView({ project, onEdit }: { project: Project; onE
   const [tab, setTab] = useState(0);
 
   const progressColor =
-    project.progress >= 100 ? "bg-emerald-500" : project.progress >= 50 ? "bg-blue-500" : project.progress > 0 ? "bg-amber-500" : "bg-muted-foreground/30";
+    project.progress >= 100 ? "bg-emerald-500" : project.progress >= 50 ? "bg-[#5f7d56]" : project.progress > 0 ? "bg-amber-500" : "bg-muted-foreground/30";
 
   return (
     <div className="flex h-full flex-col">

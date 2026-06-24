@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3Icon, Loader2Icon, TrendingUpIcon, UsersIcon, CheckCircle2Icon, ClockIcon } from "lucide-react";
@@ -22,15 +19,10 @@ type Task = {
 
 export default function ReportsPage() {
   const { data: session } = useSession();
-  const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-  };
-
+  
   useEffect(() => {
     if (!session?.user) return;
     fetch("/api/user/profile", { credentials: "include" })
@@ -60,16 +52,12 @@ export default function ReportsPage() {
   const priorityBreakdown = [
     { label: "Urgent", count: tasks.filter((t) => t.priority === "urgent").length, color: "bg-red-500" },
     { label: "High", count: tasks.filter((t) => t.priority === "high").length, color: "bg-orange-500" },
-    { label: "Medium", count: tasks.filter((t) => t.priority === "medium").length, color: "bg-blue-500" },
+    { label: "Medium", count: tasks.filter((t) => t.priority === "medium").length, color: "bg-[#5f7d56]" },
     { label: "Low", count: tasks.filter((t) => t.priority === "low").length, color: "bg-gray-400" },
   ];
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center gap-2">
             <BarChart3Icon className="size-6" />
             <h1 className="text-2xl font-bold">Reports</h1>
@@ -131,7 +119,7 @@ export default function ReportsPage() {
                         {[
                           { label: "To Do", count: tasks.filter((t) => t.status === "todo").length, color: "bg-gray-400" },
                           { label: "In Progress", count: inProgress, color: "bg-amber-500" },
-                          { label: "Review", count: tasks.filter((t) => t.status === "review").length, color: "bg-blue-500" },
+                          { label: "Review", count: tasks.filter((t) => t.status === "review").length, color: "bg-[#5f7d56]" },
                           { label: "Done", count: completed, color: "bg-emerald-500" },
                           { label: "Cancelled", count: tasks.filter((t) => t.status === "cancelled").length, color: "bg-red-500" },
                           { label: "Overdue", count: overdue, color: "bg-red-600" },
@@ -153,7 +141,5 @@ export default function ReportsPage() {
             </>
           )}
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+            );
 }

@@ -24,7 +24,7 @@ export default async function SignupMongoPage(props: { searchParams: Promise<Rec
         </p>
       </div>
 
-      <div className="relative hidden lg:block overflow-hidden bg-[#0d0f1a]">
+      <div className="relative hidden lg:block overflow-hidden bg-[#1e2d1d]">
         <Image
           src="/login-bg.png"
           alt="Background"
@@ -32,14 +32,14 @@ export default async function SignupMongoPage(props: { searchParams: Promise<Rec
           className="absolute inset-0 h-full w-full object-cover opacity-80"
           sizes="50vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0d0f1a]/60 via-transparent to-[#1a0d2e]/60" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1e2d1d]/60 via-transparent to-[#2d4029]/60" />
         <div className="absolute inset-0 flex flex-col items-start justify-end p-12">
           <blockquote className="space-y-3">
             <p className="text-xl font-medium text-white/90 leading-relaxed max-w-xs">
               &ldquo;The platform that transformed how our team collaborates and ships.&rdquo;
             </p>
             <footer className="text-sm text-white/60 font-medium">
-              Sofia Davis &mdash; Product Lead at Vercel
+              Team MyWorkSpace
             </footer>
           </blockquote>
         </div>

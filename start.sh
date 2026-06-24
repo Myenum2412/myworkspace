@@ -35,49 +35,12 @@ stop_port() {
     fi
 }
 
-########################################
-# Install Backend Dependencies
-########################################
-
-echo -e "${YELLOW}[1/8] Installing Backend Dependencies...${NC}"
-
-cd "$SCRIPT_DIR/backend"
-
-if ! npm install 2>&1; then
-    echo ""
-    echo -e "${RED}❌ Backend Dependency Install Failed${NC}"
-    exit 1
-fi
-
-npm approve-scripts --allow-scripts-pending 2>/dev/null || true
-
-echo -e "${GREEN}✅ Backend Dependencies Installed${NC}"
-echo ""
-
-########################################
-# Install Frontend Dependencies
-########################################
-
-echo -e "${YELLOW}[2/8] Installing Frontend Dependencies...${NC}"
-
-cd "$SCRIPT_DIR/frontend"
-
-if ! npm install 2>&1; then
-    echo ""
-    echo -e "${RED}❌ Frontend Dependency Install Failed${NC}"
-    exit 1
-fi
-
-npm approve-scripts --allow-scripts-pending 2>/dev/null || true
-
-echo -e "${GREEN}✅ Frontend Dependencies Installed${NC}"
-echo ""
 
 ########################################
 # Clean Build Cache
 ########################################
 
-echo -e "${YELLOW}[3/8] Cleaning Build Cache...${NC}"
+echo -e "${YELLOW}[1/6] Cleaning Build Cache...${NC}"
 
 rm -rf "$SCRIPT_DIR/backend/.next" \
        "$SCRIPT_DIR/frontend/.next" \
@@ -90,7 +53,7 @@ echo ""
 # Backend Build
 ########################################
 
-echo -e "${YELLOW}[4/8] Building Backend...${NC}"
+echo -e "${YELLOW}[2/6] Building Backend...${NC}"
 
 cd "$SCRIPT_DIR/backend"
 
@@ -109,7 +72,7 @@ echo ""
 # Seed Admin
 ########################################
 
-echo -e "${YELLOW}[5/8] Seeding Admin...${NC}"
+echo -e "${YELLOW}[3/6] Seeding Admin...${NC}"
 
 cd "$SCRIPT_DIR/backend"
 
@@ -128,7 +91,7 @@ echo ""
 # Frontend Build
 ########################################
 
-echo -e "${YELLOW}[6/8] Building Frontend...${NC}"
+echo -e "${YELLOW}[4/6] Building Frontend...${NC}"
 
 cd "$SCRIPT_DIR/frontend"
 
@@ -147,7 +110,7 @@ echo ""
 # Start Backend
 ########################################
 
-echo -e "${YELLOW}[7/8] Starting Backend on Port 4000...${NC}"
+echo -e "${YELLOW}[5/6] Starting Backend on Port 4000...${NC}"
 
 stop_port 4000 "backend"
 
@@ -161,7 +124,7 @@ sleep 5
 # Start Frontend
 ########################################
 
-echo -e "${YELLOW}[8/8] Starting Frontend on Port 3000...${NC}"
+echo -e "${YELLOW}[6/6] Starting Frontend on Port 3000...${NC}"
 
 stop_port 3000 "frontend"
 

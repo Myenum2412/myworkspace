@@ -1,10 +1,12 @@
 import { Schema, model, Document } from "mongoose";
+import { v4 as uuid } from "uuid";
 
 export interface IUser extends Document {
   id: string;
   name: string;
   email: string;
   emailVerified: boolean;
+  orgId?: string;
   image?: string;
   password?: string;
   status: "online" | "offline" | "break";
@@ -16,16 +18,30 @@ export interface IUser extends Document {
   lockedUntil?: Date;
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
+  phone?: string;
+  department?: string;
+  company?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  linkedin?: string;
+  github?: string;
+  twitter?: string;
+  website?: string;
+  bannerUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const userSchema = new Schema<IUser>(
   {
-    id: { type: String, unique: true, sparse: true },
+    id: { type: String, required: true, unique: true, default: () => uuid() },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     emailVerified: { type: Boolean, default: false },
+    orgId: { type: String, index: true },
     image: String,
     password: String,
     status: { type: String, enum: ["online", "offline", "break"], default: "offline" },
@@ -37,6 +53,19 @@ const userSchema = new Schema<IUser>(
     lockedUntil: Date,
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorSecret: String,
+    phone: String,
+    department: String,
+    company: String,
+    address: String,
+    city: String,
+    state: String,
+    country: String,
+    zipCode: String,
+    linkedin: String,
+    github: String,
+    twitter: String,
+    website: String,
+    bannerUrl: String,
   },
   { timestamps: true }
 );

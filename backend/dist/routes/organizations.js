@@ -1,17 +1,13 @@
 import { Router } from "express";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { User } from "../lib/db/models/User.js";
 import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { signToken } from "../config/auth.js";
+import { requireOrgMembership } from "../lib/org-utils.js";
 const router = Router();
 router.use(authenticate);
-// Helper: verify user is member of org
-async function requireOrgMembership(userId, orgId) {
-    const membership = await OrgMember.findOne({ orgId, userId }).lean();
-    if (!membership)
-        throw new AppError(403, "Not a member of this organization");
-}
 // GET /api/organizations -- list all orgs for current user
 router.get("/", async (req, res) => {
     const memberships = await OrgMember.find({ userId: req.user.userId }).lean();
@@ -52,6 +48,43 @@ router.post("/switch", async (req, res) => {
             orgSlug: org.slug,
         },
     });
+});
+// POST /api/organizations/invite -- invite members by email
+router.post("/invite", async (req, res) => {
+    const { emails, orgId } = req.body;
+    if (!emails || !Array.isArray(emails) || emails.length === 0) {
+        throw new AppError(400, "At least one email is required");
+    }
+    const targetOrgId = orgId || req.user.orgId;
+    if (!targetOrgId)
+        throw new AppError(400, "orgId is required");
+    // Verify sender is an admin of the target org
+    const membership = await OrgMember.findOne({ orgId: targetOrgId, userId: req.user.userId }).lean();
+    if (!membership || membership.role !== "admin") {
+        throw new AppError(403, "Only organization admins can invite members");
+    }
+    const validEmails = emails.filter((e) => e && e.includes("@"));
+    const results = [];
+    for (const email of validEmails) {
+        const user = await User.findOne({ email: email.toLowerCase().trim() }).lean();
+        if (!user) {
+            results.push({ email, status: "not_found" });
+            continue;
+        }
+        const existingMember = await OrgMember.findOne({ orgId: targetOrgId, userId: user._id }).lean();
+        if (existingMember) {
+            results.push({ email, status: "already_member" });
+            continue;
+        }
+        await OrgMember.create({
+            orgId: targetOrgId,
+            userId: user._id,
+            role: "member",
+        });
+        results.push({ email, status: "invited", userId: user._id.toString() });
+    }
+    console.log(`[INVITE] ${req.user.email} invited ${validEmails.length} users to org ${targetOrgId}:`, results);
+    res.status(201).json({ success: true, data: { results } });
 });
 // GET /api/organizations/:id -- get single org (with tenant isolation)
 router.get("/:id", async (req, res) => {

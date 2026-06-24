@@ -3,6 +3,7 @@ const teamSchema = new Schema({
     orgId: { type: String, required: true },
     name: { type: String, required: true },
     description: String,
-    createdAt: { type: Date, default: Date.now },
-});
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
+}, { timestamps: true });
 export const Team = model("Team", teamSchema);

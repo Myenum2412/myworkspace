@@ -4,6 +4,7 @@ export declare const env: {
     JWT_SECRET: string;
     JWT_EXPIRES_IN: string;
     ADMIN_EMAIL: string;
+    ADMIN_PASSWORD: string;
     CORS_ORIGIN: string[];
     NODE_ENV: string;
     R2_ENDPOINT: string;
@@ -13,4 +14,13 @@ export declare const env: {
     RESEND_API_KEY: string;
     MAIL_FROM: string;
     APP_URL: string;
+    S3_ENDPOINT: string;
+    S3_BUCKET_NAME: string;
+    S3_ACCESS_KEY_ID: string;
+    S3_SECRET_ACCESS_KEY: string;
+    S3_REGION: string;
+    GCS_BUCKET_NAME: string;
+    GCS_KEYFILE: string;
+    AZURE_STORAGE_CONNECTION_STRING: string;
+    AZURE_STORAGE_CONTAINER: string;
 };

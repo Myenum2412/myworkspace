@@ -1,94 +1,238 @@
 import { Router, Response } from "express";
+import { PipelineStage } from "mongoose";
 import { Team } from "../lib/db/models/Team.js";
 import { TeamMember } from "../lib/db/models/TeamMember.js";
-import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { requireOrgMembership } from "../lib/org-utils.js";
 
 const router = Router();
 
 router.use(authenticate);
 
-async function getUserOrgId(userId: string): Promise<string> {
-  const member = await OrgMember.findOne({ userId }).lean();
-  if (!member) throw new AppError(403, "User is not a member of any organization");
-  return member.orgId.toString();
-}
-
-// List all teams in the user's org with member counts
+// List all teams in the user's org with member counts, pagination, filtering, and sorting
 router.get("/", async (req: AuthRequest, res: Response) => {
-  const orgId = (req.query.orgId as string) || await getUserOrgId(req.user!.userId);
+  const orgId = await requireOrgMembership(req.user!.userId);
 
-  const teams = await Team.find({ orgId }).sort({ createdAt: -1 }).lean();
+  // Pagination params
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const skip = (page - 1) * limit;
 
-  const teamIds = teams.map((t) => t._id);
-  const members = await TeamMember.find({ teamId: { $in: teamIds } }).lean();
+  // Name search filter
+  const nameSearch = (req.query.name as string)?.trim();
 
-  const memberCountMap = new Map<string, number>();
-  members.forEach((m) => {
-    const key = m.teamId.toString();
-    memberCountMap.set(key, (memberCountMap.get(key) || 0) + 1);
+  // Sorting params
+  const allowedSortFields: Record<string, string> = {
+    name: "name",
+    createdAt: "createdAt",
+    memberCount: "memberCount",
+  };
+  const sortBy = allowedSortFields[req.query.sortBy as string] || "createdAt";
+  const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+
+  // Build match stage for the aggregation
+  const teamMatch: Record<string, unknown> = { orgId };
+  if (nameSearch) {
+    teamMatch.name = { $regex: nameSearch, $options: "i" };
+  }
+
+  // Aggregation pipeline: get teams with member counts and lead user info in one query
+  const pipeline: PipelineStage[] = [
+    { $match: teamMatch },
+    {
+      $lookup: {
+        from: "teammembers",
+        localField: "_id",
+        foreignField: "teamId",
+        as: "members",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        let: {
+          leadIds: {
+            $filter: {
+              input: "$members",
+              as: "m",
+              cond: { $eq: ["$$m.role", "lead"] },
+            },
+          },
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $in: ["$_id", "$$leadIds.userId"],
+              },
+            },
+          },
+          { $project: { name: 1, email: 1, image: 1 } },
+        ],
+        as: "leadUsers",
+      },
+    },
+    {
+      $addFields: {
+        memberCount: { $size: "$members" },
+        leadUser: { $arrayElemAt: ["$leadUsers", 0] },
+      },
+    },
+    { $project: { members: 0, leadUsers: 0 } },
+    // Sorting
+    { $sort: { [sortBy]: sortOrder } },
+    // Pagination
+    { $skip: skip },
+    { $limit: limit },
+  ];
+
+  // Count total matching teams for pagination metadata
+  const countPipeline: PipelineStage[] = [
+    { $match: teamMatch },
+    { $count: "total" },
+  ];
+
+  const [teams, countResult] = await Promise.all([
+    Team.aggregate(pipeline),
+    Team.aggregate(countPipeline),
+  ]);
+
+  const total = countResult.length > 0 ? countResult[0].total : 0;
+  const totalPages = Math.ceil(total / limit);
+
+  const result = teams.map((t) => ({
+    id: t._id.toString(),
+    name: t.name,
+    description: t.description || "",
+    memberCount: t.memberCount || 0,
+    leadName: t.leadUser?.name || "",
+    leadAvatar: t.leadUser?.image || "",
+    createdAt: t.createdAt,
+  }));
+
+  res.json({
+    success: true,
+    data: result,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+    },
   });
-
-  // Get leads for each team
-  const leadMembers = members.filter((m) => m.role === "lead");
-  const leadUserIds = leadMembers.map((m) => m.userId);
-  const leadUsers = await User.find({ _id: { $in: leadUserIds } }).select("name email image").lean();
-  const leadUserMap = new Map(leadUsers.map((u) => [u._id.toString(), u]));
-
-  const result = teams.map((t) => {
-    const teamLead = leadMembers.find((m) => m.teamId.toString() === t._id.toString());
-    const leadUser = teamLead ? leadUserMap.get(teamLead.userId.toString()) : null;
-    return {
-      id: t._id.toString(),
-      name: t.name,
-      description: t.description || "",
-      memberCount: memberCountMap.get(t._id.toString()) || 0,
-      leadName: leadUser?.name || "",
-      leadAvatar: leadUser?.image || "",
-      createdAt: t.createdAt,
-    };
-  });
-
-  res.json({ success: true, data: result });
 });
 
-// Get single team with full member details
+// Get single team with full member details using aggregation
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: team.orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await requireOrgMembership(req.user!.userId, team.orgId.toString());
 
-  const teamMembers = await TeamMember.find({ teamId: team._id }).lean();
-  const userIds = teamMembers.map((m) => m.userId);
-  const users = await User.find({ _id: { $in: userIds } }).select("name email image status department designation").lean();
-  const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+  // Aggregation pipeline: get team with all members and their user details in one query
+  const pipeline: PipelineStage[] = [
+    { $match: { _id: team._id } },
+    {
+      $lookup: {
+        from: "teammembers",
+        localField: "_id",
+        foreignField: "teamId",
+        as: "teamMembers",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        let: {
+          memberIds: "$teamMembers.userId",
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $in: ["$_id", "$$memberIds"],
+              },
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              email: 1,
+              image: 1,
+              status: 1,
+              department: 1,
+              designation: 1,
+            },
+          },
+        ],
+        as: "users",
+      },
+    },
+    {
+      $addFields: {
+        members: {
+          $map: {
+            input: "$teamMembers",
+            as: "tm",
+            in: {
+              $mergeObjects: [
+                {
+                  id: "$$tm._id",
+                  userId: "$$tm.userId",
+                  role: "$$tm.role",
+                },
+                {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: "$users",
+                        as: "u",
+                        cond: { $eq: ["$$u._id", "$$tm.userId"] },
+                      },
+                    },
+                    0,
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        teamMembers: 0,
+        users: 0,
+      },
+    },
+  ];
 
-  const members = teamMembers.map((m) => {
-    const u = userMap.get(m.userId.toString()) as Record<string, unknown> || {};
-    return {
-      id: m._id.toString(),
-      userId: m.userId.toString(),
-      name: (u.name as string) || "Unknown",
-      email: (u.email as string) || "",
-      avatar: (u.image as string) || "",
-      status: (u.status as string) || "offline",
-      department: (u.department as string) || "",
-      designation: (u.designation as string) || "",
-      role: m.role,
-    };
-  });
+  const result = await Team.aggregate(pipeline);
+  if (result.length === 0) throw new AppError(404, "Team not found");
+
+  const teamData = result[0];
+
+  const members = (teamData.members as Record<string, unknown>[]).map((m) => ({
+    id: (m.id as { toString: () => string }).toString ? (m.id as { toString: () => string }).toString() : m.id,
+    userId: (m.userId as { toString: () => string }).toString ? (m.userId as { toString: () => string }).toString() : m.userId,
+    name: (m.name as string) || "Unknown",
+    email: (m.email as string) || "",
+    avatar: (m.image as string) || "",
+    status: (m.status as string) || "offline",
+    department: (m.department as string) || "",
+    designation: (m.designation as string) || "",
+    role: m.role as string,
+  }));
 
   res.json({
     success: true,
     data: {
-      id: team._id.toString(),
-      name: team.name,
-      description: team.description || "",
-      createdAt: team.createdAt,
+      id: teamData._id.toString(),
+      name: teamData.name,
+      description: teamData.description || "",
+      createdAt: teamData.createdAt,
       members,
     },
   });
@@ -99,10 +243,9 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   const { name, description, orgId: bodyOrgId } = req.body;
   if (!name) throw new AppError(400, "Team name is required");
 
-  const orgId = bodyOrgId || await getUserOrgId(req.user!.userId);
+  const orgId = bodyOrgId || await requireOrgMembership(req.user!.userId);
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await requireOrgMembership(req.user!.userId, orgId);
 
   const team = await Team.create({
     orgId,
@@ -118,8 +261,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: team.orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await requireOrgMembership(req.user!.userId, team.orgId.toString());
 
   const { name, description } = req.body;
   const updates: Record<string, unknown> = {};
@@ -135,8 +277,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: team.orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await requireOrgMembership(req.user!.userId, team.orgId.toString());
 
   await TeamMember.deleteMany({ teamId: team._id });
   await Team.findByIdAndDelete(req.params.id);
@@ -148,15 +289,13 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: team.orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await requireOrgMembership(req.user!.userId, team.orgId.toString());
 
   const { userId, role } = req.body;
   if (!userId) throw new AppError(400, "userId is required");
 
   // Verify user belongs to same org
-  const userOrgMembership = await OrgMember.findOne({ userId, orgId: team.orgId }).lean();
-  if (!userOrgMembership) throw new AppError(400, "User is not a member of this organization");
+  await requireOrgMembership(userId, team.orgId.toString());
 
   // Check not already in team
   const existing = await TeamMember.findOne({ teamId: team._id, userId }).lean();
@@ -176,8 +315,7 @@ router.delete("/:teamId/members/:userId", async (req: AuthRequest, res: Response
   const team = await Team.findById(req.params.teamId).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: team.orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await requireOrgMembership(req.user!.userId, team.orgId.toString());
 
   await TeamMember.deleteOne({ teamId: team._id, userId: req.params.userId });
   res.json({ success: true });
@@ -188,8 +326,7 @@ router.patch("/:teamId/members/:userId/role", async (req: AuthRequest, res: Resp
   const team = await Team.findById(req.params.teamId).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: team.orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await requireOrgMembership(req.user!.userId, team.orgId.toString());
 
   const { role } = req.body;
   if (!role || !["lead", "member"].includes(role)) throw new AppError(400, "Valid role required (lead or member)");

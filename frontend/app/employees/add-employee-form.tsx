@@ -24,12 +24,10 @@ import { getDropdownOptions } from "@/lib/dropdown-options"
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAnalytics } from "@/hooks/use-analytics"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { employeeService } from "@/lib/services/employee-service"
+import { useQueryClient } from "@tanstack/react-query"
+import { useOfflineForm } from "@/lib/offline/use-offline-form"
 
 import {
-  ProfileImageUpload,
-  BasicInfoSection,
   WorkInfoSection,
   ContactDetailsSection,
   DynamicRowSection,
@@ -129,8 +127,33 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
 
   const [successModalOpen, setSuccessModalOpen] = React.useState(false)
 
-  const createEmployeeMutation = useMutation({
-    mutationFn: () => employeeService.createEmployee({
+  const offlineForm = useOfflineForm({
+    endpoint: "/api/employees",
+    method: "POST",
+    maxRetries: 5,
+    onSuccess: (employee) => {
+      setSavedEmployee(employee)
+      queryClient.invalidateQueries({ queryKey: ["employees"] })
+      queryClient.invalidateQueries({ queryKey: ["employee-stats"] })
+      trackEvent('save_employee_success')
+
+      const currentCount = parseInt(localStorage.getItem("employeeIdCount") || "1", 10)
+      localStorage.setItem("employeeIdCount", String(currentCount + 1))
+
+      setSuccessModalOpen(true)
+    },
+    onError: (error) => {
+      setFormError(error?.message || "Failed to create employee. Please try again.")
+    },
+  })
+
+  const handleSave = () => {
+    if (!formData.firstName.trim() || !formData.email.trim()) {
+      setFormError("First name and email address are required.")
+      return
+    }
+    trackEvent('save_employee_start')
+    const payload = {
       empId: formData.displayId.trim() || undefined,
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
@@ -149,30 +172,8 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       dependentDetails: dependentDetails.filter(d => d.name),
       currentExperience: formData.currentExperience || null,
       totalExperience: formData.totalExperience || null,
-    }),
-    onSuccess: (employee) => {
-      setSavedEmployee(employee)
-      queryClient.invalidateQueries({ queryKey: ["employee"] })
-      queryClient.invalidateQueries({ queryKey: ["employee-stats"] })
-      trackEvent('save_employee_success')
-
-      const currentCount = parseInt(localStorage.getItem("employeeIdCount") || "1", 10)
-      localStorage.setItem("employeeIdCount", String(currentCount + 1))
-
-      setSuccessModalOpen(true)
-    },
-    onError: (error: any) => {
-      setFormError(error?.message || "Failed to create employee. Please try again.")
-    },
-  })
-
-  const handleSave = () => {
-    if (!formData.firstName.trim() || !formData.email.trim()) {
-      setFormError("First name and email address are required.")
-      return
     }
-    trackEvent('save_employee_start')
-    createEmployeeMutation.mutate()
+    void offlineForm.submit(payload)
   }
 
   const completeAndClose = () => {
@@ -226,23 +227,6 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full px-6">
           <div className="space-y-8 py-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-6">Profile</h2>
-              <div className="flex gap-12 items-start">
-                <div className="flex-shrink-0">
-                  <ProfileImageUpload
-                    avatar={formData.avatar}
-                    onAvatarChange={(url) => updateField("avatar", url)}
-                  />
-                </div>
-                <div className="flex-1">
-                  <BasicInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
             <div>
               <h2 className="text-lg font-semibold mb-6">Work Information</h2>
               <WorkInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
@@ -447,9 +431,11 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
         <Button variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
-        <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSave} disabled={createEmployeeMutation.isPending}>
-          {createEmployeeMutation.isPending ? (
+        <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSave} disabled={offlineForm.isPending}>
+          {offlineForm.isPending ? (
             <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</>
+          ) : offlineForm.isOfflineQueued ? (
+            "Saved offline"
           ) : (
             "Save Employee"
           )}

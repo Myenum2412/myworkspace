@@ -23,11 +23,15 @@ export async function GET(request: Request) {
   }
 
   const projectId = searchParams.get("projectId");
+  const category = searchParams.get("category");
 
   try {
-    const filter: Record<string, unknown> = { orgId };
+    const filter: Record<string, unknown> = { orgId, deletedAt: null };
     if (projectId) {
       filter.projectId = projectId;
+    }
+    if (category && ["profile", "report", "general"].includes(category)) {
+      filter.category = category;
     }
 
     const files = await db.collection(collections.fileAttachments)

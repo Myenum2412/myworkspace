@@ -1,9 +1,3 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -18,7 +12,7 @@ export const metadata = {
 };
 
 const deptColors = [
-  "bg-blue-500", "bg-purple-500", "bg-emerald-500", "bg-orange-500",
+  "bg-[#5f7d56]", "bg-purple-500", "bg-emerald-500", "bg-orange-500",
   "bg-pink-500", "bg-cyan-500", "bg-amber-500", "bg-indigo-500",
 ];
 
@@ -26,12 +20,7 @@ const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").to
 
 export default async function DepartmentsPage() {
   const session = await auth();
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "user@example.com",
-    avatar: session?.user?.image || "",
-  };
-
+  
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
   let departments: Array<{ name: string; head: string; headAvatar: string; memberCount: number; openPositions: number; budget: string; color: string }> = [];
@@ -67,11 +56,7 @@ export default async function DepartmentsPage() {
   const totalOpen = departments.reduce((s, d) => s + d.openPositions, 0);
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">Departments</h1>
@@ -118,7 +103,5 @@ export default async function DepartmentsPage() {
             ))}
           </div>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+            );
 }

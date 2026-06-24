@@ -10,7 +10,10 @@ async function seedAdmin() {
   await connectDb();
 
   const email = env.ADMIN_EMAIL;
-  const password = process.env.ADMIN_PASSWORD || "change-me-immediately";
+  const password = env.ADMIN_PASSWORD;
+  if (!password) {
+    throw new Error("ADMIN_PASSWORD environment variable is required for seeding");
+  }
   const hashedPassword = await bcrypt.hash(password, 12);
 
   const existing = await User.findOne({ email });

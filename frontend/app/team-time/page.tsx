@@ -2,12 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -47,7 +41,7 @@ interface TeamSummaryData {
 
 export default function TeamTimePage() {
   const { data: session } = useSession();
-  const [user, setUser] = useState({ name: "", email: "", avatar: "" });
+    const [user, setUser] = useState({ name: "", email: "", avatar: "" });
   const [data, setData] = useState<TeamSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -94,7 +88,7 @@ export default function TeamTimePage() {
   const filteredMembers = teamFilter === "all" ? members : members.filter((m) => m.entryCount > 0);
 
   const statCards = [
-    { title: "Total Members", value: summary.totalMembers, icon: Users, color: "text-blue-600" },
+    { title: "Total Members", value: summary.totalMembers, icon: Users, color: "text-[#4c6a45]" },
     { title: "Active Today", value: summary.activeMembers, icon: Activity, color: "text-emerald-600" },
     { title: "Total Hours", value: summary.totalHoursAll, icon: Clock, color: "text-purple-600" },
     { title: "Total Entries", value: summary.totalEntries, icon: CalendarDays, color: "text-orange-600" },
@@ -119,11 +113,7 @@ export default function TeamTimePage() {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+                                <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">Team Time</h1>
@@ -252,7 +242,5 @@ export default function TeamTimePage() {
             </CardContent>
           </Card>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+            );
 }

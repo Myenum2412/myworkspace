@@ -46,7 +46,7 @@ export default async function AnalyticsPage() {
   const analytics = isSuperAdmin ? await getAllAnalytics() : await getAnalytics(orgId || "null");
 
   const items = [
-    { title: "Total Tasks", value: analytics.totalTasks, icon: BarChart2Icon, color: "text-blue-500" },
+    { title: "Total Tasks", value: analytics.totalTasks, icon: BarChart2Icon, color: "text-[#5f7d56]" },
     { title: "Completed", value: analytics.completedTasks, icon: CheckCircle2Icon, color: "text-emerald-500" },
     { title: "In Progress", value: analytics.inProgressTasks, icon: ClockIcon, color: "text-amber-500" },
     { title: "Cancelled", value: analytics.cancelledTasks, icon: XCircleIcon, color: "text-red-500" },

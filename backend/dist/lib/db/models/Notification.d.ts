@@ -1,6 +1,8 @@
 import { Document } from "mongoose";
 export interface INotification extends Document {
     userId: string;
+    orgId: string;
+    createdBy: string;
     type: "task_assigned" | "task_updated" | "mention" | "invite" | "system" | "comment" | "status_change";
     title: string;
     message?: string;

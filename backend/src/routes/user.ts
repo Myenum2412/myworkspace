@@ -41,24 +41,121 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
   res.json({
     user: {
       id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      image: user.image,
-      status: user.status,
-      role: user.role,
-      createdAt: user.createdAt,
+      name: user.name || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      department: user.department || "",
+      company: user.company || "",
+      address: user.address || "",
+      city: user.city || "",
+      state: user.state || "",
+      country: user.country || "",
+      zipCode: user.zipCode || "",
+      linkedin: user.linkedin || "",
+      github: user.github || "",
+      twitter: user.twitter || "",
+      website: user.website || "",
+      status: user.status || "offline",
+      role: user.role || "member",
+      image: user.image || "",
+      bannerUrl: user.bannerUrl || "",
+      createdAt: user.createdAt || new Date().toISOString(),
     },
     org: org
       ? {
           id: org._id.toString(),
-          name: org.name,
-          slug: org.slug,
-          plan: org.plan,
-          logo: org.logo,
+          name: org.name || "",
+          slug: org.slug || "",
+          domain: org.domain || "",
+          businessType: org.businessType || "",
+          industry: org.industry || "",
+          gstNumber: org.gstNumber || "",
+          panNumber: org.panNumber || "",
+          cinNumber: org.cinNumber || "",
+          companyEmail: org.companyEmail || "",
+          mobileNumber: org.mobileNumber || "",
+          alternateMobileNumber: org.alternateMobileNumber || "",
+          website: org.website || "",
+          addressLine1: org.addressLine1 || "",
+          addressLine2: org.addressLine2 || "",
+          city: org.city || "",
+          state: org.state || "",
+          pincode: org.pincode || "",
+          country: org.country || "India",
+          logoUrl: org.logo || "",
+          authorizedPersonName: org.authorizedPersonName || "",
+          designation: org.designation || "",
+          authorizedPersonEmail: org.authorizedPersonEmail || "",
+          authorizedPersonMobile: org.authorizedPersonMobile || "",
+          numberOfEmployees: org.numberOfEmployees || 0,
+          companyDescription: org.companyDescription || "",
+          plan: org.plan || "starter",
+          createdAt: org.createdAt || new Date().toISOString(),
         }
       : null,
     memberCount,
   });
+});
+
+router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) => {
+  const user = await User.findOne({ email: req.user!.email });
+  if (!user) throw new AppError(404, "User not found");
+
+  const {
+    name, email, phone, department, company,
+    address, city, state, country, zipCode,
+    linkedin, github, twitter, website,
+    companyName, companyDomain,
+    businessType, industry, gstNumber, panNumber, cinNumber,
+    companyEmail, mobileNumber, alternateMobileNumber, orgWebsite,
+    addressLine1, addressLine2, orgCity, orgState, pincode, orgCountry,
+    authorizedPersonName, designation, authorizedPersonEmail, authorizedPersonMobile,
+    numberOfEmployees, companyDescription,
+  } = req.body;
+
+  // Update user fields
+  const userUpdates: Record<string, unknown> = {};
+  const userFieldMap: Record<string, unknown> = {
+    name, email, phone, department, company,
+    address, city, state, country, zipCode,
+    linkedin, github, twitter, website,
+  };
+  for (const [key, val] of Object.entries(userFieldMap)) {
+    if (val !== undefined) userUpdates[key] = val;
+  }
+  if (Object.keys(userUpdates).length > 0) {
+    userUpdates.updatedAt = new Date();
+    await User.findByIdAndUpdate(user._id, { $set: userUpdates });
+  }
+
+  // Update org fields
+  const member = await OrgMember.findOne({ userId: user._id }).populate("orgId").lean();
+  const org = member?.orgId as any;
+  if (org) {
+    const orgUpdates: Record<string, unknown> = {};
+    const orgFieldMap: Record<string, unknown> = {
+      name: companyName,
+      domain: companyDomain,
+      businessType, industry, gstNumber, panNumber, cinNumber,
+      companyEmail, mobileNumber, alternateMobileNumber,
+      website: orgWebsite,
+      addressLine1, addressLine2,
+      city: orgCity, state: orgState, pincode,
+      country: orgCountry,
+      authorizedPersonName, designation, authorizedPersonEmail, authorizedPersonMobile,
+      numberOfEmployees: numberOfEmployees !== undefined ? Number(numberOfEmployees) : undefined,
+      companyDescription,
+    };
+    for (const [key, val] of Object.entries(orgFieldMap)) {
+      if (val !== undefined) orgUpdates[key] = val;
+    }
+    if (Object.keys(orgUpdates).length > 0) {
+      orgUpdates.updatedAt = new Date();
+      await Organization.findByIdAndUpdate(org._id, { $set: orgUpdates });
+    }
+  }
+
+  res.json({ success: true, message: "Profile updated successfully" });
 });
 
 router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {
@@ -96,6 +193,7 @@ router.post("/status", authenticate, async (req: AuthRequest, res: Response) => 
     }).sort({ loginTime: -1 });
 
     if (activeSession && activeSession.currentStatus !== status) {
+      const previousStatus = activeSession.currentStatus;
       if (activeSession.currentStatus === "break" && status !== "break") {
         const breakStart = [...activeSession.statusTransitions].reverse().find(t => t.status === "break");
         if (breakStart) {
@@ -109,7 +207,7 @@ router.post("/status", authenticate, async (req: AuthRequest, res: Response) => 
       socketIOManager.emitToUser(targetUserId, "session:status:updated", {
         sessionId: activeSession._id.toString(),
         status,
-        previousStatus: activeSession.currentStatus,
+        previousStatus,
         timestamp: new Date().toISOString(),
       });
     }

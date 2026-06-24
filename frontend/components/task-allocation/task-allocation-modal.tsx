@@ -96,25 +96,8 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
     if (open) {
       setIsLoadingData(true);
       Promise.all([
-        employeeService.getAllEmployees().catch(() =>
-          [
-            { id: "emp1", firstName: "Alice", lastName: "Chen", designation: "Designer" },
-            { id: "emp2", firstName: "Bob", lastName: "Martinez", designation: "Developer" },
-            { id: "emp3", firstName: "Carol", lastName: "Williams", designation: "Developer" },
-            { id: "emp4", firstName: "David", lastName: "Kim", designation: "QA Engineer" },
-            { id: "emp5", firstName: "Eve", lastName: "Johnson", designation: "Manager" },
-            { id: "emp6", firstName: "Frank", lastName: "Lee", designation: "DevOps" },
-            { id: "emp7", firstName: "Grace", lastName: "Patel", designation: "Designer" },
-          ]
-        ),
-        teamService.getAllTeams().catch(() =>
-          [
-            { id: "team1", name: "Engineering", headUserId: "emp2", memberIds: ["emp2", "emp3", "emp4", "emp6"] },
-            { id: "team2", name: "Design", headUserId: "emp1", memberIds: ["emp1", "emp7"] },
-            { id: "team3", name: "Marketing", headUserId: "emp5", memberIds: ["emp5"] },
-            { id: "team4", name: "QA", headUserId: "emp4", memberIds: ["emp4"] },
-          ]
-        ),
+        employeeService.getAllEmployees().catch(() => []),
+        teamService.getAllTeams().catch(() => []),
       ]).then(([staff, teamList]) => {
         setEmployees((staff as any[]).map((s) => ({
           id: s.id,
