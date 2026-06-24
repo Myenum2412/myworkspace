@@ -50,6 +50,7 @@ async function seedAdmin() {
     name: "System Administration",
     slug: "system-admin",
     plan: "enterprise",
+    ownerId: admin._id.toString(),
   });
 
   await OrgMember.create({
