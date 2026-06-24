@@ -19,7 +19,7 @@ import {
 
 const chartConfig = {
   users: {
-    label: "New Users",
+    label: "Users",
     color: "var(--chart-1)",
   },
 } satisfies ChartConfig
@@ -27,13 +27,13 @@ const chartConfig = {
 export function NewUsersChart({
   data,
 }: {
-  data: { month: string; users: number }[]
+  data: { state: string; users: number }[]
 }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>New Users</CardTitle>
-        <CardDescription>User signups over time</CardDescription>
+        <CardTitle>Users by State</CardTitle>
+        <CardDescription>Distribution of users across states</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -45,12 +45,12 @@ export function NewUsersChart({
           >
             <XAxis type="number" dataKey="users" hide />
             <YAxis
-              dataKey="month"
+              dataKey="state"
               type="category"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
+              width={80}
             />
             <ChartTooltip
               cursor={false}
@@ -63,7 +63,7 @@ export function NewUsersChart({
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 leading-none font-medium">
           <TrendingUp className="h-4 w-4" />
-          New user registrations per month
+          User count by state
         </div>
       </CardFooter>
     </Card>

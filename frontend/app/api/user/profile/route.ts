@@ -19,11 +19,18 @@ export async function GET() {
 
   const userId = session.user.id;
   const role = session.user.role;
-  console.log(`[profile GET] userId=${userId} role=${role}`);
+  const email = session.user.email;
+  console.log(`[profile GET] userId=${userId} email=${email} role=${role}`);
 
   try {
-    // Try by id field first (uuid string from signup flow), then _id (ObjectId from Mongoose seed)
-    let user = await db.collection(collections.users).findOne({ id: userId });
+    let user = null;
+    if (email) {
+      user = await db.collection(collections.users).findOne({ email });
+    }
+    
+    if (!user) {
+      user = await db.collection(collections.users).findOne({ id: userId });
+    }
     if (!user) {
       try {
         if (ObjectId.isValid(userId)) {
@@ -32,14 +39,15 @@ export async function GET() {
       } catch {}
     }
     if (!user) {
-      // Last resort: try string _id (in case driver auto-casts)
       user = await db.collection(collections.users).findOne({ _id: userId } as never);
     }
     if (!user) {
-      console.warn(`[profile GET] user not found for userId=${userId}`);
+      console.warn(`[profile GET] user not found for email=${email} userId=${userId}`);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
     console.log(`[profile GET] user found: email=${user.email} name=${user.name}`);
+
+    const dbUserId = (user.id || user._id).toString();
 
     // Super admin sees all orgs; others see their own org
     let orgId: string | null = null;
@@ -54,8 +62,8 @@ export async function GET() {
       }
       memberCount = await db.collection(collections.orgMembers).countDocuments({});
     } else {
-      orgId = await getUserOrgId(userId);
-      console.log(`[profile GET] resolved orgId=${orgId} for userId=${userId}`);
+      orgId = await getUserOrgId(dbUserId);
+      console.log(`[profile GET] resolved orgId=${orgId} for dbUserId=${dbUserId}`);
 
       // Auto-create org if user has none
       if (!orgId) {
@@ -64,7 +72,7 @@ export async function GET() {
         await db.collection(collections.organizations).insertOne({
           id: newOrgId,
           name: `${userName}'s Organization`,
-          slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
+          slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${dbUserId.slice(0, 8)}`,
           plan: "starter",
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -72,12 +80,12 @@ export async function GET() {
         await db.collection(collections.orgMembers).insertOne({
           id: uuid(),
           orgId: newOrgId,
-          userId: userId,
+          userId: dbUserId,
           role: "admin",
           joinedAt: new Date(),
         });
         orgId = newOrgId;
-        console.log(`[profile GET] auto-created org=${newOrgId} for userId=${userId}`);
+        console.log(`[profile GET] auto-created org=${newOrgId} for dbUserId=${dbUserId}`);
       }
 
       if (orgId) {
@@ -217,12 +225,20 @@ export async function PATCH(req: NextRequest) {
     }
     if (Object.keys(updates).length > 0) {
       updates.updatedAt = new Date();
-      const userQuery: { $or: Record<string, unknown>[] } = { $or: [{ id: userId }] };
-      if (ObjectId.isValid(userId)) {
-        userQuery.$or!.push({ _id: new ObjectId(userId) });
+      const sessionEmail = session.user.email;
+      let userQuery: { $or?: Record<string, unknown>[], email?: string } = {};
+      
+      if (sessionEmail) {
+        userQuery = { email: sessionEmail };
       } else {
-        userQuery.$or!.push({ _id: userId });
+        userQuery = { $or: [{ id: userId }] };
+        if (ObjectId.isValid(userId)) {
+          userQuery.$or!.push({ _id: new ObjectId(userId) });
+        } else {
+          userQuery.$or!.push({ _id: userId });
+        }
       }
+      
       const userRes = await db.collection(collections.users).updateOne(userQuery as never, { $set: updates });
       console.log(`[profile PATCH] user update matched=${userRes.matchedCount} modified=${userRes.modifiedCount}`);
     }
@@ -233,13 +249,21 @@ export async function PATCH(req: NextRequest) {
       const firstOrg = await db.collection(collections.organizations).findOne({});
       if (firstOrg) orgId = (firstOrg.id || firstOrg._id) as string;
     } else {
-      orgId = await getUserOrgId(userId);
+      // Determine the real DB user ID to query orgs
+      const sessionEmail = session.user.email;
+      let dbUser = null;
+      if (sessionEmail) {
+        dbUser = await db.collection(collections.users).findOne({ email: sessionEmail });
+      }
+      const dbUserId = dbUser ? (dbUser.id || dbUser._id).toString() : userId;
+
+      orgId = await getUserOrgId(dbUserId);
       // Fallback: if string field query failed, try matching by _id-form member doc
       if (!orgId) {
-        const member = await db.collection(collections.orgMembers).findOne({ $or: [{ userId }, { userId: userId }] } as never);
+        const member = await db.collection(collections.orgMembers).findOne({ $or: [{ userId: dbUserId }, { userId: dbUserId }] } as never);
         if (member) orgId = member.orgId as string;
       }
-      console.log(`[profile PATCH] resolved orgId=${orgId} for userId=${userId}`);
+      console.log(`[profile PATCH] resolved orgId=${orgId} for dbUserId=${dbUserId}`);
     }
 
     if (orgId) {

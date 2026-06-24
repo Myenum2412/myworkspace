@@ -40,7 +40,7 @@ export async function loginAction(formData: FormData) {
   const userId = user.id || user._id?.toString();
   await db.collection(collections.users).updateOne(
     { _id: user._id },
-    { $set: { status: "online", updatedAt: new Date() } }
+    { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
   );
 
   const member = await db.collection(collections.orgMembers).findOne({ userId: user._id });
@@ -49,11 +49,18 @@ export async function loginAction(formData: FormData) {
   if (!member) {
     const userName = user.name || email.split("@")[0];
     const newOrgId = uuid();
+    let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;
+    const existingSlug = await db.collection(collections.organizations).findOne({ slug });
+    if (existingSlug) {
+      slug = `${slug}-${userId.slice(0, 8)}`;
+    }
+
     await db.collection(collections.organizations).insertOne({
       id: newOrgId,
       name: `${userName}'s Organization`,
-      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
+      slug,
       plan: "starter",
+      ownerId: userId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -122,15 +129,23 @@ export async function signupAction(formData: FormData) {
     emailVerified: true,
     isActive: true,
     permissions: [],
+    lastLogin: new Date(),
     createdAt: new Date(),
     updatedAt: new Date(),
   });
 
+  let slug = company?.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;
+  const existingSlug = await db.collection(collections.organizations).findOne({ slug });
+  if (existingSlug) {
+    slug = `${slug}-${userId.slice(0, 8)}`;
+  }
+
   await db.collection(collections.organizations).insertOne({
     id: orgId,
     name: company || `${name}'s Organization`,
-    slug: company?.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
+    slug,
     plan: "starter",
+    ownerId: userId,
     createdAt: new Date(),
     updatedAt: new Date(),
   });

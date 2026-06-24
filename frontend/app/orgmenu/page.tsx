@@ -32,7 +32,7 @@ const getAllMetrics = cache(async () => {
   return { orgCount, memberCount, taskCount, completedTasks, inProgressTasks, activityCount };
 });
 
-const getNewUsersByMonth = cache(async (orgId?: string | null) => {
+const getUsersByState = cache(async (orgId?: string | null) => {
   const pipeline = orgId
     ? [
         { $match: { orgId } },
@@ -45,31 +45,31 @@ const getNewUsersByMonth = cache(async (orgId?: string | null) => {
           },
         },
         { $unwind: "$user" },
-        { $match: { "user.createdAt": { $exists: true } } },
+        { $match: { "user.state": { $exists: true, $nin: [null, ""] } } },
         {
           $group: {
-            _id: { $dateToString: { format: "%Y-%m", date: "$user.createdAt" } },
+            _id: "$user.state",
             users: { $sum: 1 },
           },
         },
-        { $sort: { _id: 1 } },
+        { $sort: { users: -1 } },
       ]
     : [
-        { $match: { createdAt: { $exists: true } } },
+        { $match: { state: { $exists: true, $nin: [null, ""] } } },
         {
           $group: {
-            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            _id: "$state",
             users: { $sum: 1 },
           },
         },
-        { $sort: { _id: 1 } },
+        { $sort: { users: -1 } },
       ];
   const cursor = await db
     .collection(orgId ? collections.orgMembers : collections.users)
     .aggregate(pipeline);
   const raw = await cursor.toArray();
   return raw.map((r) => ({
-    month: r._id as string,
+    state: r._id as string,
     users: r.users as number,
   }));
 });
@@ -192,19 +192,19 @@ export default async function OrgDashboardPage() {
 
   let metrics: Awaited<ReturnType<typeof getOrgMetrics>>;
   let recentOrgs: Awaited<ReturnType<typeof getRecentOrgs>> = [];
-  let newUsersData: { month: string; users: number }[] = [];
+  let newUsersData: { state: string; users: number }[] = [];
   let recentUsers: { userId: string; name: string; email: string; role: string; status: string; provider: string; avatar: string; emailVerified: boolean; createdAt: string; lastLogin?: string; orgName?: string; orgId?: string }[] = [];
   let revenueData: { month: string; revenue: number }[] = [];
 
   if (isSuperAdmin) {
     metrics = await getAllMetrics();
     recentOrgs = await getRecentOrgs();
-    newUsersData = await getNewUsersByMonth();
+    newUsersData = await getUsersByState();
     recentUsers = await getRecentUsers();
     revenueData = await getMonthlyRevenue();
   } else {
     metrics = await getOrgMetrics(orgId || "null");
-    newUsersData = await getNewUsersByMonth(orgId);
+    newUsersData = await getUsersByState(orgId);
     recentUsers = await getRecentUsers(orgId);
     revenueData = await getMonthlyRevenue(orgId);
   }
@@ -290,15 +290,6 @@ export default async function OrgDashboardPage() {
       {recentUsers.length > 0 && (
         <DashboardSignupsTable users={recentUsers} isSuperAdmin={isSuperAdmin} />
       )}
-
-      <div className="min-h-[200px] flex-1 rounded-xl bg-muted/50 flex items-center justify-center">
-        <div className="text-center">
-          <Building2Icon className="size-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">
-            {isSuperAdmin ? "Organization overview across all tenants" : "Organization overview and quick stats"}
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

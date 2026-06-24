@@ -76,15 +76,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             role: "admin",
             emailVerified: true,
             isActive: true,
+            lastLogin: new Date(),
             createdAt: new Date(),
             updatedAt: new Date(),
           });
 
+          let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;
+          const existingSlug = await db.collection("organizations").findOne({ slug });
+          if (existingSlug) {
+            slug = `${slug}-${userId.slice(0, 8)}`;
+          }
+
           await db.collection("organizations").insertOne({
             id: orgId,
             name: `${userName}'s Organization`,
-            slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
+            slug,
             plan: "starter",
+            ownerId: userId,
             createdAt: new Date(),
             updatedAt: new Date(),
           });
@@ -104,11 +112,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             const { v4: uuid } = await import("uuid");
             const orgId = uuid();
             const userName = existing.name || user.email.split("@")[0];
+            let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;
+            const existingSlug = await db.collection("organizations").findOne({ slug });
+            if (existingSlug) {
+              slug = `${slug}-${userId.slice(0, 8)}`;
+            }
+
             await db.collection("organizations").insertOne({
               id: orgId,
               name: `${userName}'s Organization`,
-              slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
+              slug,
               plan: "starter",
+              ownerId: userId,
               createdAt: new Date(),
               updatedAt: new Date(),
             });
@@ -135,7 +150,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const { db } = await import("@/lib/db");
         await db.collection("users").updateOne(
           { id: user.id },
-          { $set: { status: "online", updatedAt: new Date() } }
+          { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
         );
       } catch {
         // MongoDB connection may not be available

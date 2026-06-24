@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { UsersIcon, UserPlusIcon, UserMinusIcon, BuildingIcon, XIcon, SearchIcon } from "lucide-react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Header } from "@/components/header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,20 +102,12 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
   const columns = getColumns(undefined, handleTerminate);
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4">
-          <><div className="flex items-center justify-between">
+    <>
+      <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-2xl font-bold">Employees</h1>
                   <p className="text-sm text-muted-foreground">Manage your organization&apos;s workforce</p>
                 </div>
-                <Button onClick={() => setAddOpen(true)}>
-                  <UserPlusIcon className="mr-2 size-4" />
-                  Add Employee
-                </Button>
               </div>
 
           <div className="grid gap-4 md:grid-cols-4">
@@ -180,9 +170,6 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
               <DataTable columns={columns} data={employees} searchQuery={searchQuery} onSearchChange={setSearchQuery} onRowClick={handleView} />
             </CardContent>
           </Card>
-          </>
-        </main>
-      </SidebarInset>
 
       {/* View Dialog */}
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setViewEmp(null); } }}>
@@ -222,17 +209,6 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
         </DialogContent>
       </Dialog>
 
-      {/* Add Employee Dialog */}
-      <Dialog open={addOpen} onOpenChange={(o) => { if (!o) { setAddOpen(false); } }}>
-        <DialogContent className="p-0 flex flex-col">
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <AddEmployeeForm
-              onCancel={() => setAddOpen(false)}
-              onEmployeeAdded={handleEmployeeAdded}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </SidebarProvider>
+
   );
 }

@@ -104,6 +104,8 @@ export function OfflineBanner() {
     }
   })();
 
+  if (state.kind === "online") return null;
+
   return (
     <div
       role="status"
@@ -113,7 +115,6 @@ export function OfflineBanner() {
       className={`${baseClasses} ${variants[state.kind]} motion-reduce:transition-none`}
     >
       <span aria-hidden="true">
-        {state.kind === "online" && "🟢"}
         {state.kind === "offline" && "🟡"}
         {state.kind === "syncing" && "🔵"}
         {state.kind === "failed" && "🔴"}

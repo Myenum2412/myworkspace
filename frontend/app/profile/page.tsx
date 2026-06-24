@@ -246,7 +246,12 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    fetchProfile();
+    let mounted = true;
+    const load = async () => {
+      if (mounted) await fetchProfile();
+    };
+    load();
+    return () => { mounted = false; };
   }, [fetchProfile]);
 
   const dbUser = data?.user;
@@ -816,6 +821,10 @@ export default function ProfilePage() {
                 {editing ? (
                   <div className="space-y-6">
                     <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label className="text-xs font-medium text-muted-foreground">Org ID (Read-only)</Label>
+                        <Input value={org?.id || "—"} disabled className="h-9 text-sm font-mono bg-muted/50 cursor-default" />
+                      </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Company Name <span className="text-destructive">*</span></Label>
                         <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="h-9 text-sm" placeholder="Acme Corp" />
@@ -941,6 +950,10 @@ export default function ProfilePage() {
                 ) : (
                   <div className="space-y-5">
                     <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2 mb-2">
+                        <p className="text-xs text-muted-foreground mb-1">Org ID</p>
+                        <p className="text-sm font-medium font-mono bg-muted/50 px-2 py-1.5 rounded-md inline-block border">{org?.id || "—"}</p>
+                      </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Company Name</p>
                         <p className="text-sm font-medium">{org?.name || "—"}</p>
