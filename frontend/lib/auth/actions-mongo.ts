@@ -70,6 +70,11 @@ export async function signupActionMongo(formData: FormData) {
 
   await createUserWorkspace(userId, name, orgId);
 
+  const { sendWelcomeEmail } = await import("@/lib/mail");
+  sendWelcomeEmail(email, name).catch((err) => {
+    console.error("[AUTH] Welcome email failed:", err?.message || err);
+  });
+
   await signIn("credentials", { email, password, redirect: false });
   const createdUser = await db.collection("users").findOne({ email });
   const role = createdUser?.role;

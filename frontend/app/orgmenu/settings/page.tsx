@@ -1,13 +1,14 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
+import { getUserOrgId } from "@/lib/org";
 import { SettingsForm } from "./settings-form";
 
 export const metadata = { title: "Settings" };
 
-const getSettings = cache(async (email: string) => {
+const getSettings = cache(async (orgId: string) => {
   try {
-    return await db.collection("org_settings").findOne({ email });
+    return await db.collection("org_settings").findOne({ orgId });
   } catch {
     return null;
   }
@@ -15,9 +16,9 @@ const getSettings = cache(async (email: string) => {
 
 export default async function SettingsPage() {
   const session = await auth();
-  const userEmail = session?.user?.email?.toLowerCase().trim() || "";
+  const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
-  const saved = userEmail ? await getSettings(userEmail) : null;
+  const saved = orgId ? await getSettings(orgId) : null;
 
   const initial = {
     language: (saved?.language as string) || "en-US",

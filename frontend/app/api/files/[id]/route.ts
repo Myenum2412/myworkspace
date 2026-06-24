@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
 import { getFileBuffer, isR2Configured } from "@/lib/storage";
+import { validateOrgMembership } from "@/lib/org";
 import fs from "fs";
 import path from "path";
 
@@ -30,6 +31,14 @@ export async function GET(
     const file = await db.collection(collections.fileAttachments).findOne({ id });
     if (!file) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+    const fileOrgId = (file.orgId as string) || "";
+    if (fileOrgId) {
+      const isMember = await validateOrgMembership(session.user.id, fileOrgId);
+      if (!isMember) {
+        return NextResponse.json({ error: "Not authorized to access this file" }, { status: 403 });
+      }
     }
 
     const mime = file.mimeType || "application/octet-stream";
@@ -94,6 +103,19 @@ export async function PATCH(
   }
 
   try {
+    const file = await db.collection(collections.fileAttachments).findOne({ id });
+    if (!file) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+    const fileOrgId = (file.orgId as string) || "";
+    if (fileOrgId) {
+      const isMember = await validateOrgMembership(session.user.id, fileOrgId);
+      if (!isMember) {
+        return NextResponse.json({ error: "Not authorized to modify this file" }, { status: 403 });
+      }
+    }
+
     const updateFields: Record<string, unknown> = {};
     if (originalName) updateFields.originalName = originalName;
     if (description !== undefined) updateFields.description = description;

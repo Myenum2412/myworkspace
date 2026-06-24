@@ -8,6 +8,7 @@ export function AddEmployeePageClient() {
   const router = useRouter()
 
   const handleClose = () => {
+    router.refresh()
     router.push("/employees")
   }
 

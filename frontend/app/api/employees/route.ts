@@ -4,6 +4,7 @@ import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
+import { ensureUserOrg, validateOrgMembership } from "@/lib/org";
 
 export async function GET() {
   try {
@@ -11,23 +12,25 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id }) as any;
-    if (!orgMember) {
-      const org = await db.collection(collections.organizations).findOne({ ownerId: session.user.id }) as any;
-      if (org) {
-        orgMember = { orgId: org.id || org._id.toString() } as any;
-      }
-    }
-    if (!orgMember) {
-      return NextResponse.json({ data: [] });
-    }
-    const orgMembers = await (await db.collection(collections.orgMembers).find({ orgId: orgMember.orgId })).toArray();
+
+    const orgId = await ensureUserOrg(session.user.id);
+
+    const orgMembers = await (await db.collection(collections.orgMembers).find({ orgId })).toArray();
     const userIds = orgMembers.map((m: any) => m.userId);
-    const employees = await (await db.collection(collections.users).find(
+    const users = await (await db.collection(collections.users).find(
       { id: { $in: userIds } },
       { projection: { password: 0 } }
-    )).sort({ createdAt: -1 }).toArray();
-    return NextResponse.json({ data: employees });
+    ).sort({ createdAt: -1 })).toArray();
+
+    const result = users.map((u: Record<string, unknown>) => {
+      const member = orgMembers.find((m: any) => m.userId === u.id);
+      return {
+        ...u,
+        orgRole: member?.role || "member",
+      };
+    });
+
+    return NextResponse.json({ data: result });
   } catch (err: any) {
     console.error("[API GET /api/employees] Error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -46,6 +49,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const orgId = await ensureUserOrg(session.user.id);
+
     const body = await request.json();
     const { empId, firstName, lastName, nickname, email, password, avatar, department, designation, location, phone, roleName, branchName, shift, employmentType, status, sourceOfHire, joiningDate, currentExperience, totalExperience, alternateEmail, address, city, state, country, zipCode, linkedin, github, twitter, website, workExperience, educationDetails, dependentDetails, files } = body;
 
@@ -56,43 +61,6 @@ export async function POST(request: Request) {
     const existing = await db.collection(collections.users).findOne({ email });
     if (existing) {
       return NextResponse.json({ error: "User with this email already exists" }, { status: 409 });
-    }
-
-    let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
-    if (!orgMember) {
-      const org = await db.collection(collections.organizations).findOne({ ownerId: session.user.id });
-      if (org) {
-        await db.collection(collections.orgMembers).insertOne({
-          id: uuid(),
-          orgId: org.id || org._id.toString(),
-          userId: session.user.id,
-          role: "admin",
-          joinedAt: new Date(),
-        });
-        orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
-      } else {
-        // Auto-create org for user
-        const user = await db.collection(collections.users).findOne({ id: session.user.id });
-        const userName = user?.name || user?.email?.split("@")[0] || "User";
-        const newOrgId = uuid();
-        await db.collection(collections.organizations).insertOne({
-          id: newOrgId,
-          name: `${userName}'s Organization`,
-          slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
-          ownerId: session.user.id,
-          plan: "starter",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-        await db.collection(collections.orgMembers).insertOne({
-          id: uuid(),
-          orgId: newOrgId,
-          userId: session.user.id,
-          role: "admin",
-          joinedAt: new Date(),
-        });
-        orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
-      }
     }
 
     const userId = uuid();
@@ -132,6 +100,7 @@ export async function POST(request: Request) {
       currentExperience: currentExperience || null,
       totalExperience: totalExperience || null,
       files: files || [],
+      orgId,
       createdBy: session.user.id,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -139,7 +108,7 @@ export async function POST(request: Request) {
 
     await db.collection(collections.orgMembers).insertOne({
       id: uuid(),
-      orgId: orgMember!.orgId,
+      orgId,
       userId,
       role: roleName?.toLowerCase() || "member",
     });
@@ -149,6 +118,7 @@ export async function POST(request: Request) {
         workExperience.map((exp: any) => ({
           id: uuid(),
           userId,
+          orgId,
           company: exp.company || "",
           title: exp.title || "",
           from: exp.from || null,
@@ -166,6 +136,7 @@ export async function POST(request: Request) {
         educationDetails.map((edu: any) => ({
           id: uuid(),
           userId,
+          orgId,
           institute: edu.institute || "",
           degree: edu.degree || "",
           specialization: edu.specialization || "",
@@ -181,6 +152,7 @@ export async function POST(request: Request) {
         dependentDetails.map((dep: any) => ({
           id: uuid(),
           userId,
+          orgId,
           name: dep.name || "",
           relationship: dep.relationship || "",
           dob: dep.dob || null,
@@ -189,6 +161,11 @@ export async function POST(request: Request) {
         }))
       );
     }
+
+    const { sendWelcomeEmail } = await import("@/lib/mail");
+    sendWelcomeEmail(email, name).catch((err) => {
+      console.error("[employees] Welcome email failed:", err?.message || err);
+    });
 
     const employee = await db.collection(collections.users).findOne({ id: userId });
     return NextResponse.json(employee, { status: 201 });

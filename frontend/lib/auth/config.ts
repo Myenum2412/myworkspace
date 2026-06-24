@@ -104,6 +104,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             role: "admin",
             joinedAt: new Date(),
           });
+
+          const { sendWelcomeEmail } = await import("@/lib/mail");
+          sendWelcomeEmail(user.email, userName).catch((err) => {
+            console.error("[AUTH] Welcome email failed:", err?.message || err);
+          });
         } else {
           // Ensure existing user has an org
           const userId = existing.id || existing._id?.toString();

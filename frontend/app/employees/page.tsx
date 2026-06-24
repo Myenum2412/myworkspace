@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
+import { ObjectId } from "mongodb";
 import EmployeesPageClient from "./page-client";
 
 export const metadata = { title: "Employees Overview" };
@@ -43,6 +44,24 @@ type EmployeeInfo = {
   dependentDetails?: Array<{ id: string; name?: string; relationship?: string; dob?: string }>;
 };
 
+function toUserQuery(userIds: string[]) {
+  const objectIds: ObjectId[] = [];
+  for (const id of userIds) {
+    try { objectIds.push(new ObjectId(id)); } catch { /* not an ObjectId */ }
+  }
+  if (objectIds.length > 0 && objectIds.length === userIds.length) {
+    return { _id: { $in: objectIds } };
+  }
+  if (objectIds.length > 0) {
+    return { $or: [{ id: { $in: userIds } }, { _id: { $in: objectIds } }] };
+  }
+  return { id: { $in: userIds } };
+}
+
+function userDocToId(u: Record<string, unknown>): string {
+  return (u.id as string) || (u._id as ObjectId)?.toString() || "";
+}
+
 export default async function EmployeesPage() {
   const session = await auth();
   const user = {
@@ -55,60 +74,84 @@ export default async function EmployeesPage() {
 
   if (session?.user?.id) {
     try {
-      let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+      let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id }) as Record<string, unknown> | null;
       if (!orgMember) {
-        const org = await db.collection(collections.organizations).findOne({ ownerId: session.user.id });
+        const org = await db.collection(collections.organizations).findOne({ ownerId: session.user.id }) as Record<string, unknown> | null;
         if (org) {
+          const orgId = (org.id as string) || (org._id as ObjectId).toString();
           await db.collection(collections.orgMembers).insertOne({
             id: uuid(),
-            orgId: org.id || org._id.toString(),
+            orgId,
             userId: session.user.id,
             role: "admin",
             joinedAt: new Date(),
           });
-          orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+          orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id }) as Record<string, unknown> | null;
         }
       }
-      if (orgMember) {
-        const orgMembersCursor = await db.collection(collections.orgMembers).find({ orgId: orgMember.orgId });
-        const allOrgMembers = await orgMembersCursor.toArray();
-        const visibleMembers = allOrgMembers.filter((m: Record<string, unknown>) => m.userId !== session.user.id);
-        const userIds = visibleMembers.map((m: Record<string, unknown>) => m.userId);
-        const usersCursor = await db.collection(collections.users).find({ id: { $in: userIds } });
-        const users = await usersCursor.toArray();
-        const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
 
-        const allFileIds = users.flatMap((u: Record<string, unknown>) => (u.files as string[]) || []);
+      const allOrgMembers: Record<string, unknown>[] = [];
+
+      if (orgMember) {
+        const orgId = (orgMember.orgId as string) || (orgMember._id as ObjectId)?.toString();
+        if (orgId) {
+          const members = await (await db.collection(collections.orgMembers).find({ orgId })).toArray();
+          allOrgMembers.push(...members);
+        }
+      }
+
+      const currentUserId = session.user.id;
+      const hasCurrentUser = allOrgMembers.some((m) => m.userId === currentUserId);
+      if (!hasCurrentUser) {
+        allOrgMembers.push({ userId: currentUserId, role: "admin" });
+      }
+
+      const userIds = [...new Set(allOrgMembers.map((m) => m.userId as string).filter(Boolean))];
+
+      if (userIds.length > 0) {
+        const query = toUserQuery(userIds);
+        const users = await (await db.collection(collections.users).find(query).toArray());
+
+        const userMap = new Map<string, Record<string, unknown>>();
+        for (const u of users) {
+          const uid = userDocToId(u);
+          if (uid) userMap.set(uid, u);
+        }
+
+        const allFileIds = users.flatMap((u) => (u.files as string[]) || []);
         let fileMap = new Map<string, Record<string, unknown>>();
         if (allFileIds.length > 0) {
-          const fileDocs = await db.collection(collections.fileAttachments).find({ id: { $in: allFileIds } }).toArray();
-          fileMap = new Map(fileDocs.map((f: Record<string, unknown>) => [f.id as string, f]));
+          const fileDocs = await (await db.collection(collections.fileAttachments).find({ id: { $in: allFileIds } })).toArray();
+          fileMap = new Map(fileDocs.map((f) => [f.id as string, f]));
         }
 
-        employees = visibleMembers.map((m: Record<string, unknown>) => {
-          const u = userMap.get(m.userId as string) as Record<string, unknown> || {};
-          const userFiles = (u.files as string[]) || [];
-          return {
-            id: (m.userId as string) || (u.id as string) || "",
-            name: (u.name as string) || "Unknown",
-            email: (u.email as string) || "",
-            role: (m.role as string) || "member",
-            status: (u.status as string) || "offline",
-            department: (u.department as string) || "",
-            designation: (u.designation as string) || "",
-            employmentType: (u.employmentType as string) || "",
-            phone: (u.phone as string) || "",
-            branchName: (u.branchName as string) || "",
-            joiningDate: u.joiningDate ? (u.joiningDate as Date).toISOString() : "",
-            avatar: (u.image as string) || "",
-            files: userFiles.map((fid: string) => {
-              const file = fileMap.get(fid);
-              return file ? { id: file.id as string, name: file.originalName as string, size: file.size as number, mimeType: file.mimeType as string } : { id: fid, name: fid, size: 0 };
-            }),
-          };
-        });
+        employees = allOrgMembers
+          .filter((m) => userMap.has(m.userId as string))
+          .map((m) => {
+            const u = userMap.get(m.userId as string)!;
+            const userFiles = (u.files as string[]) || [];
+            return {
+              id: userDocToId(u) || (m.userId as string) || "",
+              name: (u.name as string) || "Unknown",
+              email: (u.email as string) || "",
+              role: (m.role as string) || (u.role as string) || "member",
+              status: (u.status as string) || "offline",
+              department: (u.department as string) || "",
+              designation: (u.designation as string) || "",
+              employmentType: (u.employmentType as string) || "",
+              phone: (u.phone as string) || "",
+              branchName: (u.branchName as string) || "",
+              joiningDate: u.joiningDate ? new Date(u.joiningDate as string | number).toISOString() : "",
+              avatar: (u.image as string) || (u.avatar as string) || "",
+              files: userFiles.map((fid: string) => {
+                const file = fileMap.get(fid);
+                return file ? { id: file.id as string, name: file.originalName as string, size: file.size as number, mimeType: file.mimeType as string } : { id: fid, name: fid, size: 0 };
+              }),
+            };
+          });
       }
-    } catch {
+    } catch (err) {
+      console.error("[EmployeesPage] Error fetching employees:", err);
       employees = [];
     }
   }

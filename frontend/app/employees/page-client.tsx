@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { UsersIcon, UserPlusIcon, UserMinusIcon, BuildingIcon, XIcon, SearchIcon } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +43,10 @@ const getInitials = (name: string) =>
 
 export default function EmployeesPageClient({ employees: initialEmployees, user }: Props) {
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+
+  useEffect(() => {
+    setEmployees(initialEmployees);
+  }, [initialEmployees]);
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [terminateEmp, setTerminateEmp] = useState<Employee | null>(null);
   const [terminateReason, setTerminateReason] = useState("");
@@ -108,6 +113,12 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
                   <h1 className="text-2xl font-bold">Employees</h1>
                   <p className="text-sm text-muted-foreground">Manage your organization&apos;s workforce</p>
                 </div>
+                <Link href="/addemployees">
+                  <Button size="sm">
+                    <UserPlusIcon className="mr-2 size-4" />
+                    Add Employee
+                  </Button>
+                </Link>
               </div>
 
           <div className="grid gap-4 md:grid-cols-4">

@@ -19,23 +19,29 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { CopyIcon, Loader2 } from "lucide-react"
+import { CopyIcon } from "lucide-react"
+
 import { getDropdownOptions } from "@/lib/dropdown-options"
 
+import { cn } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAnalytics } from "@/hooks/use-analytics"
-import { useQueryClient } from "@tanstack/react-query"
-import { useOfflineForm } from "@/lib/offline/use-offline-form"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { employeeService } from "@/lib/services/employee-service"
 
 import {
+  ProfileImageUpload,
+  BasicInfoSection,
   WorkInfoSection,
   ContactDetailsSection,
   DynamicRowSection,
+  SelectWithAdd,
   SocialPresenceSection,
   type FirstSlideEmployeeForm,
   Row,
 } from "./employee-form-sections"
 
+/** Generate a short unique ID for dynamic rows. */
 function generateId(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID()
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -51,7 +57,8 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   const queryClient = useQueryClient()
   const [savedEmployee, setSavedEmployee] = React.useState<Record<string, unknown> | null>(null)
   const [formError, setFormError] = React.useState("")
-  const [formData, setFormData] = React.useState<FirstSlideEmployeeForm>({
+  const [dropdownOptions, setDropdownOptions] = React.useState<Record<string, string[]>>({})
+  const [firstSlideData, setFirstSlideData] = React.useState<FirstSlideEmployeeForm>({
     displayId: "",
     firstName: "",
     lastName: "",
@@ -73,12 +80,25 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   })
 
   React.useEffect(() => {
-    const prefix = localStorage.getItem("employeeIdPrefix")
-    if (prefix) {
-      const count = parseInt(localStorage.getItem("employeeIdCount") || "1", 10)
-      const displayId = `${prefix}${String(count).padStart(3, '0')}`
-      setFormData(prev => ({ ...prev, displayId }))
-    }
+    const fetchOrgAndSetId = async () => {
+      try {
+        const res = await fetch('/api/user/profile');
+        if (res.ok) {
+          const data = await res.json();
+          // Get organization name, fallback to "EMP"
+          const orgName = data?.organization?.name || "EMP";
+          // Use first 3 letters of company name for the ID prefix
+          const prefix = orgName.substring(0, 3).toUpperCase();
+          const count = parseInt(localStorage.getItem("employeeIdCount") || "1", 10);
+          const displayId = `${prefix}${String(count).padStart(3, '0')}`;
+          setFirstSlideData(prev => ({ ...prev, displayId }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch organization for employee ID", err);
+      }
+    };
+    fetchOrgAndSetId();
+    setDropdownOptions(getDropdownOptions());
   }, [])
 
   const [workExperience, setWorkExperience] = React.useState<Row[]>([
@@ -91,12 +111,6 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
     { id: "1", name: "", relationship: "", dob: "" },
   ])
 
-  const [dropdownOptions, setDropdownOptions] = React.useState<Record<string, string[]>>({})
-
-  React.useEffect(() => {
-    setDropdownOptions(getDropdownOptions())
-  }, [])
-
   const addRow = (setter: React.Dispatch<React.SetStateAction<Row[]>>, type: string) => {
     setter((prev) => [...prev, { id: generateId() }])
     trackEvent('add_form_row', { rowType: type })
@@ -107,73 +121,116 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
     trackEvent('remove_form_row', { rowType: type, rowId: id })
   }
 
-  const updateRowField = (
-    setter: React.Dispatch<React.SetStateAction<Row[]>>,
-    rowId: string,
-    field: string,
-    value: any
-  ) => {
-    setter((prev) =>
-      prev.map((row) =>
-        row.id === rowId ? { ...row, [field]: value } : row
-      )
-    )
-  }
-
-  const updateField = (field: keyof FirstSlideEmployeeForm, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  const updateFirstSlideField = (field: keyof FirstSlideEmployeeForm, value: string) => {
+    setFirstSlideData((prev) => ({ ...prev, [field]: value }))
     setFormError("")
   }
 
-  const [successModalOpen, setSuccessModalOpen] = React.useState(false)
-
-  const offlineForm = useOfflineForm({
-    endpoint: "/api/employees",
-    method: "POST",
-    maxRetries: 5,
+  const createEmployeeMutation = useMutation({
+    mutationFn: () => employeeService.createEmployee({
+      empId: firstSlideData.displayId.trim() || undefined,
+      firstName: firstSlideData.firstName.trim(),
+      lastName: firstSlideData.lastName.trim(),
+      email: firstSlideData.email.trim(),
+      avatar: firstSlideData.avatar || "",
+      department: firstSlideData.department || null,
+      phone: firstSlideData.phone || null,
+      alternateEmail: firstSlideData.secondaryPhone || null, // Mapping secondaryPhone to alternateEmail for now, or just using the schema
+      address: firstSlideData.address || null,
+      city: firstSlideData.city || null,
+      state: firstSlideData.state || null,
+      country: firstSlideData.country || null,
+      zipCode: firstSlideData.postalCode || null,
+      linkedin: firstSlideData.linkedin || null,
+      github: firstSlideData.github || null,
+      twitter: firstSlideData.twitter || null,
+      website: firstSlideData.portfolio || null,
+      roleName: firstSlideData.roleName || firstSlideData.designation || null,
+      branchName: firstSlideData.branchName || firstSlideData.location || null,
+      employmentType: firstSlideData.employmentType || null,
+      status: firstSlideData.status.toLowerCase() === "inactive" ? "inactive" : "active",
+      sourceOfHire: firstSlideData.sourceOfHire || null,
+      workExperience,
+      educationDetails,
+      dependentDetails,
+      currentExperience: firstSlideData.currentExperience || null,
+      totalExperience: firstSlideData.totalExperience || null,
+    }),
     onSuccess: (employee) => {
       setSavedEmployee(employee)
-      queryClient.invalidateQueries({ queryKey: ["employees"] })
+      queryClient.invalidateQueries({ queryKey: ["employee"] })
       queryClient.invalidateQueries({ queryKey: ["employee-stats"] })
       trackEvent('save_employee_success')
-
-      const currentCount = parseInt(localStorage.getItem("employeeIdCount") || "1", 10)
-      localStorage.setItem("employeeIdCount", String(currentCount + 1))
-
-      setSuccessModalOpen(true)
     },
-    onError: (error) => {
+    onError: (error: any) => {
       setFormError(error?.message || "Failed to create employee. Please try again.")
     },
   })
 
-  const handleSave = () => {
-    if (!formData.firstName.trim() || !formData.email.trim()) {
+  const [successModalOpen, setSuccessModalOpen] = React.useState(false)
+
+  const handleSave = async () => {
+    if (savedEmployee) {
+      setSuccessModalOpen(true)
+      return
+    }
+
+    if (!firstSlideData.firstName.trim() || !firstSlideData.email.trim()) {
       setFormError("First name and email address are required.")
       return
     }
-    trackEvent('save_employee_start')
-    const payload = {
-      empId: formData.displayId.trim() || undefined,
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      email: formData.email.trim(),
-      avatar: formData.avatar || "",
-      password: formData.password || Math.random().toString(36).slice(-8) + "A1!",
-      department: formData.department || null,
-      phone: formData.phone || null,
-      roleName: formData.roleName || formData.designation || null,
-      branchName: formData.branchName || formData.location || null,
-      employmentType: formData.employmentType || null,
-      status: formData.status.toLowerCase() === "inactive" ? "inactive" : "active",
-      sourceOfHire: formData.sourceOfHire || null,
-      workExperience: workExperience.filter(w => w.company || w.title),
-      educationDetails: educationDetails.filter(e => e.institute || e.degree),
-      dependentDetails: dependentDetails.filter(d => d.name),
-      currentExperience: formData.currentExperience || null,
-      totalExperience: formData.totalExperience || null,
+
+    const finalPassword = firstSlideData.password || Math.random().toString(36).slice(-8) + "A1!"
+    if (!firstSlideData.password) {
+      setFirstSlideData(prev => ({ ...prev, password: finalPassword }))
     }
-    void offlineForm.submit(payload)
+
+    trackEvent('save_employee_start')
+    try {
+      const employee = await employeeService.createEmployee({
+        empId: firstSlideData.displayId.trim() || undefined,
+        firstName: firstSlideData.firstName.trim(),
+        lastName: firstSlideData.lastName.trim(),
+        email: firstSlideData.email.trim(),
+        avatar: firstSlideData.avatar || "",
+        password: finalPassword,
+        department: firstSlideData.department || null,
+        phone: firstSlideData.phone || null,
+        alternateEmail: firstSlideData.secondaryPhone || null,
+        address: firstSlideData.address || null,
+        city: firstSlideData.city || null,
+        state: firstSlideData.state || null,
+        country: firstSlideData.country || null,
+        zipCode: firstSlideData.postalCode || null,
+        linkedin: firstSlideData.linkedin || null,
+        github: firstSlideData.github || null,
+        twitter: firstSlideData.twitter || null,
+        website: firstSlideData.portfolio || null,
+        roleName: firstSlideData.roleName || firstSlideData.designation || null,
+        branchName: firstSlideData.branchName || firstSlideData.location || null,
+        employmentType: firstSlideData.employmentType || null,
+        status: firstSlideData.status.toLowerCase() === "inactive" ? "inactive" : "active",
+        sourceOfHire: firstSlideData.sourceOfHire || null,
+        workExperience,
+        educationDetails,
+        dependentDetails,
+        currentExperience: firstSlideData.currentExperience || null,
+        totalExperience: firstSlideData.totalExperience || null,
+      })
+      
+      setSavedEmployee(employee)
+
+      // Increment the employee ID count in localStorage
+      const currentCount = parseInt(localStorage.getItem("employeeIdCount") || "1", 10)
+      localStorage.setItem("employeeIdCount", String(currentCount + 1))
+
+      queryClient.invalidateQueries({ queryKey: ["employee"] })
+      queryClient.invalidateQueries({ queryKey: ["employee-stats"] })
+      trackEvent('save_employee_success')
+      setSuccessModalOpen(true)
+    } catch (err: any) {
+      setFormError(err?.message || "Failed to create employee. Please try again.")
+    }
   }
 
   const completeAndClose = () => {
@@ -185,9 +242,9 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col gap-6 overflow-hidden">
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Employee Created</DialogTitle>
             <DialogDescription>
@@ -197,14 +254,14 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
           <div className="flex items-center space-x-2 my-4 bg-muted/50 p-4 rounded-lg">
             <div className="grid flex-1 gap-2">
               <div className="text-sm">
-                <span className="font-semibold">Email:</span> {formData.email}
+                <span className="font-semibold">Email:</span> {firstSlideData.email}
               </div>
               <div className="text-sm">
-                <span className="font-semibold">Password:</span> {formData.password || "(auto-generated)"}
+                <span className="font-semibold">Password:</span> {firstSlideData.password}
               </div>
             </div>
             <Button size="sm" className="px-3" onClick={() => {
-              navigator.clipboard.writeText(`Email: ${formData.email}\nPassword: ${formData.password}`)
+              navigator.clipboard.writeText(`Email: ${firstSlideData.email}\nPassword: ${firstSlideData.password}`)
             }}>
               <span className="sr-only">Copy</span>
               <CopyIcon className="h-4 w-4" />
@@ -217,57 +274,87 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {formError && (
         <div className="mx-6 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
           {formError}
         </div>
       )}
 
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full px-6">
-          <div className="space-y-8 py-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-6">Work Information</h2>
-              <WorkInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
+      <div className="relative flex-1 overflow-hidden px-1">
+        <ScrollArea className="h-full px-5">
+          <div className="space-y-12 py-6 max-w-4xl mx-auto">
+            
+            {/* Step 1: Profile */}
+            <div className="space-y-8">
+              <div className="flex gap-12 items-start mb-6">
+                <div className="flex-shrink-0">
+                  <ProfileImageUpload 
+                    avatar={firstSlideData.avatar} 
+                    onAvatarChange={(url) => updateFirstSlideField("avatar", url)} 
+                  />
+                </div>
+                <div className="flex-1">
+                  <BasicInfoSection formData={firstSlideData} onChange={updateFirstSlideField} options={dropdownOptions} />
+                </div>
+              </div>
+              <Separator />
             </div>
 
-            <Separator />
+            {/* Step 2: Work Info */}
+            <div className="space-y-8">
+              <WorkInfoSection formData={firstSlideData} onChange={updateFirstSlideField} options={dropdownOptions} />
+              <Separator />
+            </div>
 
-            <div>
-              <h2 className="text-lg font-semibold mb-6">Contact Details</h2>
+            {/* Step 3: Contact */}
+            <div className="space-y-8">
               <ContactDetailsSection
-                phone={formData.phone}
-                address={formData.address}
-                city={formData.city}
-                state={formData.state}
-                country={formData.country}
-                onPhoneChange={(value) => updateField("phone", value)}
-                onAddressChange={(value) => updateField("address", value)}
-                onCityChange={(value) => updateField("city", value)}
-                onStateChange={(value) => updateField("state", value)}
-                onCountryChange={(value) => updateField("country", value)}
+                phone={firstSlideData.phone}
+                secondaryPhone={firstSlideData.secondaryPhone}
+                address={firstSlideData.address}
+                city={firstSlideData.city}
+                state={firstSlideData.state}
+                postalCode={firstSlideData.postalCode}
+                country={firstSlideData.country}
+                onPhoneChange={(v) => updateFirstSlideField("phone", v)}
+                onSecondaryPhoneChange={(v) => updateFirstSlideField("secondaryPhone", v)}
+                onAddressChange={(v) => updateFirstSlideField("address", v)}
+                onCityChange={(v) => updateFirstSlideField("city", v)}
+                onStateChange={(v) => updateFirstSlideField("state", v)}
+                onPostalCodeChange={(v) => updateFirstSlideField("postalCode", v)}
+                onCountryChange={(v) => updateFirstSlideField("country", v)}
+                options={dropdownOptions}
               />
+              <Separator />
+              <FieldSet>
+                <FieldLegend>Separation Information</FieldLegend>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel>Date of Exit</FieldLabel>
+                    <Input type="date" placeholder="dd-MMM-yyyy" />
+                  </Field>
+                </div>
+              </FieldSet>
+              <Separator />
             </div>
 
-            <Separator />
-
-            <div>
-              <h2 className="text-lg font-semibold mb-6">Social Presence</h2>
+            {/* Step 4: Social */}
+            <div className="space-y-8">
               <SocialPresenceSection
-                linkedin={formData.linkedin}
-                github={formData.github}
-                twitter={formData.twitter}
-                onLinkedinChange={(value) => updateField("linkedin", value)}
-                onGithubChange={(value) => updateField("github", value)}
-                onTwitterChange={(value) => updateField("twitter", value)}
+                linkedin={firstSlideData.linkedin}
+                github={firstSlideData.github}
+                twitter={firstSlideData.twitter}
+                portfolio={firstSlideData.portfolio}
+                onLinkedinChange={(v) => updateFirstSlideField("linkedin", v)}
+                onGithubChange={(v) => updateFirstSlideField("github", v)}
+                onTwitterChange={(v) => updateFirstSlideField("twitter", v)}
+                onPortfolioChange={(v) => updateFirstSlideField("portfolio", v)}
               />
+              <Separator />
             </div>
 
-            <Separator />
-
-            <div>
-              <h2 className="text-lg font-semibold mb-6">Work Experience</h2>
+            {/* Step 5: History */}
+            <div className="space-y-8 pb-8">
               <DynamicRowSection
                 title="Work experience"
                 rows={workExperience}
@@ -277,62 +364,32 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field>
                       <FieldLabel>Company name</FieldLabel>
-                      <Input
-                        placeholder="Company name"
-                        value={row.company || ""}
-                        onChange={(e) => updateRowField(setWorkExperience, row.id, "company", e.target.value)}
-                      />
+                      <Input placeholder="Company name" />
                     </Field>
                     <Field>
                       <FieldLabel>Job Title</FieldLabel>
-                      <Input
-                        placeholder="Job Title"
-                        value={row.title || ""}
-                        onChange={(e) => updateRowField(setWorkExperience, row.id, "title", e.target.value)}
-                      />
+                      <Input placeholder="Job Title" />
                     </Field>
                     <Field>
                       <FieldLabel>From Date</FieldLabel>
-                      <Input
-                        type="date"
-                        value={row.from || ""}
-                        onChange={(e) => updateRowField(setWorkExperience, row.id, "from", e.target.value)}
-                      />
+                      <Input type="date" />
                     </Field>
                     <Field>
                       <FieldLabel>To Date</FieldLabel>
-                      <Input
-                        type="date"
-                        value={row.to || ""}
-                        onChange={(e) => updateRowField(setWorkExperience, row.id, "to", e.target.value)}
-                      />
+                      <Input type="date" />
                     </Field>
                     <Field className="sm:col-span-2">
                       <FieldLabel>Job Description</FieldLabel>
-                      <textarea
-                        className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
-                        placeholder="Job Description"
-                        value={row.description || ""}
-                        onChange={(e) => updateRowField(setWorkExperience, row.id, "description", e.target.value)}
-                      />
+                      <textarea className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring" placeholder="Job Description" />
                     </Field>
                     <div className="flex items-center gap-2">
-                      <Checkbox
-                        id={`relevant-${row.id}`}
-                        checked={row.relevant || false}
-                        onCheckedChange={(checked) => updateRowField(setWorkExperience, row.id, "relevant", checked)}
-                      />
+                      <Checkbox id={`relevant-${row.id}`} />
                       <label htmlFor={`relevant-${row.id}`} className="text-sm font-medium">Relevant</label>
                     </div>
                   </div>
                 )}
               />
-            </div>
-
-            <Separator />
-
-            <div>
-              <h2 className="text-lg font-semibold mb-6">Education Details</h2>
+              <Separator />
               <DynamicRowSection
                 title="Education Details"
                 rows={educationDetails}
@@ -342,45 +399,24 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field>
                       <FieldLabel>Institute Name</FieldLabel>
-                      <Input
-                        placeholder="Institute Name"
-                        value={row.institute || ""}
-                        onChange={(e) => updateRowField(setEducationDetails, row.id, "institute", e.target.value)}
-                      />
+                      <Input placeholder="Institute Name" />
                     </Field>
                     <Field>
                       <FieldLabel>Degree/Diploma</FieldLabel>
-                      <Input
-                        placeholder="Degree/Diploma"
-                        value={row.degree || ""}
-                        onChange={(e) => updateRowField(setEducationDetails, row.id, "degree", e.target.value)}
-                      />
+                      <Input placeholder="Degree/Diploma" />
                     </Field>
                     <Field>
                       <FieldLabel>Specialization</FieldLabel>
-                      <Input
-                        placeholder="Specialization"
-                        value={row.specialization || ""}
-                        onChange={(e) => updateRowField(setEducationDetails, row.id, "specialization", e.target.value)}
-                      />
+                      <Input placeholder="Specialization" />
                     </Field>
                     <Field>
                       <FieldLabel>Date of Completion</FieldLabel>
-                      <Input
-                        type="date"
-                        value={row.completionDate || ""}
-                        onChange={(e) => updateRowField(setEducationDetails, row.id, "completionDate", e.target.value)}
-                      />
+                      <Input type="date" />
                     </Field>
                   </div>
                 )}
               />
-            </div>
-
-            <Separator />
-
-            <div>
-              <h2 className="text-lg font-semibold mb-6">Dependent Details</h2>
+              <Separator />
               <DynamicRowSection
                 title="Dependent Details"
                 rows={dependentDetails}
@@ -390,34 +426,15 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field>
                       <FieldLabel>Name</FieldLabel>
-                      <Input
-                        placeholder="Name"
-                        value={row.name || ""}
-                        onChange={(e) => updateRowField(setDependentDetails, row.id, "name", e.target.value)}
-                      />
+                      <Input placeholder="Name" />
                     </Field>
-                    <Field>
-                      <FieldLabel>Relationship</FieldLabel>
-                      <select
-                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
-                        value={row.relationship || ""}
-                        onChange={(e) => updateRowField(setDependentDetails, row.id, "relationship", e.target.value)}
-                      >
-                        <option value="">Select relationship</option>
-                        <option value="Spouse">Spouse</option>
-                        <option value="Child">Child</option>
-                        <option value="Parent">Parent</option>
-                        <option value="Sibling">Sibling</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </Field>
+                    <SelectWithAdd
+                      label="Relationship"
+                      options={["Spouse", "Child", "Parent"]}
+                    />
                     <Field>
                       <FieldLabel>Date of Birth</FieldLabel>
-                      <Input
-                        type="date"
-                        value={row.dob || ""}
-                        onChange={(e) => updateRowField(setDependentDetails, row.id, "dob", e.target.value)}
-                      />
+                      <Input type="date" />
                     </Field>
                   </div>
                 )}
@@ -431,15 +448,11 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
         <Button variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
-        <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSave} disabled={offlineForm.isPending}>
-          {offlineForm.isPending ? (
-            <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</>
-          ) : offlineForm.isOfflineQueued ? (
-            "Saved offline"
-          ) : (
-            "Save Employee"
-          )}
-        </Button>
+        <div className="flex gap-3">
+          <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSave} disabled={createEmployeeMutation.isPending}>
+            {createEmployeeMutation.isPending ? "Saving..." : "Save Employee"}
+          </Button>
+        </div>
       </div>
     </div>
   )

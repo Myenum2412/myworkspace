@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { UsersIcon, UserPlusIcon } from "lucide-react";
+import { UsersIcon } from "lucide-react";
 import {
   ColumnDef,
   flexRender,
@@ -92,19 +91,11 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-auto">
-                  <div className="flex flex-col items-center justify-center py-12 gap-3">
+                    <div className="flex flex-col items-center justify-center py-12 gap-3">
                     <UsersIcon className="size-10 text-muted-foreground/30" />
                     <p className="text-sm text-muted-foreground">
-                      {globalFilter ? "No employees match your search." : "No employees yet. Add your first employee to get started."}
+                      {globalFilter ? "No employees match your search." : "No employees found."}
                     </p>
-                    {!globalFilter && (
-                      <Link href="/addemployees">
-                        <Button size="sm">
-                          <UserPlusIcon className="mr-2 size-4" />
-                          Add Employee
-                        </Button>
-                      </Link>
-                    )}
                   </div>
                  </TableCell>
               </TableRow>

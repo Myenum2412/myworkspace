@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
+import { getUserOrgId } from "@/lib/org";
 
 type SettingsState = { error?: string; success?: boolean } | null;
 
@@ -15,15 +16,15 @@ export async function saveSettings(_prevState: SettingsState, formData: FormData
   const dateFormat = formData.get("dateFormat") as string;
   const brandName = formData.get("brandName") as string;
 
-  const userEmail = session.user.email?.toLowerCase().trim();
-  if (!userEmail) return { error: "No user email" };
+  const orgId = await getUserOrgId(session.user.id);
+  if (!orgId) return { error: "No organization found" };
 
   try {
     await db.collection("org_settings").updateOne(
-      { email: userEmail },
+      { orgId },
       {
         $set: {
-          email: userEmail,
+          orgId,
           language,
           timezone,
           dateFormat,

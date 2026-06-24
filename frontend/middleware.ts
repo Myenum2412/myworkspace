@@ -17,7 +17,10 @@ const WORKSPACE_ROUTES = [
   "/recycle-bin", "/upload",
 ];
 
-function getHomePath(_role?: string): string {
+function getHomePath(role?: string): string {
+  if (role === "member" || role === "staff") {
+    return "/staffs";
+  }
   return "/dashboard";
 }
 
