@@ -47,15 +47,15 @@ type Task = {
 
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-100 text-gray-700",
-  in_progress: "bg-amber-100 text-amber-700",
-  review: "bg-[#e8ece4] text-[#3a5234]",
-  done: "bg-emerald-100 text-emerald-700",
+  in_progress: "bg-red-900 text-red-700",
+  review: "bg-gray-700 text-gray-700",
+  done: "bg-red-900 text-red-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
 const priorityStyles: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
-  medium: "bg-[#e8ece4] text-[#4c6a45]",
+  medium: "bg-gray-700 text-gray-700",
   high: "bg-orange-100 text-orange-600",
   urgent: "bg-red-100 text-red-600",
 };
@@ -136,21 +136,21 @@ export default function TeamTasksPage() {
               <CardContent>
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-blue-50">
                       <TableRow>
-                        <TableHead className="w-20">Task #</TableHead>
-                        <TableHead>Task</TableHead>
-                        <TableHead>Assigned To</TableHead>
-                        <TableHead>Delegated By</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead className="w-16">Actions</TableHead>
+                        <TableHead className="bg-blue-50 w-20">Task #</TableHead>
+                        <TableHead className="bg-blue-50">Task</TableHead>
+                        <TableHead className="bg-blue-50">Assigned To</TableHead>
+                        <TableHead className="bg-blue-50">Delegated By</TableHead>
+                        <TableHead className="bg-blue-50">Status</TableHead>
+                        <TableHead className="bg-blue-50">Priority</TableHead>
+                        <TableHead className="bg-blue-50">Due Date</TableHead>
+                        <TableHead className="bg-blue-50 w-16">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {tasks.map((t, idx) => (
-                        <TableRow key={t._id}>
+                        <TableRow key={t._id} className="bg-white">
                           <TableCell className="font-mono text-xs text-muted-foreground">#{idx + 1}</TableCell>
                           <TableCell className="font-medium">{t.title}</TableCell>
                           <TableCell>
@@ -203,7 +203,7 @@ export default function TeamTasksPage() {
                     </CardTitle>
                     <div className="w-full h-1.5 rounded-full bg-muted mt-1">
                       <div
-                        className="h-1.5 rounded-full bg-emerald-500 transition-all"
+                        className="h-1.5 rounded-full bg-red-500 transition-all"
                         style={{ width: `${a.tasks.length > 0 ? (a.completed / a.tasks.length) * 100 : 0}%` }}
                       />
                     </div>
@@ -212,7 +212,7 @@ export default function TeamTasksPage() {
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {a.tasks.map((t) => (
                         <div key={t._id} className="flex items-start gap-2 rounded-lg border p-2">
-                          <CheckCircle2Icon className={`size-4 mt-0.5 shrink-0 ${t.status === "done" ? "text-emerald-500" : "text-muted-foreground"}`} />
+                          <CheckCircle2Icon className={`size-4 mt-0.5 shrink-0 ${t.status === "done" ? "text-red-500" : "text-muted-foreground"}`} />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium truncate">{t.title}</p>
                             <div className="flex items-center gap-1 mt-1">

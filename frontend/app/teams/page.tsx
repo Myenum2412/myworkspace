@@ -475,7 +475,7 @@ export default function TeamsPage() {
                   ) : (
                     <div className="space-y-2">
                       {selectedTeam.members.map((m) => (
-                        <div key={m.id} className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => { setViewMember(m); setViewMemberOpen(true); }}>
+                        <div key={m.id} className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:bg-blue-50/50 transition-colors" onClick={() => { setViewMember(m); setViewMemberOpen(true); }}>
                           <div className="flex items-center gap-3">
                             <div className="size-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
                               {m.avatar ? (
@@ -490,7 +490,7 @@ export default function TeamsPage() {
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-sm">{m.name}</span>
                                 {m.role === "lead" && (
-                                  <Badge className="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0">
+                                  <Badge className="bg-gray-700 text-gray-700 text-[10px] px-1.5 py-0">
                                     <CrownIcon className="size-3 mr-0.5" /> Lead
                                   </Badge>
                                 )}
@@ -630,7 +630,7 @@ export default function TeamsPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-emerald-500">{loading ? <Loader2Icon className="size-5 animate-spin" /> : totalMembers}</div>
+                    <div className="text-2xl font-bold text-red-500">{loading ? <Loader2Icon className="size-5 animate-spin" /> : totalMembers}</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -640,7 +640,7 @@ export default function TeamsPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-[#5f7d56]">{loading ? <Loader2Icon className="size-5 animate-spin" /> : avgTeamSize}</div>
+                    <div className="text-2xl font-bold text-red-500">{loading ? <Loader2Icon className="size-5 animate-spin" /> : avgTeamSize}</div>
                   </CardContent>
                 </Card>
               </div>
@@ -920,7 +920,7 @@ export default function TeamsPage() {
                                   <div className="min-w-0 flex-1">
                                     <p className="text-sm font-medium truncate flex items-center gap-1">
                                       {m.name}
-                                      {isLead && <span className="text-[9px] text-amber-600 font-semibold">(Lead)</span>}
+                                      {isLead && <span className="text-[9px] text-red-400 font-semibold">(Lead)</span>}
                                     </p>
                                     <p className="text-[10px] text-muted-foreground truncate">{m.designation}</p>
                                   </div>
@@ -952,7 +952,7 @@ export default function TeamsPage() {
                             <div className="min-w-0">
                               <p className="text-xs font-medium truncate max-w-[120px] flex items-center gap-1">
                                 {m.name}
-                                {isLead && <CrownIcon className="size-3 text-amber-500 shrink-0" />}
+                                {isLead && <CrownIcon className="size-3 text-red-500 shrink-0" />}
                               </p>
                               <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{m.email}</p>
                             </div>

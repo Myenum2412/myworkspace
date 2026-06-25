@@ -82,11 +82,11 @@ function formatSize(bytes: number) {
 }
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return <ImageIcon className="size-4 text-[#5f7d56]" />;
+  if (mimeType.startsWith("image/")) return <ImageIcon className="size-4 text-red-500" />;
   if (mimeType.includes("pdf")) return <FileTextIcon className="size-4 text-red-500" />;
-  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return <ArchiveIcon className="size-4 text-amber-500" />;
-  if (mimeType.includes("sheet") || mimeType.includes("excel")) return <FileTextIcon className="size-4 text-emerald-500" />;
-  if (mimeType.includes("document") || mimeType.includes("word")) return <FileTextIcon className="size-4 text-[#4c6a45]" />;
+  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return <ArchiveIcon className="size-4 text-orange-400" />;
+  if (mimeType.includes("sheet") || mimeType.includes("excel")) return <FileTextIcon className="size-4 text-red-500" />;
+  if (mimeType.includes("document") || mimeType.includes("word")) return <FileTextIcon className="size-4 text-gray-700" />;
   return <FileIcon className="size-4 text-muted-foreground" />;
 }
 
@@ -354,20 +354,20 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
       ) : (
         <div className="rounded-lg border">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-blue-50">
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Uploaded</TableHead>
-                <TableHead className="w-20">Actions</TableHead>
+                <TableHead className="bg-blue-50">Name</TableHead>
+                <TableHead className="bg-blue-50">Type</TableHead>
+                <TableHead className="bg-blue-50">Size</TableHead>
+                <TableHead className="bg-blue-50">Uploaded</TableHead>
+                <TableHead className="bg-blue-50 w-20">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredFiles.map((f) => (
                 <TableRow
                   key={f.id}
-                  className="cursor-pointer"
+                  className="cursor-pointer bg-white hover:bg-blue-50/50 transition-colors"
                   onClick={() => setPreviewFile(f)}
                 >
                   <TableCell>

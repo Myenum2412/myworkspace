@@ -24,6 +24,7 @@ import projectsRoutes from "./routes/projects.js";
 import teamsRoutes from "./routes/teams.js";
 import timeEntriesRoutes from "./routes/time-entries.js";
 import adminRoutes from "./routes/admin.js";
+import settingsRoutes from "./routes/settings.js";
 const app = express();
 app.use(helmet({
     contentSecurityPolicy: false,
@@ -59,6 +60,7 @@ app.use("/api/projects", projectsRoutes);
 app.use("/api/teams", teamsRoutes);
 app.use("/api/time-entries", timeEntriesRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/settings", settingsRoutes);
 // 404 catch-all — log unmatched routes with clear diagnostics
 app.use((req, res) => {
     const method = req.method;

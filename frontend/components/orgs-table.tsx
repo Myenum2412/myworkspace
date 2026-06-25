@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -27,7 +27,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Building2Icon, PencilIcon, Trash2Icon, AlertCircleIcon } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Building2Icon, PencilIcon, Trash2Icon, AlertCircleIcon, SearchIcon } from "lucide-react";
 import { updateOrganization, deleteOrganization } from "@/actions/admin";
 
 interface OrgRow {
@@ -130,7 +136,20 @@ interface OrgsTableProps {
 }
 
 export function OrgsTable({ orgs }: OrgsTableProps) {
+  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return orgs;
+    const q = search.toLowerCase();
+    return orgs.filter(
+      (o) =>
+        o.name.toLowerCase().includes(q) ||
+        o.plan.toLowerCase().includes(q) ||
+        o.domain.toLowerCase().includes(q) ||
+        o.slug.toLowerCase().includes(q),
+    );
+  }, [search, orgs]);
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -143,78 +162,95 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
 
   const toggleAll = () => {
     setSelected((prev) => {
-      if (prev.size === orgs.length) return new Set();
-      return new Set(orgs.map((o) => o.id));
+      if (prev.size === filtered.length) return new Set();
+      return new Set(filtered.map((o) => o.id));
     });
   };
 
   return (
-    <div className="rounded-lg border">
-      <div className="flex items-center gap-2 px-4 py-2 border-b">
-        {selected.size > 0 && (
-          <span className="text-sm text-muted-foreground">
-            {selected.size} selected
-          </span>
-        )}
-      </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-10">
-              <Checkbox
-                checked={selected.size === orgs.length && orgs.length > 0}
-                onCheckedChange={toggleAll}
-              />
-            </TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Plan</TableHead>
-            <TableHead>Domain</TableHead>
-            <TableHead>Slug</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="w-24">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {orgs.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                No organizations found.
-              </TableCell>
-            </TableRow>
-          ) : (
-            orgs.map((o) => (
-              <TableRow key={o.id} className={selected.has(o.id) ? "bg-muted/30" : ""}>
-                <TableCell>
-                  <Checkbox
-                    checked={selected.has(o.id)}
-                    onCheckedChange={() => toggle(o.id)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Building2Icon className="size-4 text-muted-foreground shrink-0" />
-                    <span className="font-medium">{o.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize">
-                    {o.plan || "starter"}
-                  </span>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">{o.domain || "—"}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{o.slug || "—"}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{o.createdAt}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <EditOrgDialog org={o} />
-                    <DeleteOrgButton org={o} />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Building2Icon className="size-5" />
+          Organizations
+          {selected.size > 0 && (
+            <span className="text-sm font-normal text-muted-foreground ml-auto">
+              {selected.size} selected
+            </span>
           )}
-        </TableBody>
-      </Table>
-    </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="relative max-w-sm">
+          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Search organizations..."
+            className="pl-9 h-9"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader className="bg-blue-50">
+              <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={selected.size === filtered.length && filtered.length > 0}
+                    onCheckedChange={toggleAll}
+                  />
+                </TableHead>
+                <TableHead className="bg-blue-50">Name</TableHead>
+                <TableHead className="bg-blue-50">Plan</TableHead>
+                <TableHead className="bg-blue-50">Domain</TableHead>
+                <TableHead className="bg-blue-50">Slug</TableHead>
+                <TableHead className="bg-blue-50">Created</TableHead>
+                <TableHead className="w-24">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                    {search ? "No organizations match your search" : "No organizations found"}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((o) => (
+                  <TableRow key={o.id} className={selected.has(o.id) ? "bg-muted/30" : ""}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selected.has(o.id)}
+                        onCheckedChange={() => toggle(o.id)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Building2Icon className="size-4 text-muted-foreground shrink-0" />
+                        <span className="font-medium">{o.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize">
+                        {o.plan || "starter"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{o.domain || "—"}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{o.slug || "—"}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{o.createdAt}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <EditOrgDialog org={o} />
+                        <DeleteOrgButton org={o} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

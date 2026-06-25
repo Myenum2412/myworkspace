@@ -49,17 +49,17 @@ type Task = {
 
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-100 text-gray-700",
-  in_progress: "bg-amber-100 text-amber-700",
-  review: "bg-[#e8ece4] text-[#3a5234]",
-  done: "bg-emerald-100 text-emerald-700",
+  in_progress: "bg-red-900 text-red-700",
+  review: "bg-gray-700 text-gray-700",
+  done: "bg-red-900 text-red-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
 const priorityStyles: Record<string, string> = {
-  low: "bg-gray-100 text-gray-600",
-  medium: "bg-[#e8ece4] text-[#4c6a45]",
-  high: "bg-orange-100 text-orange-600",
-  urgent: "bg-red-100 text-red-600",
+  low: "bg-gray-700 text-gray-700",
+  medium: "bg-gray-200 text-gray-800",
+  high: "bg-orange-900 text-orange-200",
+  urgent: "bg-red-900 text-red-700",
 };
 
 const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
@@ -122,7 +122,7 @@ export default function AllTasksPage() {
             <div className="flex items-center justify-center py-12"><AlertCircleIcon className="size-6 animate-spin text-muted-foreground" /></div>
           ) : (
           <><div className="grid gap-4 md:grid-cols-6 mb-6">
-            <Card className="bg-gray-50">
+            <Card className="bg-blue-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                   <ListTodoIcon className="size-4" /> Today Tasks
@@ -134,7 +134,7 @@ export default function AllTasksPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-gray-50">
+            <Card className="bg-blue-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                   <UsersIcon className="size-4" /> Team Task
@@ -158,7 +158,7 @@ export default function AllTasksPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-gray-50">
+            <Card className="bg-blue-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                   <AlertCircleIcon className="size-4" /> Review
@@ -205,16 +205,16 @@ export default function AllTasksPage() {
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-blue-50">
                       <TableRow>
-                        <TableHead className="w-20">Task #</TableHead>
-                        <TableHead>Task</TableHead>
-                        <TableHead>Assigned To</TableHead>
-                        <TableHead>Delegated By</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead className="w-16">Actions</TableHead>
+                        <TableHead className="bg-blue-50 w-20">Task #</TableHead>
+                        <TableHead className="bg-blue-50">Task</TableHead>
+                        <TableHead className="bg-blue-50">Assigned To</TableHead>
+                        <TableHead className="bg-blue-50">Delegated By</TableHead>
+                        <TableHead className="bg-blue-50">Status</TableHead>
+                        <TableHead className="bg-blue-50">Priority</TableHead>
+                        <TableHead className="bg-blue-50">Due Date</TableHead>
+                        <TableHead className="bg-blue-50 w-16">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -273,7 +273,16 @@ export default function AllTasksPage() {
                                   Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">
+                                <DropdownMenuItem
+                                  className="text-destructive"
+                                  onClick={async () => {
+                                    if (!confirm("Are you sure you want to delete this task?")) return;
+                                    try {
+                                      const res = await fetch(`/api/tasks/${t._id}`, { method: "DELETE", credentials: "include" });
+                                      if (res.ok) setTasks((prev) => prev.filter((task) => task._id !== t._id));
+                                    } catch {}
+                                  }}
+                                >
                                   <Trash2Icon className="mr-2 size-4" />
                                   Delete
                                 </DropdownMenuItem>

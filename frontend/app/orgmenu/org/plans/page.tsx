@@ -33,7 +33,7 @@ export default function PlansPage() {
               <ul className="space-y-2 mb-4">
                 {plan.features.map((feature) => (
                   <li key={feature} className="text-sm flex items-center gap-2">
-                    <CheckIcon className="size-4 text-emerald-500 shrink-0" />
+                    <CheckIcon className="size-4 text-red-500 shrink-0" />
                     {feature}
                   </li>
                 ))}

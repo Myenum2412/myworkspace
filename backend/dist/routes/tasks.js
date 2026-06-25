@@ -145,6 +145,7 @@ router.post("/", async (req, res) => {
             teamId: teamId || undefined,
             assigneeId: assigneeId || req.user.userId,
             creatorId: req.user.userId,
+            createdBy: req.user.userId,
             title,
             description: description || undefined,
             project: project || undefined,

@@ -105,7 +105,7 @@ export const columns: ColumnDef<Project>[] = [
         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
           access === "Public"
             ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-gray-50 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+            : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600"
         }`}>
           {access}
         </span>

@@ -18,7 +18,6 @@ import {
   ShieldIcon,
   ClipboardListIcon,
   BarChart3Icon,
-  UserIcon,
   FolderIcon,
 } from "lucide-react";
 
@@ -95,16 +94,7 @@ export const defaultOrgNavData = [
     icon: <Settings2Icon className="size-6" />,
     items: [
       { title: "General", url: "/orgmenu/settings" },
-
       { title: "Notifications", url: "/orgmenu/settings/notifications" },
-    ],
-  },
-  {
-    title: "Profile",
-    url: "/orgmenu/profile",
-    icon: <UserIcon className="size-6" />,
-    items: [
-      { title: "My Profile", url: "/orgmenu/profile" },
     ],
   },
 ];

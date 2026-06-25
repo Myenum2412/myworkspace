@@ -21,7 +21,7 @@ export function ProjectDetailedView({ project, onEdit }: { project: Project; onE
   const [tab, setTab] = useState(0);
 
   const progressColor =
-    project.progress >= 100 ? "bg-emerald-500" : project.progress >= 50 ? "bg-[#5f7d56]" : project.progress > 0 ? "bg-amber-500" : "bg-muted-foreground/30";
+    project.progress >= 100 ? "bg-red-500" : project.progress >= 50 ? "bg-red-500" : project.progress > 0 ? "bg-red-500" : "bg-muted-foreground/30";
 
   return (
     <div className="flex h-full flex-col">
@@ -55,7 +55,7 @@ export function ProjectDetailedView({ project, onEdit }: { project: Project; onE
           <div className="space-y-6">
             <div className="flex items-start gap-4">
               <div
-                className="size-14 rounded-xl shrink-0 flex items-center justify-center text-white text-lg font-bold"
+                className="size-14 rounded-xl shrink-0 flex items-center justify-center text-black text-lg font-bold bg-gray-200"
                 style={{ backgroundColor: project.color }}
               >
                 {project.name.charAt(0).toUpperCase()}
@@ -136,7 +136,7 @@ export function ProjectDetailedView({ project, onEdit }: { project: Project; onE
                   <div key={i} className="flex items-center gap-3">
                     <div className={cn(
                       "size-3 rounded-full shrink-0 ring-2 ring-offset-1",
-                      m.done ? "bg-emerald-500 ring-emerald-200" : "bg-muted ring-muted"
+                      m.done ? "bg-red-500 ring-red-300" : "bg-muted ring-muted"
                     )} />
                     <div className="flex-1 flex items-center justify-between">
                       <span className={cn("text-sm", m.done ? "font-medium" : "text-muted-foreground")}>{m.label}</span>

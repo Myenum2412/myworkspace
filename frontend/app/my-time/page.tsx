@@ -68,7 +68,7 @@ export default function MyTimePage() {
 
   const statusColors: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    approved: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    approved: "bg-red-900 text-red-700 border-gray-300",
     rejected: "bg-red-100 text-red-800 border-red-200",
   };
 
@@ -119,8 +119,8 @@ export default function MyTimePage() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead>
-                      <tr className="border-b text-left text-sm text-muted-foreground">
+                    <thead className="bg-blue-50">
+                      <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                         <th className="pb-3 font-medium">Description</th>
                         <th className="pb-3 font-medium">Time</th>
                         <th className="pb-3 font-medium">Duration</th>
@@ -130,7 +130,7 @@ export default function MyTimePage() {
                     </thead>
                     <tbody>
                       {entries.map((entry) => (
-                        <tr key={entry.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                        <tr key={entry.id} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
                           <td className="py-3 pr-4">
                             <p className="text-sm font-medium">{entry.description || "No description"}</p>
                             <p className="text-xs text-muted-foreground">

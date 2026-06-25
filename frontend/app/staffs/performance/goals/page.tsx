@@ -10,11 +10,11 @@ export const metadata = {
 };
 
 const goalStyles: Record<string, string> = {
-  on_track: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  in_progress: "bg-[#e8ece4] text-[#3a5234] border-[#c5cec0]",
-  not_started: "bg-gray-100 text-gray-700 border-gray-200",
-  at_risk: "bg-amber-100 text-amber-700 border-amber-200",
-  completed: "bg-green-100 text-green-700 border-green-200",
+  on_track: "bg-red-900 text-red-700 border-gray-300",
+  in_progress: "bg-gray-100 text-gray-700 border-gray-300",
+  not_started: "bg-gray-100 text-gray-700 border-gray-300",
+  at_risk: "bg-orange-900 text-orange-200 border-gray-300",
+  completed: "bg-red-100 text-red-700 border-red-300",
 };
 
 export default async function StaffGoalsPage() {
@@ -67,8 +67,8 @@ export default async function StaffGoalsPage() {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="border-b text-left text-sm text-muted-foreground">
+              <thead className="bg-blue-50">
+                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                   <th className="pb-3 font-medium">Goal</th>
                   <th className="pb-3 font-medium">Assignee</th>
                   <th className="pb-3 font-medium">Target Date</th>
@@ -77,7 +77,7 @@ export default async function StaffGoalsPage() {
               </thead>
               <tbody>
                 {goals.map((g, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                  <tr key={i} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
                     <td className="py-3 pr-4 text-sm font-medium">{g.title}</td>
                     <td className="py-3 pr-4 text-sm text-muted-foreground">{g.assignee}</td>
                     <td className="py-3 pr-4 text-sm text-muted-foreground">{g.target}</td>

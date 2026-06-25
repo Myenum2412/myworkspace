@@ -129,8 +129,8 @@ export default function ClientDashboardPage() {
         </div>
 
         {user?.mustChangePassword && (
-          <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
-            <p className="text-sm text-amber-800 font-medium">
+          <div className="rounded-lg bg-gray-100 border border-gray-300 p-4">
+            <p className="text-sm text-gray-700 font-medium">
               You must change your password before continuing.
             </p>
             <Button size="sm" className="mt-2" onClick={() => router.push("/client/settings?forcePasswordChange=true")}>
@@ -140,8 +140,8 @@ export default function ClientDashboardPage() {
         )}
 
         {!user?.emailVerified && (
-          <div className="rounded-lg bg-[#e8ece4] border border-[#c5cec0] p-4">
-            <p className="text-sm text-[#2d4029]">
+          <div className="rounded-lg bg-gray-700 border border-gray-300 p-4">
+            <p className="text-sm text-gray-700">
               Please verify your email address to access all features.
             </p>
           </div>

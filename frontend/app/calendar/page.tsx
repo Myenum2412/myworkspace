@@ -74,8 +74,8 @@ export default function CalendarPage() {
                 )}
               </CardContent>
             </Card>
-            <Card className="border-amber-200">
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-amber-600">This Week</CardTitle></CardHeader>
+            <Card className="border-gray-300">
+              <CardHeader className="pb-2"><CardTitle className="text-sm text-red-400">This Week</CardTitle></CardHeader>
               <CardContent>
                 {thisWeek.length === 0 ? <p className="text-sm text-muted-foreground">None</p> : (
                   <div className="space-y-2">{thisWeek.map((t) => (

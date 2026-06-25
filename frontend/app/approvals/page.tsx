@@ -86,7 +86,7 @@ export default function ApprovalsPage() {
 
     try {
       const res = await fetch(`/api/tasks/${actionTask._id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(body),
@@ -119,7 +119,7 @@ export default function ApprovalsPage() {
           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
             <Button
               size="sm"
-              className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
+              className="h-7 text-xs bg-red-500 hover:bg-red-700"
               onClick={() => openAction(task, "approve")}
             >
               <CheckCircleIcon className="size-3 mr-1" />
@@ -229,7 +229,7 @@ export default function ApprovalsPage() {
                   Close
                 </Button>
                 <Button
-                  className="bg-emerald-600 hover:bg-emerald-700"
+                  className="bg-red-500 hover:bg-red-700"
                   onClick={() => { setViewOpen(false); openAction(selectedTask, "approve"); }}
                 >
                   <CheckCircleIcon className="size-3.5 mr-1.5" />
@@ -254,7 +254,7 @@ export default function ApprovalsPage() {
         <DialogContent className="p-0 flex flex-col">
           <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-lg">
-              {actionType === "approve" ? <CheckCircleIcon className="size-5 text-emerald-600" /> : <XCircleIcon className="size-5 text-red-600" />}
+              {actionType === "approve" ? <CheckCircleIcon className="size-5 text-red-400" /> : <XCircleIcon className="size-5 text-red-600" />}
               {actionType === "approve" ? "Approve Task" : "Reject Task"}
             </DialogTitle>
             <DialogDescription>
@@ -307,7 +307,7 @@ export default function ApprovalsPage() {
             <Button
               onClick={handleAction}
               disabled={actionSubmitting}
-              className={actionType === "approve" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"}
+              className={actionType === "approve" ? "bg-red-500 hover:bg-red-700" : "bg-red-500 hover:bg-red-700"}
             >
               {actionSubmitting ? (
                 <Loader2Icon className="size-4 animate-spin" />

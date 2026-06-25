@@ -14,11 +14,13 @@ declare module "next-auth" {
       image?: string;
       role?: string;
       permissions?: string[];
+      orgId?: string;
     };
   }
   interface User {
     role?: string;
     permissions?: string[];
+    orgId?: string;
   }
 }
 
@@ -34,7 +36,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.role = (user as { role?: string }).role;
         token.permissions = (user as { permissions?: string[] }).permissions;
-        console.log(`[AUTH jwt] token updated: id=${user.id} role=${token.role}`);
+        token.orgId = (user as { orgId?: string }).orgId;
+        console.log(`[AUTH jwt] token updated: id=${user.id} role=${token.role} orgId=${token.orgId}`);
       }
       return token;
     },
@@ -43,7 +46,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.permissions = token.permissions as string[];
-        console.log(`[AUTH session] session built: email=${session.user.email} role=${session.user.role}`);
+        session.user.orgId = token.orgId as string;
+        console.log(`[AUTH session] session built: email=${session.user.email} role=${session.user.role} orgId=${session.user.orgId}`);
       }
       return session;
     },
@@ -205,7 +209,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await compare(password, user.password);
         if (!valid) return null;
         const userId = user.id || user._id?.toString();
-        return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [] };
+        const memberDoc = await db.collection("org_members").findOne({ userId });
+        const orgId = memberDoc?.orgId?.toString() || "";
+        return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [], orgId };
       },
     }),
   ],

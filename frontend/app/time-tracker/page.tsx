@@ -95,7 +95,7 @@ export default function TimeTrackerPage() {
                 placeholder="What have you worked on?"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full border-none focus:ring-0 shadow-none text-[14px] placeholder:text-gray-400 outline-none bg-transparent h-full"
+                className="w-full border-none focus:ring-0 shadow-none text-[14px] placeholder:text-gray-600 outline-none bg-transparent h-full"
               />
             </div>
             
@@ -121,7 +121,7 @@ export default function TimeTrackerPage() {
                     Mobile App
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
-                    <div className="w-2 h-2 rounded-full bg-[#5f7d56] mr-2 shadow-sm"></div>
+                    <div className="w-2 h-2 rounded-full bg-red-500 mr-2 shadow-sm"></div>
                     Marketing Campaign
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -148,7 +148,7 @@ export default function TimeTrackerPage() {
                   placeholder="00:00"
                   className="w-[42px] text-center border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-text hover:text-gray-900 focus:text-gray-900"
                 />
-                <span className="mx-1 text-gray-400">-</span>
+                <span className="mx-1 text-gray-600">-</span>
                 <input
                   type="text"
                   value={endTime}

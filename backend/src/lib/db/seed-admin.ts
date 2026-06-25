@@ -1,8 +1,10 @@
 import { connectDb, mongoose } from "./index.js";
+import { v4 as uuid } from "uuid";
 import { User } from "./models/User.js";
 import { Organization } from "./models/Organization.js";
 import { OrgMember } from "./models/OrgMember.js";
 import { ActivityLog } from "./models/ActivityLog.js";
+import { Counter } from "./models/Counter.js";
 import { env } from "../../config/env.js";
 import bcrypt from "bcryptjs";
 
@@ -23,7 +25,13 @@ async function seedAdmin() {
     return;
   }
 
+  const userId = uuid();
+  const orgId = uuid();
+
   const admin = await User.create({
+    id: userId,
+    userNumber: 1,
+    orgId,
     name: "Super Admin",
     email,
     emailVerified: true,
@@ -47,25 +55,29 @@ async function seedAdmin() {
   });
 
   const org = await Organization.create({
+    id: orgId,
     name: "System Administration",
     slug: "system-admin",
     plan: "enterprise",
-    ownerId: admin._id.toString(),
+    ownerId: userId,
   });
 
   await OrgMember.create({
-    orgId: org._id,
-    userId: admin._id,
+    orgId,
+    userId,
     role: "admin",
     joinedAt: new Date(),
   });
 
+  await Counter.create({ name: "userNumber", seq: 1 });
+
   await ActivityLog.create({
-    orgId: org._id,
-    userId: admin._id,
+    orgId: org.id,
+    userId: admin.id,
+    createdBy: admin.id,
     action: "admin.seeded",
     entityType: "user",
-    entityId: admin._id.toString(),
+    entityId: admin.id,
     description: "Super Admin account created",
   });
 

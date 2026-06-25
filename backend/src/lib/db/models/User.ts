@@ -3,10 +3,11 @@ import { v4 as uuid } from "uuid";
 
 export interface IUser extends Document {
   id: string;
+  userNumber: number;
   name: string;
   email: string;
   emailVerified: boolean;
-  orgId?: string;
+  orgId: string;
   image?: string;
   password?: string;
   status: "online" | "offline" | "break";
@@ -38,10 +39,11 @@ export interface IUser extends Document {
 const userSchema = new Schema<IUser>(
   {
     id: { type: String, required: true, unique: true, default: () => uuid() },
+    userNumber: { type: Number, required: true, unique: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     emailVerified: { type: Boolean, default: false },
-    orgId: { type: String, index: true },
+    orgId: { type: String, required: true, index: true },
     image: String,
     password: String,
     status: { type: String, enum: ["online", "offline", "break"], default: "offline" },

@@ -113,8 +113,8 @@ export default function RecycleBinPage() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-muted-foreground">
+                    <thead className="bg-blue-50">
+                      <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                         <th className="pb-3 pr-4 font-medium">Name</th>
                         <th className="pb-3 pr-4 font-medium">Type</th>
                         <th className="pb-3 pr-4 font-medium">Size</th>
@@ -125,7 +125,7 @@ export default function RecycleBinPage() {
                     </thead>
                     <tbody>
                       {files.map((f) => (
-                        <tr key={f.id} className="border-b last:border-0">
+                        <tr key={f.id} className="border-b last:border-0 bg-white hover:bg-blue-50/50 transition-colors">
                           <td className="py-3 pr-4">
                             <div className="flex items-center gap-2">
                               <FileIcon className="size-4 text-muted-foreground shrink-0" />

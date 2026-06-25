@@ -52,12 +52,12 @@ export default function DashboardPage() {
   }, [session]);
 
   const cards = useMemo(() => [
-    { title: "Total Tasks", value: metrics?.totalTasks ?? 0, icon: ListTodo, color: "text-[#4c6a45]" },
-    { title: "Completed", value: metrics?.completedTasks ?? 0, icon: CheckCircle2, color: "text-emerald-600" },
-    { title: "In Progress", value: metrics?.inProgressTasks ?? 0, icon: Clock, color: "text-amber-600" },
+    { title: "Total Tasks", value: metrics?.totalTasks ?? 0, icon: ListTodo, color: "text-gray-700" },
+    { title: "Completed", value: metrics?.completedTasks ?? 0, icon: CheckCircle2, color: "text-red-600" },
+    { title: "In Progress", value: metrics?.inProgressTasks ?? 0, icon: Clock, color: "text-red-400" },
     { title: "Overdue", value: metrics?.overdueTasks ?? 0, icon: AlertCircle, color: "text-red-600" },
-    { title: "Active Members", value: metrics?.activeMembers ?? 0, icon: Users, color: "text-violet-600" },
-    { title: "Activity (24h)", value: metrics?.recentActivity ?? 0, icon: Activity, color: "text-cyan-600" },
+    { title: "Active Members", value: metrics?.activeMembers ?? 0, icon: Users, color: "text-gray-700" },
+    { title: "Activity (24h)", value: metrics?.recentActivity ?? 0, icon: Activity, color: "text-red-400" },
   ], [metrics]);
 
   return (

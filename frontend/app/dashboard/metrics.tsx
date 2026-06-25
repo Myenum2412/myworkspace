@@ -28,11 +28,11 @@ export async function DashboardMetrics({ orgId }: { orgId: string }) {
   const metrics = await getMetrics(orgId);
 
   const items = [
-    { title: "Total Tasks", value: metrics.totalTasks, icon: ClockIcon, color: "text-[#5f7d56]" },
-    { title: "Completed", value: metrics.completedTasks, icon: CheckCircle2Icon, color: "text-emerald-500" },
-    { title: "In Progress", value: metrics.inProgressTasks, icon: AlertCircleIcon, color: "text-amber-500" },
+    { title: "Total Tasks", value: metrics.totalTasks, icon: ClockIcon, color: "text-red-500" },
+    { title: "Completed", value: metrics.completedTasks, icon: CheckCircle2Icon, color: "text-red-500" },
+    { title: "In Progress", value: metrics.inProgressTasks, icon: AlertCircleIcon, color: "text-red-400" },
     { title: "Overdue", value: metrics.overdueTasks, icon: AlertCircleIcon, color: "text-red-500" },
-    { title: "Team Members", value: metrics.memberCount, icon: UsersIcon, color: "text-violet-500" },
+    { title: "Team Members", value: metrics.memberCount, icon: UsersIcon, color: "text-gray-500" },
   ];
 
   return (

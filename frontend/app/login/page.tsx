@@ -24,7 +24,7 @@ export default async function LoginPage(props: { searchParams: Promise<Record<st
         </p>
       </div>
 
-      <div className="relative hidden lg:block overflow-hidden bg-[#1e2d1d]">
+      <div className="relative hidden lg:block overflow-hidden bg-gray-800">
         <Image
           src="/login-bg.png"
           alt="Background"
@@ -32,7 +32,7 @@ export default async function LoginPage(props: { searchParams: Promise<Record<st
           className="absolute inset-0 h-full w-full object-cover opacity-80"
           sizes="50vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1e2d1d]/60 via-transparent to-[#2d4029]/60" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/60 via-transparent to-gray-800/60" />
         <div className="absolute inset-0 flex flex-col items-start justify-end p-12">
           <blockquote className="space-y-3">
             <p className="text-xl font-medium text-white/90 leading-relaxed max-w-xs">

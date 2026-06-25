@@ -2,10 +2,11 @@ import { Schema, model } from "mongoose";
 import { v4 as uuid } from "uuid";
 const userSchema = new Schema({
     id: { type: String, required: true, unique: true, default: () => uuid() },
+    userNumber: { type: Number, required: true, unique: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     emailVerified: { type: Boolean, default: false },
-    orgId: { type: String, index: true },
+    orgId: { type: String, required: true, index: true },
     image: String,
     password: String,
     status: { type: String, enum: ["online", "offline", "break"], default: "offline" },

@@ -208,7 +208,7 @@ export default function ClientWorkspacePage() {
                     <p className="truncate text-sm font-medium">{folder.name}</p>
                     <p className="truncate text-xs text-muted-foreground">{folder.path}</p>
                   </div>
-                  <ShieldCheck className="size-4 shrink-0 text-emerald-600" />
+                  <ShieldCheck className="size-4 shrink-0 text-red-400" />
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
                   View {folder.permissions?.clientCanView ? "on" : "off"} · Upload {folder.permissions?.clientCanUpload ? "on" : "off"} · Delete {folder.permissions?.clientCanDelete ? "on" : "off"}

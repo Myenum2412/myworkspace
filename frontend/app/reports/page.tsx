@@ -51,8 +51,8 @@ export default function ReportsPage() {
 
   const priorityBreakdown = [
     { label: "Urgent", count: tasks.filter((t) => t.priority === "urgent").length, color: "bg-red-500" },
-    { label: "High", count: tasks.filter((t) => t.priority === "high").length, color: "bg-orange-500" },
-    { label: "Medium", count: tasks.filter((t) => t.priority === "medium").length, color: "bg-[#5f7d56]" },
+    { label: "High", count: tasks.filter((t) => t.priority === "high").length, color: "bg-red-500" },
+    { label: "Medium", count: tasks.filter((t) => t.priority === "medium").length, color: "bg-red-500" },
     { label: "Low", count: tasks.filter((t) => t.priority === "low").length, color: "bg-gray-400" },
   ];
 
@@ -74,11 +74,11 @@ export default function ReportsPage() {
                 </Card>
                 <Card>
                   <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><CheckCircle2Icon className="size-4" /> Completed</CardTitle></CardHeader>
-                  <CardContent><div className="text-2xl font-bold text-emerald-500">{completed}</div></CardContent>
+                  <CardContent><div className="text-2xl font-bold text-red-500">{completed}</div></CardContent>
                 </Card>
                 <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><ClockIcon className="size-4" /> In Progress</CardTitle></CardHeader>
-                  <CardContent><div className="text-2xl font-bold text-amber-500">{inProgress}</div></CardContent>
+                  <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">In Progress</CardTitle></CardHeader>
+                  <CardContent><div className="text-2xl font-bold text-red-400">{inProgress}</div></CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><TrendingUpIcon className="size-4" /> Completion Rate</CardTitle></CardHeader>
@@ -118,11 +118,11 @@ export default function ReportsPage() {
                       <div className="space-y-3">
                         {[
                           { label: "To Do", count: tasks.filter((t) => t.status === "todo").length, color: "bg-gray-400" },
-                          { label: "In Progress", count: inProgress, color: "bg-amber-500" },
-                          { label: "Review", count: tasks.filter((t) => t.status === "review").length, color: "bg-[#5f7d56]" },
-                          { label: "Done", count: completed, color: "bg-emerald-500" },
+                          { label: "In Progress", count: inProgress, color: "bg-red-500" },
+                          { label: "Review", count: tasks.filter((t) => t.status === "review").length, color: "bg-gray-1000" },
+                          { label: "Done", count: completed, color: "bg-red-500" },
                           { label: "Cancelled", count: tasks.filter((t) => t.status === "cancelled").length, color: "bg-red-500" },
-                          { label: "Overdue", count: overdue, color: "bg-red-600" },
+                          { label: "Overdue", count: overdue, color: "bg-red-500" },
                         ].map((s) => (
                           <div key={s.label} className="flex items-center gap-3">
                             <div className={`size-3 rounded-full ${s.color}`} />

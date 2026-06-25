@@ -40,9 +40,9 @@ export function Header({ context }: { context?: AppContextType }) {
   const { status, updateStatus } = useUserStatus(session?.user?.id);
 
   const statusColors = {
-    online: "bg-emerald-500",
+    online: "bg-red-500",
     offline: "bg-gray-400",
-    break: "bg-amber-500",
+    break: "bg-red-500",
   };
 
   const contextLabel = CONTEXT_LABELS[appContext];
@@ -115,7 +115,7 @@ export function Header({ context }: { context?: AppContextType }) {
             >
               <span className="relative flex size-2">
                 {status === "online" && (
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
                 )}
                 <span
                   className={`relative inline-flex size-2 rounded-full ${statusColors[status]}`}
@@ -126,10 +126,10 @@ export function Header({ context }: { context?: AppContextType }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => updateStatus("online")}>
-              <span className="flex size-2 rounded-full bg-emerald-500 mr-2" /> Online
+              <span className="flex size-2 rounded-full bg-red-500 mr-2" /> Online
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => updateStatus("break")}>
-              <span className="flex size-2 rounded-full bg-amber-500 mr-2" /> Break
+              <span className="flex size-2 rounded-full bg-red-500 mr-2" /> Break
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => updateStatus("offline")}>
               <span className="flex size-2 rounded-full bg-gray-400 mr-2" /> Offline

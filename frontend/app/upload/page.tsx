@@ -121,10 +121,10 @@ export default function UploadPage() {
             <CardContent className="flex flex-col items-center justify-center gap-4">
               {status === "success" ? (
                 <div className="flex flex-col items-center gap-3">
-                  <div className="rounded-full bg-emerald-100 p-4 dark:bg-emerald-900/30">
-                    <CheckCircleIcon className="size-8 text-emerald-600 dark:text-emerald-400" />
+                  <div className="rounded-full bg-green-100 p-4 dark:bg-green-900/30">
+                    <CheckCircleIcon className="size-8 text-red-400 dark:text-red-400" />
                   </div>
-                  <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                  <p className="text-sm font-medium text-red-400 dark:text-red-400">
                     File uploaded successfully!
                   </p>
                 </div>

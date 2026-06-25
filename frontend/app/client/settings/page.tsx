@@ -66,8 +66,8 @@ function SettingsContent() {
         </Button>
 
         {forcePasswordChange && !passwordChanged && (
-          <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
-            <p className="text-sm text-amber-800 font-medium">
+          <div className="rounded-lg bg-gray-100 border border-gray-300 p-4">
+            <p className="text-sm text-gray-700 font-medium">
               You must change your password before accessing the dashboard.
             </p>
           </div>
@@ -118,7 +118,7 @@ function SettingsContent() {
               <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
             </div>
             {message && (
-              <p className={`text-sm ${message.includes("successfully") ? "text-emerald-600" : "text-red-600"}`}>
+              <p className={`text-sm ${message.includes("successfully") ? "text-red-400" : "text-red-500"}`}>
                 {message}
               </p>
             )}

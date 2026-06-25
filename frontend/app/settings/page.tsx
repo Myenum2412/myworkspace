@@ -48,6 +48,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("general");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [orgId, setOrgId] = useState("");
 
   // General
   const [orgName, setOrgName] = useState("My WorkSpace");
@@ -152,20 +153,59 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    fetch("/api/user/me", { credentials: "include" })
+    fetch("/api/user/profile", { credentials: "include" })
       .then((r) => r.json())
-      .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
+      .then((u) => {
+        setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" });
+        const id = u.org?.id || u.org?._id?.toString() || "";
+        if (id) {
+          setOrgId(id);
+          fetch(`/api/settings?orgId=${id}`, { credentials: "include" })
+            .then((r) => r.json())
+            .then((d) => {
+              const s = d.data;
+              if (!s) return;
+              if (s.general) {
+                if (s.general.orgName) setOrgName(s.general.orgName);
+                if (s.general.orgSlug) setOrgSlug(s.general.orgSlug);
+                if (s.general.timezone) setTimezone(s.general.timezone);
+                if (s.general.language) setLanguage(s.general.language);
+              }
+              if (s.team) {
+                if (s.team.defaultTeamRole) setDefaultTeamRole(s.team.defaultTeamRole);
+                if (s.team.allowSelfAssign !== undefined) setAllowSelfAssign(s.team.allowSelfAssign);
+                if (s.team.maxTeamSize) setMaxTeamSize(String(s.team.maxTeamSize));
+                if (s.team.autoAssignLead !== undefined) setAutoAssignLead(s.team.autoAssignLead);
+              }
+              if (s.notifications) setNotifSettings(s.notifications);
+            })
+            .catch(() => {});
+        }
+      })
       .catch(() => {});
   }, []);
 
-  function handleSave() {
+  async function handleSave() {
     setSaving(true);
     setSaved(false);
-    setTimeout(() => {
-      setSaving(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    }, 600);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          orgId,
+          general: { orgName, orgSlug, timezone, language },
+          team: { defaultTeamRole, allowSelfAssign, maxTeamSize: Number(maxTeamSize), autoAssignLead },
+          notifications: notifSettings,
+        }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    } catch {}
+    setSaving(false);
   }
 
   return (
@@ -180,7 +220,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center gap-2">
               {saved && (
-                <span className="flex items-center gap-1 text-sm text-emerald-600">
+                <span className="flex items-center gap-1 text-sm text-red-400">
                   <CheckCircle2Icon className="size-4" />
                   Saved
                 </span>
@@ -338,7 +378,7 @@ export default function SettingsPage() {
                       <span className="text-xs text-muted-foreground">{seats} / {memberLimit}</span>
                     </div>
                     <div className="h-2 rounded-full bg-muted">
-                      <div className="h-2 rounded-full bg-amber-500" style={{ width: `${(seats / memberLimit) * 100}%` }} />
+                      <div className="h-2 rounded-full bg-red-500" style={{ width: `${(seats / memberLimit) * 100}%` }} />
                     </div>
                   </div>
                   <div>
@@ -347,7 +387,7 @@ export default function SettingsPage() {
                       <span className="text-xs text-muted-foreground">7 / {projectLimit}</span>
                     </div>
                     <div className="h-2 rounded-full bg-muted">
-                      <div className="h-2 rounded-full bg-emerald-500" style={{ width: `${(7 / projectLimit) * 100}%` }} />
+                      <div className="h-2 rounded-full bg-red-500" style={{ width: `${(7 / projectLimit) * 100}%` }} />
                     </div>
                   </div>
                 </CardContent>

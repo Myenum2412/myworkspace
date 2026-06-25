@@ -311,7 +311,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
           )}
         </div>
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-blue-50">
             <TableRow>
               <TableHead className="w-10">
                 <Checkbox
@@ -319,15 +319,15 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                   onCheckedChange={toggleAll}
                 />
               </TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Provider</TableHead>
-              <TableHead>Verified</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead>Last Login</TableHead>
-              <TableHead>Organization</TableHead>
+              <TableHead className="bg-blue-50">Name</TableHead>
+              <TableHead className="bg-blue-50">Email</TableHead>
+              <TableHead className="bg-blue-50">Role</TableHead>
+              <TableHead className="bg-blue-50">Status</TableHead>
+              <TableHead className="bg-blue-50">Provider</TableHead>
+              <TableHead className="bg-blue-50">Verified</TableHead>
+              <TableHead className="bg-blue-50">Joined</TableHead>
+              <TableHead className="bg-blue-50">Last Login</TableHead>
+              <TableHead className="bg-blue-50">Organization</TableHead>
               <TableHead className="w-24">Actions</TableHead>
             </TableRow>
           </TableHeader>

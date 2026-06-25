@@ -32,10 +32,10 @@ export default async function SecurityPage() {
   const data = isSuperAdmin ? await getAllSecurityData() : await getSecurityData(orgId || "null");
 
   const items = [
-    { label: "Active Sessions", value: String(data.activeSessions), color: "text-emerald-500", icon: ShieldIcon },
-    { label: "Total Members", value: String(data.totalMembers), color: "text-[#5f7d56]", icon: UsersIcon },
-    { label: "Admins", value: String(data.adminCount), color: "text-amber-500", icon: ShieldCheckIcon },
-    { label: "API Keys", value: "0", color: "text-purple-500", icon: KeyIcon },
+    { label: "Active Sessions", value: String(data.activeSessions), color: "text-red-500", icon: ShieldIcon },
+    { label: "Total Members", value: String(data.totalMembers), color: "text-red-500", icon: UsersIcon },
+    { label: "Admins", value: String(data.adminCount), color: "text-red-400", icon: ShieldCheckIcon },
+    { label: "API Keys", value: "0", color: "text-red-500", icon: KeyIcon },
   ];
 
   return (

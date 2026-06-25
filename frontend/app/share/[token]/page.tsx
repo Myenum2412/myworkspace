@@ -95,7 +95,7 @@ export default function ShareTokenPage({ params }: { params: Promise<{ token: st
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             {file?.mimeType?.startsWith("image/") ? (
-              <ImageIcon className="size-16 text-[#5f7d56]" />
+              <ImageIcon className="size-16 text-red-500" />
             ) : file?.mimeType?.includes("pdf") ? (
               <FileTextIcon className="size-16 text-red-500" />
             ) : (

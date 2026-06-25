@@ -6,6 +6,8 @@ export async function connectDb() {
     await mongoose.connect(env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
       connectTimeoutMS: 5000,
+      tls: true,
+      tlsAllowInvalidCertificates: true,
     });
     console.log("✦ Connected to MongoDB Atlas");
   } catch (err: any) {

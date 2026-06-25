@@ -35,7 +35,7 @@ export type ApprovalTask = {
 const priorityColors: Record<string, string> = {
   urgent: "bg-red-100 text-red-700 border-red-200",
   high: "bg-orange-100 text-orange-700 border-orange-200",
-  medium: "bg-[#e8ece4] text-[#3a5234] border-[#c5cec0]",
+  medium: "bg-gray-100 text-gray-700 border-gray-300",
   low: "bg-gray-100 text-gray-600 border-gray-200",
 };
 
@@ -49,12 +49,12 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   if (status === "done") {
-    return <Badge className="bg-emerald-100 text-emerald-700 text-xs font-medium">Approved</Badge>;
+    return <Badge className="bg-red-900 text-red-700 text-xs font-medium">Approved</Badge>;
   }
   if (status === "cancelled") {
     return <Badge className="bg-red-100 text-red-700 text-xs font-medium">Rejected</Badge>;
   }
-  return <Badge className="bg-amber-100 text-amber-700 text-xs font-medium">Pending</Badge>;
+  return <Badge className="bg-gray-700 text-gray-700 text-xs font-medium">Pending</Badge>;
 }
 
 export const pendingColumns: ColumnDef<ApprovalTask>[] = [

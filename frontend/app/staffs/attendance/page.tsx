@@ -13,9 +13,9 @@ export const metadata = {
 const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
 const statusStyles: Record<string, string> = {
-  present: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  absent: "bg-red-100 text-red-700 border-red-200",
-  late: "bg-amber-100 text-amber-700 border-amber-200",
+  present: "bg-red-100 text-red-700 border-red-300",
+  absent: "bg-gray-100 text-gray-700 border-gray-300",
+  late: "bg-orange-100 text-orange-700 border-orange-300",
 };
 
 export default async function StaffAttendancePage() {
@@ -64,8 +64,8 @@ export default async function StaffAttendancePage() {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="border-b text-left text-sm text-muted-foreground">
+              <thead className="bg-blue-50">
+                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                   <th className="pb-3 font-medium">Staff</th>
                   <th className="pb-3 font-medium">Check In</th>
                   <th className="pb-3 font-medium">Check Out</th>
@@ -74,7 +74,7 @@ export default async function StaffAttendancePage() {
               </thead>
               <tbody>
                 {today.map((t, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                  <tr key={i} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8">

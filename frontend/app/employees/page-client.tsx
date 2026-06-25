@@ -32,10 +32,10 @@ type Props = {
 const statusColors: Record<string, string> = {
   active: "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   online: "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  inactive: "bg-gray-50 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
-  offline: "bg-gray-50 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
-  break: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  on_leave: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  inactive: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600",
+  offline: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600",
+  break: "bg-gray-200 text-gray-700 dark:bg-gray-700/30 dark:text-gray-600",
+  on_leave: "bg-gray-200 text-gray-700 dark:bg-gray-700/30 dark:text-gray-600",
 };
 
 const getInitials = (name: string) =>
@@ -139,7 +139,7 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-emerald-500">{active}</div>
+                <div className="text-2xl font-bold text-red-500">{active}</div>
               </CardContent>
             </Card>
             <Card>
@@ -149,7 +149,7 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-amber-500">{onLeave}</div>
+                <div className="text-2xl font-bold text-red-400">{onLeave}</div>
               </CardContent>
             </Card>
             <Card>

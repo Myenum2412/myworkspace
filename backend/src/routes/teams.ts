@@ -302,6 +302,7 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
   if (existing) throw new AppError(400, "User is already a member of this team");
 
   const teamMember = await TeamMember.create({
+    orgId: team.orgId,
     teamId: team._id,
     userId,
     role: role || "member",

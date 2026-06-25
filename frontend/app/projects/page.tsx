@@ -33,13 +33,7 @@ import { columns, type Project } from "./columns";
 import { DataTable } from "./data-table";
 import { ProjectDetailedView } from "./project-detailed-view";
 
-const clients = [
-  "Acme Corp",
-  "Globex Inc",
-  "Initech",
-  "Umbrella Corp",
-  "Wayne Enterprises",
-];
+const clients: string[] = [];
 
 export default function ProjectsPage() {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
@@ -63,6 +57,7 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [projectMembers, setProjectMembers] = useState<string[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
+  const [clientList, setClientList] = useState<string[]>([]);
 
   const colors = [
     "#93c5fd", "#fca5a5", "#86efac", "#fcd34d", "#c4b5fd",
@@ -74,6 +69,17 @@ export default function ProjectsPage() {
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
       .catch(() => setUser({ name: "Jane Smith", email: "jane@example.com", avatar: "" }));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/clients", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const arr = Array.isArray(d) ? d : d.data || [];
+        const names = arr.map((c: { name?: string }) => c.name).filter(Boolean);
+        setClientList(names.length > 0 ? names : ["Acme Corp", "Globex Inc", "Initech"]);
+      })
+      .catch(() => setClientList(["Acme Corp", "Globex Inc", "Initech"]));
   }, []);
 
   useEffect(() => {
@@ -194,7 +200,7 @@ export default function ProjectsPage() {
       if (d.success && d.data) {
         setProjects((prev) => prev.map((p) => (p.id === viewProject.id ? d.data : p)));
       }
-      setViewProject(null);
+      setShowEdit(false);
     } catch {}
   }
 
@@ -223,7 +229,7 @@ export default function ProjectsPage() {
                 <CardTitle className="text-sm text-muted-foreground">On Going Project</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-[#5f7d56]">
+                <div className="text-2xl font-bold text-red-500">
                   {loading ? <Loader2Icon className="size-5 animate-spin" /> : projects.filter((p) => p.progress > 0 && p.progress < 100).length}
                 </div>
               </CardContent>
@@ -233,7 +239,7 @@ export default function ProjectsPage() {
                 <CardTitle className="text-sm text-muted-foreground">In Completed</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-emerald-500">
+                <div className="text-2xl font-bold text-red-400">
                   {loading ? <Loader2Icon className="size-5 animate-spin" /> : projects.filter((p) => p.progress === 0).length}
                 </div>
               </CardContent>
@@ -243,7 +249,7 @@ export default function ProjectsPage() {
                 <CardTitle className="text-sm text-muted-foreground">Completed</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-emerald-500">
+                <div className="text-2xl font-bold text-red-500">
                   {loading ? <Loader2Icon className="size-5 animate-spin" /> : projects.filter((p) => p.progress === 100).length}
                 </div>
               </CardContent>
@@ -308,7 +314,7 @@ export default function ProjectsPage() {
                         <SelectValue placeholder="Select a client" />
                       </SelectTrigger>
                       <SelectContent>
-                        {clients.map((c) => (
+                        {clientList.map((c) => (
                           <SelectItem key={c} value={c}>{c}</SelectItem>
                         ))}
                       </SelectContent>

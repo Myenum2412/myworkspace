@@ -43,34 +43,55 @@ export async function loginAction(formData: FormData) {
     { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
   );
 
-  const member = await db.collection(collections.orgMembers).findOne({ userId: user._id });
+  const member = await db.collection(collections.orgMembers).findOne({ userId: userId });
 
   // Auto-create org if user has none
   if (!member) {
     const userName = user.name || email.split("@")[0];
     const newOrgId = uuid();
-    let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;
+    let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
     const existingSlug = await db.collection(collections.organizations).findOne({ slug });
     if (existingSlug) {
-      slug = `${slug}-${userId.slice(0, 8)}`;
+      slug = `${slug}-${userId}`;
     }
 
-    await db.collection(collections.organizations).insertOne({
-      id: newOrgId,
-      name: `${userName}'s Organization`,
-      slug,
-      plan: "starter",
-      ownerId: userId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await db.collection(collections.orgMembers).insertOne({
-      id: uuid(),
-      orgId: newOrgId,
-      userId,
-      role: "admin",
-      joinedAt: new Date(),
-    });
+    const existingOrg = await db.collection(collections.organizations).findOne({ ownerId: userId });
+    const orgIdToUse = existingOrg?.id || newOrgId;
+
+    if (!existingOrg) {
+      await db.collection(collections.organizations).updateOne(
+        { slug },
+        {
+          $setOnInsert: {
+            id: newOrgId,
+            name: `${userName}'s Organization`,
+            slug,
+            plan: "starter",
+            ownerId: userId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+    }
+
+    const orgMemberExists = await db.collection(collections.orgMembers).findOne({ userId });
+    if (!orgMemberExists) {
+      await db.collection(collections.orgMembers).updateOne(
+        { userId, orgId: orgIdToUse },
+        {
+          $setOnInsert: {
+            id: uuid(),
+            orgId: orgIdToUse,
+            userId,
+            role: "admin",
+            joinedAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+    }
   }
 
   await db.collection(collections.activityLogs).insertOne({

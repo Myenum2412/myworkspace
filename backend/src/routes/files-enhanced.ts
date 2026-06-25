@@ -84,7 +84,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown",
   }));
 
-  res.json({ data: result, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+  res.json({ success: true, data: result, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
 });
 
 router.get("/recent", async (req: AuthRequest, res: Response) => {
@@ -100,7 +100,7 @@ router.get("/recent", async (req: AuthRequest, res: Response) => {
   const users = await User.find({ _id: { $in: userIds } }).lean();
   const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
 
-  res.json({ data: files.map(f => ({ ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown" })) });
+  res.json({ success: true, data: files.map(f => ({ ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown" })) });
 });
 
 router.get("/stats", async (req: AuthRequest, res: Response) => {
@@ -124,6 +124,7 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
   ]);
 
   res.json({
+    success: true,
     data: {
       totalFiles,
       totalSize: totalSize[0]?.total || 0,
@@ -233,7 +234,7 @@ router.get("/:id/versions", async (req: AuthRequest, res: Response) => {
   const users = await User.find({ _id: { $in: userIds } }).lean();
   const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
 
-  res.json({ data: versions.map(v => ({ ...v, uploadedByName: userMap.get(v.uploadedBy) || "Unknown" })) });
+  res.json({ success: true, data: versions.map(v => ({ ...v, uploadedByName: userMap.get(v.uploadedBy) || "Unknown" })) });
 });
 
 router.post("/:id/versions", upload.single("file"), async (req: AuthRequest, res: Response) => {

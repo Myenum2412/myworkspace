@@ -42,33 +42,33 @@ type Task = {
 const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
 
 const statusStyles: Record<string, string> = {
-  todo: "bg-gray-100 text-gray-700",
-  in_progress: "bg-amber-100 text-amber-700",
-  review: "bg-[#e8ece4] text-[#3a5234]",
-  done: "bg-emerald-100 text-emerald-700",
+  todo: "bg-gray-200 text-gray-700",
+  in_progress: "bg-red-900 text-red-700",
+  review: "bg-gray-700 text-gray-700",
+  done: "bg-red-900 text-red-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
 const priorityStyles: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
-  medium: "bg-[#e8ece4] text-[#4c6a45]",
+  medium: "bg-gray-700 text-gray-700",
   high: "bg-orange-100 text-orange-600",
   urgent: "bg-red-100 text-red-600",
 };
 
 const statusInfo = [
-  { key: "todo", label: "To Do", icon: ListTodoIcon, color: "bg-gray-500" },
-  { key: "in_progress", label: "In Progress", icon: ClockIcon, color: "bg-amber-500" },
-  { key: "review", label: "Review", icon: AlertCircleIcon, color: "bg-[#5f7d56]" },
-  { key: "done", label: "Completed", icon: CheckCircle2Icon, color: "bg-emerald-500" },
+  { key: "todo", label: "To Do", icon: ListTodoIcon, color: "bg-gray-1000" },
+  { key: "in_progress", label: "In Progress", icon: ClockIcon, color: "bg-red-500" },
+  { key: "review", label: "Review", icon: AlertCircleIcon, color: "bg-red-500" },
+  { key: "done", label: "Completed", icon: CheckCircle2Icon, color: "bg-red-500" },
   { key: "cancelled", label: "Cancelled", icon: XCircleIcon, color: "bg-red-500" },
 ];
 
 const priorityColors: Record<string, string> = {
-  low: "bg-gray-200",
-  medium: "bg-[#c5cec0]",
-  high: "bg-orange-200",
-  urgent: "bg-red-200",
+  low: "bg-gray-100",
+  medium: "bg-gray-200 text-gray-800",
+  high: "bg-orange-100",
+  urgent: "bg-red-100",
 };
 
 export default function OverviewPage() {
@@ -212,7 +212,7 @@ export default function OverviewPage() {
                   <div className="text-3xl font-bold">{completionRate}%</div>
                   <div className="mt-2 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                      className="h-full bg-red-500 rounded-full transition-all duration-500"
                       style={{ width: `${completionRate}%` }}
                     />
                   </div>
@@ -280,7 +280,7 @@ export default function OverviewPage() {
                   ) : (
                     <div className="space-y-2">
                       {recentTasks.map((t) => (
-                        <div key={t._id} className="flex items-center justify-between rounded-lg border p-2.5 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
+                        <div key={t._id} className="flex items-center justify-between rounded-lg border p-2.5 cursor-pointer hover:bg-blue-50/50 transition-colors" onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium truncate">{t.title}</p>
                             <p className="text-[11px] text-muted-foreground mt-0.5">

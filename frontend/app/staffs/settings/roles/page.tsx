@@ -26,8 +26,8 @@ export default function StaffRolesPage() {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="border-b text-left text-sm text-muted-foreground">
+              <thead className="bg-blue-50">
+                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                   <th className="pb-3 font-medium">Role</th>
                   <th className="pb-3 font-medium">Members</th>
                   <th className="pb-3 font-medium">Permissions</th>
@@ -35,7 +35,7 @@ export default function StaffRolesPage() {
               </thead>
               <tbody>
                 {roles.map((r, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                  <tr key={i} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
                     <td className="py-3 pr-4">
                       <span className="text-sm font-medium">{r.name}</span>
                     </td>

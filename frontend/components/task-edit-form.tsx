@@ -32,9 +32,9 @@ type Task = {
 
 const statusOptions = [
   { value: "todo", label: "To Do", color: "bg-gray-400" },
-  { value: "in_progress", label: "In Progress", color: "bg-amber-500" },
-  { value: "review", label: "Review", color: "bg-[#5f7d56]" },
-  { value: "done", label: "Done", color: "bg-emerald-500" },
+  { value: "in_progress", label: "In Progress", color: "bg-red-500" },
+  { value: "review", label: "Review", color: "bg-red-500" },
+  { value: "done", label: "Done", color: "bg-red-500" },
   { value: "cancelled", label: "Cancelled", color: "bg-red-500" },
 ];
 

@@ -83,12 +83,12 @@ async function enrichLogs(logs: Record<string, unknown>[], scopeOrgId: string | 
 }
 
 const actionColors: Record<string, string> = {
-  "user.login": "bg-[#e8ece4] text-[#3a5234]",
+  "user.login": "bg-gray-700 text-gray-700",
   "user.logout": "bg-slate-100 text-slate-700",
-  "user.joined": "bg-emerald-100 text-emerald-700",
-  "task.created": "bg-violet-100 text-violet-700",
-  "task.completed": "bg-emerald-100 text-emerald-700",
-  "task.assigned": "bg-amber-100 text-amber-700",
+  "user.joined": "bg-red-900 text-red-700",
+  "task.created": "bg-gray-200 text-gray-700",
+  "task.completed": "bg-red-900 text-red-700",
+  "task.assigned": "bg-gray-700 text-gray-700",
   "file.uploaded": "bg-cyan-100 text-cyan-700",
   "member.invited": "bg-indigo-100 text-indigo-700",
   "member.role_changed": "bg-orange-100 text-orange-700",
@@ -124,14 +124,14 @@ export default async function AuditPage() {
 
       <div className="rounded-lg border">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-blue-50">
             <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Action</TableHead>
-              <TableHead className="max-w-md">Description</TableHead>
-              <TableHead>Entity</TableHead>
-              <TableHead>Timestamp</TableHead>
-              {isSuperAdmin && <TableHead>Organization</TableHead>}
+              <TableHead className="bg-blue-50">User</TableHead>
+              <TableHead className="bg-blue-50">Action</TableHead>
+              <TableHead className="bg-blue-50 max-w-md">Description</TableHead>
+              <TableHead className="bg-blue-50">Entity</TableHead>
+              <TableHead className="bg-blue-50">Timestamp</TableHead>
+              {isSuperAdmin && <TableHead className="bg-blue-50">Organization</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -143,7 +143,7 @@ export default async function AuditPage() {
               </TableRow>
             ) : (
               logs.map((log) => (
-                <TableRow key={log.id}>
+                <TableRow key={log.id} className="bg-white">
                   <TableCell className="text-sm font-medium">{log.userName}</TableCell>
                   <TableCell>
                     <Badge className={`text-xs ${actionColors[log.action] || "bg-muted text-muted-foreground"}`}>

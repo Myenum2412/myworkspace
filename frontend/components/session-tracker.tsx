@@ -37,12 +37,12 @@ export function SessionTracker() {
         <Button
           variant="outline"
           size="sm"
-          className={`gap-1.5 h-8 ${isOnBreak ? "border-amber-400 text-amber-600" : "border-emerald-400 text-emerald-600"}`}
+          className={`gap-1.5 h-8 ${isOnBreak ? "border-red-400 text-red-600" : "border-red-400 text-red-600"}`}
         >
           <Clock className={`size-3.5 ${isOnBreak ? "animate-pulse" : ""}`} />
           <span className="font-mono text-xs">{formatDuration(elapsed)}</span>
           {isOnBreak && (
-            <span className="text-[10px] text-amber-500 font-medium">BREAK</span>
+            <span className="text-[10px] text-red-400 font-medium">BREAK</span>
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -59,7 +59,7 @@ export function SessionTracker() {
           {breakElapsed > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Break Time</span>
-              <span className="font-mono font-medium text-amber-600">
+              <span className="font-mono font-medium text-red-400">
                 {formatDuration(breakElapsed)}
               </span>
             </div>
@@ -74,7 +74,7 @@ export function SessionTracker() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Today Breaks</span>
-                <span className="font-mono font-medium text-amber-600">
+                <span className="font-mono font-medium text-red-400">
                   {formatDuration(todaySummary.totalBreakTime)}
                 </span>
               </div>
@@ -99,7 +99,7 @@ export function SessionTracker() {
             <Button
               variant="outline"
               size="sm"
-              className="w-full gap-2 border-amber-300 text-amber-700 hover:bg-amber-50"
+              className="w-full gap-2 border-red-300 text-red-400 hover:bg-gray-800"
               onClick={startBreak}
             >
               <Coffee className="size-4" />
@@ -112,7 +112,7 @@ export function SessionTracker() {
           <div className="px-2 pb-2">
             <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all"
+                className="h-full bg-red-500 rounded-full transition-all"
                 style={{
                   width: `${Math.min((activeMinutes / 480) * 100, 100)}%`,
                 }}

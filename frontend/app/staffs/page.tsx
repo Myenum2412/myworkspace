@@ -15,23 +15,23 @@ export const metadata = {
 const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
 const statusStyles: Record<string, string> = {
-  active: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  on_leave: "bg-amber-100 text-amber-700 border-amber-200",
+  active: "bg-red-100 text-red-700 border-red-300",
+  on_leave: "bg-gray-100 text-gray-700 border-gray-300",
 };
 
 const priorityStyles: Record<string, string> = {
-  urgent: "bg-red-100 text-red-700 border-red-200",
-  high: "bg-orange-100 text-orange-700 border-orange-200",
-  medium: "bg-[#e8ece4] text-[#3a5234] border-[#c5cec0]",
-  low: "bg-gray-100 text-gray-700 border-gray-200",
+  urgent: "bg-red-100 text-red-700 border-red-300",
+  high: "bg-orange-100 text-orange-700 border-orange-300",
+  medium: "bg-gray-100 text-gray-700 border-gray-300",
+  low: "bg-gray-200 text-gray-700 border-gray-300",
 };
 
 const statusColors: Record<string, string> = {
-  todo: "bg-slate-100 text-slate-700 border-slate-200",
-  in_progress: "bg-amber-100 text-amber-700 border-amber-200",
-  review: "bg-purple-100 text-purple-700 border-purple-200",
-  done: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  cancelled: "bg-red-100 text-red-700 border-red-200",
+  todo: "bg-gray-100 text-gray-700 border-gray-300",
+  in_progress: "bg-red-100 text-red-700 border-red-300",
+  review: "bg-gray-100 text-gray-700 border-gray-300",
+  done: "bg-red-100 text-red-700 border-red-300",
+  cancelled: "bg-red-100 text-red-700 border-red-300",
 };
 
 export default async function StaffsPage() {
@@ -56,7 +56,7 @@ export default async function StaffsPage() {
             name: (user?.name as string) || "Unknown",
             email: (user?.email as string) || "",
             role: (m.role as string) || "member",
-            department: (user?.role as string) || "",
+            department: (user?.department as string) || "",
             status: (user?.status as string) || "active",
             avatar: (user?.image as string) || "",
           };
@@ -124,8 +124,8 @@ export default async function StaffsPage() {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="border-b text-left text-sm text-muted-foreground">
+              <thead className="bg-blue-50">
+                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                   <th className="pb-3 font-medium">Name</th>
                   <th className="pb-3 font-medium">Department</th>
                   <th className="pb-3 font-medium">Role</th>
@@ -134,7 +134,7 @@ export default async function StaffsPage() {
               </thead>
               <tbody>
                 {staff.map((s) => (
-                  <tr key={s.email} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                  <tr key={s.email} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8">
@@ -170,8 +170,8 @@ export default async function StaffsPage() {
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead>
-                  <tr className="border-b text-left text-sm text-muted-foreground">
+                <thead className="bg-blue-50">
+                  <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                     <th className="pb-3 font-medium">Task</th>
                     <th className="pb-3 font-medium">Assignee</th>
                     <th className="pb-3 font-medium">Priority</th>
@@ -181,7 +181,7 @@ export default async function StaffsPage() {
                 </thead>
                 <tbody>
                   {tasks.map((t, i) => (
-                    <tr key={i} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                    <tr key={i} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
                       <td className="py-3 pr-4 text-sm font-medium">{t.title}</td>
                       <td className="py-3 pr-4 text-sm text-muted-foreground">{t.assigneeName}</td>
                       <td className="py-3 pr-4">

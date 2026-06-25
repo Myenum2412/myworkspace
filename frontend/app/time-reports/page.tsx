@@ -66,11 +66,11 @@ export default function TimeReportsPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
-                    <Clock className="size-4 text-[#4c6a45]" />
+                    <Clock className="size-4 text-gray-700" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">{data.totalHours.toFixed(1)}</div>
-                    <div className={`flex items-center gap-1 text-xs mt-1 ${changeDir === "up" ? "text-emerald-600" : "text-rose-600"}`}>
+                    <div className={`flex items-center gap-1 text-xs mt-1 ${changeDir === "up" ? "text-red-400" : "text-rose-600"}`}>
                       {changeDir === "up" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
                       {Math.abs(data.weeklyChange).toFixed(1)}% vs last week
                     </div>
@@ -80,7 +80,7 @@ export default function TimeReportsPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Billable Hours</CardTitle>
-                    <TrendingUp className="size-4 text-emerald-600" />
+                    <TrendingUp className="size-4 text-red-400" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">{data.billableHours.toFixed(1)}</div>

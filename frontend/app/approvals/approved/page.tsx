@@ -57,7 +57,7 @@ export default function ApprovedPage() {
                                 <>
                                 <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center gap-2">
-            <CheckCircleIcon className="size-6 text-emerald-600" />
+            <CheckCircleIcon className="size-6 text-red-400" />
             <h1 className="text-2xl font-bold">Approved</h1>
             <Badge variant="secondary" className="ml-auto">{tasks.length} approved</Badge>
           </div>
@@ -108,7 +108,7 @@ export default function ApprovedPage() {
                   </div>
                   <div className="rounded-lg border bg-card px-3 py-2">
                     <p className="text-[11px] text-muted-foreground">Status</p>
-                    <p className="font-medium text-emerald-600 mt-0.5">Approved</p>
+                    <p className="font-medium text-red-400 mt-0.5">Approved</p>
                   </div>
                   <div className="rounded-lg border bg-card px-3 py-2">
                     <p className="text-[11px] text-muted-foreground">Assignee</p>

@@ -249,7 +249,7 @@ export default function ClientsPage() {
 
   function fieldClass(fieldName: string): string {
     return formErrors[fieldName]
-      ? "border-red-500 focus-visible:ring-red-500"
+      ? "border-red-500 focus-visible:ring-red-400"
       : "";
   }
 
@@ -282,7 +282,7 @@ export default function ClientsPage() {
               <CardTitle className="text-sm text-muted-foreground">Active</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-500">
+              <div className="text-2xl font-bold text-red-500">
                 {clients.filter((c) => c.status === "Active Client").length}
               </div>
             </CardContent>
@@ -727,7 +727,7 @@ export default function ClientsPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="size-6 text-emerald-500" />
+              <CheckCircle2 className="size-6 text-red-500" />
               Client Created Successfully
             </DialogTitle>
             <DialogDescription>
@@ -746,7 +746,7 @@ export default function ClientsPage() {
                       <Copy className="size-4" />
                     </Button>
                   </div>
-                  {copied === "url" && <span className="text-xs text-emerald-500 mt-1 block">Copied!</span>}
+                  {copied === "url" && <span className="text-xs text-red-500 mt-1 block">Copied!</span>}
                 </div>
 
                 <Separator />
@@ -759,7 +759,7 @@ export default function ClientsPage() {
                       <Copy className="size-4" />
                     </Button>
                   </div>
-                  {copied === "email" && <span className="text-xs text-emerald-500 mt-1 block">Copied!</span>}
+                  {copied === "email" && <span className="text-xs text-red-500 mt-1 block">Copied!</span>}
                 </div>
 
                 <Separator />
@@ -777,12 +777,12 @@ export default function ClientsPage() {
                       <Copy className="size-4" />
                     </Button>
                   </div>
-                  {copied === "password" && <span className="text-xs text-emerald-500 mt-1 block">Copied!</span>}
+                  {copied === "password" && <span className="text-xs text-red-500 mt-1 block">Copied!</span>}
                 </div>
               </div>
 
-              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                <p className="text-xs text-amber-800">
+              <div className="rounded-lg bg-gray-100 border border-gray-300 p-3">
+                <p className="text-xs text-gray-700">
                   <strong>Note:</strong> The client will be required to change this password on first login.
                   An email with these credentials has been sent to {credentials.email}.
                 </p>

@@ -2,39 +2,13 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { v4 as uuid } from "uuid";
-
-async function ensureOrg(userId: string): Promise<string | null> {
-  const member = await db.collection(collections.orgMembers).findOne({ userId });
-  if (member?.orgId) return String(member.orgId);
-
-  const user = await db.collection(collections.users).findOne({ id: userId });
-  const userName = user?.name || user?.email?.split("@")[0] || "User";
-  const newOrgId = uuid();
-  await db.collection(collections.organizations).insertOne({
-    id: newOrgId,
-    name: `${userName}'s Organization`,
-    slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
-    plan: "starter",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-  await db.collection(collections.orgMembers).insertOne({
-    id: uuid(),
-    orgId: newOrgId,
-    userId,
-    role: "admin",
-    joinedAt: new Date(),
-  });
-  return newOrgId;
-}
+import { ensureUserOrg } from "@/lib/org";
 
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const orgId = await ensureOrg(session.user.id);
-  if (!orgId) return NextResponse.json({ error: "No organization found" }, { status: 404 });
+  const orgId = await ensureUserOrg(session.user.id);
 
   const files = await (await db.collection(collections.fileAttachments)
     .find({ orgId, deletedAt: null }))

@@ -24,8 +24,8 @@ export default function SsoPage() {
           </p>
           <div className="space-y-3">
             {[
-              { provider: "SAML 2.0", status: "Not configured", color: "bg-gray-500" },
-              { provider: "OIDC", status: "Not configured", color: "bg-gray-500" },
+              { provider: "SAML 2.0", status: "Not configured", color: "bg-gray-1000" },
+              { provider: "OIDC", status: "Not configured", color: "bg-gray-1000" },
             ].map((item) => (
               <div key={item.provider} className="flex items-center justify-between rounded-lg border p-4">
                 <div>

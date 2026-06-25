@@ -70,11 +70,11 @@ export function Pattern() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col">
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-blue-50">
           <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Stock</TableHead>
+            <TableHead className="bg-blue-50">Product</TableHead>
+            <TableHead className="bg-blue-50">Category</TableHead>
+            <TableHead className="bg-blue-50">Stock</TableHead>
             <TableHead className="text-right">Price</TableHead>
             <TableHead className="w-10" />
           </TableRow>

@@ -12,8 +12,8 @@ export const metadata = {
 };
 
 const deptColors = [
-  "bg-[#5f7d56]", "bg-purple-500", "bg-emerald-500", "bg-orange-500",
-  "bg-pink-500", "bg-cyan-500", "bg-amber-500", "bg-indigo-500",
+  "bg-red-500", "bg-red-500", "bg-red-500", "bg-red-500",
+  "bg-red-500", "bg-red-500", "bg-red-500", "bg-red-500",
 ];
 
 const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -72,7 +72,7 @@ export default async function DepartmentsPage() {
               <Card key={dept.name}>
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${dept.color} text-white`}>
+                    <div className={`p-2 rounded-lg ${dept.color} text-black`}>
                       <Building2 className="size-5" />
                     </div>
                     <div>

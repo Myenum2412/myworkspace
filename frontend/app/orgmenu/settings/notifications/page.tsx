@@ -55,7 +55,7 @@ export default function NotificationsPage() {
                 {category.settings.map((setting) => (
                   <div key={setting.label} className="flex items-center justify-between">
                     <span className="text-sm">{setting.label}</span>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${setting.enabled ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${setting.enabled ? "bg-red-500/10 text-red-400" : "bg-muted text-muted-foreground"}`}>
                       {setting.enabled ? "Enabled" : "Disabled"}
                     </span>
                   </div>

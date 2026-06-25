@@ -77,6 +77,16 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/login?error=Access+denied.+You+do+not+have+permission+to+view+this+page", req.url));
   }
 
+  if (routeContext === "staff") {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL("/login?error=Please+sign+in+to+access+this+area", req.url));
+    }
+    if (userRole === "member" || userRole === "staff" || userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL) {
+      return;
+    }
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
   if (routeContext === "unknown") {
     return NextResponse.rewrite(new URL("/not-found", req.url));
   }

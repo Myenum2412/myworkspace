@@ -6,6 +6,7 @@ import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { Session } from "../lib/db/models/Session.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { getNextSequence } from "../lib/db/models/Counter.js";
 import { signToken } from "../config/auth.js";
 import { getUserOrgId } from "../lib/org-utils.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
@@ -130,6 +131,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
       sessionId: session._id.toString(),
       user: {
         id: user.id,
+        userNumber: user.userNumber,
         name: user.name,
         email: user.email,
         image: user.image,
@@ -169,9 +171,11 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
     await session.withTransaction(async () => {
       const userId = uuid();
       const orgId = uuid();
+      const userNumber = await getNextSequence("userNumber");
 
       const [createdUser] = await User.create([{
         id: userId,
+        userNumber,
         orgId,
         name,
         email,
@@ -220,7 +224,7 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
     success: true,
     data: {
       token,
-      user: { id: user.id, name, email, role: "admin", status: "online", orgId: org.id },
+      user: { id: user.id, userNumber: user.userNumber, name, email, role: "admin", status: "online", orgId: org.id },
       orgId: org.id,
     },
   });
@@ -299,6 +303,7 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
     success: true,
     data: {
       id: user.id,
+      userNumber: user.userNumber,
       name: user.name,
       email: user.email,
       image: user.image,

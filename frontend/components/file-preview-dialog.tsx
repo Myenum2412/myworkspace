@@ -103,7 +103,7 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
           <DialogTitle className="flex items-center gap-2 text-lg">
             <span>{getFileIcon(file.mimeType)}</span>
             <span className="truncate max-w-[60vw]">{file.originalName}</span>
-            {file.isLocked && <LockIcon className="size-4 text-amber-500" />}
+            {file.isLocked && <LockIcon className="size-4 text-orange-400" />}
             {file.currentVersion && file.currentVersion > 1 && (
               <Badge variant="outline" className="text-xs">v{file.currentVersion}</Badge>
             )}

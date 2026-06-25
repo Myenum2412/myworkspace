@@ -91,10 +91,10 @@ export type TerminatedEmployee = Employee & {
 const statusColors: Record<string, string> = {
   active: "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   online: "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  inactive: "bg-gray-50 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
-  offline: "bg-gray-50 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
-  break: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  on_leave: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  inactive: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600",
+  offline: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600",
+  break: "bg-gray-200 text-gray-700 dark:bg-gray-700/30 dark:text-gray-600",
+  on_leave: "bg-gray-200 text-gray-700 dark:bg-gray-700/30 dark:text-gray-600",
   terminated: "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 };
 

@@ -67,7 +67,7 @@ export default function ClientProfilePage() {
               <Label>Email</Label>
               <Input value={email} disabled className="text-muted-foreground" />
             </div>
-            {message && <p className="text-sm text-emerald-600">{message}</p>}
+            {message && <p className="text-sm text-red-400">{message}</p>}
             <Button onClick={handleSave} disabled={saving}>
               {saving ? <><Loader2 className="size-4 mr-1 animate-spin" /> Saving...</> : "Save Changes"}
             </Button>

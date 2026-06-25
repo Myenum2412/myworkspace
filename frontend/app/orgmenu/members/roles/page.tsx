@@ -5,8 +5,8 @@ export const metadata = { title: "Roles" };
 
 const roles = [
   { name: "Admin", description: "Full access to all settings and members.", permissions: ["Manage org", "Manage members", "View reports", "Configure security", "Manage billing"], icon: ShieldIcon, color: "text-red-500" },
-  { name: "Manager", description: "Manage members and view reports.", permissions: ["View members", "Invite members", "View reports", "Manage tasks"], icon: UsersIcon, color: "text-amber-500" },
-  { name: "Member", description: "Basic access to assigned resources.", permissions: ["View tasks", "Update own tasks", "View team", "Receive notifications"], icon: UserIcon, color: "text-[#5f7d56]" },
+  { name: "Manager", description: "Manage members and view reports.", permissions: ["View members", "Invite members", "View reports", "Manage tasks"], icon: UsersIcon, color: "text-red-400" },
+  { name: "Member", description: "Basic access to assigned resources.", permissions: ["View tasks", "Update own tasks", "View team", "Receive notifications"], icon: UserIcon, color: "text-red-500" },
 ];
 
 export default function RolesPage() {

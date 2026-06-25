@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewUsersChart } from "@/components/NewUsersChart";
 import { MonthlyRevenueChart } from "@/components/MonthlyRevenueChart";
 import { DashboardSignupsTable } from "@/components/dashboard-signups";
-import { DashboardOrgsTable } from "@/components/dashboard-orgs";
 import { UsersIcon, ClipboardListIcon, ActivityIcon, Building2Icon, CheckCircle2Icon, ClockIcon, UserPlusIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -174,15 +173,6 @@ const getRecentUsers = cache(async (orgId?: string | null) => {
   });
 });
 
-const getRecentOrgs = cache(async () => {
-  const cursor = await db.collection(collections.organizations).find(
-    {},
-    { sort: { createdAt: -1 }, limit: 5, projection: { id: 1, name: 1, plan: 1, createdAt: 1 } },
-  );
-  const orgs = await cursor.toArray();
-  return orgs;
-});
-
 export default async function OrgDashboardPage() {
   const session = await auth();
   const role = session?.user?.role;
@@ -191,14 +181,12 @@ export default async function OrgDashboardPage() {
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
   let metrics: Awaited<ReturnType<typeof getOrgMetrics>>;
-  let recentOrgs: Awaited<ReturnType<typeof getRecentOrgs>> = [];
   let newUsersData: { state: string; users: number }[] = [];
   let recentUsers: { userId: string; name: string; email: string; role: string; status: string; provider: string; avatar: string; emailVerified: boolean; createdAt: string; lastLogin?: string; orgName?: string; orgId?: string }[] = [];
   let revenueData: { month: string; revenue: number }[] = [];
 
   if (isSuperAdmin) {
     metrics = await getAllMetrics();
-    recentOrgs = await getRecentOrgs();
     newUsersData = await getUsersByState();
     recentUsers = await getRecentUsers();
     revenueData = await getMonthlyRevenue();
@@ -253,7 +241,7 @@ export default async function OrgDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-            <CheckCircle2Icon className="size-4 text-emerald-500" />
+            <CheckCircle2Icon className="size-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.completedTasks}</div>
@@ -262,7 +250,7 @@ export default async function OrgDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
-            <ClockIcon className="size-4 text-amber-500" />
+            <ClockIcon className="size-4 text-red-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.inProgressTasks}</div>
@@ -281,9 +269,6 @@ export default async function OrgDashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {revenueData.length > 0 && <MonthlyRevenueChart data={revenueData} />}
-        {isSuperAdmin && recentOrgs.length > 0 && (
-          <DashboardOrgsTable orgs={recentOrgs as unknown as Record<string, unknown>[]} />
-        )}
         {newUsersData.length > 0 && <NewUsersChart data={newUsersData} />}
       </div>
 

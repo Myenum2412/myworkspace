@@ -20,7 +20,7 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
   if (!user) throw new AppError(404, "User not found");
 
   res.json({
-    id: user._id.toString(),
+    id: user.id || user._id.toString(),
     name: user.name,
     email: user.email,
     image: user.image,
@@ -34,7 +34,7 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
   const user = await User.findOne({ email: req.user!.email }).lean();
   if (!user) throw new AppError(404, "User not found");
 
-  const member = await OrgMember.findOne({ userId: user._id }).populate("orgId").lean();
+  const member = await OrgMember.findOne({ userId: user.id }).populate("orgId").lean();
   const org = member?.orgId as any;
   const memberCount = org ? await OrgMember.countDocuments({ orgId: org._id }) : 0;
 
@@ -129,7 +129,7 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   }
 
   // Update org fields
-  const member = await OrgMember.findOne({ userId: user._id }).populate("orgId").lean();
+  const member = await OrgMember.findOne({ userId: user.id }).populate("orgId").lean();
   const org = member?.orgId as any;
   if (org) {
     const orgUpdates: Record<string, unknown> = {};

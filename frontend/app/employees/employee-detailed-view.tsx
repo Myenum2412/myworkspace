@@ -11,10 +11,10 @@ import type { Employee } from "./columns";
 const statusColors: Record<string, string> = {
   active: "bg-green-50 text-green-700",
   online: "bg-green-50 text-green-700",
-  inactive: "bg-gray-50 text-gray-700",
-  offline: "bg-gray-50 text-gray-700",
-  break: "bg-amber-50 text-amber-700",
-  on_leave: "bg-amber-50 text-amber-700",
+  inactive: "bg-gray-100 text-gray-700",
+  offline: "bg-gray-100 text-gray-700",
+  break: "bg-gray-200 text-gray-700",
+  on_leave: "bg-gray-200 text-gray-700",
   terminated: "bg-red-50 text-red-700",
 };
 

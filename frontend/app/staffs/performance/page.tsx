@@ -10,9 +10,9 @@ export const metadata = {
 };
 
 const ratingColor = (r: number) => {
-  if (r >= 4.5) return "bg-emerald-100 text-emerald-700 border-emerald-200";
-  if (r >= 4.0) return "bg-[#e8ece4] text-[#3a5234] border-[#c5cec0]";
-  return "bg-amber-100 text-amber-700 border-amber-200";
+  if (r >= 4.5) return "bg-red-100 text-red-700 border-red-300";
+  if (r >= 4.0) return "bg-gray-100 text-gray-700 border-gray-300";
+  return "bg-orange-100 text-orange-700 border-orange-300";
 };
 
 export default async function StaffPerformancePage() {
@@ -67,8 +67,8 @@ export default async function StaffPerformancePage() {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="border-b text-left text-sm text-muted-foreground">
+              <thead className="bg-blue-50">
+                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                   <th className="pb-3 font-medium">Staff</th>
                   <th className="pb-3 font-medium">Rating</th>
                   <th className="pb-3 font-medium">Review</th>
@@ -77,7 +77,7 @@ export default async function StaffPerformancePage() {
               </thead>
               <tbody>
                 {reviews.map((r, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                  <tr key={i} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
                     <td className="py-3 pr-4 text-sm font-medium">{r.name}</td>
                     <td className="py-3 pr-4">
                       <Badge className={ratingColor(r.rating)}>{r.rating}</Badge>

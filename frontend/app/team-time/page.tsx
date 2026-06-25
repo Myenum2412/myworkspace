@@ -88,17 +88,17 @@ export default function TeamTimePage() {
   const filteredMembers = teamFilter === "all" ? members : members.filter((m) => m.entryCount > 0);
 
   const statCards = [
-    { title: "Total Members", value: summary.totalMembers, icon: Users, color: "text-[#4c6a45]" },
-    { title: "Active Today", value: summary.activeMembers, icon: Activity, color: "text-emerald-600" },
-    { title: "Total Hours", value: summary.totalHoursAll, icon: Clock, color: "text-purple-600" },
-    { title: "Total Entries", value: summary.totalEntries, icon: CalendarDays, color: "text-orange-600" },
+    { title: "Total Members", value: summary.totalMembers, icon: Users, color: "text-gray-700" },
+    { title: "Active Today", value: summary.activeMembers, icon: Activity, color: "text-red-500" },
+    { title: "Total Hours", value: summary.totalHoursAll, icon: Clock, color: "text-red-400" },
+    { title: "Total Entries", value: summary.totalEntries, icon: CalendarDays, color: "text-gray-600" },
   ];
 
   const getStatusDot = (status: string) => {
     const colors: Record<string, string> = {
-      online: "bg-emerald-500",
-      offline: "bg-gray-400",
-      break: "bg-amber-500",
+      online: "bg-red-500",
+      offline: "bg-gray-1000",
+      break: "bg-gray-400",
     };
     return <span className={`inline-block w-2 h-2 rounded-full ${colors[status] || "bg-gray-400"}`} />;
   };
@@ -186,8 +186,8 @@ export default function TeamTimePage() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead>
-                      <tr className="border-b text-left text-sm text-muted-foreground">
+                    <thead className="bg-blue-50">
+                      <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                         <th className="pb-3 font-medium">Member</th>
                         <th className="pb-3 font-medium">Department</th>
                         <th className="pb-3 font-medium">Status</th>
@@ -199,7 +199,7 @@ export default function TeamTimePage() {
                     </thead>
                     <tbody>
                       {filteredMembers.map((member) => (
-                        <tr key={member.userId} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                        <tr key={member.userId} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
                           <td className="py-3 pr-4">
                             <div className="flex items-center gap-3">
                               <Avatar className="size-8">

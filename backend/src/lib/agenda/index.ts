@@ -9,6 +9,10 @@ export async function initializeAgenda() {
   const backend = new MongoBackend({
     address: env.MONGODB_URI,
     collection: "agenda_jobs",
+    options: {
+      tls: true,
+      tlsAllowInvalidCertificates: true,
+    },
   });
 
   agenda = new Agenda({

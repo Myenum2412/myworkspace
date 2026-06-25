@@ -53,7 +53,7 @@ export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }
       </CardHeader>
       <CardContent>
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-blue-50">
             <TableRow>
               <TableHead className="w-10">
                 <Checkbox
@@ -61,8 +61,8 @@ export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }
                   onCheckedChange={toggleAll}
                 />
               </TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Plan</TableHead>
+              <TableHead className="bg-blue-50">Name</TableHead>
+              <TableHead className="bg-blue-50">Plan</TableHead>
               <TableHead className="text-right">Created</TableHead>
               <TableHead className="w-20">Actions</TableHead>
             </TableRow>

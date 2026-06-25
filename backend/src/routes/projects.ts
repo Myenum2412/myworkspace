@@ -1,33 +1,26 @@
 import { Router, Response } from "express";
 import { v4 as uuid } from "uuid";
-import mongoose from "mongoose";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { requireOrgMembership } from "../lib/org-utils.js";
+import { Project } from "../lib/db/models/Project.js";
 
 const router = Router();
 
 router.use(authenticate);
 
-const getCollection = () => mongoose.connection.db!.collection("projects");
-
-async function getUserOrgId(userId: string): Promise<string> {
-  const member = await OrgMember.findOne({ userId }).lean();
-  if (!member) throw new AppError(403, "User is not a member of any organization");
-  return member.orgId.toString();
-}
-
 router.get("/", async (req: AuthRequest, res: Response) => {
-  const orgId = (req.query.orgId as string) || await getUserOrgId(req.user!.userId);
-  const projects = await getCollection().find({ orgId }).sort({ createdAt: -1 }).toArray();
+  const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
+  const projects = await Project.find({ orgId }).sort({ createdAt: -1 }).lean();
   res.json({ success: true, data: projects.map(normalize) });
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {
   const { orgId, name, client, color, access, status, description, deadline } = req.body;
-  if (!name) { res.status(400).json({ error: "Name is required" }); return; }
+  if (!orgId) throw new AppError(400, "orgId is required");
+  if (!name) throw new AppError(400, "Name is required");
 
-  const doc = {
+  const project = await Project.create({
     id: uuid(),
     orgId,
     name,
@@ -39,48 +32,45 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     progress: 0,
     access: access || "Public",
     status: status || "Active",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  });
 
-  await getCollection().insertOne(doc);
-  res.status(201).json({ success: true, data: normalize(doc) });
+  res.status(201).json({ success: true, data: normalize(project) });
 });
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
-  const userOrgId = await getUserOrgId(req.user!.userId);
-  const existing = await getCollection().findOne({ id: req.params.id });
-  if (!existing) { res.status(404).json({ error: "Project not found" }); return; }
+  const userOrgId = await requireOrgMembership(req.user!.userId);
+  const existing = await Project.findOne({ id: req.params.id }).lean();
+  if (!existing) throw new AppError(404, "Project not found");
   if (existing.orgId !== userOrgId) throw new AppError(403, "Not authorized to modify this project");
 
   const { name, client, color, access, status, description, deadline, tracked, progress } = req.body;
-  const update: Record<string, any> = { updatedAt: new Date() };
-  if (name !== undefined) update.name = name;
-  if (client !== undefined) update.client = client;
-  if (color !== undefined) update.color = color;
-  if (access !== undefined) update.access = access;
-  if (status !== undefined) update.status = status;
-  if (description !== undefined) update.description = description;
-  if (deadline !== undefined) update.deadline = deadline;
-  if (tracked !== undefined) update.tracked = tracked;
-  if (progress !== undefined) update.progress = progress;
+  const updates: Record<string, any> = { updatedAt: new Date() };
+  if (name !== undefined) updates.name = name;
+  if (client !== undefined) updates.client = client;
+  if (color !== undefined) updates.color = color;
+  if (access !== undefined) updates.access = access;
+  if (status !== undefined) updates.status = status;
+  if (description !== undefined) updates.description = description;
+  if (deadline !== undefined) updates.deadline = deadline;
+  if (tracked !== undefined) updates.tracked = tracked;
+  if (progress !== undefined) updates.progress = progress;
 
-  const result = await getCollection().findOneAndUpdate(
+  const result = await Project.findOneAndUpdate(
     { id: req.params.id },
-    { $set: update },
+    { $set: updates },
     { returnDocument: "after" }
-  );
-  if (!result) { res.status(404).json({ error: "Project not found" }); return; }
+  ).lean();
+  if (!result) throw new AppError(404, "Project not found");
   res.json({ success: true, data: normalize(result) });
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
-  const userOrgId = await getUserOrgId(req.user!.userId);
-  const existing = await getCollection().findOne({ id: req.params.id });
-  if (!existing) { res.status(404).json({ error: "Project not found" }); return; }
+  const userOrgId = await requireOrgMembership(req.user!.userId);
+  const existing = await Project.findOne({ id: req.params.id }).lean();
+  if (!existing) throw new AppError(404, "Project not found");
   if (existing.orgId !== userOrgId) throw new AppError(403, "Not authorized to delete this project");
 
-  const result = await getCollection().deleteOne({ id: req.params.id });
+  await Project.deleteOne({ id: req.params.id });
   res.json({ success: true });
 });
 

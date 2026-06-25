@@ -137,14 +137,14 @@ export const columns: ColumnDef<Client>[] = [
     cell: ({ row }) => {
       const status = row.getValue<string>("status");
       const colorMap: Record<string, string> = {
-        "Lead": "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-        "Prospect": "bg-[#e8ece4] text-[#3a5234] dark:bg-[#1e2d1d]/30 dark:text-[#7d9474]",
+        "Lead": "bg-gray-200 text-gray-700 dark:bg-gray-700/30 dark:text-gray-600",
+        "Prospect": "bg-gray-700 text-gray-700 dark:bg-[#1e2d1d]/30 dark:text-[#7d9474]",
         "Active Client": "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-        "Inactive Client": "bg-gray-50 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+        "Inactive Client": "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600",
         "Completed": "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
       };
       return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${colorMap[status] || "bg-gray-50 text-gray-700"}`}>
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${colorMap[status] || "bg-gray-100 text-gray-700"}`}>
           {status}
         </span>
       );

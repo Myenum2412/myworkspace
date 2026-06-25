@@ -1,10 +1,11 @@
 import { Document } from "mongoose";
 export interface IUser extends Document {
     id: string;
+    userNumber: number;
     name: string;
     email: string;
     emailVerified: boolean;
-    orgId?: string;
+    orgId: string;
     image?: string;
     password?: string;
     status: "online" | "offline" | "break";

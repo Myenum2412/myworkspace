@@ -102,6 +102,11 @@ export async function DELETE(req: Request) {
   const share = await db.collection(collections.fileShares).findOne({ id });
   if (!share) return NextResponse.json({ error: "Share not found" }, { status: 404 });
 
+  if (share.orgId) {
+    const member = await db.collection(collections.orgMembers).findOne({ userId: session.user.id, orgId: share.orgId });
+    if (!member) return NextResponse.json({ error: "Not authorized to delete this share" }, { status: 403 });
+  }
+
   await db.collection(collections.fileShares).deleteOne({ id });
   return NextResponse.json({ success: true });
 }

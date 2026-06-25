@@ -84,6 +84,8 @@ export async function POST(request: Request) {
       shift: shift || null,
       employmentType: employmentType || null,
       status: status?.toLowerCase() === "inactive" ? "inactive" : "active",
+      isActive: true,
+      emailVerified: false,
       sourceOfHire: sourceOfHire || null,
       joiningDate: joiningDate || null,
       phone: phone || null,

@@ -91,8 +91,8 @@ export default function TerminatedPage() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead>
-                      <tr className="border-b text-left text-sm text-muted-foreground">
+                    <thead className="bg-blue-50">
+                      <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
                         <th className="pb-3 font-medium">Employee</th>
                         <th className="pb-3 font-medium">Department</th>
                         <th className="pb-3 font-medium">Role</th>
@@ -103,7 +103,7 @@ export default function TerminatedPage() {
                     </thead>
                     <tbody>
                       {terminated.map((emp) => (
-                        <tr key={emp.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                        <tr key={emp.id} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
                           <td className="py-3 pr-4">
                             <div className="flex items-center gap-3">
                               <Avatar className="size-8 opacity-60">
