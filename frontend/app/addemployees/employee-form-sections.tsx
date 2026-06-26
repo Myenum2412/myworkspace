@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 
 export interface Row {
   id: string;
-  [key: string]: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }
 
 export interface FirstSlideEmployeeForm {
@@ -175,8 +176,10 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
 }
 
 interface SectionProps {
-  formData: Record<string, string>;
-  onChange: (key: string, value: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formData: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onChange: (key: any, value: string) => void;
   options?: Record<string, string[]>;
 }
 

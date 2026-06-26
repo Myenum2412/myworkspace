@@ -17,7 +17,7 @@ export async function GET() {
     const orgId = await ensureUserOrg(session.user.id);
 
     const orgMembers = await (await db.collection(collections.orgMembers).find({ orgId })).toArray();
-    const userIds = orgMembers.map((m: { userId: string }) => m.userId);
+    const userIds = (orgMembers as unknown as { userId: string }[]).map((m) => m.userId);
     const users = await (await db.collection(collections.users).find(
       { id: { $in: userIds } },
       { projection: { password: 0 } }

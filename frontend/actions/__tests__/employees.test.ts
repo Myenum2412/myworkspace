@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 describe("addEmployeeAction validation", () => {
-  function validateEmployeeInput(formData: Record<string, string>): { error?: string } {
+  function validateEmployeeInput(formData: Record<string, string>): { error?: string; success?: boolean } {
     const { name, email } = formData;
     if (!name || !email) return { error: "Name and email are required" };
     return { success: true };

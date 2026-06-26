@@ -37,11 +37,11 @@ const apiProxy = createProxyMiddleware({
         console.error(`[PROXY 404] ${req.method} ${req.url} -> Backend returned 404. No matching backend route.`);
       }
     },
-    error: (err: Error, req: IncomingMessage, res: ServerResponse) => {
+    error: (err: Error, req: IncomingMessage, res: ServerResponse | import("net").Socket) => {
       console.error(`[PROXY ERROR] ${req.method} ${req.url} -> ${err.message}`);
-      if (res && typeof res.writeHead === "function") {
+      if (res && "writeHead" in res && typeof res.writeHead === "function") {
         console.warn(`[PROXY ERROR FALLBACK] ${req.method} ${req.url} -> Backend unreachable, falling back to Next.js`);
-        handle(req, res);
+        handle(req, res as ServerResponse);
       }
     },
   },
