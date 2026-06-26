@@ -10,7 +10,7 @@ export interface OfflineFormOptions {
   headers?: Record<string, string>;
   idempotencyKey?: string;
   maxRetries?: number;
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data: Record<string, unknown>) => void;
   onError?: (error: Error) => void;
 }
 
@@ -45,8 +45,11 @@ export function useOfflineForm(options: OfflineFormOptions): OfflineFormResult {
 
   const onSuccessRef = React.useRef(options.onSuccess);
   const onErrorRef = React.useRef(options.onError);
-  onSuccessRef.current = options.onSuccess;
-  onErrorRef.current = options.onError;
+
+  React.useEffect(() => {
+    onSuccessRef.current = options.onSuccess;
+    onErrorRef.current = options.onError;
+  }, [options.onSuccess, options.onError]);
 
   const [isPending, setIsPending] = React.useState(false);
   const [isOfflineQueued, setIsOfflineQueued] = React.useState(false);
@@ -55,16 +58,16 @@ export function useOfflineForm(options: OfflineFormOptions): OfflineFormResult {
   >("idle");
   const [queueLength, setQueueLength] = React.useState(0);
 
-  const refreshQueueLength = React.useCallback(async () => {
-    const { getQueueLength } = await import("./queue");
-    const len = await getQueueLength();
-    setQueueLength(len);
-    return len;
-  }, []);
-
   React.useEffect(() => {
-    void refreshQueueLength();
-  }, [refreshQueueLength, isOfflineQueued, lastSyncStatus]);
+    let cancelled = false;
+    async function load() {
+      const { getQueueLength } = await import("./queue");
+      const len = await getQueueLength();
+      if (!cancelled) setQueueLength(len);
+    }
+    void load();
+    return () => { cancelled = true; };
+  }, [isOfflineQueued, lastSyncStatus]);
 
   const submit = React.useCallback(
     async (body: unknown) => {

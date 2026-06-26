@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 
 export interface Row {
   id: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface FirstSlideEmployeeForm {
@@ -125,6 +125,7 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
         onDragLeave={handleDragLeave}
       >
         {currentImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={currentImage} alt="Avatar" className="size-full rounded-full object-cover" />
         ) : (
           <CameraIcon className="size-8 text-muted-foreground" />
@@ -173,7 +174,13 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
   );
 }
 
-export function BasicInfoSection({ formData, onChange, options }: any) {
+interface SectionProps {
+  formData: Record<string, string>;
+  onChange: (key: string, value: string) => void;
+  options?: Record<string, string[]>;
+}
+
+export function BasicInfoSection({ formData, onChange, options }: SectionProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Field>
@@ -256,7 +263,7 @@ export function BasicInfoSection({ formData, onChange, options }: any) {
   );
 }
 
-export function WorkInfoSection({ formData, onChange, options }: any) {
+export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Field>
@@ -365,7 +372,7 @@ export function WorkInfoSection({ formData, onChange, options }: any) {
   );
 }
 
-export function ContactDetailsSection({ formData, onChange, options }: any) {
+export function ContactDetailsSection({ formData, onChange, options }: SectionProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Field>
@@ -434,7 +441,7 @@ export function ContactDetailsSection({ formData, onChange, options }: any) {
   );
 }
 
-export function SocialPresenceSection({ formData, onChange }: any) {
+export function SocialPresenceSection({ formData, onChange }: Omit<SectionProps, 'options'>) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Field>
@@ -473,11 +480,19 @@ export function SocialPresenceSection({ formData, onChange }: any) {
   );
 }
 
-export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: any) {
+interface DynamicRowSectionProps {
+  title: string;
+  rows: Row[];
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+  renderRow: (row: Row, index: number) => React.ReactNode;
+}
+
+export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: DynamicRowSectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="font-medium text-lg">{title}</h3>
-      {rows.map((row: any, index: number) => (
+      {rows.map((row, index) => (
         <div key={row.id} className="relative border rounded-md p-4 bg-muted/20">
           <button
             type="button"
@@ -500,7 +515,14 @@ export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: a
   );
 }
 
-export function SelectWithAdd({ label, options, value, onChange }: any) {
+interface SelectWithAddProps {
+  label: string;
+  options: string[];
+  value?: string;
+  onChange?: (value: string) => void;
+}
+
+export function SelectWithAdd({ label, options, value, onChange }: SelectWithAddProps) {
   return (
     <Field>
       <FieldLabel>{label}</FieldLabel>

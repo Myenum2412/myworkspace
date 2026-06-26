@@ -42,12 +42,17 @@ export default async function StaffGoalsPage() {
           "Optimize database performance",
         ];
         const statuses = ["in_progress", "on_track", "not_started", "on_track", "in_progress", "at_risk"];
-        goals = members.map((m: Record<string, unknown>, i: number) => ({
-          title: titles[i % titles.length],
-          assignee: (userMap.get(m.userId as string) as string) || "Unknown",
-          target: new Date(Date.now() + (i + 1) * 30 * 86400000).toISOString().split("T")[0],
-          status: statuses[i % statuses.length],
-        }));
+        const now = new Date();
+        goals = members.map((m: Record<string, unknown>, i: number) => {
+          const target = new Date(now);
+          target.setDate(target.getDate() + (i + 1) * 30);
+          return {
+            title: titles[i % titles.length],
+            assignee: (userMap.get(m.userId as string) as string) || "Unknown",
+            target: target.toISOString().split("T")[0],
+            status: statuses[i % statuses.length],
+          };
+        });
       }
     }
   } catch {

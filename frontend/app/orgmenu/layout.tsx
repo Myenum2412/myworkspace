@@ -15,7 +15,7 @@ export default async function OrgLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  let userEmail = session.user.email?.toLowerCase().trim();
+  const userEmail = session.user.email?.toLowerCase().trim();
   const sessionRole = session.user.role;
   let authorized = sessionRole === "ORG_MENU_ADMIN" || sessionRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL;
 

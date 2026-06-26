@@ -49,7 +49,7 @@ export async function getFileBuffer(storagePath: string): Promise<Buffer | null>
     const client = getClient();
     const resp = await client.send(new GetObjectCommand({ Bucket: R2_BUCKET, Key: storagePath }));
     const chunks: Uint8Array[] = [];
-    for await (const chunk of resp.Body as any) {
+    for await (const chunk of resp.Body as AsyncIterable<Uint8Array>) {
       chunks.push(chunk);
     }
     return Buffer.concat(chunks);

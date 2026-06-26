@@ -16,7 +16,6 @@ const colors = [
 
 export default function AddProjectPage() {
   const router = useRouter();
-  const [user, setUser] = useState({ name: "", email: "", avatar: "" });
   const [orgId, setOrgId] = useState("");
   const [name, setName] = useState("");
   const [client, setClient] = useState("");
@@ -26,15 +25,6 @@ export default function AddProjectPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [clientList, setClientList] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetch("/api/user/me", { credentials: "include" })
-      .then((r) => r.json())
-      .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
-      .catch((error) => {
-        console.error("[ADDPROJECTS] Failed to fetch user:", error);
-      });
-  }, []);
 
   useEffect(() => {
     fetch("/api/user/profile", { credentials: "include" })

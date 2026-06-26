@@ -1,4 +1,4 @@
-import { createServer } from "http";
+import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import next from "next";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { connectToMongo } from "./lib/db";
@@ -37,7 +37,7 @@ const apiProxy = createProxyMiddleware({
         console.error(`[PROXY 404] ${req.method} ${req.url} -> Backend returned 404. No matching backend route.`);
       }
     },
-    error: (err, req, res: any) => {
+    error: (err: Error, req: IncomingMessage, res: ServerResponse) => {
       console.error(`[PROXY ERROR] ${req.method} ${req.url} -> ${err.message}`);
       if (res && typeof res.writeHead === "function") {
         console.warn(`[PROXY ERROR FALLBACK] ${req.method} ${req.url} -> Backend unreachable, falling back to Next.js`);

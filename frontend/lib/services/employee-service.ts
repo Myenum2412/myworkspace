@@ -17,9 +17,9 @@ type CreateEmployeeInput = {
   status?: string;
   sourceOfHire?: string | null;
   joiningDate?: string | null;
-  workExperience?: any[];
-  educationDetails?: any[];
-  dependentDetails?: any[];
+  workExperience?: Record<string, unknown>[];
+  educationDetails?: Record<string, unknown>[];
+  dependentDetails?: Record<string, unknown>[];
   currentExperience?: string | null;
   totalExperience?: string | null;
   alternateEmail?: string | null;
@@ -38,7 +38,7 @@ type CreateEmployeeInput = {
 type UpdateEmployeeInput = Partial<CreateEmployeeInput> & { id: string };
 
 async function apiFetch<T>(url: string, options: RequestInit): Promise<T> {
-  const { method = "GET", body } = options;
+  const { method = "GET" } = options;
   const res = await fetch(url, {
     ...options,
     headers: {

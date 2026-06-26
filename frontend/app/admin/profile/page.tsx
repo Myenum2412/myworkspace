@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,9 +21,6 @@ import {
   CalendarIcon,
   ShieldIcon,
   Building2Icon,
-  GlobeIcon,
-  CreditCardIcon,
-  UsersIcon,
   CircleIcon,
   CameraIcon,
   XIcon,
@@ -31,8 +28,6 @@ import {
   UserIcon,
   PencilIcon,
   CheckIcon,
-  LinkIcon,
-  MapPinIcon,
   PhoneIcon,
   AlertCircleIcon,
   CheckCircleIcon,
@@ -183,75 +178,79 @@ export default function ProfilePage() {
   const [fileKey, setFileKey] = useState(0);
   const [imageFileKey, setImageFileKey] = useState(0);
 
-  const fetchProfile = useCallback(async () => {
-    try {
-      const res = await fetch("/api/user/profile", { credentials: "include" });
-      if (!res.ok) {
-        console.error(`[profile] fetch failed: ${res.status}`);
-        setData({ user: null, org: null, memberCount: 0 });
-        setLoading(false);
-        return;
-      }
-      const d = await res.json();
-      const result = d.data || d;
-      console.log("[profile] fetched:", result?.user?.email, "org:", result?.org?.name);
-      setData(result);
-      setBannerUrl(result?.user?.bannerUrl || "");
-      setProfileImage(result?.user?.image || "");
-      // User fields
-      setEditName(result?.user?.name || "");
-      setEditEmail(result?.user?.email || "");
-      setEditPhone(result?.user?.phone || "");
-      setEditDepartment(result?.user?.department || "");
-      setEditCompany(result?.user?.company || "");
-      setEditAddress(result?.user?.address || "");
-      setEditCity(result?.user?.city || "");
-      setEditState(result?.user?.state || "");
-      setEditCountry(result?.user?.country || "");
-      setEditZipCode(result?.user?.zipCode || "");
-      setEditLinkedin(result?.user?.linkedin || "");
-      setEditGithub(result?.user?.github || "");
-      setEditTwitter(result?.user?.twitter || "");
-      setEditWebsite(result?.user?.website || "");
-      // Org fields
-      setEditCompanyName(result?.org?.name || "");
-      setEditDomain(result?.org?.domain || "");
-      setEditBusinessType(result?.org?.businessType || "");
-      setEditIndustry(result?.org?.industry || "");
-      setEditGstNumber(result?.org?.gstNumber || "");
-      setEditPanNumber(result?.org?.panNumber || "");
-      setEditCinNumber(result?.org?.cinNumber || "");
-      setEditCompanyEmail(result?.org?.companyEmail || "");
-      setEditMobileNumber(result?.org?.mobileNumber || "");
-      setEditAltMobile(result?.org?.alternateMobileNumber || "");
-      setEditOrgWebsite(result?.org?.website || "");
-      setEditAddressLine1(result?.org?.addressLine1 || "");
-      setEditAddressLine2(result?.org?.addressLine2 || "");
-      setEditOrgCity(result?.org?.city || "");
-      setEditOrgState(result?.org?.state || "");
-      setEditPincode(result?.org?.pincode || "");
-      setEditOrgCountry(result?.org?.country || "India");
-      setEditAuthorizedPerson(result?.org?.authorizedPersonName || "");
-      setEditDesignation(result?.org?.designation || "");
-      setEditAuthorizedEmail(result?.org?.authorizedPersonEmail || "");
-      setEditAuthorizedMobile(result?.org?.authorizedPersonMobile || "");
-      setEditNumEmployees(result?.org?.numberOfEmployees?.toString() || "");
-      setEditCompanyDesc(result?.org?.companyDescription || "");
-    } catch (err) {
-      console.error("[profile] fetch error:", err);
-      setData({ user: null, org: null, memberCount: 0 });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/user/profile", { credentials: "include" });
+        if (!res.ok) {
+          console.error(`[profile] fetch failed: ${res.status}`);
+          if (!cancelled) {
+            setData({ user: null, org: null, memberCount: 0 });
+            setLoading(false);
+          }
+          return;
+        }
+        const d = await res.json();
+        const result = d.data || d;
+        console.log("[profile] fetched:", result?.user?.email, "org:", result?.org?.name);
+        if (!cancelled) {
+          setData(result);
+          setBannerUrl(result?.user?.bannerUrl || "");
+          setProfileImage(result?.user?.image || "");
+          setEditName(result?.user?.name || "");
+          setEditEmail(result?.user?.email || "");
+          setEditPhone(result?.user?.phone || "");
+          setEditDepartment(result?.user?.department || "");
+          setEditCompany(result?.user?.company || "");
+          setEditAddress(result?.user?.address || "");
+          setEditCity(result?.user?.city || "");
+          setEditState(result?.user?.state || "");
+          setEditCountry(result?.user?.country || "");
+          setEditZipCode(result?.user?.zipCode || "");
+          setEditLinkedin(result?.user?.linkedin || "");
+          setEditGithub(result?.user?.github || "");
+          setEditTwitter(result?.user?.twitter || "");
+          setEditWebsite(result?.user?.website || "");
+          setEditCompanyName(result?.org?.name || "");
+          setEditDomain(result?.org?.domain || "");
+          setEditBusinessType(result?.org?.businessType || "");
+          setEditIndustry(result?.org?.industry || "");
+          setEditGstNumber(result?.org?.gstNumber || "");
+          setEditPanNumber(result?.org?.panNumber || "");
+          setEditCinNumber(result?.org?.cinNumber || "");
+          setEditCompanyEmail(result?.org?.companyEmail || "");
+          setEditMobileNumber(result?.org?.mobileNumber || "");
+          setEditAltMobile(result?.org?.alternateMobileNumber || "");
+          setEditOrgWebsite(result?.org?.website || "");
+          setEditAddressLine1(result?.org?.addressLine1 || "");
+          setEditAddressLine2(result?.org?.addressLine2 || "");
+          setEditOrgCity(result?.org?.city || "");
+          setEditOrgState(result?.org?.state || "");
+          setEditPincode(result?.org?.pincode || "");
+          setEditOrgCountry(result?.org?.country || "India");
+          setEditAuthorizedPerson(result?.org?.authorizedPersonName || "");
+          setEditDesignation(result?.org?.designation || "");
+          setEditAuthorizedEmail(result?.org?.authorizedPersonEmail || "");
+          setEditAuthorizedMobile(result?.org?.authorizedPersonMobile || "");
+          setEditNumEmployees(result?.org?.numberOfEmployees?.toString() || "");
+          setEditCompanyDesc(result?.org?.companyDescription || "");
+        }
+      } catch (err) {
+        console.error("[profile] fetch error:", err);
+        if (!cancelled) {
+          setData({ user: null, org: null, memberCount: 0 });
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   const dbUser = data?.user;
   const org = data?.org;
-  const memberCount = data?.memberCount ?? 0;
 
   
   async function handleSave() {
@@ -330,7 +329,18 @@ export default function ProfilePage() {
       console.log("[profile] save success:", result);
 
       // Re-fetch to confirm persisted data
-      await fetchProfile();
+      try {
+        const refetchRes = await fetch("/api/user/profile", { credentials: "include" });
+        if (refetchRes.ok) {
+          const refetchData = await refetchRes.json();
+          const refetchResult = refetchData.data || refetchData;
+          setData(refetchResult);
+          setBannerUrl(refetchResult?.user?.bannerUrl || "");
+          setProfileImage(refetchResult?.user?.image || "");
+        }
+      } catch {
+        // ignore re-fetch errors
+      }
       setSaveSuccess("Profile updated successfully");
       setEditing(false);
       // Clear success message after 4s

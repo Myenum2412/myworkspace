@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+import { MongoClient } from "mongodb";
 const uri = "mongodb+srv://workmyspace2412_db_user:aREoh3wCAz0j6agO@cluster0.hvtabns.mongodb.net/?appName=Cluster0";
 
 async function run() {
