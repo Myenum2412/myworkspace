@@ -188,7 +188,7 @@ export default function TimeTrackerPage() {
               </div>
               
               <Button
-                className="bg-primary hover:bg-accent text-primary-foreground rounded-[3px] h-[34px] px-[22px] font-semibold shadow-none tracking-wide text-[13px] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary hover:bg-accent text-primary-foreground rounded-none h-[34px] px-[22px] font-semibold shadow-none tracking-wide text-[13px] disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleAdd}
                 disabled={saving || !description.trim()}
               >

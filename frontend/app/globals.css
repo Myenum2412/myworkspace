@@ -92,7 +92,7 @@
   --chart-3: #f87171;
   --chart-4: #6b7280;
   --chart-5: #9ca3af;
-  --radius: 6px;
+  --radius: 0px;
   --sidebar: #ffffff;
   --sidebar-foreground: #000000;
   --sidebar-primary: #dc2626;
@@ -158,6 +158,7 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    border-radius: 0 !important;
   }
   body {
     @apply bg-background text-foreground;
