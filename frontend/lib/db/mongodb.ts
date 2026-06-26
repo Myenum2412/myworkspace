@@ -41,70 +41,7 @@ export async function connectToMongo() {
     }
   }
 
-  const { MongoMemoryServer } = await import("mongodb-memory-server");
-  const mongod = await MongoMemoryServer.create({ instance: { dbName } });
-  const localClient = new MongoClient(mongod.getUri());
-  await localClient.connect();
-  const database = localClient.db(dbName);
-  globalWithMongo._mongoClient = localClient;
-  globalWithMongo._mongoDatabase = database;
-  console.log(`> Using local in-memory MongoDB`);
-  console.log(`> Database: ${database.databaseName}`);
-
-  await seedLocalDatabase(database);
-}
-
-async function seedLocalDatabase(database: Db) {
-  const userCount = await database.collection("users").countDocuments();
-  if (userCount > 0) return;
-
-  const { v4: uuid } = await import("uuid");
-  const { hash } = await import("bcryptjs");
-
-  const userId = uuid();
-  const orgId = uuid();
-  const email = process.env.ADMIN_EMAIL || "developer@myenum.in";
-  const password = process.env.ADMIN_PASSWORD || "Admin@123";
-  const hashedPassword = await hash(password, 12);
-
-  await database.collection("users").insertOne({
-    id: userId,
-    name: "Super Admin",
-    email,
-    password: hashedPassword,
-    role: "ORG_MENU_ADMIN",
-    status: "offline",
-    emailVerified: true,
-    isActive: true,
-    permissions: [
-      "VIEW_ORGMENU", "MANAGE_USERS", "MANAGE_WORKSPACES",
-      "MANAGE_COMPANIES", "MANAGE_BILLING", "VIEW_SYSTEM_LOGS",
-      "MANAGE_ROLES", "MANAGE_SETTINGS", "MANAGE_SUBSCRIPTIONS",
-    ],
-    failedLoginAttempts: 0,
-    twoFactorEnabled: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-
-  await database.collection("organizations").insertOne({
-    id: orgId,
-    name: "System Administration",
-    slug: "system-admin",
-    plan: "enterprise",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-
-  await database.collection("org_members").insertOne({
-    id: uuid(),
-    orgId,
-    userId,
-    role: "admin",
-    joinedAt: new Date(),
-  });
-
-  console.log("\x1b[33m%s\x1b[0m", `> Seeded local DB: admin = ${email} / ${password}`);
+  throw new Error("MONGODB_URI is not set or connection failed. Please configure your MongoDB connection.");
 }
 
 async function ensureDb(): Promise<Db> {

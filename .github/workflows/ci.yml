@@ -55,33 +55,15 @@ jobs:
 
   deploy:
     name: Deploy
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [frontend, backend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: SSH and deploy
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USER }}
-          key: ${{ secrets.DO_SSH_KEY }}
-          script: |
-            cd /root/myworkspace
-            git pull origin main
+      - uses: actions/checkout@v4
 
-            # Frontend
-            cd frontend
-            npm ci --include=dev
-            npm run build
-            cd ..
-
-            # Backend
-            cd backend
-            npm ci --include=dev
-            npm run build
-            cd ..
-
-            # Restart
-            pm2 restart workspace-api 2>/dev/null || pm2 start backend/dist/index.js --name workspace-api
-            pm2 restart workspace-frontend 2>/dev/null || pm2 start npm --name workspace-frontend -- run start
+      - name: Deploy
+        run: |
+          cd /opt/myworkspace
+          git pull origin main
+          docker compose up -d --build
