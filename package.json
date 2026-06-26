@@ -1,22 +1,11 @@
 {
   "private": true,
   "scripts": {
-    "lhci": "lhci autorun",
-    "profile": "node --prof ./backend/dist/app.js",
-    "perf:audit": "npm run lhci && npm run profile",
-    "depcheck": "depcheck",
     "vercel-build": "cd frontend && npm ci --include=dev && npm run build && rm -rf ../.next && cp -r .next ../.next && cp -r public ../public && ls -la ../.next/routes-manifest.json"
   },
   "dependencies": {
-    "web-vitals": "^3.0.0",
-    "depcheck": "^1.4.5",
-    "node-cache": "^5.1.2",
     "next": "^16.2.9",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "lhci": "^0.13.0"
-  },
-  "devDependencies": {
-    "@lhci/cli": "^1.13.1"
+    "react-dom": "^19.0.0"
   }
 }
