@@ -64,6 +64,6 @@ jobs:
 
       - name: Deploy
         run: |
-          cd /opt/myworkspace
+          cd /root/myworkspace
           git pull origin main
           docker compose up -d --build
