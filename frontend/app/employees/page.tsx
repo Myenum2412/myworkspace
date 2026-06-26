@@ -74,19 +74,36 @@ export default async function EmployeesPage() {
 
   if (session?.user?.id) {
     try {
-      let orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id }) as Record<string, unknown> | null;
+      const sessionUserIdStr = session.user.id;
+      let sessionUserObjId: ObjectId | undefined;
+      try { sessionUserObjId = new ObjectId(sessionUserIdStr); } catch {}
+      
+      const userQuery = sessionUserObjId 
+        ? { $or: [{ _id: sessionUserObjId }, { id: sessionUserIdStr }] }
+        : { id: sessionUserIdStr };
+        
+      const currentUserDoc = await db.collection(collections.users).findOne(userQuery);
+      
+      const possibleUserIds = [sessionUserIdStr];
+      if (currentUserDoc) {
+        if (currentUserDoc.id) possibleUserIds.push(currentUserDoc.id as string);
+        if (currentUserDoc._id) possibleUserIds.push((currentUserDoc._id as ObjectId).toString());
+      }
+
+      let orgMember = await db.collection(collections.orgMembers).findOne({ userId: { $in: possibleUserIds } }) as Record<string, unknown> | null;
       if (!orgMember) {
-        const org = await db.collection(collections.organizations).findOne({ ownerId: session.user.id }) as Record<string, unknown> | null;
+        const org = await db.collection(collections.organizations).findOne({ ownerId: { $in: possibleUserIds } }) as Record<string, unknown> | null;
         if (org) {
           const orgId = (org.id as string) || (org._id as ObjectId).toString();
+          const mainUserId = (currentUserDoc?.id as string) || sessionUserIdStr;
           await db.collection(collections.orgMembers).insertOne({
             id: uuid(),
             orgId,
-            userId: session.user.id,
+            userId: mainUserId,
             role: "admin",
             joinedAt: new Date(),
           });
-          orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id }) as Record<string, unknown> | null;
+          orgMember = await db.collection(collections.orgMembers).findOne({ userId: mainUserId }) as Record<string, unknown> | null;
         }
       }
 
@@ -100,10 +117,10 @@ export default async function EmployeesPage() {
         }
       }
 
-      const currentUserId = session.user.id;
-      const hasCurrentUser = allOrgMembers.some((m) => m.userId === currentUserId);
+      const hasCurrentUser = allOrgMembers.some((m) => possibleUserIds.includes(m.userId as string));
       if (!hasCurrentUser) {
-        allOrgMembers.push({ userId: currentUserId, role: "admin" });
+        const mainUserId = (currentUserDoc?.id as string) || sessionUserIdStr;
+        allOrgMembers.push({ userId: mainUserId, role: "admin" });
       }
 
       const userIds = [...new Set(allOrgMembers.map((m) => m.userId as string).filter(Boolean))];
@@ -114,8 +131,8 @@ export default async function EmployeesPage() {
 
         const userMap = new Map<string, Record<string, unknown>>();
         for (const u of users) {
-          const uid = userDocToId(u);
-          if (uid) userMap.set(uid, u);
+          if (u.id) userMap.set(u.id as string, u);
+          if (u._id) userMap.set((u._id as ObjectId).toString(), u);
         }
 
         const allFileIds = users.flatMap((u) => (u.files as string[]) || []);

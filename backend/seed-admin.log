@@ -2,5 +2,9 @@
 > myworkspace-backend@1.0.0 db:seed-admin
 > tsx --env-file=.env src/lib/db/seed-admin.ts
 
+[MONGODB] Attempting connection to: mongodb+srv://***:***@cluster0.hvtabns.mongodb.net/myworkspace?appName=Cluster0
+[MONGODB] Target database: myworkspace
 ✦ Connected to MongoDB Atlas
+✦ Database: myworkspace
+✦ Host: ac-0pxayfe-shard-00-00.hvtabns.mongodb.net
 Admin user already exists: developer@myenum.in

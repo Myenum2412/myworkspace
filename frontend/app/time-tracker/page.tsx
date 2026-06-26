@@ -35,7 +35,9 @@ export default function TimeTrackerPage() {
         setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" });
         setUserId(u.id || "");
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[TIME-TRACKER] Failed to fetch user:", error);
+      });
   }, []);
 
   useEffect(() => {
@@ -47,7 +49,9 @@ export default function TimeTrackerPage() {
         const id = profile?.org?.id || profile?.org?._id?.toString() || "";
         setOrgId(id);
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[TIME-TRACKER] Failed to fetch profile:", error);
+      });
   }, [userId]);
 
   const handleAdd = async () => {

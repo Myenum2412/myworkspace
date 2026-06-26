@@ -42,6 +42,7 @@ export async function ensureUserOrg(userId: string): Promise<string> {
     name: `${userName}'s Organization`,
     slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`,
     plan: "starter",
+    onboardingCompleted: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   });

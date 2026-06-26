@@ -8,6 +8,7 @@ import { v4 as uuid } from "uuid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createUserWorkspace } from "@/actions/user-folder";
+import { getNextSequence } from "@/lib/db/counter";
 
 function getRedirectPath(role?: string): string {
   if (role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN") return "/orgmenu";
@@ -68,6 +69,7 @@ export async function loginAction(formData: FormData) {
             slug,
             plan: "starter",
             ownerId: userId,
+            onboardingCompleted: false,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -105,6 +107,17 @@ export async function loginAction(formData: FormData) {
   });
 
   const role = user?.role;
+  const isOrgAdmin = role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN";
+
+  if (!isOrgAdmin) {
+    const org = await db.collection(collections.organizations).findOne({ ownerId: userId });
+    if (org && !org.onboardingCompleted) {
+      console.log(`[AUTH] loginAction: ${email} onboarding not completed → /onboarding`);
+      revalidatePath("/onboarding");
+      redirect("/onboarding");
+    }
+  }
+
   const redirectPath = getRedirectPath(role);
   console.log(`[AUTH] loginAction: ${email} role=${role} → ${redirectPath}`);
   revalidatePath(redirectPath);
@@ -139,9 +152,11 @@ export async function signupAction(formData: FormData) {
   const hashedPassword = await hash(password, 12);
   const userId = uuid();
   const orgId = uuid();
+  const userNumber = await getNextSequence("userNumber");
 
   await db.collection(collections.users).insertOne({
     id: userId,
+    userNumber,
     name,
     email,
     password: hashedPassword,
@@ -167,6 +182,7 @@ export async function signupAction(formData: FormData) {
     slug,
     plan: "starter",
     ownerId: userId,
+    onboardingCompleted: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   });
@@ -182,11 +198,9 @@ export async function signupAction(formData: FormData) {
   await createUserWorkspace(userId, name, orgId);
 
   await signIn("credentials", { email, password, redirect: false });
-  const session = await import("./config").then(m => m.auth());
-  const redirectPath = getRedirectPath(session?.user?.role);
-  console.log(`[AUTH] signupAction: ${email} role=${session?.user?.role} → ${redirectPath}`);
-  revalidatePath(redirectPath);
-  redirect(redirectPath);
+  console.log(`[AUTH] signupAction: ${email} signed up → redirecting to /onboarding`);
+  revalidatePath("/onboarding");
+  redirect("/onboarding");
 }
 
 export async function logoutAction() {

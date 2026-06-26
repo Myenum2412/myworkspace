@@ -33,7 +33,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Building2Icon, PencilIcon, Trash2Icon, AlertCircleIcon, SearchIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import {
+  Building2Icon,
+  PencilIcon,
+  Trash2Icon,
+  AlertCircleIcon,
+  SearchIcon,
+  GlobeIcon,
+  TagIcon,
+  HashIcon,
+  CheckCircle2Icon,
+} from "lucide-react";
 import { updateOrganization, deleteOrganization } from "@/actions/admin";
 
 interface OrgRow {
@@ -64,45 +75,106 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
           <PencilIcon className="size-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Organization</DialogTitle>
-        </DialogHeader>
-        <form action={formAction} className="space-y-4">
+      <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5">
+          <DialogHeader className="text-white">
+            <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+              <Building2Icon className="size-5" />
+              Edit Organization
+            </DialogTitle>
+          </DialogHeader>
+        </div>
+
+        <form action={formAction} className="flex flex-col">
           {state?.error && (
-            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950 rounded-md px-3 py-2">
+            <div className="mx-6 mt-4 flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
               <AlertCircleIcon className="size-4 shrink-0" />
               {state.error}
             </div>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="edit-name">Name</Label>
-            <Input id="edit-name" name="name" defaultValue={org.name} required />
+
+          <div className="px-6 py-5 space-y-5">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-name" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                <Building2Icon className="size-3.5 text-muted-foreground" />
+                Organization Name
+              </Label>
+              <Input
+                id="edit-name"
+                name="name"
+                defaultValue={org.name}
+                required
+                placeholder="Enter organization name"
+                className="h-10"
+              />
+            </div>
+
+            <Separator />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-plan" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                  <TagIcon className="size-3.5 text-muted-foreground" />
+                  Plan
+                </Label>
+                <Select name="plan" defaultValue={org.plan || "starter"}>
+                  <SelectTrigger id="edit-plan" className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="starter">Starter</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-domain" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                  <GlobeIcon className="size-3.5 text-muted-foreground" />
+                  Domain
+                </Label>
+                <Input
+                  id="edit-domain"
+                  name="domain"
+                  defaultValue={org.domain || ""}
+                  placeholder="e.g. example.com"
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-slug" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                <HashIcon className="size-3.5 text-muted-foreground" />
+                Slug
+              </Label>
+              <Input
+                id="edit-slug"
+                name="slug"
+                defaultValue={org.slug || ""}
+                placeholder="url-friendly-slug"
+                className="h-10"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-plan">Plan</Label>
-            <Select name="plan" defaultValue={org.plan || "starter"}>
-              <SelectTrigger id="edit-plan">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="starter">Starter</SelectItem>
-                <SelectItem value="pro">Pro</SelectItem>
-                <SelectItem value="enterprise">Enterprise</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-domain">Domain</Label>
-            <Input id="edit-domain" name="domain" defaultValue={org.domain || ""} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-slug">Slug</Label>
-            <Input id="edit-slug" name="slug" defaultValue={org.slug || ""} />
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save"}</Button>
+
+          <div className="flex items-center justify-end gap-3 px-6 py-4 bg-muted/30 border-t">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="px-5">
+              Cancel
+            </Button>
+            <Button type="submit" disabled={pending} className="px-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+              {pending ? (
+                <>
+                  <span className="animate-spin size-4 border-2 border-white/30 border-t-white rounded-full mr-2" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2Icon className="size-4 mr-1.5" />
+                  Save Changes
+                </>
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>

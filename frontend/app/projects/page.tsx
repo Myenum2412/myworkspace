@@ -99,7 +99,9 @@ export default function ProjectsPage() {
       .then((data) => {
         if (data) setProjects(data.data || []);
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error("[PROJECTS] Failed to fetch projects:", error);
+      })
       .finally(() => setLoading(false));
   }, []);
 

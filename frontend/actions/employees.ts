@@ -6,6 +6,7 @@ import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
+import { getNextSequence } from "@/lib/db/counter";
 
 export async function addEmployeeAction(formData: FormData) {
   const session = await auth();
@@ -49,9 +50,11 @@ export async function addEmployeeAction(formData: FormData) {
 
   const userId = uuid();
   const defaultPassword = await hash(Math.random().toString(36).slice(-12) + "A1!", 12);
+  const userNumber = await getNextSequence("userNumber");
 
   await db.collection(collections.users).insertOne({
     id: userId,
+    userNumber,
     name,
     email,
     password: defaultPassword,

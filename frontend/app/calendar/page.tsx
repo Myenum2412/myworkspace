@@ -32,13 +32,18 @@ export default function CalendarPage() {
           fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" })
             .then((r) => r.json())
             .then((res) => setTasks((res.data || res || []).filter((t: Task) => t.dueDate)))
-            .catch(() => {})
+            .catch((error) => {
+              console.error("[CALENDAR] Failed to fetch tasks:", error);
+            })
             .finally(() => setLoading(false));
         } else {
           setLoading(false);
         }
       })
-      .catch(() => { setLoading(false); });
+      .catch((error) => {
+        console.error("[CALENDAR] Failed to fetch profile:", error);
+        setLoading(false);
+      });
   }, [session]);
 
   const today = new Date();

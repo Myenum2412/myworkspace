@@ -26,7 +26,9 @@ export function OrgLimitsEditor() {
         setLimits(d);
         setDraft(d);
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[ORG/LIMITS] Failed to fetch limits:", error);
+      });
   }, []);
 
   async function save() {

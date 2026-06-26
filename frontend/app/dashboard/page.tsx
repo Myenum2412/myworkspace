@@ -41,14 +41,20 @@ export default function DashboardPage() {
           fetch(`/api/dashboard/metrics?orgId=${id}`, { credentials: "include" })
             .then((r) => r.json())
             .then((m) => setMetrics(m.data || m))
-            .catch(() => {});
+            .catch((error) => {
+              console.error("[DASHBOARD] Failed to fetch metrics:", error);
+            });
           fetch(`/api/activity?orgId=${id}`, { credentials: "include" })
             .then((r) => r.json())
             .then((a) => setActivities(a.data || a || []))
-            .catch(() => {});
+            .catch((error) => {
+              console.error("[DASHBOARD] Failed to fetch activity:", error);
+            });
         }
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[DASHBOARD] Failed to fetch profile:", error);
+      });
   }, [session]);
 
   const cards = useMemo(() => [

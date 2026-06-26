@@ -55,6 +55,7 @@ export async function signupActionMongo(formData: FormData) {
     slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${userId.slice(0, 8)}`,
     ownerId: userId,
     plan: "starter",
+    onboardingCompleted: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -76,10 +77,7 @@ export async function signupActionMongo(formData: FormData) {
   });
 
   await signIn("credentials", { email, password, redirect: false });
-  const createdUser = await db.collection("users").findOne({ email });
-  const role = createdUser?.role;
-  const redirectPath = role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN" ? "/orgmenu" : "/dashboard";
-  console.log(`[AUTH] signupActionMongo: ${email} role=${role} → ${redirectPath}`);
-  revalidatePath(redirectPath);
-  redirect(redirectPath);
+  console.log(`[AUTH] signupActionMongo: ${email} signed up → redirecting to /onboarding`);
+  revalidatePath("/onboarding");
+  redirect("/onboarding");
 }

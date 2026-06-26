@@ -81,9 +81,9 @@ export function SignupForm({ className, error, ...props }: React.ComponentProps<
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /> Google</Button>
-        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}><GitHubIcon /> GitHub</Button>
-        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}><LinkedInIcon /> LinkedIn</Button>
+        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/auth/role-redirect" })}><GoogleIcon /> Google</Button>
+        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/auth/role-redirect" })}><GitHubIcon /> GitHub</Button>
+        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/auth/role-redirect" })}><LinkedInIcon /> LinkedIn</Button>
       </div>
 
       <p className="text-center text-sm text-muted-foreground">

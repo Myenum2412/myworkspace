@@ -35,7 +35,9 @@ export default function MyTimePage() {
     fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "", id: u.id || "" }))
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[MY-TIME] Failed to fetch user:", error);
+      });
   }, []);
 
   useEffect(() => {
@@ -47,7 +49,9 @@ export default function MyTimePage() {
         const id = profile?.org?.id || profile?.org?._id?.toString() || "";
         setOrgId(id);
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[MY-TIME] Failed to fetch profile:", error);
+      });
   }, [user.id]);
 
   useEffect(() => {
@@ -59,7 +63,9 @@ export default function MyTimePage() {
     fetch(`/api/time-entries?${params}`, { credentials: "include" })
       .then((r) => r.json())
       .then((res) => setEntries(res.data || res || []))
-      .catch(() => {})
+      .catch((error) => {
+        console.error("[MY-TIME] Failed to fetch time entries:", error);
+      })
       .finally(() => setLoading(false));
   }, [orgId, user.id, date]);
 

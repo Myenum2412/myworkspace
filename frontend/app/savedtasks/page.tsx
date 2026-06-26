@@ -93,7 +93,9 @@ export default function SavedTasksPage() {
           if (arr.length > 0) setTasks(arr);
         }
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error("[SAVEDTASKS] Failed to fetch tasks:", error);
+      })
       .finally(() => setLoading(false));
   }, [session]);
 

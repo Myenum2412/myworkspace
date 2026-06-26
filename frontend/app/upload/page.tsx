@@ -55,10 +55,14 @@ export default function UploadPage() {
               const list = Array.isArray(data) ? data : data.data || [];
               setProjects(list);
             })
-            .catch(() => {});
+            .catch((error) => {
+              console.error("[UPLOAD] Failed to fetch projects:", error);
+            });
         }
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[UPLOAD] Failed to fetch profile:", error);
+      });
   }, [session]);
 
   const handleSelect = (file: File | null) => {

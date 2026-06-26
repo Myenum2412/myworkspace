@@ -93,7 +93,9 @@ export default function AllTasksPage() {
           if (arr.length > 0) setTasks(arr);
         }
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error("[ALLTASKS] Failed to fetch tasks:", error);
+      })
       .finally(() => setLoading(false));
   }, [session]);
 
@@ -273,16 +275,18 @@ export default function AllTasksPage() {
                                   Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-destructive"
-                                  onClick={async () => {
-                                    if (!confirm("Are you sure you want to delete this task?")) return;
-                                    try {
-                                      const res = await fetch(`/api/tasks/${t._id}`, { method: "DELETE", credentials: "include" });
-                                      if (res.ok) setTasks((prev) => prev.filter((task) => task._id !== t._id));
-                                    } catch {}
-                                  }}
-                                >
+                                  <DropdownMenuItem
+                                    className="text-destructive"
+                                    onClick={async () => {
+                                      if (!confirm("Are you sure you want to delete this task?")) return;
+                                      try {
+                                        const res = await fetch(`/api/tasks/${t._id}`, { method: "DELETE", credentials: "include" });
+                                        if (res.ok) setTasks((prev) => prev.filter((task) => task._id !== t._id));
+                                      } catch (error) {
+                                        console.error("[ALLTASKS] Failed to delete task:", error);
+                                      }
+                                    }}
+                                  >
                                   <Trash2Icon className="mr-2 size-4" />
                                   Delete
                                 </DropdownMenuItem>

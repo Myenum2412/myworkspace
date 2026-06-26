@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 import { env } from "../../config/env.js";
 export async function connectDb() {
+    // Extract database name from URI or use default
+    const dbName = env.MONGODB_URI.includes("mongodb.net")
+        ? new URL(env.MONGODB_URI).pathname.slice(1).split("?")[0] || "myworkspace"
+        : "myworkspace";
+    console.log(`[MONGODB] Attempting connection to: ${env.MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, "//***:***@")}`);
+    console.log(`[MONGODB] Target database: ${dbName}`);
     try {
         await mongoose.connect(env.MONGODB_URI, {
             serverSelectionTimeoutMS: 5000,
@@ -8,14 +14,18 @@ export async function connectDb() {
             tls: true,
             tlsAllowInvalidCertificates: true,
         });
-        console.log("✦ Connected to MongoDB Atlas");
+        console.log(`✦ Connected to MongoDB Atlas`);
+        console.log(`✦ Database: ${mongoose.connection.db?.databaseName || dbName}`);
+        console.log(`✦ Host: ${mongoose.connection.host}`);
     }
     catch (err) {
         console.error("✦ Atlas unavailable:", err.message.split(":")[0]);
+        console.warn("✦ Falling back to in-memory MongoDB (DEVELOPMENT ONLY)");
         const { MongoMemoryServer } = await import("mongodb-memory-server");
-        const mongod = await MongoMemoryServer.create();
+        const mongod = await MongoMemoryServer.create({ instance: { dbName } });
         await mongoose.connect(mongod.getUri());
-        console.log("✦ Using local in-memory MongoDB");
+        console.log(`✦ Using local in-memory MongoDB`);
+        console.log(`✦ Database: ${mongoose.connection.db?.databaseName || dbName}`);
     }
 }
 export { mongoose };

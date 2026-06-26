@@ -19,7 +19,6 @@ import {
   Settings2Icon,
   UsersIcon,
   CreditCardIcon,
-  GaugeIcon,
   BellIcon,
   SaveIcon,
   Loader2Icon,
@@ -38,7 +37,7 @@ const tabs = [
   { id: "general", label: "General", icon: Settings2Icon },
   { id: "team", label: "Team", icon: UsersIcon },
   { id: "billing", label: "Billing", icon: CreditCardIcon },
-  { id: "limits", label: "Limits", icon: GaugeIcon },
+
   { id: "notifications", label: "Notifications", icon: BellIcon },
   { id: "employee-fields", label: "Employee Fields", icon: ListIcon },
 ];
@@ -66,12 +65,6 @@ export default function SettingsPage() {
   const [plan, setPlan] = useState("Starter");
   const [nextBilling, setNextBilling] = useState("2026-07-21");
   const [seats, setSeats] = useState(5);
-
-  // Limits
-  const [storageUsed, setStorageUsed] = useState(2.4);
-  const [storageLimit, setStorageLimit] = useState(10);
-  const [memberLimit, setMemberLimit] = useState(25);
-  const [projectLimit, setProjectLimit] = useState(10);
 
   // Employee Fields
   const [dropdownOptions, setDropdownOptionsState] = useState<Record<string, string[]>>(DEFAULT_DROPDOWN_OPTIONS);
@@ -179,10 +172,14 @@ export default function SettingsPage() {
               }
               if (s.notifications) setNotifSettings(s.notifications);
             })
-            .catch(() => {});
+            .catch((error) => {
+              console.error("[SETTINGS] Failed to fetch settings:", error);
+            });
         }
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[SETTINGS] Failed to fetch profile:", error);
+      });
   }, []);
 
   async function handleSave() {
@@ -348,50 +345,6 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-            </div>
-          )}
-
-          {/* Limits */}
-          {activeTab === "limits" && (
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <GaugeIcon className="size-4" />
-                    Usage Limits
-                  </CardTitle>
-                  <CardDescription>Monitor and manage your resource usage</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Storage</span>
-                      <span className="text-xs text-muted-foreground">{storageUsed} GB / {storageLimit} GB</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-muted">
-                      <div className="h-2 rounded-full bg-primary" style={{ width: `${(storageUsed / storageLimit) * 100}%` }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Team Members</span>
-                      <span className="text-xs text-muted-foreground">{seats} / {memberLimit}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-muted">
-                      <div className="h-2 rounded-full bg-red-500" style={{ width: `${(seats / memberLimit) * 100}%` }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Active Projects</span>
-                      <span className="text-xs text-muted-foreground">7 / {projectLimit}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-muted">
-                      <div className="h-2 rounded-full bg-red-500" style={{ width: `${(7 / projectLimit) * 100}%` }} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           )}
 

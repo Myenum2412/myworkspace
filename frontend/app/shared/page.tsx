@@ -53,7 +53,9 @@ export default function SharedPage() {
           const sharedBy = await sharedByRes.json();
           setFiles([...(sharedWith.data || []), ...(sharedBy.data || [])]);
         }
-      } catch {} finally {
+      } catch (error) {
+        console.error("[SHARED] Failed to load:", error);
+      } finally {
         setLoading(false);
       }
     }

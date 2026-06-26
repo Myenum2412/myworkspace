@@ -96,7 +96,9 @@ export default function MyTasksPage() {
           if (arr.length > 0) setTasks(arr);
         }
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error("[MYTASKS] Failed to fetch tasks:", error);
+      })
       .finally(() => setLoading(false));
   }, [session]);
 

@@ -51,7 +51,9 @@ export default function TeamTimePage() {
     fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[TEAM-TIME] Failed to fetch user:", error);
+      });
   }, []);
 
   useEffect(() => {
@@ -77,10 +79,15 @@ export default function TeamTimePage() {
             const d = res.data || res;
             setData(Array.isArray(d) ? { members: d, summary: { totalMembers: d.length, activeMembers: d.filter((m: TeamMemberSummary) => m.entryCount > 0).length, totalHoursAll: d.reduce((s: number, m: TeamMemberSummary) => s + m.totalMinutes, 0) / 60 + "", totalEntries: d.reduce((s: number, m: TeamMemberSummary) => s + m.entryCount, 0) } } : d);
           })
-          .catch(() => {})
+          .catch((error) => {
+            console.error("[TEAM-TIME] Failed to fetch team summary:", error);
+          })
           .finally(() => setLoading(false));
       })
-      .catch(() => setLoading(false));
+      .catch((error) => {
+        console.error("[TEAM-TIME] Failed to fetch profile:", error);
+        setLoading(false);
+      });
   }, [session, date]);
 
   const members = data?.members || [];

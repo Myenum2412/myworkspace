@@ -26,4 +26,5 @@ export const collections = {
   subscriptions: "subscriptions",
   clientUsers: "client_users",
   clientAuditLogs: "client_audit_logs",
+  counters: "counters",
 } as const;

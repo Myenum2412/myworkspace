@@ -31,7 +31,9 @@ export default function FilesPage() {
           const statsData = await statsRes.json();
           setStats(statsData.data || null);
         }
-      } catch {} finally {
+      } catch (error) {
+        console.error("[FILES] Failed to load:", error);
+      } finally {
         setLoading(false);
       }
     }

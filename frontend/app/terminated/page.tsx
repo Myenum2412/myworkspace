@@ -31,7 +31,9 @@ export default function TerminatedPage() {
     fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[TERMINATED] Failed to fetch user:", error);
+      });
   }, []);
 
   useEffect(() => {
@@ -40,7 +42,9 @@ export default function TerminatedPage() {
       if (stored.length > 0) {
         setTerminated(stored);
       }
-    } catch {}
+    } catch (error) {
+      console.error("[TERMINATED] Failed to parse localStorage:", error);
+    }
   }, []);
 
   function handleReactivateClick(emp: TerminatedEmployee) {

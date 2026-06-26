@@ -5,6 +5,7 @@ import { v4 as uuid } from "uuid";
 import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { ensureUserOrg, validateOrgMembership } from "@/lib/org";
+import { getNextSequence } from "@/lib/db/counter";
 
 export async function GET() {
   try {
@@ -66,11 +67,13 @@ export async function POST(request: Request) {
     const userId = uuid();
     const defaultPassword = password || Math.random().toString(36).slice(-8) + "A1!";
     const hashedPassword = await hash(defaultPassword, 12);
+    const userNumber = await getNextSequence("userNumber");
 
     const name = [firstName, lastName].filter(Boolean).join(" ");
 
     await db.collection(collections.users).insertOne({
       id: userId,
+      userNumber,
       name,
       nickname: nickname || null,
       email,

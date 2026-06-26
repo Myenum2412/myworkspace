@@ -12,6 +12,9 @@ export async function connectToMongo() {
   if (globalWithMongo._mongoClient) return;
 
   const uri = process.env.MONGODB_URI;
+  console.log(`[MONGODB] Frontend attempting connection to: ${uri ? uri.replace(/\/\/([^:]+):([^@]+)@/, "//***:***@") : 'NOT SET'}`);
+  console.log(`[MONGODB] Frontend target database: ${dbName}`);
+
   if (uri) {
     try {
       const atlasClient = new MongoClient(
@@ -29,7 +32,8 @@ export async function connectToMongo() {
       await atlasClient.db(dbName).command({ ping: 1 });
       globalWithMongo._mongoClient = atlasClient;
       globalWithMongo._mongoDatabase = atlasClient.db(dbName);
-      console.log("> Connected to MongoDB Atlas");
+      console.log(`> Connected to MongoDB Atlas`);
+      console.log(`> Database: ${atlasClient.db(dbName).databaseName}`);
       return;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -44,7 +48,8 @@ export async function connectToMongo() {
   const database = localClient.db(dbName);
   globalWithMongo._mongoClient = localClient;
   globalWithMongo._mongoDatabase = database;
-  console.log("> Using local in-memory MongoDB");
+  console.log(`> Using local in-memory MongoDB`);
+  console.log(`> Database: ${database.databaseName}`);
 
   await seedLocalDatabase(database);
 }

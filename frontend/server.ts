@@ -15,10 +15,24 @@ const apiProxy = createProxyMiddleware({
   target: process.env.API_URL || "http://localhost:4000",
   changeOrigin: true,
   on: {
-    proxyReq: (_proxyReq, req) => {
+    proxyReq: (proxyReq, req) => {
       console.log(`[PROXY] ${req.method} ${req.url} -> backend`);
+      if (req.headers.cookie) {
+        proxyReq.setHeader("cookie", req.headers.cookie);
+        console.log(`[PROXY] Forwarded cookies: ${req.headers.cookie.split(";").map(c => c.trim().split("=")[0]).join(", ")}`);
+      } else {
+        console.warn(`[PROXY] No cookies in request to backend`);
+      }
+      if (req.headers.authorization) {
+        proxyReq.setHeader("authorization", req.headers.authorization);
+        console.log(`[PROXY] Forwarded authorization header`);
+      }
     },
     proxyRes: (proxyRes, req) => {
+      console.log(`[PROXY RESPONSE] ${req.method} ${req.url} -> ${proxyRes.statusCode}`);
+      if (proxyRes.statusCode === 401) {
+        console.error(`[PROXY 401] ${req.method} ${req.url} -> Backend returned 401 Unauthorized. Check cookie forwarding.`);
+      }
       if (proxyRes.statusCode === 404) {
         console.error(`[PROXY 404] ${req.method} ${req.url} -> Backend returned 404. No matching backend route.`);
       }

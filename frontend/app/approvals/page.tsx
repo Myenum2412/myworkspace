@@ -48,13 +48,18 @@ export default function ApprovalsPage() {
           fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" })
             .then((r) => r.json())
             .then((res) => setPending((res.data || res || []).filter((t: ApprovalTask) => t.status === "review")))
-            .catch(() => {})
+            .catch((error) => {
+              console.error("[APPROVALS] Failed to fetch tasks:", error);
+            })
             .finally(() => setLoading(false));
         } else {
           setLoading(false);
         }
       })
-      .catch(() => { setLoading(false); });
+      .catch((error) => {
+        console.error("[APPROVALS] Failed to fetch profile:", error);
+        setLoading(false);
+      });
   }, [session]);
 
   useEffect(() => { fetchPending(); }, [fetchPending]);

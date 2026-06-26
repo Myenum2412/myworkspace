@@ -89,7 +89,9 @@ export default function TeamTasksPage() {
           if (arr.length > 0) setTasks(arr);
         }
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error("[TEAMTASKS] Failed to fetch tasks:", error);
+      })
       .finally(() => setLoading(false));
   }, [session]);
 

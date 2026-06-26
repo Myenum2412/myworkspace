@@ -12,7 +12,13 @@ router.use(authenticate);
 // GET /?page=1&limit=20&status=&priority=&assigneeId=&sortBy=createdAt&sortOrder=desc
 router.get("/", async (req: AuthRequest, res: Response) => {
   try {
+    console.log(`[TASKS] ========== GET / START ==========`);
+    console.log(`[TASKS] Request query:`, req.query);
+    console.log(`[TASKS] req.orgId (from middleware): ${req.orgId || 'NOT SET'}`);
+    console.log(`[TASKS] req.user:`, JSON.stringify(req.user));
+    
     const userOrgId = await requireOrgMembership(req.user!.userId);
+    console.log(`[TASKS] requireOrgMembership returned: ${userOrgId}`);
 
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
@@ -27,6 +33,8 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     if (status) match.status = status;
     if (priority) match.priority = priority;
     if (assigneeId) match.assigneeId = assigneeId;
+    
+    console.log(`[TASKS] Match query:`, JSON.stringify(match));
 
     const pipeline: any[] = [
       { $match: match },
@@ -125,6 +133,9 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     }));
 
     const total = result.totalCount[0]?.count || 0;
+    console.log(`[TASKS] Total count: ${total}, Returned: ${data.length}`);
+    console.log(`[TASKS] First task sample:`, data[0] ? { _id: data[0]._id, title: data[0].title, status: data[0].status } : 'none');
+    console.log(`[TASKS] ========== GET / END ==========`);
 
     res.json({
       success: true,

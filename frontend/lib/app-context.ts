@@ -2,7 +2,7 @@ export type AppContextType = "origin" | "workspace" | "staff" | "public";
 
 export const ORIGIN_ROUTES = ["/orgmenu"];
 export const STAFF_ROUTES = ["/staffs"];
-export const PUBLIC_ROUTES = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/"];
+export const PUBLIC_ROUTES = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/auth/not-found", "/"];
 export const WORKSPACE_ROUTES = [
   "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
   "/projects", "/teams", "/clients", "/approvals", "/reports",

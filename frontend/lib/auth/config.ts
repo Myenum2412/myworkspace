@@ -15,12 +15,14 @@ declare module "next-auth" {
       role?: string;
       permissions?: string[];
       orgId?: string;
+      onboardingCompleted?: boolean;
     };
   }
   interface User {
     role?: string;
     permissions?: string[];
     orgId?: string;
+    onboardingCompleted?: boolean;
   }
 }
 
@@ -28,7 +30,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
-    error: "/login",
+    error: "/auth/not-found",
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -37,8 +39,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = (user as { role?: string }).role;
         token.permissions = (user as { permissions?: string[] }).permissions;
         token.orgId = (user as { orgId?: string }).orgId;
-        console.log(`[AUTH jwt] token updated: id=${user.id} role=${token.role} orgId=${token.orgId}`);
+        token.onboardingCompleted = (user as { onboardingCompleted?: boolean }).onboardingCompleted;
+        console.log(`[AUTH jwt] token updated: id=${user.id} role=${token.role} orgId=${token.orgId} onboarding=${token.onboardingCompleted}`);
       }
+
+      if (token.id) {
+        try {
+          const { db } = await import("@/lib/db");
+          const orgId = token.orgId as string | undefined;
+          if (orgId) {
+            const org = await db.collection("organizations").findOne({ id: orgId });
+            token.onboardingCompleted = org?.onboardingCompleted === true;
+          } else {
+            const member = await db.collection("org_members").findOne({ userId: token.id });
+            if (member) {
+              const org = await db.collection("organizations").findOne({ id: member.orgId });
+              token.onboardingCompleted = org?.onboardingCompleted === true;
+            } else {
+              token.onboardingCompleted = false;
+            }
+          }
+        } catch {
+          if (token.onboardingCompleted === undefined) {
+            token.onboardingCompleted = false;
+          }
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -47,7 +74,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.role = token.role as string;
         session.user.permissions = token.permissions as string[];
         session.user.orgId = token.orgId as string;
-        console.log(`[AUTH session] session built: email=${session.user.email} role=${session.user.role} orgId=${session.user.orgId}`);
+        session.user.onboardingCompleted = token.onboardingCompleted as boolean;
+        console.log(`[AUTH session] session built: email=${session.user.email} role=${session.user.role} orgId=${session.user.orgId} onboarding=${session.user.onboardingCompleted}`);
       }
       return session;
     },
@@ -65,88 +93,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const { db } = await import("@/lib/db");
         const existing = await db.collection("users").findOne({ email: user.email });
         if (!existing) {
-          const { v4: uuid } = await import("uuid");
-          const userId = uuid();
-          const orgId = uuid();
-          const userName = user.name || user.email.split("@")[0];
-
-          await db.collection("users").insertOne({
-            id: userId,
-            name: userName,
-            email: user.email,
-            image: user.image || "",
-            provider: account.provider,
-            status: "online",
-            role: "admin",
-            emailVerified: true,
-            isActive: true,
-            lastLogin: new Date(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-
-          let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;
-          const existingSlug = await db.collection("organizations").findOne({ slug });
-          if (existingSlug) {
-            slug = `${slug}-${userId.slice(0, 8)}`;
-          }
-
-          await db.collection("organizations").insertOne({
-            id: orgId,
-            name: `${userName}'s Organization`,
-            slug,
-            plan: "starter",
-            ownerId: userId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-
-          await db.collection("org_members").insertOne({
-            id: uuid(),
-            orgId,
-            userId,
-            role: "admin",
-            joinedAt: new Date(),
-          });
-
-          const { sendWelcomeEmail } = await import("@/lib/mail");
-          sendWelcomeEmail(user.email, userName).catch((err) => {
-            console.error("[AUTH] Welcome email failed:", err?.message || err);
-          });
-        } else {
-          // Ensure existing user has an org
-          const userId = existing.id || existing._id?.toString();
-          const memberDoc = await db.collection("org_members").findOne({ userId });
-          if (!memberDoc) {
-            const { v4: uuid } = await import("uuid");
-            const orgId = uuid();
-            const userName = existing.name || user.email.split("@")[0];
-            let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;
-            const existingSlug = await db.collection("organizations").findOne({ slug });
-            if (existingSlug) {
-              slug = `${slug}-${userId.slice(0, 8)}`;
-            }
-
-            await db.collection("organizations").insertOne({
-              id: orgId,
-              name: `${userName}'s Organization`,
-              slug,
-              plan: "starter",
-              ownerId: userId,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await db.collection("org_members").insertOne({
-              id: uuid(),
-              orgId,
-              userId,
-              role: "admin",
-              joinedAt: new Date(),
-            });
-          }
+          console.log(`[AUTH config] signIn rejected: email=${user.email} not found in database`);
+          return false;
         }
       } catch (err) {
-        console.error("[AUTH] Failed to create OAuth user:", err);
+        console.error("[AUTH] Failed to check user in database:", err);
+        return false;
       }
 
       return true;
@@ -211,7 +163,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const userId = user.id || user._id?.toString();
         const memberDoc = await db.collection("org_members").findOne({ userId });
         const orgId = memberDoc?.orgId?.toString() || "";
-        return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [], orgId };
+        let onboardingCompleted = false;
+        if (orgId) {
+          const org = await db.collection("organizations").findOne({ id: orgId });
+          onboardingCompleted = org?.onboardingCompleted === true;
+        }
+        return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [], orgId, onboardingCompleted };
       },
     }),
   ],

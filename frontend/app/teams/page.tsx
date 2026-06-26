@@ -109,7 +109,9 @@ export default function TeamsPage() {
       const data = await res.json();
       const result = Array.isArray(data) ? data : data.data || [];
       setTeams(result);
-    } catch {}
+    } catch (error) {
+      console.error("[TEAMS] Failed to fetch teams:", error);
+    }
   }, [orgId]);
 
   const fetchOrgMembers = useCallback(async () => {
@@ -127,7 +129,9 @@ export default function TeamsPage() {
           role: (m.role as string) || "member",
         }))
       );
-    } catch {}
+    } catch (error) {
+      console.error("[TEAMS] Failed to fetch org members:", error);
+    }
   }, [orgId]);
 
   useEffect(() => {
@@ -141,7 +145,9 @@ export default function TeamsPage() {
           setOrgId(id);
         }
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error("[TEAMS] Failed to fetch profile:", error);
+      })
       .finally(() => setLoading(false));
   }, [session]);
 
@@ -244,7 +250,9 @@ export default function TeamsPage() {
                 credentials: "include",
                 body: JSON.stringify({ userId: uid }),
               });
-            } catch {}
+            } catch (error) {
+              console.error("[TEAMS] Failed to add member:", error);
+            }
           }
 
           if (teamHeadId) {
@@ -255,7 +263,9 @@ export default function TeamsPage() {
                 credentials: "include",
                 body: JSON.stringify({ role: "lead" }),
               });
-            } catch {}
+            } catch (error) {
+              console.error("[TEAMS] Failed to set lead:", error);
+            }
           }
 
           const pmNames = members.filter((m) => projectManagerIds.includes(m.userId)).map((m) => m.name).join(", ");
@@ -341,7 +351,9 @@ export default function TeamsPage() {
         setTeams((prev) => prev.filter((t) => t.id !== teamId));
         if (selectedTeam?.id === teamId) setSelectedTeam(null);
       }
-    } catch {}
+    } catch (error) {
+      console.error("[TEAMS] Failed to delete team:", error);
+    }
   }
 
   async function openTeamDetail(team: Team) {
@@ -361,7 +373,9 @@ export default function TeamsPage() {
         createdAt: detail.createdAt || team.createdAt,
         members: detail.members || [],
       });
-    } catch {}
+    } catch (error) {
+      console.error("[TEAMS] Failed to fetch team detail:", error);
+    }
   }
 
   async function handleAddMember(userId: string) {
@@ -378,7 +392,9 @@ export default function TeamsPage() {
         await openTeamDetail(selectedTeam);
         setShowAddMember(false);
       }
-    } catch {} finally {
+    } catch (error) {
+      console.error("[TEAMS] Failed to add member:", error);
+    } finally {
       setAddingMember(false);
     }
   }
@@ -393,7 +409,9 @@ export default function TeamsPage() {
       if (res.ok) {
         await openTeamDetail(selectedTeam);
       }
-    } catch {}
+    } catch (error) {
+      console.error("[TEAMS] Failed to remove member:", error);
+    }
   }
 
   async function handleSetLead(userId: string) {
@@ -408,7 +426,9 @@ export default function TeamsPage() {
       if (res.ok) {
         await openTeamDetail(selectedTeam);
       }
-    } catch {}
+    } catch (error) {
+      console.error("[TEAMS] Failed to set lead:", error);
+    }
   }
 
   const totalMembers = teams.reduce((sum, t) => sum + t.memberCount, 0);

@@ -60,7 +60,9 @@ export default function ClientsPage() {
         const arr = Array.isArray(d) ? d : d.data || [];
         if (arr.length > 0) setClients(arr);
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[CLIENTS] Failed to fetch clients:", error);
+      });
   }, []);
 
   // Client Information
@@ -157,7 +159,9 @@ export default function ClientsPage() {
     fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[CLIENTS] Failed to fetch user:", error);
+      });
   }, []);
 
   function resetForm() {

@@ -99,7 +99,9 @@ export default function UpcomingTasksPage() {
           }
         }
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error("[UPCOMINGTASKS] Failed to fetch tasks:", error);
+      })
       .finally(() => setLoading(false));
   }, [session]);
 

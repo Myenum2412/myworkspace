@@ -45,7 +45,8 @@ export default function RecycleBinPage() {
         const data = await res.json();
         setFiles(Array.isArray(data) ? data : data.data || []);
       }
-    } catch {
+    } catch (error) {
+      console.error("[RECYCLE-BIN] Failed to fetch:", error);
     } finally {
       setLoading(false);
     }
@@ -65,7 +66,9 @@ export default function RecycleBinPage() {
       if (res.ok) {
         setFiles((prev) => prev.filter((f) => f.id !== id));
       }
-    } catch {} finally {
+    } catch (error) {
+      console.error("[RECYCLE-BIN] Failed to restore:", error);
+    } finally {
       setActionId(null);
     }
   }
@@ -80,7 +83,9 @@ export default function RecycleBinPage() {
       if (res.ok) {
         setFiles((prev) => prev.filter((f) => f.id !== id));
       }
-    } catch {} finally {
+    } catch (error) {
+      console.error("[RECYCLE-BIN] Failed to delete:", error);
+    } finally {
       setActionId(null);
       setConfirmDelete(null);
     }

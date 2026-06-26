@@ -31,7 +31,9 @@ export default function AddProjectPage() {
     fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[ADDPROJECTS] Failed to fetch user:", error);
+      });
   }, []);
 
   useEffect(() => {
@@ -42,14 +44,18 @@ export default function AddProjectPage() {
         const id = profile?.org?.id || profile?.org?._id?.toString() || "";
         if (id) setOrgId(id);
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[ADDPROJECTS] Failed to fetch profile:", error);
+      });
   }, []);
 
   useEffect(() => {
     getProjects().then((projects) => {
       const unique = [...new Set(projects.map((p) => p.client).filter(Boolean))] as string[];
       setClientList(unique);
-    }).catch(() => {});
+    }).catch((error) => {
+      console.error("[ADDPROJECTS] Failed to fetch projects:", error);
+    });
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {

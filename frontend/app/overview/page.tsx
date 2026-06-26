@@ -102,7 +102,9 @@ export default function OverviewPage() {
           if (arr.length > 0) setTasks(arr);
         }
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error("[OVERVIEW] Failed to fetch tasks:", error);
+      })
       .finally(() => setLoading(false));
   }, [session]);
 
