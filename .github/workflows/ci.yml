@@ -7,12 +7,9 @@ on:
     branches: [main]
 
 jobs:
-  frontend:
-    name: Frontend
+  lint-and-build:
+    name: Lint & Build Check
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -23,40 +20,27 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - run: npm ci
-
-      - run: npm run lint
-
-      - run: npm run build
+      - name: Frontend lint & build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build
         env:
-          NEXTAUTH_URL: ${{ vars.NEXTAUTH_URL || 'http://localhost:3000' }}
+          NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'ci-build-secret' }}
           MONGODB_URI: ${{ secrets.MONGODB_URI || 'mongodb://localhost:27017/test' }}
 
-  backend:
-    name: Backend
-    runs-on: ubuntu-latest
-    defaults:
-      run:
+      - name: Backend build
         working-directory: backend
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - run: npm ci
-
-      - run: npm run build
+        run: |
+          npm ci
+          npm run build
 
   deploy:
-    name: Deploy
+    name: Deploy to DigitalOcean
     runs-on: self-hosted
-    needs: [frontend, backend]
+    needs: [lint-and-build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
@@ -65,9 +49,8 @@ jobs:
           path: myworkspace
 
       - name: Deploy
+        working-directory: myworkspace
         run: |
-          cd myworkspace
-
           cd frontend
           npm ci --include=dev
           npm run build
