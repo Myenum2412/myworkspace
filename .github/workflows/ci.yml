@@ -61,9 +61,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: myworkspace
 
       - name: Deploy
         run: |
-          cd /root/myworkspace
-          git pull origin main
-          docker compose up -d --build
+          cd myworkspace
+
+          cd frontend
+          npm ci --include=dev
+          npm run build
+          cd ..
+
+          cd backend
+          npm ci --include=dev
+          npm run build
+          cd ..
+
+          pm2 restart workspace-api 2>/dev/null || pm2 start backend/dist/index.js --name workspace-api
+          pm2 restart workspace-frontend 2>/dev/null || pm2 start npm --name workspace-frontend -- run start
