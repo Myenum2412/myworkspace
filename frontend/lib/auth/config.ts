@@ -91,17 +91,73 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       try {
         const { db } = await import("@/lib/db");
+        const { v4: uuid } = await import("uuid");
         const existing = await db.collection("users").findOne({ email: user.email });
+
         if (!existing) {
-          console.log(`[AUTH config] signIn rejected: email=${user.email} not found in database`);
-          return false;
+          // Auto-create user from OAuth provider
+          console.log(`[AUTH config] Auto-creating user for ${user.email} from ${account.provider}`);
+          const userId = uuid();
+          const now = new Date();
+          const userName = user.name || user.email.split("@")[0];
+
+          // Create user
+          await db.collection("users").insertOne({
+            id: userId,
+            email: user.email,
+            name: userName,
+            image: user.image || null,
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+            role: "USER",
+            status: "online",
+            lastLogin: now,
+            createdAt: now,
+            updatedAt: now,
+          });
+
+          // Auto-create organization for the user
+          const newOrgId = uuid();
+          let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
+          const existingSlug = await db.collection("organizations").findOne({ slug });
+          if (existingSlug) {
+            slug = `${slug}-${userId}`;
+          }
+
+          await db.collection("organizations").insertOne({
+            id: newOrgId,
+            name: `${userName}'s Organization`,
+            slug,
+            plan: "starter",
+            ownerId: userId,
+            onboardingCompleted: false,
+            createdAt: now,
+            updatedAt: now,
+          });
+
+          // Add user as admin of the organization
+          await db.collection("org_members").insertOne({
+            id: uuid(),
+            orgId: newOrgId,
+            userId,
+            role: "admin",
+            joinedAt: now,
+          });
+
+          console.log(`[AUTH config] Auto-created user ${userId} and org ${newOrgId} for ${user.email}`);
+          // Update user object with id for the token
+          user.id = userId;
+          (user as { orgId?: string }).orgId = newOrgId;
+          (user as { role?: string }).role = "USER";
+          return true;
         }
+
+        // Existing user - allow sign in
+        return true;
       } catch (err) {
-        console.error("[AUTH] Failed to check user in database:", err);
+        console.error("[AUTH] Failed to check/create user in database:", err);
         return false;
       }
-
-      return true;
     },
   },
   events: {
