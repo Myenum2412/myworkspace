@@ -22,7 +22,7 @@ module.exports = {
       repo: "git@github.com:Myenum2412/myworkspace.git",
       path: "/var/www/myworkspace-backend",
       "post-deploy":
-        "cp /var/www/myworkspace-backend/shared/.env /var/www/myworkspace-backend/current/backend/.env && cd backend && npm ci && pm2 delete myworkspace-backend 2>/dev/null || true && pm2 start ecosystem.config.cjs --only myworkspace-backend && pm2 save",
+        "cp /var/www/myworkspace-backend/shared/.env /var/www/myworkspace-backend/current/backend/.env && cd backend && npm ci && cd .. && pm2 delete myworkspace-backend 2>/dev/null || true && pm2 start ecosystem.config.cjs --only myworkspace-backend && pm2 save",
     },
   }
 };
