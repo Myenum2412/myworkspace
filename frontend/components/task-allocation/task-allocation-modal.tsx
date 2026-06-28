@@ -101,7 +101,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
       ]).then(([staff, teamList]) => {
         setEmployees((staff as any[]).map((s) => ({
           id: s.id,
-          name: `${s.firstName || ""} ${s.lastName || ""}`.trim(),
+          name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || "Unknown",
           role: s.designation || s.role || "",
         })));
         setTeams((teamList as any[]).map((t) => ({

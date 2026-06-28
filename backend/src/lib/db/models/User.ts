@@ -32,6 +32,8 @@ export interface IUser extends Document {
   twitter?: string;
   website?: string;
   bannerUrl?: string;
+  resetToken?: string;
+  resetTokenExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -68,6 +70,8 @@ const userSchema = new Schema<IUser>(
     twitter: String,
     website: String,
     bannerUrl: String,
+    resetToken: { type: String, index: true },
+    resetTokenExpires: Date,
   },
   { timestamps: true }
 );

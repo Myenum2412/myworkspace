@@ -12,6 +12,7 @@ import { getNextSequence } from "@/lib/db/counter";
 
 function getRedirectPath(role?: string): string {
   if (role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN") return "/orgmenu";
+  if (role === "member" || role === "staff") return "/staffs";
   return "/dashboard";
 }
 
@@ -69,7 +70,7 @@ export async function loginAction(formData: FormData) {
             slug,
             plan: "starter",
             ownerId: userId,
-            onboardingCompleted: false,
+            onboardingCompleted: true,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -108,15 +109,6 @@ export async function loginAction(formData: FormData) {
 
   const role = user?.role;
   const isOrgAdmin = role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN";
-
-  if (!isOrgAdmin) {
-    const org = await db.collection(collections.organizations).findOne({ ownerId: userId });
-    if (org && !org.onboardingCompleted) {
-      console.log(`[AUTH] loginAction: ${email} onboarding not completed → /onboarding`);
-      revalidatePath("/onboarding");
-      redirect("/onboarding");
-    }
-  }
 
   const redirectPath = getRedirectPath(role);
   console.log(`[AUTH] loginAction: ${email} role=${role} → ${redirectPath}`);
@@ -176,13 +168,13 @@ export async function signupAction(formData: FormData) {
     slug = `${slug}-${userId.slice(0, 8)}`;
   }
 
-  await db.collection(collections.organizations).insertOne({
+    await db.collection(collections.organizations).insertOne({
     id: orgId,
     name: company || `${name}'s Organization`,
     slug,
     plan: "starter",
     ownerId: userId,
-    onboardingCompleted: false,
+    onboardingCompleted: true,
     createdAt: new Date(),
     updatedAt: new Date(),
   });
@@ -198,9 +190,9 @@ export async function signupAction(formData: FormData) {
   await createUserWorkspace(userId, name, orgId);
 
   await signIn("credentials", { email, password, redirect: false });
-  console.log(`[AUTH] signupAction: ${email} signed up → redirecting to /onboarding`);
-  revalidatePath("/onboarding");
-  redirect("/onboarding");
+  console.log(`[AUTH] signupAction: ${email} signed up → redirecting to /dashboard`);
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }
 
 export async function logoutAction() {
@@ -219,5 +211,13 @@ export async function forgotPasswordAction(formData: FormData) {
   const email = formData.get("email") as string;
   if (!email) redirect("/forgot-password?error=Email is required");
 
-  redirect("/forgot-password?success=If an account exists, a reset link has been sent");
+  const apiUrl = process.env.API_URL || "http://localhost:4000";
+  try {
+    await fetch(`${apiUrl}/api/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+  } catch {}
+  redirect("/forgot-password?success=If an account exists with that email, a reset link has been sent");
 }

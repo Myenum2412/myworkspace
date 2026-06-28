@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { PricingCards } from "@/components/pricing-cards";
 import { CompanyDetailsForm, type CompanyDetails } from "@/components/company-details-form";
 import { completeOnboarding } from "@/lib/actions/onboarding";
@@ -15,8 +13,6 @@ const steps = [
 ];
 
 export function OnboardingClient() {
-  const router = useRouter();
-  const { update } = useSession();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState<string>("pro");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,9 +34,10 @@ export function OnboardingClient() {
         plan: selectedPlan,
         companyDetails: details,
       });
-      await update();
-      router.push("/dashboard");
     } catch (error) {
+      if ((error as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
+        throw error;
+      }
       console.error("[ONBOARDING] client error:", error);
       setSubmitError(error instanceof Error ? error.message : "Failed to save. Try again.");
       setIsSubmitting(false);

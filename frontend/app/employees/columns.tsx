@@ -124,6 +124,11 @@ export function getColumns(
       size: 40,
     },
     {
+      accessorKey: "displayId",
+      header: "ID",
+      cell: ({ row }) => <span className="font-mono text-muted-foreground text-xs">{row.getValue("displayId") || "—"}</span>,
+    },
+    {
       accessorKey: "name",
       header: "Name",
       cell: ({ row }) => <span className="font-medium">{row.getValue("name")}</span>,

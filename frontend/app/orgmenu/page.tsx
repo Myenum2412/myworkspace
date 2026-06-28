@@ -241,7 +241,7 @@ export default async function OrgDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-            <CheckCircle2Icon className="size-4 text-red-500" />
+            <CheckCircle2Icon className="size-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.completedTasks}</div>
@@ -250,7 +250,7 @@ export default async function OrgDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
-            <ClockIcon className="size-4 text-red-400" />
+            <ClockIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.inProgressTasks}</div>

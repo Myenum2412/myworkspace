@@ -259,7 +259,7 @@ export default function ApprovalsPage() {
         <DialogContent className="p-0 flex flex-col">
           <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-lg">
-              {actionType === "approve" ? <CheckCircleIcon className="size-5 text-red-400" /> : <XCircleIcon className="size-5 text-red-600" />}
+              {actionType === "approve" ? <CheckCircleIcon className="size-5 text-success" /> : <XCircleIcon className="size-5 text-destructive" />}
               {actionType === "approve" ? "Approve Task" : "Reject Task"}
             </DialogTitle>
             <DialogDescription>

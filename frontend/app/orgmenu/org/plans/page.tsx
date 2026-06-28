@@ -6,8 +6,8 @@ import { CheckIcon } from "lucide-react";
 export const metadata = { title: "Plans" };
 
 const plans = [
-  { name: "Starter", price: "$0", description: "For small teams getting started.", features: ["Up to 5 members", "Basic tasks", "2 GB storage", "Email support"], popular: false },
-  { name: "Pro", price: "$29", description: "For growing organizations.", features: ["Up to 50 members", "Advanced tasks & workflows", "50 GB storage", "Priority support", "API access", "Custom integrations"], popular: true },
+  { name: "Free", price: "$0", description: "Essential features for small teams.", features: ["Up to 5 members", "Basic tasks", "10 GB storage", "Email support"], popular: false },
+  { name: "Growth", price: "$79", description: "For growing organizations.", features: ["Up to 50 members", "Advanced tasks & workflows", "200 GB storage", "Priority support", "API access", "Custom integrations"], popular: true },
   { name: "Enterprise", price: "Custom", description: "Custom solutions for large orgs.", features: ["Unlimited members", "Enterprise SSO", "Unlimited storage", "Dedicated support", "Custom SLAs", "On-premise option"], popular: false },
 ];
 
@@ -33,7 +33,7 @@ export default function PlansPage() {
               <ul className="space-y-2 mb-4">
                 {plan.features.map((feature) => (
                   <li key={feature} className="text-sm flex items-center gap-2">
-                    <CheckIcon className="size-4 text-red-500 shrink-0" />
+                    <CheckIcon className="size-4 text-primary shrink-0" />
                     {feature}
                   </li>
                 ))}

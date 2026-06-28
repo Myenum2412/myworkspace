@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon } from "lucide-react";
+import { NotificationBell } from "@/components/notification-bell";
 import { usePathname } from "next/navigation";
 import {
   DropdownMenu,
@@ -104,6 +105,8 @@ export function Header({ context }: { context?: AppContextType }) {
         </div>
 
         <Separator orientation="vertical" className="hidden md:block h-6" />
+
+        <NotificationBell />
 
         <SessionTracker />
 

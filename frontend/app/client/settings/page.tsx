@@ -66,7 +66,7 @@ function SettingsContent() {
         </Button>
 
         {forcePasswordChange && !passwordChanged && (
-          <div className="rounded-lg bg-gray-100 border border-gray-300 p-4">
+          <div className="rounded-lg bg-gray-100 border-border p-4">
             <p className="text-sm text-gray-700 font-medium">
               You must change your password before accessing the dashboard.
             </p>

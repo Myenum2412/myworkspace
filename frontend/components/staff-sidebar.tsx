@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -9,83 +12,41 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import {
-  UsersIcon,
   LayoutDashboardIcon,
-  CalendarIcon,
-  ClockIcon,
-  ClipboardListIcon,
   ListTodoIcon,
-  Settings2Icon,
+  FolderOpenIcon,
+  ClockIcon,
 } from "lucide-react";
 
-export const defaultStaffNavData = [
-  {
-    title: "Overview",
-    url: "/staffs",
-    icon: <LayoutDashboardIcon className="size-6" />,
-    isActive: true,
-    items: [
-      { title: "Dashboard", url: "/staffs" },
-      { title: "Activity", url: "/staffs/activity" },
-    ],
-  },
-  {
-    title: "All Staffs",
-    url: "/staffs/list",
-    icon: <UsersIcon className="size-6" />,
-    items: [
-      { title: "Directory", url: "/staffs/list" },
-      { title: "Add Staff", url: "/staffs/add" },
-    ],
-  },
-  {
-    title: "Schedule",
-    url: "/staffs/schedule",
-    icon: <CalendarIcon className="size-6" />,
-    items: [
-      { title: "Shifts", url: "/staffs/schedule" },
-      { title: "Time Off", url: "/staffs/time-off" },
-    ],
-  },
-  {
-    title: "Attendance",
-    url: "/staffs/attendance",
-    icon: <ClockIcon className="size-6" />,
-    items: [
-      { title: "Today", url: "/staffs/attendance" },
-      { title: "Reports", url: "/staffs/attendance/reports" },
-    ],
-  },
-  {
-    title: "Tasks",
-    url: "/alltasks",
-    icon: <ListTodoIcon className="size-6" />,
-    items: [
-      { title: "All Tasks", url: "/alltasks" },
-      { title: "My Tasks", url: "/mytasks" },
-      { title: "Team Tasks", url: "/teamtasks" },
-      { title: "Upcoming", url: "/upcomingtasks" },
-    ],
-  },
-  {
-    title: "Performance",
-    url: "/staffs/performance",
-    icon: <ClipboardListIcon className="size-6" />,
-    items: [
-      { title: "Reviews", url: "/staffs/performance" },
-      { title: "Goals", url: "/staffs/performance/goals" },
-    ],
-  },
-  {
-    title: "Settings",
-    url: "/staffs/settings",
-    icon: <Settings2Icon className="size-6" />,
-    items: [
-      { title: "General", url: "/staffs/settings" },
-      { title: "Roles", url: "/staffs/settings/roles" },
-    ],
-  },
-];
+function buildStaffNavData(orgId: string) {
+  return [
+    {
+      title: "Dashboard",
+      url: "/staffs",
+      icon: <LayoutDashboardIcon className="size-6" />,
+      isActive: true,
+    },
+    {
+      title: "Task",
+      url: "/staffs/tasks",
+      icon: <ListTodoIcon className="size-6" />,
+      items: [
+        { title: "My Tasks", url: "/staffs/tasks" },
+        { title: "Team Tasks", url: "/staffs/tasks?filter=team" },
+      ],
+    },
+    {
+      title: "Time Sheet",
+      url: "/staffs/timesheet",
+      icon: <ClockIcon className="size-6" />,
+    },
+    {
+      title: "File Management",
+      url: `/staffs/files${orgId ? `?orgId=${orgId}` : ""}`,
+      icon: <FolderOpenIcon className="size-6" />,
+    },
+  ];
+}
 
 interface NavUserData {
   name: string;
@@ -95,12 +56,13 @@ interface NavUserData {
 
 export function StaffSidebar({
   user,
-  navItems = defaultStaffNavData,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
-  navItems?: typeof defaultStaffNavData;
   user: NavUserData;
 }) {
+  const { data: session } = useSession();
+  const orgId = (session?.user as Record<string, unknown>)?.orgId as string || "";
+  const navItems = buildStaffNavData(orgId);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -113,14 +75,11 @@ export function StaffSidebar({
             height={32}
             className="size-8 rounded-lg object-cover shadow-sm shrink-0"
           />
-          <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">
-            Staff Panel
-          </h1>
+
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navItems.slice(0, -1)} label="Staff Management" />
-        <NavMain items={navItems.slice(-1)} label="Settings" className="mt-auto" />
+        <NavMain items={navItems} label="Navigation" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

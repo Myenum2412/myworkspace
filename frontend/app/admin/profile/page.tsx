@@ -48,8 +48,9 @@ const ProfileImageUpload = nextDynamic(
 export const dynamic = "force-dynamic";
 
 const planLabels: Record<string, string> = {
-  starter: "Starter",
+  starter: "Free",
   pro: "Pro",
+  growth: "Growth",
   enterprise: "Enterprise",
 };
 

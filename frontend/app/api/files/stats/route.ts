@@ -8,7 +8,7 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const orgId = await ensureUserOrg(session.user.id);
+  const orgId = await ensureUserOrg(session.user.id, session.user.email);
 
   const [totalFiles, deletedFiles, totalSizeAgg] = await Promise.all([
     db.collection(collections.fileAttachments).countDocuments({ orgId, deletedAt: null }),

@@ -42,6 +42,7 @@ import {
   HardDrive,
 } from "lucide-react";
 
+import Link from "next/link";
 import nextDynamic from "next/dynamic";
 const BannerUpload = nextDynamic(
   () => import("@/components/ui/file-upload-1").then((m) => m.BannerUpload),
@@ -55,8 +56,9 @@ const ProfileImageUpload = nextDynamic(
 export const dynamic = "force-dynamic";
 
 const planLabels: Record<string, string> = {
-  starter: "Starter",
+  starter: "Free",
   pro: "Pro",
+  growth: "Growth",
   enterprise: "Enterprise",
 };
 
@@ -550,7 +552,9 @@ export default function ProfilePage() {
             {dbUser?.role ? dbUser.role.charAt(0).toUpperCase() + dbUser.role.slice(1) : "Member"}
           </Badge>
           <span aria-hidden>&middot;</span>
-          <span className="text-sm">{planLabels[org?.plan || "starter"] || org?.plan} plan</span>
+          <Link href="/settings/plans" className="text-sm text-primary hover:underline underline-offset-2">
+            {planLabels[org?.plan || "starter"] || org?.plan} plan &middot; Manage
+          </Link>
         </div>
 
         {/* Alerts */}

@@ -156,7 +156,7 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
         onClick={() => fileInputRef.current?.click()}
         disabled={uploading}
       >
-        {uploading ? <Loader2Icon className="size-3 animate-spin mr-1" /> : null}
+        {uploading ? <Loader2Icon className="size-3 animate-spin mr-1 round-6xl" /> : null}
         {currentImage ? "Change Photo" : "Upload Photo"}
       </Button>
 

@@ -1,207 +1,362 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import {
+  UsersIcon,
+  ListTodoIcon,
+  ClockIcon,
+  CheckCircle2Icon,
+  AlertCircleIcon,
+  BriefcaseIcon,
+  UserCheckIcon,
+  UserXIcon,
+  ChartNoAxesCombinedIcon,
+  CalendarIcon,
+  HourglassIcon,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
 
-export const metadata = {
-  title: "Staffs",
+type StaffMember = {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+  status: string;
+  image: string;
 };
 
-
-
-const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-
-const statusStyles: Record<string, string> = {
-  active: "bg-red-100 text-red-700 border-red-300",
-  on_leave: "bg-gray-100 text-gray-700 border-gray-300",
+type Task = {
+  _id: string;
+  title: string;
+  priority: string;
+  status: string;
+  assigneeId: string;
+  assigneeName: string;
+  createdAt: string;
+  dueDate: string | null;
 };
 
 const priorityStyles: Record<string, string> = {
-  urgent: "bg-red-100 text-red-700 border-red-300",
-  high: "bg-orange-100 text-orange-700 border-orange-300",
-  medium: "bg-gray-100 text-gray-700 border-gray-300",
-  low: "bg-gray-200 text-gray-700 border-gray-300",
+  low: "bg-gray-100 text-gray-600",
+  medium: "bg-gray-200 text-gray-800",
+  high: "bg-orange-100 text-orange-600",
+  urgent: "bg-red-100 text-red-600",
 };
 
-const statusColors: Record<string, string> = {
-  todo: "bg-gray-100 text-gray-700 border-gray-300",
-  in_progress: "bg-red-100 text-red-700 border-red-300",
-  review: "bg-gray-100 text-gray-700 border-gray-300",
-  done: "bg-red-100 text-red-700 border-red-300",
-  cancelled: "bg-red-100 text-red-700 border-red-300",
+const statusStyles: Record<string, string> = {
+  todo: "bg-gray-100 text-gray-700",
+  in_progress: "bg-blue-100 text-blue-700",
+  review: "bg-purple-100 text-purple-700",
+  done: "bg-green-100 text-green-700",
+  cancelled: "bg-red-100 text-red-700",
 };
 
-export default async function StaffsPage() {
-  const session = await auth();
+const priorityColors: Record<string, string> = {
+  low: "bg-gray-100",
+  medium: "bg-gray-200",
+  high: "bg-orange-100",
+  urgent: "bg-red-100",
+};
 
-  let staff: Array<{ name: string; email: string; role: string; department: string; status: string; avatar: string }> = [];
+export default function StaffsPage() {
+  const { data: session } = useSession();
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  try {
-    const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
-    if (orgId) {
-      const members = await db.collection(collections.orgMembers).find({ orgId }).toArray();
-      const userIds = members.map((m: Record<string, unknown>) => m.userId as string);
-      if (userIds.length > 0) {
-        const users = await db.collection(collections.users)
-          .find({ id: { $in: userIds } })
-          .project({ id: 1, name: 1, email: 1, image: 1, status: 1 })
-          .toArray();
-        const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
-        staff = members.map((m: Record<string, unknown>) => {
-          const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
-          return {
-            name: (user?.name as string) || "Unknown",
-            email: (user?.email as string) || "",
-            role: (m.role as string) || "member",
-            department: (user?.department as string) || "",
-            status: (user?.status as string) || "active",
-            avatar: (user?.image as string) || "",
-          };
-        });
-      }
-    }
-  } catch {
-    // staff stays empty on error
-  }
+  useEffect(() => {
+    if (!session?.user) return;
 
-  let tasks: Array<{
-    title: string;
-    priority: string;
-    status: string;
-    assigneeName: string;
-    dueDate: string | null;
-  }> = [];
+    let profileOrgId = "";
 
-  try {
-    if (session?.user?.id) {
-      const orgId = await getUserOrgId(session.user.id);
-      if (orgId) {
-        const raw = await db.collection(collections.tasks)
-          .find({ orgId })
-          .sort({ createdAt: -1 })
-          .limit(20)
-          .toArray();
+    fetch("/api/user/profile", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const profile = d.data || d;
+        profileOrgId = profile?.org?.id || profile?.org?._id?.toString() || "";
+        if (!profileOrgId) return Promise.reject();
+        return Promise.all([
+          fetch("/api/employees", { credentials: "include" }).then((r) => r.json()),
+          fetch(`/api/tasks?orgId=${profileOrgId}&limit=10`, { credentials: "include" }).then((r) => r.json()),
+        ]);
+      })
+      .then((results) => {
+        if (!results) return;
+        const [empData, taskData] = results;
+        if (empData) {
+          const arr = Array.isArray(empData) ? empData : empData.data || [];
+          setStaff(arr);
+        }
+        if (taskData) {
+          const arr = Array.isArray(taskData) ? taskData : taskData.data || [];
+          setTasks(arr);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [session]);
 
-        const userIds = new Set<string>();
-        raw.forEach((t: Record<string, unknown>) => {
-          if (t.assigneeId) userIds.add(t.assigneeId as string);
-          if (t.creatorId) userIds.add(t.creatorId as string);
-        });
+  const totalStaff = staff.length;
+  const activeStaff = staff.filter((s) => s.status === "active").length;
+  const onLeave = staff.filter((s) => s.status === "on_leave").length;
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.status === "done").length;
 
-        const users = await db.collection(collections.users)
-          .find({ id: { $in: [...userIds] } })
-          .project({ id: 1, name: 1 })
-          .toArray();
+  const today = new Date().toDateString();
+  const todayTasks = tasks.filter((t) => {
+    const d = t.createdAt ? new Date(t.createdAt).toDateString() : "";
+    return d === today;
+  }).length;
+  const pendingTasks = tasks.filter((t) => t.status !== "done" && t.status !== "cancelled").length;
 
-        const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u.name]));
+  const recentTasks = [...tasks]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
 
-        tasks = raw.map((t: Record<string, unknown>) => ({
-          title: t.title as string,
-          priority: t.priority as string || "medium",
-          status: t.status as string || "todo",
-          assigneeName: (t.assigneeId ? userMap.get(t.assigneeId as string) : null) as string || "Unassigned",
-          dueDate: t.dueDate ? new Date(t.dueDate as string).toLocaleDateString() : null,
-        }));
-      }
-    }
-  } catch {
-    // tasks stay empty on error
-  }
+  const statusDist = ["todo", "in_progress", "review", "done", "cancelled"].map((s) => ({
+    status: s,
+    count: tasks.filter((t) => t.status === s).length,
+  }));
+
+  const priorityDist = ["urgent", "high", "medium", "low"].map((p) => ({
+    priority: p,
+    count: tasks.filter((t) => t.priority === p).length,
+    color: priorityColors[p],
+  }));
+
+  const absentCount = onLeave + (totalStaff - activeStaff - onLeave);
+  const staffByStatus = [
+    { label: "Present", count: activeStaff, icon: UserCheckIcon, color: "bg-green-500" },
+    { label: "Absent", count: absentCount, icon: UserXIcon, color: "bg-gray-500" },
+  ];
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
-      <div>
-        <h1 className="text-2xl font-bold">Staffs</h1>
-        <p className="text-sm text-muted-foreground mt-1">{staff.length} staff members</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BriefcaseIcon className="size-6" />
+          <h1 className="text-2xl font-bold">Staff Dashboard</h1>
+        </div>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Staff Directory</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-blue-50">
-                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                  <th className="pb-3 font-medium">Name</th>
-                  <th className="pb-3 font-medium">Department</th>
-                  <th className="pb-3 font-medium">Role</th>
-                  <th className="pb-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {staff.map((s) => (
-                  <tr key={s.email} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                    <td className="py-3 pr-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="size-8">
-                          <AvatarImage src={s.avatar} alt={s.name} />
-                          <AvatarFallback>{getInitials(s.name)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-sm font-medium">{s.name}</p>
-                          <p className="text-xs text-muted-foreground">{s.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 pr-4 text-sm">{s.department}</td>
-                    <td className="py-3 pr-4 text-sm text-muted-foreground">{s.role}</td>
-                    <td className="py-3">
-                      <Badge className={statusStyles[s.status] || ""}>
-                        {s.status === "on_leave" ? "On Leave" : "Active"}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
 
-      {tasks.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-blue-50">
-                  <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                    <th className="pb-3 font-medium">Task</th>
-                    <th className="pb-3 font-medium">Assignee</th>
-                    <th className="pb-3 font-medium">Priority</th>
-                    <th className="pb-3 font-medium">Status</th>
-                    <th className="pb-3 font-medium">Due</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tasks.map((t, i) => (
-                    <tr key={i} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                      <td className="py-3 pr-4 text-sm font-medium">{t.title}</td>
-                      <td className="py-3 pr-4 text-sm text-muted-foreground">{t.assigneeName}</td>
-                      <td className="py-3 pr-4">
-                        <Badge className={priorityStyles[t.priority] || ""}>
-                          {t.priority}
-                        </Badge>
-                      </td>
-                      <td className="py-3 pr-4">
-                        <Badge className={statusColors[t.status] || ""}>
-                          {t.status.replace("_", " ")}
-                        </Badge>
-                      </td>
-                      <td className="py-3 text-sm text-muted-foreground">{t.dueDate || "—"}</td>
-                    </tr>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <AlertCircleIcon className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <>
+          {/* Summary Cards */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <CalendarIcon className="size-3.5" /> Today Task
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{todayTasks}</div>
+                <p className="text-xs text-muted-foreground mt-1">Tasks created today</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <HourglassIcon className="size-3.5" /> Pending Task
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{pendingTasks}</div>
+                <p className="text-xs text-muted-foreground mt-1">Tasks not yet completed</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <CheckCircle2Icon className="size-3.5" /> Completed Task
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{completedTasks}</div>
+                <p className="text-xs text-muted-foreground mt-1">Tasks done</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <ListTodoIcon className="size-3.5" /> Total Task
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{totalTasks}</div>
+                <p className="text-xs text-muted-foreground mt-1">All tasks</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Staff Status & Priority Breakdown */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <UsersIcon className="size-4" />
+                  Staff Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {staffByStatus.map((s) => (
+                    <div key={s.label} className="flex items-center gap-3">
+                      <div className={`size-3 rounded-full ${s.color}`} />
+                      <span className="text-sm w-20">{s.label}</span>
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${s.color} rounded-full`}
+                          style={{ width: `${totalStaff > 0 ? (s.count / totalStaff) * 100 : 0}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium w-8 text-right">{s.count}</span>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <ChartNoAxesCombinedIcon className="size-4" />
+                  Task Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {statusDist.map((s) => (
+                    <div key={s.status} className="flex items-center gap-3">
+                      <span className={`size-3 rounded-full ${(statusStyles[s.status] || "").split(" ")[0]}`} />
+                      <span className="text-sm capitalize w-24">{s.status.replace(/_/g, " ")}</span>
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${(statusStyles[s.status] || "").split(" ")[0]} rounded-full`}
+                          style={{ width: `${totalTasks > 0 ? (s.count / totalTasks) * 100 : 0}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium w-8 text-right">{s.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <ChartNoAxesCombinedIcon className="size-4" />
+                  Priority Breakdown
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {priorityDist.map((p) => (
+                    <div key={p.priority} className="flex items-center gap-3">
+                      <div className={`size-3 rounded-full ${p.color}`} />
+                      <span className="text-sm capitalize w-16">{p.priority}</span>
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${p.color} rounded-full`}
+                          style={{ width: `${totalTasks > 0 ? (p.count / totalTasks) * 100 : 0}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium w-8 text-right">{p.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Performance Report */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <CheckCircle2Icon className="size-4" />
+                Performance Report
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="rounded-lg border p-4 text-center">
+                  <p className="text-2xl font-bold text-green-600">{completedTasks}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Tasks Completed</p>
+                </div>
+                <div className="rounded-lg border p-4 text-center">
+                  <p className="text-2xl font-bold text-blue-600">{tasks.filter((t) => t.status === "in_progress").length}</p>
+                  <p className="text-xs text-muted-foreground mt-1">In Progress</p>
+                </div>
+                <div className="rounded-lg border p-4 text-center">
+                  <p className="text-2xl font-bold text-orange-600">{tasks.filter((t) => t.priority === "urgent" || t.priority === "high").length}</p>
+                  <p className="text-xs text-muted-foreground mt-1">High Priority</p>
+                </div>
+                <div className="rounded-lg border p-4 text-center">
+                  <p className="text-2xl font-bold text-purple-600">{activeStaff}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Active Staff</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recently Allocated Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <ListTodoIcon className="size-4" />
+                Recently Allocated Tasks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {recentTasks.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No tasks allocated yet</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-blue-50">
+                      <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
+                        <th className="pb-3 font-medium">Task</th>
+                        <th className="pb-3 font-medium">Assignee</th>
+                        <th className="pb-3 font-medium">Priority</th>
+                        <th className="pb-3 font-medium">Status</th>
+                        <th className="pb-3 font-medium">Due</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentTasks.map((t) => (
+                        <tr key={t._id} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
+                          <td className="py-3 pr-4 text-sm font-medium">{t.title}</td>
+                          <td className="py-3 pr-4 text-sm text-muted-foreground">{t.assigneeName || "Unassigned"}</td>
+                          <td className="py-3 pr-4">
+                            <Badge className={(priorityStyles[t.priority] || "") + ""}>
+                              {t.priority}
+                            </Badge>
+                          </td>
+                          <td className="py-3 pr-4">
+                            <Badge className={(statusStyles[t.status] || "") + ""}>
+                              {t.status.replace(/_/g, " ")}
+                            </Badge>
+                          </td>
+                          <td className="py-3 text-sm text-muted-foreground">
+                            {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
       )}
     </main>
   );

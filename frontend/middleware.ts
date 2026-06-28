@@ -6,7 +6,6 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "developer@myenum.in";
 const ORIGIN_ROUTES = ["/orgmenu"];
 const STAFF_ROUTES = ["/staffs"];
 const PUBLIC_ROUTES = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/share", "/client/login", "/auth/not-found"];
-const ONBOARDING_ROUTES = ["/onboarding"];
 const CLIENT_ROUTES = ["/client/dashboard", "/client/profile", "/client/projects", "/client/documents", "/client/notifications", "/client/settings"];
 const WORKSPACE_ROUTES = [
   "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
@@ -25,8 +24,7 @@ function getHomePath(role?: string): string {
   return "/dashboard";
 }
 
-function getRouteContext(pathname: string): "origin" | "staff" | "workspace" | "public" | "unknown" | "client" | "onboarding" {
-  if (ONBOARDING_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "onboarding";
+function getRouteContext(pathname: string): "origin" | "staff" | "workspace" | "public" | "unknown" | "client" {
   if (ORIGIN_ROUTES.some((r) => pathname.startsWith(r))) return "origin";
   if (STAFF_ROUTES.some((r) => pathname.startsWith(r))) return "staff";
   if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "public";
@@ -46,7 +44,6 @@ export default auth((req) => {
   const isPublic = routeContext === "public";
   const isOrgAdmin = userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL;
   const isWorkspaceUser = !isOrgAdmin;
-  const onboardingDone = (req.auth?.user as { onboardingCompleted?: boolean })?.onboardingCompleted === true;
 
   if (pathname.startsWith("/api") || pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return;
@@ -56,9 +53,6 @@ export default auth((req) => {
     if (isLoggedIn) {
       if (isOrgAdmin) {
         return NextResponse.redirect(new URL("/orgmenu", req.url));
-      }
-      if (isWorkspaceUser && !onboardingDone) {
-        return NextResponse.redirect(new URL("/onboarding", req.url));
       }
       const home = getHomePath(userRole);
       return NextResponse.redirect(new URL(home, req.url));
@@ -70,21 +64,8 @@ export default auth((req) => {
     if (isOrgAdmin) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
     }
-    if (isWorkspaceUser && !onboardingDone) {
-      return NextResponse.redirect(new URL("/onboarding", req.url));
-    }
     const home = getHomePath(userRole);
     return NextResponse.redirect(new URL(home, req.url));
-  }
-
-  if (routeContext === "onboarding") {
-    if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login?error=Please+sign+in+to+complete+onboarding", req.url));
-    }
-    if (isOrgAdmin) {
-      return NextResponse.redirect(new URL("/orgmenu", req.url));
-    }
-    return;
   }
 
   if (!isLoggedIn && !isPublic) {
@@ -97,9 +78,6 @@ export default auth((req) => {
     }
     if (isOrgAdmin) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
-    }
-    if (isWorkspaceUser && !onboardingDone) {
-      return NextResponse.redirect(new URL("/onboarding", req.url));
     }
     return;
   }
@@ -124,9 +102,6 @@ export default auth((req) => {
     }
     if (isOrgAdmin) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
-    }
-    if (isWorkspaceUser && !onboardingDone) {
-      return NextResponse.redirect(new URL("/onboarding", req.url));
     }
     if (userRole === "member" || userRole === "staff" || userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL) {
       return;

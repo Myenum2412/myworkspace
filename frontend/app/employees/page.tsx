@@ -6,6 +6,7 @@ import { ObjectId } from "mongodb";
 import EmployeesPageClient from "./page-client";
 
 export const metadata = { title: "Employees Overview" };
+export const dynamic = "force-dynamic";
 
 type EmployeeInfo = {
   id: string;
@@ -77,24 +78,31 @@ export default async function EmployeesPage() {
       const sessionUserIdStr = session.user.id;
       let sessionUserObjId: ObjectId | undefined;
       try { sessionUserObjId = new ObjectId(sessionUserIdStr); } catch {}
-      
-      const userQuery = sessionUserObjId 
-        ? { $or: [{ _id: sessionUserObjId }, { id: sessionUserIdStr }] }
-        : { id: sessionUserIdStr };
-        
-      const currentUserDoc = await db.collection(collections.users).findOne(userQuery);
-      
-      const possibleUserIds = [sessionUserIdStr];
+
+      let currentUserDoc = await db.collection(collections.users).findOne(
+        sessionUserObjId
+          ? { $or: [{ _id: sessionUserObjId }, { id: sessionUserIdStr }] }
+          : { id: sessionUserIdStr }
+      );
+
+      if (!currentUserDoc && session?.user?.email) {
+        currentUserDoc = await db.collection(collections.users).findOne({ email: session.user.email });
+      }
+
+      const possibleUserIds: string[] = [];
       if (currentUserDoc) {
         if (currentUserDoc.id) possibleUserIds.push(currentUserDoc.id as string);
         if (currentUserDoc._id) possibleUserIds.push((currentUserDoc._id as ObjectId).toString());
       }
+      possibleUserIds.push(sessionUserIdStr);
+      const uniqueIds = [...new Set(possibleUserIds)];
 
-      let orgMember = await db.collection(collections.orgMembers).findOne({ userId: { $in: possibleUserIds } }) as Record<string, unknown> | null;
-      if (!orgMember) {
-        const org = await db.collection(collections.organizations).findOne({ ownerId: { $in: possibleUserIds } }) as Record<string, unknown> | null;
+      const userOrgMembers = await (await db.collection(collections.orgMembers).find({ userId: { $in: uniqueIds } }).toArray()) as Record<string, unknown>[];
+      let orgId: string | null = null;
+      if (userOrgMembers.length === 0) {
+        const org = await db.collection(collections.organizations).findOne({ ownerId: { $in: uniqueIds } }) as Record<string, unknown> | null;
         if (org) {
-          const orgId = (org.id as string) || (org._id as ObjectId).toString();
+          orgId = (org.id as string) || (org._id as ObjectId).toString();
           const mainUserId = (currentUserDoc?.id as string) || sessionUserIdStr;
           await db.collection(collections.orgMembers).insertOne({
             id: uuid(),
@@ -103,21 +111,28 @@ export default async function EmployeesPage() {
             role: "admin",
             joinedAt: new Date(),
           });
-          orgMember = await db.collection(collections.orgMembers).findOne({ userId: mainUserId }) as Record<string, unknown> | null;
         }
+      } else if (userOrgMembers.length === 1) {
+        orgId = String(userOrgMembers[0].orgId);
+      } else {
+        const orgIds = [...new Set(userOrgMembers.map(m => String(m.orgId)))];
+        const counts = await (await db.collection(collections.orgMembers).aggregate([
+          { $match: { orgId: { $in: orgIds } } },
+          { $group: { _id: "$orgId", count: { $sum: 1 } } },
+        ]).toArray()) as { _id: string; count: number }[];
+        const countMap = new Map(counts.map(c => [c._id, c.count]));
+        orgIds.sort((a, b) => (countMap.get(b) || 0) - (countMap.get(a) || 0));
+        orgId = orgIds[0];
       }
 
       const allOrgMembers: Record<string, unknown>[] = [];
 
-      if (orgMember) {
-        const orgId = (orgMember.orgId as string) || (orgMember._id as ObjectId)?.toString();
-        if (orgId) {
-          const members = await (await db.collection(collections.orgMembers).find({ orgId })).toArray();
-          allOrgMembers.push(...members);
-        }
+      if (orgId) {
+        const members = await (await db.collection(collections.orgMembers).find({ orgId })).toArray();
+        allOrgMembers.push(...members);
       }
 
-      const hasCurrentUser = allOrgMembers.some((m) => possibleUserIds.includes(m.userId as string));
+      const hasCurrentUser = allOrgMembers.some((m) => uniqueIds.includes(m.userId as string));
       if (!hasCurrentUser) {
         const mainUserId = (currentUserDoc?.id as string) || sessionUserIdStr;
         allOrgMembers.push({ userId: mainUserId, role: "admin" });
@@ -149,6 +164,7 @@ export default async function EmployeesPage() {
             const userFiles = (u.files as string[]) || [];
             return {
               id: userDocToId(u) || (m.userId as string) || "",
+              displayId: (u.displayId as string) || "",
               name: (u.name as string) || "Unknown",
               email: (u.email as string) || "",
               role: (m.role as string) || (u.role as string) || "member",

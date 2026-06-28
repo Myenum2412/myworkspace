@@ -58,14 +58,14 @@ function formatSize(bytes: number) {
 }
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return <ImageIcon className="size-5 text-red-500" />;
-  if (mimeType.startsWith("video/")) return <FileIcon className="size-5 text-red-500" />;
-  if (mimeType.startsWith("audio/")) return <FileIcon className="size-5 text-red-500" />;
-  if (mimeType.includes("pdf")) return <FileTextIcon className="size-5 text-red-500" />;
-  if (mimeType.includes("zip") || mimeType.includes("rar")) return <ArchiveIcon className="size-5 text-orange-400" />;
-  if (mimeType.includes("sheet") || mimeType.includes("excel")) return <FileTextIcon className="size-5 text-red-500" />;
-  if (mimeType.includes("document") || mimeType.includes("word")) return <FileTextIcon className="size-5 text-gray-700" />;
-  if (mimeType.startsWith("text/")) return <FileTextIcon className="size-5 text-slate-600" />;
+  if (mimeType.startsWith("image/")) return <ImageIcon className="size-5 text-muted-foreground" />;
+  if (mimeType.startsWith("video/")) return <FileIcon className="size-5 text-muted-foreground" />;
+  if (mimeType.startsWith("audio/")) return <FileIcon className="size-5 text-muted-foreground" />;
+  if (mimeType.includes("pdf")) return <FileTextIcon className="size-5 text-muted-foreground" />;
+  if (mimeType.includes("zip") || mimeType.includes("rar")) return <ArchiveIcon className="size-5 text-muted-foreground" />;
+  if (mimeType.includes("sheet") || mimeType.includes("excel")) return <FileTextIcon className="size-5 text-muted-foreground" />;
+  if (mimeType.includes("document") || mimeType.includes("word")) return <FileTextIcon className="size-5 text-muted-foreground" />;
+  if (mimeType.startsWith("text/")) return <FileTextIcon className="size-5 text-muted-foreground" />;
   return <FileIcon className="size-5 text-muted-foreground" />;
 }
 
@@ -370,7 +370,7 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
             <Card key={folder.id} className="group cursor-pointer hover:border-primary/50 transition-colors">
               <CardContent className="p-3" onClick={() => navigateToFolder(folder.id, folder.name)}>
                 <div className="flex flex-col items-center gap-2 py-2">
-                  <FolderIcon className="size-10 text-orange-400" />
+                  <FolderIcon className="size-10 text-muted-foreground" />
                   <p className="text-xs font-medium text-center truncate w-full">{folder.name}</p>
                 </div>
               </CardContent>
@@ -398,7 +398,7 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
                   {getFileIcon(file.mimeType)}
                   <p className="text-xs font-medium text-center truncate w-full">{file.originalName}</p>
                   <p className="text-[10px] text-muted-foreground">{formatSize(file.size)}</p>
-                  {file.isLocked && <LockIcon className="size-3 text-orange-400" />}
+                  {file.isLocked && <LockIcon className="size-3 text-muted-foreground" />}
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -455,7 +455,7 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
             <tbody>
               {folders.map((folder) => (
                 <tr key={folder.id} className="border-b last:border-0 hover:bg-blue-50/50 cursor-pointer" onClick={() => navigateToFolder(folder.id, folder.name)}>
-                  <td className="p-2"><FolderIcon className="size-4 text-orange-400" /></td>
+                  <td className="p-2"><FolderIcon className="size-4 text-muted-foreground" /></td>
                   <td className="p-2 text-sm font-medium">{folder.name}</td>
                   <td className="p-2 text-xs text-muted-foreground hidden sm:table-cell">Folder</td>
                   <td className="p-2 text-xs text-muted-foreground hidden md:table-cell">—</td>
@@ -483,7 +483,7 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
                     <span className="flex items-center gap-2">
                       {getFileIcon(file.mimeType)}
                       <span className="truncate max-w-[200px]">{file.originalName}</span>
-                      {file.isLocked && <LockIcon className="size-3 text-orange-400 shrink-0" />}
+                      {file.isLocked && <LockIcon className="size-3 text-muted-foreground shrink-0" />}
                     </span>
                   </td>
                   <td className="p-2 text-xs text-muted-foreground hidden sm:table-cell">{file.mimeType.split("/")[1]?.toUpperCase() || file.mimeType}</td>

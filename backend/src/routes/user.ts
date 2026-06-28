@@ -34,9 +34,14 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
   const user = await User.findOne({ email: req.user!.email }).lean();
   if (!user) throw new AppError(404, "User not found");
 
-  const member = await OrgMember.findOne({ userId: user.id }).populate("orgId").lean();
-  const org = member?.orgId as any;
-  const memberCount = org ? await OrgMember.countDocuments({ orgId: org._id }) : 0;
+  const userId = user.id || (user as any)._id?.toString();
+  const member = await OrgMember.findOne({ userId }).lean();
+  let org = null;
+  let memberCount = 0;
+  if (member) {
+    org = await Organization.findById(member.orgId).lean();
+    memberCount = org ? await OrgMember.countDocuments({ orgId: member.orgId }) : 0;
+  }
 
   res.json({
     user: {

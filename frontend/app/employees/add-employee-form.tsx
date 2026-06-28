@@ -80,24 +80,6 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   })
 
   React.useEffect(() => {
-    const fetchOrgAndSetId = async () => {
-      try {
-        const res = await fetch('/api/user/profile');
-        if (res.ok) {
-          const data = await res.json();
-          // Get organization name, fallback to "EMP"
-          const orgName = data?.organization?.name || "EMP";
-          // Use first 3 letters of company name for the ID prefix
-          const prefix = orgName.substring(0, 3).toUpperCase();
-          const count = parseInt(localStorage.getItem("employeeIdCount") || "1", 10);
-          const displayId = `${prefix}${String(count).padStart(3, '0')}`;
-          setFirstSlideData(prev => ({ ...prev, displayId }));
-        }
-      } catch (err) {
-        console.error("Failed to fetch organization for employee ID", err);
-      }
-    };
-    fetchOrgAndSetId();
     setDropdownOptions(getDropdownOptions());
   }, [])
 
@@ -128,7 +110,6 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
 
   const createEmployeeMutation = useMutation({
     mutationFn: () => employeeService.createEmployee({
-      empId: firstSlideData.displayId.trim() || undefined,
       firstName: firstSlideData.firstName.trim(),
       lastName: firstSlideData.lastName.trim(),
       email: firstSlideData.email.trim(),
@@ -188,7 +169,6 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
     trackEvent('save_employee_start')
     try {
       const employee = await employeeService.createEmployee({
-        empId: firstSlideData.displayId.trim() || undefined,
         firstName: firstSlideData.firstName.trim(),
         lastName: firstSlideData.lastName.trim(),
         email: firstSlideData.email.trim(),
@@ -219,10 +199,6 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       })
       
       setSavedEmployee(employee)
-
-      // Increment the employee ID count in localStorage
-      const currentCount = parseInt(localStorage.getItem("employeeIdCount") || "1", 10)
-      localStorage.setItem("employeeIdCount", String(currentCount + 1))
 
       queryClient.invalidateQueries({ queryKey: ["employee"] })
       queryClient.invalidateQueries({ queryKey: ["employee-stats"] })

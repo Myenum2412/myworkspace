@@ -5,7 +5,7 @@ import { v4 as uuid } from "uuid";
 import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { ensureUserOrg, validateOrgMembership } from "@/lib/org";
-import { getNextSequence } from "@/lib/db/counter";
+import { getNextSequence, getNextEmployeeDisplayId } from "@/lib/db/counter";
 
 export async function GET() {
   try {
@@ -14,7 +14,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = await ensureUserOrg(session.user.id);
+    const orgId = await ensureUserOrg(session.user.id, session.user.email);
 
     const orgMembers = await (await db.collection(collections.orgMembers).find({ orgId })).toArray();
     const userIds = (orgMembers as unknown as { userId: string }[]).map((m) => m.userId);
@@ -50,10 +50,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = await ensureUserOrg(session.user.id);
+    const orgId = await ensureUserOrg(session.user.id, session.user.email);
 
     const body = await request.json();
-    const { empId, firstName, lastName, nickname, email, password, avatar, department, designation, location, phone, roleName, branchName, shift, employmentType, status, sourceOfHire, joiningDate, currentExperience, totalExperience, alternateEmail, address, city, state, country, zipCode, linkedin, github, twitter, website, workExperience, educationDetails, dependentDetails, files } = body;
+    const { firstName, lastName, nickname, email, password, avatar, department, designation, location, phone, roleName, branchName, shift, employmentType, status, sourceOfHire, joiningDate, currentExperience, totalExperience, alternateEmail, address, city, state, country, zipCode, linkedin, github, twitter, website, workExperience, educationDetails, dependentDetails, files } = body;
 
     if (!firstName || !email) {
       return NextResponse.json({ error: "First name and email are required" }, { status: 400 });
@@ -68,12 +68,14 @@ export async function POST(request: Request) {
     const defaultPassword = password || Math.random().toString(36).slice(-8) + "A1!";
     const hashedPassword = await hash(defaultPassword, 12);
     const userNumber = await getNextSequence("userNumber");
+    const displayId = await getNextEmployeeDisplayId(orgId);
 
     const name = [firstName, lastName].filter(Boolean).join(" ");
 
     await db.collection(collections.users).insertOne({
       id: userId,
       userNumber,
+      displayId,
       name,
       nickname: nickname || null,
       email,
@@ -171,6 +173,40 @@ export async function POST(request: Request) {
     sendWelcomeEmail(email, name).catch((err) => {
       console.error("[employees] Welcome email failed:", err?.message || err);
     });
+
+    const notificationsCol = db.collection(collections.notifications);
+    const now = new Date();
+    const newUserNotif = {
+      id: uuid(),
+      userId,
+      orgId,
+      createdBy: session.user.id,
+      type: "system",
+      title: "Welcome to MyWorkspace!",
+      message: "Your account has been created. You're now part of the organization.",
+      link: "/employees",
+      read: false,
+      createdAt: now,
+    };
+    await notificationsCol.insertOne(newUserNotif);
+
+    const adminMembers = await (await db.collection(collections.orgMembers).find({ orgId, role: { $in: ["admin", "manager"] } })).toArray();
+    const adminIds = [...new Set(adminMembers.map((m: any) => m.userId))].filter((id: string) => id !== userId);
+    if (adminIds.length > 0) {
+      const adminNotifs = adminIds.map((adminId: string) => ({
+        id: uuid(),
+        userId: adminId,
+        orgId,
+        createdBy: session.user.id,
+        type: "system",
+        title: "New Employee Added",
+        message: `${name} (${email}) has been added.`,
+        link: "/employees",
+        read: false,
+        createdAt: now,
+      }));
+      await notificationsCol.insertMany(adminNotifs);
+    }
 
     const employee = await db.collection(collections.users).findOne({ id: userId });
     return NextResponse.json(employee, { status: 201 });

@@ -23,9 +23,9 @@ function formatSize(bytes: number) {
 }
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return <ImageIcon className="size-5 text-red-500" />;
-  if (mimeType.includes("pdf") || mimeType.includes("document")) return <FileTextIcon className="size-5 text-red-500" />;
-  if (mimeType.includes("zip") || mimeType.includes("rar")) return <ArchiveIcon className="size-5 text-orange-400" />;
+  if (mimeType.startsWith("image/")) return <ImageIcon className="size-5 text-muted-foreground" />;
+  if (mimeType.includes("pdf") || mimeType.includes("document")) return <FileTextIcon className="size-5 text-muted-foreground" />;
+  if (mimeType.includes("zip") || mimeType.includes("rar")) return <ArchiveIcon className="size-5 text-muted-foreground" />;
   return <FileIcon className="size-5 text-muted-foreground" />;
 }
 

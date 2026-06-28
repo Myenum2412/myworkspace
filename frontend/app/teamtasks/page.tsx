@@ -214,7 +214,7 @@ export default function TeamTasksPage() {
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {a.tasks.map((t) => (
                         <div key={t._id} className="flex items-start gap-2 rounded-lg border p-2">
-                          <CheckCircle2Icon className={`size-4 mt-0.5 shrink-0 ${t.status === "done" ? "text-red-500" : "text-muted-foreground"}`} />
+                          <CheckCircle2Icon className={`size-4 mt-0.5 shrink-0 ${t.status === "done" ? "text-primary" : "text-muted-foreground"}`} />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium truncate">{t.title}</p>
                             <div className="flex items-center gap-1 mt-1">

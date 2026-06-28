@@ -5,7 +5,7 @@ import { TeamMember } from "../lib/db/models/TeamMember.js";
 import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { requireOrgMembership } from "../lib/org-utils.js";
+import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
 
 const router = Router();
 
@@ -13,7 +13,7 @@ router.use(authenticate);
 
 // List all teams in the user's org with member counts, pagination, filtering, and sorting
 router.get("/", async (req: AuthRequest, res: Response) => {
-  const orgId = await requireOrgMembership(req.user!.userId);
+  const orgId = await requireOrgMembershipFromRequest(req);
 
   // Pagination params
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -129,7 +129,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  await requireOrgMembership(req.user!.userId, team.orgId.toString());
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   // Aggregation pipeline: get team with all members and their user details in one query
   const pipeline: PipelineStage[] = [
@@ -243,14 +243,15 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   const { name, description, orgId: bodyOrgId } = req.body;
   if (!name) throw new AppError(400, "Team name is required");
 
-  const orgId = bodyOrgId || await requireOrgMembership(req.user!.userId);
+  const orgId = bodyOrgId || await requireOrgMembershipFromRequest(req);
 
-  await requireOrgMembership(req.user!.userId, orgId);
+  await requireOrgMembershipFromRequest(req, orgId);
 
   const team = await Team.create({
     orgId,
     name,
     description: description || undefined,
+    createdBy: req.user!.userId,
   });
 
   res.status(201).json({ success: true, data: { id: team._id.toString(), name: team.name } });
@@ -261,12 +262,13 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  await requireOrgMembership(req.user!.userId, team.orgId.toString());
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   const { name, description } = req.body;
   const updates: Record<string, unknown> = {};
   if (name !== undefined) updates.name = name;
   if (description !== undefined) updates.description = description;
+  if (Object.keys(updates).length > 0) updates.updatedBy = req.user!.userId;
 
   await Team.findByIdAndUpdate(req.params.id, updates);
   res.json({ success: true });
@@ -277,7 +279,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  await requireOrgMembership(req.user!.userId, team.orgId.toString());
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   await TeamMember.deleteMany({ teamId: team._id });
   await Team.findByIdAndDelete(req.params.id);
@@ -289,7 +291,7 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  await requireOrgMembership(req.user!.userId, team.orgId.toString());
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   const { userId, role } = req.body;
   if (!userId) throw new AppError(400, "userId is required");
@@ -316,7 +318,7 @@ router.delete("/:teamId/members/:userId", async (req: AuthRequest, res: Response
   const team = await Team.findById(req.params.teamId).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  await requireOrgMembership(req.user!.userId, team.orgId.toString());
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   await TeamMember.deleteOne({ teamId: team._id, userId: req.params.userId });
   res.json({ success: true });
@@ -327,7 +329,7 @@ router.patch("/:teamId/members/:userId/role", async (req: AuthRequest, res: Resp
   const team = await Team.findById(req.params.teamId).lean();
   if (!team) throw new AppError(404, "Team not found");
 
-  await requireOrgMembership(req.user!.userId, team.orgId.toString());
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   const { role } = req.body;
   if (!role || !["lead", "member"].includes(role)) throw new AppError(400, "Valid role required (lead or member)");

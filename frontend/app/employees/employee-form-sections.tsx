@@ -119,7 +119,7 @@ export function BasicInfoSection({ formData, onChange, options }: BasicInfoSecti
         <Field>
           <FieldLabel>Display ID</FieldLabel>
           <Input
-            placeholder="Employee ID"
+            placeholder="Auto-generated on save"
             value={formData.displayId}
             onChange={(e) => onChange("displayId", e.target.value)}
             readOnly

@@ -374,7 +374,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                   </TableCell>
                   <TableCell>
                     {member.emailVerified ? (
-                      <CheckCircle2Icon className="size-4 text-green-500" />
+                      <CheckCircle2Icon className="size-4 text-success" />
                     ) : (
                       <XCircleIcon className="size-4 text-muted-foreground" />
                     )}

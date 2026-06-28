@@ -6,6 +6,44 @@ if (!env.RESEND_API_KEY) {
 }
 const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
+export async function sendPasswordResetEmail(to: string, name: string, resetLink: string): Promise<void> {
+  if (!resend) {
+    console.warn("Resend not configured — skipping password reset email");
+    return;
+  }
+  await resend.emails.send({
+    from: env.MAIL_FROM,
+    to,
+    subject: "Reset your MyWorkspace password",
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
+        <div style="text-align: center; margin-bottom: 32px;">
+          <h1 style="font-size: 24px; color: #1a1a2e; margin: 0;">MyWorkspace</h1>
+        </div>
+        <div style="background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+          <h1 style="font-size: 20px; color: #1a1a2e; margin: 0 0 16px;">Reset your password</h1>
+          <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 8px;">Hi ${name},</p>
+          <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 24px;">
+            We received a request to reset your MyWorkspace password. Click the button below to choose a new one.
+          </p>
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${resetLink}"
+               style="display: inline-block; padding: 12px 28px; background: #3b82f6; color: #ffffff; border-radius: 8px; text-decoration: none; font-size: 15px; font-weight: 500;">
+              Reset Password
+            </a>
+          </div>
+          <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0;">
+            This link will expire in 1 hour. If you did not request a password reset, you can safely ignore this email.
+          </p>
+        </div>
+        <p style="text-align: center; margin-top: 24px; font-size: 12px; color: #94a3b8;">
+          © ${new Date().getFullYear()} MyWorkspace. All rights reserved.
+        </p>
+      </div>
+    `,
+  });
+}
+
 export async function sendWelcomeEmail(to: string, name: string): Promise<void> {
   if (!resend) {
     console.warn("Resend not configured — skipping welcome email");

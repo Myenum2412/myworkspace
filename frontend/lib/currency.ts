@@ -7,25 +7,26 @@ export interface PriceTier {
   description: string;
   features: string[];
   popular: boolean;
+  storageGB: number;
 }
 
 export const priceTiers: PriceTier[] = [
   {
     id: "starter",
-    name: "Starter",
-    inr: "₹3,000",
-    usd: "$29",
+    name: "Free",
+    inr: "₹0",
+    usd: "$0",
     period: "/month",
-    description: "Perfect for small teams getting started with project management.",
+    description: "Get started with essential features for small teams.",
     features: [
-      "Up to 10 team members",
-      "5 projects",
-      "Basic time tracking",
-      "Task management",
-      "Email notifications",
-      "7-day history",
+      "Up to 5 team members",
+      "3 projects",
+      "Basic task management",
+      "10 GB storage",
+      "Email support",
     ],
     popular: false,
+    storageGB: 10,
   },
   {
     id: "growth",
@@ -38,13 +39,14 @@ export const priceTiers: PriceTier[] = [
       "Up to 50 team members",
       "Unlimited projects",
       "Advanced time tracking",
+      "200 GB storage",
       "Custom workflows",
       "Analytics & reports",
       "Priority support",
       "Integrations",
-      "90-day history",
     ],
     popular: true,
+    storageGB: 200,
   },
   {
     id: "enterprise",
@@ -56,14 +58,15 @@ export const priceTiers: PriceTier[] = [
     features: [
       "Unlimited team members",
       "Unlimited projects",
+      "Unlimited storage",
       "Dedicated account manager",
       "SSO & SAML",
       "Audit logs",
       "Custom integrations",
       "SLA guarantee",
-      "Unlimited history",
     ],
     popular: false,
+    storageGB: 9999,
   },
 ];
 

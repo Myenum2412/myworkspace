@@ -5,6 +5,8 @@ import { hkdf } from "@panva/hkdf";
 import { env } from "../config/env.js";
 import { JwtPayload } from "../types/index.js";
 import type { AuthRequest } from "../types/index.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { User } from "../lib/db/models/User.js";
 export type { AuthRequest };
 
 const JWE_ALG = "dir" as const;
@@ -87,6 +89,7 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
       console.log(`[BACKEND AUTH] User ID from token: ${decoded.userId}`);
       console.log(`[BACKEND AUTH] Org ID from token: ${decoded.orgId}`);
       req.user = decoded;
+      await resolveStaleUserId(req);
       console.log(`[BACKEND AUTH] ========== AUTHENTICATE SUCCESS (Bearer) ==========`);
       next();
       return;
@@ -106,6 +109,7 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
     console.log(`[BACKEND AUTH] Role from cookie: ${nextAuthUser.role}`);
     console.log(`[BACKEND AUTH] Org ID from cookie: ${nextAuthUser.orgId}`);
     req.user = nextAuthUser;
+    await resolveStaleUserId(req);
     console.log(`[BACKEND AUTH] ========== AUTHENTICATE SUCCESS (Cookie) ==========`);
     next();
     return;
@@ -114,6 +118,43 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
   console.log(`[BACKEND AUTH] Authentication failed - no valid credentials`);
   console.log(`[BACKEND AUTH] ========== AUTHENTICATE FAILED ==========`);
   res.status(401).json({ success: false, error: "Authentication required" });
+}
+
+/**
+ * Resolve a stale userId from the JWT by looking up the user by email.
+ * Called after authenticate to update req.user.userId if needed.
+ */
+export async function resolveStaleUserId(req: AuthRequest): Promise<void> {
+  if (!req.user) return;
+  const { userId, email } = req.user;
+
+  // Fast path: userId has a valid membership
+  const member = await OrgMember.findOne({ userId }).lean();
+  if (member) return;
+
+  let resolvedId: string | null = null;
+
+  // Try looking up user by userId first (in case userId matches a User doc but not OrgMember)
+  if (userId) {
+    const userById = await User.findById(userId).lean().catch(() => null)
+      || await User.findOne({ id: userId }).lean().catch(() => null);
+    if (userById) {
+      resolvedId = userById.id || (userById as any)._id?.toString();
+    }
+  }
+
+  // Fallback: lookup by email
+  if (!resolvedId && email) {
+    const userByEmail = await User.findOne({ email }).lean().catch(() => null);
+    if (userByEmail) {
+      resolvedId = userByEmail.id || (userByEmail as any)._id?.toString();
+    }
+  }
+
+  if (resolvedId && resolvedId !== userId) {
+    console.log(`[BACKEND AUTH] Resolved stale userId: ${userId} → ${resolvedId}`);
+    req.user.userId = resolvedId;
+  }
 }
 
 export async function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction): Promise<void> {

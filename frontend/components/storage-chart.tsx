@@ -21,9 +21,9 @@ import { cn } from "@/lib/utils";
 import { HardDrive, Database, Check } from "lucide-react";
 
 const PLAN_TIERS = [
-  { name: "Starter", inr: "₹3,000", usd: "$29", storage: "60 GB", storageGB: 60 },
-  { name: "Growth", inr: "₹6,000", usd: "$79", storage: "200 GB", storageGB: 200 },
-  { name: "Enterprise", inr: "Custom", usd: "Custom", storage: "Contact us", storageGB: 9999 },
+  { name: "Free", plan: "starter", inr: "₹0", usd: "$0", storage: "10 GB", storageGB: 10 },
+  { name: "Growth", plan: "growth", inr: "₹6,000", usd: "$79", storage: "200 GB", storageGB: 200 },
+  { name: "Enterprise", plan: "enterprise", inr: "Custom", usd: "Custom", storage: "Contact us", storageGB: 9999 },
 ];
 
 function formatBytes(mb: number): string {
@@ -37,7 +37,7 @@ interface StorageChartProps {
 
 export function StorageChart({ orgPlan }: StorageChartProps) {
   const [usedMB, setUsedMB] = useState(0);
-  const [totalMB, setTotalMB] = useState(1024 * 60);
+  const [totalMB, setTotalMB] = useState(1024 * 10);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export function StorageChart({ orgPlan }: StorageChartProps) {
           const stats = await statsRes.json();
           const limits = await limitsRes.json();
           const used = stats?.data?.totalSize ?? 0;
-          const limitGB = limits?.storageLimit ?? 60;
+          const limitGB = limits?.storageLimit ?? 10;
           setUsedMB(used);
           setTotalMB(limitGB * 1024);
         }
@@ -94,6 +94,11 @@ export function StorageChart({ orgPlan }: StorageChartProps) {
     []
   );
 
+  const planLabel = (() => {
+    const tier = PLAN_TIERS.find(t => t.plan === orgPlan);
+    return tier ? tier.name : "Free";
+  })();
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-3 pb-4">
@@ -102,7 +107,7 @@ export function StorageChart({ orgPlan }: StorageChartProps) {
         </div>
         <div>
           <CardTitle className="text-base">Storage</CardTitle>
-          <CardDescription>Plan: {(orgPlan || "starter").charAt(0).toUpperCase() + (orgPlan || "starter").slice(1)}</CardDescription>
+          <CardDescription>Plan: {planLabel}</CardDescription>
         </div>
       </CardHeader>
       <CardContent>
@@ -160,7 +165,7 @@ export function StorageChart({ orgPlan }: StorageChartProps) {
           <div className="space-y-3">
             <p className="text-sm font-medium text-muted-foreground">Available Plans</p>
             {PLAN_TIERS.map((tier) => {
-              const isActive = orgPlan === tier.name.toLowerCase() || (orgPlan === "pro" && tier.name === "Growth");
+              const isActive = orgPlan === tier.plan || (orgPlan === "pro" && tier.plan === "growth");
               return (
                 <div
                   key={tier.name}

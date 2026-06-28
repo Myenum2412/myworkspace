@@ -129,7 +129,7 @@ export default function ClientDashboardPage() {
         </div>
 
         {user?.mustChangePassword && (
-          <div className="rounded-lg bg-gray-100 border border-gray-300 p-4">
+          <div className="rounded-lg bg-gray-100 border-border p-4">
             <p className="text-sm text-gray-700 font-medium">
               You must change your password before continuing.
             </p>
@@ -140,7 +140,7 @@ export default function ClientDashboardPage() {
         )}
 
         {!user?.emailVerified && (
-          <div className="rounded-lg bg-gray-700 border border-gray-300 p-4">
+          <div className="rounded-lg bg-gray-700 border-border p-4">
             <p className="text-sm text-gray-700">
               Please verify your email address to access all features.
             </p>

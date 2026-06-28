@@ -339,7 +339,7 @@ export default function ClientsPage() {
               <div className="space-y-8 py-2">
                 {apiError && (
                   <div className="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 p-4">
-                    <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
+                    <AlertCircle className="size-5 text-destructive shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-red-800">{apiError}</p>
                       {Object.keys(formErrors).length > 0 && (
@@ -350,7 +350,7 @@ export default function ClientsPage() {
                         </ul>
                       )}
                     </div>
-                    <button onClick={() => setApiError("")} className="shrink-0 text-red-400 hover:text-red-600">
+                    <button onClick={() => setApiError("")} className="shrink-0 text-destructive hover:text-destructive">
                       <X className="size-4" />
                     </button>
                   </div>
@@ -739,7 +739,7 @@ export default function ClientsPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="size-6 text-red-500" />
+              <CheckCircle2 className="size-6 text-primary" />
               Client Created Successfully
             </DialogTitle>
             <DialogDescription>
@@ -793,7 +793,7 @@ export default function ClientsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-gray-100 border border-gray-300 p-3">
+              <div className="rounded-lg bg-gray-100 border-border p-3">
                 <p className="text-xs text-gray-700">
                   <strong>Note:</strong> The client will be required to change this password on first login.
                   An email with these credentials has been sent to {credentials.email}.

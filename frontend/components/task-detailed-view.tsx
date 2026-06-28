@@ -22,10 +22,10 @@ type Task = {
 };
 
 const statusColors: Record<string, string> = {
-  todo: "bg-gray-100 text-gray-700 border-gray-200",
-  in_progress: "bg-red-900 text-red-700 border-gray-300",
-  review: "bg-gray-100 text-gray-700 border-gray-300",
-  done: "bg-red-900 text-red-700 border-gray-300",
+  todo: "bg-gray-100 text-gray-700 border-border",
+  in_progress: "bg-red-900 text-red-700 border-border",
+  review: "bg-gray-100 text-gray-700 border-border",
+  done: "bg-red-900 text-red-700 border-border",
   cancelled: "bg-red-50 text-red-700 border-red-200",
 };
 

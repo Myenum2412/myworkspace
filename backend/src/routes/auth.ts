@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { hash, compare } from "bcryptjs";
 import { v4 as uuid } from "uuid";
+import crypto from "crypto";
 import { User } from "../lib/db/models/User.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
@@ -9,9 +10,10 @@ import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { getNextSequence } from "../lib/db/models/Counter.js";
 import { signToken } from "../config/auth.js";
 import { getUserOrgId } from "../lib/org-utils.js";
+import { env } from "../config/env.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { sendWelcomeEmail } from "../lib/mail/index.js";
+import { sendWelcomeEmail, sendPasswordResetEmail } from "../lib/mail/index.js";
 import { mongoose } from "../lib/db/index.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 
@@ -285,12 +287,39 @@ router.post("/forgot-password", async (req: AuthRequest, res: Response) => {
 
   const user = await User.findOne({ email });
   if (user) {
-    // In production, send a reset email here
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpires = new Date(Date.now() + 3600000);
+    await User.updateOne({ _id: user._id }, { $set: { resetToken, resetTokenExpires } });
+
+    const resetLink = `${env.APP_URL}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    sendPasswordResetEmail(email, user.name, resetLink).catch((err) => {
+      console.error("[auth] Failed to send password reset email:", err?.message || err);
+    });
   }
   res.json({
     success: true,
-    message: "If an account exists, a reset link has been sent",
+    message: "If an account exists with that email, a reset link has been sent.",
   });
+});
+
+router.post("/reset-password", async (req: AuthRequest, res: Response) => {
+  const { token, email, password } = req.body;
+  if (!token || !email || !password) {
+    throw new AppError(400, "Token, email, and new password are required");
+  }
+
+  const user = await User.findOne({ email, resetToken: token, resetTokenExpires: { $gt: new Date() } });
+  if (!user) {
+    throw new AppError(400, "Invalid or expired reset token");
+  }
+
+  const hashedPassword = await hash(password, 12);
+  await User.updateOne(
+    { _id: user._id },
+    { $set: { password: hashedPassword, resetToken: null, resetTokenExpires: null } }
+  );
+
+  res.json({ success: true, message: "Password has been reset successfully." });
 });
 
 router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {

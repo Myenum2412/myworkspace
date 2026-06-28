@@ -62,8 +62,8 @@ export async function GET() {
       }
       memberCount = await db.collection(collections.orgMembers).countDocuments({});
     } else {
-      orgId = await getUserOrgId(dbUserId);
-      console.log(`[profile GET] resolved orgId=${orgId} for dbUserId=${dbUserId}`);
+      orgId = await getUserOrgId(session.user.id, session.user.email);
+      console.log(`[profile GET] resolved orgId=${orgId} via session userId/email`);
 
       // Auto-create org if user has none
       if (!orgId) {
@@ -249,21 +249,8 @@ export async function PATCH(req: NextRequest) {
       const firstOrg = await db.collection(collections.organizations).findOne({});
       if (firstOrg) orgId = (firstOrg.id || firstOrg._id) as string;
     } else {
-      // Determine the real DB user ID to query orgs
-      const sessionEmail = session.user.email;
-      let dbUser = null;
-      if (sessionEmail) {
-        dbUser = await db.collection(collections.users).findOne({ email: sessionEmail });
-      }
-      const dbUserId = dbUser ? (dbUser.id || dbUser._id).toString() : userId;
-
-      orgId = await getUserOrgId(dbUserId);
-      // Fallback: if string field query failed, try matching by _id-form member doc
-      if (!orgId) {
-        const member = await db.collection(collections.orgMembers).findOne({ $or: [{ userId: dbUserId }, { userId: dbUserId }] } as never);
-        if (member) orgId = member.orgId as string;
-      }
-      console.log(`[profile PATCH] resolved orgId=${orgId} for dbUserId=${dbUserId}`);
+      orgId = await getUserOrgId(userId, session.user.email);
+      console.log(`[profile PATCH] resolved orgId=${orgId}`);
     }
 
     if (orgId) {

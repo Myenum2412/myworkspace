@@ -17,13 +17,6 @@ export default async function RoleRedirectPage() {
     redirect("/orgmenu");
   }
 
-  const userId = session.user.id;
-  const org = await db.collection("organizations").findOne({ ownerId: userId });
-  if (org && !org.onboardingCompleted) {
-    console.log(`[AUTH role-redirect] email=${session.user.email} onboarding not completed → /onboarding`);
-    redirect("/onboarding");
-  }
-
   console.log(`[AUTH role-redirect] email=${session.user.email} role=${role} -> /dashboard`);
   redirect("/dashboard");
 }

@@ -126,18 +126,18 @@ export default function UploadPage() {
               {status === "success" ? (
                 <div className="flex flex-col items-center gap-3">
                   <div className="rounded-full bg-green-100 p-4 dark:bg-green-900/30">
-                    <CheckCircleIcon className="size-8 text-red-400 dark:text-red-400" />
+                    <CheckCircleIcon className="size-8 text-success" />
                   </div>
-                  <p className="text-sm font-medium text-red-400 dark:text-red-400">
+                  <p className="text-sm font-medium text-success">
                     File uploaded successfully!
                   </p>
                 </div>
               ) : status === "error" ? (
                 <div className="flex flex-col items-center gap-3">
                   <div className="rounded-full bg-red-100 p-4 dark:bg-red-900/30">
-                    <AlertCircleIcon className="size-8 text-red-600 dark:text-red-400" />
+                    <AlertCircleIcon className="size-8 text-destructive" />
                   </div>
-                  <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
+                  <p className="text-sm font-medium text-destructive">{error}</p>
                   <Button variant="outline" onClick={() => setStatus("idle")}>Try Again</Button>
                 </div>
               ) : !selectedFile ? (

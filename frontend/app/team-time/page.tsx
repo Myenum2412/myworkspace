@@ -95,10 +95,10 @@ export default function TeamTimePage() {
   const filteredMembers = teamFilter === "all" ? members : members.filter((m) => m.entryCount > 0);
 
   const statCards = [
-    { title: "Total Members", value: summary.totalMembers, icon: Users, color: "text-gray-700" },
-    { title: "Active Today", value: summary.activeMembers, icon: Activity, color: "text-red-500" },
-    { title: "Total Hours", value: summary.totalHoursAll, icon: Clock, color: "text-red-400" },
-    { title: "Total Entries", value: summary.totalEntries, icon: CalendarDays, color: "text-gray-600" },
+    { title: "Total Members", value: summary.totalMembers, icon: Users, color: "text-muted-foreground" },
+    { title: "Active Today", value: summary.activeMembers, icon: Activity, color: "text-primary" },
+    { title: "Total Hours", value: summary.totalHoursAll, icon: Clock, color: "text-warning" },
+    { title: "Total Entries", value: summary.totalEntries, icon: CalendarDays, color: "text-muted-foreground" },
   ];
 
   const getStatusDot = (status: string) => {

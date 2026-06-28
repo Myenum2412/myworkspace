@@ -103,9 +103,8 @@ export const defaultNavData = {
       icon: <Settings2Icon className="size-6" />,
       items: [
         { title: "General", url: "/settings" },
+        { title: "Plans & Billing", url: "/settings/plans" },
         { title: "Team", url: "/settings" },
-        { title: "Billing", url: "/settings" },
-        { title: "Limits", url: "/settings" },
         { title: "Notifications", url: "/settings" },
       ],
     },
@@ -115,8 +114,6 @@ export const defaultNavData = {
 export interface AppSidebarData {
   navMain: typeof defaultNavData.navMain;
 }
-
-const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "developer@myenum.in").toLowerCase().trim();
 
 interface NavUserData {
   name: string;
@@ -131,74 +128,6 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { data?: AppSidebarData; user: NavUserData }) {
 
-  const isEmployee = user.role === "member";
-
-  const employeeNav = [
-    {
-      title: "Dashboard",
-      url: "/staffs",
-      icon: <LayoutDashboardIcon className="size-6" />,
-      isActive: true,
-      items: [
-        { title: "Overview", url: "/staffs" },
-        { title: "Activity", url: "/staffs/activity" },
-      ],
-    },
-    {
-      title: "My Tasks",
-      url: "/mytasks",
-      icon: <ListChecksIcon className="size-6" />,
-      items: [
-        { title: "All Tasks", url: "/alltasks" },
-        { title: "My Tasks", url: "/mytasks" },
-        { title: "Upcoming", url: "/upcomingtasks" },
-      ],
-    },
-    {
-      title: "Schedule",
-      url: "/staffs/schedule",
-      icon: <CalendarIcon className="size-6" />,
-      items: [
-        { title: "Shifts", url: "/staffs/schedule" },
-        { title: "Time Off", url: "/staffs/time-off" },
-      ],
-    },
-    {
-      title: "Attendance",
-      url: "/staffs/attendance",
-      icon: <ClockIcon className="size-6" />,
-      items: [
-        { title: "Today", url: "/staffs/attendance" },
-        { title: "Reports", url: "/staffs/attendance/reports" },
-      ],
-    },
-    {
-      title: "Performance",
-      url: "/staffs/performance",
-      icon: <ClipboardListIcon className="size-6" />,
-      items: [
-        { title: "Reviews", url: "/staffs/performance" },
-        { title: "Goals", url: "/staffs/performance/goals" },
-      ],
-    },
-    {
-      title: "File Manager",
-      url: "/files",
-      icon: <FolderIcon className="size-6" />,
-      items: [
-        { title: "All Files", url: "/files" },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "/staffs/settings",
-      icon: <Settings2Icon className="size-6" />,
-      items: [
-        { title: "General", url: "/staffs/settings" },
-      ],
-    },
-  ];
-
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="h-20 border-b justify-center">
@@ -211,22 +140,13 @@ export function AppSidebar({
             className="size-8 rounded-lg object-cover shadow-sm shrink-0"
           />
           <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">
-            {isEmployee ? "Staff Panel" : "My WorkSpace"}
+            My WorkSpace
           </h1>
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {isEmployee ? (
-          <>
-            <NavMain items={employeeNav.slice(0, -1)} label="Staff" />
-            <NavMain items={employeeNav.slice(-1)} label="Settings" className="mt-auto" />
-          </>
-        ) : (
-          <>
-            <NavMain items={data.navMain.slice(0, -1)} label="Platform" />
-            <NavMain items={data.navMain.slice(-1)} label="Settings" className="mt-auto" />
-          </>
-        )}
+        <NavMain items={data.navMain.slice(0, -1)} label="Platform" />
+        <NavMain items={data.navMain.slice(-1)} label="Settings" className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

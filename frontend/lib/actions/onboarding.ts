@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth/config";
+import { auth, unstable_update } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { revalidatePath } from "next/cache";
@@ -47,13 +47,26 @@ export async function completeOnboarding(data: OnboardingData) {
     redirect("/orgmenu");
   }
 
-  const member = await db.collection(collections.orgMembers).findOne({ userId });
+  let member = await db.collection(collections.orgMembers).findOne({ userId });
   console.log("[ONBOARDING] member lookup:", member?.orgId);
+  
+  let orgId = member?.orgId;
   if (!member) {
-    redirect("/login?error=No+organization+found");
+    const org = await db.collection(collections.organizations).findOne({ ownerId: userId });
+    console.log("[ONBOARDING] org by ownerId:", org?.id);
+    if (!org) {
+      redirect("/login?error=No+organization+found");
+    }
+    orgId = org.id;
+    await db.collection(collections.orgMembers).insertOne({
+      id: crypto.randomUUID(),
+      orgId: org.id,
+      userId,
+      role: "admin",
+      joinedAt: new Date(),
+    });
+    console.log("[ONBOARDING] created org_members entry for user:", userId);
   }
-
-  const orgId = member.orgId;
 
   const updateFields: Record<string, unknown> = {
     plan: data.plan,
@@ -112,8 +125,8 @@ export async function completeOnboarding(data: OnboardingData) {
     createdAt: new Date(),
   });
 
+  await unstable_update({});
   revalidatePath("/dashboard");
   revalidatePath("/orgmenu/members");
-
-  return { success: true };
+  redirect("/dashboard");
 }

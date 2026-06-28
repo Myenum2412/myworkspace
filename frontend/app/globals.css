@@ -84,22 +84,22 @@
   --accent: #dc2626;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
-  --border: #d1d5db;
-  --input: #d1d5db;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
   --ring: #dc2626;
   --chart-1: #dc2626;
   --chart-2: #ef4444;
   --chart-3: #f87171;
   --chart-4: #6b7280;
   --chart-5: #9ca3af;
-  --radius: 0px;
+  --radius: 1px;
   --sidebar: #ffffff;
   --sidebar-foreground: #000000;
   --sidebar-primary: #dc2626;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e5e5e5;
   --sidebar-accent-foreground: #000000;
-  --sidebar-border: #d1d5db;
+  --sidebar-border: #E5E7EB;
   --sidebar-ring: #dc2626;
   --destructive-foreground: #ffffff;
   --success: #16a34a;
@@ -158,7 +158,6 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    border-radius: 0 !important;
   }
   body {
     @apply bg-background text-foreground;

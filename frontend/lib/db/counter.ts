@@ -11,3 +11,8 @@ export async function getNextSequence(name: string): Promise<number> {
     );
   return counter?.seq ?? 1;
 }
+
+export async function getNextEmployeeDisplayId(orgId: string): Promise<string> {
+  const seq = await getNextSequence(`empDisplayId_${orgId}`);
+  return seq >= 1000 ? `EMP${seq}` : `EMP${String(seq).padStart(3, "0")}`;
+}

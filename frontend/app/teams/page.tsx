@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import {
   UsersIcon,
   PlusIcon,
@@ -87,7 +86,6 @@ export default function TeamsPage() {
   const [teamDescription, setTeamDescription] = useState("");
   const [teamHeadId, setTeamHeadId] = useState("");
   const [teamHeadName, setTeamHeadName] = useState("");
-  const [projectManagerIds, setProjectManagerIds] = useState<string[]>([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -102,31 +100,33 @@ export default function TeamsPage() {
   const [viewMember, setViewMember] = useState<TeamDetail["members"][0] | null>(null);
 
   
-  const fetchTeams = useCallback(async () => {
-    if (!orgId) return;
+  const fetchTeams = useCallback(async (oid?: string) => {
     try {
-      const res = await fetch(`/api/teams?orgId=${orgId}`, { credentials: "include" });
+      const query = oid ? `?orgId=${oid}` : "";
+      const res = await fetch(`/api/teams${query}`, { credentials: "include" });
       const data = await res.json();
       const result = Array.isArray(data) ? data : data.data || [];
       setTeams(result);
     } catch (error) {
       console.error("[TEAMS] Failed to fetch teams:", error);
     }
-  }, [orgId]);
+  }, []);
 
-  const fetchOrgMembers = useCallback(async () => {
-    if (!orgId) return;
+  const fetchOrgMembers = useCallback(async (oid?: string) => {
     try {
-      const res = await fetch(`/api/organizations/${orgId}/members`, { credentials: "include" });
+      const query = oid ? `?orgId=${oid}` : "";
+      const res = await fetch(`/api/employees${query}`, { credentials: "include" });
       const data = await res.json();
       const raw = Array.isArray(data) ? data : data.data || [];
       setMembers(
         raw.map((m: Record<string, unknown>) => ({
-          userId: (m.userId as Record<string, unknown>)?._id?.toString?.() || (m.userId as string) || "",
-          name: (m.userId as Record<string, unknown>)?.name as string || "Unknown",
-          email: (m.userId as Record<string, unknown>)?.email as string || "",
-          avatar: (m.userId as Record<string, unknown>)?.image as string || "",
+          userId: (m.id as string) || (m._id as string) || "",
+          name: (m.name as string) || `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Unknown",
+          email: (m.email as string) || "",
+          avatar: (m.image as string) || (m.avatar as string) || "",
           role: (m.role as string) || "member",
+          designation: (m.designation as string) || "",
+          department: (m.department as string) || "",
         }))
       );
     } catch (error) {
@@ -152,12 +152,14 @@ export default function TeamsPage() {
   }, [session]);
 
   useEffect(() => {
-    if (orgId) {
+    if (session?.user) {
       setLoading(true);
-      fetchTeams().finally(() => setLoading(false));
-      fetchOrgMembers();
+      Promise.all([
+        fetchTeams(orgId || undefined),
+        fetchOrgMembers(orgId || undefined),
+      ]).finally(() => setLoading(false));
     }
-  }, [orgId, fetchTeams, fetchOrgMembers]);
+  }, [session, orgId, fetchTeams, fetchOrgMembers]);
 
   function openCreateForm() {
     setEditingTeam(null);
@@ -165,7 +167,6 @@ export default function TeamsPage() {
     setTeamDescription("");
     setTeamHeadId("");
     setTeamHeadName("");
-    setProjectManagerIds([]);
     setSelectedMemberIds([]);
     setFormError("");
     setShowForm(true);
@@ -177,7 +178,6 @@ export default function TeamsPage() {
     setTeamDescription(team.description);
     setTeamHeadId(team.leadId || "");
     setTeamHeadName(team.leadName || "");
-    setProjectManagerIds(team.projectManagerIds || []);
     setSelectedMemberIds(team.memberIds || []);
     setFormError("");
     setShowForm(true);
@@ -214,8 +214,6 @@ export default function TeamsPage() {
                   leadName: teamHeadName,
                   memberIds: selectedMemberIds,
                   memberCount: selectedMemberIds.length,
-                  projectManagerIds,
-                  projectManagerNames: members.filter((m) => projectManagerIds.includes(m.userId)).map((m) => m.name).join(", "),
                 }
               : t
           ));
@@ -268,7 +266,6 @@ export default function TeamsPage() {
             }
           }
 
-          const pmNames = members.filter((m) => projectManagerIds.includes(m.userId)).map((m) => m.name).join(", ");
           const newTeam: Team = {
             id: teamId,
             name: teamName.trim(),
@@ -278,8 +275,6 @@ export default function TeamsPage() {
             leadAvatar: "",
             leadId: teamHeadId,
             memberIds: memberIdsToAdd,
-            projectManagerIds,
-            projectManagerNames: pmNames,
             createdAt: new Date().toISOString(),
           };
           setTeams((prev) => [newTeam, ...prev]);
@@ -292,11 +287,9 @@ export default function TeamsPage() {
         setTeamDescription("");
         setTeamHeadId("");
         setTeamHeadName("");
-        setProjectManagerIds([]);
         setSelectedMemberIds([]);
       }
     } catch {
-        const pmNames = members.filter((m) => projectManagerIds.includes(m.userId)).map((m) => m.name).join(", ");
         setTeams((prev) => {
           if (editingTeam) {
             return prev.map((t) =>
@@ -309,8 +302,6 @@ export default function TeamsPage() {
                     leadName: teamHeadName,
                     memberIds: selectedMemberIds,
                     memberCount: selectedMemberIds.length,
-                    projectManagerIds,
-                    projectManagerNames: pmNames,
                   }
                 : t
             );
@@ -324,8 +315,6 @@ export default function TeamsPage() {
             leadAvatar: "",
             leadId: teamHeadId,
             memberIds: selectedMemberIds,
-            projectManagerIds,
-            projectManagerNames: pmNames,
             createdAt: new Date().toISOString(),
           };
           return [newTeam, ...prev];
@@ -336,7 +325,6 @@ export default function TeamsPage() {
         setTeamDescription("");
         setTeamHeadId("");
         setTeamHeadName("");
-        setProjectManagerIds([]);
         setSelectedMemberIds([]);
     } finally {
       setSubmitting(false);
@@ -521,29 +509,6 @@ export default function TeamsPage() {
                                 {m.designation ? ` · ${m.designation}` : ""}
                               </p>
                   </div>
-                  {projectManagerIds.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-1">
-                      {projectManagerIds.map((id) => {
-                        const m = members.find((x) => x.userId === id);
-                        if (!m) return null;
-                        return (
-                          <span key={id} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium">
-                            <span className="size-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold shrink-0">
-                              {getInitials(m.name)}
-                            </span>
-                            {m.name}
-                            <button
-                              type="button"
-                              onClick={() => setProjectManagerIds((prev) => prev.filter((p) => p !== id))}
-                              className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
-                            >
-                              <XIcon className="size-3" />
-                            </button>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
                           <div className="flex items-center gap-1">
                             {m.role !== "lead" && (
@@ -725,7 +690,7 @@ export default function TeamsPage() {
                   {editingTeam ? "Edit Team" : "New Team"}
                 </DialogTitle>
                 <DialogDescription>
-                  {editingTeam ? "Update the team details." : "Create a new team with members and leads."}
+                  {editingTeam ? "Update the team details." : "Create a new team with name, description, head, and members."}
                 </DialogDescription>
               </DialogHeader>
 
@@ -756,7 +721,7 @@ export default function TeamsPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="teamHead" className="text-sm">Team Lead</Label>
+                      <Label htmlFor="teamHead" className="text-sm">Team Head</Label>
                       <Select
                         value={teamHeadId}
                         onValueChange={(v) => {
@@ -797,89 +762,6 @@ export default function TeamsPage() {
                     />
                   </div>
                 </div>
-
-                <Separator />
-
-                {/* Section: Project Managers */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                      <UsersIcon className="size-3.5" />
-                      Project Managers
-                      {projectManagerIds.length > 0 && (
-                        <span className="ml-1 text-[10px] font-normal text-primary bg-primary/10 rounded-full px-1.5 py-0.5">
-                          {projectManagerIds.length}
-                        </span>
-                      )}
-                    </h3>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-7 text-xs">
-                          {projectManagerIds.length > 0
-                            ? `${projectManagerIds.length} selected`
-                            : "Select project managers"}
-                          <UsersIcon className="ml-1.5 size-3" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-72 p-2" align="end">
-                        <div className="space-y-1 max-h-56 overflow-y-auto">
-                          {members.length === 0 ? (
-                            <p className="text-sm text-muted-foreground py-2 text-center">No employees available</p>
-                          ) : members.map((m) => {
-                            const checked = projectManagerIds.includes(m.userId);
-                            return (
-                              <label
-                                key={m.userId}
-                                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 cursor-pointer hover:bg-muted text-sm"
-                              >
-                                <Checkbox
-                                  checked={checked}
-                                  onCheckedChange={() => {
-                                    setProjectManagerIds((prev) =>
-                                      checked ? prev.filter((id) => id !== m.userId) : [...prev, m.userId]
-                                    );
-                                  }}
-                                />
-                                <div className="size-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium shrink-0">
-                                  {getInitials(m.name)}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium truncate">{m.name}</p>
-                                  <p className="text-[10px] text-muted-foreground truncate">{m.designation}</p>
-                                </div>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  {projectManagerIds.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {projectManagerIds.map((id) => {
-                        const m = members.find((x) => x.userId === id);
-                        if (!m) return null;
-                        return (
-                          <span key={id} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium">
-                            <span className="size-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold shrink-0">
-                              {getInitials(m.name)}
-                            </span>
-                            {m.name}
-                            <button
-                              type="button"
-                              onClick={() => setProjectManagerIds((prev) => prev.filter((p) => p !== id))}
-                              className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
-                            >
-                              <XIcon className="size-3" />
-                            </button>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                <Separator />
 
                 {/* Section: Team Members */}
                 <div className="space-y-3">
@@ -972,7 +854,7 @@ export default function TeamsPage() {
                             <div className="min-w-0">
                               <p className="text-xs font-medium truncate max-w-[120px] flex items-center gap-1">
                                 {m.name}
-                                {isLead && <CrownIcon className="size-3 text-red-500 shrink-0" />}
+                                {isLead && <CrownIcon className="size-3 text-primary shrink-0" />}
                               </p>
                               <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{m.email}</p>
                             </div>

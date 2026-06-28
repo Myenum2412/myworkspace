@@ -5,6 +5,7 @@ import { AddEmployeePageClient } from "./page-client";
 export const metadata = {
   title: "Add Employee",
 };
+export const dynamic = "force-dynamic";
 
 export default async function AddEmployeePage() {
   let session;

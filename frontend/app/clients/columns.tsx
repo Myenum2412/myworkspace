@@ -195,7 +195,7 @@ export const columns: ColumnDef<Client>[] = [
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="text-red-600 focus:text-red-600"
+              className="text-destructive focus:text-destructive"
               onClick={() => console.log("delete", client.id)}
             >
               <Trash2 className="mr-2 size-4" />

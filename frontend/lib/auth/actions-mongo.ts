@@ -55,7 +55,7 @@ export async function signupActionMongo(formData: FormData) {
     slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${userId.slice(0, 8)}`,
     ownerId: userId,
     plan: "starter",
-    onboardingCompleted: false,
+    onboardingCompleted: true,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -77,7 +77,7 @@ export async function signupActionMongo(formData: FormData) {
   });
 
   await signIn("credentials", { email, password, redirect: false });
-  console.log(`[AUTH] signupActionMongo: ${email} signed up → redirecting to /onboarding`);
-  revalidatePath("/onboarding");
-  redirect("/onboarding");
+  console.log(`[AUTH] signupActionMongo: ${email} signed up → redirecting to /dashboard`);
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }

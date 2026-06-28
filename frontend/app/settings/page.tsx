@@ -15,6 +15,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import {
   Settings2Icon,
   UsersIcon,
@@ -30,6 +31,7 @@ import {
   ListIcon,
   PlusIcon,
   Trash2Icon,
+  ArrowUpRightIcon,
 } from "lucide-react";
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
 
@@ -313,38 +315,26 @@ export default function SettingsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CreditCardIcon className="size-4" />
-                    Current Plan
+                    Plans & Billing
                   </CardTitle>
-                  <CardDescription>Your subscription and billing details</CardDescription>
+                  <CardDescription>Manage your subscription, plan, and storage</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="rounded-lg border p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">{plan} Plan</p>
-                      <p className="text-xs text-muted-foreground">{seats} seats · Next billing: {nextBilling}</p>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">Active</Badge>
-                  </div>
-                  <div className="flex gap-3">
-                    {["Starter", "Professional", "Enterprise"].map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => setPlan(p)}
-                        className={`flex-1 rounded-lg border p-3 text-left transition-colors ${
-                          plan === p ? "border-primary bg-primary/5" : "hover:bg-muted"
-                        }`}
-                      >
-                        <p className="text-sm font-medium">{p}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {p === "Starter" ? "Free" : p === "Professional" ? "$29/mo" : "$99/mo"}
-                        </p>
-                      </button>
-                    ))}
+                <CardContent>
+                  <div className="rounded-lg border bg-card/50 p-6 text-center">
+                    <CreditCardIcon className="size-10 text-muted-foreground mx-auto mb-3" />
+                    <h3 className="text-base font-semibold mb-1">Plan & Storage Management</h3>
+                    <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+                      View your current plan, upgrade or downgrade, and manage storage in the dedicated plans page.
+                    </p>
+                    <Link href="/settings/plans">
+                      <Button variant="default" size="sm">
+                        <ArrowUpRightIcon className="size-4 mr-1" />
+                        Open Plans & Billing
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
-
             </div>
           )}
 

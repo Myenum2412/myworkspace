@@ -184,7 +184,7 @@ export default function EmployeesPageClient({ employees: initialEmployees, user 
 
       {/* View Dialog */}
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setViewEmp(null); } }}>
-        <DialogContent className="p-0 flex flex-col">
+        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col overflow-hidden">
           {viewEmp && <EmployeeDetailedView employee={viewEmp} />}
         </DialogContent>
       </Dialog>

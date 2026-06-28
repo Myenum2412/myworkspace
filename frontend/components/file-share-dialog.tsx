@@ -161,7 +161,7 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
                 <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30">
                   <Input value={shareUrl} readOnly className="border-0 bg-transparent text-sm" />
                   <Button variant="outline" size="sm" onClick={copyToClipboard}>
-                    {copied ? <CheckCircle2Icon className="size-4 text-green-500" /> : <CopyIcon className="size-4" />}
+                    {copied ? <CheckCircle2Icon className="size-4 text-success" /> : <CopyIcon className="size-4" />}
                   </Button>
                 </div>
                 <Button variant="outline" size="sm" className="w-full" onClick={() => setShareUrl("")}>

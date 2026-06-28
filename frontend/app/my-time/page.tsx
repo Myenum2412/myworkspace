@@ -92,7 +92,7 @@ export default function MyTimePage() {
             </div>
             <Popover>
               <PopoverTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-2 text-sm border rounded-md hover:bg-muted transition-colors">
+                <button className="flex items-center gap-2 px-3 py-2 text-sm rounded-md border-border hover:bg-muted transition-colors">
                   <Calendar className="size-4" />
                   {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString() : "Select date"}
                 </button>

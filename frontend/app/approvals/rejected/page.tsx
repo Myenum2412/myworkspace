@@ -62,7 +62,7 @@ export default function RejectedPage() {
     <>
                                 <main className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center gap-2">
-            <XCircleIcon className="size-6 text-red-600" />
+            <XCircleIcon className="size-6 text-destructive" />
             <h1 className="text-2xl font-bold">Rejected</h1>
             <Badge variant="secondary" className="ml-auto">{tasks.length} rejected</Badge>
           </div>

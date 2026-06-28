@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { Task } from "../lib/db/models/Task.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { TeamMember } from "../lib/db/models/TeamMember.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
@@ -22,7 +23,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
-    const { status, priority, assigneeId, sortBy, sortOrder } = req.query;
+    const { status, priority, assigneeId, sortBy, sortOrder, scope } = req.query;
 
     const allowedSortFields = ["createdAt", "dueDate", "priority", "status", "title"];
     const effectiveSortBy = allowedSortFields.includes(sortBy as string) ? (sortBy as string) : "createdAt";
@@ -33,6 +34,19 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     if (status) match.status = status;
     if (priority) match.priority = priority;
     if (assigneeId) match.assigneeId = assigneeId;
+
+    // Staff scope: only show tasks assigned to the user or their teams
+    if (scope === "staff" || scope === "member") {
+      const userTeams = await TeamMember.find({ userId: req.user!.userId }).lean();
+      const teamIds = userTeams.map(t => t.teamId);
+      const orConditions: Record<string, any>[] = [
+        { assigneeId: req.user!.userId },
+      ];
+      if (teamIds.length > 0) {
+        orConditions.push({ teamId: { $in: teamIds } });
+      }
+      match.$or = orConditions;
+    }
     
     console.log(`[TASKS] Match query:`, JSON.stringify(match));
 
@@ -200,6 +214,18 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
     if (!existing) throw new AppError(404, "Task not found");
     if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to modify this task");
 
+    // Staff users can only update tasks assigned to them or their teams
+    const updateScope = req.query.scope as string;
+    if (updateScope === "staff" || updateScope === "member") {
+      const userTeams = await TeamMember.find({ userId: req.user!.userId }).lean();
+      const teamIds = userTeams.map(t => t.teamId);
+      const isOwnTask = existing.assigneeId?.toString() === req.user!.userId;
+      const isTeamTask = existing.teamId && teamIds.includes(existing.teamId);
+      if (!isOwnTask && !isTeamTask) {
+        throw new AppError(403, "Not authorized to modify this task");
+      }
+    }
+
     const updates: Record<string, any> = {};
     if (title !== undefined) updates.title = title;
     if (status !== undefined) updates.status = status;
@@ -234,6 +260,17 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
     const existing = await Task.findById(req.params.id).lean();
     if (!existing) throw new AppError(404, "Task not found");
     if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to delete this task");
+
+    const deleteScope = req.query.scope as string;
+    if (deleteScope === "staff" || deleteScope === "member") {
+      const userTeams = await TeamMember.find({ userId: req.user!.userId }).lean();
+      const teamIds = userTeams.map(t => t.teamId);
+      const isOwnTask = existing.assigneeId?.toString() === req.user!.userId;
+      const isTeamTask = existing.teamId && teamIds.includes(existing.teamId);
+      if (!isOwnTask && !isTeamTask) {
+        throw new AppError(403, "Not authorized to delete this task");
+      }
+    }
 
     await Task.findByIdAndDelete(req.params.id);
     res.json({ success: true });

@@ -11,7 +11,7 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const orgId = await getUserOrgId(session.user.id);
+  const orgId = await getUserOrgId(session.user.id, session.user.email);
   if (!orgId) {
     return NextResponse.json({ error: "No org" }, { status: 404 });
   }

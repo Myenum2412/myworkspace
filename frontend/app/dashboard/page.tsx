@@ -58,12 +58,12 @@ export default function DashboardPage() {
   }, [session]);
 
   const cards = useMemo(() => [
-    { title: "Total Tasks", value: metrics?.totalTasks ?? 0, icon: ListTodo, color: "text-gray-700" },
-    { title: "Completed", value: metrics?.completedTasks ?? 0, icon: CheckCircle2, color: "text-red-600" },
-    { title: "In Progress", value: metrics?.inProgressTasks ?? 0, icon: Clock, color: "text-red-400" },
-    { title: "Overdue", value: metrics?.overdueTasks ?? 0, icon: AlertCircle, color: "text-red-600" },
-    { title: "Active Members", value: metrics?.activeMembers ?? 0, icon: Users, color: "text-gray-700" },
-    { title: "Activity (24h)", value: metrics?.recentActivity ?? 0, icon: Activity, color: "text-red-400" },
+    { title: "Total Tasks", value: metrics?.totalTasks ?? 0, icon: ListTodo, color: "text-muted-foreground" },
+    { title: "Completed", value: metrics?.completedTasks ?? 0, icon: CheckCircle2, color: "text-destructive" },
+    { title: "In Progress", value: metrics?.inProgressTasks ?? 0, icon: Clock, color: "text-destructive" },
+    { title: "Overdue", value: metrics?.overdueTasks ?? 0, icon: AlertCircle, color: "text-destructive" },
+    { title: "Active Members", value: metrics?.activeMembers ?? 0, icon: Users, color: "text-muted-foreground" },
+    { title: "Activity (24h)", value: metrics?.recentActivity ?? 0, icon: Activity, color: "text-destructive" },
   ], [metrics]);
 
   return (

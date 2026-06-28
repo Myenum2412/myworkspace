@@ -26,7 +26,7 @@ declare module "next-auth" {
   }
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
   trustHost: true,
   session: { strategy: "jwt" },
   pages: {
@@ -64,12 +64,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               const org = await db.collection("organizations").findOne({ id: member.orgId });
               token.onboardingCompleted = org?.onboardingCompleted === true;
             } else {
-              token.onboardingCompleted = false;
+              token.onboardingCompleted = true;
             }
           }
         } catch {
           if (token.onboardingCompleted === undefined) {
-            token.onboardingCompleted = false;
+            token.onboardingCompleted = true;
           }
         }
       }
@@ -155,7 +155,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             slug,
             plan: "starter",
             ownerId: userId,
-            onboardingCompleted: false,
+            onboardingCompleted: true,
             createdAt: now,
             updatedAt: now,
           });
@@ -247,7 +247,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const userId = user.id || user._id?.toString();
         const memberDoc = await db.collection("org_members").findOne({ userId });
         const orgId = memberDoc?.orgId?.toString() || "";
-        let onboardingCompleted = false;
+        let onboardingCompleted = true;
         if (orgId) {
           const org = await db.collection("organizations").findOne({ id: orgId });
           onboardingCompleted = org?.onboardingCompleted === true;

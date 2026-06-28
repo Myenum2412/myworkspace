@@ -80,7 +80,7 @@ function ClientLoginInner() {
         <CardContent>
           {newClient && (
             <div className="rounded-lg bg-green-50 border border-green-300 p-3 flex items-start gap-2">
-                <CheckCircle2 className="size-5 text-red-500 shrink-0 mt-0.5" />
+                <CheckCircle2 className="size-5 text-success shrink-0 mt-0.5" />
                 <p className="text-sm text-gray-700">
                 Your client workspace has been created. Use the credentials sent to your email to sign in.
               </p>

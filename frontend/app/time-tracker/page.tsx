@@ -92,7 +92,7 @@ export default function TimeTrackerPage() {
   return (
                                 
         <main className="flex flex-1 flex-col bg-background min-h-screen">
-          <div className="flex items-center bg-white border-b border-gray-200 px-4 py-[10px] shadow-sm w-full relative z-10 h-16">
+          <div className="flex items-center bg-white border-b border-border px-4 py-[10px] shadow-sm w-full relative z-10 h-16">
             <div className="flex-1 h-full flex items-center">
               <input
                 type="text"

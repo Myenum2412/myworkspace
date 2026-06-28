@@ -186,9 +186,9 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, onUpload
                     <p className="text-xs text-muted-foreground">{formatSize(f.file.size)}</p>
                   </div>
                   {f.status === "uploading" && <Loader2Icon className="size-4 animate-spin" />}
-                  {f.status === "done" && <CheckCircle2Icon className="size-4 text-green-500" />}
+                  {f.status === "done" && <CheckCircle2Icon className="size-4 text-success" />}
                   {f.status === "duplicate" && <Badge variant="secondary" className="text-xs">Duplicate</Badge>}
-                  {f.status === "error" && <AlertCircleIcon className="size-4 text-red-500" data-tip={f.error} />}
+                  {f.status === "error" && <AlertCircleIcon className="size-4 text-destructive" data-tip={f.error} />}
                   {!uploading && f.status === "pending" && (
                     <button onClick={() => removeFile(f.id)} className="text-muted-foreground hover:text-foreground">
                       <XIcon className="size-4" />

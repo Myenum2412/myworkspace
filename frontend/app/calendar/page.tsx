@@ -66,7 +66,7 @@ export default function CalendarPage() {
             <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
           ) : (
           <div className="grid gap-4 md:grid-cols-3">
-            <Card className="border-red-200">
+            <Card className="border-border">
               <CardHeader className="pb-2"><CardTitle className="text-sm text-red-600">Overdue</CardTitle></CardHeader>
               <CardContent>
                 {overdue.length === 0 ? <p className="text-sm text-muted-foreground">None</p> : (
@@ -79,7 +79,7 @@ export default function CalendarPage() {
                 )}
               </CardContent>
             </Card>
-            <Card className="border-gray-300">
+            <Card className="border-border">
               <CardHeader className="pb-2"><CardTitle className="text-sm text-red-400">This Week</CardTitle></CardHeader>
               <CardContent>
                 {thisWeek.length === 0 ? <p className="text-sm text-muted-foreground">None</p> : (

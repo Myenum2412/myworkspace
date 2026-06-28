@@ -82,11 +82,11 @@ function formatSize(bytes: number) {
 }
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return <ImageIcon className="size-4 text-red-500" />;
-  if (mimeType.includes("pdf")) return <FileTextIcon className="size-4 text-red-500" />;
-  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return <ArchiveIcon className="size-4 text-orange-400" />;
-  if (mimeType.includes("sheet") || mimeType.includes("excel")) return <FileTextIcon className="size-4 text-red-500" />;
-  if (mimeType.includes("document") || mimeType.includes("word")) return <FileTextIcon className="size-4 text-gray-700" />;
+  if (mimeType.startsWith("image/")) return <ImageIcon className="size-4 text-muted-foreground" />;
+  if (mimeType.includes("pdf")) return <FileTextIcon className="size-4 text-muted-foreground" />;
+  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return <ArchiveIcon className="size-4 text-muted-foreground" />;
+  if (mimeType.includes("sheet") || mimeType.includes("excel")) return <FileTextIcon className="size-4 text-muted-foreground" />;
+  if (mimeType.includes("document") || mimeType.includes("word")) return <FileTextIcon className="size-4 text-muted-foreground" />;
   return <FileIcon className="size-4 text-muted-foreground" />;
 }
 
@@ -245,7 +245,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
                     className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-card hover:bg-accent/50 hover:border-accent-foreground/20 transition-all group cursor-pointer text-center"
                   >
                     <div className="size-20 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                      <FolderIcon className="size-10 text-primary/70 group-hover:text-primary transition-colors" />
+                      <FolderIcon className="size-10 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                     <div className="flex flex-col gap-0.5 min-w-0 w-full">
                       <span className="text-sm font-semibold truncate">{m.name}</span>
