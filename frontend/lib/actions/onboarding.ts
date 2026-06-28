@@ -33,7 +33,9 @@ export interface OnboardingData {
 }
 
 export async function completeOnboarding(data: OnboardingData) {
+  console.log("[ONBOARDING] completeOnboarding called, data:", JSON.stringify(data));
   const session = await auth();
+  console.log("[ONBOARDING] session user:", session?.user?.id, "role:", session?.user?.role);
   if (!session?.user?.id) {
     redirect("/login?error=Please+sign+in+to+complete+onboarding");
   }
@@ -46,6 +48,7 @@ export async function completeOnboarding(data: OnboardingData) {
   }
 
   const member = await db.collection(collections.orgMembers).findOne({ userId });
+  console.log("[ONBOARDING] member lookup:", member?.orgId);
   if (!member) {
     redirect("/login?error=No+organization+found");
   }
@@ -79,10 +82,12 @@ export async function completeOnboarding(data: OnboardingData) {
   if (data.companyDetails.designation) updateFields.designation = data.companyDetails.designation;
   if (data.companyDetails.authorizedPersonMobile) updateFields.authorizedPersonMobile = data.companyDetails.authorizedPersonMobile;
 
+  console.log("[ONBOARDING] updating org:", orgId);
   await db.collection(collections.organizations).updateOne(
     { id: orgId },
     { $set: updateFields }
   );
+  console.log("[ONBOARDING] org updated, redirecting to /dashboard");
 
   const userUpdateFields: Record<string, unknown> = {
     designation: data.companyDetails.designation || "",
@@ -109,5 +114,6 @@ export async function completeOnboarding(data: OnboardingData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/orgmenu/members");
-  redirect("/dashboard");
+
+  return { success: true };
 }

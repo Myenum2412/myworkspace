@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { INDUSTRIES } from "@/lib/industries";
 import {
   MailIcon,
   CalendarIcon,
@@ -848,8 +850,15 @@ export default function ProfilePage() {
                         </Select>
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Industry <span className="text-destructive">*</span></Label>
-                        <Input value={editIndustry} onChange={(e) => setEditIndustry(e.target.value)} placeholder="Technology" className="h-9 text-sm" />
+                        <SearchableSelect
+                          id="edit-industry"
+                          label="Industry"
+                          required
+                          options={INDUSTRIES}
+                          value={editIndustry}
+                          onValueChange={setEditIndustry}
+                          placeholder="Select industry"
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">GST Number</Label>

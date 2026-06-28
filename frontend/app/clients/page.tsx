@@ -29,6 +29,8 @@ import {
   FieldLegend,
 } from "@/components/ui/field";
 import { PlusIcon, Loader2, CheckCircle2, Copy, Eye, EyeOff, RefreshCw, AlertCircle, X } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { INDUSTRIES } from "@/lib/industries";
 import { columns, type Client } from "./columns";
 import { DataTable } from "./data-table";
 
@@ -399,8 +401,14 @@ export default function ClientsPage() {
                       </Select>
                     </Field>
                     <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Industry</Label>
-                      <Input placeholder="Enter industry" value={industry} onChange={(e) => setIndustry(e.target.value)} />
+                      <SearchableSelect
+                        id="client-industry"
+                        label="Industry"
+                        options={INDUSTRIES}
+                        value={industry}
+                        onValueChange={setIndustry}
+                        placeholder="Select industry"
+                      />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Website URL</Label>

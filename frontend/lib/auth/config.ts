@@ -27,6 +27,7 @@ declare module "next-auth" {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -36,7 +37,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: string }).role;
+        token.role = (user as { role?: string }).role || "workspace";
         token.permissions = (user as { permissions?: string[] }).permissions;
         token.orgId = (user as { orgId?: string }).orgId;
         token.onboardingCompleted = (user as { onboardingCompleted?: boolean }).onboardingCompleted;
@@ -46,6 +47,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.id) {
         try {
           const { db } = await import("@/lib/db");
+          const dbUser = await db.collection("users").findOne({ id: token.id });
+          if (dbUser?.role && dbUser.role !== "USER") {
+            token.role = dbUser.role;
+          } else if (!token.role || token.role === "USER") {
+            token.role = "workspace";
+          }
           const orgId = token.orgId as string | undefined;
           if (orgId) {
             const org = await db.collection("organizations").findOne({ id: orgId });
@@ -53,6 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           } else {
             const member = await db.collection("org_members").findOne({ userId: token.id });
             if (member) {
+              token.orgId = member.orgId?.toString() || "";
               const org = await db.collection("organizations").findOne({ id: member.orgId });
               token.onboardingCompleted = org?.onboardingCompleted === true;
             } else {
@@ -100,21 +108,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const userId = uuid();
           const now = new Date();
           const userName = user.name || user.email.split("@")[0];
+          const { getNextSequence } = await import("@/lib/db/counter");
 
-          // Create user
-          await db.collection("users").insertOne({
-            id: userId,
-            email: user.email,
-            name: userName,
-            image: user.image || null,
-            provider: account.provider,
-            providerAccountId: account.providerAccountId,
-            role: "USER",
-            status: "online",
-            lastLogin: now,
-            createdAt: now,
-            updatedAt: now,
-          });
+          let userNumber: number;
+          let retries = 0;
+          // eslint-disable-next-line no-constant-condition
+          while (true) {
+            userNumber = await getNextSequence("userNumber");
+            try {
+              await db.collection("users").insertOne({
+                id: userId,
+                userNumber,
+                email: user.email,
+                name: userName,
+                image: user.image || null,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                role: "workspace",
+                status: "online",
+                lastLogin: now,
+                createdAt: now,
+                updatedAt: now,
+              });
+              break;
+            } catch (insertErr: unknown) {
+              const mongoErr = insertErr as { code?: number };
+              if (mongoErr.code === 11000 && retries < 5) {
+                retries++;
+                continue;
+              }
+              throw insertErr;
+            }
+          }
 
           // Auto-create organization for the user
           const newOrgId = uuid();
@@ -148,7 +173,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Update user object with id for the token
           user.id = userId;
           (user as { orgId?: string }).orgId = newOrgId;
-          (user as { role?: string }).role = "USER";
+          (user as { role?: string }).role = "workspace";
           return true;
         }
 
@@ -211,10 +236,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
         const { db } = await import("@/lib/db");
+        console.log("[AUTH authorize] looking up", email);
         const user = await db.collection("users").findOne({ email });
+        console.log("[AUTH authorize] user found:", !!user, "has password:", !!user?.password);
         if (!user) return null;
         if (!user.password) return null;
         const valid = await compare(password, user.password);
+        console.log("[AUTH authorize] password valid:", valid);
         if (!valid) return null;
         const userId = user.id || user._id?.toString();
         const memberDoc = await db.collection("org_members").findOne({ userId });

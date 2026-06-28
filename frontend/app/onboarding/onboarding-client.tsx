@@ -2,23 +2,25 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { PricingCards } from "@/components/pricing-cards";
 import { CompanyDetailsForm, type CompanyDetails } from "@/components/company-details-form";
 import { completeOnboarding } from "@/lib/actions/onboarding";
-import { Check, CreditCard, Building2, PartyPopper } from "lucide-react";
+import { Check, CreditCard, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const steps = [
   { id: 1, label: "Choose Plan", icon: CreditCard },
   { id: 2, label: "Company Details", icon: Building2 },
-  { id: 3, label: "All Done", icon: PartyPopper },
 ];
 
 export function OnboardingClient() {
   const router = useRouter();
+  const { update } = useSession();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState<string>("pro");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSelectPlan = (plan: string) => {
     setSelectedPlan(plan);
@@ -30,20 +32,19 @@ export function OnboardingClient() {
 
   const handleCompanyDetailsSubmit = async (details: CompanyDetails) => {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       await completeOnboarding({
         plan: selectedPlan,
         companyDetails: details,
       });
-      setCurrentStep(3);
+      await update();
+      router.push("/dashboard");
     } catch (error) {
-      console.error("Onboarding failed:", error);
+      console.error("[ONBOARDING] client error:", error);
+      setSubmitError(error instanceof Error ? error.message : "Failed to save. Try again.");
       setIsSubmitting(false);
     }
-  };
-
-  const handleGoToDashboard = () => {
-    router.push("/dashboard");
   };
 
   return (
@@ -122,32 +123,17 @@ export function OnboardingClient() {
               </p>
             </div>
 
+            {submitError && (
+              <div className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+                {submitError}
+              </div>
+            )}
+
             <CompanyDetailsForm
               onSubmit={handleCompanyDetailsSubmit}
               onBack={() => setCurrentStep(1)}
               isSubmitting={isSubmitting}
             />
-          </div>
-        )}
-
-        {currentStep === 3 && (
-          <div className="flex flex-col items-center justify-center py-16 space-y-6 text-center">
-            <div className="flex size-16 items-center justify-center rounded-full bg-primary/10">
-              <PartyPopper className="size-8 text-primary" />
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">You&apos;re All Set!</h1>
-              <p className="text-muted-foreground max-w-md">
-                Your workspace is ready. Start managing your projects, tasks, and team.
-              </p>
-            </div>
-            <button
-              onClick={handleGoToDashboard}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 shadow-md hover:shadow-lg"
-            >
-              Go to Dashboard
-              <Check className="size-4" />
-            </button>
           </div>
         )}
       </div>

@@ -1,67 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, Sparkles, Zap, Building2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const plans = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: "$29",
-    period: "/month",
-    description: "Perfect for small teams getting started with project management.",
-    icon: Zap,
-    features: [
-      "Up to 10 team members",
-      "5 projects",
-      "Basic time tracking",
-      "Task management",
-      "Email notifications",
-      "7-day history",
-    ],
-    popular: false,
-  },
-  {
-    id: "pro",
-    name: "Growth",
-    price: "$79",
-    period: "/month",
-    description: "For growing teams that need advanced collaboration tools.",
-    icon: Sparkles,
-    features: [
-      "Up to 50 team members",
-      "Unlimited projects",
-      "Advanced time tracking",
-      "Custom workflows",
-      "Analytics & reports",
-      "Priority support",
-      "Integrations",
-      "90-day history",
-    ],
-    popular: true,
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "$199",
-    period: "/month",
-    description: "For organizations requiring enterprise-grade security and control.",
-    icon: Building2,
-    features: [
-      "Unlimited team members",
-      "Unlimited projects",
-      "Dedicated account manager",
-      "SSO & SAML",
-      "Audit logs",
-      "Custom integrations",
-      "SLA guarantee",
-      "Unlimited history",
-    ],
-    popular: false,
-  },
-];
+import { priceTiers, getPrice, type Currency } from "@/lib/currency";
+import { useUserCountry, isINR } from "@/hooks/use-user-country";
 
 interface PricingCardsProps {
   selectedPlan?: string;
@@ -69,11 +13,15 @@ interface PricingCardsProps {
 }
 
 export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) {
+  const { country, loading } = useUserCountry();
+  const currency: Currency = isINR(country) ? "INR" : "USD";
+
   return (
     <div className="grid gap-6 lg:grid-cols-3 w-full max-w-5xl mx-auto">
-      {plans.map((plan) => {
-        const Icon = plan.icon;
+      {priceTiers.map((plan) => {
+        const Icon = plan.id === "starter" ? Zap : plan.id === "growth" ? Sparkles : Building2;
         const isSelected = selectedPlan === plan.id;
+        const price = getPrice(plan, currency);
         return (
           <div
             key={plan.id}
@@ -109,8 +57,8 @@ export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) 
 
             <div className="mb-4">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold tracking-tight">{plan.price}</span>
-                <span className="text-sm text-muted-foreground">{plan.period}</span>
+                <span className="text-4xl font-bold tracking-tight">{price}</span>
+                <span className="text-sm text-muted-foreground">{plan.id === "enterprise" ? "" : plan.period}</span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
             </div>

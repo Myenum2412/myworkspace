@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { INDUSTRIES } from "@/lib/industries";
 import { ArrowRight, ArrowLeft, Building2, MapPin, User, Phone, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,19 +47,6 @@ const businessTypes = [
   "Private Limited",
   "Public Limited",
   "One Person Company",
-  "Other",
-];
-
-const industries = [
-  "Technology",
-  "Finance",
-  "Healthcare",
-  "Education",
-  "Manufacturing",
-  "Retail",
-  "Real Estate",
-  "Consulting",
-  "Media & Entertainment",
   "Other",
 ];
 
@@ -107,18 +96,31 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
     }
   };
 
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRe = /^[+\d][\d\s()-]{6,}$/;
+  const pincodeRe = /^\d{4,6}$/;
+  const panRe = /^[A-Z]{5}\d{4}[A-Z]$/;
+  const gstRe = /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d][Z][A-Z\d]$/;
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!form.businessType) newErrors.businessType = "Required";
     if (!form.industry) newErrors.industry = "Required";
     if (!form.companyEmail) newErrors.companyEmail = "Required";
+    else if (!emailRe.test(form.companyEmail)) newErrors.companyEmail = "Invalid email";
     if (!form.mobileNumber) newErrors.mobileNumber = "Required";
+    else if (!phoneRe.test(form.mobileNumber)) newErrors.mobileNumber = "Invalid phone";
     if (!form.addressLine1) newErrors.addressLine1 = "Required";
     if (!form.city) newErrors.city = "Required";
     if (!form.state) newErrors.state = "Required";
     if (!form.pincode) newErrors.pincode = "Required";
+    else if (!pincodeRe.test(form.pincode)) newErrors.pincode = "Invalid pincode";
     if (!form.authorizedPersonName) newErrors.authorizedPersonName = "Required";
     if (!form.authorizedPersonEmail) newErrors.authorizedPersonEmail = "Required";
+    else if (!emailRe.test(form.authorizedPersonEmail)) newErrors.authorizedPersonEmail = "Invalid email";
+    if (form.authorizedPersonMobile && !phoneRe.test(form.authorizedPersonMobile)) newErrors.authorizedPersonMobile = "Invalid phone";
+    if (form.panNumber && !panRe.test(form.panNumber)) newErrors.panNumber = "Invalid PAN";
+    if (form.gstNumber && !gstRe.test(form.gstNumber)) newErrors.gstNumber = "Invalid GST";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -132,6 +134,11 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-3xl mx-auto space-y-8">
+      {Object.keys(errors).length > 0 && (
+        <div className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+          Fix {Object.keys(errors).length} field{Object.keys(errors).length === 1 ? "" : "s"} above.
+        </div>
+      )}
       <div className="space-y-6">
         <div className="flex items-center gap-2 text-lg font-semibold">
           <Building2 className="size-5 text-primary" />
@@ -150,19 +157,19 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
                 ))}
               </SelectContent>
             </Select>
+            {errors.businessType && <p className="text-xs text-destructive mt-1">{errors.businessType}</p>}
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="industry">Industry *</Label>
-            <Select value={form.industry} onValueChange={(v) => update("industry", v)}>
-              <SelectTrigger className={cn(errors.industry && "border-destructive")}>
-                <SelectValue placeholder="Select industry" />
-              </SelectTrigger>
-              <SelectContent>
-                {industries.map((i) => (
-                  <SelectItem key={i} value={i}>{i}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+  <div className="space-y-1.5">
+            <SearchableSelect
+              id="industry"
+              label="Industry"
+              required
+              options={INDUSTRIES}
+              value={form.industry}
+              onValueChange={(v) => update("industry", v)}
+              placeholder="Select industry"
+              error={errors.industry}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="gstNumber">GST Number</Label>
@@ -171,6 +178,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
           <div className="space-y-1.5">
             <Label htmlFor="panNumber">PAN Number</Label>
             <Input id="panNumber" value={form.panNumber} onChange={(e) => update("panNumber", e.target.value.toUpperCase())} placeholder="AAAAA0000A" />
+            {errors.panNumber && <p className="text-xs text-destructive mt-1">{errors.panNumber}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cinNumber">CIN Number</Label>
@@ -192,10 +200,12 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
           <div className="space-y-1.5">
             <Label htmlFor="companyEmail">Company Email *</Label>
             <Input id="companyEmail" type="email" value={form.companyEmail} onChange={(e) => update("companyEmail", e.target.value)} placeholder="info@company.com" className={cn(errors.companyEmail && "border-destructive")} />
+            {errors.companyEmail && <p className="text-xs text-destructive mt-1">{errors.companyEmail}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="mobileNumber">Mobile Number *</Label>
             <Input id="mobileNumber" value={form.mobileNumber} onChange={(e) => update("mobileNumber", e.target.value)} placeholder="+91 98765 43210" className={cn(errors.mobileNumber && "border-destructive")} />
+            {errors.mobileNumber && <p className="text-xs text-destructive mt-1">{errors.mobileNumber}</p>}
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <Label htmlFor="website">Website</Label>
@@ -216,6 +226,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
           <div className="space-y-1.5 md:col-span-2">
             <Label htmlFor="addressLine1">Address Line 1 *</Label>
             <Input id="addressLine1" value={form.addressLine1} onChange={(e) => update("addressLine1", e.target.value)} placeholder="Street address" className={cn(errors.addressLine1 && "border-destructive")} />
+            {errors.addressLine1 && <p className="text-xs text-destructive mt-1">{errors.addressLine1}</p>}
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <Label htmlFor="addressLine2">Address Line 2</Label>
@@ -224,6 +235,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
           <div className="space-y-1.5">
             <Label htmlFor="city">City *</Label>
             <Input id="city" value={form.city} onChange={(e) => update("city", e.target.value)} placeholder="City" className={cn(errors.city && "border-destructive")} />
+            {errors.city && <p className="text-xs text-destructive mt-1">{errors.city}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="state">State *</Label>
@@ -237,10 +249,12 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
                 ))}
               </SelectContent>
             </Select>
+            {errors.state && <p className="text-xs text-destructive mt-1">{errors.state}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="pincode">Pincode *</Label>
             <Input id="pincode" value={form.pincode} onChange={(e) => update("pincode", e.target.value)} placeholder="000000" className={cn(errors.pincode && "border-destructive")} />
+            {errors.pincode && <p className="text-xs text-destructive mt-1">{errors.pincode}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="country">Country</Label>
@@ -258,6 +272,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
           <div className="space-y-1.5">
             <Label htmlFor="authorizedPersonName">Name *</Label>
             <Input id="authorizedPersonName" value={form.authorizedPersonName} onChange={(e) => update("authorizedPersonName", e.target.value)} placeholder="Full name" className={cn(errors.authorizedPersonName && "border-destructive")} />
+            {errors.authorizedPersonName && <p className="text-xs text-destructive mt-1">{errors.authorizedPersonName}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="designation">Designation</Label>
@@ -266,10 +281,12 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
           <div className="space-y-1.5">
             <Label htmlFor="authorizedPersonEmail">Email *</Label>
             <Input id="authorizedPersonEmail" type="email" value={form.authorizedPersonEmail} onChange={(e) => update("authorizedPersonEmail", e.target.value)} placeholder="person@company.com" className={cn(errors.authorizedPersonEmail && "border-destructive")} />
+            {errors.authorizedPersonEmail && <p className="text-xs text-destructive mt-1">{errors.authorizedPersonEmail}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="authorizedPersonMobile">Mobile</Label>
             <Input id="authorizedPersonMobile" value={form.authorizedPersonMobile} onChange={(e) => update("authorizedPersonMobile", e.target.value)} placeholder="+91 98765 43210" />
+            {errors.authorizedPersonMobile && <p className="text-xs text-destructive mt-1">{errors.authorizedPersonMobile}</p>}
           </div>
         </div>
       </div>
