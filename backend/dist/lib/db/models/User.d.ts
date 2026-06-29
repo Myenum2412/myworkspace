@@ -25,10 +25,6 @@ export interface IUser extends Document {
     state?: string;
     country?: string;
     zipCode?: string;
-    linkedin?: string;
-    github?: string;
-    twitter?: string;
-    website?: string;
     bannerUrl?: string;
     resetToken?: string;
     resetTokenExpires?: Date;

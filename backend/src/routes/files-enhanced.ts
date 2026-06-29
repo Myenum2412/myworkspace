@@ -90,6 +90,56 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   res.json({ success: true, data: result, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
 });
 
+// Shared-file listing (org-scoped). Kept from the legacy files router; merged
+// here so /api/files has one canonical implementation.
+router.get("/shared", async (req: AuthRequest, res: Response) => {
+  const orgId = (req.query.orgId as string) || "";
+  if (!orgId) { res.json({ success: true, data: [] }); return; }
+  const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).lean();
+
+  const fileIds = [...new Set(shares.map(s => s.fileId))];
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
+  const fileMap = new Map(files.map(f => [f.id, f]));
+
+  const userIds = [...new Set(files.map(f => f.uploaderId))];
+  const { User } = await import("../lib/db/models/User.js");
+  const users = await User.find({ _id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+
+  const result = shares.map(share => {
+    const file = fileMap.get(share.fileId);
+    return {
+      ...share,
+      file: file ? { originalName: file.originalName, mimeType: file.mimeType, size: file.size } : undefined,
+      uploaderName: file ? userMap.get(file.uploaderId) || "Unknown" : "Unknown",
+    };
+  });
+
+  res.json({ success: true, data: result });
+});
+
+// Recycle bin — org-scoped soft-deleted files.
+router.get("/recycle-bin", async (req: AuthRequest, res: Response) => {
+  const orgId = (req.query.orgId as string) || "";
+  if (!orgId) { res.json({ success: true, data: [] }); return; }
+  const files = await FileAttachment.find({ orgId, deletedAt: { $ne: null } })
+    .select("id originalName mimeType size createdAt uploaderId deletedAt")
+    .sort({ deletedAt: -1 })
+    .lean();
+
+  const userIds = [...new Set(files.map(f => f.uploaderId))];
+  const { User } = await import("../lib/db/models/User.js");
+  const users = await User.find({ _id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+
+  const result = files.map(f => ({
+    ...f,
+    uploaderName: userMap.get(f.uploaderId) || "Unknown",
+  }));
+
+  res.json({ success: true, data: result });
+});
+
 router.get("/recent", async (req: AuthRequest, res: Response) => {
   const orgId = req.query.orgId as string;
   if (!orgId) throw new AppError(400, "orgId is required");
@@ -137,6 +187,49 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
       mimeTypeBreakdown,
     },
   });
+});
+
+// Inline stream/preview of a file (public-object fallback used by the
+// download button). Org-membership enforced.
+router.get("/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id }).lean();
+  if (!file) throw new AppError(404, "File not found");
+  if (file.deletedAt) throw new AppError(410, "File has been deleted");
+
+  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: file.orgId }).lean();
+  if (!membership) throw new AppError(403, "Not authorized to access this file");
+
+  const provider = getStorageProvider();
+  const buf = await provider.get(file.storagePath);
+  if (!buf) throw new AppError(404, "File not found in storage");
+  res.set("Content-Type", file.mimeType || "application/octet-stream");
+  res.set("Content-Disposition", `inline; filename="${file.originalName}"`);
+  res.send(buf);
+});
+
+// Share a file with a specific org user (org-scoped).
+router.post("/:id/share", async (req: AuthRequest, res: Response) => {
+  const { sharedWithUserId, orgId } = req.body;
+  if (!orgId) throw new AppError(400, "orgId is required");
+
+  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId }).lean();
+  if (!membership) throw new AppError(403, "Not a member of this organization");
+
+  const shareId = uuid();
+  await FileShare.create({
+    id: shareId,
+    fileId: req.params.id,
+    sharedByUserId: req.user!.userId,
+    sharedWithUserId: sharedWithUserId || null,
+    orgId,
+  });
+  res.json({ success: true });
+});
+
+router.delete("/:id/share", async (req: AuthRequest, res: Response) => {
+  const { id } = req.body;
+  await FileShare.deleteOne({ id });
+  res.json({ success: true });
 });
 
 router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: Response) => {
@@ -199,7 +292,7 @@ router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: 
         description: `File "${file.originalname}" uploaded (${(file.size / 1024).toFixed(1)} KB)`,
       });
 
-      socketIOManager.emitToOrg(orgId, "file:uploaded", { fileId, orgId, folderId: folderId || null });
+      socketIOManager.emitToOrg(orgId, "file:uploaded", { fileId, orgId, folderId: folderId || null, clientId: clientId || null });
       results.push({ originalName: file.originalname, fileId });
     } catch (err: any) {
       results.push({ originalName: file.originalname, fileId: "", error: err.message });

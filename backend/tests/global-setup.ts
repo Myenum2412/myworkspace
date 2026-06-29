@@ -8,7 +8,11 @@ let mongod: MongoMemoryServer;
 
 export default async function globalSetup(): Promise<void> {
   mongod = await MongoMemoryServer.create({ instance: { dbName: "jesttest" } });
-  process.env.__TEST_MONGODB_URI__ = mongod.getUri();
+  const uri = mongod.getUri();
+  process.env.__TEST_MONGODB_URI__ = uri;
+  // `env.ts` validates MONGODB_URI at import time (used by app.ts), so the
+  // canonical name must also be present for app-importing suites.
+  process.env.MONGODB_URI = uri;
   process.env.NODE_ENV = "test";
   process.env.JWT_SECRET = "test-secret";
   process.env.PERF_LOG = "0";

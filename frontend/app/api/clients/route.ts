@@ -42,7 +42,7 @@ export async function GET() {
 
     const orgId = await ensureUserOrg(session.user.id, session.user.email);
 
-    const clients = await (await db.collection(collections.clients).find({ orgId }).sort({ createdAt: -1 }).toArray()) as Record<string, unknown>[];
+    const clients = await db.collection(collections.clients).find({ orgId }, { sort: { createdAt: -1 } }).toArray() as Record<string, unknown>[];
     const clientUsers = await (await db.collection(collections.clientUsers).find({ orgId }).toArray()) as Record<string, unknown>[];
     const userMap = new Map(clientUsers.map((u) => [u.clientId, u]));
     const enriched = clients.map((c) => ({

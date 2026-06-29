@@ -177,7 +177,18 @@ export const columns: ColumnDef<Client>[] = [
     },
     enableSorting: false,
   },
-  {
+];
+
+/**
+ * Actions cell factory — defined here so the dropdown markup lives in one
+ * place, but the handlers come from the page (which owns `setClients` and the
+ * edit modal). Keeps the data-table dependency-injection free.
+ */
+export function makeActionsCell(
+  onEdit: (client: Client) => void,
+  onDelete: (client: Client) => void,
+): ColumnDef<Client> {
+  return {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
@@ -190,13 +201,13 @@ export const columns: ColumnDef<Client>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => console.log("edit", client.id)}>
+            <DropdownMenuItem onSelect={() => onEdit(client)}>
               <Pencil className="mr-2 size-4" />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
-              onClick={() => console.log("delete", client.id)}
+              onSelect={() => onDelete(client)}
             >
               <Trash2 className="mr-2 size-4" />
               Delete
@@ -207,5 +218,5 @@ export const columns: ColumnDef<Client>[] = [
     },
     enableSorting: false,
     enableHiding: false,
-  },
-];
+  };
+}

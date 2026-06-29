@@ -24,6 +24,7 @@ import {
 import { FileUploadDialog } from "@/components/file-upload-dialog";
 import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import { FileShareDialog } from "@/components/file-share-dialog";
+import { getSocketIO } from "@/lib/socketio-client";
 
 type FileItem = {
   id: string;
@@ -165,36 +166,38 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Realtime refresh — backend emits `client:created`, `client:updated`,
-  // `folder:updated`, etc. via socket.io. We listen on the org room and
-  // refetch on any relevant event. A hard refresh is simplest and safe here
-  // because the data volume per org is bounded.
+  // Realtime refresh — backend emits `folder:*`, `file:*`, `client:*` to the
+  // org room over socket.io. Use the app's shared socket client (cookie-aware
+  // NextAuth bridge). A full refetch is simplest and safe: per-org data volume
+  // is bounded, and it guarantees the grid + the per-client explorer stay
+  // consistent after uploads performed in another view.
   useEffect(() => {
     let cancelled = false;
-    let ws: WebSocket | null = null;
+    const refresh = () => { if (!cancelled) fetchData(); };
+    let sock: ReturnType<typeof getSocketIO> | null = null;
     try {
-      const proto = window.location.protocol === "https:" ? "wss" : "ws";
-      const host = process.env.NEXT_PUBLIC_API_URL
-        ? new URL(process.env.NEXT_PUBLIC_API_URL).host
-        : window.location.host;
-      ws = new WebSocket(`${proto}://${host}`);
-      ws.onopen = () => {
-        ws?.send(JSON.stringify({ type: "subscribe", orgId }));
-      };
-      ws.onmessage = (evt) => {
-        try {
-          const msg = JSON.parse(evt.data);
-          if (msg?.type && String(msg.type).startsWith("folder") || String(msg.type).startsWith("file") || String(msg.type).startsWith("client")) {
-            if (!cancelled) fetchData();
-          }
-        } catch {}
-      };
+      sock = getSocketIO();
+      sock.on("folder:created", refresh);
+      sock.on("folder:updated", refresh);
+      sock.on("folder:deleted", refresh);
+      sock.on("file:uploaded", refresh);
+      sock.on("file:updated", refresh);
+      sock.on("file:deleted", refresh);
+      sock.on("client:created", refresh);
     } catch {}
     return () => {
       cancelled = true;
-      try { ws?.close(); } catch {}
+      if (sock) {
+        sock.off("folder:created", refresh);
+        sock.off("folder:updated", refresh);
+        sock.off("folder:deleted", refresh);
+        sock.off("file:uploaded", refresh);
+        sock.off("file:updated", refresh);
+        sock.off("file:deleted", refresh);
+        sock.off("client:created", refresh);
+      }
     };
-  }, [orgId, fetchData]);
+  }, [fetchData]);
 
   const navigateToFolder = useCallback(async (folderId: string | null, folderName?: string) => {
     setCurrentFolderId(folderId);
@@ -219,6 +222,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
       const res = await fetch("/api/folders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ orgId, parentId: currentFolderId, name: newFolderName.trim() }),
       });
       if (res.ok) {
@@ -231,7 +235,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
 
   const fetchClients = useCallback(async () => {
     try {
-      const res = await fetch("/api/clients", { credentials: "include" });
+      const res = await fetch(`/api/clients?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" });
       const d = await res.json();
       const arr: Record<string, unknown>[] = Array.isArray(d) ? d : (d.data || []);
       setClients(arr.map((c) => ({ id: String(c.id), name: String(c.name || c.id) })));
@@ -248,6 +252,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
       const clientFolderRes = await fetch("/api/folders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ orgId, parentId: null, name: clientName, clientId }),
       });
       if (!clientFolderRes.ok) {
@@ -260,6 +265,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         await fetch("/api/folders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ orgId, parentId: clientFolderId, name: sub, clientId }),
         });
       }
@@ -278,6 +284,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
       const res = await fetch(endpoint, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ name: renameValue.trim() }),
       });
       if (res.ok) {
@@ -291,7 +298,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
   const deleteItem = async (id: string, type: "file" | "folder") => {
     try {
       const endpoint = type === "file" ? `/api/files/${id}` : `/api/folders/${id}`;
-      await fetch(endpoint, { method: "DELETE" });
+      await fetch(endpoint, { method: "DELETE", credentials: "include" });
       fetchData();
     } catch {}
   };
@@ -333,6 +340,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
     try {
       await fetch("/api/files/bulk-delete", {
         method: "POST", headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ fileIds: Array.from(selectedIds) }),
       });
       setSelectedIds(new Set());
@@ -352,16 +360,8 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
   const fileTypeCount = (type: string) =>
     files.filter(f => f.mimeType?.startsWith(type)).length;
 
-  const isRoot = currentFolderId === null;
-  // When a clientId is set, show only that client's folders. Otherwise at
-  // root, show org-level folders (no clientId) so the top view isn't a flat
-  // list of every client's folders.
-  const displayFolders = clientId
-    ? folders
-    : isRoot
-      ? folders.filter(f => !f.clientId)
-      : folders;
-  const displayFiles = isRoot && !clientId ? [] : files;
+  const displayFolders = folders;
+  const displayFiles = files;
 
   return (
     <div className="space-y-4">

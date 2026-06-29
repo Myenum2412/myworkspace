@@ -31,9 +31,17 @@ import {
 import { PlusIcon, Loader2, CheckCircle2, Copy, Eye, EyeOff, RefreshCw, AlertCircle, X } from "lucide-react";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { INDUSTRIES } from "@/lib/industries";
-import { columns, type Client } from "./columns";
+import { columns, makeActionsCell, type Client } from "./columns";
 import { DataTable } from "./data-table";
 import { getSocketIO } from "@/lib/socketio-client";
+import {
+  ClientValues,
+  EMPTY_VALUES,
+  valuesFromClient,
+  payloadFromValues,
+  CreateClientFormFields,
+  EditClientFormFields,
+} from "./client-form-fields";
 
 type Credentials = {
   username: string;
@@ -185,6 +193,19 @@ export default function ClientsPage() {
   const [assignedProjectManager, setAssignedProjectManager] = useState("");
   const [members, setMembers] = useState<string[]>([]);
 
+  // Edit
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editValues, setEditValues] = useState<ClientValues>(EMPTY_VALUES);
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+  const [editSaving, setEditSaving] = useState(false);
+  const [editApiError, setEditApiError] = useState("");
+  const setEdit = (key: string, value: string) =>
+    setEditValues((prev) => ({ ...prev, [key]: value }));
+
+  // Delete
+  const [deletingClient, setDeletingClient] = useState<Client | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
   useEffect(() => {
     fetch("/api/user/me", { credentials: "include" })
       .then((r) => r.json())
@@ -283,6 +304,63 @@ export default function ClientsPage() {
     if (!open) resetForm();
   }
 
+  function handleStartEdit(client: Client) {
+    setEditingClient(client);
+    setEditValues(valuesFromClient(client as unknown as Record<string, unknown>));
+    setEditErrors({});
+    setEditApiError("");
+  }
+
+  function handleCloseEdit(open: boolean) {
+    setEditingClient(open ? editingClient : null);
+    if (!open) {
+      setEditValues(EMPTY_VALUES);
+      setEditErrors({});
+      setEditApiError("");
+    }
+  }
+
+  async function handleEditSubmit() {
+    if (!editingClient) return;
+    setEditSaving(true);
+    setEditApiError("");
+    setEditErrors({});
+    const res = await fetch(`/api/clients/${encodeURIComponent(editingClient.id)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payloadFromValues(editValues)),
+    });
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) {
+      const updated = result.data || result;
+      setClients((prev) => prev.map((c) => (c.id === editingClient.id ? { ...c, ...updated } : c)));
+      handleCloseEdit(false);
+    } else {
+      if (result.fields) setEditErrors(result.fields);
+      setEditApiError(result.error || "Failed to update client");
+    }
+    setEditSaving(false);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deletingClient) return;
+    setDeleteError("");
+    const res = await fetch(`/api/clients/${encodeURIComponent(deletingClient.id)}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (res.ok) {
+      const result = await res.json().catch(() => ({}));
+      const deletedId = result?.id || deletingClient.id;
+      setClients((prev) => prev.filter((c) => c.id !== deletedId));
+      setDeletingClient(null);
+    } else {
+      const result = await res.json().catch(() => ({}));
+      setDeleteError(result.error || "Failed to delete client");
+    }
+  }
+
   function copyToClipboard(text: string, label: string) {
     navigator.clipboard.writeText(text);
     setCopied(label);
@@ -356,7 +434,10 @@ export default function ClientsPage() {
             <CardTitle className="text-base">Client List</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <DataTable columns={columns} data={clients} />
+            <DataTable
+              columns={[...columns, makeActionsCell(handleStartEdit, (c) => { setDeletingClient(c); setDeleteError(""); })]}
+              data={clients}
+            />
           </CardContent>
         </Card>
       </main>
@@ -370,27 +451,29 @@ export default function ClientsPage() {
             </DialogDescription>
           </DialogHeader>
 
+          {apiError && (
+            <div className="px-6">
+              <div className="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 p-4">
+                <AlertCircle className="size-5 text-destructive shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-800">{apiError}</p>
+                  {Object.keys(formErrors).length > 0 && (
+                    <ul className="mt-1 text-xs text-red-600 list-disc list-inside">
+                      {Object.entries(formErrors).map(([key, msg]) => (
+                        <li key={key}>{key}: {msg}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <button onClick={() => setApiError("")} className="shrink-0 text-destructive hover:text-destructive">
+                  <X className="size-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
             <ScrollArea className="h-full">
-              <div className="space-y-8 py-2">
-                {apiError && (
-                  <div className="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 p-4">
-                    <AlertCircle className="size-5 text-destructive shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-red-800">{apiError}</p>
-                      {Object.keys(formErrors).length > 0 && (
-                        <ul className="mt-1 text-xs text-red-600 list-disc list-inside">
-                          {Object.entries(formErrors).map(([key, msg]) => (
-                            <li key={key}>{key}: {msg}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                    <button onClick={() => setApiError("")} className="shrink-0 text-destructive hover:text-destructive">
-                      <X className="size-4" />
-                    </button>
-                  </div>
-                )}
 
                 <FieldSet>
                   <FieldLegend>Client Information</FieldLegend>
@@ -774,7 +857,6 @@ export default function ClientsPage() {
                     </Field>
                   </div>
                 </FieldSet>
-              </div>
             </ScrollArea>
           </div>
 
@@ -858,6 +940,74 @@ export default function ClientsPage() {
 
           <DialogFooter>
             <Button onClick={() => setShowSuccess(false)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit client */}
+      <Dialog open={!!editingClient} onOpenChange={handleCloseEdit}>
+        <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
+          <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
+            <DialogTitle>Edit Client{editingClient ? ` — ${editingClient.name}` : ""}</DialogTitle>
+            <DialogDescription>Update the details below. Changes are saved immediately.</DialogDescription>
+          </DialogHeader>
+
+          {editApiError && (
+            <div className="px-6">
+              <div className="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 p-4">
+                <AlertCircle className="size-5 text-destructive shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-800">{editApiError}</p>
+                  {Object.keys(editErrors).length > 0 && (
+                    <ul className="mt-1 text-xs text-red-600 list-disc list-inside">
+                      {Object.entries(editErrors).map(([key, msg]) => (
+                        <li key={key}>{key}: {msg}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <button onClick={() => setEditApiError("")} className="shrink-0 text-destructive hover:text-destructive">
+                  <X className="size-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
+            <ScrollArea className="h-full">
+              <EditClientFormFields v={editValues} set={setEdit} errors={editErrors} members={members} />
+            </ScrollArea>
+          </div>
+
+          <DialogFooter className="flex items-center justify-between px-6 py-4 border-t shrink-0">
+            <Button variant="outline" onClick={() => handleCloseEdit(false)}>Cancel</Button>
+            <Button disabled={editSaving} onClick={handleEditSubmit}>
+              {editSaving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</> : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirm */}
+      <Dialog open={!!deletingClient} onOpenChange={(o) => { if (!o) setDeletingClient(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="size-5 text-destructive" />
+              Delete client?
+            </DialogTitle>
+            <DialogDescription>
+              {deletingClient ? (
+                <>This permanently removes <strong>{deletingClient.name}</strong> ({deletingClient.company}) and their client-user account. This cannot be undone.</>
+              ) : "This cannot be undone."}
+            </DialogDescription>
+          </DialogHeader>
+          {deleteError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-destructive">{deleteError}</div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingClient(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -64,7 +64,7 @@ export async function GET(req: Request) {
 
   const skip = (page - 1) * limit;
   const [files, total, folders] = await Promise.all([
-    (await db.collection(fileColl).find(match)).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+    await db.collection(fileColl).find(match, { sort: { createdAt: -1 }, skip: skip, limit: limit }).toArray(),
     db.collection(fileColl).countDocuments(match),
     q ? (await db.collection("folders").find({
       orgId, deletedAt: null,

@@ -100,10 +100,9 @@ export function ClientFileManager({ orgId, userId }: ClientFileManagerProps) {
     setLoading(true);
     setError("");
     try {
-      const params = new URLSearchParams({ orgId });
       const [clientsRes, foldersRes] = await Promise.all([
-        fetch(`/api/clients?${params}`, { credentials: "include" }),
-        fetch(`/api/folders?${params}`, { credentials: "include" }),
+        fetch(`/api/clients?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" }),
+        fetch(`/api/folders?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" }),
       ]);
 
       if (!clientsRes.ok || !foldersRes.ok) {
@@ -114,29 +113,32 @@ export function ClientFileManager({ orgId, userId }: ClientFileManagerProps) {
       const foldersData = await foldersRes.json();
 
       const list: ClientRecord[] = Array.isArray(clientsData.data) ? clientsData.data : [];
+      // Backend GET /folders returns root folders (parentId: null) for the org,
+      // both org-scoped and client-scoped. Group by clientId for the grid.
       const allFolders: ClientFolder[] = Array.isArray(foldersData.data) ? foldersData.data : [];
 
       setClients(list);
 
-      // Group folders by clientId (only top-level). Non-client folders sit under null.
       const grouped: Record<string, ClientFolder[]> = {};
       for (const f of allFolders) {
+        if (f.parentId !== null) continue;
         const key = f.clientId || "__org__";
         if (!grouped[key]) grouped[key] = [];
-        if (f.parentId === null) grouped[key].push(f);
+        grouped[key].push(f);
       }
       setFoldersByClient(grouped);
 
-      // Pull file counts per client via workspace endpoint (backend aggregate).
-      // Parallel but tolerate individual failures.
+      // Per-client file stats from the canonical backend stats endpoint —
+      // uncapped (the workspace dashboard caps recent files at 25). Parallel,
+      // tolerating individual failures.
       const statsEntries = await Promise.all(
         list.map(async (c) => {
           try {
-            const r = await fetch(`/api/clients/${encodeURIComponent(c.id)}/workspace`, { credentials: "include" });
+            const r = await fetch(`/api/files/stats?orgId=${encodeURIComponent(orgId)}&clientId=${encodeURIComponent(c.id)}`, { credentials: "include" });
             if (!r.ok) return [c.id, { files: 0, size: 0 }] as const;
             const d = await r.json();
-            const files = d?.data?.dashboard?.metrics?.files || 0;
-            const size = d?.data?.dashboard?.metrics?.storageBytes || 0;
+            const files = d?.data?.totalFiles || 0;
+            const size = d?.data?.totalSize || 0;
             return [c.id, { files, size }] as const;
           } catch {
             return [c.id, { files: 0, size: 0 }] as const;
