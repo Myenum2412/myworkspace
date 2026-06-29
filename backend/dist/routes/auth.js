@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { hash, compare } from "bcryptjs";
 import { v4 as uuid } from "uuid";
+import crypto from "crypto";
 import { User } from "../lib/db/models/User.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
@@ -8,14 +9,32 @@ import { Session } from "../lib/db/models/Session.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { getNextSequence } from "../lib/db/models/Counter.js";
 import { signToken } from "../config/auth.js";
+import { env } from "../config/env.js";
 import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { sendWelcomeEmail } from "../lib/mail/index.js";
+import { sendWelcomeEmail, sendPasswordResetEmail } from "../lib/mail/index.js";
 import { mongoose } from "../lib/db/index.js";
+import jwt from "jsonwebtoken";
 import { socketIOManager } from "../lib/socketio/index.js";
+import { requireString, optionalString } from "../lib/validate.js";
 const router = Router();
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
+// Issue a short-lived token the frontend uses to authenticate its Socket.IO
+// connection. The session cookie is httpOnly (so JS can't read it); the client
+// calls this endpoint to get a time-boxed bearer instead. Single-use in spirit:
+// 60s expiry + the socket handshake consumes it immediately.
+router.get("/socket-token", authenticate, (req, res) => {
+    const purpose = {
+        userId: req.user.userId,
+        email: req.user.email,
+        role: req.user.role,
+        orgId: req.user.orgId,
+        permissions: req.user.permissions,
+    };
+    const token = jwt.sign({ ...purpose, purpose: "socket" }, env.JWT_SECRET, { expiresIn: "60s" });
+    res.json({ success: true, token });
+});
 // Helper: generate unique slug
 async function generateUniqueSlug(base) {
     const slugBase = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "org";
@@ -33,10 +52,8 @@ async function getUserPrimaryOrgId(userId) {
     return member ? member.orgId : null;
 }
 router.post("/login", async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        throw new AppError(400, "Email and password are required");
-    }
+    const email = requireString(req.body.email || "", "email", { min: 1, max: 254 }).toLowerCase();
+    const password = requireString(req.body.password || "", "password", { min: 1, max: 1000 });
     const user = await User.findOne({ email });
     if (!user || !user.password) {
         throw new AppError(401, "Invalid email or password");
@@ -127,13 +144,10 @@ router.post("/login", async (req, res) => {
     });
 });
 router.post("/signup", async (req, res) => {
-    const { name, email, password, company } = req.body;
-    if (!name || !email || !password) {
-        throw new AppError(400, "Name, email, and password are required");
-    }
-    if (password.length < 8) {
-        throw new AppError(400, "Password must be at least 8 characters");
-    }
+    const name = requireString(req.body.name, "name", { min: 1, max: 200 });
+    const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
+    const password = requireString(req.body.password, "password", { min: 8, max: 1000 });
+    const company = optionalString(req.body.company, "company", { max: 200 });
     const existing = await User.findOne({ email });
     if (existing) {
         throw new AppError(409, "An account with this email already exists");
@@ -244,17 +258,34 @@ router.post("/logout", authenticate, async (req, res) => {
     res.json({ success: true });
 });
 router.post("/forgot-password", async (req, res) => {
-    const { email } = req.body;
-    if (!email)
-        throw new AppError(400, "Email is required");
+    const email = requireString(req.body.email || "", "email", { min: 1, max: 254 }).toLowerCase();
     const user = await User.findOne({ email });
     if (user) {
-        // In production, send a reset email here
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const resetTokenExpires = new Date(Date.now() + 3600000);
+        await User.updateOne({ _id: user._id }, { $set: { resetToken, resetTokenExpires } });
+        const resetLink = `${env.APP_URL}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+        sendPasswordResetEmail(email, user.name, resetLink).catch((err) => {
+            console.error("[auth] Failed to send password reset email:", err?.message || err);
+        });
     }
     res.json({
         success: true,
-        message: "If an account exists, a reset link has been sent",
+        message: "If an account exists with that email, a reset link has been sent.",
     });
+});
+router.post("/reset-password", async (req, res) => {
+    const { token, email, password } = req.body;
+    if (!token || !email || !password) {
+        throw new AppError(400, "Token, email, and new password are required");
+    }
+    const user = await User.findOne({ email, resetToken: token, resetTokenExpires: { $gt: new Date() } });
+    if (!user) {
+        throw new AppError(400, "Invalid or expired reset token");
+    }
+    const hashedPassword = await hash(password, 12);
+    await User.updateOne({ _id: user._id }, { $set: { password: hashedPassword, resetToken: null, resetTokenExpires: null } });
+    res.json({ success: true, message: "Password has been reset successfully." });
 });
 router.get("/me", authenticate, async (req, res) => {
     const user = await User.findOne({ id: req.user.userId });

@@ -46,10 +46,6 @@ export interface FirstSlideEmployeeForm {
   state: string;
   country: string;
   zipCode: string;
-  linkedin: string;
-  github: string;
-  twitter: string;
-  website: string;
 }
 
 export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string; onAvatarChange: (url: string) => void }) {
@@ -438,45 +434,6 @@ export function ContactDetailsSection({ formData, onChange, options }: SectionPr
           value={formData.zipCode}
           onChange={(e) => onChange("zipCode", e.target.value)}
           placeholder="Zip code"
-        />
-      </Field>
-    </div>
-  );
-}
-
-export function SocialPresenceSection({ formData, onChange }: Omit<SectionProps, 'options'>) {
-  return (
-    <div className="grid grid-cols-2 gap-4">
-      <Field>
-        <FieldLabel>LinkedIn</FieldLabel>
-        <Input
-          value={formData.linkedin}
-          onChange={(e) => onChange("linkedin", e.target.value)}
-          placeholder="LinkedIn profile URL"
-        />
-      </Field>
-      <Field>
-        <FieldLabel>GitHub</FieldLabel>
-        <Input
-          value={formData.github}
-          onChange={(e) => onChange("github", e.target.value)}
-          placeholder="GitHub profile URL"
-        />
-      </Field>
-      <Field>
-        <FieldLabel>Twitter / X</FieldLabel>
-        <Input
-          value={formData.twitter}
-          onChange={(e) => onChange("twitter", e.target.value)}
-          placeholder="Twitter handle"
-        />
-      </Field>
-      <Field>
-        <FieldLabel>Website</FieldLabel>
-        <Input
-          value={formData.website}
-          onChange={(e) => onChange("website", e.target.value)}
-          placeholder="Personal website URL"
         />
       </Field>
     </div>

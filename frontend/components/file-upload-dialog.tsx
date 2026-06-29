@@ -26,6 +26,7 @@ interface FileUploadDialogProps {
   onOpenChange: (open: boolean) => void;
   orgId: string;
   folderId?: string | null;
+  clientId?: string | null;
   onUploadComplete?: () => void;
 }
 
@@ -35,7 +36,7 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function FileUploadDialog({ open, onOpenChange, orgId, folderId, onUploadComplete }: FileUploadDialogProps) {
+export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId, onUploadComplete }: FileUploadDialogProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [description, setDescription] = useState("");
@@ -85,6 +86,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, onUpload
     files.forEach(f => formData.append("files", f.file));
     formData.append("orgId", orgId);
     formData.append("folderId", folderId || "");
+    if (clientId) formData.append("clientId", clientId);
     formData.append("description", description);
     formData.append("tags", JSON.stringify(tags.split(",").map(t => t.trim()).filter(Boolean)));
 

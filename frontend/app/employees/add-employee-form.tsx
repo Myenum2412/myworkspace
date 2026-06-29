@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { CopyIcon } from "lucide-react"
+import { CopyIcon, UploadIcon, FileTextIcon, XIcon } from "lucide-react"
 
 import { getDropdownOptions } from "@/lib/dropdown-options"
 
@@ -36,7 +36,6 @@ import {
   ContactDetailsSection,
   DynamicRowSection,
   SelectWithAdd,
-  SocialPresenceSection,
   type FirstSlideEmployeeForm,
   Row,
 } from "./employee-form-sections"
@@ -84,7 +83,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   }, [])
 
   const [workExperience, setWorkExperience] = React.useState<Row[]>([
-    { id: "1", company: "", title: "", from: "", to: "", description: "", relevant: false },
+    { id: "1", company: "", title: "", roles: "", from: "", to: "", description: "", relevant: false },
   ])
   const [educationDetails, setEducationDetails] = React.useState<Row[]>([
     { id: "1", institute: "", degree: "", specialization: "", completionDate: "" },
@@ -92,6 +91,36 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   const [dependentDetails, setDependentDetails] = React.useState<Row[]>([
     { id: "1", name: "", relationship: "", dob: "" },
   ])
+  const [offerLetter, setOfferLetter] = React.useState<{ name: string; data: string } | null>(null)
+  const [offerLetterUploading, setOfferLetterUploading] = React.useState(false)
+
+  const updateWorkRow = (id: string, field: string, value: string | boolean) => {
+    setWorkExperience((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
+  }
+
+  const handleOfferLetterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      setFormError("Offer letter must be under 10MB")
+      return
+    }
+    setOfferLetterUploading(true)
+    try {
+      const bytes = await file.arrayBuffer()
+      const base64 = Buffer.from(bytes).toString("base64")
+      setOfferLetter({ name: file.name, data: `data:${file.type};base64,${base64}` })
+      setFormError("")
+    } catch {
+      setFormError("Failed to read file")
+    } finally {
+      setOfferLetterUploading(false)
+    }
+  }
+
+  const removeOfferLetter = () => {
+    setOfferLetter(null)
+  }
 
   const addRow = (setter: React.Dispatch<React.SetStateAction<Row[]>>, type: string) => {
     setter((prev) => [...prev, { id: generateId() }])
@@ -122,15 +151,12 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       state: firstSlideData.state || null,
       country: firstSlideData.country || null,
       zipCode: firstSlideData.postalCode || null,
-      linkedin: firstSlideData.linkedin || null,
-      github: firstSlideData.github || null,
-      twitter: firstSlideData.twitter || null,
-      website: firstSlideData.portfolio || null,
       roleName: firstSlideData.roleName || firstSlideData.designation || null,
       branchName: firstSlideData.branchName || firstSlideData.location || null,
       employmentType: firstSlideData.employmentType || null,
       status: firstSlideData.status.toLowerCase() === "inactive" ? "inactive" : "active",
       sourceOfHire: firstSlideData.sourceOfHire || null,
+      offerLetter: offerLetter?.data || null,
       workExperience,
       educationDetails,
       dependentDetails,
@@ -182,15 +208,12 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
         state: firstSlideData.state || null,
         country: firstSlideData.country || null,
         zipCode: firstSlideData.postalCode || null,
-        linkedin: firstSlideData.linkedin || null,
-        github: firstSlideData.github || null,
-        twitter: firstSlideData.twitter || null,
-        website: firstSlideData.portfolio || null,
         roleName: firstSlideData.roleName || firstSlideData.designation || null,
         branchName: firstSlideData.branchName || firstSlideData.location || null,
         employmentType: firstSlideData.employmentType || null,
         status: firstSlideData.status.toLowerCase() === "inactive" ? "inactive" : "active",
         sourceOfHire: firstSlideData.sourceOfHire || null,
+        offerLetter: offerLetter?.data || null,
         workExperience,
         educationDetails,
         dependentDetails,
@@ -314,18 +337,33 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
               <Separator />
             </div>
 
-            {/* Step 4: Social */}
+            {/* Step 4: Documents */}
             <div className="space-y-8">
-              <SocialPresenceSection
-                linkedin={firstSlideData.linkedin}
-                github={firstSlideData.github}
-                twitter={firstSlideData.twitter}
-                portfolio={firstSlideData.portfolio}
-                onLinkedinChange={(v) => updateFirstSlideField("linkedin", v)}
-                onGithubChange={(v) => updateFirstSlideField("github", v)}
-                onTwitterChange={(v) => updateFirstSlideField("twitter", v)}
-                onPortfolioChange={(v) => updateFirstSlideField("portfolio", v)}
-              />
+              <FieldSet>
+                <FieldLegend>Documents</FieldLegend>
+                <div className="space-y-4">
+                  <Field>
+                    <FieldLabel>Offer Letter</FieldLabel>
+                    {offerLetter ? (
+                      <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/20">
+                        <FileTextIcon className="size-5 text-muted-foreground shrink-0" />
+                        <span className="text-sm truncate flex-1">{offerLetter.name}</span>
+                        <button type="button" onClick={removeOfferLetter} className="text-destructive hover:text-destructive/80">
+                          <XIcon className="size-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center gap-3 rounded-lg border border-dashed p-4 cursor-pointer hover:bg-muted/20 transition-colors">
+                        <UploadIcon className="size-5 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {offerLetterUploading ? "Uploading..." : "Upload offer letter (PDF, max 10MB)"}
+                        </span>
+                        <input type="file" accept=".pdf,image/*" className="hidden" onChange={handleOfferLetterUpload} disabled={offerLetterUploading} />
+                      </label>
+                    )}
+                  </Field>
+                </div>
+              </FieldSet>
               <Separator />
             </div>
 
@@ -340,28 +378,32 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field>
                       <FieldLabel>Company name</FieldLabel>
-                      <Input placeholder="Company name" />
+                      <Input value={row.company || ""} onChange={(e) => updateWorkRow(row.id, "company", e.target.value)} placeholder="Company name" />
                     </Field>
                     <Field>
                       <FieldLabel>Job Title</FieldLabel>
-                      <Input placeholder="Job Title" />
+                      <Input value={row.title || ""} onChange={(e) => updateWorkRow(row.id, "title", e.target.value)} placeholder="Job Title" />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Roles</FieldLabel>
+                      <Input value={row.roles || ""} onChange={(e) => updateWorkRow(row.id, "roles", e.target.value)} placeholder="e.g. Developer, Team Lead" />
                     </Field>
                     <Field>
                       <FieldLabel>From Date</FieldLabel>
-                      <Input type="date" />
+                      <Input type="date" value={row.from || ""} onChange={(e) => updateWorkRow(row.id, "from", e.target.value)} />
                     </Field>
                     <Field>
                       <FieldLabel>To Date</FieldLabel>
-                      <Input type="date" />
-                    </Field>
-                    <Field className="sm:col-span-2">
-                      <FieldLabel>Job Description</FieldLabel>
-                      <textarea className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring" placeholder="Job Description" />
+                      <Input type="date" value={row.to || ""} onChange={(e) => updateWorkRow(row.id, "to", e.target.value)} />
                     </Field>
                     <div className="flex items-center gap-2">
-                      <Checkbox id={`relevant-${row.id}`} />
+                      <Checkbox id={`relevant-${row.id}`} checked={!!row.relevant} onCheckedChange={(c) => updateWorkRow(row.id, "relevant", !!c)} />
                       <label htmlFor={`relevant-${row.id}`} className="text-sm font-medium">Relevant</label>
                     </div>
+                    <Field className="sm:col-span-2">
+                      <FieldLabel>Job Description</FieldLabel>
+                      <textarea className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring" value={row.description || ""} onChange={(e) => updateWorkRow(row.id, "description", e.target.value)} placeholder="Job Description" />
+                    </Field>
                   </div>
                 )}
               />

@@ -3,6 +3,28 @@
 import { io, Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
+let tokenPromise: Promise<string | null> | null = null;
+
+// Fetch a short-lived socket bearer token (works around the httpOnly session
+// cookie that JS cannot read). Cache the in-flight promise so concurrent
+// callers share one request.
+function fetchSocketToken(): Promise<string | null> {
+  if (tokenPromise) return tokenPromise;
+  tokenPromise = (async () => {
+    try {
+      const res = await fetch("/api/auth/socket-token", { credentials: "include" });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.token || null;
+    } catch {
+      return null;
+    } finally {
+      // Let a future reconnect retry the token.
+      setTimeout(() => { tokenPromise = null; }, 5 * 60 * 1000);
+    }
+  })();
+  return tokenPromise;
+}
 
 /**
  * Read the NextAuth JWT straight from the session cookie. Auth.js stores the
@@ -29,12 +51,16 @@ export function getSocketIO(token?: string): Socket {
   if (socket?.connected) return socket;
 
   if (!socket) {
-    const resolved = token ?? resolveTokenFromCookie();
+    // Token priority: explicit > httpOnly-safe endpoint > cookie fallback
+    // (cookie only works if httpOnly is disabled, which it usually isn't).
+    const cookieToken = resolveTokenFromCookie();
+    const resolved: string | undefined = token || cookieToken || undefined;
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
     socket = io(apiUrl, {
       path: "/api/socketio",
-      auth: { token: resolved ?? undefined },
+      auth: { token: resolved },
       // Prefer websocket only — lower latency on local net. Polling fallback is
       // kept for environments that tunnel WS.
       transports: ["websocket", "polling"],
@@ -48,11 +74,19 @@ export function getSocketIO(token?: string): Socket {
     });
 
     socket.on("disconnect", (reason) => {
-      console.log("[SocketIO] Disconnected:", reason);
+      // On a server-forced disconnect or auth failure, force a fresh socket-token
+      // on the next reconnect so expired / invalid tokens don't loop forever.
+      if (reason === "io server disconnect" || reason === "transport error") {
+        tokenPromise = null;
+      }
     });
 
     socket.on("connect_error", (err) => {
       console.error("[SocketIO] Connection error:", err.message);
+      // "Invalid token" → drop cached promise so the next connect fetches fresh.
+      if (/token|auth/i.test(err.message)) {
+        tokenPromise = null;
+      }
     });
   }
 

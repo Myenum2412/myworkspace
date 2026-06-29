@@ -10,7 +10,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
-import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, Share2Icon, HistoryIcon, CheckCircle2Icon } from "lucide-react"
+import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, HistoryIcon, CheckCircle2Icon } from "lucide-react"
 import { employeeService } from "@/lib/services/employee-service"
 
 import {
@@ -20,7 +20,6 @@ import {
   ContactDetailsSection,
   DynamicRowSection,
   SelectWithAdd,
-  SocialPresenceSection,
   type FirstSlideEmployeeForm,
   type Row,
 } from "@/app/addemployees/employee-form-sections"
@@ -86,14 +85,10 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
     state: employee.state || "",
     country: employee.country || "",
     zipCode: employee.zipCode || "",
-    linkedin: employee.linkedin || "",
-    github: employee.github || "",
-    twitter: employee.twitter || "",
-    website: employee.website || "",
   })
 
   const [workExperience, setWorkExperience] = useState<Row[]>(
-    toRow(employee.workExperience, { company: "", title: "", from: "", to: "", description: "", relevant: false })
+    toRow(employee.workExperience, { company: "", title: "", roles: "", from: "", to: "", description: "", relevant: false })
   )
   const [educationDetails, setEducationDetails] = useState<Row[]>(
     toRow(employee.educationDetails, { institute: "", degree: "", specialization: "", completionDate: "" })
@@ -160,10 +155,6 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
         state: formData.state,
         country: formData.country,
         zipCode: formData.zipCode,
-        linkedin: formData.linkedin,
-        github: formData.github,
-        twitter: formData.twitter,
-        website: formData.website,
         workExperience: workExperience.filter(w => w.company || w.title),
         educationDetails: educationDetails.filter(e => e.institute || e.degree),
         dependentDetails: dependentDetails.filter(d => d.name),
@@ -242,13 +233,6 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
 
         <Separator />
 
-        {/* Social */}
-        <Section icon={Share2Icon} title="Social">
-          <SocialPresenceSection formData={formData} onChange={updateField} />
-        </Section>
-
-        <Separator />
-
         {/* History */}
         <Section icon={HistoryIcon} title="History">
           <div className="space-y-6">
@@ -273,6 +257,14 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
                       value={row.title || ""}
                       onChange={(e) => updateRow(setWorkExperience, row.id, "title", e.target.value)}
                       placeholder="Job Title"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Roles</FieldLabel>
+                    <Input
+                      value={row.roles || ""}
+                      onChange={(e) => updateRow(setWorkExperience, row.id, "roles", e.target.value)}
+                      placeholder="e.g. Developer, Team Lead"
                     />
                   </Field>
                   <Field>

@@ -13,7 +13,10 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   if (!userId || !type || !title) {
     throw new AppError(400, "userId, type, and title are required");
   }
-  const targetOrgId = orgId || req.user!.orgId || "";
+  const targetOrgId = orgId || req.user!.orgId;
+  if (!targetOrgId) {
+    throw new AppError(400, "orgId is required");
+  }
   const doc = await Notification.create({
     userId,
     orgId: targetOrgId,

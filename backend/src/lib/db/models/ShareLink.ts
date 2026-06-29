@@ -37,7 +37,6 @@ const shareLinkSchema = new Schema<IShareLink>(
   { timestamps: true }
 );
 
-shareLinkSchema.index({ token: 1 });
 shareLinkSchema.index({ fileId: 1, isActive: 1 });
 
 export const ShareLink = model<IShareLink>("ShareLink", shareLinkSchema);

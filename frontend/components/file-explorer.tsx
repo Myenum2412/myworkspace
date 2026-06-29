@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +16,11 @@ import {
   MoveIcon, Share2Icon, LockIcon, UnlockIcon, HistoryIcon,
   ChevronRightIcon, ChevronDownIcon, PlusIcon, ArrowUpIcon,
   Loader2Icon, AlertCircleIcon, ImageIcon, FileTextIcon, ArchiveIcon,
-  FolderOpenIcon, RotateCcwIcon,
+  FolderOpenIcon, RotateCcwIcon, Building2Icon, UserPlusIcon,
 } from "lucide-react";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
 import { FileUploadDialog } from "@/components/file-upload-dialog";
 import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import { FileShareDialog } from "@/components/file-share-dialog";
@@ -45,6 +48,7 @@ type FolderItem = {
   name: string;
   path: string;
   parentId: string | null;
+  clientId?: string | null;
   children?: FolderItem[];
 };
 
@@ -72,11 +76,18 @@ function getFileIcon(mimeType: string) {
 interface FileExplorerProps {
   orgId: string;
   userId: string;
+  /**
+   * When set, the explorer is scoped to a single client — only folders and
+   * files with that clientId are shown. Used by the per-client workspace
+   * view inside the Client File Manager.
+   */
+  clientId?: string | null;
 }
 
-export function FileExplorer({ orgId, userId }: FileExplorerProps) {
+export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerProps) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [folders, setFolders] = useState<FolderItem[]>([]);
+  const [clientNames, setClientNames] = useState<Record<string, string>>({});
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([{ id: null, name: "Files" }]);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -95,6 +106,11 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  // Client folder auto-creation
+  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+  const [clientPickerOpen, setClientPickerOpen] = useState(false);
+  const [creatingClientFolder, setCreatingClientFolder] = useState<string | null>(null);
+
   // Sort
   const [sortBy, setSortBy] = useState<string>("-createdAt");
 
@@ -108,25 +124,77 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
       if (currentFolderId) params.set("folderId", currentFolderId);
       if (search) params.set("search", search);
       params.set("sort", sortBy);
+      if (clientId) params.set("clientId", clientId);
+
+      const foldersParams = new URLSearchParams({ orgId });
+      if (currentFolderId) foldersParams.set("parentId", currentFolderId);
+      else foldersParams.set("parentId", "");
+      if (clientId) foldersParams.set("clientId", clientId);
 
       const [filesRes, foldersRes] = await Promise.all([
         fetch(`/api/files?${params}`, { credentials: "include" }),
-        fetch(`/api/folders?orgId=${orgId}&parentId=${currentFolderId || ""}`, { credentials: "include" }),
+        fetch(`/api/folders?${foldersParams}`, { credentials: "include" }),
       ]);
 
       const filesData = await filesRes.json();
       const foldersData = await foldersRes.json();
 
       setFiles(filesData.data || []);
-      setFolders(foldersData.data || []);
+      const fetchedFolders: FolderItem[] = foldersData.data || [];
+      setFolders(fetchedFolders);
+
+      // Resolve client names for folders grouped under a clientId.
+      const clientIds = [...new Set(foldersData.data?.map((f: FolderItem) => f.clientId).filter(Boolean) || [])] as string[];
+      if (clientIds.length > 0) {
+        fetch(`/api/clients?ids=${encodeURIComponent(clientIds.join(","))}`, { credentials: "include" })
+          .then((r) => r.json())
+          .then((d) => {
+            const list: Record<string, unknown>[] = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
+            const names: Record<string, string> = {};
+            for (const c of list) names[String(c.id)] = String(c.name || c.id);
+            setClientNames(names);
+          })
+          .catch(() => {});
+      }
     } catch (err) {
       console.error("Failed to load files:", err);
     } finally {
       setLoading(false);
     }
-  }, [orgId, currentFolderId, search, sortBy]);
+  }, [orgId, currentFolderId, search, sortBy, clientId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Realtime refresh — backend emits `client:created`, `client:updated`,
+  // `folder:updated`, etc. via socket.io. We listen on the org room and
+  // refetch on any relevant event. A hard refresh is simplest and safe here
+  // because the data volume per org is bounded.
+  useEffect(() => {
+    let cancelled = false;
+    let ws: WebSocket | null = null;
+    try {
+      const proto = window.location.protocol === "https:" ? "wss" : "ws";
+      const host = process.env.NEXT_PUBLIC_API_URL
+        ? new URL(process.env.NEXT_PUBLIC_API_URL).host
+        : window.location.host;
+      ws = new WebSocket(`${proto}://${host}`);
+      ws.onopen = () => {
+        ws?.send(JSON.stringify({ type: "subscribe", orgId }));
+      };
+      ws.onmessage = (evt) => {
+        try {
+          const msg = JSON.parse(evt.data);
+          if (msg?.type && String(msg.type).startsWith("folder") || String(msg.type).startsWith("file") || String(msg.type).startsWith("client")) {
+            if (!cancelled) fetchData();
+          }
+        } catch {}
+      };
+    } catch {}
+    return () => {
+      cancelled = true;
+      try { ws?.close(); } catch {}
+    };
+  }, [orgId, fetchData]);
 
   const navigateToFolder = useCallback(async (folderId: string | null, folderName?: string) => {
     setCurrentFolderId(folderId);
@@ -161,6 +229,46 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
     } catch {}
   };
 
+  const fetchClients = useCallback(async () => {
+    try {
+      const res = await fetch("/api/clients", { credentials: "include" });
+      const d = await res.json();
+      const arr: Record<string, unknown>[] = Array.isArray(d) ? d : (d.data || []);
+      setClients(arr.map((c) => ({ id: String(c.id), name: String(c.name || c.id) })));
+    } catch {}
+  }, []);
+
+  const createClientFolder = async (clientId: string, clientName: string) => {
+    if (!clientId || currentFolderId !== null) return; // only at root
+    setCreatingClientFolder(clientId);
+    try {
+      // Create a top-level folder named after the client. Subfolders mirror
+      // the workspace provision template.
+      const subfolders = ["Documents", "Reports", "Projects", "Settings"];
+      const clientFolderRes = await fetch("/api/folders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orgId, parentId: null, name: clientName, clientId }),
+      });
+      if (!clientFolderRes.ok) {
+        setCreatingClientFolder(null);
+        setClientPickerOpen(false);
+        return;
+      }
+      const { folderId: clientFolderId } = await clientFolderRes.json();
+      for (const sub of subfolders) {
+        await fetch("/api/folders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orgId, parentId: clientFolderId, name: sub, clientId }),
+        });
+      }
+      setClientPickerOpen(false);
+      fetchData();
+    } catch {}
+    setCreatingClientFolder(null);
+  };
+
   const renameItem = async (id: string, type: "file" | "folder") => {
     if (!renameValue.trim()) return;
     try {
@@ -190,7 +298,7 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
 
   const duplicateFile = async (fileId: string) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/files/${fileId}/duplicate`, {
+      await fetch(`/api/files/${fileId}/duplicate`, {
         method: "POST", credentials: "include",
       });
       fetchData();
@@ -200,7 +308,7 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
   const toggleLock = async (fileId: string, locked: boolean) => {
     try {
       const action = locked ? "unlock" : "lock";
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/files/${fileId}/${action}`, {
+      await fetch(`/api/files/${fileId}/${action}`, {
         method: "POST", credentials: "include",
       });
       fetchData();
@@ -244,6 +352,17 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
   const fileTypeCount = (type: string) =>
     files.filter(f => f.mimeType?.startsWith(type)).length;
 
+  const isRoot = currentFolderId === null;
+  // When a clientId is set, show only that client's folders. Otherwise at
+  // root, show org-level folders (no clientId) so the top view isn't a flat
+  // list of every client's folders.
+  const displayFolders = clientId
+    ? folders
+    : isRoot
+      ? folders.filter(f => !f.clientId)
+      : folders;
+  const displayFiles = isRoot && !clientId ? [] : files;
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -263,6 +382,34 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
         <Button variant="outline" size="sm" onClick={() => setShowNewFolder(!showNewFolder)}>
           <PlusIcon className="mr-1 size-4" /> Folder
         </Button>
+        <Popover open={clientPickerOpen} onOpenChange={(o) => { setClientPickerOpen(o); if (o && clients.length === 0) fetchClients(); }}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Building2Icon className="mr-1 size-4" /> New Client Folder
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-2" align="start">
+            <p className="text-xs font-medium text-muted-foreground px-2 py-1">Pick a client</p>
+            <div className="max-h-64 overflow-y-auto space-y-1">
+              {clients.length === 0 && (
+                <p className="text-xs text-muted-foreground px-2 py-2">No clients yet.</p>
+              )}
+              {clients.map((c) => (
+                <button
+                  key={c.id}
+                  className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted text-left disabled:opacity-50"
+                  disabled={creatingClientFolder === c.id}
+                  onClick={() => createClientFolder(c.id, c.name)}
+                >
+                  {creatingClientFolder === c.id
+                    ? <Loader2Icon className="size-3 animate-spin" />
+                    : <UserPlusIcon className="size-3 text-muted-foreground" />}
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
         <Button size="sm" onClick={() => setUploadOpen(true)}>
           <UploadIcon className="mr-1 size-4" /> Upload
         </Button>
@@ -349,35 +496,23 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
         <div className="flex items-center justify-center py-16">
           <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
         </div>
-      ) : folders.length === 0 && files.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-          <FolderOpenIcon className="size-16 mb-3" />
-          <p className="text-lg font-medium">This folder is empty</p>
-          <p className="text-sm mb-4">Upload files or create a folder to get started</p>
-          <div className="flex gap-2">
-            <Button onClick={() => setShowNewFolder(true)} variant="outline">
-              <PlusIcon className="mr-1 size-4" /> New Folder
-            </Button>
-            <Button onClick={() => setUploadOpen(true)}>
-              <UploadIcon className="mr-1 size-4" /> Upload Files
-            </Button>
-          </div>
-        </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+        <div className="space-y-6">
           {/* Folders */}
-          {folders.map((folder) => (
-            <Card key={folder.id} className="group cursor-pointer hover:border-primary/50 transition-colors">
-              <CardContent className="p-3" onClick={() => navigateToFolder(folder.id, folder.name)}>
-                <div className="flex flex-col items-center gap-2 py-2">
-                  <FolderIcon className="size-10 text-muted-foreground" />
-                  <p className="text-xs font-medium text-center truncate w-full">{folder.name}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {displayFolders.map((folder) => (
+              <Card key={folder.id} className="group cursor-pointer hover:border-primary/50 transition-colors">
+                <CardContent className="p-3" onClick={() => navigateToFolder(folder.id, folder.name)}>
+                  <div className="flex flex-col items-center gap-2 py-2">
+                    <FolderIcon className="size-10 text-muted-foreground" />
+                    <p className="text-xs font-medium text-center truncate w-full">{folder.name}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
           {/* Files */}
-          {files.map((file) => (
+          {displayFiles.map((file) => (
             <Card
               key={file.id}
               className={`group cursor-pointer hover:border-primary/50 transition-colors relative ${
@@ -453,7 +588,7 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
               </tr>
             </thead>
             <tbody>
-              {folders.map((folder) => (
+              {displayFolders.map((folder) => (
                 <tr key={folder.id} className="border-b last:border-0 hover:bg-blue-50/50 cursor-pointer" onClick={() => navigateToFolder(folder.id, folder.name)}>
                   <td className="p-2"><FolderIcon className="size-4 text-muted-foreground" /></td>
                   <td className="p-2 text-sm font-medium">{folder.name}</td>
@@ -474,7 +609,7 @@ export function FileExplorer({ orgId, userId }: FileExplorerProps) {
                   </td>
                 </tr>
               ))}
-              {files.map((file) => (
+              {displayFiles.map((file) => (
                 <tr key={file.id} className="border-b last:border-0 hover:bg-blue-50/50">
                   <td className="p-2">
                     <input type="checkbox" checked={selectedIds.has(file.id)} onChange={() => toggleSelect(file.id)} className="size-4" />

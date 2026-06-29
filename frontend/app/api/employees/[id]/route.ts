@@ -29,7 +29,7 @@ export async function PUT(
       "role", "branchName", "shift", "employmentType", "status",
       "sourceOfHire", "joiningDate", "currentExperience", "totalExperience",
       "alternateEmail", "address", "city", "state", "country", "zipCode",
-      "linkedin", "github", "twitter", "website",
+      "offerLetter",
     ];
 
     const updateData: Record<string, unknown> = {};

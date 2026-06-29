@@ -93,7 +93,6 @@ export const defaultNavData = {
       items: [
         { title: "All Files", url: "/files" },
         { title: "Upload", url: "/files?upload=true" },
-        { title: "Shared with Me", url: "/shared" },
         { title: "Recycle Bin", url: "/recycle-bin" },
       ],
     },

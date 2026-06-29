@@ -24,6 +24,7 @@ export async function GET(request: Request) {
 
   const projectId = searchParams.get("projectId");
   const category = searchParams.get("category");
+  const clientId = searchParams.get("clientId");
 
   try {
     const filter: Record<string, unknown> = { orgId, deletedAt: null };
@@ -32,6 +33,9 @@ export async function GET(request: Request) {
     }
     if (category && ["profile", "report", "general"].includes(category)) {
       filter.category = category;
+    }
+    if (clientId) {
+      filter.clientId = clientId;
     }
 
     const files = await db.collection(collections.fileAttachments)

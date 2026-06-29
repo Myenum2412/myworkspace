@@ -115,10 +115,6 @@ export async function GET() {
           state: user.state || "",
           country: user.country || "",
           zipCode: user.zipCode || "",
-          linkedin: user.linkedin || "",
-          github: user.github || "",
-          twitter: user.twitter || "",
-          website: user.website || "",
           status: user.status || "offline",
           role: user.role || "member",
           image: user.image || "",
@@ -188,7 +184,6 @@ export async function PATCH(req: NextRequest) {
   const {
     name, email, phone, department, company,
     address, city, state, country, zipCode,
-    linkedin, github, twitter, website,
     companyName, companyDomain,
     businessType, industry, gstNumber, panNumber, cinNumber,
     companyEmail, mobileNumber, alternateMobileNumber, orgWebsite,
@@ -218,7 +213,7 @@ export async function PATCH(req: NextRequest) {
 
   try {
     // Update user fields
-    const userFields = { name, email, phone, department, company, address, city, state, country, zipCode, linkedin, github, twitter, website };
+    const userFields = { name, email, phone, department, company, address, city, state, country, zipCode };
     const updates: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(userFields)) {
       if (val !== undefined) updates[key] = val;

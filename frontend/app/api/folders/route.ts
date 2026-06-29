@@ -18,10 +18,19 @@ export async function GET(req: Request) {
   if (!member) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
 
   const filter: Record<string, unknown> = { orgId, deletedAt: null };
-  if (parentId) filter.parentId = parentId;
-  else filter.parentId = null;
+  if (parentId) {
+    filter.parentId = parentId;
+  } else {
+    // Root: show org folders (no client) + top-level client folders so they
+    // appear under a "Clients" group in the file explorer.
+    filter.$or = [
+      { parentId: null, clientId: null },
+      { parentId: null, clientId: { $ne: null } },
+    ];
+    delete filter.parentId;
+  }
 
-  const folders = await (await db.collection("folders").find(filter)).sort({ name: 1 }).toArray();
+  const folders = await (await db.collection("folders").find(filter)).sort({ clientId: 1, name: 1 }).toArray();
   return NextResponse.json({ data: folders });
 }
 
@@ -29,7 +38,7 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { orgId, parentId, name } = await req.json();
+  const { orgId, parentId, name, clientId } = await req.json();
   if (!orgId || !name) return NextResponse.json({ error: "orgId and name are required" }, { status: 400 });
 
   const member = await db.collection(collections.orgMembers).findOne({ userId: session.user.id, orgId });
@@ -43,7 +52,7 @@ export async function POST(req: Request) {
 
   const id = uuid();
   await db.collection("folders").insertOne({
-    id, orgId, parentId: parentId || null, name, path,
+    id, orgId, parentId: parentId || null, name, path, clientId: clientId || null,
     createdBy: session.user.id, deletedAt: null, createdAt: new Date(), updatedAt: new Date(),
   });
 

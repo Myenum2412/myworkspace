@@ -6,6 +6,7 @@ import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 
 const router = Router();
 router.use(authenticate);
@@ -28,12 +29,14 @@ router.get("/tree", async (req: AuthRequest, res: Response) => {
 router.get("/", async (req: AuthRequest, res: Response) => {
   const orgId = req.query.orgId as string;
   const parentId = (req.query.parentId as string) || null;
+  const clientId = (req.query.clientId as string) || null;
   if (!orgId) throw new AppError(400, "orgId is required");
   await verifyMembership(req.user!.userId, orgId);
 
   const filter: Record<string, unknown> = { orgId, deletedAt: null };
   if (parentId) filter.parentId = parentId;
   else filter.parentId = null;
+  if (clientId) filter.clientId = clientId;
 
   const folders = await Folder.find(filter).sort({ name: 1 }).lean();
   res.json({ data: folders });
@@ -47,7 +50,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {
-  const { orgId, parentId, name } = req.body;
+  const { orgId, parentId, name, clientId } = req.body;
   if (!orgId || !name) throw new AppError(400, "orgId and name are required");
   await verifyMembership(req.user!.userId, orgId);
 
@@ -58,13 +61,15 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   if (existing) throw new AppError(409, "A folder with this name already exists at this location");
 
   const id = uuid();
-  await Folder.create({ id, orgId, parentId: parentId || null, name, path, createdBy: req.user!.userId });
+  await Folder.create({ id, orgId, parentId: parentId || null, name, path, clientId: clientId || null, createdBy: req.user!.userId });
 
   await ActivityLog.create({
     orgId, userId: req.user!.userId, action: "folder.created",
     entityType: "folder", entityId: id,
     description: `Folder "${name}" created`,
   });
+
+  socketIOManager.emitToOrg(orgId, "folder:created", { folderId: id, orgId, clientId: clientId || null });
 
   res.status(201).json({ success: true, folderId: id });
 });

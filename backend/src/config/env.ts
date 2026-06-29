@@ -19,6 +19,9 @@ export const env = {
   MAIL_FROM: process.env.MAIL_FROM || "MyWorkspace <welcome@myworkspace.myenum.in>",
   APP_URL: process.env.APP_URL || "http://localhost:3000",
 
+  // Websocket connect-src for Helmet CSP (derived from APP_URL).
+  BASE_URL_WS: process.env.BASE_URL_WS || (process.env.APP_URL || "http://localhost:3000").replace(/^http/, "ws"),
+
   S3_ENDPOINT: process.env.S3_ENDPOINT || "",
   S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || "",
   S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || "",

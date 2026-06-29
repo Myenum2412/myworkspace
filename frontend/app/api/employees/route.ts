@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     const orgId = await ensureUserOrg(session.user.id, session.user.email);
 
     const body = await request.json();
-    const { firstName, lastName, nickname, email, password, avatar, department, designation, location, phone, roleName, branchName, shift, employmentType, status, sourceOfHire, joiningDate, currentExperience, totalExperience, alternateEmail, address, city, state, country, zipCode, linkedin, github, twitter, website, workExperience, educationDetails, dependentDetails, files } = body;
+    const { firstName, lastName, nickname, email, password, avatar, department, designation, location, phone, roleName, branchName, shift, employmentType, status, sourceOfHire, joiningDate, currentExperience, totalExperience, alternateEmail, address, city, state, country, zipCode, offerLetter, workExperience, educationDetails, dependentDetails, files } = body;
 
     if (!firstName || !email) {
       return NextResponse.json({ error: "First name and email are required" }, { status: 400 });
@@ -100,12 +100,9 @@ export async function POST(request: Request) {
       state: state || null,
       country: country || null,
       zipCode: zipCode || null,
-      linkedin: linkedin || null,
-      github: github || null,
-      twitter: twitter || null,
-      website: website || null,
       currentExperience: currentExperience || null,
       totalExperience: totalExperience || null,
+      offerLetter: offerLetter || null,
       files: files || [],
       orgId,
       createdBy: session.user.id,
@@ -128,6 +125,7 @@ export async function POST(request: Request) {
           orgId,
           company: exp.company || "",
           title: exp.title || "",
+          roles: exp.roles || "",
           from: exp.from || null,
           to: exp.to || null,
           description: exp.description || "",

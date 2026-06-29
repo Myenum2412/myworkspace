@@ -11,6 +11,7 @@ import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { getStorageProvider, computeChecksum } from "../lib/storage/providers.js";
 import { env } from "../config/env.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
@@ -40,6 +41,7 @@ async function updateUsedStorage(orgId: string, deltaBytes: number): Promise<voi
 router.get("/", async (req: AuthRequest, res: Response) => {
   const orgId = req.query.orgId as string;
   const folderId = req.query.folderId as string | undefined;
+  const clientId = req.query.clientId as string | undefined;
   const category = req.query.category as string | undefined;
   const mimeType = req.query.mimeType as string | undefined;
   const uploaderId = req.query.uploaderId as string | undefined;
@@ -54,6 +56,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
   const filter: Record<string, unknown> = { orgId, deletedAt: null };
   if (folderId !== undefined) filter.folderId = folderId || null;
+  if (clientId) filter.clientId = clientId;
   if (category) filter.category = category;
   if (mimeType) filter.mimeType = { $regex: mimeType.replace("*", ".*"), $options: "i" };
   if (uploaderId) filter.uploaderId = uploaderId;
@@ -139,6 +142,7 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
 router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: Response) => {
   const orgId = req.body.orgId as string;
   const folderId = req.body.folderId as string | undefined;
+  const clientId = req.body.clientId as string | undefined;
   const description = req.body.description as string || "";
   const tags = req.body.tags ? (typeof req.body.tags === "string" ? JSON.parse(req.body.tags) : req.body.tags) : [];
 
@@ -180,7 +184,7 @@ router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: 
         : "general";
 
       await FileAttachment.create({
-        id: fileId, orgId, folderId: folderId || null,
+        id: fileId, orgId, folderId: folderId || null, clientId: clientId || null,
         uploaderId: req.user!.userId, name: file.originalname,
         originalName: file.originalname, mimeType: file.mimetype || "application/octet-stream",
         size: file.size, storagePath, storageProvider: env.R2_ENDPOINT ? "r2" : "local",
@@ -195,6 +199,7 @@ router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: 
         description: `File "${file.originalname}" uploaded (${(file.size / 1024).toFixed(1)} KB)`,
       });
 
+      socketIOManager.emitToOrg(orgId, "file:uploaded", { fileId, orgId, folderId: folderId || null });
       results.push({ originalName: file.originalname, fileId });
     } catch (err: any) {
       results.push({ originalName: file.originalname, fileId: "", error: err.message });

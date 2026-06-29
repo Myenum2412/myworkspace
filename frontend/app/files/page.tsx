@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { FileExplorer } from "@/components/file-explorer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2Icon, HardDriveIcon, FileIcon, Trash2Icon, TrendingUpIcon } from "lucide-react";
+import { Loader2Icon, HardDriveIcon, FileIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 
 function formatSizeMB(bytes: number) {
@@ -85,18 +85,6 @@ export default function FilesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">{stats.deletedFiles || 0}</p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/shared">
-            <Card className="hover:border-muted-foreground/30 cursor-pointer transition-colors h-full">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <TrendingUpIcon className="size-4" /> Shared
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">View</p>
               </CardContent>
             </Card>
           </Link>

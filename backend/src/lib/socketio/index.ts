@@ -22,11 +22,32 @@ export class SocketIOManager {
       },
     });
 
+    // Per-IP handshake rate limiter — sliding window 20 attempts / minute.
+    // Stored in-process; fine for a single instance. Swap for redis if you
+    // add a second instance.
+    const handshakeAttempts = new Map<string, number[]>();
+    const HANDSHAKE_LIMIT = 20;
+    const HANDSHAKE_WINDOW_MS = 60_000;
+
     this.io.use((socket: AuthenticatedSocket, next) => {
+      const now = Date.now();
+      const ip =
+        (socket.handshake.headers["x-forwarded-for"] as string) ||
+        socket.handshake.address ||
+        "unknown";
+      const attempts = (handshakeAttempts.get(ip) || []).filter((t) => now - t < HANDSHAKE_WINDOW_MS);
+      attempts.push(now);
+      handshakeAttempts.set(ip, attempts);
+      if (attempts.length > HANDSHAKE_LIMIT) {
+        return next(new Error("rate_limited"));
+      }
+
       const token = socket.handshake.auth?.token || socket.handshake.query?.token;
       if (token) {
         try {
           const decoded = jwt.verify(token as string, env.JWT_SECRET) as JwtPayload;
+          // Accept both long-lived session JWTs and short-lived socket tokens
+          // (purpose: "socket"). Both are signed with the same secret.
           socket.userId = decoded.userId;
           socket.orgId = decoded.orgId;
         } catch {

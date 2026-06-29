@@ -27,10 +27,6 @@ export interface IUser extends Document {
   state?: string;
   country?: string;
   zipCode?: string;
-  linkedin?: string;
-  github?: string;
-  twitter?: string;
-  website?: string;
   bannerUrl?: string;
   resetToken?: string;
   resetTokenExpires?: Date;
@@ -65,10 +61,6 @@ const userSchema = new Schema<IUser>(
     state: String,
     country: String,
     zipCode: String,
-    linkedin: String,
-    github: String,
-    twitter: String,
-    website: String,
     bannerUrl: String,
     resetToken: { type: String, index: true },
     resetTokenExpires: Date,

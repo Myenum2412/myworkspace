@@ -7,6 +7,7 @@ import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
 import { socketIOManager } from "../lib/socketio/index.js";
+import { requireString, optionalString } from "../lib/validate.js";
 
 const router = Router();
 
@@ -241,16 +242,16 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 
 // Create a team
 router.post("/", async (req: AuthRequest, res: Response) => {
-  const { name, description, orgId: bodyOrgId } = req.body;
-  if (!name) throw new AppError(400, "Team name is required");
-
+  const name = requireString(req.body.name, "name", { min: 1, max: 200 });
+  const description = optionalString(req.body.description, "description", { max: 5000 }) ?? "";
+  const bodyOrgId = optionalString(req.body.orgId, "orgId");
   // Second require was redundant (re-fetches membership already implied). Keep one.
   const orgId = bodyOrgId ?? await requireOrgMembershipFromRequest(req);
 
   const team = await Team.create({
     orgId,
     name,
-    description: description || undefined,
+    description,
     createdBy: req.user!.userId,
   });
 

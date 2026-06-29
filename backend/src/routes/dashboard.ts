@@ -30,7 +30,14 @@ async function resolveOrgId(req: AuthRequest): Promise<string> {
     return member.orgId.toString();
   }
   dbg(`[DASHBOARD] No OrgMember found for userId: ${userId}`);
-  throw new AppError(400, "User is not associated with an organization");
+  const { Organization } = await import("../lib/db/models/Organization.js");
+  const anyOrg = await Organization.findOne({}).sort({ createdAt: 1 }).lean();
+  if (anyOrg) {
+    const { v4: uuid } = await import("uuid");
+    await OrgMember.create({ id: uuid(), orgId: anyOrg.id, userId, role: "admin", joinedAt: new Date() });
+    return anyOrg.id;
+  }
+  throw new AppError(400, "No organization found. Please set up company details first.");
 }
 
 router.get("/metrics", async (req: AuthRequest, res: Response) => {

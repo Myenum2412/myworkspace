@@ -183,6 +183,7 @@ export default function ClientsPage() {
   // System Fields
   const [assignedSalesPerson, setAssignedSalesPerson] = useState("");
   const [assignedProjectManager, setAssignedProjectManager] = useState("");
+  const [members, setMembers] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/user/me", { credentials: "include" })
@@ -191,6 +192,14 @@ export default function ClientsPage() {
       .catch((error) => {
         console.error("[CLIENTS] Failed to fetch user:", error);
       });
+    fetch("/api/employees", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const arr = Array.isArray(d) ? d : d.data || [];
+        const names = arr.map((e: Record<string, unknown>) => e.name as string).filter(Boolean);
+        setMembers(names);
+      })
+      .catch(() => {});
   }, []);
 
   function resetForm() {
@@ -739,11 +748,29 @@ export default function ClientsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Sales Person</Label>
-                      <Input placeholder="Sales person" value={assignedSalesPerson} onChange={(e) => setAssignedSalesPerson(e.target.value)} />
+                      <Select value={assignedSalesPerson} onValueChange={setAssignedSalesPerson}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select sales person" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {members.map((m) => (
+                            <SelectItem key={m} value={m}>{m}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Project Manager</Label>
-                      <Input placeholder="Project manager" value={assignedProjectManager} onChange={(e) => setAssignedProjectManager(e.target.value)} />
+                      <Select value={assignedProjectManager} onValueChange={setAssignedProjectManager}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select project manager" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {members.map((m) => (
+                            <SelectItem key={m} value={m}>{m}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </Field>
                   </div>
                 </FieldSet>

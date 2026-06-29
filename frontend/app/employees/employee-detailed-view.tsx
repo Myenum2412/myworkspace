@@ -196,20 +196,6 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
             <Separator />
           </div>
 
-          {/* Step 4: Social */}
-          <div className="space-y-8">
-            <FieldSet>
-              <FieldLegend>Social Presence</FieldLegend>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FieldInput label="LinkedIn" field="linkedin" value={employee.linkedin} placeholder="LinkedIn profile URL" />
-                <FieldInput label="Twitter / X" field="twitter" value={employee.twitter} placeholder="Twitter handle or URL" />
-                <FieldInput label="GitHub" field="github" value={employee.github} placeholder="GitHub profile URL" />
-                <FieldInput label="Portfolio / Website" field="website" value={employee.website} placeholder="Portfolio website URL" />
-              </div>
-            </FieldSet>
-            <Separator />
-          </div>
-
           {/* Step 5: Documents */}
           <div className="space-y-8">
             <FieldSet>

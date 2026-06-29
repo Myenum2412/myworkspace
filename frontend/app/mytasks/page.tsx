@@ -308,7 +308,24 @@ export default function MyTasksPage() {
           {selectedTask && (
             <TaskEditForm
               task={selectedTask}
-              onSave={(updated) => {
+              onSave={async (updated) => {
+                try {
+                  const payload: Record<string, unknown> = { _id: updated._id };
+                  if (updated.title !== selectedTask?.title) payload.title = updated.title;
+                  if (updated.description !== selectedTask?.description) payload.description = updated.description;
+                  if (updated.status !== selectedTask?.status) payload.status = updated.status;
+                  if (updated.priority !== selectedTask?.priority) payload.priority = updated.priority;
+                  if (updated.assigneeId !== selectedTask?.assigneeId) payload.assigneeId = updated.assigneeId;
+                  if (updated.dueDate !== selectedTask?.dueDate) payload.dueDate = updated.dueDate;
+                  const res = await fetch(`/api/tasks/${updated._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(payload) });
+                  if (!res.ok) {
+                    const d = await res.json().catch(() => ({}));
+                    throw new Error(d.error || "Save failed");
+                  }
+                } catch (error) {
+                  console.error("[MYTASKS] Failed to save task:", error);
+                  return;
+                }
                 setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as unknown as Task) : t));
                 setEditOpen(false);
                 setSelectedTask(null);

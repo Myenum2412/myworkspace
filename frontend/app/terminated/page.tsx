@@ -97,12 +97,12 @@ export default function TerminatedPage() {
                   <table className="w-full">
                     <thead className="bg-blue-50">
                       <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                        <th className="pb-3 font-medium">Employee</th>
-                        <th className="pb-3 font-medium">Department</th>
-                        <th className="pb-3 font-medium">Role</th>
-                        <th className="pb-3 font-medium">End Date</th>
-                        <th className="pb-3 font-medium">Reason</th>
-                        <th className="pb-3 font-medium text-right">Action</th>
+                        <th className="px-4 pb-3 font-medium">Employee</th>
+                        <th className="px-4 pb-3 font-medium">Department</th>
+                        <th className="px-4 pb-3 font-medium">Role</th>
+                        <th className="px-4 pb-3 font-medium">End Date</th>
+                        <th className="px-4 pb-3 font-medium">Reason</th>
+                        <th className="px-4 pb-3 font-medium text-right pr-4">Action</th>
                       </tr>
                     </thead>
                     <tbody>

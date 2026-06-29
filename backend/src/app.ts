@@ -6,6 +6,7 @@ import path from "path";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
 import { perfMiddleware } from "./lib/perf/middleware.js";
+import { authLimiter, apiLimiter } from "./middleware/rate-limit.js";
 import authRoutes from "./routes/auth.js";
 import tasksRoutes from "./routes/tasks.js";
 import sessionsRoutes from "./routes/sessions.js";
@@ -30,13 +31,35 @@ import settingsRoutes from "./routes/settings.js";
 
 const app = express();
 
+// NOTE: scriptSrc does NOT include 'unsafe-inline' in production. Next 16
+// App Router ships no inline scripts in prod builds. If a future build
+// re-introduces them (or you add a third-party inline script), relax ONLY this
+// single directive and log the change — never enable 'unsafe-eval'.
+const isProd = env.NODE_ENV === "production";
 app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "https://fonts.googleapis.com", ...(isProd ? [] : ["'unsafe-inline'"])],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+      imgSrc: ["'self'", "data:", "blob:", env.APP_URL, env.S3_ENDPOINT, env.R2_ENDPOINT].filter(Boolean),
+      connectSrc: ["'self'", env.APP_URL, env.BASE_URL_WS].filter(Boolean),
+      objectSrc: ["'none'"],
+      frameAncestors: ["'self'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      ...(isProd ? { upgradeInsecureRequests: [] } : {}),
+    },
+  },
+  crossOriginEmbedderPolicy: true,
 }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(compression());
 app.use(express.json());
+app.use("/api/auth", authLimiter);
+app.use("/api/client-auth", authLimiter);
+app.use("/api", apiLimiter);
 app.use(perfMiddleware);
 
 // Serve uploads and banners statically

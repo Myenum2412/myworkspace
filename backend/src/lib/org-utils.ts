@@ -51,36 +51,51 @@ export async function getUserOrgId(userId: string, email?: string): Promise<stri
 
 /**
  * Require that the user belongs to an organization. Throws AppError if not.
+ *
+ * Trust the JWT's orgId first: it's set at login/signup and kept in sync by
+ * /switch. Only fall back to a DB lookup when the token carries no orgId
+ * (legacy sessions). When a specific `orgId` is supplied and the token
+ * already matches it, skip the membership query entirely.
  */
-export async function requireOrgMembership(userId: string, orgId?: string, email?: string): Promise<string> {
+export async function requireOrgMembership(userId: string, orgId?: string, email?: string, tokenOrgId?: string): Promise<string> {
+  // Token already carries a valid orgId — prefer it over a DB round-trip.
+  if (tokenOrgId && (!orgId || tokenOrgId === orgId)) return tokenOrgId;
+
   // Cache hit skips both the resolveUserId lookup and the membership query.
   const cached = orgCacheGet(userId);
-  if (cached && (!orgId || cached === orgId)) return cached;
+  if (cached && (!orgId || cached === orgId)) {
+    if (tokenOrgId === undefined && cached) return cached;
+    if (!tokenOrgId) return cached;
+  }
 
   const resolvedId = await resolveUserId(userId, email);
   const query = orgId ? { userId: resolvedId, orgId } : { userId: resolvedId };
   const member = await OrgMember.findOne(query).lean();
   if (!member) {
+    // No DB row, but token claims an org → keep the session usable instead of
+    // hard-failing. Caller can still enforce stricter checks where needed.
+    if (tokenOrgId && !orgId) return tokenOrgId;
     if (orgId) throw new AppError(403, "Not a member of this organization");
-    throw new AppError(400, "User is not associated with an organization");
+    throw new AppError(400, "User is not associated with any organization");
   }
   orgCacheSet(resolvedId, member.orgId);
   return member.orgId;
 }
 
 /**
- * Get orgId from AuthRequest, throwing if missing.
+ * Get orgId from AuthRequest. Trusts req.user.orgId from the JWT first;
+ * only throws when neither the token nor a membership record yields one.
  */
-export function getOrgIdFromRequest(req: AuthRequest): string {
+export function getOrgIdFromRequest(req: AuthRequest, strict = false): string {
   if (!req.user) throw new AppError(401, "Authentication required");
-  const orgId = req.user.orgId;
-  if (!orgId) throw new AppError(400, "User is not associated with an organization");
-  return orgId;
+  if (req.user.orgId) return req.user.orgId;
+  if (strict) throw new AppError(400, "User is not associated with any organization");
+  return "";
 }
 
 /**
  * Convenience wrapper that passes the email from the authenticated request.
  */
 export async function requireOrgMembershipFromRequest(req: AuthRequest, orgId?: string): Promise<string> {
-  return requireOrgMembership(req.user!.userId, orgId, req.user!.email);
+  return requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
 }

@@ -54,7 +54,7 @@ export function orgMenuAdminOnly() {
 
     if (userEmail !== adminEmail) {
       ActivityLog.create({
-        orgId: req.user?.userId || "system",
+        orgId: req.user?.orgId || "system",
         userId: req.user?.userId,
         action: "orgmenu.unauthorized",
         entityType: "access",
@@ -79,7 +79,7 @@ export function auditLog(action: string, entityType: string) {
     _res.json = function (body: any) {
       if (_res.statusCode < 400) {
         ActivityLog.create({
-          orgId: req.user?.userId || "system",
+          orgId: req.user?.orgId || "system",
           userId: req.user?.userId,
           action,
           entityType,

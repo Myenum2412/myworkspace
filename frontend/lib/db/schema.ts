@@ -24,6 +24,7 @@ export const collections = {
   dependentDetails: "dependent_details",
   payments: "payments",
   subscriptions: "subscriptions",
+  clients: "clients",
   clientUsers: "client_users",
   clientAuditLogs: "client_audit_logs",
   counters: "counters",

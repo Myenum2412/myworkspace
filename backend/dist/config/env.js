@@ -18,6 +18,8 @@ export const env = {
     RESEND_API_KEY: process.env.RESEND_API_KEY || "",
     MAIL_FROM: process.env.MAIL_FROM || "MyWorkspace <welcome@myworkspace.myenum.in>",
     APP_URL: process.env.APP_URL || "http://localhost:3000",
+    // Websocket connect-src for Helmet CSP (derived from APP_URL).
+    BASE_URL_WS: process.env.BASE_URL_WS || (process.env.APP_URL || "http://localhost:3000").replace(/^http/, "ws"),
     S3_ENDPOINT: process.env.S3_ENDPOINT || "",
     S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || "",
     S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || "",
@@ -25,6 +27,10 @@ export const env = {
     S3_REGION: process.env.S3_REGION || "us-east-1",
     GCS_BUCKET_NAME: process.env.GCS_BUCKET_NAME || "",
     GCS_KEYFILE: process.env.GCS_KEYFILE || "",
+    // "1" enables per-request stage timing logs (PERF_LOG) and auth debug logs.
+    // Off by default — zero cost in production.
+    PERF_LOG: process.env.PERF_LOG || "0",
+    AUTH_DEBUG: process.env.AUTH_DEBUG || "0",
     AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING || "",
     AZURE_STORAGE_CONTAINER: process.env.AZURE_STORAGE_CONTAINER || "",
 };

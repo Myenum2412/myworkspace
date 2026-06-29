@@ -33,6 +33,7 @@ type CreateEmployeeInput = {
   twitter?: string | null;
   website?: string | null;
   files?: string[];
+  offerLetter?: string | null;
 };
 
 type UpdateEmployeeInput = Partial<CreateEmployeeInput> & { id: string };

@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
+import { FolderOpenIcon, PaletteIcon, TextIcon, CalendarIcon } from "lucide-react";
 
 export type Project = {
   id: string;
@@ -55,7 +56,35 @@ export const columns: ColumnDef<Project>[] = [
   {
     accessorKey: "client",
     header: "Client",
-    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("client")}</span>,
+    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("client") || "—"}</span>,
+  },
+  {
+    id: "color",
+    header: () => <span className="flex items-center gap-1"><PaletteIcon className="size-3" /> Color</span>,
+    cell: ({ row }) => {
+      const color = row.original.color;
+      return color
+        ? <span className="inline-block size-5 rounded-full border" style={{ backgroundColor: color }} />
+        : <span className="text-muted-foreground">—</span>;
+    },
+  },
+  {
+    id: "description",
+    header: () => <span className="flex items-center gap-1"><TextIcon className="size-3" /> Description</span>,
+    cell: ({ row }) => {
+      const desc = row.original.description;
+      return <span className="text-muted-foreground truncate max-w-[200px] block" title={desc}>{desc || "—"}</span>;
+    },
+  },
+  {
+    id: "deadline",
+    header: () => <span className="flex items-center gap-1"><CalendarIcon className="size-3" /> Deadline</span>,
+    cell: ({ row }) => {
+      const deadline = row.original.deadline;
+      return deadline
+        ? <span>{new Date(deadline).toLocaleDateString()}</span>
+        : <span className="text-muted-foreground">—</span>;
+    },
   },
   {
     accessorKey: "tracked",
@@ -108,6 +137,23 @@ export const columns: ColumnDef<Project>[] = [
             : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600"
         }`}>
           {access}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.getValue<string>("status");
+      const active = status === "Active";
+      return (
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+          active
+            ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+            : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600"
+        }`}>
+          {status}
         </span>
       );
     },

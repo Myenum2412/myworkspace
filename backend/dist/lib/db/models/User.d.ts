@@ -30,6 +30,8 @@ export interface IUser extends Document {
     twitter?: string;
     website?: string;
     bannerUrl?: string;
+    resetToken?: string;
+    resetTokenExpires?: Date;
     createdAt: Date;
     updatedAt: Date;
 }

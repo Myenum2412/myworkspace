@@ -52,7 +52,7 @@ export async function PATCH(
         return NextResponse.json({ error: "Not authorized to modify this task" }, { status: 403 });
       }
     } else {
-      const userOrgId = await requireUserOrgId(session.user.id);
+      const userOrgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
       await db.collection(collections.tasks).updateOne(taskFilter, { $set: { orgId: userOrgId } });
     }
 

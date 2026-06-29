@@ -31,5 +31,7 @@ const userSchema = new Schema({
     twitter: String,
     website: String,
     bannerUrl: String,
+    resetToken: { type: String, index: true },
+    resetTokenExpires: Date,
 }, { timestamps: true });
 export const User = model("User", userSchema);

@@ -1,9 +1,13 @@
 import { Router } from "express";
+import mongoose from "mongoose";
 import { Task } from "../lib/db/models/Task.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { TeamMember } from "../lib/db/models/TeamMember.js";
 import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
+import { socketIOManager } from "../lib/socketio/index.js";
+import { requireString, requireEnum, optionalString, TASK_PRIORITIES } from "../lib/validate.js";
 const router = Router();
 router.use(authenticate);
 // GET /?page=1&limit=20&status=&priority=&assigneeId=&sortBy=createdAt&sortOrder=desc
@@ -17,7 +21,7 @@ router.get("/", async (req, res) => {
         console.log(`[TASKS] requireOrgMembership returned: ${userOrgId}`);
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
-        const { status, priority, assigneeId, sortBy, sortOrder } = req.query;
+        const { status, priority, assigneeId, sortBy, sortOrder, scope, afterId } = req.query;
         const allowedSortFields = ["createdAt", "dueDate", "priority", "status", "title"];
         const effectiveSortBy = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
         const effectiveSortOrder = sortOrder === "asc" ? 1 : -1;
@@ -29,6 +33,23 @@ router.get("/", async (req, res) => {
             match.priority = priority;
         if (assigneeId)
             match.assigneeId = assigneeId;
+        // Cursor pagination: fetch rows strictly after this _id. Keeps deep-page
+        // reads O(limit) instead of O(skip+limit) which skip() degrades to.
+        if (typeof afterId === "string" && afterId) {
+            match._id = { $lt: new mongoose.Types.ObjectId(afterId) };
+        }
+        // Staff scope: only show tasks assigned to the user or their teams
+        if (scope === "staff" || scope === "member") {
+            const userTeams = await TeamMember.find({ userId: req.user.userId }).lean();
+            const teamIds = userTeams.map(t => t.teamId);
+            const orConditions = [
+                { assigneeId: req.user.userId },
+            ];
+            if (teamIds.length > 0) {
+                orConditions.push({ teamId: { $in: teamIds } });
+            }
+            match.$or = orConditions;
+        }
         console.log(`[TASKS] Match query:`, JSON.stringify(match));
         const pipeline = [
             { $match: match },
@@ -144,30 +165,60 @@ router.get("/", async (req, res) => {
 // POST /
 router.post("/", async (req, res) => {
     try {
-        const { orgId, title, description, priority, assigneeId, teamId, dueDate, project } = req.body;
-        if (!title)
-            throw new AppError(400, "Title is required");
-        if (!orgId)
-            throw new AppError(400, "orgId is required");
+        const orgId = requireString(req.body.orgId, "orgId");
+        const title = requireString(req.body.title, "title", { min: 1, max: 500 });
+        const description = optionalString(req.body.description, "description", { max: 10_000 });
+        const priority = req.body.priority !== undefined
+            ? requireEnum(req.body.priority, TASK_PRIORITIES, "priority")
+            : "medium";
+        const assigneeId = optionalString(req.body.assigneeId, "assigneeId", { max: 100 });
+        const teamId = optionalString(req.body.teamId, "teamId", { max: 100 });
+        const project = optionalString(req.body.project, "project", { max: 500 });
+        let dueDate;
+        if (req.body.dueDate) {
+            const d = new Date(req.body.dueDate);
+            if (isNaN(d.getTime()))
+                throw new AppError(400, "Invalid dueDate", { dueDate: "must be a valid date" });
+            dueDate = d;
+        }
+        // Fan-out in parallel: write the task, write the activity log. Independent
+        // so a sequential await here was pure latency tax. ActivityLog needs the
+        // task id so it is written after — but the task create is the long pole,
+        // so we kick off a detached log write once we have the id.
         const task = await Task.create({
             orgId,
-            teamId: teamId || undefined,
+            teamId,
             assigneeId: assigneeId || req.user.userId,
             creatorId: req.user.userId,
             createdBy: req.user.userId,
             title,
-            description: description || undefined,
-            project: project || undefined,
-            priority: priority || "medium",
-            dueDate: dueDate ? new Date(dueDate) : undefined,
+            description,
+            project,
+            priority,
+            dueDate,
         });
-        await ActivityLog.create({
+        // Fire-and-forget the activity log — the user-facing path (response + socket)
+        // does not depend on it. Removes one blocking await from the hot path.
+        void ActivityLog.create({
             orgId,
             userId: req.user.userId,
+            createdBy: req.user.userId,
             action: "task.created",
             entityType: "task",
             entityId: task._id.toString(),
             description: `Task "${title}" created`,
+        });
+        // Emit the delta to the org room only — other clients patch local state,
+        // no full refetch. Includes assignee so the right user gets a notification cue.
+        socketIOManager.emitToOrg(orgId, "task:created", {
+            id: task._id.toString(),
+            orgId,
+            title,
+            status: task.status,
+            priority: task.priority,
+            assigneeId: task.assigneeId?.toString() || req.user.userId,
+            creatorId: req.user.userId,
+            dueDate: task.dueDate || null,
         });
         res.status(201).json({ success: true, data: { taskId: task._id } });
     }
@@ -188,6 +239,17 @@ router.put("/:id", async (req, res) => {
             throw new AppError(404, "Task not found");
         if (existing.orgId.toString() !== userOrgId)
             throw new AppError(403, "Not authorized to modify this task");
+        // Staff users can only update tasks assigned to them or their teams
+        const updateScope = req.query.scope;
+        if (updateScope === "staff" || updateScope === "member") {
+            const userTeams = await TeamMember.find({ userId: req.user.userId }).lean();
+            const teamIds = userTeams.map(t => t.teamId);
+            const isOwnTask = existing.assigneeId?.toString() === req.user.userId;
+            const isTeamTask = existing.teamId && teamIds.includes(existing.teamId);
+            if (!isOwnTask && !isTeamTask) {
+                throw new AppError(403, "Not authorized to modify this task");
+            }
+        }
         const updates = {};
         if (title !== undefined)
             updates.title = title;
@@ -203,14 +265,28 @@ router.put("/:id", async (req, res) => {
             updates.project = project;
         if (dueDate !== undefined)
             updates.dueDate = dueDate ? new Date(dueDate) : null;
-        await Task.findByIdAndUpdate(id, updates);
-        await ActivityLog.create({
-            orgId: existing.orgId,
-            userId: req.user.userId,
-            action: "task.updated",
-            entityType: "task",
-            entityId: id,
-            description: `Task updated: ${status ? `status changed to ${status}` : title ? "title updated" : ""}`,
+        // Update + log in parallel. The event payload carries just the changed
+        // scalar fields, not the whole document — clients merge into local state.
+        const [updated] = await Promise.all([
+            Task.findByIdAndUpdate(id, updates, { new: true }).lean(),
+            ActivityLog.create({
+                orgId: existing.orgId,
+                userId: req.user.userId,
+                createdBy: req.user.userId,
+                action: "task.updated",
+                entityType: "task",
+                entityId: id,
+                description: `Task updated: ${status ? `status changed to ${status}` : title ? "title updated" : ""}`,
+            }),
+        ]);
+        socketIOManager.emitToOrg(existing.orgId.toString(), "task:updated", {
+            id,
+            orgId: existing.orgId.toString(),
+            title: updated?.title,
+            status: updated?.status,
+            priority: updated?.priority,
+            assigneeId: updated?.assigneeId?.toString(),
+            updatedAt: updated?.updatedAt ?? new Date(),
         });
         res.json({ success: true });
     }
@@ -229,7 +305,32 @@ router.delete("/:id", async (req, res) => {
             throw new AppError(404, "Task not found");
         if (existing.orgId.toString() !== userOrgId)
             throw new AppError(403, "Not authorized to delete this task");
-        await Task.findByIdAndDelete(req.params.id);
+        const deleteScope = req.query.scope;
+        if (deleteScope === "staff" || deleteScope === "member") {
+            const userTeams = await TeamMember.find({ userId: req.user.userId }).lean();
+            const teamIds = userTeams.map(t => t.teamId);
+            const isOwnTask = existing.assigneeId?.toString() === req.user.userId;
+            const isTeamTask = existing.teamId && teamIds.includes(existing.teamId);
+            if (!isOwnTask && !isTeamTask) {
+                throw new AppError(403, "Not authorized to delete this task");
+            }
+        }
+        await Promise.all([
+            Task.findByIdAndDelete(req.params.id),
+            ActivityLog.create({
+                orgId: existing.orgId,
+                userId: req.user.userId,
+                createdBy: req.user.userId,
+                action: "task.deleted",
+                entityType: "task",
+                entityId: req.params.id,
+                description: `Task deleted`,
+            }),
+        ]);
+        socketIOManager.emitToOrg(existing.orgId.toString(), "task:deleted", {
+            id: req.params.id,
+            orgId: existing.orgId.toString(),
+        });
         res.json({ success: true });
     }
     catch (err) {
@@ -261,6 +362,11 @@ router.patch("/batch/status", async (req, res) => {
             },
         }));
         const result = await Task.bulkWrite(bulkOps);
+        // Delta only: which ids changed and to what status.
+        socketIOManager.emitToOrg(userOrgId, "task:batch-updated", {
+            ids: tasks.map((t) => t._id.toString()),
+            status,
+        });
         res.json({
             success: true,
             data: {
@@ -288,6 +394,12 @@ router.patch("/:id/status", async (req, res) => {
         if (existing.orgId.toString() !== userOrgId)
             throw new AppError(403, "Not authorized to modify this task");
         await Task.findByIdAndUpdate(req.params.id, { status });
+        socketIOManager.emitToOrg(userOrgId, "task:updated", {
+            id: req.params.id,
+            orgId: userOrgId,
+            status,
+            updatedAt: new Date(),
+        });
         res.json({ success: true });
     }
     catch (err) {

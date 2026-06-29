@@ -6,6 +6,7 @@ import { requireOrgMembership } from "../lib/org-utils.js";
 import { Project } from "../lib/db/models/Project.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { socketIOManager } from "../lib/socketio/index.js";
+import { requireString, optionalString, requireEnum, optionalArray, PROJECT_STATUSES, PROJECT_ACCESS } from "../lib/validate.js";
 
 const router = Router();
 
@@ -18,22 +19,32 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {
-  const { orgId, name, client, color, access, status, description, deadline } = req.body;
-  if (!orgId) throw new AppError(400, "orgId is required");
-  if (!name) throw new AppError(400, "Name is required");
+  const orgId = requireString(req.body.orgId, "orgId");
+  const name = requireString(req.body.name, "name", { min: 1, max: 200 });
+  const client = optionalString(req.body.client, "client", { max: 200 }) ?? "";
+  const color = optionalString(req.body.color, "color", { max: 20 }) ?? "#3b82f6";
+  const access = req.body.access !== undefined ? requireEnum(req.body.access, PROJECT_ACCESS, "access") : "Public";
+  const status = req.body.status !== undefined ? requireEnum(req.body.status, PROJECT_STATUSES, "status") : "Active";
+  const description = optionalString(req.body.description, "description", { max: 5000 }) ?? "";
+  let deadline: Date | null = null;
+  if (req.body.deadline) {
+    const d = new Date(req.body.deadline);
+    if (isNaN(d.getTime())) throw new AppError(400, "Invalid deadline", { deadline: "must be a valid date" });
+    deadline = d;
+  }
 
   const project = await Project.create({
     id: uuid(),
     orgId,
     name,
-    client: client || "",
-    color: color || "#3b82f6",
-    description: description || "",
-    deadline: deadline || null,
+    client,
+    color,
+    description,
+    deadline,
     tracked: 0,
     progress: 0,
-    access: access || "Public",
-    status: status || "Active",
+    access,
+    status,
   });
 
   // Activity log is non-blocking; the user-facing path depends on response + emit.

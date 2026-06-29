@@ -7,6 +7,7 @@ import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { socketIOManager } from "../lib/socketio/index.js";
+import { requireString, requireEnum, optionalString, TASK_STATUSES, TASK_PRIORITIES } from "../lib/validate.js";
 
 const router = Router();
 
@@ -177,25 +178,36 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 // POST /
 router.post("/", async (req: AuthRequest, res: Response) => {
   try {
-    const { orgId, title, description, priority, assigneeId, teamId, dueDate, project } = req.body;
-    if (!title) throw new AppError(400, "Title is required");
-    if (!orgId) throw new AppError(400, "orgId is required");
-
+    const orgId = requireString(req.body.orgId, "orgId");
+    const title = requireString(req.body.title, "title", { min: 1, max: 500 });
+    const description = optionalString(req.body.description, "description", { max: 10_000 });
+    const priority = req.body.priority !== undefined
+      ? requireEnum(req.body.priority, TASK_PRIORITIES, "priority")
+      : "medium";
+    const assigneeId = optionalString(req.body.assigneeId, "assigneeId", { max: 100 });
+    const teamId = optionalString(req.body.teamId, "teamId", { max: 100 });
+    const project = optionalString(req.body.project, "project", { max: 500 });
+    let dueDate: Date | undefined;
+    if (req.body.dueDate) {
+      const d = new Date(req.body.dueDate);
+      if (isNaN(d.getTime())) throw new AppError(400, "Invalid dueDate", { dueDate: "must be a valid date" });
+      dueDate = d;
+    }
     // Fan-out in parallel: write the task, write the activity log. Independent
     // so a sequential await here was pure latency tax. ActivityLog needs the
     // task id so it is written after — but the task create is the long pole,
     // so we kick off a detached log write once we have the id.
     const task = await Task.create({
       orgId,
-      teamId: teamId || undefined,
+      teamId,
       assigneeId: assigneeId || req.user!.userId,
       creatorId: req.user!.userId,
       createdBy: req.user!.userId,
       title,
-      description: description || undefined,
-      project: project || undefined,
-      priority: priority || "medium",
-      dueDate: dueDate ? new Date(dueDate) : undefined,
+      description,
+      project,
+      priority,
+      dueDate,
     });
 
     // Fire-and-forget the activity log — the user-facing path (response + socket)

@@ -39,10 +39,49 @@ async function resolvePossibleUserIds(userId: string, email?: string): Promise<s
   return [...new Set(ids)];
 }
 
-export async function requireUserOrgId(userId: string, email?: string): Promise<string> {
+/**
+ * Resolve the user's active orgId.
+ *
+ * Order of precedence:
+ *   1. `tokenOrgId` — already present on the JWT/session. Trust it; do NOT
+ *      throw just because the DB lookup below is momentarily out of sync.
+ *   2. OrgMember lookup by userId/email (handles legacy sessions whose token
+ *      was issued before orgId was embedded).
+ *
+ * Throws ONLY when neither source yields an orgId. The caller decides how to
+ * surface the message — API routes map it to 400/403, pages show a graceful
+ * "no organization" state instead of a hard crash.
+ */
+export async function requireUserOrgId(
+  userId: string,
+  email?: string,
+  tokenOrgId?: string,
+): Promise<string> {
+  if (tokenOrgId) return tokenOrgId;
   const orgId = await getUserOrgId(userId, email);
-  if (!orgId) throw new Error("User is not associated with any organization");
-  return orgId;
+  if (orgId) return orgId;
+  throw new Error("User is not associated with any organization");
+}
+
+/**
+ * Fetch the organization record for an orgId.
+ * Tries string `id` first, then ObjectId `_id`. Returns null if missing
+ * (orgId present but org doc deleted) so callers can show a graceful
+ * fallback instead of throwing.
+ */
+export async function getOrgDetails(orgId: string): Promise<Record<string, unknown> | null> {
+  if (!orgId) return null;
+  const org = await db.collection(collections.organizations).findOne({ id: orgId });
+  if (org) return org as Record<string, unknown>;
+  let byObjectId: Record<string, unknown> | null = null;
+  try {
+    if (ObjectId.isValid(orgId)) {
+      byObjectId = (await db.collection(collections.organizations).findOne(
+        { _id: new ObjectId(orgId) },
+      )) as Record<string, unknown> | null;
+    }
+  } catch {}
+  return byObjectId;
 }
 
 export async function validateOrgMembership(userId: string, orgId: string, email?: string): Promise<boolean> {
@@ -58,6 +97,20 @@ export async function ensureUserOrg(userId: string, email?: string): Promise<str
   const { v4: uuid } = await import("uuid");
   const possibleIds = await resolvePossibleUserIds(userId, email);
   const user = await db.collection(collections.users).findOne({ id: { $in: possibleIds } });
+
+  const existingOrg = await db.collection(collections.organizations).findOne({}, { sort: { createdAt: 1 } });
+  if (existingOrg) {
+    const mainUserId = user?.id || possibleIds[0];
+    await db.collection(collections.orgMembers).insertOne({
+      id: uuid(),
+      orgId: existingOrg.id,
+      userId: mainUserId,
+      role: "admin",
+      joinedAt: new Date(),
+    });
+    return existingOrg.id;
+  }
+
   const userName = user?.name || user?.email?.split("@")[0] || "User";
   const newOrgId = uuid();
   const baseSlug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;

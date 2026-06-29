@@ -447,66 +447,6 @@ export function ContactDetailsSection({
   )
 }
 
-export function SocialPresenceSection({
-  linkedin = "",
-  twitter = "",
-  github = "",
-  portfolio = "",
-  onLinkedinChange,
-  onTwitterChange,
-  onGithubChange,
-  onPortfolioChange,
-}: {
-  linkedin?: string
-  twitter?: string
-  github?: string
-  portfolio?: string
-  onLinkedinChange?: (value: string) => void
-  onTwitterChange?: (value: string) => void
-  onGithubChange?: (value: string) => void
-  onPortfolioChange?: (value: string) => void
-} = {}) {
-  return (
-    <FieldSet>
-      <FieldLegend>Social Presence</FieldLegend>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field>
-          <FieldLabel>LinkedIn</FieldLabel>
-          <Input 
-            placeholder="LinkedIn profile URL"
-            value={linkedin}
-            onChange={(e) => onLinkedinChange?.(e.target.value)}
-          />
-        </Field>
-        <Field>
-          <FieldLabel>Twitter</FieldLabel>
-          <Input 
-            placeholder="Twitter handle or URL"
-            value={twitter}
-            onChange={(e) => onTwitterChange?.(e.target.value)}
-          />
-        </Field>
-        <Field>
-          <FieldLabel>GitHub</FieldLabel>
-          <Input 
-            placeholder="GitHub profile URL"
-            value={github}
-            onChange={(e) => onGithubChange?.(e.target.value)}
-          />
-        </Field>
-        <Field>
-          <FieldLabel>Portfolio</FieldLabel>
-          <Input 
-            placeholder="Portfolio website URL"
-            value={portfolio}
-            onChange={(e) => onPortfolioChange?.(e.target.value)}
-          />
-        </Field>
-      </div>
-    </FieldSet>
-  )
-}
-
 interface DynamicRowSectionProps {
   title: string
   rows: Row[]

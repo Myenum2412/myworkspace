@@ -187,6 +187,55 @@ export default function StaffTasksPage() {
             </Card>
           </div>
 
+          {/* Recently Allocated Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <ListTodoIcon className="size-4" />
+                Recently Allocated Tasks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {displayTasks.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No tasks allocated yet</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-blue-50">
+                      <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
+                        <th className="pb-3 font-medium">Task</th>
+                        <th className="pb-3 font-medium">Assignee</th>
+                        <th className="pb-3 font-medium">Priority</th>
+                        <th className="pb-3 font-medium">Status</th>
+                        <th className="pb-3 font-medium">Due</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...displayTasks]
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        .slice(0, 5)
+                        .map((t) => (
+                        <tr key={t._id} className="border-b last:border-0">
+                          <td className="py-2.5 text-sm">{t.title}</td>
+                          <td className="py-2.5 text-sm">{t.assigneeName || "Unassigned"}</td>
+                          <td className="py-2.5">
+                            <Badge className={priorityStyles[t.priority] || ""}>{t.priority}</Badge>
+                          </td>
+                          <td className="py-2.5">
+                            <Badge className={statusStyles[t.status] || ""}>{t.status.replace(/_/g, " ")}</Badge>
+                          </td>
+                          <td className="py-2.5 text-sm text-muted-foreground">
+                            {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {view === "table" ? (
             <Card>
               <CardHeader><CardTitle>{filter === "team" ? "Team Tasks" : "My Tasks"}</CardTitle></CardHeader>

@@ -9,6 +9,12 @@ import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { saveFile, getFilePath, getFileBuffer, deleteFile as deleteStorageFile } from "../lib/storage/index.js";
 import { env } from "../config/env.js";
+import { socketIOManager } from "../lib/socketio/index.js";
+
+async function verifyAccess(userId: string, orgId: string): Promise<void> {
+  const member = await OrgMember.findOne({ userId, orgId }).lean();
+  if (!member) throw new AppError(403, "Not authorized");
+}
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
@@ -92,6 +98,7 @@ router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) 
   if (!req.file) throw new AppError(400, "No file provided");
   const orgId = req.body.orgId as string;
   if (!orgId) throw new AppError(400, "orgId is required");
+  await verifyAccess(req.user!.userId, orgId);
 
   const category = (req.body.category as string) || "general";
   if (!["profile", "report", "general"].includes(category)) {
@@ -122,6 +129,8 @@ router.post("/", upload.single("file"), async (req: AuthRequest, res: Response) 
     entityId: fileId,
     description: `File "${req.file.originalname}" uploaded`,
   });
+
+  socketIOManager.emitToOrg(orgId, "file:uploaded", { fileId, orgId });
 
   res.status(201).json({ success: true, fileId });
 });

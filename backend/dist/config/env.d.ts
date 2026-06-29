@@ -14,6 +14,7 @@ export declare const env: {
     RESEND_API_KEY: string;
     MAIL_FROM: string;
     APP_URL: string;
+    BASE_URL_WS: string;
     S3_ENDPOINT: string;
     S3_BUCKET_NAME: string;
     S3_ACCESS_KEY_ID: string;
@@ -21,6 +22,8 @@ export declare const env: {
     S3_REGION: string;
     GCS_BUCKET_NAME: string;
     GCS_KEYFILE: string;
+    PERF_LOG: string;
+    AUTH_DEBUG: string;
     AZURE_STORAGE_CONNECTION_STRING: string;
     AZURE_STORAGE_CONTAINER: string;
 };

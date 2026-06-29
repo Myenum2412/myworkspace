@@ -56,10 +56,6 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
       state: user.state || "",
       country: user.country || "",
       zipCode: user.zipCode || "",
-      linkedin: user.linkedin || "",
-      github: user.github || "",
-      twitter: user.twitter || "",
-      website: user.website || "",
       status: user.status || "offline",
       role: user.role || "member",
       image: user.image || "",
@@ -109,7 +105,6 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   const {
     name, email, phone, department, company,
     address, city, state, country, zipCode,
-    linkedin, github, twitter, website,
     companyName, companyDomain,
     businessType, industry, gstNumber, panNumber, cinNumber,
     companyEmail, mobileNumber, alternateMobileNumber, orgWebsite,
@@ -123,7 +118,6 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   const userFieldMap: Record<string, unknown> = {
     name, email, phone, department, company,
     address, city, state, country, zipCode,
-    linkedin, github, twitter, website,
   };
   for (const [key, val] of Object.entries(userFieldMap)) {
     if (val !== undefined) userUpdates[key] = val;
