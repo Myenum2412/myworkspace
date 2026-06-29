@@ -36,7 +36,7 @@ import {
   UploadIcon,
 } from "lucide-react";
 import { FileExplorer } from "@/components/file-explorer";
-import { FileUploadDialog } from "@/components/file-upload-dialog";
+import { DropZoneUpload } from "@/components/dropzone-upload";
 
 type ClientFolder = {
   id: string;
@@ -92,9 +92,8 @@ export default function FilesPage() {
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [activeClientName, setActiveClientName] = useState<string>("");
 
-  // Dialogs
+  // Upload
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [uploadClientId, setUploadClientId] = useState<string | null>(null);
 
   const orgId = orgInfo?.id || "";
   const userId = session?.user?.id || "";
@@ -198,11 +197,6 @@ export default function FilesPage() {
     setActiveClientName("");
   };
 
-  const onUpload = (clientId: string) => {
-    setUploadClientId(clientId);
-    setUploadOpen(true);
-  };
-
   const filteredClients = useMemo(() => {
     if (!search.trim()) return clients;
     const q = search.toLowerCase();
@@ -261,8 +255,8 @@ export default function FilesPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => onUpload(activeClientId)}>
-            <UploadIcon className="mr-2 size-4" /> Upload to Client
+          <Button variant={uploadOpen ? "secondary" : "outline"} size="sm" onClick={() => setUploadOpen((v) => !v)}>
+            <UploadIcon className="mr-2 size-4" /> {uploadOpen ? "Close Upload" : "Upload to Client"}
           </Button>
           <Button
             variant="outline"
@@ -273,18 +267,16 @@ export default function FilesPage() {
           </Button>
         </div>
 
-        <FileExplorer orgId={orgId} userId={userId} clientId={activeClientId} />
+        {uploadOpen && (
+          <DropZoneUpload
+            orgId={orgId}
+            clientId={activeClientId}
+            onUploadComplete={fetchData}
+            maxConcurrency={3}
+          />
+        )}
 
-        <FileUploadDialog
-          open={uploadOpen}
-          onOpenChange={setUploadOpen}
-          orgId={orgId}
-          clientId={uploadClientId}
-          onUploadComplete={() => {
-            setUploadOpen(false);
-            fetchData();
-          }}
-        />
+        <FileExplorer orgId={orgId} userId={userId} clientId={activeClientId} />
       </div>
     );
   }
@@ -371,7 +363,7 @@ export default function FilesPage() {
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <FolderOpenIcon className="size-5" />
-            Client Folders
+            Folders & Files
           </h2>
           <p className="text-sm text-muted-foreground">
             {clients.length} client{clients.length !== 1 ? "s" : ""} · click a client to browse their files

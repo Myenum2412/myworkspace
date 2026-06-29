@@ -5,15 +5,14 @@ import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { socketIOManager } from "../lib/socketio/index.js";
+import { verifyOrgAccess } from "../lib/org-utils.js";
 
 const router = Router();
 router.use(authenticate);
 
 async function verifyMembership(userId: string, orgId: string): Promise<void> {
-  const member = await OrgMember.findOne({ userId, orgId }).lean();
-  if (!member) throw new AppError(403, "Not a member of this organization");
+  await verifyOrgAccess(userId, orgId);
 }
 
 router.get("/tree", async (req: AuthRequest, res: Response) => {
@@ -64,7 +63,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   await Folder.create({ id, orgId, parentId: parentId || null, name, path, clientId: clientId || null, createdBy: req.user!.userId });
 
   await ActivityLog.create({
-    orgId, userId: req.user!.userId, action: "folder.created",
+    orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "folder.created",
     entityType: "folder", entityId: id,
     description: `Folder "${name}" created`,
   });
@@ -91,7 +90,7 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
 
   const oldPrefix = oldPath + "/";
   const newPrefix = newPath + "/";
-  await Folder.updateOne({ id: folder.id }, { name, path: newPath });
+  await Folder.updateOne({ id: folder.id }, { name, path: newPath, updatedBy: req.user!.userId });
   const childFolders = await Folder.find({
     orgId: folder.orgId,
     path: { $regex: `^${escapeRegex(oldPrefix)}` },
@@ -101,12 +100,10 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
     await Folder.updateOne({ id: child.id }, { path: childNewPath });
   }
 
-  // Emit update event (socket)
-  const { socketIOManager } = await import("../lib/socketio/index.js");
   socketIOManager.emitToOrg(folder.orgId, "folder:updated", { folderId: folder.id, name, oldPath, newPath });
 
   await ActivityLog.create({
-    orgId: folder.orgId, userId: req.user!.userId, action: "folder.renamed",
+    orgId: folder.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "folder.renamed",
     entityType: "folder", entityId: folder.id,
     description: `Folder renamed from "${folder.name}" to "${name}"`,
   });
@@ -131,7 +128,7 @@ router.post("/:id/move", async (req: AuthRequest, res: Response) => {
   const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null, id: { $ne: folder.id } }).lean();
   if (existing) throw new AppError(409, "A folder with this name already exists at target location");
 
-  await Folder.updateOne({ id: folder.id }, { parentId: targetParentId || null, path: newPath });
+  await Folder.updateOne({ id: folder.id }, { parentId: targetParentId || null, path: newPath, updatedBy: req.user!.userId });
   const oldPrefix = oldPath + "/";
   const newPrefix = newPath + "/";
   const childFolders = await Folder.find({ orgId: folder.orgId, path: { $regex: `^${escapeRegex(oldPrefix)}` } }).lean();
@@ -141,6 +138,9 @@ router.post("/:id/move", async (req: AuthRequest, res: Response) => {
   }
 
   await FileAttachment.updateMany({ orgId: folder.orgId, folderId: folder.id }, { folderId: targetParentId || null });
+
+  socketIOManager.emitToOrg(folder.orgId, "folder:updated", { folderId: folder.id, action: "moved", from: oldPath, to: newPath });
+
   res.json({ success: true });
 });
 
@@ -178,13 +178,16 @@ router.post("/:id/copy", async (req: AuthRequest, res: Response) => {
       _id: undefined,
       id: copyId,
       folderId: newFolderId,
-      name: `${file.name}`,
+      name: file.name,
       originalName: file.originalName,
       uploaderId: req.user!.userId,
+      createdBy: req.user!.userId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
   }
+
+  socketIOManager.emitToOrg(folder.orgId, "folder:created", { folderId: folderIdMap.get(folder.id), orgId: folder.orgId });
 
   res.status(201).json({ success: true, folderId: folderIdMap.get(folder.id) });
 });
@@ -195,21 +198,33 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   await verifyMembership(req.user!.userId, folder.orgId);
 
   const now = new Date();
+
+  // Collect all descendant folder IDs recursively
+  const allChildFolders = await Folder.find({
+    orgId: folder.orgId,
+    path: { $regex: `^${escapeRegex(folder.path)}/` },
+  }).lean();
+  const allFolderIds = [folder.id, ...allChildFolders.map(f => f.id)];
+
+  // Soft-delete all descendant folders
   await Folder.updateMany(
-    { orgId: folder.orgId, $or: [{ id: folder.id }, { path: { $regex: `^${escapeRegex(folder.path)}/` } }] },
-    { deletedAt: now, $set: { deletedAt: now } }
+    { id: { $in: allFolderIds } },
+    { deletedAt: now, deletedBy: req.user!.userId }
   );
 
+  // Soft-delete all files inside any of these folders
   await FileAttachment.updateMany(
-    { orgId: folder.orgId, folderId: folder.id, deletedAt: null },
+    { orgId: folder.orgId, folderId: { $in: allFolderIds }, deletedAt: null },
     { deletedAt: now, deletedBy: req.user!.userId }
   );
 
   await ActivityLog.create({
-    orgId: folder.orgId, userId: req.user!.userId, action: "folder.deleted",
+    orgId: folder.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "folder.deleted",
     entityType: "folder", entityId: folder.id,
-    description: `Folder "${folder.name}" and contents deleted`,
+    description: `Folder "${folder.name}" and ${allChildFolders.length} sub-folders deleted`,
   });
+
+  socketIOManager.emitToOrg(folder.orgId, "folder:deleted", { folderId: folder.id, childFolderIds: allFolderIds });
 
   res.json({ success: true });
 });

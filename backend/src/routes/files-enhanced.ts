@@ -5,10 +5,10 @@ import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { FileVersion } from "../lib/db/models/FileVersion.js";
 import { FileShare } from "../lib/db/models/FileShare.js";
 import { StorageQuota } from "../lib/db/models/StorageQuota.js";
-import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { verifyOrgAccess } from "../lib/org-utils.js";
 import { getStorageProvider, computeChecksum } from "../lib/storage/providers.js";
 import { env } from "../config/env.js";
 import { socketIOManager } from "../lib/socketio/index.js";
@@ -19,8 +19,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500
 router.use(authenticate);
 
 async function verifyAccess(userId: string, orgId: string): Promise<void> {
-  const member = await OrgMember.findOne({ userId, orgId }).lean();
-  if (!member) throw new AppError(403, "Not authorized");
+  await verifyOrgAccess(userId, orgId);
 }
 
 async function checkQuota(orgId: string, additionalBytes: number): Promise<void> {
@@ -80,8 +79,8 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
   const { User } = await import("../lib/db/models/User.js");
-  const users = await User.find({ _id: { $in: userIds } }).lean();
-  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+  const users = await User.find({ id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   const result = files.map(f => ({
     ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown",
@@ -90,11 +89,10 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   res.json({ success: true, data: result, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
 });
 
-// Shared-file listing (org-scoped). Kept from the legacy files router; merged
-// here so /api/files has one canonical implementation.
 router.get("/shared", async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || "";
   if (!orgId) { res.json({ success: true, data: [] }); return; }
+  await verifyAccess(req.user!.userId, orgId);
   const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).lean();
 
   const fileIds = [...new Set(shares.map(s => s.fileId))];
@@ -103,8 +101,8 @@ router.get("/shared", async (req: AuthRequest, res: Response) => {
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
   const { User } = await import("../lib/db/models/User.js");
-  const users = await User.find({ _id: { $in: userIds } }).lean();
-  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+  const users = await User.find({ id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   const result = shares.map(share => {
     const file = fileMap.get(share.fileId);
@@ -118,10 +116,10 @@ router.get("/shared", async (req: AuthRequest, res: Response) => {
   res.json({ success: true, data: result });
 });
 
-// Recycle bin — org-scoped soft-deleted files.
 router.get("/recycle-bin", async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || "";
   if (!orgId) { res.json({ success: true, data: [] }); return; }
+  await verifyAccess(req.user!.userId, orgId);
   const files = await FileAttachment.find({ orgId, deletedAt: { $ne: null } })
     .select("id originalName mimeType size createdAt uploaderId deletedAt")
     .sort({ deletedAt: -1 })
@@ -129,8 +127,8 @@ router.get("/recycle-bin", async (req: AuthRequest, res: Response) => {
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
   const { User } = await import("../lib/db/models/User.js");
-  const users = await User.find({ _id: { $in: userIds } }).lean();
-  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+  const users = await User.find({ id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   const result = files.map(f => ({
     ...f,
@@ -150,8 +148,8 @@ router.get("/recent", async (req: AuthRequest, res: Response) => {
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
   const { User } = await import("../lib/db/models/User.js");
-  const users = await User.find({ _id: { $in: userIds } }).lean();
-  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+  const users = await User.find({ id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   res.json({ success: true, data: files.map(f => ({ ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown" })) });
 });
@@ -189,15 +187,12 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
   });
 });
 
-// Inline stream/preview of a file (public-object fallback used by the
-// download button). Org-membership enforced.
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   const file = await FileAttachment.findOne({ id: req.params.id }).lean();
   if (!file) throw new AppError(404, "File not found");
   if (file.deletedAt) throw new AppError(410, "File has been deleted");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: file.orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized to access this file");
+  await verifyOrgAccess(req.user!.userId, file.orgId);
 
   const provider = getStorageProvider();
   const buf = await provider.get(file.storagePath);
@@ -207,13 +202,11 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
   res.send(buf);
 });
 
-// Share a file with a specific org user (org-scoped).
 router.post("/:id/share", async (req: AuthRequest, res: Response) => {
   const { sharedWithUserId, orgId } = req.body;
   if (!orgId) throw new AppError(400, "orgId is required");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId }).lean();
-  if (!membership) throw new AppError(403, "Not a member of this organization");
+  await verifyOrgAccess(req.user!.userId, orgId);
 
   const shareId = uuid();
   await FileShare.create({
@@ -222,12 +215,17 @@ router.post("/:id/share", async (req: AuthRequest, res: Response) => {
     sharedByUserId: req.user!.userId,
     sharedWithUserId: sharedWithUserId || null,
     orgId,
+    createdBy: req.user!.userId,
   });
   res.json({ success: true });
 });
 
 router.delete("/:id/share", async (req: AuthRequest, res: Response) => {
   const { id } = req.body;
+  if (!id) throw new AppError(400, "share id is required");
+  const share = await FileShare.findOne({ id }).lean();
+  if (!share) throw new AppError(404, "Share not found");
+  await verifyOrgAccess(req.user!.userId, share.orgId);
   await FileShare.deleteOne({ id });
   res.json({ success: true });
 });
@@ -278,7 +276,8 @@ router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: 
 
       await FileAttachment.create({
         id: fileId, orgId, folderId: folderId || null, clientId: clientId || null,
-        uploaderId: req.user!.userId, name: file.originalname,
+        uploaderId: req.user!.userId, createdBy: req.user!.userId,
+        name: file.originalname,
         originalName: file.originalname, mimeType: file.mimetype || "application/octet-stream",
         size: file.size, storagePath, storageProvider: env.R2_ENDPOINT ? "r2" : "local",
         category: mimeCategory as any, description, tags, checksum, currentVersion: 1,
@@ -287,7 +286,7 @@ router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: 
       await updateUsedStorage(orgId, file.size);
 
       await ActivityLog.create({
-        orgId, userId: req.user!.userId, action: "file.uploaded",
+        orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "file.uploaded",
         entityType: "file", entityId: fileId,
         description: `File "${file.originalname}" uploaded (${(file.size / 1024).toFixed(1)} KB)`,
       });
@@ -329,8 +328,8 @@ router.get("/:id/versions", async (req: AuthRequest, res: Response) => {
   const versions = await FileVersion.find({ fileId: req.params.id }).sort({ versionNumber: -1 }).lean();
   const userIds = [...new Set(versions.map(v => v.uploadedBy))];
   const { User } = await import("../lib/db/models/User.js");
-  const users = await User.find({ _id: { $in: userIds } }).lean();
-  const userMap = new Map(users.map(u => [u._id.toString(), u.name]));
+  const users = await User.find({ id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   res.json({ success: true, data: versions.map(v => ({ ...v, uploadedByName: userMap.get(v.uploadedBy) || "Unknown" })) });
 });
@@ -354,8 +353,8 @@ router.post("/:id/versions", upload.single("file"), async (req: AuthRequest, res
 
   const versionId = uuid();
   await FileVersion.create({
-    id: versionId, fileId: file.id, versionNumber, storagePath: versionStoragePath,
-    size: req.file.size, uploadedBy: req.user!.userId, comment,
+    id: versionId, orgId: file.orgId, fileId: file.id, versionNumber, storagePath: versionStoragePath,
+    size: req.file.size, uploadedBy: req.user!.userId, createdBy: req.user!.userId, comment,
   });
 
   const checksum = await computeChecksum(req.file.buffer);
@@ -365,10 +364,12 @@ router.post("/:id/versions", upload.single("file"), async (req: AuthRequest, res
   );
 
   await ActivityLog.create({
-    orgId: file.orgId, userId: req.user!.userId, action: "file.version.created",
+    orgId: file.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "file.version.created",
     entityType: "file", entityId: file.id,
     description: `Version ${versionNumber} uploaded for "${file.originalName}"`,
   });
+
+  socketIOManager.emitToOrg(file.orgId, "file:updated", { fileId: file.id, action: "version_uploaded", versionNumber });
 
   res.status(201).json({ success: true, versionId, versionNumber });
 });
@@ -390,10 +391,12 @@ router.post("/:id/rollback", async (req: AuthRequest, res: Response) => {
   );
 
   await ActivityLog.create({
-    orgId: file.orgId, userId: req.user!.userId, action: "file.rolledback",
+    orgId: file.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "file.rolledback",
     entityType: "file", entityId: file.id,
     description: `File rolled back to version ${version.versionNumber}`,
   });
+
+  socketIOManager.emitToOrg(file.orgId, "file:updated", { fileId: file.id, action: "rolled_back", versionNumber: version.versionNumber });
 
   res.json({ success: true });
 });
@@ -412,6 +415,8 @@ router.post("/:id/lock", async (req: AuthRequest, res: Response) => {
     { isLocked: true, lockedBy: req.user!.userId }
   );
 
+  socketIOManager.emitToOrg(file.orgId, "file:updated", { fileId: file.id, action: "locked", lockedBy: req.user!.userId });
+
   res.json({ success: true, locked: true });
 });
 
@@ -429,6 +434,8 @@ router.post("/:id/unlock", async (req: AuthRequest, res: Response) => {
     { isLocked: false, lockedBy: null }
   );
 
+  socketIOManager.emitToOrg(file.orgId, "file:updated", { fileId: file.id, action: "unlocked" });
+
   res.json({ success: true, locked: false });
 });
 
@@ -444,122 +451,27 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
   }
 
   const update: Record<string, any> = {};
-  if (name !== undefined) update.name = name;
+  if (name !== undefined) {
+    update.name = name;
+    update.originalName = name;
+  }
   if (description !== undefined) update.description = description;
   if (tags !== undefined) update.tags = tags;
   if (folderId !== undefined) update.folderId = folderId || null;
+  update.updatedBy = req.user!.userId;
 
   await FileAttachment.updateOne({ id: req.params.id }, { $set: update });
 
   await ActivityLog.create({
-    orgId: file.orgId, userId: req.user!.userId, action: "file.updated",
+    orgId: file.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "file.updated",
     entityType: "file", entityId: file.id,
     description: `File "${file.originalName}" metadata updated`,
   });
 
-  res.json({ success: true });
-});
-
-router.post("/:id/duplicate", async (req: AuthRequest, res: Response) => {
-  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
-  if (!file) throw new AppError(404, "File not found");
-  await verifyAccess(req.user!.userId, file.orgId);
-
-  const provider = getStorageProvider();
-  const buf = await provider.get(file.storagePath);
-  if (!buf) throw new AppError(404, "Source file not found in storage");
-
-  const newId = uuid();
-  const storagePath = `${file.orgId}/${Date.now()}-${newId}-${file.originalName}`;
-  await provider.save(buf, storagePath);
-
-  await FileAttachment.create({
-    id: newId, orgId: file.orgId, folderId: file.folderId,
-    uploaderId: req.user!.userId, name: `Copy of ${file.name}`,
-    originalName: `Copy of ${file.originalName}`, mimeType: file.mimeType,
-    size: file.size, storagePath, storageProvider: file.storageProvider,
-    category: file.category, description: file.description, tags: file.tags,
-    checksum: file.checksum, currentVersion: 1,
-  });
-
-  res.status(201).json({ success: true, fileId: newId });
-});
-
-router.delete("/:id", async (req: AuthRequest, res: Response) => {
-  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
-  if (!file) throw new AppError(404, "File not found");
-  await verifyAccess(req.user!.userId, file.orgId);
-
-  if (file.isLocked && file.lockedBy !== req.user!.userId) {
-    throw new AppError(423, "File is locked by another user");
-  }
-
-  await FileAttachment.updateOne(
-    { id: req.params.id },
-    { deletedAt: new Date(), deletedBy: req.user!.userId }
-  );
-
-  await ActivityLog.create({
-    orgId: file.orgId, userId: req.user!.userId, action: "file.deleted",
-    entityType: "file", entityId: file.id,
-    description: `File "${file.originalName}" moved to trash`,
-  });
+  socketIOManager.emitToOrg(file.orgId, "file:updated", { fileId: file.id, action: "metadata_updated", updates: Object.keys(update) });
 
   res.json({ success: true });
 });
-
-router.post("/:id/restore", async (req: AuthRequest, res: Response) => {
-  const file = await FileAttachment.findOne({ id: req.params.id }).lean();
-  if (!file) throw new AppError(404, "File not found");
-  if (!file.deletedAt) throw new AppError(400, "File is not in trash");
-  await verifyAccess(req.user!.userId, file.orgId);
-
-  await FileAttachment.updateOne(
-    { id: req.params.id },
-    { deletedAt: null, deletedBy: null }
-  );
-
-  await ActivityLog.create({
-    orgId: file.orgId, userId: req.user!.userId, action: "file.restored",
-    entityType: "file", entityId: file.id,
-    description: `File "${file.originalName}" restored from trash`,
-  });
-
-  res.json({ success: true });
-});
-
-router.delete("/:id/permanent", async (req: AuthRequest, res: Response) => {
-  const file = await FileAttachment.findOne({ id: req.params.id }).lean();
-  if (!file) throw new AppError(404, "File not found");
-  await verifyAccess(req.user!.userId, file.orgId);
-
-  const provider = getStorageProvider();
-  await provider.delete(file.storagePath);
-
-  const versions = await FileVersion.find({ fileId: file.id }).lean();
-  for (const v of versions) {
-    await provider.delete(v.storagePath);
-  }
-  await FileVersion.deleteMany({ fileId: file.id });
-  await FileShare.deleteMany({ fileId: file.id });
-  await ShareLinkDeleteMany(file.id);
-  await FileAttachment.deleteOne({ id: req.params.id });
-
-  await updateUsedStorage(file.orgId, -file.size);
-
-  await ActivityLog.create({
-    orgId: file.orgId, userId: req.user!.userId, action: "file.permanent_deleted",
-    entityType: "file", entityId: file.id,
-    description: `File "${file.originalName}" permanently deleted`,
-  });
-
-  res.json({ success: true });
-});
-
-async function ShareLinkDeleteMany(fileId: string): Promise<void> {
-  const { ShareLink } = await import("../lib/db/models/ShareLink.js");
-  await ShareLink.deleteMany({ fileId });
-}
 
 router.post("/bulk/delete", async (req: AuthRequest, res: Response) => {
   const { fileIds } = req.body;
@@ -577,10 +489,12 @@ router.post("/bulk/delete", async (req: AuthRequest, res: Response) => {
   );
 
   await ActivityLog.create({
-    orgId: orgIds[0], userId: req.user!.userId, action: "files.bulk_deleted",
+    orgId: orgIds[0], userId: req.user!.userId, createdBy: req.user!.userId, action: "files.bulk_deleted",
     entityType: "file", entityId: fileIds.join(","),
     description: `${fileIds.length} files moved to trash`,
   });
+
+  socketIOManager.emitToOrg(orgIds[0], "file:deleted", { fileIds, action: "bulk_soft_delete" });
 
   res.json({ success: true, deleted: fileIds.length });
 });
@@ -599,6 +513,8 @@ router.post("/bulk/restore", async (req: AuthRequest, res: Response) => {
     { deletedAt: null, deletedBy: null }
   );
 
+  socketIOManager.emitToOrg(files[0].orgId, "file:updated", { fileIds, action: "bulk_restored" });
+
   res.json({ success: true, restored: fileIds.length });
 });
 
@@ -614,6 +530,8 @@ router.post("/bulk/move", async (req: AuthRequest, res: Response) => {
     { id: { $in: fileIds }, deletedAt: null },
     { folderId: targetFolderId || null }
   );
+
+  socketIOManager.emitToOrg(files[0].orgId, "file:updated", { fileIds, action: "bulk_moved", targetFolderId });
 
   res.json({ success: true, moved: fileIds.length });
 });
@@ -638,6 +556,8 @@ router.post("/bulk/tag", async (req: AuthRequest, res: Response) => {
     );
   }
 
+  socketIOManager.emitToOrg(files[0].orgId, "file:updated", { fileIds, action: "bulk_tagged" });
+
   res.json({ success: true });
 });
 
@@ -650,17 +570,159 @@ router.post("/bulk/permanent", async (req: AuthRequest, res: Response) => {
   await verifyAccess(req.user!.userId, files[0].orgId);
 
   const provider = getStorageProvider();
+  let totalSizeFreed = 0;
   for (const file of files) {
-    await provider.delete(file.storagePath);
+    try {
+      await provider.delete(file.storagePath);
+    } catch (e: any) {
+      console.warn(`Failed to delete from storage: ${file.storagePath}`, e.message);
+    }
     const versions = await FileVersion.find({ fileId: file.id }).lean();
-    for (const v of versions) await provider.delete(v.storagePath);
+    for (const v of versions) {
+      try {
+        await provider.delete(v.storagePath);
+      } catch (e: any) {
+        console.warn(`Failed to delete version from storage: ${v.storagePath}`, e.message);
+      }
+    }
     await FileVersion.deleteMany({ fileId: file.id });
     await FileShare.deleteMany({ fileId: file.id });
     await ShareLinkDeleteMany(file.id);
+    totalSizeFreed += file.size;
   }
 
   await FileAttachment.deleteMany({ id: { $in: fileIds } });
+  await updateUsedStorage(files[0].orgId, -totalSizeFreed);
+
+  await ActivityLog.create({
+    orgId: files[0].orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "files.bulk_permanent_deleted",
+    entityType: "file", entityId: fileIds.join(","),
+    description: `${fileIds.length} files permanently deleted`,
+  });
+
+  socketIOManager.emitToOrg(files[0].orgId, "file:deleted", { fileIds, action: "bulk_permanent_delete" });
+
   res.json({ success: true, deleted: fileIds.length });
 });
+
+router.post("/:id/duplicate", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  if (!file) throw new AppError(404, "File not found");
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  const provider = getStorageProvider();
+  const buf = await provider.get(file.storagePath);
+  if (!buf) throw new AppError(404, "Source file not found in storage");
+
+  const newId = uuid();
+  const storagePath = `${file.orgId}/${Date.now()}-${newId}-${file.originalName}`;
+  await provider.save(buf, storagePath);
+
+  await FileAttachment.create({
+    id: newId, orgId: file.orgId, folderId: file.folderId,
+    uploaderId: req.user!.userId, createdBy: req.user!.userId,
+    name: `Copy of ${file.name}`,
+    originalName: `Copy of ${file.originalName}`, mimeType: file.mimeType,
+    size: file.size, storagePath, storageProvider: file.storageProvider,
+    category: file.category, description: file.description, tags: file.tags,
+    checksum: file.checksum, currentVersion: 1,
+  });
+
+  socketIOManager.emitToOrg(file.orgId, "file:uploaded", { fileId: newId, orgId: file.orgId, folderId: file.folderId });
+
+  res.status(201).json({ success: true, fileId: newId });
+});
+
+router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  if (!file) throw new AppError(404, "File not found");
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  if (file.isLocked && file.lockedBy !== req.user!.userId) {
+    throw new AppError(423, "File is locked by another user");
+  }
+
+  await FileAttachment.updateOne(
+    { id: req.params.id },
+    { deletedAt: new Date(), deletedBy: req.user!.userId }
+  );
+
+  await ActivityLog.create({
+    orgId: file.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "file.deleted",
+    entityType: "file", entityId: file.id,
+    description: `File "${file.originalName}" moved to trash`,
+  });
+
+  socketIOManager.emitToOrg(file.orgId, "file:deleted", { fileId: file.id, action: "soft_delete" });
+
+  res.json({ success: true });
+});
+
+router.post("/:id/restore", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id }).lean();
+  if (!file) throw new AppError(404, "File not found");
+  if (!file.deletedAt) throw new AppError(400, "File is not in trash");
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  await FileAttachment.updateOne(
+    { id: req.params.id },
+    { deletedAt: null, deletedBy: null }
+  );
+
+  await ActivityLog.create({
+    orgId: file.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "file.restored",
+    entityType: "file", entityId: file.id,
+    description: `File "${file.originalName}" restored from trash`,
+  });
+
+  socketIOManager.emitToOrg(file.orgId, "file:updated", { fileId: file.id, action: "restored" });
+
+  res.json({ success: true });
+});
+
+router.delete("/:id/permanent", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id }).lean();
+  if (!file) throw new AppError(404, "File not found");
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  const provider = getStorageProvider();
+
+  // Delete from R2 — wrap in try-catch so DB cleanup still happens
+  try {
+    await provider.delete(file.storagePath);
+  } catch (e: any) {
+    console.warn(`Failed to delete file from storage: ${file.storagePath}`, e.message);
+  }
+
+  const versions = await FileVersion.find({ fileId: file.id }).lean();
+  for (const v of versions) {
+    try {
+      await provider.delete(v.storagePath);
+    } catch (e: any) {
+      console.warn(`Failed to delete version from storage: ${v.storagePath}`, e.message);
+    }
+  }
+  await FileVersion.deleteMany({ fileId: file.id });
+  await FileShare.deleteMany({ fileId: file.id });
+  await ShareLinkDeleteMany(file.id);
+  await FileAttachment.deleteOne({ id: req.params.id });
+
+  await updateUsedStorage(file.orgId, -file.size);
+
+  await ActivityLog.create({
+    orgId: file.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "file.permanent_deleted",
+    entityType: "file", entityId: file.id,
+    description: `File "${file.originalName}" permanently deleted`,
+  });
+
+  socketIOManager.emitToOrg(file.orgId, "file:deleted", { fileId: file.id, action: "permanent_delete" });
+
+  res.json({ success: true });
+});
+
+async function ShareLinkDeleteMany(fileId: string): Promise<void> {
+  const { ShareLink } = await import("../lib/db/models/ShareLink.js");
+  await ShareLink.deleteMany({ fileId });
+}
 
 export default router;

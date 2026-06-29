@@ -1,29 +1,53 @@
 import { Router } from "express";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { User } from "../lib/db/models/User.js";
 import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 const router = Router();
 router.use(authenticate);
+async function enrichLogs(logs) {
+    const userIds = [...new Set(logs.map((l) => l.userId).filter(Boolean))];
+    const users = userIds.length > 0
+        ? await User.find({ id: { $in: userIds } }, { id: 1, name: 1, avatar: 1 }).lean()
+        : [];
+    const userMap = new Map(users.map((u) => [u.id, u]));
+    return logs.map((log) => ({
+        ...log,
+        userName: userMap.get(log.userId)?.name || "Unknown",
+        userAvatar: userMap.get(log.userId)?.avatar || null,
+    }));
+}
 router.get("/", async (req, res) => {
-    console.log(`[ACTIVITY] ========== GET / START ==========`);
-    console.log(`[ACTIVITY] GET / called, query:`, req.query);
-    console.log(`[ACTIVITY] req.orgId (from middleware): ${req.orgId || 'NOT SET'}`);
-    console.log(`[ACTIVITY] req.user:`, JSON.stringify(req.user));
     const orgId = req.query.orgId || req.orgId || "";
-    console.log(`[ACTIVITY] Final orgId being used: ${orgId}`);
     if (!orgId) {
-        console.log(`[ACTIVITY] ERROR: orgId is required but not found`);
         throw new AppError(400, "orgId is required");
     }
+    const entityType = req.query.entityType || undefined;
+    const action = req.query.action || undefined;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(200, Math.max(1, parseInt(req.query.limit) || 50));
+    const skip = (page - 1) * limit;
     const queryFilter = { orgId };
-    console.log(`[ACTIVITY] Query filter:`, JSON.stringify(queryFilter));
-    const logs = await ActivityLog.find(queryFilter)
-        .sort({ createdAt: -1 })
-        .limit(50)
-        .lean();
-    console.log(`[ACTIVITY] Found ${logs.length} logs`);
-    console.log(`[ACTIVITY] First log sample:`, logs[0] || 'none');
-    console.log(`[ACTIVITY] ========== GET / END ==========`);
-    res.json({ success: true, data: logs });
+    if (entityType) {
+        queryFilter.entityType = { $in: entityType.split(",") };
+    }
+    if (action) {
+        queryFilter.action = { $regex: action, $options: "i" };
+    }
+    const [rawLogs, total] = await Promise.all([
+        ActivityLog.find(queryFilter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+        ActivityLog.countDocuments(queryFilter),
+    ]);
+    const data = await enrichLogs(rawLogs);
+    res.json({
+        success: true,
+        data,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+    });
 });
 export default router;

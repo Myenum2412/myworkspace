@@ -1,5 +1,7 @@
 import { OrgMember } from "./db/models/OrgMember.js";
 import { User } from "./db/models/User.js";
+import { ClientUser } from "./db/models/ClientUser.js";
+import { ClientWorkspace } from "./db/models/ClientWorkspace.js";
 import { AuthRequest } from "../types/index.js";
 import { AppError } from "../middleware/error.js";
 
@@ -98,4 +100,31 @@ export function getOrgIdFromRequest(req: AuthRequest, strict = false): string {
  */
 export async function requireOrgMembershipFromRequest(req: AuthRequest, orgId?: string): Promise<string> {
   return requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+}
+
+/**
+ * Verify that a user has access to an organization's files and folders.
+ * Checks multiple access paths:
+ * 1. OrgMember record (existing)
+ * 2. User.orgId matching the org (users without OrgMember record)
+ * 3. ClientUser with active workspace (for client portal access)
+ * 4. ORG_MENU_ADMIN super admin bypass
+ */
+export async function verifyOrgAccess(userId: string, orgId: string): Promise<void> {
+  const member = await OrgMember.findOne({ userId, orgId }).lean();
+  if (member) return;
+
+  const user = await User.findOne({ id: userId, orgId }).lean();
+  if (user) return;
+
+  const clientUser = await ClientUser.findOne({ id: userId, orgId }).lean();
+  if (clientUser) {
+    const workspace = await ClientWorkspace.findOne({ clientId: clientUser.clientId }).lean();
+    if (workspace?.fileManagementEnabled) return;
+  }
+
+  const superAdmin = await User.findOne({ id: userId, role: "ORG_MENU_ADMIN" }).lean();
+  if (superAdmin) return;
+
+  throw new AppError(403, "Not authorized");
 }

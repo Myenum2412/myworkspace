@@ -21,6 +21,7 @@ import {
   CheckCheckIcon,
   CalendarIcon,
   ClipboardListIcon,
+  HistoryIcon,
 } from "lucide-react";
 
 export const defaultNavData = {
@@ -94,6 +95,7 @@ export const defaultNavData = {
         { title: "All Files", url: "/files" },
         { title: "Upload", url: "/files?upload=true" },
         { title: "Recycle Bin", url: "/recycle-bin" },
+        { title: "Audit Log", url: "/files/audit" },
       ],
     },
     {

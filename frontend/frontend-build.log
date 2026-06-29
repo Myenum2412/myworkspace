@@ -16,15 +16,15 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 7.3s
+✓ Compiled successfully in 6.8s
   Running TypeScript ...
-  Finished TypeScript in 9.5s ...
+  Finished TypeScript in 9.2s ...
   Collecting page data using 11 workers ...
   Generating static pages using 11 workers (0/91) ...
   Generating static pages using 11 workers (22/91) 
   Generating static pages using 11 workers (45/91) 
   Generating static pages using 11 workers (68/91) 
-✓ Generating static pages using 11 workers (91/91) in 636ms
+✓ Generating static pages using 11 workers (91/91) in 651ms
   Finalizing page optimization ...
 
 Route (app)
@@ -38,8 +38,12 @@ Route (app)
 ├ ƒ /api/clients
 ├ ƒ /api/clients/[id]/workspace
 ├ ƒ /api/employees
+├ ƒ /api/employees/[id]
 ├ ƒ /api/files
 ├ ƒ /api/files/[id]
+├ ƒ /api/files/[id]/duplicate
+├ ƒ /api/files/[id]/lock
+├ ƒ /api/files/[id]/unlock
 ├ ƒ /api/files/bulk-delete
 ├ ƒ /api/files/bulk-move
 ├ ƒ /api/files/bulk-restore
@@ -110,10 +114,11 @@ Route (app)
 ├ ○ /projects
 ├ ○ /recycle-bin
 ├ ○ /reports
+├ ƒ /reset-password
 ├ ○ /savedtasks
 ├ ○ /settings
+├ ○ /settings/plans
 ├ ƒ /share/[token]
-├ ○ /shared
 ├ ƒ /signup
 ├ ƒ /signup-mongo
 ├ ƒ /staffs
@@ -121,6 +126,7 @@ Route (app)
 ├ ƒ /staffs/add
 ├ ƒ /staffs/attendance
 ├ ƒ /staffs/attendance/reports
+├ ƒ /staffs/files
 ├ ƒ /staffs/list
 ├ ƒ /staffs/performance
 ├ ƒ /staffs/performance/goals
@@ -128,7 +134,9 @@ Route (app)
 ├ ƒ /staffs/schedule
 ├ ƒ /staffs/settings
 ├ ƒ /staffs/settings/roles
+├ ƒ /staffs/tasks
 ├ ƒ /staffs/time-off
+├ ƒ /staffs/timesheet
 ├ ○ /team-time
 ├ ○ /teams
 ├ ○ /teamtasks

@@ -28,7 +28,7 @@ import {
   FieldSet,
   FieldLegend,
 } from "@/components/ui/field";
-import { PlusIcon, Loader2, CheckCircle2, Copy, Eye, EyeOff, RefreshCw, AlertCircle, X } from "lucide-react";
+import { PlusIcon, Loader2, CheckCircle2, Copy, Eye, EyeOff, RefreshCw, AlertCircle, X, Trash2, FolderOpen, FileText } from "lucide-react";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { INDUSTRIES } from "@/lib/industries";
 import { columns, makeActionsCell, type Client } from "./columns";
@@ -80,18 +80,18 @@ export default function ClientsPage() {
   useEffect(() => {
     let alive = true;
     const sock: any = getSocketIO();
-      sock.on("client:created", (d: any) => {
-        const c = d?.payload ?? d;
-        setClients((prev) => (prev.some((x) => x.id === c.id) ? prev : [c, ...prev]));
-      });
-      sock.on("client:updated", (d: any) => {
-        const c = d?.payload ?? d;
-        setClients((prev) => prev.map((x) => (x.id === c.id ? { ...x, ...c } : x)));
-      });
-      sock.on("client:deleted", (d: any) => {
-        const { id } = d?.payload ?? d;
-        setClients((prev) => prev.filter((x) => x.id !== id));
-      });
+    sock.on("client:created", (d: any) => {
+      const c = d?.payload ?? d;
+      setClients((prev) => (prev.some((x) => x.id === c.id) ? prev : [c, ...prev]));
+    });
+    sock.on("client:updated", (d: any) => {
+      const c = d?.payload ?? d;
+      setClients((prev) => prev.map((x) => (x.id === c.id ? { ...x, ...c } : x)));
+    });
+    sock.on("client:deleted", (d: any) => {
+      const { id } = d?.payload ?? d;
+      setClients((prev) => prev.filter((x) => x.id !== id));
+    });
     return () => {
       alive = false;
       if (sock) {
@@ -220,7 +220,7 @@ export default function ClientsPage() {
         const names = arr.map((e: Record<string, unknown>) => e.name as string).filter(Boolean);
         setMembers(names);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   function resetForm() {
@@ -475,388 +475,388 @@ export default function ClientsPage() {
           <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
             <ScrollArea className="h-full">
 
-                <FieldSet>
-                  <FieldLegend>Client Information</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground">Client ID</Label>
-                      <Input value="Auto Generated" disabled className="text-muted-foreground" />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Client Name *</Label>
-                      <Input placeholder="Enter client name" value={clientName} onChange={(e) => setClientName(e.target.value)} className={fieldClass("name")} />
-                      {fieldError("name") && <p className="text-xs text-red-500 mt-1">{fieldError("name")}</p>}
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
-                      <Input placeholder="Enter company name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={fieldClass("company")} />
-                      {fieldError("company") && <p className="text-xs text-red-500 mt-1">{fieldError("company")}</p>}
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
-                      <Input placeholder="client@company.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass("email")} />
-                      {fieldError("email") && <p className="text-xs text-red-500 mt-1">{fieldError("email")}</p>}
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Generated Password</Label>
-                      <div className="flex gap-2">
-                        <Input value={generatedPassword} readOnly className="font-mono text-xs flex-1" />
-                        <Button type="button" variant="outline" size="icon" className="size-9 shrink-0"
-                          onClick={() => setGeneratedPassword(generateRandomPassword())}
-                          title="Regenerate password">
-                          <RefreshCw className="size-4" />
-                        </Button>
-                      </div>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Client Type</Label>
-                      <Select value={clientType} onValueChange={setClientType}>
-                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Individual">Individual</SelectItem>
-                          <SelectItem value="Business">Business</SelectItem>
-                          <SelectItem value="Government">Government</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field>
-                      <SearchableSelect
-                        id="client-industry"
-                        label="Industry"
-                        options={INDUSTRIES}
-                        value={industry}
-                        onValueChange={setIndustry}
-                        placeholder="Select industry"
-                      />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Website URL</Label>
-                      <Input placeholder="https://example.com" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} />
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Contact Information</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Primary Contact Person *</Label>
-                      <Input placeholder="Enter contact person" value={primaryContact} onChange={(e) => setPrimaryContact(e.target.value)} className={fieldClass("primaryContact")} />
-                      {fieldError("primaryContact") && <p className="text-xs text-red-500 mt-1">{fieldError("primaryContact")}</p>}
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Designation</Label>
-                      <Input placeholder="Enter designation" value={designation} onChange={(e) => setDesignation(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile Number *</Label>
-                      <Input placeholder="Enter mobile number" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Alternate Phone Number</Label>
-                      <Input placeholder="Enter alternate phone" value={alternatePhone} onChange={(e) => setAlternatePhone(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">WhatsApp Number</Label>
-                      <Input placeholder="Enter WhatsApp number" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Address Details</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 1 *</Label>
-                      <Input placeholder="Enter address" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 2</Label>
-                      <Input placeholder="Enter address line 2" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">City *</Label>
-                      <Input placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">State/Province *</Label>
-                      <Input placeholder="Enter state/province" value={stateProvince} onChange={(e) => setStateProvince(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Country *</Label>
-                      <Input placeholder="Enter country" value={country} onChange={(e) => setCountry(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Postal Code *</Label>
-                      <Input placeholder="Enter postal code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Business Details</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">GST Number</Label>
-                      <Input placeholder="Enter GST number" value={gstNumber} onChange={(e) => setGstNumber(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">PAN Number</Label>
-                      <Input placeholder="Enter PAN number" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Company Registration Number</Label>
-                      <Input placeholder="Enter registration number" value={companyRegNumber} onChange={(e) => setCompanyRegNumber(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Tax ID</Label>
-                      <Input placeholder="Enter tax ID" value={taxId} onChange={(e) => setTaxId(e.target.value)} />
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Project Information</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Project Name</Label>
-                      <Input placeholder="Enter project name" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Service Required</Label>
-                      <Select value={serviceRequired} onValueChange={setServiceRequired}>
-                        <SelectTrigger><SelectValue placeholder="Select service" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Website Development">Website Development</SelectItem>
-                          <SelectItem value="Mobile App Development">Mobile App Development</SelectItem>
-                          <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
-                          <SelectItem value="SEO">SEO</SelectItem>
-                          <SelectItem value="Branding">Branding</SelectItem>
-                          <SelectItem value="Graphic Design">Graphic Design</SelectItem>
-                          <SelectItem value="Custom Software">Custom Software</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Project Budget</Label>
-                      <Input placeholder="Enter budget" value={projectBudget} onChange={(e) => setProjectBudget(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Expected Start Date</Label>
-                      <Input type="date" value={expectedStartDate} onChange={(e) => setExpectedStartDate(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Expected End Date</Label>
-                      <Input type="date" value={expectedEndDate} onChange={(e) => setExpectedEndDate(e.target.value)} />
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Billing Information</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Contact Name</Label>
-                      <Input placeholder="Enter billing contact" value={billingContactName} onChange={(e) => setBillingContactName(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Email</Label>
-                      <Input placeholder="Enter billing email" type="email" value={billingEmail} onChange={(e) => setBillingEmail(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Payment Terms</Label>
-                      <Input placeholder="Enter payment terms" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Currency</Label>
-                      <Select value={currency} onValueChange={setCurrency}>
-                        <SelectTrigger><SelectValue placeholder="Select currency" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="USD">USD</SelectItem>
-                          <SelectItem value="EUR">EUR</SelectItem>
-                          <SelectItem value="GBP">GBP</SelectItem>
-                          <SelectItem value="INR">INR</SelectItem>
-                          <SelectItem value="AED">AED</SelectItem>
-                          <SelectItem value="AUD">AUD</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Credit Limit</Label>
-                      <Input placeholder="Enter credit limit" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Bank Details</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Bank Name</Label>
-                      <Input placeholder="Enter bank name" value={bankName} onChange={(e) => setBankName(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Account Holder Name</Label>
-                      <Input placeholder="Enter account holder name" value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Account Number</Label>
-                      <Input placeholder="Enter account number" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Confirm Account Number</Label>
-                      <Input placeholder="Re-enter account number" value={confirmAccountNumber} onChange={(e) => setConfirmAccountNumber(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">IFSC Code / Routing No.</Label>
-                      <Input placeholder="Enter IFSC or routing number" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Branch Name</Label>
-                      <Input placeholder="Enter branch name" value={branchName} onChange={(e) => setBranchName(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Account Type</Label>
-                      <Select value={accountType} onValueChange={setAccountType}>
-                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Savings">Savings</SelectItem>
-                          <SelectItem value="Current">Current</SelectItem>
-                          <SelectItem value="Business">Business</SelectItem>
-                          <SelectItem value="Corporate">Corporate</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">UPI ID / PayPal Email</Label>
-                      <Input placeholder="Enter UPI ID or PayPal email" value={upiId} onChange={(e) => setUpiId(e.target.value)} />
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Communication Preferences</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Contact Method</Label>
-                      <Select value={preferredContactMethod} onValueChange={setPreferredContactMethod}>
-                        <SelectTrigger><SelectValue placeholder="Select method" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Email">Email</SelectItem>
-                          <SelectItem value="Phone">Phone</SelectItem>
-                          <SelectItem value="WhatsApp">WhatsApp</SelectItem>
-                          <SelectItem value="Teams">Teams</SelectItem>
-                          <SelectItem value="Zoom">Zoom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Time Zone</Label>
-                      <Input placeholder="e.g. IST, EST, PST" value={preferredTimeZone} onChange={(e) => setPreferredTimeZone(e.target.value)} />
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Client Status</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Status</Label>
-                      <Select value={status} onValueChange={setStatus}>
-                        <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Lead">Lead</SelectItem>
-                          <SelectItem value="Prospect">Prospect</SelectItem>
-                          <SelectItem value="Active Client">Active Client</SelectItem>
-                          <SelectItem value="Inactive Client">Inactive Client</SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Additional Information</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Source of Lead</Label>
-                      <Select value={sourceOfLead} onValueChange={setSourceOfLead}>
-                        <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Referral">Referral</SelectItem>
-                          <SelectItem value="Website">Website</SelectItem>
-                          <SelectItem value="Social Media">Social Media</SelectItem>
-                          <SelectItem value="BNI">BNI</SelectItem>
-                          <SelectItem value="Advertisement">Advertisement</SelectItem>
-                          <SelectItem value="Direct Contact">Direct Contact</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field />
-                  </div>
-                  <div className="mt-4">
-                    <Label className="text-xs text-muted-foreground mb-1.5 block">Notes</Label>
-                    <textarea
-                      className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
-                      placeholder="Enter notes"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
+              <FieldSet>
+                <FieldLegend>Client Information</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground">Client ID</Label>
+                    <Input value="Auto Generated" disabled className="text-muted-foreground" />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Client Name *</Label>
+                    <Input placeholder="Enter client name" value={clientName} onChange={(e) => setClientName(e.target.value)} className={fieldClass("name")} />
+                    {fieldError("name") && <p className="text-xs text-red-500 mt-1">{fieldError("name")}</p>}
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
+                    <Input placeholder="Enter company name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={fieldClass("company")} />
+                    {fieldError("company") && <p className="text-xs text-red-500 mt-1">{fieldError("company")}</p>}
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
+                    <Input placeholder="client@company.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass("email")} />
+                    {fieldError("email") && <p className="text-xs text-red-500 mt-1">{fieldError("email")}</p>}
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Generated Password</Label>
+                    <div className="flex gap-2">
+                      <Input value={generatedPassword} readOnly className="font-mono text-xs flex-1" />
+                      <Button type="button" variant="outline" size="icon" className="size-9 shrink-0"
+                        onClick={() => setGeneratedPassword(generateRandomPassword())}
+                        title="Regenerate password">
+                        <RefreshCw className="size-4" />
+                      </Button>
+                    </div>
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Client Type</Label>
+                    <Select value={clientType} onValueChange={setClientType}>
+                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Individual">Individual</SelectItem>
+                        <SelectItem value="Business">Business</SelectItem>
+                        <SelectItem value="Government">Government</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field>
+                    <SearchableSelect
+                      id="client-industry"
+                      label="Industry"
+                      options={INDUSTRIES}
+                      value={industry}
+                      onValueChange={setIndustry}
+                      placeholder="Select industry"
                     />
-                  </div>
-                </FieldSet>
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Website URL</Label>
+                    <Input placeholder="https://example.com" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} />
+                  </Field>
+                </div>
+              </FieldSet>
 
-                <Separator />
+              <Separator />
 
-                <FieldSet>
-                  <FieldLegend>System Fields</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Sales Person</Label>
-                      <Select value={assignedSalesPerson} onValueChange={setAssignedSalesPerson}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select sales person" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {members.map((m) => (
-                            <SelectItem key={m} value={m}>{m}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Project Manager</Label>
-                      <Select value={assignedProjectManager} onValueChange={setAssignedProjectManager}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select project manager" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {members.map((m) => (
-                            <SelectItem key={m} value={m}>{m}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  </div>
-                </FieldSet>
+              <FieldSet>
+                <FieldLegend>Contact Information</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Primary Contact Person *</Label>
+                    <Input placeholder="Enter contact person" value={primaryContact} onChange={(e) => setPrimaryContact(e.target.value)} className={fieldClass("primaryContact")} />
+                    {fieldError("primaryContact") && <p className="text-xs text-red-500 mt-1">{fieldError("primaryContact")}</p>}
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Designation</Label>
+                    <Input placeholder="Enter designation" value={designation} onChange={(e) => setDesignation(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile Number *</Label>
+                    <Input placeholder="Enter mobile number" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Alternate Phone Number</Label>
+                    <Input placeholder="Enter alternate phone" value={alternatePhone} onChange={(e) => setAlternatePhone(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">WhatsApp Number</Label>
+                    <Input placeholder="Enter WhatsApp number" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
+                  </Field>
+                </div>
+              </FieldSet>
+
+              <Separator />
+
+              <FieldSet>
+                <FieldLegend>Address Details</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 1 *</Label>
+                    <Input placeholder="Enter address" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 2</Label>
+                    <Input placeholder="Enter address line 2" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">City *</Label>
+                    <Input placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">State/Province *</Label>
+                    <Input placeholder="Enter state/province" value={stateProvince} onChange={(e) => setStateProvince(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Country *</Label>
+                    <Input placeholder="Enter country" value={country} onChange={(e) => setCountry(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Postal Code *</Label>
+                    <Input placeholder="Enter postal code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+                  </Field>
+                </div>
+              </FieldSet>
+
+              <Separator />
+
+              <FieldSet>
+                <FieldLegend>Business Details</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">GST Number</Label>
+                    <Input placeholder="Enter GST number" value={gstNumber} onChange={(e) => setGstNumber(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">PAN Number</Label>
+                    <Input placeholder="Enter PAN number" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Company Registration Number</Label>
+                    <Input placeholder="Enter registration number" value={companyRegNumber} onChange={(e) => setCompanyRegNumber(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Tax ID</Label>
+                    <Input placeholder="Enter tax ID" value={taxId} onChange={(e) => setTaxId(e.target.value)} />
+                  </Field>
+                </div>
+              </FieldSet>
+
+              <Separator />
+
+              <FieldSet>
+                <FieldLegend>Project Information</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Project Name</Label>
+                    <Input placeholder="Enter project name" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Service Required</Label>
+                    <Select value={serviceRequired} onValueChange={setServiceRequired}>
+                      <SelectTrigger><SelectValue placeholder="Select service" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Website Development">Website Development</SelectItem>
+                        <SelectItem value="Mobile App Development">Mobile App Development</SelectItem>
+                        <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
+                        <SelectItem value="SEO">SEO</SelectItem>
+                        <SelectItem value="Branding">Branding</SelectItem>
+                        <SelectItem value="Graphic Design">Graphic Design</SelectItem>
+                        <SelectItem value="Custom Software">Custom Software</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Project Budget</Label>
+                    <Input placeholder="Enter budget" value={projectBudget} onChange={(e) => setProjectBudget(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Expected Start Date</Label>
+                    <Input type="date" value={expectedStartDate} onChange={(e) => setExpectedStartDate(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Expected End Date</Label>
+                    <Input type="date" value={expectedEndDate} onChange={(e) => setExpectedEndDate(e.target.value)} />
+                  </Field>
+                </div>
+              </FieldSet>
+
+              <Separator />
+
+              <FieldSet>
+                <FieldLegend>Billing Information</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Contact Name</Label>
+                    <Input placeholder="Enter billing contact" value={billingContactName} onChange={(e) => setBillingContactName(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Billing Email</Label>
+                    <Input placeholder="Enter billing email" type="email" value={billingEmail} onChange={(e) => setBillingEmail(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Payment Terms</Label>
+                    <Input placeholder="Enter payment terms" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Currency</Label>
+                    <Select value={currency} onValueChange={setCurrency}>
+                      <SelectTrigger><SelectValue placeholder="Select currency" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD</SelectItem>
+                        <SelectItem value="EUR">EUR</SelectItem>
+                        <SelectItem value="GBP">GBP</SelectItem>
+                        <SelectItem value="INR">INR</SelectItem>
+                        <SelectItem value="AED">AED</SelectItem>
+                        <SelectItem value="AUD">AUD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Credit Limit</Label>
+                    <Input placeholder="Enter credit limit" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />
+                  </Field>
+                </div>
+              </FieldSet>
+
+              <Separator />
+
+              <FieldSet>
+                <FieldLegend>Bank Details</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Bank Name</Label>
+                    <Input placeholder="Enter bank name" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Account Holder Name</Label>
+                    <Input placeholder="Enter account holder name" value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Account Number</Label>
+                    <Input placeholder="Enter account number" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Confirm Account Number</Label>
+                    <Input placeholder="Re-enter account number" value={confirmAccountNumber} onChange={(e) => setConfirmAccountNumber(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">IFSC Code / Routing No.</Label>
+                    <Input placeholder="Enter IFSC or routing number" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Branch Name</Label>
+                    <Input placeholder="Enter branch name" value={branchName} onChange={(e) => setBranchName(e.target.value)} />
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Account Type</Label>
+                    <Select value={accountType} onValueChange={setAccountType}>
+                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Savings">Savings</SelectItem>
+                        <SelectItem value="Current">Current</SelectItem>
+                        <SelectItem value="Business">Business</SelectItem>
+                        <SelectItem value="Corporate">Corporate</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">UPI ID / PayPal Email</Label>
+                    <Input placeholder="Enter UPI ID or PayPal email" value={upiId} onChange={(e) => setUpiId(e.target.value)} />
+                  </Field>
+                </div>
+              </FieldSet>
+
+              <Separator />
+
+              <FieldSet>
+                <FieldLegend>Communication Preferences</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Contact Method</Label>
+                    <Select value={preferredContactMethod} onValueChange={setPreferredContactMethod}>
+                      <SelectTrigger><SelectValue placeholder="Select method" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Email">Email</SelectItem>
+                        <SelectItem value="Phone">Phone</SelectItem>
+                        <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                        <SelectItem value="Teams">Teams</SelectItem>
+                        <SelectItem value="Zoom">Zoom</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Time Zone</Label>
+                    <Input placeholder="e.g. IST, EST, PST" value={preferredTimeZone} onChange={(e) => setPreferredTimeZone(e.target.value)} />
+                  </Field>
+                </div>
+              </FieldSet>
+
+              <Separator />
+
+              <FieldSet>
+                <FieldLegend>Client Status</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Status</Label>
+                    <Select value={status} onValueChange={setStatus}>
+                      <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Lead">Lead</SelectItem>
+                        <SelectItem value="Prospect">Prospect</SelectItem>
+                        <SelectItem value="Active Client">Active Client</SelectItem>
+                        <SelectItem value="Inactive Client">Inactive Client</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
+              </FieldSet>
+
+              <Separator />
+
+              <FieldSet>
+                <FieldLegend>Additional Information</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Source of Lead</Label>
+                    <Select value={sourceOfLead} onValueChange={setSourceOfLead}>
+                      <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Referral">Referral</SelectItem>
+                        <SelectItem value="Website">Website</SelectItem>
+                        <SelectItem value="Social Media">Social Media</SelectItem>
+                        <SelectItem value="BNI">BNI</SelectItem>
+                        <SelectItem value="Advertisement">Advertisement</SelectItem>
+                        <SelectItem value="Direct Contact">Direct Contact</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field />
+                </div>
+                <div className="mt-4">
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Notes</Label>
+                  <textarea
+                    className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
+                    placeholder="Enter notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                </div>
+              </FieldSet>
+
+              <Separator />
+
+              <FieldSet>
+                <FieldLegend>System Fields</FieldLegend>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Sales Person</Label>
+                    <Select value={assignedSalesPerson} onValueChange={setAssignedSalesPerson}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select sales person" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {members.map((m) => (
+                          <SelectItem key={m} value={m}>{m}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Assigned Project Manager</Label>
+                    <Select value={assignedProjectManager} onValueChange={setAssignedProjectManager}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select project manager" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {members.map((m) => (
+                          <SelectItem key={m} value={m}>{m}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
+              </FieldSet>
             </ScrollArea>
           </div>
 
@@ -990,24 +990,70 @@ export default function ClientsPage() {
 
       {/* Delete confirm */}
       <Dialog open={!!deletingClient} onOpenChange={(o) => { if (!o) setDeletingClient(null); }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertCircle className="size-5 text-destructive" />
-              Delete client?
-            </DialogTitle>
-            <DialogDescription>
-              {deletingClient ? (
-                <>This permanently removes <strong>{deletingClient.name}</strong> ({deletingClient.company}) and their client-user account. This cannot be undone.</>
-              ) : "This cannot be undone."}
-            </DialogDescription>
-          </DialogHeader>
-          {deleteError && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-destructive">{deleteError}</div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeletingClient(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>Delete</Button>
+        <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-none shadow-2xl">
+          <div className="bg-gradient-to-br from-red-500/10 via-background to-background p-6">
+            <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-red-100/80 ring-8 ring-red-50 mb-6 dark:bg-red-500/20 dark:ring-red-500/10">
+              <Trash2 className="size-7 text-red-600 dark:text-red-400" />
+            </div>
+
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl font-bold tracking-tight">
+                Delete Client
+              </DialogTitle>
+              <DialogDescription className="text-center pt-2 text-base">
+                {deletingClient ? (
+                  <>Are you sure you want to permanently remove <strong className="text-foreground">{deletingClient.name}</strong> ({deletingClient.company})?</>
+                ) : "Are you sure you want to permanently remove this client?"}
+              </DialogDescription>
+            </DialogHeader>
+
+            {deletingClient && (
+              <div className="mt-6 space-y-3 rounded-xl border border-border bg-card/50 p-4 shadow-sm backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-8 items-center justify-center rounded-md bg-primary/10">
+                    <FolderOpen className="size-4 text-primary" />
+                  </div>
+                  <div className="text-sm font-medium">All associated projects</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex size-8 items-center justify-center rounded-md bg-primary/10">
+                    <FileText className="size-4 text-primary" />
+                  </div>
+                  <div className="text-sm font-medium">Files and documents</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex size-8 items-center justify-center rounded-md bg-red-500/10">
+                    <AlertCircle className="size-4 text-red-600" />
+                  </div>
+                  <div className="text-sm font-medium text-red-600">Client-user access revoked</div>
+                </div>
+              </div>
+            )}
+
+            {deleteError && (
+              <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-destructive flex items-center gap-2">
+                <AlertCircle className="size-4" />
+                {deleteError}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="bg-muted/50 p-4 flex sm:justify-between border-t border-border/50 gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => setDeletingClient(null)}
+              className="w-full sm:w-auto hover:bg-background"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              className="w-full sm:w-auto shadow-md hover:shadow-lg transition-all active:scale-95 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400"
+            >
+              <Trash2 className="mr-2 size-4" />
+              Yes, delete client
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

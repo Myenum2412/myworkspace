@@ -8,7 +8,7 @@ import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { optionalAuth } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { verifyOrgAccess } from "../lib/org-utils.js";
 import crypto from "crypto";
 
 const router = Router();
@@ -24,8 +24,7 @@ router.post("/links", authenticate, async (req: AuthRequest, res: Response) => {
   const file = await FileAttachment.findOne({ id: fileId, deletedAt: null }).lean();
   if (!file) throw new AppError(404, "File not found");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await verifyOrgAccess(req.user!.userId, orgId);
 
   const token = generateToken();
   const hashedPassword = password ? await hash(password, 12) : null;
@@ -40,7 +39,7 @@ router.post("/links", authenticate, async (req: AuthRequest, res: Response) => {
   const shareUrl = `${req.protocol}://${req.get("host")}/share/${token}`;
 
   await ActivityLog.create({
-    orgId, userId: req.user!.userId, action: "share.link.created",
+    orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "share.link.created",
     entityType: "file", entityId: fileId,
     description: `Share link created for "${file.originalName}"`,
   });
@@ -116,6 +115,8 @@ router.get("/links", authenticate, async (req: AuthRequest, res: Response) => {
   const fileId = req.query.fileId as string | undefined;
   if (!orgId) throw new AppError(400, "orgId is required");
 
+  await verifyOrgAccess(req.user!.userId, orgId);
+
   const filter: Record<string, unknown> = { orgId };
   if (fileId) filter.fileId = fileId;
 
@@ -127,8 +128,7 @@ router.delete("/links/:id", authenticate, async (req: AuthRequest, res: Response
   const link = await ShareLink.findOne({ id: req.params.id }).lean();
   if (!link) throw new AppError(404, "Share link not found");
   if (link.createdBy !== req.user!.userId) {
-    const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: link.orgId }).lean();
-    if (!membership) throw new AppError(403, "Not authorized");
+    await verifyOrgAccess(req.user!.userId, link.orgId);
   }
 
   await ShareLink.updateOne({ id: req.params.id }, { isActive: false });
@@ -142,22 +142,24 @@ router.post("/internal", authenticate, async (req: AuthRequest, res: Response) =
   const file = await FileAttachment.findOne({ id: fileId, deletedAt: null }).lean();
   if (!file) throw new AppError(404, "File not found");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await verifyOrgAccess(req.user!.userId, orgId);
 
   if (sharedWithUserId) {
-    const targetMember = await OrgMember.findOne({ userId: sharedWithUserId, orgId }).lean();
-    if (!targetMember) throw new AppError(404, "Target user not found in organization");
+    try {
+      await verifyOrgAccess(sharedWithUserId, orgId);
+    } catch {
+      throw new AppError(404, "Target user not found in organization");
+    }
   }
 
   const shareId = uuid();
   await FileShare.create({
     id: shareId, fileId, sharedByUserId: req.user!.userId,
-    sharedWithUserId: sharedWithUserId || null, orgId,
+    sharedWithUserId: sharedWithUserId || null, orgId, createdBy: req.user!.userId,
   });
 
   await ActivityLog.create({
-    orgId, userId: req.user!.userId, action: "file.shared",
+    orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "file.shared",
     entityType: "file", entityId: fileId,
     description: `File "${file.originalName}" shared with ${sharedWithUserId || "organization"}`,
   });
@@ -169,13 +171,12 @@ router.delete("/internal/:id", authenticate, async (req: AuthRequest, res: Respo
   const share = await FileShare.findOne({ id: req.params.id }).lean();
   if (!share) throw new AppError(404, "Share not found");
 
-  const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: share.orgId }).lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+  await verifyOrgAccess(req.user!.userId, share.orgId);
 
   await FileShare.deleteOne({ id: req.params.id });
 
   await ActivityLog.create({
-    orgId: share.orgId, userId: req.user!.userId, action: "share.removed",
+    orgId: share.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "share.removed",
     entityType: "file", entityId: share.fileId,
     description: "Share removed",
   });
@@ -188,7 +189,7 @@ router.get("/internal", authenticate, async (req: AuthRequest, res: Response) =>
   const orgId = req.query.orgId as string;
 
   if (orgId) {
-    await OrgMember.findOne({ userId: req.user!.userId, orgId }).lean();
+    await verifyOrgAccess(req.user!.userId, orgId);
     const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).lean();
     const fileIds = [...new Set(shares.map(s => s.fileId))];
     const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();

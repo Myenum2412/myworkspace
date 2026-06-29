@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,9 +109,12 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
           if (result.fileId) return { ...f, status: "done" as const, progress: 100 };
           return { ...f, status: "error" as const, error: result.error || "Upload failed" };
         }));
+      } else if (!res.ok) {
+        const serverError = data.error || `HTTP ${res.status}`;
+        setFiles(prev => prev.map(f => f.status === "uploading" ? { ...f, status: "error" as const, error: serverError } : f));
       }
     } catch (err: any) {
-      setFiles(prev => prev.map(f => f.status === "uploading" ? { ...f, status: "error" as const, error: err.message } : f));
+      setFiles(prev => prev.map(f => f.status === "uploading" ? { ...f, status: "error" as const, error: err.message || "Network error" } : f));
     } finally {
       setUploading(false);
       onUploadComplete?.();
@@ -123,27 +126,54 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) { onOpenChange(false); setTimeout(reset, 300); } }}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Upload Files</DialogTitle>
-          <DialogDescription>
-            Drag and drop files or click to browse. Max 500 MB per file.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="w-auto h-auto min-w-[50vw] sm:max-w-fit p-0 overflow-hidden border-none shadow-2xl">
+        <div className="bg-gradient-to-br from-primary/5 via-background to-background p-6 space-y-6">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/5">
+                <UploadIcon className="size-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-bold tracking-tight">Upload Files</DialogTitle>
+                <DialogDescription className="text-sm mt-1">
+                  Upload your documents, images, and other necessary files here.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
 
-        <div className="space-y-4">
+          <div className="bg-amber-50/80 border border-amber-200/60 rounded-xl p-4 flex gap-3 text-sm text-amber-800 dark:bg-amber-900/10 dark:border-amber-900/30 dark:text-amber-400">
+            <AlertCircleIcon className="size-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-500" />
+            <div className="space-y-1">
+              <p className="font-semibold">Important Upload Guidelines</p>
+              <ul className="list-disc list-inside text-amber-700/80 dark:text-amber-400/80 text-xs space-y-1">
+                <li>Maximum file size is <strong>500MB</strong> per file.</li>
+                <li>Please ensure files are relevant to the client or project.</li>
+                <li>Do not upload executable files (.exe, .bat) or sensitive unencrypted credentials.</li>
+              </ul>
+            </div>
+          </div>
+
           <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+            className={`group relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200 ease-in-out ${
+              dragOver 
+                ? "border-primary bg-primary/10 scale-[1.02] shadow-inner" 
+                : "border-muted-foreground/25 bg-card hover:bg-muted/50 hover:border-primary/50"
             }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onClick={() => inputRef.current?.click()}
           >
-            <UploadIcon className="mx-auto size-8 text-muted-foreground mb-2" />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
+            <div className={`mx-auto flex size-16 items-center justify-center rounded-full bg-primary/10 mb-4 transition-transform duration-300 ${dragOver ? "scale-110" : ""}`}>
+              <UploadIcon className="size-8 text-primary" />
+            </div>
+            <p className="text-base font-medium text-foreground mb-1">
+              {dragOver ? "Drop files here!" : "Drag & drop files here"}
+            </p>
             <p className="text-sm text-muted-foreground">
-              Drag & drop files here, or click to browse
+              or click to browse your computer
             </p>
             <input
               ref={inputRef}
@@ -154,45 +184,51 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="desc">Description (optional)</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="desc" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description (optional)</Label>
               <Textarea
                 id="desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add a description..."
-                className="mt-1"
+                placeholder="Briefly describe these files..."
+                className="resize-none focus-visible:ring-primary shadow-sm"
                 rows={2}
               />
             </div>
-            <div>
-              <Label htmlFor="tags">Tags (comma separated)</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="tags" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tags (comma separated)</Label>
               <Input
                 id="tags"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="e.g. design, proposal, Q2"
-                className="mt-1"
+                placeholder="e.g. invoice, Q2, design"
+                className="shadow-sm focus-visible:ring-primary"
               />
             </div>
           </div>
 
           {files.length > 0 && (
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="space-y-2 max-h-52 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted-foreground/20">
               {files.map((f) => (
-                <div key={f.id} className="flex items-center gap-3 p-2 rounded-md border text-sm">
-                  <FileIcon className="size-6 shrink-0 text-muted-foreground" />
+                <div key={f.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card shadow-sm text-sm group transition-all hover:border-primary/30">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                    <FileIcon className="size-5 text-primary" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="truncate font-medium">{f.file.name}</p>
+                    <p className="truncate font-medium text-foreground">{f.file.name}</p>
                     <p className="text-xs text-muted-foreground">{formatSize(f.file.size)}</p>
                   </div>
-                  {f.status === "uploading" && <Loader2Icon className="size-4 animate-spin" />}
-                  {f.status === "done" && <CheckCircle2Icon className="size-4 text-success" />}
+                  {f.status === "uploading" && <Loader2Icon className="size-5 text-primary animate-spin" />}
+                  {f.status === "done" && <CheckCircle2Icon className="size-5 text-green-500" />}
                   {f.status === "duplicate" && <Badge variant="secondary" className="text-xs">Duplicate</Badge>}
-                  {f.status === "error" && <AlertCircleIcon className="size-4 text-destructive" data-tip={f.error} />}
+                  {f.status === "error" && <span title={f.error}><AlertCircleIcon className="size-5 text-destructive" /></span>}
                   {!uploading && f.status === "pending" && (
-                    <button onClick={() => removeFile(f.id)} className="text-muted-foreground hover:text-foreground">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); removeFile(f.id); }} 
+                      className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-destructive/10"
+                      title="Remove file"
+                    >
                       <XIcon className="size-4" />
                     </button>
                   )}
@@ -202,26 +238,31 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
           )}
 
           {hasError && (
-            <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 p-2 rounded-md">
-              <AlertCircleIcon className="size-4" /> Some files failed to upload
+            <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 p-3 rounded-lg dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+              <AlertCircleIcon className="size-4 shrink-0" /> 
+              <span>Some files failed to upload. Hover over the error icon for details.</span>
             </div>
           )}
-
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => { onOpenChange(false); setTimeout(reset, 300); }}>
-              Cancel
-            </Button>
-            <Button onClick={startUpload} disabled={!files.length || uploading}>
-              {uploading ? (
-                <><Loader2Icon className="mr-2 size-4 animate-spin" /> Uploading...</>
-              ) : allDone ? (
-                "Done"
-              ) : (
-                <><UploadIcon className="mr-2 size-4" /> Upload {files.length} file{files.length > 1 ? "s" : ""}</>
-              )}
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter className="bg-muted/40 p-4 border-t border-border/50 flex flex-col sm:flex-row gap-2 sm:gap-0">
+          <Button variant="outline" onClick={() => { onOpenChange(false); setTimeout(reset, 300); }} className="w-full sm:w-auto">
+            Cancel
+          </Button>
+          <Button 
+            onClick={startUpload} 
+            disabled={!files.length || uploading}
+            className="w-full sm:w-auto shadow-md transition-all active:scale-95 bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
+            {uploading ? (
+              <><Loader2Icon className="mr-2 size-4 animate-spin" /> Uploading...</>
+            ) : allDone ? (
+              <><CheckCircle2Icon className="mr-2 size-4" /> Done</>
+            ) : (
+              <><UploadIcon className="mr-2 size-4" /> Upload {files.length} file{files.length > 1 ? "s" : ""}</>
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
