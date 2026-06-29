@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { columns, type Team } from "./columns";
 import { DataTable } from "./data-table";
+import { getSocketIO } from "@/lib/socketio-client";
 
 type OrgMember = {
   userId: string;
@@ -150,6 +151,27 @@ export default function TeamsPage() {
       })
       .finally(() => setLoading(false));
   }, [session]);
+
+  // Live updates from other clients (own create/delete handled in handlers below).
+  useEffect(() => {
+    let alive = true;
+    const sock: any = getSocketIO();
+      sock.on("team:created", (d: any) => {
+        const t = d?.payload ?? d;
+        setTeams((prev) => (prev.some((x) => x.id === t.id) ? prev : [{ ...t, memberCount: t.memberCount ?? 0 }, ...prev]));
+      });
+      sock.on("team:deleted", (d: any) => {
+        const { id } = d?.payload ?? d;
+        setTeams((prev) => prev.filter((x) => x.id !== id));
+      });
+    return () => {
+      alive = false;
+      if (sock) {
+        sock.off("team:created");
+        sock.off("team:deleted");
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (session?.user) {

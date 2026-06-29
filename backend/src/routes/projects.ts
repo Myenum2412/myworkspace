@@ -4,6 +4,8 @@ import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { Project } from "../lib/db/models/Project.js";
+import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 
 const router = Router();
 
@@ -34,6 +36,25 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     status: status || "Active",
   });
 
+  // Activity log is non-blocking; the user-facing path depends on response + emit.
+  void ActivityLog.create({
+    orgId,
+    userId: req.user!.userId,
+    createdBy: req.user!.userId,
+    action: "project.created",
+    entityType: "project",
+    entityId: project.id,
+    description: `Project "${name}" created`,
+  });
+
+  socketIOManager.emitToOrg(orgId, "project:created", {
+    id: project.id,
+    orgId,
+    name,
+    status: project.status,
+    color: project.color,
+  });
+
   res.status(201).json({ success: true, data: normalize(project) });
 });
 
@@ -55,12 +76,31 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (tracked !== undefined) updates.tracked = tracked;
   if (progress !== undefined) updates.progress = progress;
 
-  const result = await Project.findOneAndUpdate(
-    { id: req.params.id },
-    { $set: updates },
-    { returnDocument: "after" }
-  ).lean();
+  const [result] = await Promise.all([
+    Project.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: updates },
+      { returnDocument: "after" }
+    ).lean(),
+    ActivityLog.create({
+      orgId: existing.orgId,
+      userId: req.user!.userId,
+      createdBy: req.user!.userId,
+      action: "project.updated",
+      entityType: "project",
+      entityId: req.params.id,
+      description: `Project "${existing.name}" updated`,
+    }),
+  ]);
   if (!result) throw new AppError(404, "Project not found");
+
+  socketIOManager.emitToOrg(existing.orgId, "project:updated", {
+    id: req.params.id,
+    orgId: existing.orgId,
+    ...updates,
+    updatedAt: result.updatedAt,
+  });
+
   res.json({ success: true, data: normalize(result) });
 });
 
@@ -70,7 +110,24 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   if (!existing) throw new AppError(404, "Project not found");
   if (existing.orgId !== userOrgId) throw new AppError(403, "Not authorized to delete this project");
 
-  await Project.deleteOne({ id: req.params.id });
+  await Promise.all([
+    Project.deleteOne({ id: req.params.id }),
+    ActivityLog.create({
+      orgId: existing.orgId,
+      userId: req.user!.userId,
+      createdBy: req.user!.userId,
+      action: "project.deleted",
+      entityType: "project",
+      entityId: req.params.id,
+      description: `Project "${existing.name}" deleted`,
+    }),
+  ]);
+
+  socketIOManager.emitToOrg(existing.orgId, "project:deleted", {
+    id: req.params.id,
+    orgId: existing.orgId,
+  });
+
   res.json({ success: true });
 });
 

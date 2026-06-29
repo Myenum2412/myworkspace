@@ -28,6 +28,11 @@ export const env = {
   GCS_BUCKET_NAME: process.env.GCS_BUCKET_NAME || "",
   GCS_KEYFILE: process.env.GCS_KEYFILE || "",
 
+  // "1" enables per-request stage timing logs (PERF_LOG) and auth debug logs.
+  // Off by default — zero cost in production.
+  PERF_LOG: process.env.PERF_LOG || "0",
+  AUTH_DEBUG: process.env.AUTH_DEBUG || "0",
+
   AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING || "",
   AZURE_STORAGE_CONTAINER: process.env.AZURE_STORAGE_CONTAINER || "",
 };

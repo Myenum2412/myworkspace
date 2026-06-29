@@ -33,6 +33,7 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { INDUSTRIES } from "@/lib/industries";
 import { columns, type Client } from "./columns";
 import { DataTable } from "./data-table";
+import { getSocketIO } from "@/lib/socketio-client";
 
 type Credentials = {
   username: string;
@@ -65,6 +66,32 @@ export default function ClientsPage() {
       .catch((error) => {
         console.error("[CLIENTS] Failed to fetch clients:", error);
       });
+  }, []);
+
+  // Live updates from other clients (own create is optimistic in the form).
+  useEffect(() => {
+    let alive = true;
+    const sock: any = getSocketIO();
+      sock.on("client:created", (d: any) => {
+        const c = d?.payload ?? d;
+        setClients((prev) => (prev.some((x) => x.id === c.id) ? prev : [c, ...prev]));
+      });
+      sock.on("client:updated", (d: any) => {
+        const c = d?.payload ?? d;
+        setClients((prev) => prev.map((x) => (x.id === c.id ? { ...x, ...c } : x)));
+      });
+      sock.on("client:deleted", (d: any) => {
+        const { id } = d?.payload ?? d;
+        setClients((prev) => prev.filter((x) => x.id !== id));
+      });
+    return () => {
+      alive = false;
+      if (sock) {
+        sock.off("client:created");
+        sock.off("client:updated");
+        sock.off("client:deleted");
+      }
+    };
   }, []);
 
   // Client Information

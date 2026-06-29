@@ -1,71 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getWsClient } from "@/lib/ws/client";
-import { WsEventPayload } from "@/lib/ws/events";
+import { useRealtimeList } from "./use-realtime-list";
 
 export type Task = {
   id: string;
+  _id: string;
   title: string;
   description?: string;
   status: string;
   priority: string;
   assigneeId?: string;
-  creatorId: string;
+  assigneeName?: string;
+  assigneeAvatar?: string;
+  creatorId?: string;
+  creatorName?: string;
   orgId: string;
   teamId?: string;
-  dueDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  dueDate?: string | null;
+  createdAt: string;
+  updatedAt?: string;
 };
 
-export function useRealtimeTasks(orgId?: string) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!orgId) return;
-    const client = getWsClient();
-
-    const unsubCreated = client.on("task:created", (data) => {
-      const task = data.payload as unknown as Task;
-      setTasks((prev) => [task, ...prev]);
-    });
-
-    const unsubUpdated = client.on("task:updated", (data) => {
-      const update = data.payload as WsEventPayload["task:updated"];
-      setTasks((prev) =>
-        prev.map((t) => (t.id === update.id ? { ...t, ...update } : t))
-      );
-    });
-
-    const unsubDeleted = client.on("task:deleted", (data) => {
-      const { id } = data.payload as WsEventPayload["task:deleted"];
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-    });
-
-    fetchTasks(orgId).then((data) => {
-      setTasks(data as Task[]);
-      setLoading(false);
-    });
-
-    return () => {
-      unsubCreated();
-      unsubUpdated();
-      unsubDeleted();
-    };
-  }, [orgId]);
-
-  return { tasks, loading, setTasks };
+interface TasksResponse {
+  success: boolean;
+  data: Task[];
+  pagination?: { page: number; limit: number; total: number; totalPages: number };
 }
 
-async function fetchTasks(orgId: string) {
+async function fetchTasks(orgId: string): Promise<Task[]> {
   try {
     const res = await fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
-    if (res.ok) {
-      const d = await res.json();
-      return d.data || d;
-    }
-  } catch { /* ignore */ }
-  return [];
+    if (!res.ok) return [];
+    const d: TasksResponse = await res.json();
+    return d.data || [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Live task list. Shared generic realtime hook + per-event wiring for the
+ * task:created/updated/deleted/batch-updated stream.
+ */
+export function useRealtimeTasks(orgId?: string) {
+  const list = useRealtimeList<Task>(
+    orgId ? ["tasks", orgId] : ["tasks"],
+    () => (orgId ? fetchTasks(orgId) : Promise.resolve([])),
+    {
+      created: "task:created",
+      updated: "task:updated",
+      deleted: "task:deleted",
+      belongs: (p) => !orgId || p.orgId === orgId,
+      mergeOnUpdate: (e, p) => ({ ...e, ...p }),
+    },
+    { enabled: !!orgId },
+  );
+
+  // batch-updated is task-specific, subscribe separately.
+  return list;
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { PlusIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon } from "lucide-react";
+import { PlusIcon, ListTodoIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,21 +31,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ViewToggle } from "@/components/view-toggle";
+import { useRealtimeTasks, Task } from "@/hooks/use-realtime-tasks";
+import { getSocketIO } from "@/lib/socketio-client";
+import type { ComponentProps } from "react";
 
-type Task = {
-  _id: string;
-  title: string;
-  description: string;
-  status: string;
-  priority: string;
-  dueDate: string | null;
-  assigneeId: string;
-  assigneeName: string;
-  assigneeAvatar: string;
-  creatorId: string;
-  creatorName: string;
-  createdAt: string;
-};
+type UiTask = ComponentProps<typeof TaskEditForm>["task"];
 
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-200 text-gray-700",
@@ -66,14 +56,13 @@ const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
 
 export default function MyTasksPage() {
   const { data: session } = useSession();
-    const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState<string>("");
   const [view, setView] = useState<"kanban" | "table">("table");
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
 
   useEffect(() => {
     if (!session?.user) return;
@@ -83,29 +72,33 @@ export default function MyTasksPage() {
         const profile = d.data || d;
         const userId = profile?._id?.toString() || session.user?.id || "";
         setCurrentUserId(userId);
-        const orgId = profile?.org?.id || profile?.org?._id?.toString() || "";
-        if (orgId) {
-          return fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
-        }
-        return null;
+        const id = profile?.org?.id || profile?.org?._id?.toString() || "";
+        if (id) setOrgId(id);
       })
-      .then((res) => res?.json())
-      .then((d) => {
-        if (d) {
-          const arr = Array.isArray(d) ? d : d.data || [];
-          if (arr.length > 0) setTasks(arr);
-        }
-      })
-      .catch((error) => {
-        console.error("[MYTASKS] Failed to fetch tasks:", error);
-      })
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, [session]);
 
+  // Shared socket — same live updates as /alltasks.
+  useEffect(() => { getSocketIO(); }, [session]);
+
+  const { data: tasks, isLoading: loading, set: setTasks } = useRealtimeTasks(orgId);
+
   const userId = session?.user?.id || currentUserId || "";
-  const myTasks = userId
-    ? tasks.filter((t) => t.assigneeId === userId)
-    : tasks;
+  // Client-side filter over the live (full-org) list. Keeps "my tasks" in sync
+  // with the same realtime stream without a second fetch.
+  const myTasks = useMemo(
+    () => (userId ? tasks.filter((t) => t.assigneeId === userId) : tasks),
+    [tasks, userId],
+  );
+
+  // Single-pass counts, memoized.
+  const summary = useMemo(() => {
+    const init = { todo: 0, in_progress: 0, review: 0, done: 0, cancelled: 0 };
+    return myTasks.reduce((acc, t) => {
+      if (t.status in init) acc[t.status as keyof typeof init]++;
+      return acc;
+    }, init);
+  }, [myTasks]);
 
   
   return (
@@ -139,21 +132,7 @@ export default function MyTasksPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {myTasks.filter((t) => t.status === "todo").length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-blue-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <UsersIcon className="size-4" /> Team Task
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {myTasks.filter((t) => t.status === "assigned").length}
-                </div>
+                <div className="text-2xl font-bold">{summary.todo}</div>
               </CardContent>
             </Card>
             <Card className="bg-yellow-50">
@@ -163,9 +142,7 @@ export default function MyTasksPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {myTasks.filter((t) => t.status === "in_progress").length}
-                </div>
+                <div className="text-2xl font-bold">{summary.in_progress}</div>
               </CardContent>
             </Card>
             <Card className="bg-blue-50">
@@ -175,9 +152,7 @@ export default function MyTasksPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {myTasks.filter((t) => t.status === "review").length}
-                </div>
+                <div className="text-2xl font-bold">{summary.review}</div>
               </CardContent>
             </Card>
             <Card className="bg-green-50">
@@ -187,21 +162,17 @@ export default function MyTasksPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {myTasks.filter((t) => t.status === "done").length}
-                </div>
+                <div className="text-2xl font-bold">{summary.done}</div>
               </CardContent>
             </Card>
             <Card className="bg-red-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <XCircleIcon className="size-4" /> In Completed
+                  <XCircleIcon className="size-4" /> Cancelled
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {myTasks.filter((t) => t.status === "cancelled").length}
-                </div>
+                <div className="text-2xl font-bold">{summary.cancelled}</div>
               </CardContent>
             </Card>
           </div>
@@ -256,8 +227,8 @@ export default function MyTasksPage() {
                                 <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => { setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { setSelectedTask(t); setEditOpen(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setSelectedTask(t as unknown as UiTask); setEditOpen(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="text-destructive"><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
                               </DropdownMenuContent>
@@ -326,7 +297,7 @@ export default function MyTasksPage() {
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
-              onEdit={(t) => { setViewOpen(false); setSelectedTask(t); setEditOpen(true); }}
+              onEdit={(t) => { setViewOpen(false); setSelectedTask(t as unknown as UiTask); setEditOpen(true); }}
             />
           )}
         </DialogContent>
@@ -338,7 +309,7 @@ export default function MyTasksPage() {
             <TaskEditForm
               task={selectedTask}
               onSave={(updated) => {
-                setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
+                setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as unknown as Task) : t));
                 setEditOpen(false);
                 setSelectedTask(null);
               }}

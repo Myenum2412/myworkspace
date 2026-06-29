@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { PlusIcon, XIcon, Loader2Icon, AlertCircleIcon, UsersIcon } from "lucide-react";
 import { columns, type Project } from "./columns";
+import { getSocketIO } from "@/lib/socketio-client";
 import { DataTable } from "./data-table";
 import { ProjectDetailedView } from "./project-detailed-view";
 
@@ -104,6 +105,35 @@ export default function ProjectsPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Live updates from other clients. Own-actions are handled optimistically above;
+  // this wires in edits/deletes made elsewhere so the list stays consistent.
+  useEffect(() => {
+    let alive = true;
+    const sock: any = getSocketIO();
+      sock.on("project:created", (d: any) => {
+        const p = d?.payload ?? d;
+        if (!orgId || p.orgId !== orgId) return;
+        setProjects((prev) => (prev.some((x) => x.id === p.id) ? prev : [p, ...prev]));
+      });
+      sock.on("project:updated", (d: any) => {
+        const p = d?.payload ?? d;
+        if (!orgId || p.orgId !== orgId) return;
+        setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, ...p } : x)));
+      });
+      sock.on("project:deleted", (d: any) => {
+        const { id } = d?.payload ?? d;
+        setProjects((prev) => prev.filter((x) => x.id !== id));
+      });
+    return () => {
+      alive = false;
+      if (sock) {
+        sock.off("project:created");
+        sock.off("project:updated");
+        sock.off("project:deleted");
+      }
+    };
+  }, [orgId]);
 
   async function handleSubmit() {
     if (!projectName || !selectedClient) return;

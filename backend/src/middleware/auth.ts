@@ -9,6 +9,16 @@ import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
 export type { AuthRequest };
 
+// Per-request auth logging is gated behind AUTH_DEBUG=1. The JWE/cookie path
+// does crypto + string parsing on every request; logging each step to stdout
+// synchronously is a real cost under load, so it is off in production.
+const dbg = (...a: unknown[]) => {
+  if (env.AUTH_DEBUG === "1") console.log(...a);
+};
+const dbgError = (...a: unknown[]) => {
+  if (env.AUTH_DEBUG === "1") console.error(...a);
+};
+
 const JWE_ALG = "dir" as const;
 const JWE_ENC = "A256CBC-HS512" as const;
 
@@ -18,34 +28,34 @@ async function getDerivedEncryptionKey(secret: string, salt: string): Promise<Ui
 
 async function tryNextAuthCookie(req: AuthRequest): Promise<JwtPayload | null> {
   const cookieHeader = req.headers.cookie;
-  console.log(`[BACKEND AUTH] Cookie header present: ${!!cookieHeader}`);
+  dbg(`[BACKEND AUTH] Cookie header present: ${!!cookieHeader}`);
   if (!cookieHeader) {
-    console.log(`[BACKEND AUTH] No cookie header`);
+    dbg(`[BACKEND AUTH] No cookie header`);
     return null;
   }
 
   const cookies = cookieHeader.split(";").map(c => c.trim());
-  console.log(`[BACKEND AUTH] Cookies found: ${cookies.map(c => c.split("=")[0]).join(", ")}`);
-  
+  dbg(`[BACKEND AUTH] Cookies found: ${cookies.map(c => c.split("=")[0]).join(", ")}`);
+
   for (const cookie of cookies) {
     const [name, ...rest] = cookie.split("=");
-    console.log(`[BACKEND AUTH] Checking cookie: ${name}`);
+    dbg(`[BACKEND AUTH] Checking cookie: ${name}`);
     if (name === "authjs.session-token" || name === "__Secure-authjs.session-token") {
       const token = rest.join("=");
-      console.log(`[BACKEND AUTH] Found NextAuth session token, length: ${token.length}`);
+      dbg(`[BACKEND AUTH] Found NextAuth session token, length: ${token.length}`);
       try {
         const salt = name;
         const encryptionSecret = await getDerivedEncryptionKey(env.JWT_SECRET, salt);
-        console.log(`[BACKEND AUTH] Derived encryption key, length: ${encryptionSecret.length}`);
+        dbg(`[BACKEND AUTH] Derived encryption key, length: ${encryptionSecret.length}`);
         const { payload } = await jwtDecrypt(token, async ({ kid, enc }) => {
-          console.log(`[BACKEND AUTH] JWE header: kid=${kid}, enc=${enc}`);
+          dbg(`[BACKEND AUTH] JWE header: kid=${kid}, enc=${enc}`);
           if (enc !== JWE_ENC) throw new Error("unsupported encryption");
           if (kid === undefined) return encryptionSecret;
           const thumbprint = await calculateJwkThumbprint(
             { kty: "oct", k: base64url.encode(encryptionSecret) },
             (`sha${encryptionSecret.byteLength << 3}`) as "sha256" | "sha384" | "sha512",
           );
-          console.log(`[BACKEND AUTH] Calculated thumbprint: ${thumbprint}, kid: ${kid}`);
+          dbg(`[BACKEND AUTH] Calculated thumbprint: ${thumbprint}, kid: ${kid}`);
           if (kid === thumbprint) return encryptionSecret;
           throw new Error("no matching decryption secret");
         }, {
@@ -60,63 +70,65 @@ async function tryNextAuthCookie(req: AuthRequest): Promise<JwtPayload | null> {
           permissions: (payload.permissions || []) as string[],
           orgId: (payload.orgId || undefined) as string | undefined,
         };
-        console.log(`[BACKEND AUTH] Decrypted payload:`, JSON.stringify(result));
+        dbg(`[BACKEND AUTH] Decrypted payload:`, JSON.stringify(result));
         return result;
       } catch (err) {
-        console.error(`[BACKEND AUTH] Decryption failed:`, err);
+        dbgError(`[BACKEND AUTH] Decryption failed:`, err);
         return null;
       }
     }
   }
-  console.log(`[BACKEND AUTH] No NextAuth session token cookie found`);
+  dbg(`[BACKEND AUTH] No NextAuth session token cookie found`);
   return null;
 }
 
 export async function authenticate(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
-  console.log(`[BACKEND AUTH] ========== AUTHENTICATE START ==========`);
-  console.log(`[BACKEND AUTH] authenticate called for: ${req.method} ${req.url}`);
-  console.log(`[BACKEND AUTH] Request headers: cookie=${!!req.headers.cookie}, authorization=${!!req.headers.authorization}`);
-  console.log(`[BACKEND AUTH] Request origin: ${req.headers.origin || 'not set'}`);
-  console.log(`[BACKEND AUTH] Request referer: ${req.headers.referer || 'not set'}`);
-  
+  dbg(`[BACKEND AUTH] ========== AUTHENTICATE START ==========`);
+  dbg(`[BACKEND AUTH] authenticate called for: ${req.method} ${req.url}`);
+  dbg(`[BACKEND AUTH] Request headers: cookie=${!!req.headers.cookie}, authorization=${!!req.headers.authorization}`);
+  dbg(`[BACKEND AUTH] Request origin: ${req.headers.origin || 'not set'}`);
+  dbg(`[BACKEND AUTH] Request referer: ${req.headers.referer || 'not set'}`);
+
   const header = req.headers.authorization;
   if (header && header.startsWith("Bearer ")) {
     const token = header.slice(7);
-    console.log(`[BACKEND AUTH] Bearer token found, length: ${token.length}`);
+    dbg(`[BACKEND AUTH] Bearer token found, length: ${token.length}`);
     try {
       const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
-      console.log(`[BACKEND AUTH] Bearer token verified:`, JSON.stringify(decoded));
-      console.log(`[BACKEND AUTH] User ID from token: ${decoded.userId}`);
-      console.log(`[BACKEND AUTH] Org ID from token: ${decoded.orgId}`);
+      dbg(`[BACKEND AUTH] Bearer token verified:`, JSON.stringify(decoded));
+      dbg(`[BACKEND AUTH] User ID from token: ${decoded.userId}`);
+      dbg(`[BACKEND AUTH] Org ID from token: ${decoded.orgId}`);
       req.user = decoded;
       await resolveStaleUserId(req);
-      console.log(`[BACKEND AUTH] ========== AUTHENTICATE SUCCESS (Bearer) ==========`);
+      dbg(`[BACKEND AUTH] ========== AUTHENTICATE SUCCESS (Bearer) ==========`);
       next();
       return;
     } catch (err) {
-      console.error(`[BACKEND AUTH] Bearer token verification failed:`, err);
+      dbgError(`[BACKEND AUTH] Bearer token verification failed:`, err);
       res.status(401).json({ success: false, error: "Invalid or expired token" });
       return;
     }
   }
 
-  console.log(`[BACKEND AUTH] No Bearer token, trying NextAuth cookie...`);
+  dbg(`[BACKEND AUTH] No Bearer token, trying NextAuth cookie...`);
   const nextAuthUser = await tryNextAuthCookie(req);
   if (nextAuthUser) {
-    console.log(`[BACKEND AUTH] NextAuth cookie auth successful`);
-    console.log(`[BACKEND AUTH] User ID from cookie: ${nextAuthUser.userId}`);
-    console.log(`[BACKEND AUTH] Email from cookie: ${nextAuthUser.email}`);
-    console.log(`[BACKEND AUTH] Role from cookie: ${nextAuthUser.role}`);
-    console.log(`[BACKEND AUTH] Org ID from cookie: ${nextAuthUser.orgId}`);
+    dbg(`[BACKEND AUTH] NextAuth cookie auth successful`);
+    dbg(`[BACKEND AUTH] User ID from cookie: ${nextAuthUser.userId}`);
+    dbg(`[BACKEND AUTH] Email from cookie: ${nextAuthUser.email}`);
+    dbg(`[BACKEND AUTH] Role from cookie: ${nextAuthUser.role}`);
+    dbg(`[BACKEND AUTH] Org ID from cookie: ${nextAuthUser.orgId}`);
     req.user = nextAuthUser;
     await resolveStaleUserId(req);
-    console.log(`[BACKEND AUTH] ========== AUTHENTICATE SUCCESS (Cookie) ==========`);
+    dbg(`[BACKEND AUTH] ========== AUTHENTICATE SUCCESS (Cookie) ==========`);
     next();
     return;
   }
 
-  console.log(`[BACKEND AUTH] Authentication failed - no valid credentials`);
-  console.log(`[BACKEND AUTH] ========== AUTHENTICATE FAILED ==========`);
+  dbg(`[BACKEND AUTH] Authentication failed - no valid credentials`);
+  dbg(`[BACKEND AUTH] ========== AUTHENTICATE FAILED ==========`);
+  // Surface auth failures even when debug is off — useful for clients.
+  console.log(`[BACKEND AUTH] ${req.method} ${req.url} — no credentials`);
   res.status(401).json({ success: false, error: "Authentication required" });
 }
 
@@ -152,7 +164,7 @@ export async function resolveStaleUserId(req: AuthRequest): Promise<void> {
   }
 
   if (resolvedId && resolvedId !== userId) {
-    console.log(`[BACKEND AUTH] Resolved stale userId: ${userId} → ${resolvedId}`);
+    dbg(`[BACKEND AUTH] Resolved stale userId: ${userId} → ${resolvedId}`);
     req.user.userId = resolvedId;
   }
 }

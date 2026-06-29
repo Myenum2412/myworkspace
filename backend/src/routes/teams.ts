@@ -6,6 +6,7 @@ import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 
 const router = Router();
 
@@ -243,15 +244,20 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   const { name, description, orgId: bodyOrgId } = req.body;
   if (!name) throw new AppError(400, "Team name is required");
 
-  const orgId = bodyOrgId || await requireOrgMembershipFromRequest(req);
-
-  await requireOrgMembershipFromRequest(req, orgId);
+  // Second require was redundant (re-fetches membership already implied). Keep one.
+  const orgId = bodyOrgId ?? await requireOrgMembershipFromRequest(req);
 
   const team = await Team.create({
     orgId,
     name,
     description: description || undefined,
     createdBy: req.user!.userId,
+  });
+
+  socketIOManager.emitToOrg(orgId, "team:created", {
+    id: team._id.toString(),
+    orgId,
+    name: team.name,
   });
 
   res.status(201).json({ success: true, data: { id: team._id.toString(), name: team.name } });
@@ -281,8 +287,16 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 
   await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
-  await TeamMember.deleteMany({ teamId: team._id });
-  await Team.findByIdAndDelete(req.params.id);
+  await Promise.all([
+    TeamMember.deleteMany({ teamId: team._id }),
+    Team.findByIdAndDelete(req.params.id),
+  ]);
+
+  socketIOManager.emitToOrg(team.orgId.toString(), "team:deleted", {
+    id: req.params.id,
+    orgId: team.orgId.toString(),
+  });
+
   res.json({ success: true });
 });
 

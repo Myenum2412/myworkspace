@@ -4,6 +4,12 @@ import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { env } from "../config/env.js";
+
+// Per-request dashboard logging gated behind PERF_LOG=1 (see auth.ts dbg helper).
+// These routes are hot (loaded on every navigation to /dashboard) and each line
+// is synchronous stdout — real cost under load.
+const dbg = (...a: unknown[]) => { if (env.PERF_LOG === "1") console.log(...a); };
 
 const router = Router();
 
@@ -11,29 +17,29 @@ router.use(authenticate);
 
 // Helper: resolve orgId from token or membership
 async function resolveOrgId(req: AuthRequest): Promise<string> {
-  console.log(`[DASHBOARD] resolveOrgId called, req.user:`, JSON.stringify(req.user));
+  dbg(`[DASHBOARD] resolveOrgId called, req.user:`, JSON.stringify(req.user));
   if (req.user!.orgId) {
-    console.log(`[DASHBOARD] Using orgId from token: ${req.user!.orgId}`);
+    dbg(`[DASHBOARD] Using orgId from token: ${req.user!.orgId}`);
     return req.user!.orgId;
   }
   const userId = req.user!.userId;
-  console.log(`[DASHBOARD] No orgId in token, looking up OrgMember for userId: ${userId}`);
+  dbg(`[DASHBOARD] No orgId in token, looking up OrgMember for userId: ${userId}`);
   const member = await OrgMember.findOne({ userId }).lean();
   if (member) {
-    console.log(`[DASHBOARD] Found OrgMember:`, JSON.stringify(member));
+    dbg(`[DASHBOARD] Found OrgMember:`, JSON.stringify(member));
     return member.orgId.toString();
   }
-  console.log(`[DASHBOARD] No OrgMember found for userId: ${userId}`);
+  dbg(`[DASHBOARD] No OrgMember found for userId: ${userId}`);
   throw new AppError(400, "User is not associated with an organization");
 }
 
 router.get("/metrics", async (req: AuthRequest, res: Response) => {
-  console.log(`[DASHBOARD] ========== GET /metrics START ==========`);
-  console.log(`[DASHBOARD] GET /metrics called, query:`, req.query);
-  console.log(`[DASHBOARD] req.orgId (from middleware): ${req.orgId || 'NOT SET'}`);
-  console.log(`[DASHBOARD] req.user:`, JSON.stringify(req.user));
+  dbg(`[DASHBOARD] ========== GET /metrics START ==========`);
+  dbg(`[DASHBOARD] GET /metrics called, query:`, req.query);
+  dbg(`[DASHBOARD] req.orgId (from middleware): ${req.orgId || 'NOT SET'}`);
+  dbg(`[DASHBOARD] req.user:`, JSON.stringify(req.user));
   const orgId = (req.query.orgId as string) || req.orgId || await resolveOrgId(req);
-  console.log(`[DASHBOARD] Final orgId being used: ${orgId}`);
+  dbg(`[DASHBOARD] Final orgId being used: ${orgId}`);
 
   const queryFilters = {
     totalTasks: { orgId },
@@ -43,7 +49,7 @@ router.get("/metrics", async (req: AuthRequest, res: Response) => {
     activeMembers: { orgId },
     recentActivity: { orgId, createdAt: { $gt: new Date(Date.now() - 86400000) } },
   };
-  console.log(`[DASHBOARD] Query filters:`, JSON.stringify(queryFilters, null, 2));
+  dbg(`[DASHBOARD] Query filters:`, JSON.stringify(queryFilters, null, 2));
 
   const [
     totalTasks,
@@ -69,8 +75,8 @@ router.get("/metrics", async (req: AuthRequest, res: Response) => {
     activeMembers,
     recentActivity,
   };
-  console.log(`[DASHBOARD] Query results:`, JSON.stringify(result));
-  console.log(`[DASHBOARD] ========== GET /metrics END ==========`);
+  dbg(`[DASHBOARD] Query results:`, JSON.stringify(result));
+  dbg(`[DASHBOARD] ========== GET /metrics END ==========`);
 
   res.json({
     success: true,

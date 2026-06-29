@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import compression from "compression";
 import path from "path";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
+import { perfMiddleware } from "./lib/perf/middleware.js";
 import authRoutes from "./routes/auth.js";
 import tasksRoutes from "./routes/tasks.js";
 import sessionsRoutes from "./routes/sessions.js";
@@ -33,7 +35,9 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+app.use(compression());
 app.use(express.json());
+app.use(perfMiddleware);
 
 // Serve uploads and banners statically
 app.use("/uploads", express.static(path.resolve("data", "uploads")));
@@ -71,13 +75,15 @@ app.use("/api/settings", settingsRoutes);
 app.use((req, res) => {
   const method = req.method;
   const url = req.originalUrl || req.url;
-  console.warn(`[BACKEND 404] ${method} ${url} — No backend route matches this path.`);
-  console.warn(`  Headers:`, JSON.stringify({
-    contentType: req.headers["content-type"],
-    accept: req.headers["accept"],
-    authorization: req.headers["authorization"] ? "[present]" : "[absent]",
-    origin: req.headers["origin"] || "[not set]",
-  }));
+  if (env.AUTH_DEBUG === "1") {
+    console.warn(`[BACKEND 404] ${method} ${url} — No backend route matches this path.`);
+    console.warn(`  Headers:`, JSON.stringify({
+      contentType: req.headers["content-type"],
+      accept: req.headers["accept"],
+      authorization: req.headers["authorization"] ? "[present]" : "[absent]",
+      origin: req.headers["origin"] || "[not set]",
+    }));
+  }
   res.status(404).json({
     success: false,
     error: `Route not found: ${method} ${url}`,

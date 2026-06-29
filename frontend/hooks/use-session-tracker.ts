@@ -80,7 +80,8 @@ export function useSessionTracker() {
     };
     init();
 
-    // Connect Socket.IO
+    // Connect Socket.IO synchronously — attaching `.on` immediately is safe;
+    // the socket queues local events until the transport is open.
     const sock = getSocketIO();
 
     sock.on("session:started", (data: { sessionId: string; loginTime: string }) => {

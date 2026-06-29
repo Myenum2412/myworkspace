@@ -14,6 +14,7 @@ import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { sendClientWelcomeEmail } from "../lib/mail/index.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 import { env } from "../config/env.js";
 import { provisionClientWorkspace } from "../lib/workspace/provision.js";
 
@@ -228,6 +229,13 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     session.endSession();
   }
 
+  // Delta emit to org room — other admins see the new client instantly.
+  socketIOManager.emitToOrg(orgId, "client:created", {
+    id: clientId,
+    orgId,
+    name: req.body.name,
+  });
+
   sendClientWelcomeEmail(
     req.body.email,
     req.body.name,
@@ -268,7 +276,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
     throw new AppError(404, "Client not found");
   }
 
-  await ClientAuditLog.create({
+  void ClientAuditLog.create({
     orgId,
     clientId: req.params.id,
     createdBy: adminId,
@@ -276,6 +284,13 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
     entityType: "client",
     entityId: req.params.id,
     description: `Client ${client.name} updated by ${adminEmail}`,
+  });
+
+  socketIOManager.emitToOrg(orgId, "client:updated", {
+    id: req.params.id,
+    orgId,
+    name: client.name,
+    updatedAt: client.updatedAt ?? new Date(),
   });
 
   res.json({ success: true, data: client });
@@ -290,16 +305,24 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
     throw new AppError(404, "Client not found");
   }
 
-  await ClientUser.deleteOne({ clientId: req.params.id });
-  await ClientAuditLog.deleteMany({ clientId: req.params.id });
+  const [, ] = await Promise.all([
+    Promise.allSettled([
+      ClientUser.deleteOne({ clientId: req.params.id }),
+      ClientAuditLog.deleteMany({ clientId: req.params.id }),
+    ]),
+    ClientAuditLog.create({
+      orgId,
+      createdBy: adminId,
+      action: "client.deleted",
+      entityType: "client",
+      entityId: req.params.id,
+      description: `Client ${client.name} deleted`,
+    }),
+  ]);
 
-  await ClientAuditLog.create({
+  socketIOManager.emitToOrg(orgId, "client:deleted", {
+    id: req.params.id,
     orgId,
-    createdBy: adminId,
-    action: "client.deleted",
-    entityType: "client",
-    entityId: req.params.id,
-    description: `Client ${client.name} deleted`,
   });
 
   res.json({ success: true, message: "Client deleted" });

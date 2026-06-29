@@ -4,6 +4,15 @@ export type WsEventType =
   | "task:created"
   | "task:updated"
   | "task:deleted"
+  | "task:batch-updated"
+  | "project:created"
+  | "project:updated"
+  | "project:deleted"
+  | "client:created"
+  | "client:updated"
+  | "client:deleted"
+  | "team:created"
+  | "team:deleted"
   | "chat:message"
   | "activity:log"
   | "dashboard:metrics"
@@ -49,6 +58,10 @@ export type WsEventPayload = {
     id: string;
     orgId: string;
   };
+  "task:batch-updated": {
+    ids: string[];
+    status: string;
+  };
   "chat:message": {
     id: string;
     orgId: string;
@@ -80,6 +93,49 @@ export type WsEventPayload = {
     teamId: string;
     name?: string;
     memberCount?: number;
+  };
+  "project:created": {
+    id: string;
+    orgId: string;
+    name: string;
+    status: string;
+    color: string;
+  };
+  "project:updated": {
+    id: string;
+    orgId: string;
+    name?: string;
+    status?: string;
+    color?: string;
+    updatedAt: Date;
+  };
+  "project:deleted": {
+    id: string;
+    orgId: string;
+  };
+  "client:created": {
+    id: string;
+    orgId: string;
+    name: string;
+  };
+  "client:updated": {
+    id: string;
+    orgId: string;
+    name?: string;
+    updatedAt: Date;
+  };
+  "client:deleted": {
+    id: string;
+    orgId: string;
+  };
+  "team:created": {
+    id: string;
+    orgId: string;
+    name: string;
+  };
+  "team:deleted": {
+    id: string;
+    orgId: string;
   };
   "project:sync": {
     projectId: string;

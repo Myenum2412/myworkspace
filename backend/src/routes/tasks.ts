@@ -1,10 +1,12 @@
 import { Router, Response } from "express";
+import mongoose from "mongoose";
 import { Task } from "../lib/db/models/Task.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { TeamMember } from "../lib/db/models/TeamMember.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 
 const router = Router();
 
@@ -23,7 +25,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
-    const { status, priority, assigneeId, sortBy, sortOrder, scope } = req.query;
+    const { status, priority, assigneeId, sortBy, sortOrder, scope, afterId } = req.query;
 
     const allowedSortFields = ["createdAt", "dueDate", "priority", "status", "title"];
     const effectiveSortBy = allowedSortFields.includes(sortBy as string) ? (sortBy as string) : "createdAt";
@@ -34,6 +36,11 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     if (status) match.status = status;
     if (priority) match.priority = priority;
     if (assigneeId) match.assigneeId = assigneeId;
+    // Cursor pagination: fetch rows strictly after this _id. Keeps deep-page
+    // reads O(limit) instead of O(skip+limit) which skip() degrades to.
+    if (typeof afterId === "string" && afterId) {
+      match._id = { $lt: new mongoose.Types.ObjectId(afterId) };
+    }
 
     // Staff scope: only show tasks assigned to the user or their teams
     if (scope === "staff" || scope === "member") {
@@ -174,6 +181,10 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     if (!title) throw new AppError(400, "Title is required");
     if (!orgId) throw new AppError(400, "orgId is required");
 
+    // Fan-out in parallel: write the task, write the activity log. Independent
+    // so a sequential await here was pure latency tax. ActivityLog needs the
+    // task id so it is written after — but the task create is the long pole,
+    // so we kick off a detached log write once we have the id.
     const task = await Task.create({
       orgId,
       teamId: teamId || undefined,
@@ -187,13 +198,29 @@ router.post("/", async (req: AuthRequest, res: Response) => {
       dueDate: dueDate ? new Date(dueDate) : undefined,
     });
 
-    await ActivityLog.create({
+    // Fire-and-forget the activity log — the user-facing path (response + socket)
+    // does not depend on it. Removes one blocking await from the hot path.
+    void ActivityLog.create({
       orgId,
       userId: req.user!.userId,
+      createdBy: req.user!.userId,
       action: "task.created",
       entityType: "task",
       entityId: task._id.toString(),
       description: `Task "${title}" created`,
+    });
+
+    // Emit the delta to the org room only — other clients patch local state,
+    // no full refetch. Includes assignee so the right user gets a notification cue.
+    socketIOManager.emitToOrg(orgId, "task:created", {
+      id: task._id.toString(),
+      orgId,
+      title,
+      status: task.status,
+      priority: task.priority,
+      assigneeId: task.assigneeId?.toString() || req.user!.userId,
+      creatorId: req.user!.userId,
+      dueDate: task.dueDate || null,
     });
 
     res.status(201).json({ success: true, data: { taskId: task._id } });
@@ -235,15 +262,29 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
     if (project !== undefined) updates.project = project;
     if (dueDate !== undefined) updates.dueDate = dueDate ? new Date(dueDate) : null;
 
-    await Task.findByIdAndUpdate(id, updates);
+    // Update + log in parallel. The event payload carries just the changed
+    // scalar fields, not the whole document — clients merge into local state.
+    const [updated] = await Promise.all([
+      Task.findByIdAndUpdate(id, updates, { new: true }).lean(),
+      ActivityLog.create({
+        orgId: existing.orgId,
+        userId: req.user!.userId,
+        createdBy: req.user!.userId,
+        action: "task.updated",
+        entityType: "task",
+        entityId: id,
+        description: `Task updated: ${status ? `status changed to ${status}` : title ? "title updated" : ""}`,
+      }),
+    ]);
 
-    await ActivityLog.create({
-      orgId: existing.orgId,
-      userId: req.user!.userId,
-      action: "task.updated",
-      entityType: "task",
-      entityId: id,
-      description: `Task updated: ${status ? `status changed to ${status}` : title ? "title updated" : ""}`,
+    socketIOManager.emitToOrg(existing.orgId.toString(), "task:updated", {
+      id,
+      orgId: existing.orgId.toString(),
+      title: updated?.title,
+      status: updated?.status,
+      priority: updated?.priority,
+      assigneeId: updated?.assigneeId?.toString(),
+      updatedAt: updated?.updatedAt ?? new Date(),
     });
 
     res.json({ success: true });
@@ -272,7 +313,24 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
       }
     }
 
-    await Task.findByIdAndDelete(req.params.id);
+    await Promise.all([
+      Task.findByIdAndDelete(req.params.id),
+      ActivityLog.create({
+        orgId: existing.orgId,
+        userId: req.user!.userId,
+        createdBy: req.user!.userId,
+        action: "task.deleted",
+        entityType: "task",
+        entityId: req.params.id,
+        description: `Task deleted`,
+      }),
+    ]);
+
+    socketIOManager.emitToOrg(existing.orgId.toString(), "task:deleted", {
+      id: req.params.id,
+      orgId: existing.orgId.toString(),
+    });
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -305,6 +363,12 @@ router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
 
     const result = await Task.bulkWrite(bulkOps);
 
+    // Delta only: which ids changed and to what status.
+    socketIOManager.emitToOrg(userOrgId, "task:batch-updated", {
+      ids: tasks.map((t) => t._id.toString()),
+      status,
+    });
+
     res.json({
       success: true,
       data: {
@@ -330,6 +394,14 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
     if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to modify this task");
 
     await Task.findByIdAndUpdate(req.params.id, { status });
+
+    socketIOManager.emitToOrg(userOrgId, "task:updated", {
+      id: req.params.id,
+      orgId: userOrgId,
+      status,
+      updatedAt: new Date(),
+    });
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;

@@ -75,7 +75,9 @@ export function StaffSidebar({
             height={32}
             className="size-8 rounded-lg object-cover shadow-sm shrink-0"
           />
-
+          <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">
+            Staff Panel
+          </h1>
         </div>
       </SidebarHeader>
       <SidebarContent>

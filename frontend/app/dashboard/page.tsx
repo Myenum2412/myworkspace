@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ListTodo, CheckCircle2, Clock, AlertCircle, Users, Activity } from "lucide-react";
@@ -27,35 +28,45 @@ type ActivityItem = {
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const [metrics, setMetrics] = useState<Metrics>({totalTasks:0,completedTasks:0,inProgressTasks:0,overdueTasks:0,activeMembers:0,recentActivity:0});
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [orgId, setOrgId] = useState("");
 
+  // Resolve orgId once (cached by React Query below otherwise).
   useEffect(() => {
     if (!session?.user) return;
     fetch("/api/user/profile", { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
         const profile = d.data || d;
-        const id = profile?.org?.id || profile?.org?._id?.toString() || "";
-        if (id) {
-          fetch(`/api/dashboard/metrics?orgId=${id}`, { credentials: "include" })
-            .then((r) => r.json())
-            .then((m) => setMetrics(m.data || m))
-            .catch((error) => {
-              console.error("[DASHBOARD] Failed to fetch metrics:", error);
-            });
-          fetch(`/api/activity?orgId=${id}`, { credentials: "include" })
-            .then((r) => r.json())
-            .then((a) => setActivities(a.data || a || []))
-            .catch((error) => {
-              console.error("[DASHBOARD] Failed to fetch activity:", error);
-            });
-        }
+        setOrgId(profile?.org?.id || profile?.org?._id?.toString() || "");
       })
-      .catch((error) => {
-        console.error("[DASHBOARD] Failed to fetch profile:", error);
-      });
+      .catch(() => {});
   }, [session]);
+
+  // Metrics are cacheable: identical for everyone in the org, refresh every 60s.
+  const { data: metrics }: { data: Metrics | undefined } = useQuery({
+    queryKey: ["dashboard-metrics", orgId],
+    queryFn: async () => {
+      const r = await fetch(`/api/dashboard/metrics?orgId=${orgId}`, { credentials: "include" });
+      const d = await r.json();
+      return d.data || d;
+    },
+    enabled: !!orgId,
+    staleTime: 60_000,
+  });
+
+  // Activity feed — cached list with a 60s stale window. A future `activity:log`
+  // socket event (backend not yet emitting) can patch this cache for true
+  // realtime; until then the background refetch bounds staleness.
+  const { data: activities }: { data: ActivityItem[] | undefined } = useQuery({
+    queryKey: ["activity", orgId],
+    queryFn: async () => {
+      const r = await fetch(`/api/activity?orgId=${orgId}`, { credentials: "include" });
+      const d = await r.json();
+      return d.data || d || [];
+    },
+    enabled: !!orgId,
+    staleTime: 60_000,
+  });
 
   const cards = useMemo(() => [
     { title: "Total Tasks", value: metrics?.totalTasks ?? 0, icon: ListTodo, color: "text-muted-foreground" },
@@ -89,9 +100,7 @@ export default function DashboardPage() {
               <CardTitle className="text-base">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              {activities.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No recent activity.</p>
-              ) : (
+              {activities && activities.length > 0 ? (
                 <div className="space-y-3">
                   {activities.map((a) => (
                     <div key={a._id} className="flex items-center gap-3 text-sm">
@@ -103,6 +112,8 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No recent activity.</p>
               )}
             </CardContent>
           </Card>
