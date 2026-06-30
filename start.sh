@@ -37,10 +37,65 @@ stop_port() {
 
 
 ########################################
+# Infrastructure Checks (RabbitMQ, Redis)
+########################################
+
+echo -e "${YELLOW}[1/7] Checking Infrastructure...${NC}"
+
+check_amqp() {
+    timeout 5 node -e "
+const amqplib = require('amqplib');
+amqplib.connect(process.env.RABBITMQ_URL || 'amqp://localhost:5672')
+  .then(c => c.close())
+  .then(()=>process.exit(0))
+  .catch(()=>process.exit(1));
+" 2>/dev/null
+}
+
+start_rabbitmq() {
+    # Try systemd service first
+    if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet rabbitmq-server 2>/dev/null; then
+        return 0
+    fi
+    if command -v systemctl >/dev/null 2>&1; then
+        sudo systemctl start rabbitmq-server 2>/dev/null || true
+        sleep 3
+        if systemctl is-active --quiet rabbitmq-server 2>/dev/null; then
+            return 0
+        fi
+    fi
+    # Try docker compose as fallback
+    if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+        docker compose up -d rabbitmq 2>/dev/null || true
+        sleep 5
+        return 0
+    fi
+    return 1
+}
+
+if check_amqp; then
+    echo -e "${GREEN}  ✓ RabbitMQ reachable${NC}"
+else
+    echo -e "${YELLOW}  ✗ RabbitMQ down — attempting start...${NC}"
+    if start_rabbitmq; then
+        sleep 2
+        if check_amqp; then
+            echo -e "${GREEN}  ✓ RabbitMQ started${NC}"
+        else
+            echo -e "${RED}  ✗ RabbitMQ still unreachable (queues will be disabled)${NC}"
+        fi
+    else
+        echo -e "${RED}  ✗ Cannot start RabbitMQ (queues will be disabled)${NC}"
+    fi
+fi
+
+echo ""
+
+########################################
 # Clean Build Cache
 ########################################
 
-echo -e "${YELLOW}[1/6] Cleaning Build Cache...${NC}"
+echo -e "${YELLOW}[2/7] Cleaning Build Cache...${NC}"
 
 rm -rf "$SCRIPT_DIR/backend/.next" \
        "$SCRIPT_DIR/frontend/.next" \
@@ -53,7 +108,7 @@ echo ""
 # Backend Build
 ########################################
 
-echo -e "${YELLOW}[2/6] Building Backend...${NC}"
+echo -e "${YELLOW}[3/7] Building Backend...${NC}"
 
 cd "$SCRIPT_DIR/backend"
 
@@ -72,7 +127,7 @@ echo ""
 # Seed Admin
 ########################################
 
-echo -e "${YELLOW}[3/6] Seeding Admin...${NC}"
+echo -e "${YELLOW}[4/7] Seeding Admin...${NC}"
 
 cd "$SCRIPT_DIR/backend"
 
@@ -91,7 +146,7 @@ echo ""
 # Frontend Build
 ########################################
 
-echo -e "${YELLOW}[4/6] Building Frontend...${NC}"
+echo -e "${YELLOW}[5/7] Building Frontend...${NC}"
 
 cd "$SCRIPT_DIR/frontend"
 
@@ -110,7 +165,7 @@ echo ""
 # Start Backend
 ########################################
 
-echo -e "${YELLOW}[5/6] Starting Backend on Port 4000...${NC}"
+echo -e "${YELLOW}[6/7] Starting Backend on Port 4000...${NC}"
 
 stop_port 4000 "backend"
 
@@ -124,7 +179,7 @@ sleep 5
 # Start Frontend
 ########################################
 
-echo -e "${YELLOW}[6/6] Starting Frontend on Port 3000...${NC}"
+echo -e "${YELLOW}[7/7] Starting Frontend on Port 3000...${NC}"
 
 stop_port 3000 "frontend"
 

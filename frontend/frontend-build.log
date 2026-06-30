@@ -16,24 +16,24 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 6.8s
+✓ Compiled successfully in 7.5s
   Running TypeScript ...
-  Finished TypeScript in 9.2s ...
+  Finished TypeScript in 8.9s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/91) ...
-  Generating static pages using 11 workers (22/91) 
-  Generating static pages using 11 workers (45/91) 
-  Generating static pages using 11 workers (68/91) 
-✓ Generating static pages using 11 workers (91/91) in 651ms
+  Generating static pages using 11 workers (0/52) ...
+  Generating static pages using 11 workers (13/52) 
+  Generating static pages using 11 workers (26/52) 
+  Generating static pages using 11 workers (39/52) 
+✓ Generating static pages using 11 workers (52/52) in 392ms
   Finalizing page optimization ...
 
 Route (app)
 ┌ ○ /
 ├ ○ /_not-found
 ├ ƒ /addemployees
-├ ○ /addprojects
-├ ○ /admin/profile
-├ ○ /alltasks
+├ ƒ /addprojects
+├ ƒ /admin/profile
+├ ƒ /alltasks
 ├ ƒ /api/auth/[...nextauth]
 ├ ƒ /api/clients
 ├ ƒ /api/clients/[id]/workspace
@@ -64,29 +64,30 @@ Route (app)
 ├ ƒ /api/user/banner
 ├ ƒ /api/user/profile
 ├ ƒ /api/user/profile-image
-├ ○ /approvals
-├ ○ /approvals/approved
-├ ○ /approvals/rejected
+├ ƒ /approvals
+├ ƒ /approvals/approved
+├ ƒ /approvals/rejected
 ├ ○ /auth/not-found
 ├ ƒ /auth/role-redirect
-├ ○ /calendar
-├ ○ /client/dashboard
-├ ○ /client/documents
-├ ○ /client/login
+├ ƒ /calendar
+├ ƒ /client/dashboard
+├ ƒ /client/documents
+├ ƒ /client/login
 ├ ○ /client/notifications
-├ ○ /client/profile
+├ ƒ /client/profile
 ├ ○ /client/projects
-├ ○ /client/settings
-├ ○ /clients
+├ ƒ /client/settings
+├ ƒ /clients
 ├ ƒ /clients/[id]
-├ ○ /dashboard
+├ ƒ /dashboard
 ├ ƒ /departments
 ├ ƒ /employees
-├ ○ /files
+├ ƒ /files
+├ ƒ /files/audit
 ├ ƒ /forgot-password
 ├ ƒ /login
-├ ○ /my-time
-├ ○ /mytasks
+├ ƒ /my-time
+├ ƒ /mytasks
 ├ ƒ /onboarding
 ├ ƒ /orgmenu
 ├ ƒ /orgmenu/analytics
@@ -108,16 +109,16 @@ Route (app)
 ├ ƒ /orgmenu/security/sso
 ├ ƒ /orgmenu/settings
 ├ ƒ /orgmenu/settings/notifications
-├ ○ /overview
+├ ƒ /overview
 ├ ○ /pricing
-├ ○ /profile
-├ ○ /projects
-├ ○ /recycle-bin
-├ ○ /reports
+├ ƒ /profile
+├ ƒ /projects
+├ ƒ /recycle-bin
+├ ƒ /reports
 ├ ƒ /reset-password
-├ ○ /savedtasks
-├ ○ /settings
-├ ○ /settings/plans
+├ ƒ /savedtasks
+├ ƒ /settings
+├ ƒ /settings/plans
 ├ ƒ /share/[token]
 ├ ƒ /signup
 ├ ƒ /signup-mongo
@@ -137,14 +138,14 @@ Route (app)
 ├ ƒ /staffs/tasks
 ├ ƒ /staffs/time-off
 ├ ƒ /staffs/timesheet
-├ ○ /team-time
-├ ○ /teams
-├ ○ /teamtasks
-├ ○ /terminated
-├ ○ /time-reports
-├ ○ /time-tracker
-├ ○ /upcomingtasks
-└ ○ /upload
+├ ƒ /team-time
+├ ƒ /teams
+├ ƒ /teamtasks
+├ ƒ /terminated
+├ ƒ /time-reports
+├ ƒ /time-tracker
+├ ƒ /upcomingtasks
+└ ƒ /upload
 
 
 ƒ Proxy (Middleware)

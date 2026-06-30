@@ -20,6 +20,9 @@ export declare const env: {
     S3_ACCESS_KEY_ID: string;
     S3_SECRET_ACCESS_KEY: string;
     S3_REGION: string;
+    TUS_PREFIX: string;
+    TUS_MAX_SIZE: number;
+    TUS_TTL_MS: number;
     GCS_BUCKET_NAME: string;
     GCS_KEYFILE: string;
     PERF_LOG: string;

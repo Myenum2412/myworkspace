@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { ObjectId } from "mongodb";
-import EmployeesPageClient from "./page-client";
+import EmployeesInteractive from "./employees-interactive";
 
 export const metadata = { title: "Employees Overview" };
 export const dynamic = "force-dynamic";
@@ -189,5 +189,5 @@ export default async function EmployeesPage() {
     }
   }
 
-  return <EmployeesPageClient employees={employees} user={user} />;
+  return <EmployeesInteractive employees={employees} user={user} />;
 }

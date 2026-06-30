@@ -1,8 +1,9 @@
 "use client";
 
+import { io, Socket } from "socket.io-client";
+
 export type WsConnectionState = "connecting" | "connected" | "disconnected" | "reconnecting";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type WsEventCallback<T = any> = (data: { type: string; payload: T; timestamp: number }) => void;
 
 export class WsClient {
@@ -74,7 +75,6 @@ export class WsClient {
     this.listeners.clear();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   send(data: any) {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(data));
@@ -89,7 +89,6 @@ export class WsClient {
     this.send({ type: "unsubscribe", channels });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   on<T = any>(type: string, callback: WsEventCallback<T>) {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, new Set());
@@ -98,7 +97,6 @@ export class WsClient {
     return () => this.listeners.get(type)?.delete(callback as WsEventCallback);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private emit(type: string, data: any) {
     this.listeners.get(type)?.forEach((cb) => cb(data));
     this.listeners.get("*")?.forEach((cb) => cb(data));
@@ -128,3 +126,113 @@ export function getWsClient(): WsClient {
   }
   return globalClient;
 }
+
+type EventCallback = (event: string, data: unknown) => void;
+
+const SOCKET_PATH = "/api/socketio";
+
+export class SocketIOClient {
+  private socket: Socket | null = null;
+  private listeners: Set<EventCallback> = new Set();
+  private connected = false;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 10;
+  private userId: string | null = null;
+  private orgId: string | null = null;
+
+  async connect(userId: string, orgId?: string) {
+    if (this.socket?.connected) return;
+
+    this.userId = userId;
+    this.orgId = orgId || null;
+
+    const token = await this.getAuthToken();
+
+    this.socket = io({
+      path: SOCKET_PATH,
+      auth: { token },
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: this.maxReconnectAttempts,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 10000,
+      timeout: 20000,
+    });
+
+    this.socket.on("connect", () => {
+      this.connected = true;
+      this.reconnectAttempts = 0;
+      this.notifyListeners("socket:connected", { userId, orgId });
+    });
+
+    this.socket.on("disconnect", (reason) => {
+      this.connected = false;
+      this.notifyListeners("socket:disconnected", { reason });
+    });
+
+    this.socket.on("connect_error", (error) => {
+      this.reconnectAttempts++;
+      this.notifyListeners("socket:error", { error: error.message, attempts: this.reconnectAttempts });
+    });
+
+    this.socket.on("upload:started", (data) => this.notifyListeners("upload:started", data));
+    this.socket.on("upload:completed", (data) => this.notifyListeners("upload:completed", data));
+    this.socket.on("upload:failed", (data) => this.notifyListeners("upload:failed", data));
+    this.socket.on("upload:cancelled", (data) => this.notifyListeners("upload:cancelled", data));
+    this.socket.on("file:uploaded", (data) => this.notifyListeners("file:uploaded", data));
+    this.socket.on("file:deleted", (data) => this.notifyListeners("file:deleted", data));
+    this.socket.on("file:restored", (data) => this.notifyListeners("file:restored", data));
+    this.socket.on("file:updated", (data) => this.notifyListeners("file:updated", data));
+    this.socket.on("file:metadata-saved", (data) => this.notifyListeners("file:metadata-saved", data));
+    this.socket.on("file:version-created", (data) => this.notifyListeners("file:version-created", data));
+    this.socket.on("session:status:updated", (data) => this.notifyListeners("session:status:updated", data));
+    this.socket.on("user:status:changed", (data) => this.notifyListeners("user:status:changed", data));
+  }
+
+  private async getAuthToken(): Promise<string> {
+    const token = localStorage.getItem("auth-token");
+    if (token) return token;
+    try {
+      const res = await fetch("/api/auth/socket-token");
+      if (res.ok) {
+        const data = await res.json();
+        return data.token || "";
+      }
+    } catch {}
+    return "";
+  }
+
+  disconnect() {
+    this.socket?.disconnect();
+    this.socket = null;
+    this.connected = false;
+  }
+
+  onEvent(callback: EventCallback): () => void {
+    this.listeners.add(callback);
+    return () => this.listeners.delete(callback);
+  }
+
+  private notifyListeners(event: string, data: unknown) {
+    this.listeners.forEach((cb) => cb(event, data));
+  }
+
+  emit(event: string, data: unknown) {
+    this.socket?.emit(event, data);
+  }
+
+  isConnected(): boolean {
+    return this.connected;
+  }
+
+  joinOrg(orgId: string) {
+    this.orgId = orgId;
+    this.emit("org:join", { orgId });
+  }
+
+  leaveOrg(orgId: string) {
+    this.emit("org:leave", { orgId });
+  }
+}
+
+export const socketIOManager = new SocketIOClient();

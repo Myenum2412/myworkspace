@@ -2,7 +2,7 @@ import { cache } from "react";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
-import { SettingsForm } from "./settings-form";
+import { SettingsFormInteractive } from "./settings-form-interactive";
 
 export const metadata = { title: "Settings" };
 
@@ -32,7 +32,7 @@ export default async function SettingsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">General Settings</h1>
       </div>
-      <SettingsForm initial={initial} />
+      <SettingsFormInteractive initial={initial} />
     </div>
   );
 }

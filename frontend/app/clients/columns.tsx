@@ -1,5 +1,4 @@
-"use client";
-
+"use client"
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { BarChart3, FolderOpen, MoreHorizontal, Pencil, Settings, Trash2, Workflow, FileText } from "lucide-react";

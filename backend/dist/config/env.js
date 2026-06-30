@@ -25,6 +25,11 @@ export const env = {
     S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || "",
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || "",
     S3_REGION: process.env.S3_REGION || "us-east-1",
+    // TUS resumable upload (tus-node-server + FileStore). Chunk persistence lands
+    // under data/tus-uploads/; final objects go to R2 via the orchestrator.
+    TUS_PREFIX: process.env.TUS_PREFIX || "/files-tus",
+    TUS_MAX_SIZE: Number(process.env.TUS_MAX_SIZE || 10 * 1024 * 1024 * 1024),
+    TUS_TTL_MS: Number(process.env.TUS_TTL_MS || 24 * 60 * 60 * 1000),
     GCS_BUCKET_NAME: process.env.GCS_BUCKET_NAME || "",
     GCS_KEYFILE: process.env.GCS_KEYFILE || "",
     // "1" enables per-request stage timing logs (PERF_LOG) and auth debug logs.

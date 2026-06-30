@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { InviteMemberForm } from "./invite-form";
+import { InviteMemberFormInteractive } from "./invite-form-interactive";
 
 export const metadata = { title: "Invite Members" };
 
@@ -14,7 +14,7 @@ export default function InvitePage() {
           <CardTitle>Send Invitations</CardTitle>
         </CardHeader>
         <CardContent>
-          <InviteMemberForm />
+          <InviteMemberFormInteractive />
         </CardContent>
       </Card>
     </div>

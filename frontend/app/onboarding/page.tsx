@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { OnboardingClient } from "./onboarding-client";
+import { OnboardingInteractive } from "./onboarding-interactive";
+
+export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {
   const session = await auth();
@@ -21,5 +23,5 @@ export default async function OnboardingPage() {
     redirect("/dashboard");
   }
 
-  return <OnboardingClient />;
+  return <OnboardingInteractive />;
 }

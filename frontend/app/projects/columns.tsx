@@ -1,5 +1,3 @@
-"use client";
-
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { FolderOpenIcon, PaletteIcon, TextIcon, CalendarIcon } from "lucide-react";

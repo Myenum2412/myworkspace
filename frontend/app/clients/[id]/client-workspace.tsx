@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
 import {
-  AlertCircle,
   ArrowLeft,
   BarChart3,
   FileText,
   FolderOpen,
-  Loader2,
   Settings,
   ShieldCheck,
   Workflow,
@@ -19,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-type ClientWorkspaceResponse = {
+export type ClientWorkspaceResponse = {
   client: {
     id: string;
     name: string;
@@ -127,66 +124,19 @@ function ModuleCard({ id, icon: Icon, title, detail }: { id: string; icon: Lucid
   );
 }
 
-export default function ClientWorkspaceClient() {
-  const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const [workspace, setWorkspace] = useState<ClientWorkspaceResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+type ClientWorkspaceProps = {
+  data: ClientWorkspaceResponse;
+};
 
-  useEffect(() => {
-    async function loadWorkspace() {
-      setLoading(true);
-      setError("");
-      try {
-        const res = await fetch(`/api/clients/${params.id}/workspace`, { credentials: "include" });
-        const result = await res.json();
-        if (!res.ok || !result.success) {
-          throw new Error(result.error || "Failed to load client workspace");
-        }
-        setWorkspace(result.data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load client workspace");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (params.id) loadWorkspace();
-  }, [params.id]);
+export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
+  const { client, dashboard, fileManagement } = data;
+  const metrics = dashboard.metrics;
 
   const folderNameById = useMemo(() => {
     const map = new Map<string, string>();
-    workspace?.fileManagement.folders.forEach((folder) => map.set(folder.id, folder.name));
+    fileManagement.folders.forEach((folder) => map.set(folder.id, folder.name));
     return map;
-  }, [workspace]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (error || !workspace) {
-    return (
-      <div className="mx-auto flex max-w-xl flex-col items-center gap-4 py-16 text-center">
-        <AlertCircle className="size-10 text-red-500" />
-        <div>
-          <h1 className="text-xl font-semibold">Workspace unavailable</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{error || "Client workspace was not found."}</p>
-        </div>
-        <Button variant="outline" onClick={() => router.push("/clients")}>
-          <ArrowLeft className="mr-2 size-4" />
-          Back to Clients
-        </Button>
-      </div>
-    );
-  }
-
-  const { client, dashboard, fileManagement } = workspace;
-  const metrics = dashboard.metrics;
+  }, [fileManagement.folders]);
 
   return (
     <div className="space-y-6">

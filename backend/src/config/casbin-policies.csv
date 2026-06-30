@@ -1,0 +1,100 @@
+p, super_admin, *:file, view
+p, super_admin, *:file, upload
+p, super_admin, *:file, download
+p, super_admin, *:file, edit
+p, super_admin, *:file, delete
+p, super_admin, *:file, share
+p, super_admin, *:file, restore
+p, super_admin, *:file, archive
+p, super_admin, *:folder, view
+p, super_admin, *:folder, create
+p, super_admin, *:folder, edit
+p, super_admin, *:folder, delete
+p, super_admin, *:upload, view
+p, super_admin, *:upload, resume
+p, super_admin, *:upload, cancel
+p, super_admin, *:upload, pause
+
+p, org_admin, *:file, view
+p, org_admin, *:file, upload
+p, org_admin, *:file, download
+p, org_admin, *:file, edit
+p, org_admin, *:file, delete
+p, org_admin, *:file, share
+p, org_admin, *:file, restore
+p, org_admin, *:file, archive
+p, org_admin, *:folder, view
+p, org_admin, *:folder, create
+p, org_admin, *:folder, edit
+p, org_admin, *:folder, delete
+p, org_admin, *:upload, view
+p, org_admin, *:upload, resume
+p, org_admin, *:upload, cancel
+p, org_admin, *:upload, pause
+
+p, gen_admin, :org_file, view
+p, gen_admin, :org_file, upload
+p, gen_admin, :org_file, download
+p, gen_admin, :org_file, edit
+p, gen_admin, :org_file, delete
+p, gen_admin, :org_file, share
+p, gen_admin, :org_folder, view
+p, gen_admin, :org_folder, create
+p, gen_admin, :org_folder, edit
+p, gen_admin, :org_folder, delete
+p, gen_admin, :org_upload, view
+p, gen_admin, :org_upload, resume
+p, gen_admin, :org_upload, cancel
+
+p, hr, *:file, view
+p, hr, *:file, upload
+p, hr, *:file, download
+p, hr, *:file, edit
+p, hr, *:file, share
+p, hr, *:folder, view
+p, hr, *:folder, create
+
+p, branch_manager, :org_file, view
+p, branch_manager, :org_file, upload
+p, branch_manager, :org_file, download
+p, branch_manager, :project_file, view
+p, branch_manager, :project_file, upload
+p, branch_manager, :project_file, download
+p, branch_manager, :project_file, delete
+p, branch_manager, :project_folder, view
+p, branch_manager, :project_folder, create
+
+p, project_manager, :project_file, view
+p, project_manager, :project_file, upload
+p, project_manager, :project_file, download
+p, project_manager, :project_file, edit
+p, project_manager, :project_file, delete
+p, project_manager, :project_file, share
+p, project_manager, :project_folder, view
+p, project_manager, :project_folder, create
+
+p, team_leader, :project_file, view
+p, team_leader, :project_file, upload
+p, team_leader, :project_file, download
+p, team_leader, :project_file, edit
+p, team_leader, :project_folder, view
+
+p, staff, :project_file, view
+p, staff, :project_file, upload
+p, staff, :project_file, download
+p, staff, :project_folder, view
+
+p, client, :client_file, view
+p, client, :client_file, upload
+p, client, :client_file, download
+p, client, :client_folder, view
+
+p, guest, :shared_file, view
+p, guest, :shared_file, download
+
+g, super_admin, org_admin
+g, org_admin, gen_admin
+g, gen_admin, branch_manager
+g, branch_manager, project_manager
+g, project_manager, team_leader
+g, team_leader, staff

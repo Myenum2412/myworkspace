@@ -1,182 +1,48 @@
-"use client";
+import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
+import { getUserOrgId } from "@/lib/org";
+import { redirect } from "next/navigation";
+import MyTime from "./my-time-interactive";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarUI } from "@/components/ui/calendar";
-import { Clock, Calendar, Loader2, Trash2 } from "lucide-react";
+export const dynamic = "force-dynamic";
 
-interface TimeEntry {
-  id: string;
-  userId: string;
-  date: string;
-  startTime?: string;
-  endTime?: string;
-  duration: number;
-  description: string;
-  billable: boolean;
-  status: "pending" | "approved" | "rejected";
-  createdAt: string;
-}
+export default async function MyTimePage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
 
-export default function MyTimePage() {
-  const [user, setUser] = useState({ name: "", email: "", avatar: "", id: "" });
-  const [orgId, setOrgId] = useState("");
-  const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const orgId = await getUserOrgId(session.user.id, session.user.email);
+  if (!orgId || !session.user.id) {
+    return <MyTime initialEntries={[]} user={{ name: "", email: "", avatar: "", id: "" }} />;
+  }
 
-  useEffect(() => {
-    fetch("/api/user/me", { credentials: "include" })
-      .then((r) => r.json())
-      .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "", id: u.id || "" }))
-      .catch((error) => {
-        console.error("[MY-TIME] Failed to fetch user:", error);
-      });
-  }, []);
+  const raw = await db.collection(collections.timeEntries)
+    .find({ orgId, userId: session.user.id })
+    .sort({ date: -1 })
+    .toArray();
 
-  useEffect(() => {
-    if (!user.id) return;
-    fetch("/api/user/profile", { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => {
-        const profile = d.data || d;
-        const id = profile?.org?.id || profile?.org?._id?.toString() || "";
-        setOrgId(id);
-      })
-      .catch((error) => {
-        console.error("[MY-TIME] Failed to fetch profile:", error);
-      });
-  }, [user.id]);
-
-  useEffect(() => {
-    if (!orgId || !user.id) return;
-    setLoading(true);
-    const params = new URLSearchParams({ orgId, userId: user.id });
-    if (date) params.set("date", date.toISOString().slice(0, 10));
-
-    fetch(`/api/time-entries?${params}`, { credentials: "include" })
-      .then((r) => r.json())
-      .then((res) => setEntries(res.data || res || []))
-      .catch((error) => {
-        console.error("[MY-TIME] Failed to fetch time entries:", error);
-      })
-      .finally(() => setLoading(false));
-  }, [orgId, user.id, date]);
-
-  const totalMinutes = entries.reduce((s, e) => s + e.duration, 0);
-  const totalHours = (totalMinutes / 60).toFixed(1);
-
-  const statusColors: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    approved: "bg-red-900 text-red-700 border-gray-300",
-    rejected: "bg-red-100 text-red-800 border-red-200",
-  };
-
-  const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/time-entries/${id}`, { method: "DELETE", credentials: "include" });
-    if (res.ok) setEntries((prev) => prev.filter((e) => e.id !== id));
-  };
+  const entries = (raw as unknown as Record<string, unknown>[]).map((e) => ({
+    id: (e._id as { toString: () => string }).toString(),
+    userId: (e.userId as string) || "",
+    date: (e.date as string) || "",
+    startTime: (e.startTime as string) || undefined,
+    endTime: (e.endTime as string) || undefined,
+    duration: (e.duration as number) || 0,
+    description: (e.description as string) || "",
+    billable: (e.billable as boolean) ?? true,
+    status: (e.status as "pending" | "approved" | "rejected") || "pending",
+    createdAt: (e.createdAt as string) || "",
+  }));
 
   return (
-                                <main className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">My Time</h1>
-              <p className="text-sm text-muted-foreground mt-1">Track your logged hours</p>
-            </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-2 text-sm rounded-md border-border hover:bg-muted transition-colors">
-                  <Calendar className="size-4" />
-                  {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString() : "Select date"}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <CalendarUI mode="single" selected={date} onSelect={setDate} />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="size-4" />
-                {totalHours}h logged
-                <Badge variant="secondary">{entries.length} entries</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : entries.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                  <Clock className="size-10 mb-3 opacity-50" />
-                  <p>No time entries for this date</p>
-                  <p className="text-sm">Go to Time Tracker to log your hours</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-blue-50">
-                      <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                        <th className="pb-3 font-medium">Description</th>
-                        <th className="pb-3 font-medium">Time</th>
-                        <th className="pb-3 font-medium">Duration</th>
-                        <th className="pb-3 font-medium">Status</th>
-                        <th className="pb-3 font-medium w-10"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {entries.map((entry) => (
-                        <tr key={entry.id} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                          <td className="py-3 pr-4">
-                            <p className="text-sm font-medium">{entry.description || "No description"}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(entry.date).toLocaleDateString()}
-                              {entry.startTime && entry.endTime && ` · ${entry.startTime} - ${entry.endTime}`}
-                            </p>
-                          </td>
-                          <td className="py-3 pr-4">
-                            <span className="text-sm">
-                              {entry.startTime && entry.endTime
-                                ? `${entry.startTime} - ${entry.endTime}`
-                                : "—"}
-                            </span>
-                          </td>
-                          <td className="py-3 pr-4">
-                            <span className="text-sm font-mono font-medium">
-                              {Math.floor(entry.duration / 60)}h {entry.duration % 60}m
-                            </span>
-                          </td>
-                          <td className="py-3 pr-4">
-                            <Badge className={statusColors[entry.status]}>
-                              {entry.status}
-                            </Badge>
-                          </td>
-                          <td className="py-3">
-                            <button
-                              onClick={() => handleDelete(entry.id)}
-                              className="text-muted-foreground hover:text-red-600 transition-colors"
-                            >
-                              <Trash2 className="size-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </main>
-            );
+    <MyTime
+      initialEntries={entries}
+      user={{
+        name: (session.user.name as string) || "",
+        email: (session.user.email as string) || "",
+        avatar: (session.user.image as string) || "",
+        id: session.user.id,
+      }}
+    />
+  );
 }

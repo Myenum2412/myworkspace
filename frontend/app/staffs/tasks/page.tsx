@@ -1,28 +1,12 @@
-"use client";
+import { Suspense } from "react";
+import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
+import { getUserOrgId } from "@/lib/org";
+import { redirect } from "next/navigation";
+import TasksInteractive from "./tasks-interactive";
 
-import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
-import {
-  PlusIcon, ListTodoIcon, UsersIcon, ClockIcon,
-  CheckCircle2Icon, XCircleIcon, AlertCircleIcon,
-  MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
-import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskEditForm } from "@/components/task-edit-form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ViewToggle } from "@/components/view-toggle";
+export const dynamic = "force-dynamic";
 
 type Task = {
   _id: string;
@@ -39,401 +23,86 @@ type Task = {
   createdAt: string;
 };
 
-const statusStyles: Record<string, string> = {
-  todo: "bg-gray-100 text-gray-700",
-  in_progress: "bg-yellow-100 text-yellow-700",
-  review: "bg-purple-100 text-purple-700",
-  done: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
-};
+export default async function StaffTasksPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
 
-const priorityStyles: Record<string, string> = {
-  low: "bg-gray-100 text-gray-700",
-  medium: "bg-gray-200 text-gray-800",
-  high: "bg-orange-100 text-orange-700",
-  urgent: "bg-red-100 text-red-700",
-};
+  const orgId = await getUserOrgId(session.user.id, session.user.email);
 
-const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
+  let tasks: Task[] = [];
 
-export default function StaffTasksPage() {
-  const { data: session } = useSession();
-  const searchParams = useSearchParams();
-  const filter = searchParams.get("filter");
+  if (orgId) {
+    const userId = session.user.id;
 
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<"kanban" | "table">("table");
-  const [showTaskModal, setShowTaskModal] = useState(false);
-  const [viewOpen, setViewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    // Staff scope: only show tasks assigned to the user or their teams
+    // (mirrors backend /api/tasks?scope=staff logic)
+    const userTeams = (await db
+      .collection(collections.teamMembers)
+      .find({ userId })
+      .toArray()) as unknown as { teamId: string }[];
+    const teamIds = userTeams.map((t) => t.teamId);
 
-  const fetchTasks = useCallback(async () => {
-    if (!session?.user) return;
-    setLoading(true);
-    try {
-      const res = await fetch("/api/tasks?scope=staff", { credentials: "include" });
-      const d = await res.json();
-      const arr = Array.isArray(d) ? d : d.data || [];
-      setTasks(arr);
-    } catch (error) {
-      console.error("[STAFF TASKS] Failed to fetch tasks:", error);
-    } finally {
-      setLoading(false);
+    const orConditions: Record<string, unknown>[] = [{ assigneeId: userId }];
+    if (teamIds.length > 0) {
+      orConditions.push({ teamId: { $in: teamIds } });
     }
-  }, [session]);
 
-  useEffect(() => { fetchTasks(); }, [fetchTasks]);
+    const match: Record<string, unknown> = { orgId, $or: orConditions };
 
-  const displayTasks = filter === "team"
-    ? tasks
-    : tasks;
+    const pipeline: Record<string, unknown>[] = [
+      { $match: match },
+      {
+        $lookup: {
+          from: "users",
+          localField: "assigneeId",
+          foreignField: "_id",
+          as: "assignee",
+          pipeline: [{ $project: { _id: 1, name: 1, email: 1, image: 1 } }],
+        },
+      },
+      { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "creatorId",
+          foreignField: "_id",
+          as: "creator",
+          pipeline: [{ $project: { _id: 1, name: 1, email: 1, image: 1 } }],
+        },
+      },
+      { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
+      { $sort: { createdAt: -1 } },
+      { $limit: 100 },
+    ];
 
-  const todoCount = tasks.filter((t) => t.status === "todo").length;
-  const inProgressCount = tasks.filter((t) => t.status === "in_progress").length;
-  const reviewCount = tasks.filter((t) => t.status === "review").length;
-  const doneCount = tasks.filter((t) => t.status === "done").length;
-  const cancelledCount = tasks.filter((t) => t.status === "cancelled").length;
-  const totalCount = tasks.length;
+    const raw = (await db
+      .collection(collections.tasks)
+      .aggregate(pipeline)
+      .toArray()) as unknown as Record<string, unknown>[];
+
+    tasks = raw.map((t) => {
+      const assignee = t.assignee as Record<string, unknown> | null;
+      const creator = t.creator as Record<string, unknown> | null;
+      return {
+        _id: (t._id as { toString: () => string }).toString(),
+        title: (t.title as string) || "",
+        description: (t.description as string) || "",
+        status: (t.status as string) || "todo",
+        priority: (t.priority as string) || "medium",
+        dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
+        assigneeId: t.assigneeId ? (t.assigneeId as { toString?: () => string }).toString?.() || (t.assigneeId as string) : "",
+        assigneeName: assignee ? (assignee.name as string) || "" : "",
+        assigneeAvatar: assignee ? (assignee.image as string) || "" : "",
+        creatorId: t.creatorId ? (t.creatorId as { toString?: () => string }).toString?.() || (t.creatorId as string) : "",
+        creatorName: creator ? (creator.name as string) || "" : "",
+        createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
+      };
+    });
+  }
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold">
-            {filter === "team" ? "Team Tasks" : "My Tasks"}
-          </h1>
-          <div className="flex gap-1 ml-2">
-            <ViewToggle
-              options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
-              value={view}
-              onChange={(v) => setView(v as typeof view)}
-            />
-          </div>
-        </div>
-        <Button onClick={() => setShowTaskModal(true)}>
-          <PlusIcon className="mr-2 size-4" />
-          New Task
-        </Button>
-      </div>
-
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <AlertCircleIcon className="size-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-4 md:grid-cols-6 mb-6">
-            <Card className="bg-blue-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <ListTodoIcon className="size-4" /> To Do
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{todoCount}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-yellow-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <ClockIcon className="size-4" /> In Progress
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{inProgressCount}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-purple-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <AlertCircleIcon className="size-4" /> Review
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{reviewCount}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-green-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <CheckCircle2Icon className="size-4" /> Completed
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{doneCount}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-red-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <XCircleIcon className="size-4" /> Cancelled
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{cancelledCount}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <UsersIcon className="size-4" /> Total
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalCount}</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recently Allocated Tasks */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <ListTodoIcon className="size-4" />
-                Recently Allocated Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {displayTasks.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No tasks allocated yet</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-blue-50">
-                      <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                        <th className="pb-3 font-medium">Task</th>
-                        <th className="pb-3 font-medium">Assignee</th>
-                        <th className="pb-3 font-medium">Priority</th>
-                        <th className="pb-3 font-medium">Status</th>
-                        <th className="pb-3 font-medium">Due</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...displayTasks]
-                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                        .slice(0, 5)
-                        .map((t) => (
-                        <tr key={t._id} className="border-b last:border-0">
-                          <td className="py-2.5 text-sm">{t.title}</td>
-                          <td className="py-2.5 text-sm">{t.assigneeName || "Unassigned"}</td>
-                          <td className="py-2.5">
-                            <Badge className={priorityStyles[t.priority] || ""}>{t.priority}</Badge>
-                          </td>
-                          <td className="py-2.5">
-                            <Badge className={statusStyles[t.status] || ""}>{t.status.replace(/_/g, " ")}</Badge>
-                          </td>
-                          <td className="py-2.5 text-sm text-muted-foreground">
-                            {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {view === "table" ? (
-            <Card>
-              <CardHeader><CardTitle>{filter === "team" ? "Team Tasks" : "My Tasks"}</CardTitle></CardHeader>
-              <CardContent>
-                {displayTasks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No tasks found.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader className="bg-blue-50">
-                        <TableRow>
-                          <TableHead className="bg-blue-50 w-20">Task #</TableHead>
-                          <TableHead className="bg-blue-50">Task</TableHead>
-                          <TableHead className="bg-blue-50">Assigned To</TableHead>
-                          <TableHead className="bg-blue-50">Delegated By</TableHead>
-                          <TableHead className="bg-blue-50">Status</TableHead>
-                          <TableHead className="bg-blue-50">Priority</TableHead>
-                          <TableHead className="bg-blue-50">Due Date</TableHead>
-                          <TableHead className="bg-blue-50 w-16">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {displayTasks.map((t, idx) => (
-                          <TableRow key={t._id}>
-                            <TableCell className="font-mono text-xs text-muted-foreground">
-                              #{idx + 1}
-                            </TableCell>
-                            <TableCell className="font-medium">{t.title}</TableCell>
-                            <TableCell>
-                              {t.assigneeName ? (
-                                <div className="flex items-center gap-2">
-                                  <div className="size-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                                    {t.assigneeAvatar ? (
-                                      <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
-                                    ) : (
-                                      <span className="text-[10px] font-medium text-muted-foreground">
-                                        {t.assigneeName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className="text-sm">{t.assigneeName}</span>
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground">—</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {t.creatorName ? (
-                                <span className="text-sm">{t.creatorName}</span>
-                              ) : (
-                                <span className="text-muted-foreground">—</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={statusStyles[t.status] || ""}>
-                                {t.status.replace(/_/g, " ")}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={priorityStyles[t.priority] || ""}>
-                                {t.priority}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
-                            </TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon-sm">
-                                    <MoreHorizontalIcon className="size-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
-                                    <EyeIcon className="mr-2 size-4" />
-                                    View
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => { setSelectedTask(t); setEditOpen(true); }}>
-                                    <PencilIcon className="mr-2 size-4" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    className="text-destructive"
-                                    onClick={async () => {
-                                      if (!confirm("Delete this task?")) return;
-                                      try {
-                                        const res = await fetch(`/api/tasks/${t._id}?scope=staff`, {
-                                          method: "DELETE", credentials: "include",
-                                        });
-                                        if (res.ok) setTasks((prev) => prev.filter((x) => x._id !== t._id));
-                                      } catch (error) {
-                                        console.error("[STAFF TASKS] Delete error:", error);
-                                      }
-                                    }}
-                                  >
-                                    <Trash2Icon className="mr-2 size-4" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-5">
-              {statusGroups.map((s) => {
-                const items = displayTasks.filter((t) => t.status === s);
-                return (
-                  <div key={s} className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold capitalize">{s.replace(/_/g, " ")}</h3>
-                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                        {items.length}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-2 min-h-[120px]">
-                      {items.length === 0 ? (
-                        <p className="text-xs text-muted-foreground italic px-1">No tasks</p>
-                      ) : (
-                        items.map((t) => (
-                          <div key={t._id} className="rounded-lg border bg-card p-3 space-y-2 shadow-sm">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-medium leading-tight">{t.title}</p>
-                              <Badge className={(priorityStyles[t.priority] || "") + " shrink-0"}>
-                                {t.priority}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1.5">
-                                <div className="size-5 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                                  {t.assigneeAvatar ? (
-                                    <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
-                                  ) : (
-                                    <span className="text-[8px] font-medium text-muted-foreground">
-                                      {(t.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-[11px] text-muted-foreground">{t.assigneeName}</span>
-                              </div>
-                              {t.dueDate && (
-                                <span className="text-[10px] text-muted-foreground">
-                                  {new Date(t.dueDate).toLocaleDateString()}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
-      )}
-
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="p-0 flex flex-col">
-          {selectedTask && (
-            <TaskDetailedView
-              task={selectedTask}
-              onEdit={(t) => { setViewOpen(false); setSelectedTask(t); setEditOpen(true); }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="p-0 flex flex-col">
-          {selectedTask && (
-            <TaskEditForm
-              task={selectedTask}
-              onSave={(updated) => {
-                setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
-                setEditOpen(false);
-                setSelectedTask(null);
-              }}
-              onCancel={() => setEditOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <TaskAllocationModal
-        open={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-      />
-    </main>
+    <Suspense fallback={<div className="flex items-center justify-center py-12"><div className="text-sm text-muted-foreground">Loading tasks...</div></div>}>
+      <TasksInteractive tasks={tasks} />
+    </Suspense>
   );
 }

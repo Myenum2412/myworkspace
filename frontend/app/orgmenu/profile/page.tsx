@@ -1,708 +1,123 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  MailIcon,
-  CalendarIcon,
-  ShieldIcon,
-  Building2Icon,
-  CameraIcon,
-  XIcon,
-  Loader2Icon,
-  UserIcon,
-  PencilIcon,
-  CheckIcon,
-  PhoneIcon,
-  MapPinIcon,
-  LinkIcon,
-  GlobeIcon,
-  BriefcaseIcon,
-} from "lucide-react";
-
-import nextDynamic from "next/dynamic";
-const BannerUpload = nextDynamic(
-  () => import("@/components/ui/file-upload-1").then((m) => m.BannerUpload),
-  { ssr: false }
-);
-const ProfileImageUpload = nextDynamic(
-  () => import("@/components/ui/profile-image-upload").then((m) => m.ProfileImageUpload),
-  { ssr: false }
-);
+import { Suspense } from "react";
+import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
+import { redirect } from "next/navigation";
+import { ObjectId } from "mongodb";
+import ProfileLeafInteractive from "./profile-leaf-interactive";
 
 export const dynamic = "force-dynamic";
 
-type ProfileData = {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    department: string;
-    company: string;
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-    zipCode: string;
-    linkedin: string;
-    github: string;
-    twitter: string;
-    website: string;
-    status: string;
-    role: string;
-    createdAt: string;
-    bannerUrl?: string;
-    image?: string;
-  } | null;
-  org: {
-    id: string;
-    name: string;
-    domain: string;
-    plan: string;
-  } | null;
+type ProfileUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  department: string;
+  company: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  linkedin: string;
+  github: string;
+  twitter: string;
+  website: string;
+  status: string;
+  role: string;
+  createdAt: string;
+  bannerUrl?: string;
+  image?: string;
 };
 
-export default function OrgProfilePage() {
-  const { data: session } = useSession();
-  const [data, setData] = useState<ProfileData | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
-  const [saveSuccess, setSaveSuccess] = useState("");
+type ProfileOrg = {
+  id: string;
+  name: string;
+  domain: string;
+  plan: string;
+};
 
-  const [editName, setEditName] = useState("");
-  const [editPhone, setEditPhone] = useState("");
-  const [editDepartment, setEditDepartment] = useState("");
-  const [editCompany, setEditCompany] = useState("");
-  const [editAddress, setEditAddress] = useState("");
-  const [editCity, setEditCity] = useState("");
-  const [editState, setEditState] = useState("");
-  const [editCountry, setEditCountry] = useState("");
-  const [editZipCode, setEditZipCode] = useState("");
-  const [editLinkedin, setEditLinkedin] = useState("");
-  const [editGithub, setEditGithub] = useState("");
-  const [editTwitter, setEditTwitter] = useState("");
-  const [editWebsite, setEditWebsite] = useState("");
+type ProfileData = {
+  user: ProfileUser | null;
+  org: ProfileOrg | null;
+};
 
-  const [showBannerEditor, setShowBannerEditor] = useState(false);
-  const [showImageEditor, setShowImageEditor] = useState(false);
-  const [urlInput, setUrlInput] = useState("");
+export default async function OrgProfilePage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
 
-  const [uploading, setUploading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [bannerUrl, setBannerUrl] = useState("");
-  const [profileImage, setProfileImage] = useState("");
-  const [fileKey, setFileKey] = useState(0);
-  const [imageFileKey, setImageFileKey] = useState(0);
-
-  useEffect(() => {
-    fetch("/api/user/profile", { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => {
-        const result = d.data || d;
-        setData(result);
-        setBannerUrl(result?.user?.bannerUrl || "");
-        setProfileImage(result?.user?.image || "");
-        setEditName(result?.user?.name || "");
-        setEditPhone(result?.user?.phone || "");
-        setEditDepartment(result?.user?.department || "");
-        setEditCompany(result?.user?.company || "");
-        setEditAddress(result?.user?.address || "");
-        setEditCity(result?.user?.city || "");
-        setEditState(result?.user?.state || "");
-        setEditCountry(result?.user?.country || "");
-        setEditZipCode(result?.user?.zipCode || "");
-        setEditLinkedin(result?.user?.linkedin || "");
-        setEditGithub(result?.user?.github || "");
-        setEditTwitter(result?.user?.twitter || "");
-        setEditWebsite(result?.user?.website || "");
-      })
-      .catch(() => setData({ user: null, org: null }));
-  }, []);
-
-  const dbUser = data?.user;
-  const org = data?.org;
-
-  const displayName = session?.user?.name || dbUser?.name || "User";
-  const displayEmail = session?.user?.email || dbUser?.email || "user@example.com";
-  const displayAvatar = profileImage || session?.user?.image || dbUser?.image || "";
-
-  async function handleSave() {
-    setSaveError("");
-    setSaveSuccess("");
-    setSaving(true);
-    try {
-      const res = await fetch("/api/user/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name: editName,
-          phone: editPhone,
-          department: editDepartment,
-          company: editCompany,
-          address: editAddress,
-          city: editCity,
-          state: editState,
-          country: editCountry,
-          zipCode: editZipCode,
-          linkedin: editLinkedin,
-          github: editGithub,
-          twitter: editTwitter,
-          website: editWebsite,
-        }),
-      });
-      if (!res.ok) {
-        let errMsg = `Request failed (${res.status})`;
-        try { const err = await res.json(); errMsg = err.error || errMsg; } catch {}
-        setSaveError(errMsg);
-        return;
-      }
-      setData((prev) => prev ? {
-        ...prev,
-        user: prev.user ? {
-          ...prev.user,
-          name: editName,
-          phone: editPhone,
-          department: editDepartment,
-          company: editCompany,
-          address: editAddress,
-          city: editCity,
-          state: editState,
-          country: editCountry,
-          zipCode: editZipCode,
-          linkedin: editLinkedin,
-          github: editGithub,
-          twitter: editTwitter,
-          website: editWebsite,
-        } : prev.user,
-      } : prev);
-      setSaveSuccess("Profile updated successfully");
-      setEditing(false);
-      setTimeout(() => setSaveSuccess(""), 4000);
-    } catch (e) {
-      setSaveError(e instanceof TypeError && e.message === "Failed to fetch"
-        ? "Cannot connect to server. Please check your connection and try again."
-        : (e instanceof Error ? e.message : "Network error"));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function handleCancel() {
-    setEditName(dbUser?.name || "");
-    setEditPhone(dbUser?.phone || "");
-    setEditDepartment(dbUser?.department || "");
-    setEditCompany(dbUser?.company || "");
-    setEditAddress(dbUser?.address || "");
-    setEditCity(dbUser?.city || "");
-    setEditState(dbUser?.state || "");
-    setEditCountry(dbUser?.country || "");
-    setEditZipCode(dbUser?.zipCode || "");
-    setEditLinkedin(dbUser?.linkedin || "");
-    setEditGithub(dbUser?.github || "");
-    setEditTwitter(dbUser?.twitter || "");
-    setEditWebsite(dbUser?.website || "");
-    setSaveError("");
-    setSaveSuccess("");
-    setEditing(false);
-  }
-
-  async function updateBanner(url: string) {
-    const res = await fetch("/api/user/banner", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ url }),
-    });
-    if (res.ok) {
-      const result = await res.json();
-      setBannerUrl(result.bannerUrl);
-      setShowBannerEditor(false);
-      setUrlInput("");
-    }
-  }
-
-  async function handleBannerFile(file: File) {
-    setUploading(true);
-    const formData = new FormData();
-    formData.append("banner", file);
-    const res = await fetch("/api/user/banner", {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-    });
-    if (res.ok) {
-      const result = await res.json();
-      setBannerUrl(result.bannerUrl);
-      setShowBannerEditor(false);
-      setFileKey((k) => k + 1);
-    }
-    setUploading(false);
-  }
-
-  async function removeProfileImage() {
-    const res = await fetch("/api/user/profile-image", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ url: "" }),
-    });
-    if (res.ok) {
-      const result = await res.json();
-      setProfileImage(result.image);
-      setShowImageEditor(false);
-    }
-  }
-
-  async function handleProfileImageFile(file: File) {
-    setUploadingImage(true);
-    const formData = new FormData();
-    formData.append("image", file);
-    const res = await fetch("/api/user/profile-image", {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-    });
-    if (res.ok) {
-      const result = await res.json();
-      setProfileImage(result.image);
-      setShowImageEditor(false);
-      setImageFileKey((k) => k + 1);
-    }
-    setUploadingImage(false);
-  }
-
-  if (!data) {
+  const email = session.user.email;
+  if (!email) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center py-24">
-        <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
-      </div>
+      <Suspense fallback={<div className="flex flex-1 items-center justify-center text-muted-foreground">Loading...</div>}>
+        <ProfileLeafInteractive data={{ user: null, org: null }} />
+      </Suspense>
     );
   }
 
+  // Fetch user by email (matches backend /api/user/profile logic)
+  const userDoc = (await db.collection(collections.users).findOne({ email })) as Record<string, unknown> | null;
+
+  if (!userDoc) {
+    return (
+      <Suspense fallback={<div className="flex flex-1 items-center justify-center text-muted-foreground">Loading...</div>}>
+        <ProfileLeafInteractive data={{ user: null, org: null }} />
+      </Suspense>
+    );
+  }
+
+  const userId = (userDoc.id as string) || String(userDoc._id || "");
+
+  // Find org membership
+  const member = (await db.collection(collections.orgMembers).findOne({ userId })) as Record<string, unknown> | null;
+
+  let orgData: ProfileOrg | null = null;
+
+  if (member?.orgId) {
+    const orgId = String(member.orgId);
+    let orgObjId: ObjectId | undefined;
+    try { orgObjId = new ObjectId(orgId); } catch { /* not an ObjectId */ }
+    const org = (await db.collection(collections.organizations).findOne(
+      orgObjId ? { $or: [{ id: orgId }, { _id: orgObjId }] } : { id: orgId }
+    )) as Record<string, unknown> | null;
+
+    if (org) {
+      orgData = {
+        id: (org.id as string) || String(org._id || ""),
+        name: (org.name as string) || "",
+        domain: (org.domain as string) || "",
+        plan: (org.plan as string) || "starter",
+      };
+    }
+  }
+
+  const userData: ProfileUser = {
+    id: String(userDoc._id || ""),
+    name: (userDoc.name as string) || "",
+    email: (userDoc.email as string) || "",
+    phone: (userDoc.phone as string) || "",
+    department: (userDoc.department as string) || "",
+    company: (userDoc.company as string) || "",
+    address: (userDoc.address as string) || "",
+    city: (userDoc.city as string) || "",
+    state: (userDoc.state as string) || "",
+    country: (userDoc.country as string) || "",
+    zipCode: (userDoc.zipCode as string) || "",
+    linkedin: (userDoc.linkedin as string) || "",
+    github: (userDoc.github as string) || "",
+    twitter: (userDoc.twitter as string) || "",
+    website: (userDoc.website as string) || "",
+    status: (userDoc.status as string) || "offline",
+    role: (userDoc.role as string) || "member",
+    image: (userDoc.image as string) || "",
+    bannerUrl: (userDoc.bannerUrl as string) || "",
+    createdAt: userDoc.createdAt ? String(userDoc.createdAt) : new Date().toISOString(),
+  };
+
   return (
-    <div className="flex flex-1 flex-col">
-      <div
-        className="relative h-[200px] bg-gradient-to-b from-primary/90 via-primary/40 to-background bg-cover bg-center"
-        style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
-      >
-        <button
-          onClick={() => setShowBannerEditor(true)}
-          className="absolute top-3 right-3 flex items-center gap-1.5 rounded-md bg-background/80 backdrop-blur-sm px-2.5 py-1.5 text-xs font-medium shadow-sm hover:bg-background transition-colors"
-        >
-          <CameraIcon className="size-3.5" />
-          Edit Banner
-        </button>
-      </div>
-
-      <div className="flex flex-col items-center -mt-12 px-6">
-        <div className="relative group">
-          <Avatar className="size-24 ring-4 ring-background shadow-xl">
-            <AvatarImage src={displayAvatar} alt={displayName} />
-            <AvatarFallback className="text-2xl">{displayName.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <button
-            onClick={() => setShowImageEditor(true)}
-            className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
-            aria-label="Edit profile photo"
-          >
-            <CameraIcon className="size-4" />
-          </button>
-        </div>
-
-        <h1 className="mt-3 text-2xl font-bold">{displayName}</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">{displayEmail}</p>
-        <div className="flex items-center gap-2 mt-2">
-          <Badge variant="default">
-            <ShieldIcon className="size-3 mr-1" />
-            {dbUser?.role ? dbUser.role.charAt(0).toUpperCase() + dbUser.role.slice(1) : "Admin"}
-          </Badge>
-          {org?.name && (
-            <Badge variant="secondary">
-              <Building2Icon className="size-3 mr-1" />
-              {org.name}
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2 max-w-4xl mx-auto w-full px-6 pt-4">
-        {saveError && (
-          <div className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{saveError}</div>
-        )}
-        {saveSuccess && (
-          <div className="rounded-md bg-green-500/10 px-3 py-2 text-xs text-green-600">{saveSuccess}</div>
-        )}
-        <div className="flex justify-end">
-          {editing ? (
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? <Loader2Icon className="size-4 animate-spin" /> : <CheckIcon className="size-4" />}
-                Save
-              </Button>
-            </div>
-          ) : (
-            <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-              <PencilIcon className="size-4" />
-              Edit Profile
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-2 p-6 max-w-5xl mx-auto w-full">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <UserIcon className="size-5" />
-              Personal Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-3">
-              <MailIcon className="size-4 text-muted-foreground shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="text-sm font-medium">{displayEmail}</p>
-              </div>
-            </div>
-            <Separator />
-            <div className="flex items-center gap-3">
-              <UserIcon className="size-4 text-muted-foreground shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Full Name</p>
-                {editing ? (
-                  <Input
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="h-8 text-sm mt-1"
-                  />
-                ) : (
-                  <p className="text-sm font-medium">{dbUser?.name || "—"}</p>
-                )}
-              </div>
-            </div>
-            <Separator />
-            <div className="flex items-center gap-3">
-              <PhoneIcon className="size-4 text-muted-foreground shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Phone</p>
-                {editing ? (
-                  <Input
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    placeholder="+1 555-123-4567"
-                    className="h-8 text-sm mt-1"
-                  />
-                ) : (
-                  <p className="text-sm font-medium">{dbUser?.phone || "—"}</p>
-                )}
-              </div>
-            </div>
-            <Separator />
-            <div className="flex items-center gap-3">
-              <BriefcaseIcon className="size-4 text-muted-foreground shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Department</p>
-                {editing ? (
-                  <Input
-                    value={editDepartment}
-                    onChange={(e) => setEditDepartment(e.target.value)}
-                    placeholder="Engineering"
-                    className="h-8 text-sm mt-1"
-                  />
-                ) : (
-                  <p className="text-sm font-medium">{dbUser?.department || "—"}</p>
-                )}
-              </div>
-            </div>
-            <Separator />
-            <div className="flex items-center gap-3">
-              <Building2Icon className="size-4 text-muted-foreground shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Company</p>
-                {editing ? (
-                  <Input
-                    value={editCompany}
-                    onChange={(e) => setEditCompany(e.target.value)}
-                    placeholder="Company name"
-                    className="h-8 text-sm mt-1"
-                  />
-                ) : (
-                  <p className="text-sm font-medium">{dbUser?.company || "—"}</p>
-                )}
-              </div>
-            </div>
-            <Separator />
-            <div className="flex items-center gap-3">
-              <ShieldIcon className="size-4 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">Role</p>
-                <p className="text-sm font-medium capitalize">{dbUser?.role || "Admin"}</p>
-              </div>
-            </div>
-            <Separator />
-            <div className="flex items-center gap-3">
-              <CalendarIcon className="size-4 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">Member since</p>
-                <p className="text-sm font-medium">
-                  {dbUser?.createdAt
-                    ? new Date(dbUser.createdAt).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    : "—"}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <MapPinIcon className="size-5" />
-              Address & Social
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Address</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <p className="text-xs text-muted-foreground mb-1">Street</p>
-                  {editing ? (
-                    <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="h-8 text-sm" />
-                  ) : (
-                    <p className="text-sm font-medium">{dbUser?.address || "—"}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">City</p>
-                  {editing ? (
-                    <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="h-8 text-sm" />
-                  ) : (
-                    <p className="text-sm font-medium">{dbUser?.city || "—"}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">State</p>
-                  {editing ? (
-                    <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="h-8 text-sm" />
-                  ) : (
-                    <p className="text-sm font-medium">{dbUser?.state || "—"}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Country</p>
-                  {editing ? (
-                    <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="h-8 text-sm" />
-                  ) : (
-                    <p className="text-sm font-medium">{dbUser?.country || "—"}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Zip Code</p>
-                  {editing ? (
-                    <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="h-8 text-sm" />
-                  ) : (
-                    <p className="text-sm font-medium">{dbUser?.zipCode || "—"}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-            <Separator />
-            <div className="space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Social Links</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                    <LinkIcon className="size-3" /> LinkedIn
-                  </p>
-                  {editing ? (
-                    <Input
-                      value={editLinkedin}
-                      onChange={(e) => setEditLinkedin(e.target.value)}
-                      placeholder="https://linkedin.com/in/username"
-                      className="h-8 text-sm"
-                    />
-                  ) : (
-                    <p className="text-sm font-medium truncate">{dbUser?.linkedin || "—"}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                    <LinkIcon className="size-3" /> GitHub
-                  </p>
-                  {editing ? (
-                    <Input
-                      value={editGithub}
-                      onChange={(e) => setEditGithub(e.target.value)}
-                      placeholder="https://github.com/username"
-                      className="h-8 text-sm"
-                    />
-                  ) : (
-                    <p className="text-sm font-medium truncate">{dbUser?.github || "—"}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                    <LinkIcon className="size-3" /> Twitter
-                  </p>
-                  {editing ? (
-                    <Input
-                      value={editTwitter}
-                      onChange={(e) => setEditTwitter(e.target.value)}
-                      placeholder="https://twitter.com/username"
-                      className="h-8 text-sm"
-                    />
-                  ) : (
-                    <p className="text-sm font-medium truncate">{dbUser?.twitter || "—"}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                    <GlobeIcon className="size-3" /> Website
-                  </p>
-                  {editing ? (
-                    <Input
-                      value={editWebsite}
-                      onChange={(e) => setEditWebsite(e.target.value)}
-                      placeholder="https://example.com"
-                      className="h-8 text-sm"
-                    />
-                  ) : (
-                    <p className="text-sm font-medium truncate">{dbUser?.website || "—"}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {showBannerEditor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBannerEditor(false)}>
-          <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold">Update banner</h2>
-              <button
-                onClick={() => setShowBannerEditor(false)}
-                className="rounded-md p-1 hover:bg-muted transition-colors"
-              >
-                <XIcon className="size-3.5" />
-              </button>
-            </div>
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Paste image URL"
-                  value={urlInput}
-                  onChange={(e) => setUrlInput(e.target.value)}
-                  className="h-8 text-xs"
-                />
-                <Button
-                  size="sm"
-                  className="h-8 text-xs shrink-0"
-                  disabled={!urlInput}
-                  onClick={() => updateBanner(urlInput)}
-                >
-                  Set
-                </Button>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <span className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">or</span>
-                </span>
-              </div>
-              <BannerUpload
-                key={fileKey}
-                onFile={handleBannerFile}
-                disabled={uploading}
-              />
-              {bannerUrl && (
-                <>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <span className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">or</span>
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    className="w-full h-8 text-xs text-destructive hover:text-destructive"
-                    onClick={() => updateBanner("")}
-                  >
-                    Remove banner
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showImageEditor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageEditor(false)}>
-          <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold">Update profile photo</h2>
-              <button
-                onClick={() => setShowImageEditor(false)}
-                className="rounded-md p-1 hover:bg-muted transition-colors"
-              >
-                <XIcon className="size-3.5" />
-              </button>
-            </div>
-            <div className="space-y-3">
-              <ProfileImageUpload
-                key={imageFileKey}
-                onFile={handleProfileImageFile}
-                disabled={uploadingImage}
-              />
-              {profileImage && (
-                <>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <span className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">or</span>
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    className="w-full h-8 text-xs text-destructive hover:text-destructive"
-                    onClick={removeProfileImage}
-                  >
-                    Remove photo
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <Suspense fallback={<div className="flex flex-1 items-center justify-center text-muted-foreground">Loading...</div>}>
+      <ProfileLeafInteractive data={{ user: userData, org: orgData }} />
+    </Suspense>
   );
 }

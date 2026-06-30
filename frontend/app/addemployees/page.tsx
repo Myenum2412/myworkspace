@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { AddEmployeePageClient } from "./page-client";
+import { AddEmployeePageInteractive } from "./page-interactive";
 
 export const metadata = {
   title: "Add Employee",
@@ -25,7 +25,7 @@ export default async function AddEmployeePage() {
         <h1 className="text-2xl font-bold tracking-tight">Employees</h1>
         <p className="text-muted-foreground">Manage your organization&apos;s employees</p>
       </div>
-      <AddEmployeePageClient />
+      <AddEmployeePageInteractive />
     </main>
   );
 }

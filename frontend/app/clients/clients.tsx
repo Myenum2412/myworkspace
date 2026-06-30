@@ -42,6 +42,19 @@ import {
   EditClientFormFields,
 } from "./client-form-fields";
 
+type SessionUser = {
+  id?: string;
+  name?: string;
+  email?: string;
+  image?: string;
+  role?: string;
+};
+
+type ClientsProps = {
+  initialClients: Client[];
+  user: SessionUser;
+};
+
 type Credentials = {
   username: string;
   email: string;
@@ -49,11 +62,11 @@ type Credentials = {
   loginUrl: string;
 };
 
-export default function ClientsClient() {
+export default function Clients({ initialClients, user: sessionUser }: ClientsProps) {
   const router = useRouter();
-  const [user, setUser] = useState({ name: "", email: "", avatar: "" });
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(sessionUser);
+  const [clients, setClients] = useState<Client[]>(initialClients);
+  const [loading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -155,18 +168,10 @@ export default function ClientsClient() {
   const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
-    setLoading(true);
     Promise.all([
-      fetch("/api/clients", { credentials: "include" })
-        .then((r) => r.json())
-        .then((d) => {
-          const arr = Array.isArray(d) ? d : d.data || [];
-          if (arr.length > 0) setClients(arr);
-        })
-        .catch(() => {}),
       fetch("/api/user/me", { credentials: "include" })
         .then((r) => r.json())
-        .then((u) => setUser({ name: u.name || "User", email: u.email || "", avatar: u.image || "" }))
+        .then((u) => setUser({ name: u.name || "User", email: u.email || "", image: u.image || "" }))
         .catch(() => {}),
       fetch("/api/employees", { credentials: "include" })
         .then((r) => r.json())
@@ -176,7 +181,7 @@ export default function ClientsClient() {
           setMembers(names);
         })
         .catch(() => {}),
-    ]).finally(() => setLoading(false));
+    ]).catch(() => {});
   }, []);
 
   useEffect(() => {

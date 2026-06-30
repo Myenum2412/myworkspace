@@ -5,7 +5,11 @@ export type FileCategory = "profile" | "report" | "general" | "document" | "imag
 export interface IFileAttachment extends Document {
   id: string;
   orgId: string;
+  workspaceId: string | null;
+  projectId: string | null;
   clientId: string | null;
+  staffId: string | null;
+  departmentId: string | null;
   folderId: string | null;
   uploaderId: string;
   createdBy: string;
@@ -36,7 +40,11 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
   {
     id: { type: String, required: true, unique: true },
     orgId: { type: String, required: true, index: true },
+    workspaceId: { type: String, default: null, index: true },
+    projectId: { type: String, default: null, index: true },
     clientId: { type: String, default: null, index: true },
+    staffId: { type: String, default: null, index: true },
+    departmentId: { type: String, default: null, index: true },
     folderId: { type: String, default: null, index: true },
     uploaderId: { type: String, required: true, index: true },
     createdBy: { type: String, required: true },
@@ -46,8 +54,16 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
     mimeType: { type: String, required: true },
     size: { type: Number, required: true },
     storagePath: { type: String, required: true },
-    storageProvider: { type: String, enum: ["local", "r2", "s3", "gcs", "azure"], default: "local" },
-    category: { type: String, enum: ["profile", "report", "general", "document", "image", "video", "audio", "archive"], default: "general" },
+    storageProvider: {
+      type: String,
+      enum: ["local", "r2", "s3", "gcs", "azure"],
+      default: "local",
+    },
+    category: {
+      type: String,
+      enum: ["profile", "report", "general", "document", "image", "video", "audio", "archive"],
+      default: "general",
+    },
     description: { type: String, default: "" },
     tags: { type: [String], default: [] },
     isLocked: { type: Boolean, default: false },
@@ -60,15 +76,16 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
     deletedAt: { type: Date, default: null },
     deletedBy: { type: String, default: null },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-fileAttachmentSchema.index({ orgId: 1, folderId: 1 });
-fileAttachmentSchema.index({ orgId: 1, clientId: 1 });
-fileAttachmentSchema.index({ orgId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, folderId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, projectId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, clientId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, uploaderId: 1, deletedAt: 1 });
 fileAttachmentSchema.index({ orgId: 1, name: "text", description: "text", tags: "text" });
 fileAttachmentSchema.index({ orgId: 1, mimeType: 1 });
-fileAttachmentSchema.index({ orgId: 1, uploaderId: 1 });
-fileAttachmentSchema.index({ checksum: 1 });
+fileAttachmentSchema.index({ checksum: 1, orgId: 1 });
+fileAttachmentSchema.index({ category: 1, orgId: 1 });
 
 export const FileAttachment = model<IFileAttachment>("FileAttachment", fileAttachmentSchema);

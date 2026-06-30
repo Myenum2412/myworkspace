@@ -52,11 +52,10 @@ async function ensureDb(): Promise<Db> {
   return globalWithMongo._mongoDatabase!;
 }
 
-const CURSOR_METHODS = new Set([
+const TERMINAL_METHODS = new Set([
   "toArray",
   "forEach",
   "map",
-  "filter",
   "reduce",
   "next",
   "hasNext",
@@ -65,19 +64,20 @@ const CURSOR_METHODS = new Set([
 ]);
 
 function createCursorPromise(promise: Promise<any>) {
-  const cursorPromise = promise.then((cursor) => cursor);
   const handler: ProxyHandler<any> = {
     get(_t, prop: string | symbol) {
       if (prop === "then") {
-        return (...args: any[]) => cursorPromise.then(...args);
+        return (...args: any[]) => promise.then(...args);
       }
-      if (CURSOR_METHODS.has(prop as string)) {
-        return (...args: any[]) => cursorPromise.then((c: any) => (c as any)[prop](...args));
+      if (TERMINAL_METHODS.has(prop as string)) {
+        return (...args: any[]) => promise.then((c: any) => (c as any)[prop](...args));
       }
       if (prop === Symbol.toPrimitive || prop === Symbol.iterator || prop === Symbol.toStringTag) {
         return undefined;
       }
-      return (...args: any[]) => cursorPromise.then((c: any) => (c as any)[prop](...args));
+      return (...args: any[]) => createCursorPromise(
+        promise.then((c: any) => (c as any)[prop](...args))
+      );
     },
   };
   return new Proxy({}, handler);

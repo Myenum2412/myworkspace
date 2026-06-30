@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
+import { User } from "../../src/lib/db/models/User.js";
+import { Organization } from "../../src/lib/db/models/Organization.js";
+import { OrgMember } from "../../src/lib/db/models/OrgMember.js";
+import { hash } from "bcryptjs";
+import { signToken } from "../../src/config/auth.js";
 
 /**
  * Seed an org with an admin user directly (bypasses mail + throttling concerns
@@ -11,13 +16,6 @@ export async function seedOrgWithAdmin(opts: {
   name?: string;
   password?: string;
 }): Promise<{ userId: string; orgId: string; email: string; headers: Record<string, string> }> {
-  // Lazy imports keep startup cheap and avoid side effects on import.
-  const { User } = await import("../../../src/lib/db/models/User.js");
-  const { Organization } = await import("../../../src/lib/db/models/Organization.js");
-  const { OrgMember } = await import("../../../src/lib/db/models/OrgMember.js");
-  const { hash } = await import("bcryptjs");
-  const { signToken } = await import("../../../src/config/auth.js");
-
   const userId = uuid();
   const orgId = uuid();
   const name = opts.name || "Tester";
@@ -32,6 +30,7 @@ export async function seedOrgWithAdmin(opts: {
     status: "online",
     role: "admin",
     orgId,
+    userNumber: Math.floor(Math.random() * 900000) + 100000,
   });
   await Organization.create({ id: orgId, name: `${name}'s Org`, slug: `slug-${userId.slice(0, 8)}`, plan: "starter", ownerId: userId });
   await OrgMember.create({ orgId, userId, role: "admin" });
