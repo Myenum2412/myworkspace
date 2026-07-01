@@ -93,13 +93,13 @@ export default async function TeamsPage() {
     ]);
 
     teams = (teamDocs as unknown as Record<string, unknown>[]).map((t) => ({
-      id: (t.id as string) || "",
+      id: String(t.id || t._id || ""),
       name: (t.name as string) || "",
       description: (t.description as string) || "",
       memberCount: (t.memberCount as number) || 0,
       leadName: (t.leadName as string) || "",
       leadAvatar: (t.leadAvatar as string) || "",
-      leadId: (t.leadId as string) || undefined,
+      leadId: t.leadId ? String(t.leadId) : undefined,
       createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
     }));
 

@@ -5,17 +5,17 @@ import { ObjectId } from "mongodb";
 export async function getUserOrgId(userId: string, email?: string): Promise<string | null> {
   const possibleIds = await resolvePossibleUserIds(userId, email);
 
-  // Query both NextAuth (org_members) and Mongoose (orgmembers) collections
-  const [nextAuthMembers, mongooseMembers] = await Promise.all([
-    db.collection(collections.orgMembers).find({ userId: { $in: possibleIds } }).toArray() as Promise<Record<string, unknown>[]>,
-    db.collection("orgmembers").find({ userId: { $in: possibleIds } }).toArray() as Promise<Record<string, unknown>[]>,
-  ]);
+  // Query Mongoose collection first — all app data (teams, tasks, projects)
+  // uses the Mongoose orgId format (24-char hex string from orgmembers).
+  const mongooseMembers = await db.collection("orgmembers").find({ userId: { $in: possibleIds } }).toArray() as unknown as Record<string, unknown>[];
+  if (mongooseMembers.length > 0) return String(mongooseMembers[0].orgId);
 
-  const members = [...nextAuthMembers, ...mongooseMembers];
-  if (members.length === 0) return null;
-  if (members.length === 1) return String(members[0].orgId);
+  // Fallback to NextAuth org_members collection (UUID format)
+  const nextAuthMembers = await db.collection(collections.orgMembers).find({ userId: { $in: possibleIds } }).toArray() as unknown as Record<string, unknown>[];
+  if (nextAuthMembers.length === 0) return null;
+  if (nextAuthMembers.length === 1) return String(nextAuthMembers[0].orgId);
 
-  const orgIds = [...new Set(members.map(m => String(m.orgId)))];
+  const orgIds = [...new Set(nextAuthMembers.map(m => String(m.orgId)))];
   const counts = await db.collection(collections.orgMembers).aggregate([
     { $match: { orgId: { $in: orgIds } } },
     { $group: { _id: "$orgId", count: { $sum: 1 } } },

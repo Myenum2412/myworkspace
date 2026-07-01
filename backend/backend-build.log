@@ -2,3 +2,5 @@
 > myworkspace-backend@1.0.0 build
 > tsc
 
+src/routes/projects.ts(9,69): error TS2724: '"../lib/validate.js"' has no exported member named 'optionalStringArray'. Did you mean 'optionalString'?
+src/routes/projects.ts(29,19): error TS2532: Object is possibly 'undefined'.

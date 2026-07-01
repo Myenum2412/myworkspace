@@ -43,17 +43,11 @@ export function StorageChart({ orgPlan }: StorageChartProps) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statsRes, limitsRes] = await Promise.all([
-          fetch("/api/files/stats"),
-          fetch("/api/org/limits"),
-        ]);
-        if (statsRes.ok && limitsRes.ok) {
+        const statsRes = await fetch("/api/files/stats");
+        if (statsRes.ok) {
           const stats = await statsRes.json();
-          const limits = await limitsRes.json();
           const used = stats?.data?.totalSize ?? 0;
-          const limitGB = limits?.storageLimit ?? 10;
           setUsedMB(used);
-          setTotalMB(limitGB * 1024);
         }
       } catch {
         // fallback defaults

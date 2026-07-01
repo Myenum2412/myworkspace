@@ -34,6 +34,7 @@ export default async function ProjectsPage() {
       progress: Number(p.progress ?? 0),
       access: (p.access as "Public" | "Private") || "Public",
       status: (p.status as "Active" | "Inactive") || "Active",
+      members: Array.isArray(p.members) ? (p.members as string[]) : undefined,
       headId: (p.headId as string) || undefined,
       headName: (p.headName as string) || undefined,
       headAvatar: (p.headAvatar as string) || undefined,

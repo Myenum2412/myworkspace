@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -137,6 +137,16 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
     fileManagement.folders.forEach((folder) => map.set(folder.id, folder.name));
     return map;
   }, [fileManagement.folders]);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const el = document.getElementById(hash.slice(1));
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, []);
 
   return (
     <div className="space-y-6">

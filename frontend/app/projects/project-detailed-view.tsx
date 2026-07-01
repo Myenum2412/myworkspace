@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,19 @@ function FieldRow({ label, value }: { label: string; value: string | number | nu
 
 export function ProjectDetailedView({ project, onEdit }: { project: Project; onEdit?: (p: Project) => void }) {
   const [tab, setTab] = useState(0);
+  const [memberNames, setMemberNames] = useState<{ id: string; name: string; image?: string }[]>([]);
+
+  useEffect(() => {
+    if (!project.members?.length) return;
+    fetch("/api/employees", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const all = (d?.data || []) as { id?: string; _id?: string; name: string; image?: string }[];
+        const filtered = all.filter((e) => project.members!.includes(e.id || e._id || ""));
+        setMemberNames(filtered.map((e) => ({ id: e.id || e._id || "", name: e.name, image: e.image })));
+      })
+      .catch(() => {});
+  }, [project.members]);
 
   const progressColor =
     project.progress >= 100 ? "bg-red-500" : project.progress >= 50 ? "bg-red-500" : project.progress > 0 ? "bg-red-500" : "bg-muted-foreground/30";
@@ -95,9 +108,28 @@ export function ProjectDetailedView({ project, onEdit }: { project: Project; onE
         {tab === 1 && (
           <div className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Team Members</h3>
-            <div className="flex items-center justify-center py-12">
-              <p className="text-sm text-muted-foreground">No team members available</p>
-            </div>
+            {memberNames.length === 0 ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-sm text-muted-foreground">No team members available</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {memberNames.map((m) => (
+                  <div key={m.id} className="flex items-center gap-3 rounded-lg border p-3">
+                    <div className="size-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium shrink-0 overflow-hidden">
+                      {m.image ? (
+                        <img src={m.image} alt={m.name} className="size-full object-cover" />
+                      ) : (
+                        <span>{m.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{m.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

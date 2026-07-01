@@ -12,6 +12,7 @@ export interface IProject extends Document {
   progress: number;
   access: "Public" | "Private";
   status: "Active" | "Inactive";
+  members: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,7 @@ const projectSchema = new Schema<IProject>(
     progress: { type: Number, default: 0 },
     access: { type: String, enum: ["Public", "Private"], default: "Public" },
     status: { type: String, enum: ["Active", "Inactive"], default: "Active" },
+    members: { type: [String], default: [] },
   },
   { timestamps: true }
 );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { PlusIcon, XIcon, Loader2Icon, AlertCircleIcon, UsersIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PlusIcon, XIcon, Loader2Icon, AlertCircleIcon, UsersIcon, Trash2Icon } from "lucide-react";
 import { columns, type Project } from "./columns";
 import { getSocketIO } from "@/lib/socketio-client";
 import { DataTable } from "./data-table";
@@ -67,6 +68,14 @@ export default function ProjectsInteractive({
   const [projectMembers, setProjectMembers] = useState<string[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [clientList, setClientList] = useState<string[]>(initialClientList);
+  const [employees, setEmployees] = useState<{ id: string; name: string; email: string; image?: string }[]>([]);
+
+
+  const filteredMembers = useMemo(() => {
+    if (!memberSearch) return employees;
+    const q = memberSearch.toLowerCase();
+    return employees.filter((m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q));
+  }, [employees, memberSearch]);
 
   const colors = [
     "#93c5fd", "#fca5a5", "#86efac", "#fcd34d", "#c4b5fd",
@@ -91,6 +100,21 @@ export default function ProjectsInteractive({
       })
       .catch(() => setClientList(["Acme Corp", "Globex Inc", "Initech"]));
   }, [clientList.length]);
+
+  useEffect(() => {
+    fetch("/api/employees", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const arr = d?.data || [];
+        setEmployees(arr.map((e: { id?: string; _id?: string; name: string; email: string; image?: string }) => ({
+          id: e.id || e._id || "",
+          name: e.name,
+          email: e.email,
+          image: e.image,
+        })));
+      })
+      .catch(() => {});
+  }, []);
 
   // Live updates from other clients. Own-actions are handled optimistically above;
   // this wires in edits/deletes made elsewhere so the list stays consistent.
@@ -142,6 +166,7 @@ export default function ProjectsInteractive({
           deadline: projectDeadline || null,
           access: "Public",
           status: "Active",
+          members: projectMembers,
         }),
       });
       const d = await res.json();
@@ -164,6 +189,7 @@ export default function ProjectsInteractive({
         progress: 0,
         access: "Public",
         status: "Active",
+        members: projectMembers,
       };
       setProjects((prev) => [...prev, newProject]);
     } finally {
@@ -180,6 +206,8 @@ export default function ProjectsInteractive({
 
   const [editDescription, setEditDescription] = useState("");
   const [editDeadline, setEditDeadline] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   function handleView(project: Project) {
     setViewProject(project);
@@ -195,6 +223,34 @@ export default function ProjectsInteractive({
     setEditDescription(project.description || "");
     setEditDeadline(project.deadline || "");
     setShowEdit(true);
+  }
+
+  function handleEdit(project: Project) {
+    setViewProject(null);
+    setEditName(project.name);
+    setEditClient(project.client);
+    setEditColor(project.color);
+    setEditAccess(project.access);
+    setEditStatus(project.status);
+    setEditDescription(project.description || "");
+    setEditDeadline(project.deadline || "");
+    setShowEdit(true);
+  }
+
+  async function handleDelete(project: Project) {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setProjects((prev) => prev.filter((p) => p.id !== project.id));
+      }
+    } catch {} finally {
+      setDeleting(false);
+      setDeleteConfirm(null);
+    }
   }
 
   async function handleSave() {
@@ -279,7 +335,7 @@ export default function ProjectsInteractive({
           {loading ? (
             <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
           ) : (
-            <DataTable columns={columns} data={projects} meta={{ onView: handleView }} />
+            <DataTable columns={columns} data={projects} meta={{ onView: handleView, onEdit: handleEdit, onDelete: (p: Project) => setDeleteConfirm(p) }} />
           )}
         </div>
       </main>
@@ -396,8 +452,37 @@ export default function ProjectsInteractive({
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
                         </svg>
                       </div>
-                        <div className="flex items-center justify-center py-6">
-                          <p className="text-sm text-muted-foreground">No members available</p>
+                        <div className="max-h-48 space-y-1 overflow-y-auto">
+                          {filteredMembers.length === 0 ? (
+                            <p className="text-sm text-muted-foreground py-4 text-center">
+                              {memberSearch ? "No matching members" : "No employees available"}
+                            </p>
+                          ) : filteredMembers.map((m) => {
+                            const checked = projectMembers.includes(m.id);
+                            return (
+                              <label key={m.id} className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-muted">
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={() => {
+                                    setProjectMembers((prev) =>
+                                      checked ? prev.filter((id) => id !== m.id) : [...prev, m.id]
+                                    );
+                                  }}
+                                />
+                                <div className="size-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium shrink-0 overflow-hidden">
+                                  {m.image ? (
+                                    <img src={m.image} alt={m.name} className="size-full object-cover" />
+                                  ) : (
+                                    <span>{m.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</span>
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium truncate">{m.name}</p>
+                                  <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
+                                </div>
+                              </label>
+                            );
+                          })}
                         </div>
                     </PopoverContent>
                   </Popover>
@@ -564,6 +649,33 @@ export default function ProjectsInteractive({
           <DialogFooter className="px-6 pb-6 pt-2 shrink-0 flex gap-2 sm:gap-2">
             <Button variant="outline" className="flex-1" onClick={() => setShowEdit(false)}>Cancel</Button>
             <Button className="flex-1" onClick={handleSave}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2Icon className="size-5" />
+              Delete Project
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{deleteConfirm?.name}</strong>? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setDeleteConfirm(null)} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+              disabled={deleting}
+            >
+              {deleting ? <Loader2Icon className="size-4 animate-spin" /> : <><Trash2Icon className="size-4 mr-1.5" /> Delete</>}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

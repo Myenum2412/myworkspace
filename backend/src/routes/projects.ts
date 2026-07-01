@@ -6,7 +6,7 @@ import { requireOrgMembership } from "../lib/org-utils.js";
 import { Project } from "../lib/db/models/Project.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { socketIOManager } from "../lib/socketio/index.js";
-import { requireString, optionalString, requireEnum, optionalArray, PROJECT_STATUSES, PROJECT_ACCESS } from "../lib/validate.js";
+import { requireString, optionalString, requireEnum, optionalArray, optionalStringArray, PROJECT_STATUSES, PROJECT_ACCESS } from "../lib/validate.js";
 
 const router = Router();
 
@@ -26,6 +26,8 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   const access = req.body.access !== undefined ? requireEnum(req.body.access, PROJECT_ACCESS, "access") : "Public";
   const status = req.body.status !== undefined ? requireEnum(req.body.status, PROJECT_STATUSES, "status") : "Active";
   const description = optionalString(req.body.description, "description", { max: 5000 }) ?? "";
+  const members = optionalArray(req.body.members, "members").map((m) => String(m));
+
   let deadline: Date | null = null;
   if (req.body.deadline) {
     const d = new Date(req.body.deadline);
@@ -45,6 +47,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     progress: 0,
     access,
     status,
+    members,
   });
 
   // Activity log is non-blocking; the user-facing path depends on response + emit.
@@ -75,7 +78,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (!existing) throw new AppError(404, "Project not found");
   if (existing.orgId !== userOrgId) throw new AppError(403, "Not authorized to modify this project");
 
-  const { name, client, color, access, status, description, deadline, tracked, progress } = req.body;
+  const { name, client, color, access, status, description, deadline, tracked, progress, members } = req.body;
   const updates: Record<string, any> = { updatedAt: new Date() };
   if (name !== undefined) updates.name = name;
   if (client !== undefined) updates.client = client;
@@ -86,6 +89,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (deadline !== undefined) updates.deadline = deadline;
   if (tracked !== undefined) updates.tracked = tracked;
   if (progress !== undefined) updates.progress = progress;
+  if (members !== undefined) updates.members = members;
 
   const [result] = await Promise.all([
     Project.findOneAndUpdate(

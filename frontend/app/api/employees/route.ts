@@ -16,17 +16,37 @@ export async function GET() {
 
     const orgId = await ensureUserOrg(session.user.id, session.user.email);
 
-    const orgMembers = await (await db.collection(collections.orgMembers).find({ orgId })).toArray();
+    // Query BOTH org membership collections (NextAuth org_members AND Mongoose orgmembers)
+    const [fromNextAuth, fromMongoose] = await Promise.all([
+      (await db.collection(collections.orgMembers).find({ orgId })).toArray(),
+      (await db.collection("orgmembers").find({ orgId })).toArray(),
+    ]);
+    const allOrgMembers = [...fromNextAuth, ...fromMongoose];
+    // Deduplicate by userId
+    const seenUserIds = new Set<string>();
+    const orgMembers = allOrgMembers.filter((m: any) => {
+      const uid = m.userId as string;
+      if (!uid || seenUserIds.has(uid)) return false;
+      seenUserIds.add(uid);
+      return true;
+    });
     const userIds = (orgMembers as unknown as { userId: string }[]).map((m) => m.userId);
+    // Build ObjectId array for matching _id (some orgmember userIds are ObjectId hex strings)
+    const { ObjectId } = await import("mongodb");
+    const objectIds = userIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
     const users = await (await db.collection(collections.users).find(
-      { id: { $in: userIds } },
+      { $or: [{ id: { $in: userIds } }, ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : [])] },
       { projection: { password: 0 } }
     ).sort({ createdAt: -1 })).toArray();
 
     const result = users.map((u: Record<string, unknown>) => {
-      const member = orgMembers.find((m: any) => m.userId === u.id);
+      const uIdStr = u.id as string;
+      const uObjIdStr = u._id ? String(u._id) : "";
+      const member = orgMembers.find((m: any) => m.userId === uIdStr || m.userId === uObjIdStr);
       return {
         ...u,
+        _id: uObjIdStr,
+        id: uIdStr || uObjIdStr,
         orgRole: member?.role || "member",
       };
     });

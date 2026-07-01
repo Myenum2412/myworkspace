@@ -4,7 +4,6 @@ import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
 import { OrgsTable } from "@/components/orgs-table";
-import { OrgLimitsEditor } from "./limits-interactive";
 
 
 export const dynamic = "force-dynamic";
@@ -68,8 +67,6 @@ export default async function OrgDetailsPage() {
       </div>
 
       <OrgsTable orgs={orgs} />
-
-      <OrgLimitsEditor />
     </div>
   );
 }

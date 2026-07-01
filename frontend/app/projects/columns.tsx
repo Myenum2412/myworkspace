@@ -1,6 +1,13 @@
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { FolderOpenIcon, PaletteIcon, TextIcon, CalendarIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FolderOpenIcon, PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon } from "lucide-react";
 
 export type Project = {
   id: string;
@@ -13,6 +20,7 @@ export type Project = {
   progress: number;
   access: "Public" | "Private";
   status: "Active" | "Inactive";
+  members?: string[];
   headId?: string;
   headName?: string;
   headAvatar?: string;
@@ -62,7 +70,7 @@ export const columns: ColumnDef<Project>[] = [
     cell: ({ row }) => {
       const color = row.original.color;
       return color
-        ? <span className="inline-block size-5 rounded-full border" style={{ backgroundColor: color }} />
+        ? <span className="inline-block size-5 rounded-full border" style={{ backgroundColor: color }} title={color} />
         : <span className="text-muted-foreground">—</span>;
     },
   },
@@ -161,16 +169,30 @@ export const columns: ColumnDef<Project>[] = [
     header: "",
     cell: ({ row, table }) => {
       const project = row.original;
-      const meta = table.options.meta as { onView?: (project: Project) => void } | undefined;
+      const meta = table.options.meta as { onView?: (project: Project) => void; onEdit?: (project: Project) => void; onDelete?: (project: Project) => void } | undefined;
       return (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => meta?.onView?.(project)}
-          className="text-xs"
-        >
-          View
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-8">
+              <MoreHorizontalIcon className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem onClick={() => meta?.onView?.(project)}>
+              <EyeIcon className="size-3.5 mr-2" /> View
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => meta?.onEdit?.(project)}>
+              <PencilIcon className="size-3.5 mr-2" /> Edit
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => meta?.onDelete?.(project)}
+              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+            >
+              <Trash2Icon className="size-3.5 mr-2" /> Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
   },

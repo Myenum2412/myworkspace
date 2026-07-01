@@ -84,12 +84,28 @@ export function DataTable<TData, TValue>({
               ))}
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
+                  {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => {
+                  const projectColor = (row.original as Record<string, unknown>).color as string | undefined;
+                  // Convert hex color to rgba with low opacity for a subtle tint
+                  const hexToRgba = (hex: string, alpha: number) => {
+                    const c = hex.replace('#', '');
+                    const r = parseInt(c.substring(0, 2), 16);
+                    const g = parseInt(c.substring(2, 4), 16);
+                    const b = parseInt(c.substring(4, 6), 16);
+                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                  };
+                  const rowBg = projectColor ? hexToRgba(projectColor, 0.15) : undefined;
+                  const borderColor = projectColor || 'transparent';
+                  return (
                   <tr
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="bg-white group hover:bg-slate-50 transition-colors"
+                    className="group transition-colors"
+                    style={{
+                      backgroundColor: rowBg || 'white',
+                      borderLeft: `4px solid ${borderColor}`,
+                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="px-4 py-3">
@@ -97,7 +113,8 @@ export function DataTable<TData, TValue>({
                       </td>
                     ))}
                   </tr>
-                ))
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={columns.length} className="bg-white">

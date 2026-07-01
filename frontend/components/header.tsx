@@ -117,7 +117,7 @@ export function Header({ context }: { context?: AppContextType }) {
         <SessionTracker />
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="focus:outline-none">
+          <DropdownMenuTrigger asChild>
             <Badge
               variant="secondary"
               className="gap-2 w-24 h-9 justify-start px-3 text-sm font-normal cursor-pointer hover:bg-muted transition-colors"

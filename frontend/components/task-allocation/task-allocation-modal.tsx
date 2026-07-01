@@ -72,7 +72,10 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
+  const [selectedClient, setSelectedClient] = useState("");
   const [projectName, setProjectName] = useState("");
+  const [clientList, setClientList] = useState<string[]>([]);
+  const [projectList, setProjectList] = useState<{ id: string; name: string; client: string }[]>([]);
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
@@ -91,6 +94,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
 
   const [dueDateOpen, setDueDateOpen] = useState(false);
   const [repeatStartDateOpen, setRepeatStartDateOpen] = useState(false);
+  const [userOrgId, setUserOrgId] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -98,7 +102,11 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
       Promise.all([
         employeeService.getAllEmployees().catch(() => []),
         teamService.getAllTeams().catch(() => []),
-      ]).then(([staff, teamList]) => {
+        fetch("/api/clients", { credentials: "include" }).then((r) => r.json()).catch(() => []),
+        fetch("/api/projects", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch("/api/user/me", { credentials: "include" }).then((r) => r.json()).catch(() => ({})),
+      ]).then(([staff, teamList, clientsRes, projectsRes, userRes]) => {
+        setUserOrgId((userRes as any)?.orgId || "");
         setEmployees((staff as any[]).map((s) => ({
           id: s.id,
           name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || "Unknown",
@@ -110,6 +118,14 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
           created_by: t.headUserId || "",
           memberCount: t.memberIds?.length || 0,
         })));
+        const clientArr = Array.isArray(clientsRes) ? clientsRes : clientsRes?.data || [];
+        setClientList(clientArr.map((c: { name?: string }) => c.name).filter(Boolean));
+        const projectArr = Array.isArray(projectsRes) ? projectsRes : projectsRes?.data || [];
+        setProjectList(projectArr.map((p: { id?: string; name?: string; client?: string }) => ({
+          id: p.id || "",
+          name: p.name || "",
+          client: p.client || "",
+        })));
         setIsLoadingData(false);
       });
     }
@@ -117,6 +133,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
 
   const resetForm = () => {
     setTitle("");
+    setSelectedClient("");
     setProjectName("");
     setDescription("");
     setPriority("");
@@ -143,25 +160,25 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
     setFormError("");
     setIsSubmitting(true);
     try {
-      await taskService.createTask({
-        task: title.trim(),
+      const payload: Record<string, any> = {
+        orgId: userOrgId,
+        title: title.trim(),
         description: description.trim(),
         project: projectName.trim() || undefined,
         priority,
-        status: "Open",
-        assignedTo:
-          String(selectedAssigneeType) === "staff"
-            ? employees.find((e) => e.id === selectedAssignee)?.name || "Unassigned"
-            : teams.find((t) => t.id === selectedAssignee)?.name || "Unassigned",
-        delegatedBy: "Admin",
         dueDate: dueDate?.toISOString(),
-        finalStatus: "Open",
-      } as unknown as Partial<Task>);
+      };
+      if (selectedAssignee && selectedAssigneeType === "staff") {
+        payload.assigneeId = selectedAssignee;
+      } else if (selectedAssignee && selectedAssigneeType === "team") {
+        payload.teamId = selectedAssignee;
+      }
+      await taskService.createTask(payload as unknown as Partial<Task>);
 
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       handleClose();
-    } catch {
-      setFormError("An error occurred while creating the task.");
+    } catch (err: any) {
+      setFormError(err?.message || "An error occurred while creating the task.");
     } finally {
       setIsSubmitting(false);
     }
@@ -219,15 +236,40 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
               />
             </div>
             <div>
-              <Label htmlFor="projectName" className="text-sm font-medium">Project Name</Label>
-              <Input
-                id="projectName"
-                placeholder="e.g. Marketing Site"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="mt-1.5"
-              />
+              <Label htmlFor="client" className="text-sm font-medium">Client</Label>
+              <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
+                <SelectTrigger id="client" className="mt-1.5">
+                  <SelectValue placeholder="Select client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientList.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            <div>
+              <Label htmlFor="project" className="text-sm font-medium">Project</Label>
+              <Select
+                value={projectName}
+                onValueChange={setProjectName}
+                disabled={!selectedClient}
+              >
+                <SelectTrigger id="project" className="mt-1.5">
+                  <SelectValue placeholder={selectedClient ? "Select project" : "Select client first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {projectList
+                    .filter((p) => p.client === selectedClient)
+                    .map((p) => (
+                      <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-3">
             <div>
               <Label className="text-sm font-medium">Priority *</Label>
               <div className="mt-1.5">
@@ -240,9 +282,6 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
                 />
               </div>
             </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
             <div>
               <Label className="text-sm font-medium">Due Date</Label>
               <div className="mt-1.5">

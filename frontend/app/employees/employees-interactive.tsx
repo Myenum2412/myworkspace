@@ -7,7 +7,6 @@ import {
   UsersIcon,
   PlusIcon,
   SearchIcon,
-  FilterIcon,
   MoreHorizontalIcon,
   PencilIcon,
   UserXIcon,
@@ -26,12 +25,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -39,7 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Employee } from "./columns";
-import { EmployeeDetailedView } from "./employee-detailed-view";
 import { EmployeeEditForm } from "./employee-edit-form";
 import { AddEmployeeForm } from "./add-employee-form";
 
@@ -239,6 +231,33 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
     </div>
   );
 
+  // ──── ADD EMPLOYEE (FULL SCREEN) ────
+  if (pageView === "add") {
+    return (
+      <main className="flex flex-1 flex-col h-full bg-white">
+        <div className="flex items-center gap-3 px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
+          <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1.5">
+            <ChevronLeftIcon className="size-4" />
+            Back
+          </Button>
+          <div className="h-5 w-px bg-border" />
+          <h1 className="text-lg font-semibold text-black">Add New Employee</h1>
+        </div>
+        <div className="flex-1 overflow-auto bg-white">
+          <div className="max-w-5xl mx-auto py-6 bg-white my-6">
+            <AddEmployeeForm
+              onCancel={handleBack}
+              onEmployeeAdded={() => {
+                handleBack();
+                window.location.reload();
+              }}
+            />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   // ──── VIEW / EDIT EMPLOYEE (FULL SCREEN) ────
   if ((pageView === "edit" || pageView === "view") && selectedEmployee) {
     return (
@@ -273,25 +292,6 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
   // ──── MAIN LIST VIEW ────
   return (
     <>
-      <Dialog open={pageView === "add"} onOpenChange={(open) => { if (!open) handleBack(); }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 gap-0">
-          <div className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
-            <DialogTitle className="text-lg font-semibold">Add New Employee</DialogTitle>
-          </div>
-          <div className="p-6">
-            <AddEmployeeForm
-              onCancel={handleBack}
-              onEmployeeAdded={() => {
-                handleBack();
-                window.location.reload();
-              }}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* View/Edit dialogs removed as they are now full-screen early returns */}
-
       {terminateOverlay}
       <main className="flex flex-1 flex-col gap-0 p-6">
         {/* Header */}
@@ -489,17 +489,28 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
 
                         {/* Actions */}
                         <td className="px-4 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center justify-end gap-2">
-                            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => handleView(emp)}>
-                              <UsersIcon className="size-3 mr-1" /> View
-                            </Button>
-                            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => handleEdit(emp)}>
-                              <PencilIcon className="size-3 mr-1" /> Edit
-                            </Button>
-                            <Button variant="destructive" size="sm" className="h-7 text-xs bg-red-500 hover:bg-red-600 text-white" onClick={() => handleTerminate(emp)}>
-                              <UserXIcon className="size-3 mr-1" /> Terminate
-                            </Button>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="size-8">
+                                <MoreHorizontalIcon className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40">
+                              <DropdownMenuItem onClick={() => handleView(emp)}>
+                                <UsersIcon className="size-3.5 mr-2" /> View
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEdit(emp)}>
+                                <PencilIcon className="size-3.5 mr-2" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleTerminate(emp)}
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                              >
+                                <UserXIcon className="size-3.5 mr-2" /> Terminate
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </td>
                       </tr>
                     );
