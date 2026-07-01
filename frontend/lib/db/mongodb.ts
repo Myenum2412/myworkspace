@@ -26,6 +26,8 @@ export async function connectToMongo() {
           connectTimeoutMS: 10000,
           tls: true,
           tlsAllowInvalidCertificates: true,
+          maxPoolSize: 10,
+          minPoolSize: 2,
         },
       );
       await atlasClient.connect();
