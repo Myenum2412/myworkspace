@@ -42,7 +42,14 @@ export class CacheManager {
   delByPattern(pattern: string): number {
     const keys = this.cache.keys();
     const matchingKeys = keys.filter((k: string) => k.includes(pattern));
+    for (const k of matchingKeys) {
+      redisDel(k).catch(() => {});
+    }
     return this.cache.del(matchingKeys);
+  }
+
+  async invalidatePattern(pattern: string): Promise<void> {
+    this.delByPattern(pattern);
   }
 
   flush(): void {
@@ -77,6 +84,16 @@ export class CacheManager {
 }
 
 export const cacheManager = new CacheManager();
+
+// Standalone convenience wrappers (for drop-in replacement of old cache/index.ts)
+export async function getOrSet<T>(key: string, factory: () => Promise<T>, ttlMs?: number): Promise<T> {
+  const ttlSec = ttlMs !== undefined ? Math.ceil(ttlMs / 1000) : 30;
+  return cacheManager.getOrSet(key, factory, ttlSec);
+}
+
+export async function invalidatePattern(pattern: string): Promise<void> {
+  return cacheManager.invalidatePattern(pattern);
+}
 
 // Cache key generators
 export const CacheKeys = {

@@ -16,7 +16,7 @@ import { casbinCheckFileAccess, casbinCheckFolderAccess } from "../middleware/ca
 import { eventProducer } from "../lib/queue/producer.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 import { getStorageProvider } from "../lib/storage/providers.js";
-import { cacheManager, getOrSet, invalidatePattern } from "../lib/cache/index.js";
+import { cacheManager, getOrSet, invalidatePattern } from "../lib/cache.js";
 import { uploadLogger } from "../lib/logger/index.js";
 import { env } from "../config/env.js";
 import { AppError } from "../middleware/error.js";
