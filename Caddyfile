@@ -1,6 +1,6 @@
 myworkspace.myenum.in {
-    # Reverse proxy to backend
-    reverse_proxy backend:4000 {
+    # Reverse proxy to backend (PM2 on localhost:4000)
+    reverse_proxy 127.0.0.1:4000 {
         # Forward real IP
         header_up X-Forwarded-For {remote_host}
         header_up X-Forwarded-Proto {scheme}

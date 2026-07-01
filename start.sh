@@ -43,13 +43,13 @@ stop_port() {
 echo -e "${YELLOW}[1/7] Checking Infrastructure...${NC}"
 
 check_amqp() {
-    timeout 5 node -e "
-const amqplib = require('amqplib');
-amqplib.connect(process.env.RABBITMQ_URL || 'amqp://localhost:5672')
-  .then(c => c.close())
-  .then(()=>process.exit(0))
-  .catch(()=>process.exit(1));
-" 2>/dev/null
+    # Try rabbitmqctl first (fastest, no dependencies)
+    if command -v rabbitmqctl >/dev/null 2>&1; then
+        rabbitmqctl status 2>/dev/null | grep -q "rabbit" && return 0
+    fi
+    # Fallback: raw TCP port check
+    timeout 3 bash -c 'echo > /dev/tcp/localhost/5672' 2>/dev/null && return 0
+    return 1
 }
 
 start_rabbitmq() {

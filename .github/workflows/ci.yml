@@ -36,3 +36,50 @@ jobs:
         run: |
           npm ci
           npm run build
+
+  deploy:
+    name: Deploy to EC2
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: lint-and-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies & build
+        run: |
+          cd backend && npm ci && npm run build
+          cd ../frontend && npm ci && npm run build
+        env:
+          NEXTAUTH_URL: ${{ secrets.APP_URL || 'https://myworkspace.myenum.in' }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+
+      - name: Sync to EC2
+        uses: easingthemes/ssh-deploy@v4
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.EC2_HOST }}
+          REMOTE_USER: ${{ secrets.EC2_USER || 'ubuntu' }}
+          SOURCE: "backend/dist backend/package.json backend/package-lock.json backend/tsconfig.json backend/node_modules frontend/.next frontend/package.json frontend/package-lock.json frontend/node_modules ecosystem.config.cjs Caddyfile docker-compose.prod.yml start.sh"
+          TARGET: ${{ secrets.EC2_DEPLOY_PATH || '/var/www/myworkspace' }}
+          ARGS: "-avz --delete --exclude='.env' --exclude='node_modules/.cache'"
+
+      - name: Restart application on EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER || 'ubuntu' }}
+          script: |
+            cd ${{ secrets.EC2_DEPLOY_PATH || '/var/www/myworkspace' }}
+            cp shared/.env backend/.env 2>/dev/null || true
+            cp shared/.env frontend/.env 2>/dev/null || true
+            cd backend && npm ci --production 2>/dev/null || true && cd ..
+            pm2 delete myworkspace-backend 2>/dev/null || true
+            pm2 start ecosystem.config.cjs --only myworkspace-backend
+            pm2 save

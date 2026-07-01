@@ -37,12 +37,13 @@ function createPinoLogger(name?: string): Logger {
   const instance = name ? pinoLogger.child({ module: name }) : pinoLogger;
 
   const adapt = (level: string, args: LogArg[]) => {
-    if (args.length === 0) return instance[level as keyof typeof instance]("");
+    const logFn = instance[level as keyof typeof instance] as unknown as (...a: unknown[]) => void;
+    if (args.length === 0) return logFn("");
     if (typeof args[0] === "string") {
-      instance[level as keyof typeof instance](args[0], ...args.slice(1));
+      logFn(args[0], ...args.slice(1));
     } else {
       const { msg, ...rest } = args[0] as Record<string, unknown>;
-      instance[level as keyof typeof instance](rest, (msg as string) || "");
+      logFn(rest, (msg as string) || "");
     }
   };
 

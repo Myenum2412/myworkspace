@@ -16,18 +16,143 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 10.2s
+✓ Compiled successfully in 12.2s
   Running TypeScript ...
-Failed to type check.
+  Finished TypeScript in 12.6s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/56) ...
+  Generating static pages using 11 workers (14/56) 
+  Generating static pages using 11 workers (28/56) 
+  Generating static pages using 11 workers (42/56) 
+✓ Generating static pages using 11 workers (56/56) in 690ms
+  Finalizing page optimization ...
 
-./app/teams/page.tsx:131:55
-Type error: Type 'string | null' is not assignable to type 'string | undefined'.
-  Type 'null' is not assignable to type 'string | undefined'.
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /addemployees
+├ ƒ /addprojects
+├ ƒ /admin/profile
+├ ƒ /alltasks
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/clients
+├ ƒ /api/clients/[id]/workspace
+├ ƒ /api/employees
+├ ƒ /api/employees/[id]
+├ ƒ /api/files
+├ ƒ /api/files/[id]
+├ ƒ /api/files/[id]/duplicate
+├ ƒ /api/files/[id]/lock
+├ ƒ /api/files/[id]/unlock
+├ ƒ /api/files/bulk-delete
+├ ƒ /api/files/bulk-move
+├ ƒ /api/files/bulk-restore
+├ ƒ /api/files/bulk-tag
+├ ƒ /api/files/members
+├ ƒ /api/files/recent
+├ ƒ /api/files/stats
+├ ƒ /api/folders
+├ ƒ /api/folders/[id]
+├ ƒ /api/org/limits
+├ ƒ /api/search
+├ ƒ /api/shares/internal
+├ ƒ /api/shares/links/[token]
+├ ƒ /api/shares/links/[token]/download
+├ ƒ /api/shares/links/[token]/verify
+├ ƒ /api/tasks/[id]
+├ ƒ /api/time-entries/summary
+├ ƒ /api/user/banner
+├ ƒ /api/user/profile
+├ ƒ /api/user/profile-image
+├ ƒ /approvals
+├ ƒ /approvals/approved
+├ ƒ /approvals/rejected
+├ ○ /auth/not-found
+├ ƒ /auth/role-redirect
+├ ƒ /billing
+├ ○ /billing/invoices
+├ ○ /billing/plans
+├ ƒ /calendar
+├ ƒ /client/dashboard
+├ ƒ /client/documents
+├ ƒ /client/login
+├ ○ /client/notifications
+├ ƒ /client/profile
+├ ○ /client/projects
+├ ƒ /client/settings
+├ ƒ /clients
+├ ƒ /clients/[id]
+├ ƒ /dashboard
+├ ƒ /departments
+├ ƒ /employees
+├ ƒ /files
+├ ƒ /files/audit
+├ ƒ /forgot-password
+├ ƒ /login
+├ ƒ /my-time
+├ ƒ /mytasks
+├ ƒ /onboarding
+├ ƒ /orgmenu
+├ ƒ /orgmenu/analytics
+├ ƒ /orgmenu/audit
+├ ƒ /orgmenu/audit/exports
+├ ƒ /orgmenu/files
+├ ƒ /orgmenu/members
+├ ƒ /orgmenu/members/invite
+├ ƒ /orgmenu/members/roles
+├ ƒ /orgmenu/org
+├ ƒ /orgmenu/org/billing
+├ ƒ /orgmenu/org/plans
+├ ƒ /orgmenu/profile
+├ ƒ /orgmenu/reports
+├ ƒ /orgmenu/reports/activity
+├ ƒ /orgmenu/reports/usage
+├ ƒ /orgmenu/security
+├ ƒ /orgmenu/security/policies
+├ ƒ /orgmenu/security/sso
+├ ƒ /orgmenu/settings
+├ ƒ /orgmenu/settings/notifications
+├ ƒ /overview
+├ ○ /pricing
+├ ƒ /profile
+├ ƒ /projects
+├ ƒ /recycle-bin
+├ ƒ /reports
+├ ƒ /reset-password
+├ ƒ /savedtasks
+├ ƒ /settings
+├ ƒ /settings/plans
+├ ƒ /share/[token]
+├ ƒ /signup
+├ ƒ /signup-mongo
+├ ƒ /staffs
+├ ƒ /staffs/activity
+├ ƒ /staffs/add
+├ ƒ /staffs/attendance
+├ ƒ /staffs/attendance/reports
+├ ƒ /staffs/files
+├ ƒ /staffs/list
+├ ƒ /staffs/performance
+├ ƒ /staffs/performance/goals
+├ ƒ /staffs/profile
+├ ƒ /staffs/schedule
+├ ƒ /staffs/settings
+├ ƒ /staffs/settings/roles
+├ ƒ /staffs/tasks
+├ ƒ /staffs/time-off
+├ ƒ /staffs/timesheet
+├ ƒ /team-time
+├ ƒ /teams
+├ ƒ /teamtasks
+├ ƒ /terminated
+├ ƒ /time-reports
+├ ƒ /time-tracker
+├ ƒ /upcomingtasks
+└ ƒ /upload
 
-  [90m129 |[0m   }
-  [90m130 |[0m
-[31m[1m>[0m [90m131 |[0m   [36mreturn[0m <[33mTeamsClient[0m teams={teams} members={members} orgId={orgId} />;
-  [90m    |[0m                                                       [31m[1m^[0m
-  [90m132 |[0m }
-  [90m133 |[0m
-Next.js build worker exited with code: 1 and signal: null
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

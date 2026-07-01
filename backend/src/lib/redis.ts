@@ -1,15 +1,17 @@
-import Redis from "ioredis";
+import { Redis as IORedis } from "ioredis";
 import { env } from "../config/env.js";
 import { logger } from "./logger/index.js";
 
-let client: Redis | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let client: any = null;
 let connected = false;
 
-export function getRedis(): Redis {
+export function getRedis() {
   if (!client) {
-    client = new Redis(env.REDIS_URL, {
+    client = new IORedis(env.REDIS_URL, {
       maxRetriesPerRequest: 3,
-      retryStrategy(times) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      retryStrategy(times: number): number | null {
         if (times > 5) return null;
         return Math.min(times * 200, 2000);
       },
@@ -21,7 +23,7 @@ export function getRedis(): Redis {
       connected = true;
     });
 
-    client.on("error", (err) => {
+    client.on("error", (err: Error) => {
       logger.warn({ err }, "Redis error");
       connected = false;
     });

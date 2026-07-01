@@ -33,7 +33,7 @@ export default async function TeamsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
+  const orgId = (await getUserOrgId(session.user.id, session.user.email)) ?? undefined;
 
   let teams: Team[] = [];
   let members: OrgMember[] = [];
