@@ -29,6 +29,12 @@ export interface IFileAttachment extends Document {
   checksum: string;
   isDuplicate: boolean;
   duplicateOf: string | null;
+  virusScanStatus: "pending" | "clean" | "infected" | "error";
+  virusScanResult: string;
+  thumbnailPath: string | null;
+  approvalStatus: "none" | "pending" | "approved" | "rejected";
+  approvedBy: string | null;
+  approvalNote: string;
   lastAccessedAt: Date | null;
   deletedAt: Date | null;
   deletedBy: string | null;
@@ -72,6 +78,20 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
     checksum: { type: String, default: "" },
     isDuplicate: { type: Boolean, default: false },
     duplicateOf: { type: String, default: null },
+    virusScanStatus: {
+      type: String,
+      enum: ["pending", "clean", "infected", "error"],
+      default: "pending",
+    },
+    virusScanResult: { type: String, default: "" },
+    thumbnailPath: { type: String, default: null },
+    approvalStatus: {
+      type: String,
+      enum: ["none", "pending", "approved", "rejected"],
+      default: "none",
+    },
+    approvedBy: { type: String, default: null },
+    approvalNote: { type: String, default: "" },
     lastAccessedAt: { type: Date, default: null },
     deletedAt: { type: Date, default: null },
     deletedBy: { type: String, default: null },
@@ -87,5 +107,6 @@ fileAttachmentSchema.index({ orgId: 1, name: "text", description: "text", tags: 
 fileAttachmentSchema.index({ orgId: 1, mimeType: 1 });
 fileAttachmentSchema.index({ checksum: 1, orgId: 1 });
 fileAttachmentSchema.index({ category: 1, orgId: 1 });
+fileAttachmentSchema.index({ orgId: 1, approvalStatus: 1 });
 
 export const FileAttachment = model<IFileAttachment>("FileAttachment", fileAttachmentSchema);

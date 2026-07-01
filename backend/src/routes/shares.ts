@@ -4,12 +4,13 @@ import { hash, compare } from "bcryptjs";
 import { ShareLink } from "../lib/db/models/ShareLink.js";
 import { FileShare } from "../lib/db/models/FileShare.js";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
-import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { recordAuditLog } from "../services/audit.service.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { optionalAuth } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { verifyOrgAccess } from "../lib/org-utils.js";
 import crypto from "crypto";
+import { cacheManager } from "../lib/cache.js";
 
 const router = Router();
 
@@ -38,7 +39,7 @@ router.post("/links", authenticate, async (req: AuthRequest, res: Response) => {
 
   const shareUrl = `${req.protocol}://${req.get("host")}/share/${token}`;
 
-  await ActivityLog.create({
+  await recordAuditLog({
     orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "share.link.created",
     entityType: "file", entityId: fileId,
     description: `Share link created for "${file.originalName}"`,
@@ -158,11 +159,13 @@ router.post("/internal", authenticate, async (req: AuthRequest, res: Response) =
     sharedWithUserId: sharedWithUserId || null, orgId, createdBy: req.user!.userId,
   });
 
-  await ActivityLog.create({
+  await recordAuditLog({
     orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "file.shared",
     entityType: "file", entityId: fileId,
     description: `File "${file.originalName}" shared with ${sharedWithUserId || "organization"}`,
   });
+
+  cacheManager.invalidatePattern(`shares:${orgId}`);
 
   res.status(201).json({ success: true, shareId });
 });
@@ -175,11 +178,13 @@ router.delete("/internal/:id", authenticate, async (req: AuthRequest, res: Respo
 
   await FileShare.deleteOne({ id: req.params.id });
 
-  await ActivityLog.create({
+  await recordAuditLog({
     orgId: share.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "share.removed",
     entityType: "file", entityId: share.fileId,
     description: "Share removed",
   });
+
+  cacheManager.invalidatePattern(`shares:${share.orgId}`);
 
   res.json({ success: true });
 });

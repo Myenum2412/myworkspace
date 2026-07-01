@@ -2,19 +2,17 @@ import { createServer } from "http";
 import app from "./app.js";
 import { env } from "./config/env.js";
 import { connectDb } from "./lib/db/index.js";
-import { wsManager } from "./lib/ws/server.js";
 import { socketIOManager } from "./lib/socketio/index.js";
 import { initializeAgenda } from "./lib/agenda/index.js";
 import { logger } from "./lib/logger/index.js";
 import { getEnforcer } from "./config/casbin.js";
-import { cleanupStaleSessions } from "./lib/tus/enhanced-server.js";
 import { startWorkers } from "./lib/queue/worker.js";
 import { getChannel } from "./lib/queue/connection.js";
+import { promoteRateLimitersToRedis } from "./middleware/rate-limit.js";
 
 async function start() {
   const server = createServer(app);
 
-  wsManager.initialize(server);
   socketIOManager.initialize(server);
 
   server.listen(env.PORT, () => {
@@ -51,9 +49,7 @@ async function start() {
     logger.error({ err }, "Agenda.js initialization failed");
   });
 
-  setInterval(() => {
-    cleanupStaleSessions();
-  }, 60 * 60 * 1000);
+  promoteRateLimitersToRedis();
 
   logger.info("MyWorkSpace startup complete");
 }

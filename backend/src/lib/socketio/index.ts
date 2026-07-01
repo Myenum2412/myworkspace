@@ -1,9 +1,12 @@
 import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
 import jwt from "jsonwebtoken";
+import { Redis } from "ioredis";
 import { env } from "../../config/env.js";
 import { JwtPayload } from "../../types/index.js";
-import { ActivityLog } from "../db/models/ActivityLog.js";
+import { isRedisConnected } from "../redis.js";
+import { logger } from "../logger/index.js";
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -22,32 +25,30 @@ export class SocketIOManager {
       },
     });
 
-    // Per-IP handshake rate limiter — sliding window 20 attempts / minute.
-    // Stored in-process; fine for a single instance. Swap for redis if you
-    // add a second instance.
-    const handshakeAttempts = new Map<string, number[]>();
-    const HANDSHAKE_LIMIT = 20;
-    const HANDSHAKE_WINDOW_MS = 60_000;
-
-    this.io.use((socket: AuthenticatedSocket, next) => {
-      const now = Date.now();
-      const ip =
-        (socket.handshake.headers["x-forwarded-for"] as string) ||
-        socket.handshake.address ||
-        "unknown";
-      const attempts = (handshakeAttempts.get(ip) || []).filter((t) => now - t < HANDSHAKE_WINDOW_MS);
-      attempts.push(now);
-      handshakeAttempts.set(ip, attempts);
-      if (attempts.length > HANDSHAKE_LIMIT) {
-        return next(new Error("rate_limited"));
+    if (isRedisConnected()) {
+      try {
+        const pubClient = new Redis(env.REDIS_URL, {
+          maxRetriesPerRequest: 3,
+          retryStrategy(times: number): number | null {
+            if (times > 5) return null;
+            return Math.min(times * 200, 2000);
+          },
+          lazyConnect: true,
+        });
+        const subClient = pubClient.duplicate();
+        this.io.adapter(createAdapter(pubClient, subClient));
+        logger.info("Socket.IO Redis adapter initialized");
+      } catch (err) {
+        logger.warn({ err: (err as Error).message }, "Socket.IO Redis adapter failed, falling back to in-memory");
       }
-
+    } else {
+      logger.info("Socket.IO using in-memory adapter (single instance)");
+    }
+    this.io.use((socket: AuthenticatedSocket, next) => {
       const token = socket.handshake.auth?.token || socket.handshake.query?.token;
       if (token) {
         try {
           const decoded = jwt.verify(token as string, env.JWT_SECRET) as JwtPayload;
-          // Accept both long-lived session JWTs and short-lived socket tokens
-          // (purpose: "socket"). Both are signed with the same secret.
           socket.userId = decoded.userId;
           socket.orgId = decoded.orgId;
         } catch {
@@ -105,7 +106,7 @@ export class SocketIOManager {
       });
     });
 
-    console.log("✦ Socket.IO initialized on /api/socketio");
+    logger.info({ path: "/api/socketio" }, "Socket.IO initialized");
     return this.io;
   }
 

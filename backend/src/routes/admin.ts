@@ -7,6 +7,7 @@ import { authenticate } from "../middleware/auth.js";
 import { orgMenuAdminOnly, authorizePermission, auditLog } from "../middleware/authorize.js";
 import { AuthRequest } from "../types/index.js";
 import { AppError } from "../middleware/error.js";
+import { cacheManager } from "../lib/cache.js";
 
 const router = Router();
 
@@ -76,6 +77,7 @@ router.patch("/users/:id/toggle-status", authorizePermission("MANAGE_USERS"), au
   if (user.role === "ORG_MENU_ADMIN") throw new AppError(403, "Cannot deactivate another admin");
   user.isActive = !user.isActive;
   await user.save();
+  cacheManager.invalidatePattern(`user:${req.params.id}:profile`);
   res.json({ success: true, data: { isActive: user.isActive } });
 });
 

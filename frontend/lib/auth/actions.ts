@@ -223,3 +223,25 @@ export async function forgotPasswordAction(formData: FormData) {
   } catch {}
   redirect("/forgot-password?success=If an account exists with that email, a reset link has been sent");
 }
+
+export async function verifyEmailAction(formData: FormData) {
+  const token = formData.get("token") as string;
+  const email = formData.get("email") as string;
+  if (!token || !email) redirect("/verify-email?error=Missing verification token or email");
+
+  const apiUrl = process.env.API_URL || "http://localhost:4000";
+  try {
+    const res = await fetch(`${apiUrl}/api/auth/verify-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, email }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      redirect(`/verify-email?error=${encodeURIComponent(err.error || "Verification failed")}`);
+    }
+  } catch {
+    redirect("/verify-email?error=Unable to connect. Please try again.");
+  }
+  redirect("/login?verified=true");
+}

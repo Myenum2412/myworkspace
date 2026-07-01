@@ -31,6 +31,7 @@ export async function createIndexes(): Promise<void> {
   await c("tasks").createIndex({ orgId: 1, assigneeId: 1 }, { name: "idx_tasks_org_assignee" });
   await c("tasks").createIndex({ orgId: 1, dueDate: 1 }, { name: "idx_tasks_org_duedate" });
   await c("tasks").createIndex({ orgId: 1, createdBy: 1 }, { name: "idx_tasks_org_createdby" });
+  await c("tasks").createIndex({ orgId: 1, status: 1, assigneeId: 1, createdAt: -1 }, { name: "idx_tasks_org_status_assignee_created" });
   await c("tasks").createIndex({ id: 1 }, { unique: true, name: "idx_tasks_id" });
 
   // Teams
@@ -49,11 +50,15 @@ export async function createIndexes(): Promise<void> {
   await c("timeentries").createIndex({ orgId: 1, status: 1 }, { name: "idx_timeentries_org_status" });
   await c("timeentries").createIndex({ orgId: 1, createdBy: 1 }, { name: "idx_timeentries_org_createdby" });
 
+  // Upload Sessions
+  await c("uploadsessions").createIndex({ updatedAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60, name: "idx_uploadsessions_ttl" });
+
   // Activity Logs
   await c("activitylogs").createIndex({ orgId: 1, createdAt: -1 }, { name: "idx_activity_org_created" });
   await c("activitylogs").createIndex({ orgId: 1, userId: 1 }, { name: "idx_activity_org_user" });
   await c("activitylogs").createIndex({ orgId: 1, createdBy: 1 }, { name: "idx_activity_org_createdby" });
   await c("activitylogs").createIndex({ entityType: 1, entityId: 1 }, { name: "idx_activity_entity" });
+  await c("activitylogs").createIndex({ createdAt: 1 }, { expireAfterSeconds: 365 * 24 * 60 * 60, name: "idx_activitylogs_ttl" });
 
   // Sessions
   await c("sessions").createIndex({ userId: 1, loginTime: -1 }, { name: "idx_sessions_user_login" });
@@ -64,11 +69,13 @@ export async function createIndexes(): Promise<void> {
   await c("notifications").createIndex({ userId: 1, read: 1, createdAt: -1 }, { name: "idx_notifications_user_read_created" });
   await c("notifications").createIndex({ orgId: 1, userId: 1 }, { name: "idx_notifications_org_user" });
   await c("notifications").createIndex({ orgId: 1, createdBy: 1 }, { name: "idx_notifications_org_createdby" });
+  await c("notifications").createIndex({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60, name: "idx_notifications_ttl" });
 
   // Files
   await c("files").createIndex({ orgId: 1, createdAt: -1 }, { name: "idx_files_org_created" });
   await c("files").createIndex({ orgId: 1, uploaderId: 1 }, { name: "idx_files_org_uploader" });
   await c("files").createIndex({ orgId: 1, createdBy: 1 }, { name: "idx_files_org_createdby" });
+  await c("files").createIndex({ checksum: 1, orgId: 1, folderId: 1 }, { unique: true, partialFilterExpression: { deletedAt: null }, name: "idx_files_checksum_org_folder_dedup" });
   await c("files").createIndex({ id: 1 }, { unique: true, name: "idx_files_id" });
 
   // File Versions

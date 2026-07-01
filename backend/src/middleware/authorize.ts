@@ -2,8 +2,8 @@ import { Response, NextFunction } from "express";
 import { User } from "../lib/db/models/User.js";
 import { AuthRequest } from "./auth.js";
 import { AppError } from "./error.js";
-import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { env } from "../config/env.js";
+import { recordAuditLog } from "../services/audit.service.js";
 
 export function authorizeRole(...roles: string[]) {
   return async (req: AuthRequest, _res: Response, next: NextFunction) => {
@@ -53,9 +53,10 @@ export function orgMenuAdminOnly() {
     const adminEmail = env.ADMIN_EMAIL.toLowerCase().trim();
 
     if (userEmail !== adminEmail) {
-      ActivityLog.create({
+      await recordAuditLog({
         orgId: req.user?.orgId || "system",
         userId: req.user?.userId,
+        createdBy: req.user?.userId || "system",
         action: "orgmenu.unauthorized",
         entityType: "access",
         entityId: req.ip || "unknown",
@@ -66,7 +67,7 @@ export function orgMenuAdminOnly() {
           method: req.method,
           path: req.originalUrl,
         }),
-      }).catch(() => {});
+      });
       throw new AppError(403, "Forbidden: only the authorized administrator can access this area");
     }
     next();
@@ -78,9 +79,10 @@ export function auditLog(action: string, entityType: string) {
     const originalSend = _res.json.bind(_res);
     _res.json = function (body: any) {
       if (_res.statusCode < 400) {
-        ActivityLog.create({
+        recordAuditLog({
           orgId: req.user?.orgId || "system",
-          userId: req.user?.userId,
+          userId: req.user?.userId || "system",
+          createdBy: req.user?.userId || "system",
           action,
           entityType,
           entityId: req.params?.id || req.body?.id || "unknown",
@@ -91,7 +93,7 @@ export function auditLog(action: string, entityType: string) {
             method: req.method,
             path: req.originalUrl,
           }),
-        }).catch(() => {});
+        });
       }
       return originalSend(body);
     };

@@ -9,6 +9,7 @@ import { Organization } from "../lib/db/models/Organization.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { socketIOManager } from "../lib/socketio/index.js";
+import { cacheManager } from "../lib/cache.js";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -20,13 +21,16 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
   if (!user) throw new AppError(404, "User not found");
 
   res.json({
-    id: user.id || user._id.toString(),
-    name: user.name,
-    email: user.email,
-    image: user.image,
-    role: user.role,
-    status: user.status,
-    createdAt: user.createdAt,
+    success: true,
+    data: {
+      id: user.id || user._id.toString(),
+      name: user.name,
+      email: user.email,
+      image: user.image,
+      role: user.role,
+      status: user.status,
+      createdAt: user.createdAt,
+    },
   });
 });
 
@@ -44,7 +48,8 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
   }
 
   res.json({
-    user: {
+    success: true,
+    data: { user: {
       id: user._id.toString(),
       name: user.name || "",
       email: user.email || "",
@@ -95,7 +100,7 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
         }
       : null,
     memberCount,
-  });
+  } });
 });
 
 router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) => {
@@ -154,6 +159,8 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
     }
   }
 
+  cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
+
   res.json({ success: true, message: "Profile updated successfully" });
 });
 
@@ -167,7 +174,7 @@ router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {
   } else {
     user = await User.findOne({ id: userId }).lean();
   }
-  res.json({ status: user?.status || "offline" });
+  res.json({ success: true, data: { status: user?.status || "offline" } });
 });
 
 router.post("/status", authenticate, async (req: AuthRequest, res: Response) => {
@@ -212,12 +219,14 @@ router.post("/status", authenticate, async (req: AuthRequest, res: Response) => 
     }
   }
 
+  cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
+
   res.json({ success: true });
 });
 
 router.get("/banner", authenticate, async (req: AuthRequest, res: Response) => {
   const user = await User.findOne({ email: req.user!.email }).select("image").lean();
-  res.json({ bannerUrl: user?.image || null });
+  res.json({ success: true, data: { bannerUrl: user?.image || null } });
 });
 
 router.post("/banner", authenticate, upload.single("banner"), async (req: AuthRequest, res: Response) => {
@@ -237,6 +246,8 @@ router.post("/banner", authenticate, upload.single("banner"), async (req: AuthRe
   if (bannerUrl) {
     await User.findOneAndUpdate({ email: req.user!.email }, { image: bannerUrl });
   }
+
+  cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
 
   res.json({ bannerUrl });
 });

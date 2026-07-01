@@ -1,7 +1,8 @@
 import { v4 as uuid } from "uuid";
 import { FileAttachment } from "../db/models/FileAttachment.js";
 import { StorageQuota } from "../db/models/StorageQuota.js";
-import { ActivityLog } from "../db/models/ActivityLog.js";
+import { UploadSession } from "../db/models/UploadSession.js";
+import { UploadApproval } from "../db/models/UploadApproval.js";
 import { getStorageProvider, computeChecksum } from "../storage/providers.js";
 import { env } from "../../config/env.js";
 import { AppError } from "../../middleware/error.js";
@@ -22,6 +23,7 @@ export interface FinalizeInput {
   buffer: Buffer;
   checksum?: string;
   skipDuplicates?: boolean;
+  needsApproval?: boolean;
 }
 
 export async function checkOrgQuota(orgId: string, additionalBytes: number): Promise<void> {
@@ -78,21 +80,38 @@ export async function finalizeUpload(input: FinalizeInput): Promise<Orchestrator
   await provider.save(buffer, storagePath);
 
   const fileId = uuid();
+  const approvalStatus = input.needsApproval ? "pending" : "none";
   await FileAttachment.create({
     id: fileId, orgId, folderId: folderId || null, clientId: clientId || null,
     uploaderId, createdBy: uploaderId, name, originalName,
     mimeType, size, storagePath,
     storageProvider: env.R2_ENDPOINT ? "r2" : "local",
     category: categorizeMime(mimeType), checksum: sha, currentVersion: 1,
+    approvalStatus,
   });
+
+  if (input.needsApproval) {
+    await UploadApproval.create({
+      uploadId: fileId,
+      tusId: fileId,
+      orgId,
+      uploaderId,
+      uploaderRole: "member",
+      approvedBy: null,
+      status: "pending",
+      fileName: originalName,
+      fileSize: size,
+      mimeType,
+      folderId: folderId || null,
+      projectId: null,
+      workspaceId: null,
+      clientId: null,
+      reviewedAt: null,
+      rejectionReason: "",
+    });
+  }
 
   await updateUsedStorage(orgId, size);
-
-  await ActivityLog.create({
-    orgId, userId: uploaderId, createdBy: uploaderId, action: "file.uploaded",
-    entityType: "file", entityId: fileId,
-    description: `File "${originalName}" uploaded (${(size / 1024).toFixed(1)} KB)`,
-  });
 
   return { kind: "created", fileId, isDuplicate: false };
 }

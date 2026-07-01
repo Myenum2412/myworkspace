@@ -17,6 +17,7 @@ export async function connectToMongo() {
 
   if (uri) {
     try {
+      const isDev = process.env.NODE_ENV !== "production";
       const atlasClient = new MongoClient(
         uri.includes("retryWrites=")
           ? uri
@@ -25,7 +26,7 @@ export async function connectToMongo() {
           serverSelectionTimeoutMS: 10000,
           connectTimeoutMS: 10000,
           tls: true,
-          tlsAllowInvalidCertificates: true,
+          tlsAllowInvalidCertificates: isDev,
           maxPoolSize: 10,
           minPoolSize: 2,
         },

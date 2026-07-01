@@ -30,6 +30,8 @@ export interface IUser extends Document {
   bannerUrl?: string;
   resetToken?: string;
   resetTokenExpires?: Date;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -64,6 +66,8 @@ const userSchema = new Schema<IUser>(
     bannerUrl: String,
     resetToken: { type: String, index: true },
     resetTokenExpires: Date,
+    emailVerificationToken: { type: String, index: true },
+    emailVerificationExpires: Date,
   },
   { timestamps: true }
 );

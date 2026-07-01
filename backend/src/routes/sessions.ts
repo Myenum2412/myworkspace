@@ -1,10 +1,11 @@
 import { Router, Response } from "express";
 import { Session } from "../lib/db/models/Session.js";
 import { User } from "../lib/db/models/User.js";
-import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { recordAuditLog } from "../services/audit.service.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { socketIOManager } from "../lib/socketio/index.js";
+import { cacheManager } from "../lib/cache.js";
 
 const router = Router();
 
@@ -42,9 +43,10 @@ router.post("/start", authenticate, async (req: AuthRequest, res: Response) => {
 
   await User.findByIdAndUpdate(userId, { status: "online" });
 
-  await ActivityLog.create({
+  await recordAuditLog({
     orgId: orgId || userId,
     userId,
+    createdBy: userId,
     action: "session.start",
     entityType: "session",
     entityId: session._id.toString(),
@@ -63,6 +65,9 @@ router.post("/start", authenticate, async (req: AuthRequest, res: Response) => {
       timestamp: new Date().toISOString(),
     });
   }
+
+  cacheManager.invalidatePattern(`sessions:${userId}`);
+  cacheManager.invalidatePattern(`users:${orgId || userId}:sessions`);
 
   res.status(201).json({
     success: true,
@@ -105,9 +110,10 @@ router.patch("/:id/status", authenticate, async (req: AuthRequest, res: Response
 
   await User.findByIdAndUpdate(userId, { status });
 
-  await ActivityLog.create({
+  await recordAuditLog({
     orgId: req.user!.orgId || userId,
     userId,
+    createdBy: userId,
     action: "session.status",
     entityType: "session",
     entityId: id,
@@ -140,6 +146,8 @@ router.patch("/:id/status", authenticate, async (req: AuthRequest, res: Response
       timestamp: new Date().toISOString(),
     });
   }
+
+  cacheManager.invalidatePattern(`sessions:${userId}`);
 
   res.json({
     success: true,
@@ -178,9 +186,10 @@ router.patch("/:id/close", authenticate, async (req: AuthRequest, res: Response)
 
   await User.findByIdAndUpdate(userId, { status: "offline" });
 
-  await ActivityLog.create({
+  await recordAuditLog({
     orgId: req.user!.orgId || userId,
     userId,
+    createdBy: userId,
     action: "session.end",
     entityType: "session",
     entityId: id,
@@ -207,6 +216,8 @@ router.patch("/:id/close", authenticate, async (req: AuthRequest, res: Response)
       timestamp: new Date().toISOString(),
     });
   }
+
+  cacheManager.invalidatePattern(`sessions:${userId}`);
 
   res.json({
     success: true,

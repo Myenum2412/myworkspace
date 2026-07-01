@@ -31,6 +31,8 @@ export function getRedis() {
     client.on("close", () => {
       connected = false;
     });
+
+    client.connect().catch(() => {});
   }
   return client;
 }

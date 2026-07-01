@@ -4,8 +4,9 @@ import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
 import { Project } from "../lib/db/models/Project.js";
-import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { recordAuditLog } from "../services/audit.service.js";
 import { socketIOManager } from "../lib/socketio/index.js";
+import { cacheManager } from "../lib/cache.js";
 import { requireString, optionalString, requireEnum, optionalArray, PROJECT_STATUSES, PROJECT_ACCESS } from "../lib/validate.js";
 
 const router = Router();
@@ -50,8 +51,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     members,
   });
 
-  // Activity log is non-blocking; the user-facing path depends on response + emit.
-  void ActivityLog.create({
+  await recordAuditLog({
     orgId,
     userId: req.user!.userId,
     createdBy: req.user!.userId,
@@ -68,6 +68,8 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     status: project.status,
     color: project.color,
   });
+
+  cacheManager.invalidatePattern(`projects:${orgId}`);
 
   res.status(201).json({ success: true, data: normalize(project) });
 });
@@ -97,7 +99,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
       { $set: updates },
       { returnDocument: "after" }
     ).lean(),
-    ActivityLog.create({
+    recordAuditLog({
       orgId: existing.orgId,
       userId: req.user!.userId,
       createdBy: req.user!.userId,
@@ -116,6 +118,9 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
     updatedAt: result.updatedAt,
   });
 
+  cacheManager.invalidatePattern(`projects:${existing.orgId}`);
+  cacheManager.invalidatePattern(`project:${req.params.id}`);
+
   res.json({ success: true, data: normalize(result) });
 });
 
@@ -127,7 +132,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 
   await Promise.all([
     Project.deleteOne({ id: req.params.id }),
-    ActivityLog.create({
+    recordAuditLog({
       orgId: existing.orgId,
       userId: req.user!.userId,
       createdBy: req.user!.userId,
@@ -142,6 +147,9 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
     id: req.params.id,
     orgId: existing.orgId,
   });
+
+  cacheManager.invalidatePattern(`projects:${existing.orgId}`);
+  cacheManager.invalidatePattern(`project:${req.params.id}`);
 
   res.json({ success: true });
 });

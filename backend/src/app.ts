@@ -1,13 +1,14 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { brotliCompress } from "./lib/brotli.js";
+import compression from "compression";
+import cookieParser from "cookie-parser";
 import path from "path";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
 import { requestIdMiddleware } from "./lib/request-id.js";
-import { perfMiddleware } from "./lib/perf/middleware.js";
 import { authLimiter, socketTokenLimiter, apiLimiter } from "./middleware/rate-limit.js";
+import { csrfProtection } from "./lib/csrf.js";
 import mongoose from "mongoose";
 import { isRedisConnected } from "./lib/redis.js";
 import authRoutes from "./routes/auth.js";
@@ -31,13 +32,10 @@ import teamsRoutes from "./routes/teams.js";
 import timeEntriesRoutes from "./routes/time-entries.js";
 import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
+import fileApprovalRoutes from "./routes/file-approval.js";
 
 const app = express();
 
-// NOTE: scriptSrc does NOT include 'unsafe-inline' in production. Next 16
-// App Router ships no inline scripts in prod builds. If a future build
-// re-introduces them (or you add a third-party inline script), relax ONLY this
-// single directive and log the change — never enable 'unsafe-eval'.
 const isProd = env.NODE_ENV === "production";
 app.use(helmet({
   contentSecurityPolicy: {
@@ -58,16 +56,17 @@ app.use(helmet({
   crossOriginEmbedderPolicy: true,
 }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
-app.use(brotliCompress);
-app.use(express.json());
+app.use(compression({ level: 6 }));
+app.use(express.json({ limit: "50mb" }));
+app.use(cookieParser());
 app.use(requestIdMiddleware);
+app.use(csrfProtection());
 app.use("/api/auth", authLimiter, (req, _res, next) => {
   if (req.path === "/socket-token") socketTokenLimiter(req, _res, next);
   else next();
 });
 app.use("/api/client-auth", authLimiter);
 app.use("/api", apiLimiter);
-app.use(perfMiddleware);
 
 // Serve uploads and banners statically
 app.use("/uploads", express.static(path.resolve("data", "uploads")));
@@ -126,6 +125,7 @@ app.use("/api/teams", teamsRoutes);
 app.use("/api/time-entries", timeEntriesRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/file-approval", fileApprovalRoutes);
 
 // 404 catch-all — log unmatched routes with clear diagnostics
 app.use((req, res) => {

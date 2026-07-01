@@ -6,6 +6,10 @@ import { FileAttachment } from "../db/models/FileAttachment.js";
 import { ActivityLog } from "../db/models/ActivityLog.js";
 import { Notification } from "../db/models/Notification.js";
 import { env } from "../../config/env.js";
+import { generatePreview } from "../../services/preview.service.js";
+import { scanFile } from "../../services/virus-scan.service.js";
+import path from "path";
+import fs from "fs";
 
 async function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -38,8 +42,12 @@ registerHandler(QUEUES.THUMBNAIL_GENERATION, async (_msg, data) => {
   const { fileId, orgId } = data as Record<string, any>;
   logger.info({ fileId, orgId }, "Generating thumbnail");
   try {
-    // Thumbnail generation would integrate with sharp or similar
-    await delay(100);
+    const file = await FileAttachment.findOne({ id: fileId, orgId }).lean();
+    if (!file) return { success: false, error: "File not found" };
+    const preview = await generatePreview(file.storagePath, file.mimeType, fileId);
+    if (preview.thumbnailPath) {
+      await FileAttachment.updateOne({ id: fileId }, { thumbnailPath: preview.thumbnailPath });
+    }
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -52,7 +60,23 @@ registerHandler(QUEUES.FILE_PROCESSING, async (_msg, data) => {
   try {
     switch (processingType) {
       case "virus-scan": {
-        await delay(200);
+        const file = await FileAttachment.findOne({ id: fileId, orgId }).lean();
+        if (!file) return { success: false, error: "File not found" };
+        const { getStorageProvider } = await import("../storage/providers.js");
+        const provider = getStorageProvider();
+        const filePath = path.join("/tmp", `virus-scan-${fileId}`);
+        try {
+          const buffer = await provider.get(file.storagePath);
+          if (!buffer) return { success: false, error: "File data not found" };
+          await fs.promises.writeFile(filePath, buffer);
+          const result = await scanFile(filePath);
+          await FileAttachment.updateOne(
+            { id: fileId },
+            { virusScanStatus: result.status, virusScanResult: result.details },
+          );
+        } finally {
+          fs.promises.unlink(filePath).catch(() => {});
+        }
         break;
       }
       case "compress": {
