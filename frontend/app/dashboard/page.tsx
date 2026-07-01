@@ -12,7 +12,7 @@ import {
   FolderKanbanIcon, BriefcaseIcon, Building2Icon, HardDriveIcon,
 } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 

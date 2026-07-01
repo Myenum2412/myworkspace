@@ -9,7 +9,7 @@ import { MonthlyRevenueChart } from "@/components/MonthlyRevenueChart";
 import { DashboardSignupsTable } from "@/components/dashboard-signups";
 import { UsersIcon, ClipboardListIcon, ActivityIcon, Building2Icon, CheckCircle2Icon, ClockIcon, UserPlusIcon } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 export const metadata = { title: "Organization Dashboard" };
 
 const getOrgMetrics = unstable_cache(async (orgId: string) => {
