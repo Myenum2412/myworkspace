@@ -4,8 +4,7 @@ import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
 import { unstable_cache } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { NewUsersChart } from "@/components/NewUsersChart";
-import { MonthlyRevenueChart } from "@/components/MonthlyRevenueChart";
+import { MonthlyRevenueChart, NewUsersChart } from "@/components/dynamic-charts";
 import { DashboardSignupsTable } from "@/components/dashboard-signups";
 import { UsersIcon, ClipboardListIcon, ActivityIcon, Building2Icon, CheckCircle2Icon, ClockIcon, UserPlusIcon } from "lucide-react";
 
