@@ -106,7 +106,7 @@ function DeleteFileButton({ file, onDeleted }: { file: FileItem; onDeleted: () =
       onClick={handleDelete}
       variant="ghost"
       size="icon"
-      className="size-7 text-red-500 hover:text-red-700 hover:bg-red-50"
+      className="size-7 text-black hover:text-gray-600 hover:bg-blue-50"
     >
       <Trash2Icon className="size-3.5" />
     </Button>

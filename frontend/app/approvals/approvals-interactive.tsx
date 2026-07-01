@@ -98,7 +98,7 @@ export default function ApprovalsInteractive({ initialTasks }: ApprovalsInteract
             <Button size="sm" className="h-7 text-xs bg-green-500 hover:bg-green-700" onClick={() => openAction(task, "approve")}>
               <CheckCircleIcon className="size-3 mr-1" />Approve
             </Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50" onClick={() => openAction(task, "reject")}>
+            <Button size="sm" variant="outline" className="h-7 text-xs text-black border-blue-200 hover:bg-blue-100" onClick={() => openAction(task, "reject")}>
               <XCircleIcon className="size-3 mr-1" />Reject
             </Button>
           </div>
@@ -161,7 +161,7 @@ export default function ApprovalsInteractive({ initialTasks }: ApprovalsInteract
               <DialogFooter className="shrink-0 border-t px-6 py-4 gap-2">
                 <Button variant="outline" onClick={() => { setViewOpen(false); setSelectedTask(null); }}>Close</Button>
                 <Button className="bg-green-500 hover:bg-green-700" onClick={() => { setViewOpen(false); openAction(selectedTask, "approve"); }}><CheckCircleIcon className="size-3.5 mr-1.5" />Approve</Button>
-                <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => { setViewOpen(false); openAction(selectedTask, "reject"); }}><XCircleIcon className="size-3.5 mr-1.5" />Reject</Button>
+                <Button variant="outline" className="text-black border-blue-200 hover:bg-blue-100" onClick={() => { setViewOpen(false); openAction(selectedTask, "reject"); }}><XCircleIcon className="size-3.5 mr-1.5" />Reject</Button>
               </DialogFooter>
             </>
           )}
@@ -203,7 +203,7 @@ export default function ApprovalsInteractive({ initialTasks }: ApprovalsInteract
 
           <DialogFooter className="shrink-0 border-t px-6 py-4 gap-2">
             <Button variant="outline" onClick={() => { setActionTask(null); setActionType(null); setActionNote(""); setActionError(""); }} disabled={actionSubmitting}>Cancel</Button>
-            <Button onClick={handleAction} disabled={actionSubmitting} className={actionType === "approve" ? "bg-green-500 hover:bg-green-700" : "bg-red-500 hover:bg-red-700"}>
+            <Button onClick={handleAction} disabled={actionSubmitting} className={actionType === "approve" ? "bg-green-500 hover:bg-green-700" : "bg-blue-300 hover:bg-blue-400"}>
               {actionSubmitting ? <Loader2Icon className="size-4 animate-spin" /> : actionType === "approve" ? <><CheckCircleIcon className="size-3.5 mr-1.5" /> Confirm Approve</> : <><XCircleIcon className="size-3.5 mr-1.5" /> Confirm Reject</>}
             </Button>
           </DialogFooter>

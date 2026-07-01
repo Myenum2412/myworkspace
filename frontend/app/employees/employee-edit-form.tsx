@@ -9,7 +9,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
-import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, HistoryIcon, CheckCircle2Icon } from "lucide-react"
+import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, HistoryIcon, CheckCircle2Icon, PencilIcon } from "lucide-react"
 import { employeeService } from "@/lib/services/employee-service"
 
 import {
@@ -50,17 +50,23 @@ interface EmployeeEditFormProps {
   employee: Employee
   onSave: (updated: Employee) => void
   onCancel: () => void
+  isViewMode?: boolean
+  onSwitchToEdit?: () => void
 }
 
-export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFormProps) {
+export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwitchToEdit }: EmployeeEditFormProps) {
   const [formError, setFormError] = useState("")
   const [formSuccess, setFormSuccess] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
+  const nameParts = employee.name ? employee.name.trim().split(" ") : []
+  const defaultFirstName = employee.firstName || nameParts[0] || ""
+  const defaultLastName = employee.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "")
+
   const [formData, setFormData] = useState<FirstSlideEmployeeForm>({
     displayId: employee.displayId || "",
-    firstName: employee.firstName || "",
-    lastName: employee.lastName || "",
+    firstName: defaultFirstName,
+    lastName: defaultLastName,
     nickname: employee.nickname || "",
     email: employee.email || "",
     password: employee.password || "",
@@ -171,13 +177,13 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
 
   return (
     <>
-      <div className="px-6 pt-6 pb-2 shrink-0">
-        <h2 className="flex items-center gap-2 text-xl font-semibold">
+      <div className="px-6 pt-6 pb-2 shrink-0 bg-white border-b">
+        <h2 className="flex items-center gap-2 text-xl font-semibold text-black">
           <UserIcon className="size-5" />
-          Edit Employee
+          {isViewMode ? "Employee Details" : "Edit Employee"}
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Update employee details across all sections.
+        <p className="text-sm text-gray-600 mt-1">
+          {isViewMode ? "View employee information across all sections." : "Update employee details across all sections."}
         </p>
       </div>
 
@@ -194,7 +200,10 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto px-6 py-3 space-y-5">
+      <div className={`flex-1 overflow-y-auto px-6 py-3 space-y-5 ${
+        isViewMode ? "[&_input:disabled]:bg-white [&_input:disabled]:text-black [&_input:disabled]:opacity-100 [&_select:disabled]:bg-white [&_select:disabled]:text-black [&_select:disabled]:opacity-100 [&_textarea:disabled]:bg-white [&_textarea:disabled]:text-black [&_textarea:disabled]:opacity-100" : ""
+      }`}>
+        <fieldset disabled={isViewMode} className="space-y-5 border-0 p-0 m-0 min-w-0">
         {/* Profile */}
         <Section icon={UserIcon} title="Profile">
           <div className="flex gap-8 items-start">
@@ -380,15 +389,25 @@ export function EmployeeEditForm({ employee, onSave, onCancel }: EmployeeEditFor
             />
           </div>
         </Section>
+        </fieldset>
       </div>
 
-      <div className="shrink-0 border-t px-6 py-4 flex gap-2 justify-end bg-background mt-4">
-        <Button variant="outline" onClick={onCancel} disabled={submitting}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()}>
-          {submitting ? <Loader2Icon className="size-4 animate-spin" /> : <><SaveIcon className="size-3.5 mr-1.5" />Save Changes</>}
-        </Button>
+      <div className="shrink-0 border-t px-6 py-4 flex gap-2 justify-end bg-white mt-4">
+        {isViewMode ? (
+          <Button onClick={() => onSwitchToEdit && onSwitchToEdit()}>
+            <PencilIcon className="size-3.5 mr-1.5" />
+            Edit Employee
+          </Button>
+        ) : (
+          <>
+            <Button variant="outline" onClick={onCancel} disabled={submitting}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()}>
+              {submitting ? <Loader2Icon className="size-4 animate-spin" /> : <><SaveIcon className="size-3.5 mr-1.5" />Save Changes</>}
+            </Button>
+          </>
+        )}
       </div>
     </>
   )

@@ -275,18 +275,13 @@ export default function ProjectsInteractive({
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Project List</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {loading ? (
-              <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
-            ) : (
-              <DataTable columns={columns} data={projects} meta={{ onView: handleView }} />
-            )}
-          </CardContent>
-        </Card>
+        <div className="flex-1 mt-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
+          ) : (
+            <DataTable columns={columns} data={projects} meta={{ onView: handleView }} />
+          )}
+        </div>
       </main>
 
       <Dialog open={showForm} onOpenChange={(open) => { if (!submitting) setShowForm(open); }}>

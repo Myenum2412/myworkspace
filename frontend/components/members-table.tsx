@@ -396,7 +396,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                           type="submit"
                           variant="ghost"
                           size="icon"
-                          className="size-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          className="size-8 text-black hover:text-gray-600 hover:bg-blue-50"
                           onClick={(e) => {
                             if (!confirm(`Delete member "${member.name}"?`)) e.preventDefault();
                           }}

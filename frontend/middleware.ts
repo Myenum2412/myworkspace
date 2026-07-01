@@ -14,7 +14,7 @@ const WORKSPACE_ROUTES = [
   "/teamtasks", "/team-time", "/settings", "/profile", "/admin",
   "/departments", "/addemployees", "/addprojects", "/files",
   "/savedtasks", "/upcomingtasks", "/terminated",
-  "/recycle-bin", "/upload",
+  "/recycle-bin", "/upload", "/billing",
 ];
 
 function getHomePath(role?: string): string {

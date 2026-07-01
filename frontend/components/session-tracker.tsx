@@ -37,12 +37,12 @@ export function SessionTracker() {
         <Button
           variant="outline"
           size="sm"
-          className={`gap-1.5 h-8 ${isOnBreak ? "border-red-400 text-red-600" : "border-red-400 text-red-600"}`}
+          className={`gap-1.5 h-8 ${isOnBreak ? "border-blue-300 text-black" : "border-blue-300 text-black"}`}
         >
           <Clock className={`size-3.5 ${isOnBreak ? "animate-pulse" : ""}`} />
           <span className="font-mono text-xs">{formatDuration(elapsed)}</span>
           {isOnBreak && (
-            <span className="text-[10px] text-red-400 font-medium">BREAK</span>
+            <span className="text-[10px] text-black font-medium">BREAK</span>
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -59,7 +59,7 @@ export function SessionTracker() {
           {breakElapsed > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Break Time</span>
-              <span className="font-mono font-medium text-red-400">
+              <span className="font-mono font-medium text-black">
                 {formatDuration(breakElapsed)}
               </span>
             </div>
@@ -74,7 +74,7 @@ export function SessionTracker() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Today Breaks</span>
-                <span className="font-mono font-medium text-red-400">
+                <span className="font-mono font-medium text-black">
                   {formatDuration(todaySummary.totalBreakTime)}
                 </span>
               </div>
@@ -99,7 +99,7 @@ export function SessionTracker() {
             <Button
               variant="outline"
               size="sm"
-              className="w-full gap-2 border-red-300 text-red-400 hover:bg-gray-800"
+              className="w-full gap-2 border-blue-300 text-black hover:bg-gray-800"
               onClick={startBreak}
             >
               <Coffee className="size-4" />

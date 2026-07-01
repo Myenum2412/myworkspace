@@ -42,65 +42,17 @@ const getInitials = (name: string) =>
   name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
 export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee; onEdit?: (emp: Employee) => void }) {
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState<Record<string, string>>({});
-  const [error, setError] = useState("");
-
   const fullName = employee.firstName && employee.lastName
     ? `${employee.firstName} ${employee.lastName}`
     : employee.name;
 
-  const getVal = (key: string, fallback?: string | null) =>
-    editing ? (formData[key] ?? fallback ?? "") : (fallback ?? "");
-
-  const setVal = (key: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const startEditing = () => {
-    setFormData({});
-    setError("");
-    setEditing(true);
-  };
-
-  const cancelEditing = () => {
-    setEditing(false);
-    setFormData({});
-    setError("");
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    setError("");
-    try {
-      const res = await fetch(`/api/employees/${employee.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: employee.id, ...formData }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error || "Failed to update employee");
-      }
-      setEditing(false);
-      onEdit?.(employee);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const FieldInput = ({ label, field, value, placeholder, className }: { label: string; field?: string; value?: string | null; placeholder?: string; className?: string }) => (
+  const FieldInput = ({ label, value, className }: { label: string; value?: string | null; className?: string }) => (
     <Field className={className}>
       <FieldLabel>{label}</FieldLabel>
       <Input
-        value={getVal(field || "", value)}
-        onChange={field && editing ? (e) => setVal(field, e.target.value) : undefined}
-        readOnly={!editing || !field}
-        placeholder={placeholder || ""}
-        className={!editing ? "bg-muted/30" : ""}
+        value={value || ""}
+        readOnly
+        className="bg-muted/30"
       />
     </Field>
   );
@@ -136,12 +88,12 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
                   <FieldLegend>Basic Information</FieldLegend>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <FieldInput label="Display ID" value={employee.displayId || employee.id} />
-                    <FieldInput label="First Name *" field="firstName" value={employee.firstName || fullName.split(" ")[0]} placeholder="First name" />
-                    <FieldInput label="Last Name *" field="lastName" value={employee.lastName || fullName.split(" ").slice(1).join(" ") || null} placeholder="Last name" />
-                    <FieldInput label="Nickname" field="nickname" value={employee.nickname} placeholder="Nickname" />
-                    <FieldInput label="Email *" field="email" value={employee.email} placeholder="Email address" />
-                    <FieldInput label="Department" field="department" value={employee.department} placeholder="Department" />
-                    <FieldInput label="Location" field="location" value={employee.location || employee.branchName} placeholder="Location" />
+                    <FieldInput label="First Name" value={employee.firstName || fullName.split(" ")[0]} />
+                    <FieldInput label="Last Name" value={employee.lastName || fullName.split(" ").slice(1).join(" ") || null} />
+                    <FieldInput label="Nickname" value={employee.nickname} />
+                    <FieldInput label="Email" value={employee.email} />
+                    <FieldInput label="Department" value={employee.department} />
+                    <FieldInput label="Location" value={employee.location || employee.branchName} />
                   </div>
                 </FieldSet>
               </div>
@@ -154,24 +106,24 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
             <FieldSet>
               <FieldLegend>Work Information</FieldLegend>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FieldInput label="Department" field="department" value={employee.department} placeholder="Department" />
-                <FieldInput label="Location" field="location" value={employee.location || employee.branchName} placeholder="Location" />
-                <FieldInput label="Designation" field="designation" value={employee.designation} placeholder="Designation" />
-                <FieldInput label="Role" field="role" value={employee.role} placeholder="Role" />
-                <FieldInput label="Employment Type" field="employmentType" value={employee.employmentType} placeholder="Employment type" />
-                <FieldInput label="Status" field="status" value={employee.status} placeholder="Status" />
+                <FieldInput label="Department" value={employee.department} />
+                <FieldInput label="Location" value={employee.location || employee.branchName} />
+                <FieldInput label="Designation" value={employee.designation} />
+                <FieldInput label="Role" value={employee.role} />
+                <FieldInput label="Employment Type" value={employee.employmentType} />
+                <FieldInput label="Status" value={employee.status} />
               </div>
             </FieldSet>
 
             <FieldSet>
               <FieldLegend>Joining Details</FieldLegend>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FieldInput label="Branch Name" field="branchName" value={employee.branchName} placeholder="Branch" />
-                <FieldInput label="Shift" field="shift" value={employee.shift} placeholder="Shift" />
-                <FieldInput label="Date of Joining" field="joiningDate" value={employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString() : null} placeholder="Joining date" />
-                <FieldInput label="Source of Hire" field="sourceOfHire" value={employee.sourceOfHire} placeholder="Source" />
-                <FieldInput label="Current Experience" field="currentExperience" value={employee.currentExperience} placeholder="Current experience" />
-                <FieldInput label="Total Experience" field="totalExperience" value={employee.totalExperience} placeholder="Total experience" />
+                <FieldInput label="Branch Name" value={employee.branchName} />
+                <FieldInput label="Shift" value={employee.shift} />
+                <FieldInput label="Date of Joining" value={employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString() : null} />
+                <FieldInput label="Source of Hire" value={employee.sourceOfHire} />
+                <FieldInput label="Current Experience" value={employee.currentExperience} />
+                <FieldInput label="Total Experience" value={employee.totalExperience} />
               </div>
             </FieldSet>
             <Separator />
@@ -182,14 +134,14 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
             <FieldSet>
               <FieldLegend>Contact Details</FieldLegend>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FieldInput label="Phone Number" field="phone" value={employee.phone} placeholder="Phone number" />
-                <FieldInput label="Alternate Email" field="alternateEmail" value={employee.alternateEmail} placeholder="Alternate email" />
-                <FieldInput label="Address" field="address" value={employee.address} placeholder="Street address" className="sm:col-span-2" />
+                <FieldInput label="Phone Number" value={employee.phone} />
+                <FieldInput label="Alternate Email" value={employee.alternateEmail} />
+                <FieldInput label="Address" value={employee.address} className="sm:col-span-2" />
 
-                <FieldInput label="City" field="city" value={employee.city} placeholder="City" />
-                <FieldInput label="State / Province" field="state" value={employee.state} placeholder="State/Province" />
-                <FieldInput label="Postal Code" field="zipCode" value={employee.zipCode} placeholder="Postal code" />
-                <FieldInput label="Country" field="country" value={employee.country} placeholder="Country" />
+                <FieldInput label="City" value={employee.city} />
+                <FieldInput label="State / Province" value={employee.state} />
+                <FieldInput label="Postal Code" value={employee.zipCode} />
+                <FieldInput label="Country" value={employee.country} />
               </div>
             </FieldSet>
             <Separator />
@@ -303,26 +255,7 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/10">
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {editing ? (
-          <div className="flex items-center gap-3 ml-auto">
-            <Button variant="outline" onClick={cancelEditing} disabled={saving}>
-              <XIcon className="size-3.5 mr-1.5" />
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={saving} className="w-32">
-              {saving ? <Loader2Icon className="size-3.5 mr-1.5 animate-spin" /> : <CheckIcon className="size-3.5 mr-1.5" />}
-              Save Changes
-            </Button>
-          </div>
-        ) : (
-          <Button variant="outline" onClick={startEditing} className="ml-auto">
-            <PencilIcon className="size-3.5 mr-1.5" />
-            Edit Employee
-          </Button>
-        )}
-      </div>
+      {/* Removed duplicated inline edit footer */}
     </div>
   );
 }

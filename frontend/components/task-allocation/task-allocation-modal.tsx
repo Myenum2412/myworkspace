@@ -253,7 +253,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
                       <CalendarIcon className="size-4 ml-2" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 border" align="start">
+                  <PopoverContent className="w-auto p-0 border rounded-md" align="start">
                     <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -304,7 +304,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
                         <CalendarIcon className="size-3 ml-1" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 border" align="start">
+                    <PopoverContent className="w-auto p-0 border rounded-md" align="start">
                       <Calendar mode="single" selected={repeatStartDate} onSelect={(d) => { setRepeatStartDate(d); setRepeatStartDateOpen(false); }} />
                     </PopoverContent>
                   </Popover>

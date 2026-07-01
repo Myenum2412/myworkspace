@@ -58,9 +58,9 @@ const planLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  online: "bg-red-500",
+  online: "bg-green-500",
   offline: "bg-gray-1000",
-  break: "bg-gray-400",
+  break: "bg-yellow-500",
 };
 
 const roleBadge: Record<string, "default" | "secondary" | "outline"> = {

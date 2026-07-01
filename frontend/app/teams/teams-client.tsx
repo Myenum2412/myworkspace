@@ -18,6 +18,8 @@ import {
   Trash2Icon,
   PencilIcon,
   MoreHorizontalIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "lucide-react";
 import {
   Dialog,
@@ -96,6 +98,9 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
   const [addingMember, setAddingMember] = useState(false);
   const [viewMemberOpen, setViewMemberOpen] = useState(false);
   const [viewMember, setViewMember] = useState<TeamDetail["members"][0] | null>(null);
+  
+  const [memberPage, setMemberPage] = useState(0);
+  const [memberRowsPerPage, setMemberRowsPerPage] = useState(10);
 
   const fetchTeams = useCallback(async (oid?: string) => {
     try {
@@ -277,6 +282,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
         createdAt: detail.createdAt || team.createdAt,
         members: detail.members || [],
       });
+      setMemberPage(0);
     } catch (_) {}
   }
 
@@ -357,39 +363,117 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
             </div>
           </div>
 
-          <Card>
-            <CardHeader><CardTitle className="text-base">Team Members</CardTitle></CardHeader>
-            <CardContent>
-              {selectedTeam.members.length === 0 ? (
-                <div className="py-8 text-center"><UsersIcon className="size-10 mx-auto text-muted-foreground/30 mb-2" /><p className="text-sm text-muted-foreground">No members yet.</p></div>
-              ) : (
-                <div className="space-y-2">
-                  {selectedTeam.members.map((m) => (
-                    <div key={m.id} className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:bg-blue-50/50 transition-colors" onClick={() => { setViewMember(m); setViewMemberOpen(true); }}>
-                      <div className="flex items-center gap-3">
-                        <div className="size-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                          {m.avatar ? <img src={m.avatar} alt={m.name} className="size-full object-cover" /> : <span className="text-xs font-medium text-muted-foreground">{m.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}</span>}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{m.name}</span>
-                            {m.role === "lead" && <Badge className="bg-gray-700 text-gray-700 text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5" /> Lead</Badge>}
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+            <div className="overflow-x-auto overflow-y-auto flex-1">
+              <table className="w-full text-sm text-left border-collapse" style={{ minWidth: 900 }}>
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-[#f3f4f6] text-gray-900 border-b">
+                    <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Member</th>
+                    <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Role</th>
+                    <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Department</th>
+                    <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Designation</th>
+                    <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {selectedTeam.members.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="bg-white">
+                        <div className="flex flex-col items-center justify-center py-16 gap-3">
+                          <div className="flex items-center justify-center size-12 rounded-full bg-muted">
+                            <UsersIcon className="size-6 text-muted-foreground/50" />
                           </div>
-                          <p className="text-xs text-muted-foreground">{m.email}{m.department ? ` · ${m.department}` : ""}{m.designation ? ` · ${m.designation}` : ""}</p>
+                          <p className="text-sm font-medium text-muted-foreground">No members yet.</p>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {m.role !== "lead" && (
-                          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); handleSetLead(m.userId); }}><CrownIcon className="size-3 mr-1" />Set Lead</Button>
-                        )}
-                        <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleRemoveMember(m.userId); }}><Trash2Icon className="size-3" /></Button>
-                      </div>
-                    </div>
-                  ))}
+                      </td>
+                    </tr>
+                  ) : (
+                    selectedTeam.members.slice(memberPage * memberRowsPerPage, (memberPage + 1) * memberRowsPerPage).map((m) => (
+                      <tr key={m.id} className="group bg-white hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => { setViewMember(m); setViewMemberOpen(true); }}>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            {m.avatar ? (
+                              <img src={m.avatar} alt={m.name} className="size-8 rounded-full object-cover ring-2 ring-background" />
+                            ) : (
+                              <div className="size-8 rounded-full flex items-center justify-center text-xs font-semibold bg-gray-100 text-gray-600">
+                                {getInitials(m.name)}
+                              </div>
+                            )}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-gray-900">{m.name}</span>
+                                {m.role === "lead" && <Badge className="bg-gray-700 text-gray-700 text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5" /> Lead</Badge>}
+                              </div>
+                              <span className="text-xs text-gray-500 block mt-0.5">{m.email}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-700 capitalize">{m.role}</td>
+                        <td className="px-4 py-3 text-gray-700">{m.department || "—"}</td>
+                        <td className="px-4 py-3 text-gray-600">{m.designation || "—"}</td>
+                        <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-2">
+                            {m.role !== "lead" && (
+                              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => handleSetLead(m.userId)}>
+                                <CrownIcon className="size-3 mr-1" /> Set Lead
+                              </Button>
+                            )}
+                            <Button variant="destructive" size="sm" className="h-7 text-xs bg-red-500 hover:bg-red-600 text-white" onClick={() => handleRemoveMember(m.userId)}>
+                              <Trash2Icon className="size-3 mr-1" /> Remove
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            
+            {selectedTeam.members.length > 0 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-[#f3f4f6] text-gray-900 sticky bottom-0 z-10">
+                <div className="flex items-center gap-2 text-sm text-gray-800">
+                  <span>Rows per page:</span>
+                  <Select value={String(memberRowsPerPage)} onValueChange={(v) => { setMemberRowsPerPage(Number(v)); setMemberPage(0); }}>
+                    <SelectTrigger className="w-[68px] h-8 text-xs bg-white border-gray-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-gray-800">
+                    {memberPage * memberRowsPerPage + 1}–{Math.min((memberPage + 1) * memberRowsPerPage, selectedTeam.members.length)} of {selectedTeam.members.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 hover:text-black bg-white"
+                      onClick={() => setMemberPage((p) => Math.max(0, p - 1))}
+                      disabled={memberPage === 0}
+                    >
+                      <ChevronLeftIcon className="size-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 hover:text-black bg-white"
+                      onClick={() => setMemberPage((p) => Math.min(Math.ceil(selectedTeam.members.length / memberRowsPerPage) - 1, p + 1))}
+                      disabled={memberPage >= Math.ceil(selectedTeam.members.length / memberRowsPerPage) - 1}
+                    >
+                      <ChevronRightIcon className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {showAddMember && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowAddMember(false)}>

@@ -22,6 +22,7 @@ import {
   CalendarIcon,
   ClipboardListIcon,
   HistoryIcon,
+  CreditCardIcon,
 } from "lucide-react";
 
 export const defaultNavData = {
@@ -96,6 +97,16 @@ export const defaultNavData = {
         { title: "Upload", url: "/files?upload=true" },
         { title: "Recycle Bin", url: "/recycle-bin" },
         { title: "Audit Log", url: "/files/audit" },
+      ],
+    },
+    {
+      title: "Billing",
+      url: "/billing",
+      icon: <CreditCardIcon className="size-6" />,
+      items: [
+        { title: "Overview", url: "/billing" },
+        { title: "Plans", url: "/billing/plans" },
+        { title: "Invoices", url: "/billing/invoices" },
       ],
     },
     {

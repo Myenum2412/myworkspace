@@ -138,7 +138,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
                       <td className="py-3">
                         <button
                           onClick={() => handleDelete(entry.id)}
-                          className="text-muted-foreground hover:text-red-600 transition-colors"
+                          className="text-muted-foreground hover:text-black transition-colors"
                         >
                           <Trash2 className="size-4" />
                         </button>

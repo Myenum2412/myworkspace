@@ -415,17 +415,12 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Client List</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DataTable
-              columns={[...columns, makeActionsCell(handleStartEdit, (c) => { setDeletingClient(c); setDeleteError(""); })]}
-              data={clients}
-            />
-          </CardContent>
-        </Card>
+        <div className="flex-1 mt-4">
+          <DataTable
+            columns={[...columns, makeActionsCell(handleStartEdit, (c) => { setDeletingClient(c); setDeleteError(""); })]}
+            data={clients}
+          />
+        </div>
       </main>
 
       <Dialog open={showForm} onOpenChange={handleCloseForm}>
@@ -1015,7 +1010,7 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
 
           <DialogFooter className="bg-muted/50 p-4 flex sm:justify-between border-t border-border/50 gap-2 sm:gap-0">
             <Button variant="ghost" onClick={() => setDeletingClient(null)} className="w-full sm:w-auto hover:bg-background">Cancel</Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm} className="w-full sm:w-auto shadow-md hover:shadow-lg transition-all active:scale-95 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400">
+            <Button variant="destructive" onClick={handleDeleteConfirm} className="w-full sm:w-auto shadow-md hover:shadow-lg transition-all active:scale-95 bg-gradient-to-r from-blue-300 to-blue-400 hover:from-blue-400 hover:to-blue-500">
               <Trash2 className="mr-2 size-4" />
               Yes, delete client
             </Button>

@@ -71,6 +71,49 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<void> 
   });
 }
 
+export async function sendOrganizationInviteEmail(
+  to: string,
+  name: string,
+  orgName: string,
+  inviteUrl: string
+): Promise<void> {
+  if (!resend) {
+    console.warn("Resend not configured — skipping organization invite email");
+    return;
+  }
+  await resend!.emails.send({
+    from: env.MAIL_FROM,
+    to,
+    subject: `You've been invited to ${orgName} on MyWorkspace`,
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
+        <div style="text-align: center; margin-bottom: 32px;">
+          <h1 style="font-size: 24px; color: #1a1a2e; margin: 0;">MyWorkspace</h1>
+        </div>
+        <div style="background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+          <h1 style="font-size: 20px; color: #1a1a2e; margin: 0 0 16px;">You've been invited!</h1>
+          <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 8px;">Hi ${name},</p>
+          <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 24px;">
+            You have been invited to join <strong>${orgName}</strong> on MyWorkspace. Click the button below to access your workspace.
+          </p>
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${inviteUrl}"
+               style="display: inline-block; padding: 12px 28px; background: #3b82f6; color: #ffffff; border-radius: 8px; text-decoration: none; font-size: 15px; font-weight: 500;">
+              Open Workspace
+            </a>
+          </div>
+          <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0;">
+            If you were not expecting this invitation, you can safely ignore this email.
+          </p>
+        </div>
+        <p style="text-align: center; margin-top: 24px; font-size: 12px; color: #94a3b8;">
+          &copy; ${new Date().getFullYear()} MyWorkspace. All rights reserved.
+        </p>
+      </div>
+    `,
+  });
+}
+
 export async function sendClientWelcomeEmail(
   to: string,
   clientName: string,

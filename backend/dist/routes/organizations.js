@@ -6,6 +6,8 @@ import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { signToken } from "../config/auth.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
+import { env } from "../config/env.js";
+import { sendOrganizationInviteEmail } from "../lib/mail/index.js";
 const router = Router();
 router.use(authenticate);
 // GET /api/organizations -- list all orgs for current user
@@ -63,6 +65,8 @@ router.post("/invite", async (req, res) => {
     if (!membership || membership.role !== "admin") {
         throw new AppError(403, "Only organization admins can invite members");
     }
+    const org = await Organization.findById(targetOrgId).lean();
+    const orgName = org?.name || "Organization";
     const validEmails = emails.filter((e) => e && e.includes("@"));
     const results = [];
     for (const email of validEmails) {
@@ -81,6 +85,7 @@ router.post("/invite", async (req, res) => {
             userId: user._id,
             role: "member",
         });
+        await sendOrganizationInviteEmail(email, user.name || email, orgName, `${env.APP_URL}/orgmenu`);
         results.push({ email, status: "invited", userId: user._id.toString() });
     }
     console.log(`[INVITE] ${req.user.email} invited ${validEmails.length} users to org ${targetOrgId}:`, results);

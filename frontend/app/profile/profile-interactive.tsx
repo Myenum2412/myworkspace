@@ -439,14 +439,6 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
         className="relative h-[200px] bg-gradient-to-b from-primary/90 via-primary/40 to-background bg-cover bg-center"
         style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
       >
-        <button
-          onClick={() => setShowBannerEditor(true)}
-          className="absolute top-4 right-4 flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur-sm px-3 py-1.5 text-xs font-medium shadow-sm hover:bg-background/95 transition-colors"
-          aria-label="Edit banner"
-        >
-          <CameraIcon className="size-3.5" />
-          Change banner
-        </button>
       </div>
 
       <div className="flex flex-col items-center -mt-12 px-6">
