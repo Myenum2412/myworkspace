@@ -3,46 +3,53 @@ import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { AuthRequest } from "./auth.js";
 import { AppError } from "./error.js";
 
+const ORG_CACHE_TTL = 60_000;
+const orgCache = new Map<string, { orgId: string | null; exp: number }>();
+
+function orgCacheGet(userId: string): string | null | undefined {
+  const hit = orgCache.get(userId);
+  if (!hit) return undefined;
+  if (Date.now() > hit.exp) { orgCache.delete(userId); return undefined; }
+  return hit.orgId;
+}
+
+function orgCacheSet(userId: string, orgId: string | null): void {
+  orgCache.set(userId, { orgId, exp: Date.now() + ORG_CACHE_TTL });
+}
+
 /**
  * Middleware: Resolve and attach organization context to the request.
  * Uses orgId from JWT token if available, otherwise looks up from OrgMember.
  * Attaches req.orgId for downstream use.
  */
 export async function resolveOrgContext(req: AuthRequest, _res: Response, next: NextFunction): Promise<void> {
-  console.log(`[ORG CONTEXT] ========== RESOLVE ORG CONTEXT START ==========`);
-  console.log(`[ORG CONTEXT] Request URL: ${req.url}`);
-  console.log(`[ORG CONTEXT] User present: ${!!req.user}`);
-  
   if (!req.user) {
-    console.log(`[ORG CONTEXT] No user, throwing 401`);
     throw new AppError(401, "Authentication required");
   }
-
-  console.log(`[ORG CONTEXT] User ID: ${req.user.userId}`);
-  console.log(`[ORG CONTEXT] User orgId from token: ${req.user.orgId || 'NOT SET'}`);
 
   // Use orgId from token if available
   if (req.user.orgId) {
     req.orgId = req.user.orgId;
-    console.log(`[ORG CONTEXT] Using orgId from token: ${req.orgId}`);
-    console.log(`[ORG CONTEXT] ========== RESOLVE ORG CONTEXT SUCCESS (from token) ==========`);
+    next();
+    return;
+  }
+
+  // Check cache before DB lookup
+  const cached = orgCacheGet(req.user.userId);
+  if (cached !== undefined) {
+    req.orgId = cached || undefined;
     next();
     return;
   }
 
   // Look up from membership
-  console.log(`[ORG CONTEXT] No orgId in token, looking up OrgMember for userId: ${req.user.userId}`);
   const member = await OrgMember.findOne({ userId: req.user.userId }).lean();
-  if (member) {
-    req.orgId = member.orgId.toString();
-    console.log(`[ORG CONTEXT] Found OrgMember: orgId=${member.orgId}, role=${member.role}`);
-    console.log(`[ORG CONTEXT] Using orgId from membership: ${req.orgId}`);
-  } else {
-    console.log(`[ORG CONTEXT] No OrgMember found for userId: ${req.user.userId}`);
+  const orgId = member ? member.orgId.toString() : null;
+  orgCacheSet(req.user.userId, orgId);
+  if (orgId) {
+    req.orgId = orgId;
   }
 
-  console.log(`[ORG CONTEXT] Final orgId: ${req.orgId || 'NOT SET'}`);
-  console.log(`[ORG CONTEXT] ========== RESOLVE ORG CONTEXT END ==========`);
   next();
 }
 

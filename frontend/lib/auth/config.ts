@@ -41,10 +41,18 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         token.permissions = (user as { permissions?: string[] }).permissions;
         token.orgId = (user as { orgId?: string }).orgId;
         token.onboardingCompleted = (user as { onboardingCompleted?: boolean }).onboardingCompleted;
-        console.log(`[AUTH jwt] token updated: id=${user.id} role=${token.role} orgId=${token.orgId} onboarding=${token.onboardingCompleted}`);
+        token.lastVerified = Date.now();
+        return token;
       }
 
+      // Only re-verify from DB every 5 minutes
       if (token.id) {
+        const now = Date.now();
+        const lastVerified = (token as any).lastVerified as number | undefined;
+        if (lastVerified && (now - lastVerified) < 300_000) {
+          return token;
+        }
+
         try {
           const { db } = await import("@/lib/db");
           const dbUser = await db.collection("users").findOne({ id: token.id });
@@ -72,6 +80,8 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             token.onboardingCompleted = true;
           }
         }
+
+        (token as any).lastVerified = Date.now();
       }
 
       return token;

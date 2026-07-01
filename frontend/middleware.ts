@@ -3,11 +3,12 @@ import { NextResponse } from "next/server";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "developer@myenum.in";
 
-const ORIGIN_ROUTES = ["/orgmenu"];
-const STAFF_ROUTES = ["/staffs"];
-const PUBLIC_ROUTES = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/share", "/client/login", "/auth/not-found"];
-const CLIENT_ROUTES = ["/client/dashboard", "/client/profile", "/client/projects", "/client/documents", "/client/notifications", "/client/settings"];
-const WORKSPACE_ROUTES = [
+const ORIGIN_PREFIXES = ["/orgmenu"];
+const STAFF_PREFIXES = ["/staffs"];
+const PUBLIC_PATHS = new Set(["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/client/login", "/auth/not-found"]);
+const PUBLIC_PREFIXES = new Set(["/share"]);
+const CLIENT_PREFIXES = ["/client/dashboard", "/client/profile", "/client/projects", "/client/documents", "/client/notifications", "/client/settings"];
+const WORKSPACE_PREFIXES = [
   "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
   "/projects", "/teams", "/clients", "/approvals", "/reports",
   "/calendar", "/time-tracker", "/time-reports", "/my-time",
@@ -17,6 +18,12 @@ const WORKSPACE_ROUTES = [
   "/recycle-bin", "/upload", "/billing",
 ];
 
+// Pre-compile startsWith prefixes into a structure for faster matching
+const WORKSPACE_SET = new Set(WORKSPACE_PREFIXES);
+const CLIENT_SET = new Set(CLIENT_PREFIXES);
+const ORIGIN_SET = new Set(ORIGIN_PREFIXES);
+const STAFF_SET = new Set(STAFF_PREFIXES);
+
 function getHomePath(role?: string): string {
   if (role === "member" || role === "staff") {
     return "/staffs";
@@ -24,12 +31,19 @@ function getHomePath(role?: string): string {
   return "/dashboard";
 }
 
+function pathMatchesPrefix(pathname: string, prefixes: Set<string>): boolean {
+  for (const prefix of prefixes) {
+    if (pathname.startsWith(prefix)) return true;
+  }
+  return false;
+}
+
 function getRouteContext(pathname: string): "origin" | "staff" | "workspace" | "public" | "unknown" | "client" {
-  if (ORIGIN_ROUTES.some((r) => pathname.startsWith(r))) return "origin";
-  if (STAFF_ROUTES.some((r) => pathname.startsWith(r))) return "staff";
-  if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "public";
-  if (CLIENT_ROUTES.some((r) => pathname.startsWith(r))) return "client";
-  if (WORKSPACE_ROUTES.some((r) => pathname.startsWith(r))) return "workspace";
+  if (pathMatchesPrefix(pathname, ORIGIN_SET)) return "origin";
+  if (pathMatchesPrefix(pathname, STAFF_SET)) return "staff";
+  if (PUBLIC_PATHS.has(pathname) || pathMatchesPrefix(pathname, PUBLIC_PREFIXES)) return "public";
+  if (pathMatchesPrefix(pathname, CLIENT_SET)) return "client";
+  if (pathMatchesPrefix(pathname, WORKSPACE_SET)) return "workspace";
   if (pathname === "/") return "public";
   return "unknown";
 }

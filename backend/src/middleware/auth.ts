@@ -22,6 +22,36 @@ const dbgError = (...a: unknown[]) => {
 const JWE_ALG = "dir" as const;
 const JWE_ENC = "A256CBC-HS512" as const;
 
+// --- In-memory caches for auth hot path ---
+const JWE_CACHE_TTL = 60_000; // 60s TTL for JWT decrypt results
+const USER_CACHE_TTL = 300_000; // 5min TTL for userId resolution
+
+const jweCache = new Map<string, { payload: JwtPayload; exp: number }>();
+const resolveUserIdCache = new Map<string, { found: boolean; exp: number }>();
+
+function jweCacheGet(key: string): JwtPayload | null {
+  const hit = jweCache.get(key);
+  if (!hit) return null;
+  if (Date.now() > hit.exp) { jweCache.delete(key); return null; }
+  return hit.payload;
+}
+
+function jweCacheSet(key: string, payload: JwtPayload): void {
+  jweCache.set(key, { payload, exp: Date.now() + JWE_CACHE_TTL });
+}
+
+function resolveCacheGet(userId: string): boolean | null {
+  const hit = resolveUserIdCache.get(userId);
+  if (!hit) return null;
+  if (Date.now() > hit.exp) { resolveUserIdCache.delete(userId); return null; }
+  return hit.found;
+}
+
+function resolveCacheSet(userId: string, found: boolean): void {
+  resolveUserIdCache.set(userId, { found, exp: Date.now() + USER_CACHE_TTL });
+}
+// --- End caches ---
+
 async function getDerivedEncryptionKey(secret: string, salt: string): Promise<Uint8Array> {
   return await hkdf("sha256", secret, salt, `Auth.js Generated Encryption Key (${salt})`, 64);
 }
@@ -43,6 +73,15 @@ async function tryNextAuthCookie(req: AuthRequest): Promise<JwtPayload | null> {
     if (name === "authjs.session-token" || name === "__Secure-authjs.session-token") {
       const token = rest.join("=");
       dbg(`[BACKEND AUTH] Found NextAuth session token, length: ${token.length}`);
+
+      // JWE decrypt cache hit — skip HKDF + JWE entirely
+      const cacheKey = `jwe:${token.slice(0, 64)}`;
+      const cached = jweCacheGet(cacheKey);
+      if (cached) {
+        dbg(`[BACKEND AUTH] JWE cache hit`);
+        return cached;
+      }
+
       try {
         const salt = name;
         const encryptionSecret = await getDerivedEncryptionKey(env.JWT_SECRET, salt);
@@ -71,6 +110,7 @@ async function tryNextAuthCookie(req: AuthRequest): Promise<JwtPayload | null> {
           orgId: (payload.orgId || undefined) as string | undefined,
         };
         dbg(`[BACKEND AUTH] Decrypted payload:`, JSON.stringify(result));
+        jweCacheSet(cacheKey, result);
         return result;
       } catch (err) {
         dbgError(`[BACKEND AUTH] Decryption failed:`, err);
@@ -140,9 +180,19 @@ export async function resolveStaleUserId(req: AuthRequest): Promise<void> {
   if (!req.user) return;
   const { userId, email } = req.user;
 
+  // Cache hit — userId already verified as valid
+  const cached = resolveCacheGet(userId);
+  if (cached === true) return;
+  if (cached === false) {
+    // Previously known to need resolution; skip OrgMember query, go straight to User lookup
+  }
+
   // Fast path: userId has a valid membership
   const member = await OrgMember.findOne({ userId }).lean();
-  if (member) return;
+  if (member) {
+    resolveCacheSet(userId, true);
+    return;
+  }
 
   let resolvedId: string | null = null;
 
@@ -166,7 +216,11 @@ export async function resolveStaleUserId(req: AuthRequest): Promise<void> {
   if (resolvedId && resolvedId !== userId) {
     dbg(`[BACKEND AUTH] Resolved stale userId: ${userId} → ${resolvedId}`);
     req.user.userId = resolvedId;
+    resolveCacheSet(resolvedId, true);
   }
+
+  // Even if resolution failed, cache the miss to avoid re-querying
+  resolveCacheSet(userId, false);
 }
 
 export async function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction): Promise<void> {
