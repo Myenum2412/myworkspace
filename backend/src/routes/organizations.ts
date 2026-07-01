@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import { Router, Response } from "express";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
+import { StorageQuota, getPlanLimits } from "../lib/db/models/StorageQuota.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { signToken } from "../config/auth.js";
@@ -135,11 +137,12 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   const existing = await Organization.findOne({ slug });
   if (existing) throw new AppError(409, "An organization with this slug already exists");
 
+  const orgPlan = plan || "free";
   const org = await Organization.create({
     name,
     slug,
     domain,
-    plan: plan || "starter",
+    plan: orgPlan,
     ownerId: req.user!.userId,
   });
 
@@ -148,6 +151,23 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     userId: req.user!.userId,
     role: "admin",
   });
+
+  const limits = getPlanLimits(orgPlan);
+  await StorageQuota.updateOne(
+    { orgId: org._id.toString() },
+    {
+      $setOnInsert: {
+        maxStorageBytes: limits.maxStorageBytes,
+        maxFileSizeBytes: limits.maxFileSizeBytes,
+        userStorageLimitBytes: limits.userStorageLimitBytes,
+        usedStorageBytes: 0,
+        versioningEnabled: true,
+        retentionDays: 30,
+        allowedMimeTypes: [],
+      },
+    },
+    { upsert: true }
+  );
 
   res.status(201).json({ success: true, data: { orgId: org._id } });
 });
@@ -158,7 +178,12 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (!org) throw new AppError(404, "Organization not found");
 
   // Only org admin or owner can update
-  const membership = await OrgMember.findOne({ orgId: org._id, userId: req.user!.userId }).lean();
+  // Query both string and ObjectId userId — some orgmembers entries store userId as ObjectId
+  const adminFilter: Record<string, any>[] = [{ orgId: org._id, userId: req.user!.userId }];
+  if (mongoose.Types.ObjectId.isValid(req.user!.userId)) {
+    adminFilter.push({ orgId: org._id, userId: new mongoose.Types.ObjectId(req.user!.userId) });
+  }
+  const membership = await OrgMember.findOne({ $or: adminFilter }).lean();
   if (!membership || membership.role !== "admin") {
     throw new AppError(403, "Only organization admins can update organization details");
   }
@@ -171,7 +196,17 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
     org.slug = slug;
   }
   if (domain !== undefined) org.domain = domain;
-  if (plan) org.plan = plan;
+  if (plan && plan !== org.plan) {
+    org.plan = plan;
+    const limits = getPlanLimits(plan);
+    await StorageQuota.updateOne(
+      { orgId: org._id.toString() },
+      { $set: { maxStorageBytes: limits.maxStorageBytes, maxFileSizeBytes: limits.maxFileSizeBytes, userStorageLimitBytes: limits.userStorageLimitBytes } },
+      { upsert: true }
+    );
+  } else if (plan) {
+    org.plan = plan;
+  }
 
   await org.save();
   res.json({ success: true, data: org });

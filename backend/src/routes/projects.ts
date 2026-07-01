@@ -2,11 +2,11 @@ import { Router, Response } from "express";
 import { v4 as uuid } from "uuid";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { requireOrgMembership } from "../lib/org-utils.js";
+import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
 import { Project } from "../lib/db/models/Project.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { socketIOManager } from "../lib/socketio/index.js";
-import { requireString, optionalString, requireEnum, optionalArray, optionalStringArray, PROJECT_STATUSES, PROJECT_ACCESS } from "../lib/validate.js";
+import { requireString, optionalString, requireEnum, optionalArray, PROJECT_STATUSES, PROJECT_ACCESS } from "../lib/validate.js";
 
 const router = Router();
 
@@ -26,7 +26,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   const access = req.body.access !== undefined ? requireEnum(req.body.access, PROJECT_ACCESS, "access") : "Public";
   const status = req.body.status !== undefined ? requireEnum(req.body.status, PROJECT_STATUSES, "status") : "Active";
   const description = optionalString(req.body.description, "description", { max: 5000 }) ?? "";
-  const members = optionalArray(req.body.members, "members").map((m) => String(m));
+  const members = (optionalArray(req.body.members, "members") || []).map((m) => String(m));
 
   let deadline: Date | null = null;
   if (req.body.deadline) {
@@ -73,7 +73,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
-  const userOrgId = await requireOrgMembership(req.user!.userId);
+  const userOrgId = await requireOrgMembershipFromRequest(req);
   const existing = await Project.findOne({ id: req.params.id }).lean();
   if (!existing) throw new AppError(404, "Project not found");
   if (existing.orgId !== userOrgId) throw new AppError(403, "Not authorized to modify this project");
@@ -120,7 +120,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
-  const userOrgId = await requireOrgMembership(req.user!.userId);
+  const userOrgId = await requireOrgMembershipFromRequest(req);
   const existing = await Project.findOne({ id: req.params.id }).lean();
   if (!existing) throw new AppError(404, "Project not found");
   if (existing.orgId !== userOrgId) throw new AppError(403, "Not authorized to delete this project");

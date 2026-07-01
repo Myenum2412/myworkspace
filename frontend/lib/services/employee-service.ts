@@ -50,14 +50,20 @@ async function apiFetch<T>(url: string, options: RequestInit): Promise<T> {
 
   if (!res.ok) {
     let errorMessage: string;
+    let error: Error;
     try {
       const errBody = await res.json();
       errorMessage = errBody.error || errBody.message || `HTTP ${res.status}`;
+      error = new Error(errorMessage);
+      if (errBody.fields) {
+        (error as any).fields = errBody.fields;
+      }
     } catch {
       errorMessage = `HTTP ${res.status}: ${res.statusText}`;
+      error = new Error(errorMessage);
     }
     console.error(`[API ${method} ${url}] Failed with status ${res.status}: ${errorMessage}`);
-    throw new Error(errorMessage);
+    throw error;
   }
 
   return res.json();

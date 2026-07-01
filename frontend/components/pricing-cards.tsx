@@ -19,7 +19,7 @@ export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) 
   return (
     <div className="grid gap-6 lg:grid-cols-3 w-full max-w-5xl mx-auto">
       {priceTiers.map((plan) => {
-        const Icon = plan.id === "starter" ? Zap : plan.id === "growth" ? Sparkles : Building2;
+        const Icon = plan.id === "free" ? Zap : plan.id === "growth" ? Sparkles : Building2;
         const isSelected = selectedPlan === plan.id;
         const price = getPrice(plan, currency);
         return (

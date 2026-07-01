@@ -12,7 +12,7 @@ export interface PriceTier {
 
 export const priceTiers: PriceTier[] = [
   {
-    id: "starter",
+    id: "free",
     name: "Free",
     inr: "₹0",
     usd: "$0",

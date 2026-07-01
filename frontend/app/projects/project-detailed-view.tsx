@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Project } from "./columns";
 
-const TABS = ["Project Info", "Team", "Performance Report"];
+const TABS = ["Project Info", "Team"];
 
 function FieldRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
@@ -16,7 +16,7 @@ function FieldRow({ label, value }: { label: string; value: string | number | nu
   );
 }
 
-export function ProjectDetailedView({ project, onEdit }: { project: Project; onEdit?: (p: Project) => void }) {
+export function ProjectDetailedView({ project }: { project: Project }) {
   const [tab, setTab] = useState(0);
   const [memberNames, setMemberNames] = useState<{ id: string; name: string; image?: string }[]>([]);
 
@@ -49,17 +49,9 @@ export function ProjectDetailedView({ project, onEdit }: { project: Project; onE
                 : "text-muted-foreground hover:bg-muted"
             )}
           >
-            {t}
-          </button>
-        ))}
-        {onEdit && (
-          <button
-            onClick={() => onEdit(project)}
-            className="ml-auto rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
-          >
-            Edit
-          </button>
-        )}
+          {t}
+            </button>
+          ))}
       </div>
 
       <ScrollArea className="flex-1 px-6 pb-6">
@@ -130,79 +122,6 @@ export function ProjectDetailedView({ project, onEdit }: { project: Project; onE
                 ))}
               </div>
             )}
-          </div>
-        )}
-
-        {tab === 2 && (
-          <div className="space-y-5">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-lg border p-3.5 space-y-1">
-                <p className="text-xs text-muted-foreground">Hours Tracked</p>
-                <p className="text-2xl font-bold">{project.tracked}h</p>
-              </div>
-              <div className="rounded-lg border p-3.5 space-y-1">
-                <p className="text-xs text-muted-foreground">Tasks Completed</p>
-                <p className="text-2xl font-bold">
-                  {Math.round((project.progress / 100) * 24)} / 24
-                </p>
-              </div>
-              <div className="rounded-lg border p-3.5 space-y-1">
-                <p className="text-xs text-muted-foreground">Completion</p>
-                <p className="text-2xl font-bold">{project.progress}%</p>
-              </div>
-            </div>
-
-            {/* Timeline / Milestone */}
-            <div className="rounded-lg border p-4 space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Timeline</h3>
-              <div className="space-y-3">
-                {[
-                  { label: "Kickoff", date: "Jan 15", done: true },
-                  { label: "Design Phase", date: "Feb 28", done: project.progress >= 25 },
-                  { label: "Development", date: "Apr 10", done: project.progress >= 50 },
-                  { label: "Testing", date: "May 20", done: project.progress >= 75 },
-                  { label: "Delivery", date: project.deadline ? new Date(project.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "TBD", done: project.progress >= 100 },
-                ].map((m, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className={cn(
-                      "size-3 rounded-full shrink-0 ring-2 ring-offset-1",
-                      m.done ? "bg-red-500 ring-red-300" : "bg-muted ring-muted"
-                    )} />
-                    <div className="flex-1 flex items-center justify-between">
-                      <span className={cn("text-sm", m.done ? "font-medium" : "text-muted-foreground")}>{m.label}</span>
-                      <span className="text-xs text-muted-foreground">{m.date}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Weekly Activity */}
-            <div className="rounded-lg border p-4 space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Weekly Activity</h3>
-              <div className="flex items-end gap-1.5 h-20">
-                {[40, 65, 25, 80, 55, 70, 30].map((v, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                    <div
-                      className="w-full rounded-sm bg-primary/60 hover:bg-primary transition-colors"
-                      style={{ height: `${v}%` }}
-                    />
-                    <span className="text-[10px] text-muted-foreground">
-                      {["M","T","W","T","F","S","S"][i]}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Team Performance */}
-            <div className="rounded-lg border p-4 space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Team Performance</h3>
-              <div className="flex items-center justify-center py-8">
-                <p className="text-sm text-muted-foreground">No performance data available</p>
-              </div>
-            </div>
           </div>
         )}
       </ScrollArea>

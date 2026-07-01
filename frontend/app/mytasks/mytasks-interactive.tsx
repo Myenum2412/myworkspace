@@ -92,7 +92,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
       const res = await fetch(`/api/tasks/${updated._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(payload) });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error(d.error || "Save failed");
+        throw new Error(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Save failed"));
       }
     } catch (error) {
       console.error("[MYTASKS] Failed to save task:", error);

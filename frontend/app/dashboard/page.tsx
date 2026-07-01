@@ -113,22 +113,38 @@ const getCachedDashboardData = unstable_cache(
       db.collection(collections.projects).countDocuments({ orgId, status: "Active" }),
       db.collection(collections.clients).countDocuments({ orgId }),
       db.collection(collections.teams).countDocuments({ orgId }),
-      db.collection(collections.tasks).find({ orgId }).sort({ createdAt: -1 }).limit(10).toArray(),
+      db.collection(collections.tasks).aggregate([
+        { $match: { orgId } },
+        { $sort: { createdAt: -1 } },
+        { $limit: 10 },
+        {
+          $lookup: {
+            from: "users",
+            localField: "assigneeId",
+            foreignField: "id",
+            as: "assignee",
+            pipeline: [{ $project: { _id: 0, name: 1, image: 1 } }],
+          },
+        },
+        { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
+      ]).toArray(),
       db.collection(collections.projects).find({ orgId }).sort({ createdAt: -1 }).limit(10).toArray(),
       db.collection(collections.clients).find({ orgId }).sort({ createdAt: -1 }).limit(5).toArray(),
       db.collection(collections.activityLogs).find({ orgId }).sort({ createdAt: -1 }).limit(20).toArray(),
     ]);
 
-    const tasks: Task[] = (taskDocs as unknown as Record<string, unknown>[]).map((t) => ({
+    const tasks: Task[] = (taskDocs as unknown as Record<string, unknown>[]).map((t) => {
+      const assignee = (t.assignee as Record<string, unknown> | null) || null;
+      return {
       _id: (t._id as { toString: () => string }).toString(),
       title: (t.title as string) || "",
       status: (t.status as string) || "todo",
       priority: (t.priority as string) || "medium",
       dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
-      assigneeName: (t.assigneeName as string) || "",
-      assigneeAvatar: (t.assigneeAvatar as string) || "",
+      assigneeName: (assignee?.name as string) || (t.assigneeName as string) || "",
+      assigneeAvatar: (assignee?.image as string) || (t.assigneeAvatar as string) || "",
       createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
-    }));
+    }});
 
     const projects: Project[] = (projDocs as unknown as Record<string, unknown>[]).map((p) => ({
       id: (p.id as string) || String(p._id || ""),

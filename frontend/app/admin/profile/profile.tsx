@@ -870,7 +870,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Plan</p>
-                      <p className="text-sm font-medium">{planLabels[org?.plan || "starter"] || org?.plan}</p>
+                      <p className="text-sm font-medium">{planLabels[org?.plan || "free"] || org?.plan}</p>
                     </div>
                     <div className="sm:col-span-2">
                       <p className="text-xs text-muted-foreground">Description</p>

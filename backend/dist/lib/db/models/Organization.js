@@ -27,7 +27,7 @@ const organizationSchema = new Schema({
     authorizedPersonMobile: String,
     numberOfEmployees: Number,
     companyDescription: String,
-    plan: { type: String, enum: ["starter", "pro", "enterprise"], default: "starter" },
+    plan: { type: String, enum: ["free", "starter", "growth", "pro", "enterprise"], default: "free" },
     ownerId: { type: String, required: true },
 }, { timestamps: true });
 export const Organization = model("Organization", organizationSchema);

@@ -32,8 +32,34 @@ export default async function OverviewPage() {
 
   let tasks: Task[] = [];
   if (orgId) {
-    const raw = await db.collection(collections.tasks).find({ orgId }).toArray();
-    tasks = (raw as unknown as Record<string, unknown>[]).map((t) => ({
+    const raw = await db.collection(collections.tasks).aggregate([
+      { $match: { orgId } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "assigneeId",
+          foreignField: "id",
+          as: "assignee",
+          pipeline: [{ $project: { _id: 0, name: 1, image: 1 } }],
+        },
+      },
+      { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "creatorId",
+          foreignField: "id",
+          as: "creator",
+          pipeline: [{ $project: { _id: 0, name: 1, image: 1 } }],
+        },
+      },
+      { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
+    ]).toArray();
+    
+    tasks = (raw as unknown as Record<string, unknown>[]).map((t) => {
+      const assignee = (t.assignee as Record<string, unknown> | null) || null;
+      const creator = (t.creator as Record<string, unknown> | null) || null;
+      return {
       _id: (t._id as { toString: () => string }).toString(),
       title: (t.title as string) || "",
       description: (t.description as string) || "",
@@ -41,13 +67,14 @@ export default async function OverviewPage() {
       priority: (t.priority as string) || "",
       dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
       assigneeId: (t.assigneeId as string) || "",
-      assigneeName: (t.assigneeName as string) || "",
-      assigneeAvatar: (t.assigneeAvatar as string) || "",
+      assigneeName: (assignee?.name as string) || "",
+      assigneeAvatar: (assignee?.image as string) || "",
       creatorId: (t.creatorId as string) || "",
-      creatorName: (t.creatorName as string) || "",
+      creatorName: (creator?.name as string) || "",
       createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
       isBookmarked: (t.isBookmarked as boolean) || false,
-    }));
+      };
+    });
   }
 
   return <OverviewInteractive tasks={tasks} currentUserId={currentUserId} />;

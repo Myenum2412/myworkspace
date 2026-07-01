@@ -14,7 +14,7 @@ const steps = [
 
 export function OnboardingInteractive() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedPlan, setSelectedPlan] = useState<string>("pro");
+  const [selectedPlan, setSelectedPlan] = useState<string>("growth");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 

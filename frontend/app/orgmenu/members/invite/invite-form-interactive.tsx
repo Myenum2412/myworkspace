@@ -10,6 +10,7 @@ export function InviteMemberFormInteractive() {
   const [emails, setEmails] = useState<string[]>([""]);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
   function addEmail() {
     setEmails((prev) => [...prev, ""]);
@@ -29,6 +30,7 @@ export function InviteMemberFormInteractive() {
     if (validEmails.length === 0) return;
 
     setSending(true);
+    setError("");
     try {
       const res = await fetch("/api/organizations/invite", {
         method: "POST",
@@ -44,7 +46,8 @@ export function InviteMemberFormInteractive() {
       setSent(true);
     } catch (err: any) {
       console.error("[INVITE FORM] Failed to send invitations:", err);
-      alert(err.message || "Failed to send invitations. Please try again.");
+      const msg = err?.message === "Validation failed" ? "Please provide valid email addresses." : (err?.message || "Failed to send invitations. Please try again.");
+      setError(msg);
       setSending(false);
     }
   }
@@ -92,6 +95,7 @@ export function InviteMemberFormInteractive() {
       <Button type="button" variant="outline" size="sm" onClick={addEmail}>
         <PlusIcon className="size-4 mr-1" /> Add another
       </Button>
+      {error && <p className="text-sm text-red-500">{error}</p>}
       <div className="pt-2">
         <Button type="submit" disabled={sending || emails.every((e) => !e)}>
           {sending ? <Loader2Icon className="size-4 animate-spin mr-1" /> : null}

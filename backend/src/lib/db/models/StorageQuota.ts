@@ -28,3 +28,41 @@ const storageQuotaSchema = new Schema<IStorageQuota>(
 );
 
 export const StorageQuota = model<IStorageQuota>("StorageQuota", storageQuotaSchema);
+
+export interface PlanLimits {
+  maxStorageBytes: number;
+  maxFileSizeBytes: number;
+  userStorageLimitBytes: number;
+}
+
+const planToStorageLimits: Record<string, PlanLimits> = {
+  free: {
+    maxStorageBytes: 10 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 100 * 1024 * 1024,
+    userStorageLimitBytes: 1024 * 1024 * 1024,
+  },
+  starter: {
+    maxStorageBytes: 10 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 100 * 1024 * 1024,
+    userStorageLimitBytes: 1024 * 1024 * 1024,
+  },
+  growth: {
+    maxStorageBytes: 200 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 500 * 1024 * 1024,
+    userStorageLimitBytes: 10 * 1024 * 1024 * 1024,
+  },
+  pro: {
+    maxStorageBytes: 200 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 500 * 1024 * 1024,
+    userStorageLimitBytes: 10 * 1024 * 1024 * 1024,
+  },
+  enterprise: {
+    maxStorageBytes: 9999 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 1024 * 1024 * 1024,
+    userStorageLimitBytes: 100 * 1024 * 1024 * 1024,
+  },
+};
+
+export function getPlanLimits(plan: string): PlanLimits {
+  return planToStorageLimits[plan] || planToStorageLimits.free;
+}

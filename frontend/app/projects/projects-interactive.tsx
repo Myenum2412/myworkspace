@@ -34,8 +34,6 @@ import { getSocketIO } from "@/lib/socketio-client";
 import { DataTable } from "./data-table";
 import { ProjectDetailedView } from "./project-detailed-view";
 
-const clients: string[] = [];
-
 export interface ProjectsInteractiveProps {
   orgId: string;
   initialProjects: Project[];
@@ -58,6 +56,7 @@ export default function ProjectsInteractive({
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [viewProject, setViewProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [showEdit, setShowEdit] = useState(false);
   const [editName, setEditName] = useState("");
   const [editClient, setEditClient] = useState("");
@@ -173,7 +172,7 @@ export default function ProjectsInteractive({
       if (d.success && d.data) {
         setProjects((prev) => [...prev, d.data]);
       } else {
-        setFormError(d.error || "Failed to create project");
+        setFormError(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Failed to create project"));
         setSubmitting(false);
         return;
       }
@@ -214,7 +213,7 @@ export default function ProjectsInteractive({
   }
 
   function handleEditFromView(project: Project) {
-    setViewProject(null);
+    setEditingProject(project);
     setEditName(project.name);
     setEditClient(project.client);
     setEditColor(project.color);
@@ -226,7 +225,7 @@ export default function ProjectsInteractive({
   }
 
   function handleEdit(project: Project) {
-    setViewProject(null);
+    setEditingProject(project);
     setEditName(project.name);
     setEditClient(project.client);
     setEditColor(project.color);
@@ -254,14 +253,15 @@ export default function ProjectsInteractive({
   }
 
   async function handleSave() {
-    if (!viewProject) return;
+    if (!editingProject) return;
 
     try {
-      const res = await fetch(`/api/projects/${viewProject.id}`, {
+      const res = await fetch(`/api/projects/${editingProject.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
+          orgId,
           name: editName,
           client: editClient,
           color: editColor,
@@ -273,71 +273,97 @@ export default function ProjectsInteractive({
       });
       const d = await res.json();
       if (d.success && d.data) {
-        setProjects((prev) => prev.map((p) => (p.id === viewProject.id ? d.data : p)));
+        setProjects((prev) => prev.map((p) => (p.id === editingProject.id ? d.data : p)));
       }
       setShowEdit(false);
-    } catch {}
+      setEditingProject(null);
+    } catch {
+      setShowEdit(false);
+      setEditingProject(null);
+    }
   }
 
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">All Projects</h1>
-          <Button onClick={() => setShowForm(true)}>
-            <PlusIcon className="mr-2 size-4" />
-            New Project
-          </Button>
-        </div>
+        {viewProject ? (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="sm" onClick={() => setViewProject(null)}>← Back</Button>
+                <h1 className="text-2xl font-bold">{viewProject.name}</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleEditFromView(viewProject)}>
+                  Edit Project
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm(viewProject)}>
+                  <Trash2Icon className="mr-2 size-4" />Delete
+                </Button>
+              </div>
+            </div>
+            <ProjectDetailedView project={viewProject} />
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold">All Projects</h1>
+              <Button onClick={() => setShowForm(true)}>
+                <PlusIcon className="mr-2 size-4" />
+                New Project
+              </Button>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total Project</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{projects.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">On Going Project</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-500">
-                {projects.filter((p) => p.progress > 0 && p.progress < 100).length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">In Completed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-400">
-                {projects.filter((p) => p.progress === 0).length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Completed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-500">
-                {projects.filter((p) => p.progress === 100).length}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground">Total Project</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{projects.length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground">On Going Project</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-500">
+                    {projects.filter((p) => p.progress > 0 && p.progress < 100).length}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground">In Completed</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-400">
+                    {projects.filter((p) => p.progress === 0).length}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground">Completed</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-500">
+                    {projects.filter((p) => p.progress === 100).length}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-        <div className="flex-1 mt-4">
-          {loading ? (
-            <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
-          ) : (
-            <DataTable columns={columns} data={projects} meta={{ onView: handleView, onEdit: handleEdit, onDelete: (p: Project) => setDeleteConfirm(p) }} />
-          )}
-        </div>
+            <div className="flex-1 mt-4">
+              {loading ? (
+                <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
+              ) : (
+                <DataTable columns={columns} data={projects} meta={{ onView: handleView, onEdit: handleEdit, onDelete: (p: Project) => setDeleteConfirm(p) }} />
+              )}
+            </div>
+          </>
+        )}
       </main>
 
       <Dialog open={showForm} onOpenChange={(open) => { if (!submitting) setShowForm(open); }}>
@@ -537,24 +563,7 @@ export default function ProjectsInteractive({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!viewProject} onOpenChange={(open) => { if (!open) setViewProject(null); }}>
-        <DialogContent className="p-0 flex flex-col">
-          <DialogHeader className="px-6 pt-6 pb-0 shrink-0">
-            <DialogTitle>Project Details</DialogTitle>
-            <DialogDescription>View project information and performance.</DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 min-h-0 overflow-hidden">
-            {viewProject && (
-              <ProjectDetailedView project={viewProject} onEdit={handleEditFromView} />
-            )}
-          </div>
-          <div className="shrink-0 border-t px-6 py-4 flex justify-end">
-            <Button variant="outline" onClick={() => setViewProject(null)}>Close</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+      <Dialog open={showEdit} onOpenChange={(open) => { if (!open) { setShowEdit(false); setEditingProject(null); } }}>
         <DialogContent className="p-0 flex flex-col">
           <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">
@@ -572,16 +581,7 @@ export default function ProjectsInteractive({
               </div>
               <div>
                 <Label className="text-sm">Client</Label>
-                <Select value={editClient} onValueChange={setEditClient}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input value={editClient} onChange={(e) => setEditClient(e.target.value)} className="mt-1" />
               </div>
               <div>
                 <Label className="text-sm">Description</Label>
@@ -596,29 +596,31 @@ export default function ProjectsInteractive({
                 <Label className="text-sm">Deadline</Label>
                 <Input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} className="mt-1" />
               </div>
-              <div>
-                <Label className="text-sm">Access</Label>
-                <Select value={editAccess} onValueChange={(v) => setEditAccess(v as "Public" | "Private")}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Public">Public</SelectItem>
-                    <SelectItem value="Private">Private</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-sm">Status</Label>
-                <Select value={editStatus} onValueChange={(v) => setEditStatus(v as "Active" | "Inactive")}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm">Access</Label>
+                  <Select value={editAccess} onValueChange={(v) => setEditAccess(v as "Public" | "Private")}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Public">Public</SelectItem>
+                      <SelectItem value="Private">Private</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-sm">Status</Label>
+                  <Select value={editStatus} onValueChange={(v) => setEditStatus(v as "Active" | "Inactive")}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div>
                 <Label className="text-sm">Color</Label>
@@ -647,7 +649,7 @@ export default function ProjectsInteractive({
             </div>
           </ScrollArea>
           <DialogFooter className="px-6 pb-6 pt-2 shrink-0 flex gap-2 sm:gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setShowEdit(false)}>Cancel</Button>
+            <Button variant="outline" className="flex-1" onClick={() => { setShowEdit(false); setEditingProject(null); }}>Cancel</Button>
             <Button className="flex-1" onClick={handleSave}>Save</Button>
           </DialogFooter>
         </DialogContent>

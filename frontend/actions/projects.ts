@@ -30,7 +30,7 @@ export async function getProjects() {
       id: newOrgId,
       name: `${userName}'s Organization`,
       slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
-      plan: "starter",
+      plan: "free",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -71,7 +71,7 @@ export async function createProjectAction(formData: FormData) {
       id: newOrgId,
       name: `${userName}'s Organization`,
       slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
-      plan: "starter",
+      plan: "free",
       createdAt: new Date(),
       updatedAt: new Date(),
     });

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { OrgMember } from "./db/models/OrgMember.js";
 import { User } from "./db/models/User.js";
 import { ClientUser } from "./db/models/ClientUser.js";
@@ -9,17 +10,27 @@ import { cacheManager } from "./cache.js";
 const ORG_CACHE_TTL = 30;
 
 /**
- * Resolve a possible stale userId by looking up the user by email as a fallback.
- * This handles cases where the JWT's userId was generated before a user document
- * was re-created, leaving orphaned org_member records with the new userId.
+ * Resolve a possible stale userId by looking up the user by email.
+ * 
+ * When email is available, the MongoDB user document's `id` or `_id` is the
+ * authoritative identifier. Some orgmembers entries store this ID as ObjectId
+ * rather than string, so we return the hex-string form to let the caller
+ * match against both representations.
+ * 
+ * Falls back to the JWT's userId when no email is provided or when the user
+ * doc can't be found.
  */
 async function resolveUserId(userId: string, email?: string): Promise<string> {
-  if (!email) return userId;
-  const member = await OrgMember.findOne({ userId }).lean();
-  if (member) return userId;
-  const user = await User.findOne({ email }).lean();
-  if (!user) return userId;
-  return user.id || (user as any)._id?.toString() || userId;
+  // Try to find the MongoDB user document via email (authoritative ID source).
+  if (email) {
+    const user = await User.findOne({ email }).lean();
+    if (user) {
+      const authoritativeId = user.id || (user as any)._id?.toString();
+      if (authoritativeId) return authoritativeId;
+    }
+  }
+  // Fallback: the JWT userId itself may already match an orgmembers entry.
+  return userId;
 }
 
 /**
@@ -53,8 +64,27 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
   }
 
   const resolvedId = await resolveUserId(userId, email);
-  const query = orgId ? { userId: resolvedId, orgId } : { userId: resolvedId };
-  const member = await OrgMember.findOne(query).lean();
+
+  // Query OrgMember by string userId (standard Mongoose behavior)
+  const stringQuery = orgId ? { userId: resolvedId, orgId } : { userId: resolvedId };
+  const stringMember = await OrgMember.findOne(stringQuery).lean();
+
+  // Also try matching as ObjectId — some orgmembers entries store userId as
+  // ObjectId rather than string. Mongoose's String type won't cast to ObjectId,
+  // so bypass the model and use the raw driver.
+  let oidMember: Record<string, any> | null = null;
+  if (mongoose.Types.ObjectId.isValid(resolvedId)) {
+    const db = mongoose.connection.db;
+    if (db) {
+      const oidFilter: Record<string, any> = { userId: new mongoose.Types.ObjectId(resolvedId) };
+      if (orgId) oidFilter.orgId = orgId;
+      oidMember = (await db.collection("orgmembers").findOne(oidFilter)) as Record<string, any> | null;
+    }
+  }
+
+  // Prefer ObjectId match — Mongoose-created entries carry the canonical orgId
+  // for Mongoose-backed data (clients, projects, tasks).
+  const member = oidMember || stringMember;
   if (!member) {
     // No DB row, but token claims an org → keep the session usable instead of
     // hard-failing. Caller can still enforce stricter checks where needed.
@@ -62,8 +92,11 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
     if (orgId) throw new AppError(403, "Not a member of this organization");
     throw new AppError(400, "User is not associated with any organization");
   }
-  cacheManager.set(cacheKey, member.orgId, ORG_CACHE_TTL);
-  return member.orgId;
+
+  // Normalize orgId to string — raw driver returns ObjectId for ObjectId fields.
+  const orgIdVal = typeof member.orgId === "string" ? member.orgId : String(member.orgId);
+  cacheManager.set(cacheKey, orgIdVal, ORG_CACHE_TTL);
+  return orgIdVal;
 }
 
 /**
@@ -81,7 +114,7 @@ export function getOrgIdFromRequest(req: AuthRequest, strict = false): string {
  * Convenience wrapper that passes the email from the authenticated request.
  */
 export async function requireOrgMembershipFromRequest(req: AuthRequest, orgId?: string): Promise<string> {
-  return requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+  return requireOrgMembership(req.user!.userId, orgId, req.user!.email || undefined, req.user!.orgId);
 }
 
 /**

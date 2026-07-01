@@ -39,7 +39,7 @@ export default async function OrgDetailsPage() {
     ? allOrgs.map((o) => ({
         id: o.id as string,
         name: o.name as string,
-        plan: (o.plan as string) || "starter",
+        plan: (o.plan as string) || "free",
         domain: (o.domain as string) || "",
         slug: (o.slug as string) || "",
         createdAt: o.createdAt ? new Date(o.createdAt as string).toLocaleDateString() : "—",
@@ -48,7 +48,7 @@ export default async function OrgDetailsPage() {
       ? [{
           id: org.id as string,
           name: org.name as string,
-          plan: (org.plan as string) || "starter",
+          plan: (org.plan as string) || "free",
           domain: (org.domain as string) || "",
           slug: (org.slug as string) || "",
           createdAt: org.createdAt ? new Date(org.createdAt as string).toLocaleDateString() : "—",

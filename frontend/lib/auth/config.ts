@@ -163,7 +163,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             id: newOrgId,
             name: `${userName}'s Organization`,
             slug,
-            plan: "starter",
+            plan: "free",
             ownerId: userId,
             onboardingCompleted: true,
             createdAt: now,

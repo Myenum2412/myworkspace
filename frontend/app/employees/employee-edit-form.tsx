@@ -169,7 +169,8 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
       setFormSuccess("Employee updated successfully.")
       onSave(updated as Employee)
     } catch (err: any) {
-      setFormError(err?.message || "Failed to update employee. Please try again.")
+      const msg = err?.message === "Validation failed" ? "Please fill in all required fields correctly." : (err?.message || "Failed to update employee. Please try again.")
+      setFormError(msg)
     } finally {
       setSubmitting(false)
     }

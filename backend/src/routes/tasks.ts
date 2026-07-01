@@ -66,7 +66,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
         $lookup: {
           from: "users",
           localField: "assigneeId",
-          foreignField: "_id",
+          foreignField: "id",
           as: "assignee",
           pipeline: [
             { $project: { _id: 1, name: 1, email: 1, image: 1 } },
@@ -80,7 +80,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
         $lookup: {
           from: "users",
           localField: "creatorId",
-          foreignField: "_id",
+          foreignField: "id",
           as: "creator",
           pipeline: [
             { $project: { _id: 1, name: 1, email: 1, image: 1 } },
@@ -125,6 +125,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
     const [result] = await Task.aggregate(pipeline);
     const data = result.data.map((t: any) => ({
+      id: t._id.toString(),
       _id: t._id.toString(),
       title: t.title,
       description: t.description || "",
@@ -133,23 +134,10 @@ router.get("/", async (req: AuthRequest, res: Response) => {
       priority: t.priority,
       dueDate: t.dueDate || null,
       assigneeId: t.assigneeId ? t.assigneeId.toString() : "",
-      assignee: t.assignee
-        ? {
-            _id: t.assignee._id.toString(),
-            name: t.assignee.name || "",
-            email: t.assignee.email || "",
-            image: t.assignee.image || "",
-          }
-        : null,
+      assigneeName: t.assignee?.name || "",
+      assigneeAvatar: t.assignee?.image || "",
       creatorId: t.creatorId ? t.creatorId.toString() : "",
-      creator: t.creator
-        ? {
-            _id: t.creator._id.toString(),
-            name: t.creator.name || "",
-            email: t.creator.email || "",
-            image: t.creator.image || "",
-          }
-        : null,
+      creatorName: t.creator?.name || "",
       createdAt: t.createdAt,
       updatedAt: t.updatedAt,
     }));
@@ -178,7 +166,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 // POST /
 router.post("/", async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = requireString(req.body.orgId, "orgId");
+    const orgId = await requireOrgMembership(req.user!.userId);
     const title = requireString(req.body.title, "title", { min: 1, max: 500 });
     const description = optionalString(req.body.description, "description", { max: 10_000 });
     const priority = req.body.priority !== undefined
@@ -222,17 +210,27 @@ router.post("/", async (req: AuthRequest, res: Response) => {
       description: `Task "${title}" created`,
     });
 
+    const [assigneeUser, creatorUser] = await Promise.all([
+      import("../lib/db/models/User.js").then(m => m.User.findOne({ id: task.assigneeId || req.user!.userId }).lean()),
+      import("../lib/db/models/User.js").then(m => m.User.findOne({ id: req.user!.userId }).lean()),
+    ]);
+
     // Emit the delta to the org room only — other clients patch local state,
     // no full refetch. Includes assignee so the right user gets a notification cue.
     socketIOManager.emitToOrg(orgId, "task:created", {
       id: task._id.toString(),
+      _id: task._id.toString(),
       orgId,
       title,
       status: task.status,
       priority: task.priority,
       assigneeId: task.assigneeId?.toString() || req.user!.userId,
+      assigneeName: assigneeUser?.name || "",
+      assigneeAvatar: assigneeUser?.image || "",
       creatorId: req.user!.userId,
+      creatorName: creatorUser?.name || "",
       dueDate: task.dueDate || null,
+      createdAt: task.createdAt,
     });
 
     res.status(201).json({ success: true, data: { taskId: task._id } });
@@ -291,6 +289,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 
     socketIOManager.emitToOrg(existing.orgId.toString(), "task:updated", {
       id,
+      _id: id,
       orgId: existing.orgId.toString(),
       title: updated?.title,
       status: updated?.status,

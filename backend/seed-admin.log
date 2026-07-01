@@ -4,7 +4,11 @@
 
 [MONGODB] Attempting connection to: mongodb+srv://***:***@cluster0.hvtabns.mongodb.net/myworkspace?appName=Cluster0
 [MONGODB] Target database: myworkspace
-✦ Connected to MongoDB Atlas
-✦ Database: myworkspace
-✦ Host: ac-0pxayfe-shard-00-00.hvtabns.mongodb.net
-Admin user already exists: developer@myenum.in
+✦ Atlas unavailable: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist
+✦ Falling back to in-memory MongoDB (DEVELOPMENT ONLY)
+✦ Using local in-memory MongoDB
+✦ Database: test
+Super Admin seeded successfully!
+Email: developer@myenum.in
+Role: ORG_MENU_ADMIN
+Permissions: VIEW_ORGMENU, MANAGE_USERS, MANAGE_WORKSPACES, MANAGE_COMPANIES, MANAGE_BILLING, VIEW_SYSTEM_LOGS, MANAGE_ROLES, MANAGE_SETTINGS, MANAGE_SUBSCRIPTIONS

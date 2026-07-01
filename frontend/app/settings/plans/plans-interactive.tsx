@@ -28,6 +28,7 @@ import { priceTiers, getPrice, type Currency } from "@/lib/currency";
 import { useUserCountry, isINR } from "@/hooks/use-user-country";
 
 const planIcons: Record<string, typeof ZapIcon> = {
+  free: ZapIcon,
   starter: ZapIcon,
   growth: SparklesIcon,
   enterprise: Building2Icon,
@@ -52,7 +53,8 @@ export function SettingsPlansPageInteractive({ orgPlan: initialOrgPlan, orgId, u
   const { country } = useUserCountry();
   const currency: Currency = isINR(country) ? "INR" : "USD";
 
-  const currentTier = priceTiers.find((t) => t.id === orgPlan) || priceTiers[0];
+  const normalizedPlan = orgPlan === "starter" ? "free" : orgPlan === "pro" ? "growth" : orgPlan;
+  const currentTier = priceTiers.find((t) => t.id === normalizedPlan) || priceTiers[0];
   const currentStorageGB = currentTier?.storageGB || 10;
   const totalMB = currentStorageGB * 1024;
   const usedPct = Math.min(100, (usedMB / totalMB) * 100);
@@ -247,7 +249,7 @@ export function SettingsPlansPageInteractive({ orgPlan: initialOrgPlan, orgId, u
               You are running out of storage. Upgrade your plan to get more space.
             </div>
           )}
-          {orgPlan === "starter" && usedPct >= 70 && (
+          {(orgPlan === "free" || orgPlan === "starter") && usedPct >= 70 && (
             <Button variant="outline" size="sm" onClick={handlePurchaseStorage} disabled={saving}>
               <ArrowUpIcon className="size-4 mr-1" />
               Upgrade to Growth for more storage
@@ -268,10 +270,11 @@ export function SettingsPlansPageInteractive({ orgPlan: initialOrgPlan, orgId, u
           <div className="grid gap-4 md:grid-cols-3">
             {priceTiers.map((plan) => {
               const Icon = planIcons[plan.id] || SparklesIcon;
-              const isActive = orgPlan === plan.id;
+              const isActive = orgPlan === plan.id || (orgPlan === "starter" && plan.id === "free") || (orgPlan === "pro" && plan.id === "growth");
               const price = getPrice(plan, currency);
-              const isDowngrade = plan.id === "starter" && orgPlan !== "starter";
-              const isUpgrade = plan.id === "growth" && orgPlan === "starter" || plan.id === "enterprise" && orgPlan !== "enterprise";
+              const isFree = orgPlan === "free" || orgPlan === "starter";
+              const isDowngrade = (plan.id === "free" || plan.id === "starter") && !isFree;
+              const isUpgrade = plan.id === "growth" && isFree || plan.id === "enterprise" && orgPlan !== "enterprise";
 
               return (
                 <div

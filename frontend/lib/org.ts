@@ -5,13 +5,35 @@ import { ObjectId } from "mongodb";
 export async function getUserOrgId(userId: string, email?: string): Promise<string | null> {
   const possibleIds = await resolvePossibleUserIds(userId, email);
 
+  const objectIdIds = possibleIds
+    .map((id) => { try { return new ObjectId(id); } catch { return null; } })
+    .filter((oid): oid is ObjectId => oid !== null);
+
   // Query Mongoose collection first — all app data (teams, tasks, projects)
   // uses the Mongoose orgId format (24-char hex string from orgmembers).
-  const mongooseMembers = await db.collection("orgmembers").find({ userId: { $in: possibleIds } }).toArray() as unknown as Record<string, unknown>[];
-  if (mongooseMembers.length > 0) return String(mongooseMembers[0].orgId);
+  // Some userId fields in orgmembers are stored as ObjectId, others as string,
+  // so we match both to avoid type-sensitive $in comparison failures.
+  const mongooseMembers = await db.collection("orgmembers").find({
+    $or: [
+      { userId: { $in: possibleIds } },
+      ...(objectIdIds.length > 0 ? [{ userId: { $in: objectIdIds } }] : []),
+    ],
+  }).toArray() as unknown as Record<string, unknown>[];
+  if (mongooseMembers.length > 0) {
+    // Prefer ObjectId userId matches (created by Mongoose) — they carry the
+    // correct orgId for Mongoose-backed data (clients, projects, tasks).
+    const objIdMatch = mongooseMembers.find((m) => typeof m.userId !== "string");
+    if (objIdMatch) return String(objIdMatch.orgId);
+    return String(mongooseMembers[0].orgId);
+  }
 
   // Fallback to NextAuth org_members collection (UUID format)
-  const nextAuthMembers = await db.collection(collections.orgMembers).find({ userId: { $in: possibleIds } }).toArray() as unknown as Record<string, unknown>[];
+  const nextAuthMembers = await db.collection(collections.orgMembers).find({
+    $or: [
+      { userId: { $in: possibleIds } },
+      ...(objectIdIds.length > 0 ? [{ userId: { $in: objectIdIds } }] : []),
+    ],
+  }).toArray() as unknown as Record<string, unknown>[];
   if (nextAuthMembers.length === 0) return null;
   if (nextAuthMembers.length === 1) return String(nextAuthMembers[0].orgId);
 
@@ -94,7 +116,15 @@ export async function getOrgDetails(orgId: string): Promise<Record<string, unkno
 
 export async function validateOrgMembership(userId: string, orgId: string, email?: string): Promise<boolean> {
   const possibleIds = await resolvePossibleUserIds(userId, email);
-  const member = await db.collection(collections.orgMembers).findOne({ userId: { $in: possibleIds }, orgId });
+  const objectIdIds = possibleIds
+    .map((id) => { try { return new ObjectId(id); } catch { return null; } })
+    .filter((oid): oid is ObjectId => oid !== null);
+  const member = await db.collection(collections.orgMembers).findOne({
+    $or: [
+      { userId: { $in: possibleIds }, orgId },
+      ...(objectIdIds.length > 0 ? [{ userId: { $in: objectIdIds }, orgId }] : []),
+    ],
+  });
   return !!member;
 }
 
@@ -128,7 +158,7 @@ export async function ensureUserOrg(userId: string, email?: string): Promise<str
     id: newOrgId,
     name: `${userName}'s Organization`,
     slug,
-    plan: "starter",
+    plan: "free",
     onboardingCompleted: true,
     createdAt: new Date(),
     updatedAt: new Date(),

@@ -78,7 +78,7 @@ export default async function FilesPage() {
         companyEmail: (org.companyEmail as string) || undefined,
         website: (org.website as string) || undefined,
         industry: (org.industry as string) || undefined,
-        plan: (org.plan as string) || "starter",
+        plan: (org.plan as string) || "free",
       }
     : null;
 

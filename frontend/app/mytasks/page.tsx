@@ -30,7 +30,7 @@ export default async function MyTasksPage() {
           $lookup: {
             from: "users",
             localField: "assigneeId",
-            foreignField: "_id",
+            foreignField: "id",
             as: "assignee",
             pipeline: [{ $project: { _id: 1, name: 1, image: 1 } }],
           },
@@ -40,7 +40,7 @@ export default async function MyTasksPage() {
           $lookup: {
             from: "users",
             localField: "creatorId",
-            foreignField: "_id",
+            foreignField: "id",
             as: "creator",
             pipeline: [{ $project: { _id: 1, name: 1, image: 1 } }],
           },
@@ -54,6 +54,7 @@ export default async function MyTasksPage() {
       const assignee = (t.assignee as Record<string, unknown> | null) || null;
       const creator = (t.creator as Record<string, unknown> | null) || null;
       return {
+        id: (t._id as { toString: () => string }).toString(),
         _id: (t._id as { toString: () => string }).toString(),
         title: (t.title as string) || "",
         description: (t.description as string) || "",

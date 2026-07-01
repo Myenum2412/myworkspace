@@ -26,7 +26,7 @@ export interface IOrganization extends Document {
     authorizedPersonMobile?: string;
     numberOfEmployees?: number;
     companyDescription?: string;
-    plan: "starter" | "pro" | "enterprise";
+    plan: "free" | "growth" | "enterprise" | string;
     ownerId: string;
     createdAt: Date;
     updatedAt: Date;

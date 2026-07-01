@@ -24,7 +24,7 @@ import { perfLog, perfNow } from "@/lib/perf";
 
 
 
-const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
+const statusGroups = ["todo", "assigned", "in_progress", "review", "done", "cancelled"];
 
 // Local UI shape expected by the shared edit/detail components (they ship their
 // own non-exported Task type). We keep the hook's Task as the source of truth
@@ -39,10 +39,10 @@ export type AllTasksProps = {
 };
 
 const priorityStyles: Record<string, string> = {
-  low: "bg-gray-700 text-gray-700",
+  low: "bg-gray-100 text-gray-600",
   medium: "bg-gray-200 text-gray-800",
-  high: "bg-orange-900 text-orange-200",
-  urgent: "bg-red-900 text-red-700",
+  high: "bg-orange-100 text-orange-700",
+  urgent: "bg-red-100 text-red-700",
 };
 
 export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksProps) {
@@ -108,15 +108,18 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
     <>
       <main className="flex flex-1 flex-col gap-4 p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">All Tasks</h1>
-            <div className="flex gap-1 ml-2">
-              <ViewToggle
-                options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
-                value={view}
-                onChange={(v) => setView(v as typeof view)}
-              />
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">All Tasks</h1>
+              <div className="flex gap-1">
+                <ViewToggle
+                  options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
+                  value={view}
+                  onChange={(v) => setView(v as typeof view)}
+                />
+              </div>
             </div>
+            <p className="text-sm text-muted-foreground">Manage all tasks across your organization</p>
           </div>
           <Button onClick={() => setShowTaskModal(true)}>
             <PlusIcon className="mr-2 size-4" />
@@ -124,13 +127,8 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </Button>
         </div>
 
-        {/*
-          No loading spinner: SSR delivers the first paint. The list is already
-          populated from initialTasks; React Query's warm cache surfaces it
-          through `tasks` immediately. Socket.IO only refines it afterwards.
-        */}
-        <div className="grid gap-4 md:grid-cols-6 mb-6">
-          <Card className="bg-blue-50">
+        <div className="grid gap-4 md:grid-cols-6">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <ListTodoIcon className="size-4" /> Today Tasks
@@ -140,7 +138,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
               <div className="text-2xl font-bold">{summary.todo}</div>
             </CardContent>
           </Card>
-          <Card className="bg-blue-50">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <UsersIcon className="size-4" /> Team Task
@@ -150,7 +148,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
               <div className="text-2xl font-bold">{summary.assigned}</div>
             </CardContent>
           </Card>
-          <Card className="bg-yellow-50">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <ClockIcon className="size-4" /> In Progress
@@ -160,7 +158,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
               <div className="text-2xl font-bold">{summary.in_progress}</div>
             </CardContent>
           </Card>
-          <Card className="bg-blue-50">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <AlertCircleIcon className="size-4" /> Review
@@ -170,7 +168,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
               <div className="text-2xl font-bold">{summary.review}</div>
             </CardContent>
           </Card>
-          <Card className="bg-green-50">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <CheckCircle2Icon className="size-4" /> Completed
@@ -180,7 +178,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
               <div className="text-2xl font-bold">{summary.done}</div>
             </CardContent>
           </Card>
-          <Card className="bg-red-50">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                 <XCircleIcon className="size-4" /> In Completed
@@ -208,7 +206,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </CardContent>
         </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-6">
             {statusGroups.map((s) => {
               const items = tasks.filter((t) => t.status === s);
               return (
@@ -283,7 +281,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
                   const res = await fetch(`/api/tasks/${updated._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(payload) });
                   if (!res.ok) {
                     const d = await res.json().catch(() => ({}));
-                    throw new Error(d.error || "Save failed");
+                    throw new Error(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Save failed"));
                   }
                 } catch (error) {
                   console.error("[ALLTASKS] Failed to save task:", error);

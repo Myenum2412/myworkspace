@@ -117,13 +117,13 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
                   <TagIcon className="size-3.5 text-muted-foreground" />
                   Plan
                 </Label>
-                <Select name="plan" defaultValue={org.plan || "starter"}>
+                <Select name="plan" defaultValue={org.plan === "starter" ? "free" : org.plan === "pro" ? "growth" : org.plan || "free"}>
                   <SelectTrigger id="edit-plan" className="h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="starter">Starter</SelectItem>
-                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="growth">Growth</SelectItem>
                     <SelectItem value="enterprise">Enterprise</SelectItem>
                   </SelectContent>
                 </Select>
@@ -304,7 +304,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
                     </TableCell>
                     <TableCell>
                       <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize">
-                        {o.plan || "starter"}
+                        {o.plan || "free"}
                       </span>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{o.domain || "—"}</TableCell>

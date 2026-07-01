@@ -132,9 +132,8 @@ export function DataTable<TData, TValue>({
             </tbody>
           </table>
         </div>
-      </div>
       {table.getFilteredRowModel().rows.length > 0 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-[#f3f4f6] text-gray-900 sticky bottom-0 z-10">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-[#f3f4f6] text-gray-900 z-10 shrink-0">
           <div className="flex items-center gap-2 text-sm text-gray-800">
             <span>Rows per page:</span>
             <Select
@@ -179,6 +178,7 @@ export function DataTable<TData, TValue>({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export async function updateOrganization(_prevState: ActionResult, formData: For
   try {
     await db.collection(collections.organizations).updateOne(
       { id },
-      { $set: { name, plan: plan || "starter", domain: domain || null, slug: slug || null } },
+      { $set: { name, plan: plan === "starter" ? "free" : plan === "pro" ? "growth" : plan || "free", domain: domain || null, slug: slug || null } },
     );
     revalidatePath("/orgmenu/org");
     revalidatePath("/orgmenu");

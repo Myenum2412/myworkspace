@@ -82,7 +82,7 @@ export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }
                 <TableCell className="font-medium">
                   {org.name as string}
                 </TableCell>
-                <TableCell>{(org.plan as string) || "starter"}</TableCell>
+                <TableCell>{(org.plan as string) || "free"}</TableCell>
                 <TableCell className="text-right text-muted-foreground">
                   {org.createdAt
                     ? new Date(org.createdAt as string).toLocaleDateString()

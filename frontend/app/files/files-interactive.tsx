@@ -186,96 +186,11 @@ export default function FilesInteractive({
   // ── Main view: Company details + Client folders ───────────────────
   return (
     <div className="space-y-6">
-      {/* Company Details Header */}
-      {orgInfo && (
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex items-center justify-center size-14 rounded-xl bg-primary/10 text-primary shrink-0">
-              {orgInfo.logoUrl ? (
-                <img src={orgInfo.logoUrl} alt={orgInfo.name} className="size-10 rounded-lg object-cover" />
-              ) : (
-                <Building2Icon className="size-7" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold truncate">{orgInfo.name}</h1>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5 flex-wrap">
-                {orgInfo.industry && <span>{orgInfo.industry}</span>}
-                {orgInfo.companyEmail && <span>· {orgInfo.companyEmail}</span>}
-                {orgInfo.website && <span>· {orgInfo.website}</span>}
-              </div>
-            </div>
-            <Badge variant="secondary" className="capitalize shrink-0">
-              {orgInfo.plan} plan
-            </Badge>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Storage Dashboard */}
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <HardDriveIcon className="size-4" /> Total Storage
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{formatSizeMB(stats.totalSize || 0)} MB</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <FileIcon className="size-4" /> Total Files
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{stats.totalFiles || 0}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Building2Icon className="size-4" /> Total Clients
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{clients.length}</p>
-            </CardContent>
-          </Card>
-          <Link href="/recycle-bin">
-            <Card className="hover:border-muted-foreground/30 cursor-pointer transition-colors h-full">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Trash2Icon className="size-4" /> Deleted
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{stats.deletedFiles || 0}</p>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-      )}
-
-      {/* Client File Management Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <FolderOpenIcon className="size-5" />
-            Folders & Files
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {clients.length} client{clients.length !== 1 ? "s" : ""} · click a client to browse their files
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" onClick={() => router.push("/clients")}>
-            <PlusIcon className="mr-1 size-4" /> Manage Clients
-          </Button>
-        </div>
+      {/* Client Files */}
+      <div className="flex items-center justify-end">
+        <Button size="sm" onClick={() => router.push("/clients")}>
+          <PlusIcon className="mr-1 size-4" /> Manage Clients
+        </Button>
       </div>
 
       {/* Search */}

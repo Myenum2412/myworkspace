@@ -73,7 +73,7 @@ export async function GET() {
           id: newOrgId,
           name: `${userName}'s Organization`,
           slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${dbUserId.slice(0, 8)}`,
-          plan: "starter",
+          plan: "free",
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -147,7 +147,7 @@ export async function GET() {
           authorizedPersonMobile: org.authorizedPersonMobile || "",
           numberOfEmployees: org.numberOfEmployees || 0,
           companyDescription: org.companyDescription || "",
-          plan: org.plan || "starter",
+          plan: org.plan || "free",
           createdAt: org.createdAt || new Date().toISOString(),
         } : null,
         memberCount,

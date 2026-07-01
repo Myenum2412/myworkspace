@@ -87,7 +87,7 @@ export default async function OrgProfilePage() {
         id: (org.id as string) || String(org._id || ""),
         name: (org.name as string) || "",
         domain: (org.domain as string) || "",
-        plan: (org.plan as string) || "starter",
+        plan: (org.plan as string) || "free",
       };
     }
   }

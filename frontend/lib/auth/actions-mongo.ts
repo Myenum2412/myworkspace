@@ -54,7 +54,7 @@ export async function signupActionMongo(formData: FormData) {
     name: company || `${name}'s Organization`,
     slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${userId.slice(0, 8)}`,
     ownerId: userId,
-    plan: "starter",
+    plan: "free",
     onboardingCompleted: true,
     createdAt: new Date(),
     updatedAt: new Date(),

@@ -15,7 +15,7 @@ export default async function BillingPage() {
 
   const orgId = await getUserOrgId(session.user.id, session.user.email);
 
-  let plan = "starter";
+  let plan = "free";
 
   if (orgId) {
     const org = await db.collection(collections.organizations).findOne(

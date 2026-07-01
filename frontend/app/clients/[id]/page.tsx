@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect, notFound } from "next/navigation";
+import { v4 as uuid } from "uuid";
 import type { ClientWorkspaceResponse } from "./client-workspace";
 import ClientWorkspace from "./client-workspace";
 
@@ -22,8 +23,9 @@ export default async function ClientWorkspacePage({ params }: { params: { id: st
     .findOne({ id: clientId, orgId });
   if (!clientDoc) notFound();
 
-  const [workspaceDoc, folderDocs, fileDocs, activityDocs, projectCount, reportCount] = await Promise.all([
-    db.collection("client_workspaces").findOne({ orgId, clientId }),
+  let workspaceDoc = await db.collection("client_workspaces").findOne({ orgId, clientId });
+
+  const [folderDocs, fileDocs, activityDocs, projectCount, reportCount] = await Promise.all([
     db
       .collection(collections.folders)
       .find({ orgId, clientId, deletedAt: null })
@@ -47,7 +49,30 @@ export default async function ClientWorkspacePage({ params }: { params: { id: st
       .countDocuments({ orgId, clientId, category: "report", deletedAt: null }),
   ]);
 
-  if (!workspaceDoc) notFound();
+  // Auto-provision workspace for clients created before the workspace document existed.
+  if (!workspaceDoc) {
+    const newWsId = uuid();
+    await db.collection("client_workspaces").insertOne({
+      id: newWsId,
+      orgId,
+      clientId,
+      dashboardEnabled: true,
+      fileManagementEnabled: true,
+      modules: ["dashboard", "files", "projects", "reports", "settings"],
+      defaultFolderIds: (folderDocs as Record<string, unknown>[]).map((f: Record<string, unknown>) => f.id as string),
+      permissions: {
+        clientCanViewDashboard: true,
+        clientCanViewFiles: true,
+        clientCanUploadFiles: true,
+        clientCanDeleteFiles: false,
+      },
+      createdBy: session.user.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    // Re-fetch so the rest of the handler has the workspace doc.
+    workspaceDoc = await db.collection("client_workspaces").findOne({ orgId, clientId });
+  }
 
   const clientFileDocs: Record<string, unknown>[] = fileDocs as Record<string, unknown>[];
   const folders = folderDocs as unknown as ClientWorkspaceResponse["fileManagement"]["folders"];

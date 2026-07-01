@@ -135,7 +135,7 @@ export default async function ProfilePage() {
         authorizedPersonMobile: (org.authorizedPersonMobile as string) || "",
         numberOfEmployees: (org.numberOfEmployees as number) || 0,
         companyDescription: (org.companyDescription as string) || "",
-        plan: (org.plan as string) || "starter",
+        plan: (org.plan as string) || "free",
         createdAt: org.createdAt ? String(org.createdAt) : new Date().toISOString(),
       };
     }

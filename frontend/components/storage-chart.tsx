@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { HardDrive, Database, Check } from "lucide-react";
 
 const PLAN_TIERS = [
-  { name: "Free", plan: "starter", inr: "₹0", usd: "$0", storage: "10 GB", storageGB: 10 },
+  { name: "Free", plan: "free", inr: "₹0", usd: "$0", storage: "10 GB", storageGB: 10 },
   { name: "Growth", plan: "growth", inr: "₹6,000", usd: "$79", storage: "200 GB", storageGB: 200 },
   { name: "Enterprise", plan: "enterprise", inr: "Custom", usd: "Custom", storage: "Contact us", storageGB: 9999 },
 ];
@@ -35,7 +35,8 @@ interface StorageChartProps {
   orgPlan?: string;
 }
 
-export function StorageChart({ orgPlan }: StorageChartProps) {
+export function StorageChart({ orgPlan: rawOrgPlan }: StorageChartProps) {
+  const orgPlan = rawOrgPlan === "starter" ? "free" : rawOrgPlan === "pro" ? "growth" : rawOrgPlan || "free";
   const [usedMB, setUsedMB] = useState(0);
   const [totalMB, setTotalMB] = useState(1024 * 10);
   const [loading, setLoading] = useState(true);
@@ -88,10 +89,7 @@ export function StorageChart({ orgPlan }: StorageChartProps) {
     []
   );
 
-  const planLabel = (() => {
-    const tier = PLAN_TIERS.find(t => t.plan === orgPlan);
-    return tier ? tier.name : "Free";
-  })();
+  const planLabel = PLAN_TIERS.find(t => t.plan === orgPlan)?.name || "Free";
 
   return (
     <Card>
@@ -159,7 +157,7 @@ export function StorageChart({ orgPlan }: StorageChartProps) {
           <div className="space-y-3">
             <p className="text-sm font-medium text-muted-foreground">Available Plans</p>
             {PLAN_TIERS.map((tier) => {
-              const isActive = orgPlan === tier.plan || (orgPlan === "pro" && tier.plan === "growth");
+              const isActive = orgPlan === tier.plan;
               return (
                 <div
                   key={tier.name}

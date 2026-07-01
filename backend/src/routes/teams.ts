@@ -67,7 +67,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
           {
             $match: {
               $expr: {
-                $in: ["$_id", "$$leadIds.userId"],
+                $in: ["$id", "$$leadIds.userId"],
               },
             },
           },
@@ -154,7 +154,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
           {
             $match: {
               $expr: {
-                $in: ["$_id", "$$memberIds"],
+                $in: ["$id", "$$memberIds"],
               },
             },
           },

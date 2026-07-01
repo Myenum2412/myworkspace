@@ -14,7 +14,7 @@ export default async function SettingsPlansPage() {
 
   const orgId = await getUserOrgId(session.user.id, session.user.email);
 
-  let orgPlan = "starter";
+  let orgPlan = "free";
   let usedMB = 0;
 
   if (orgId) {
@@ -24,7 +24,12 @@ export default async function SettingsPlansPage() {
     const org = (await db.collection(collections.organizations).findOne(
       orgObjId ? { $or: [{ id: orgId }, { _id: orgObjId }] } : { id: orgId }
     )) as Record<string, unknown> | null;
-    if (org?.plan) orgPlan = String(org.plan);
+    if (org?.plan) {
+      orgPlan = String(org.plan);
+      // Normalize legacy plan values
+      if (orgPlan === "starter") orgPlan = "free";
+      else if (orgPlan === "pro") orgPlan = "growth";
+    }
 
     // Fetch used storage (sum of file sizes). The backend /api/files/stats
     // returns totalSize as the raw sum of the size field, which the client

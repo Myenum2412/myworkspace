@@ -9,6 +9,7 @@
     "start": "fuser -k 4000/tcp 2>/dev/null; tsx --env-file=.env src/index.ts",
     "db:seed": "tsx --env-file=.env src/lib/db/seed.ts",
     "db:seed-admin": "tsx --env-file=.env src/lib/db/seed-admin.ts",
+    "db:migrate-plans": "tsx --env-file=.env src/scripts/migrate-plans.ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --runInBand"
   },

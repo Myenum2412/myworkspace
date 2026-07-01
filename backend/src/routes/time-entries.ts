@@ -57,7 +57,7 @@ router.get("/team-summary", async (req: AuthRequest, res: Response) => {
         $lookup: {
           from: "users",
           localField: "_id",
-          foreignField: "_id",
+          foreignField: "id",
           as: "userData",
         },
       },
@@ -165,7 +165,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
         $lookup: {
           from: "users",
           localField: "userId",
-          foreignField: "_id",
+          foreignField: "id",
           as: "user",
         },
       },

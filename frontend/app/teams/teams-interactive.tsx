@@ -163,7 +163,7 @@ export default function TeamsInteractive({ teams: initialTeams, members: initial
         });
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
-          setFormError(d.error || "Failed to update team");
+          setFormError(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Failed to update team"));
           hasError = true;
         }
         if (!hasError) {
@@ -182,7 +182,7 @@ export default function TeamsInteractive({ teams: initialTeams, members: initial
         });
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
-          setFormError(d.error || "Failed to create team");
+          setFormError(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Failed to create team"));
           hasError = true;
         }
         if (!hasError) {

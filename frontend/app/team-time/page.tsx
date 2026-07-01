@@ -53,7 +53,7 @@ export default async function TeamTimePage() {
       $lookup: {
         from: "users",
         localField: "_id",
-        foreignField: "_id",
+        foreignField: "id",
         as: "userData",
       },
     },

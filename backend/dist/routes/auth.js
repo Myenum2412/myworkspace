@@ -178,7 +178,7 @@ router.post("/signup", async (req, res) => {
                     id: orgId,
                     name: orgName,
                     slug,
-                    plan: "starter",
+                    plan: "free",
                     ownerId: userId,
                 }], { session });
             org = createdOrg;

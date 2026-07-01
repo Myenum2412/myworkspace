@@ -32,7 +32,7 @@ export const taskService = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: "Failed to create task" }));
-      throw new Error(err.error || "Failed to create task");
+      throw new Error(err.error === "Validation failed" ? "Please fill in all required fields." : (err.error || "Failed to create task"));
     }
     const data = await res.json();
     return data.data || data;

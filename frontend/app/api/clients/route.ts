@@ -116,10 +116,19 @@ export async function POST(request: NextRequest) {
     await db.collection(collections.clients).insertOne(client);
     await db.collection(collections.clientUsers).insertOne(clientUser);
 
-    // Provision client folders in file management (mirrors backend template).
-    const clientFolderId = uuid();
-    await db.collection(collections.folders).insertOne({
-      id: clientFolderId,
+    // Provision client workspace (folders + workspace document).
+    // Mirrors backend workspace-provision template.
+    const folderIds: string[] = [];
+    const rootFolderId = uuid();
+    const DEFAULT_FOLDERS = [
+      { name: "Documents", path: "/Documents" },
+      { name: "Reports", path: "/Reports" },
+      { name: "Projects", path: "/Projects" },
+      { name: "Settings", path: "/Settings" },
+    ];
+    
+    const rootFolder = {
+      id: rootFolderId,
       orgId,
       clientId,
       parentId: null,
@@ -129,21 +138,50 @@ export async function POST(request: NextRequest) {
       deletedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
-    for (const sub of CLIENT_SUBFOLDERS) {
+    };
+    await db.collection(collections.folders).insertOne(rootFolder);
+    folderIds.push(rootFolderId);
+
+    for (const def of DEFAULT_FOLDERS) {
+      const subId = uuid();
       await db.collection(collections.folders).insertOne({
-        id: uuid(),
+        id: subId,
         orgId,
         clientId,
-        parentId: clientFolderId,
-        name: sub,
-        path: `/clients/${clientId}/${sub}`,
+        parentId: rootFolderId,
+        name: def.name,
+        path: `/clients/${clientId}${def.path}`,
+        permissions: {
+          clientCanView: true,
+          clientCanUpload: def.name !== "Reports",
+          clientCanDelete: false,
+        },
         createdBy: adminId,
         deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+      folderIds.push(subId);
     }
+
+    await db.collection("client_workspaces").insertOne({
+      id: uuid(),
+      orgId,
+      clientId,
+      dashboardEnabled: true,
+      fileManagementEnabled: true,
+      modules: ["dashboard", "files", "projects", "reports", "settings"],
+      defaultFolderIds: folderIds,
+      permissions: {
+        clientCanViewDashboard: true,
+        clientCanViewFiles: true,
+        clientCanUploadFiles: true,
+        clientCanDeleteFiles: false,
+      },
+      createdBy: adminId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
     const appUrl = process.env.APP_URL || "http://localhost:3000";
 

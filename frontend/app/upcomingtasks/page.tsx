@@ -53,7 +53,7 @@ export default async function UpcomingTasksPage() {
 
     const userMap = new Map<string, { name: string; image: string }>();
     for (const u of [...users, ...usersByStringId]) {
-      const uid = (u._id as { toString: () => string })?.toString() || (u.id as string) || "";
+      const uid = (u.id as string) || (u._id as { toString: () => string })?.toString() || "";
       if (uid && !userMap.has(uid)) {
         userMap.set(uid, {
           name: (u.name as string) || "",

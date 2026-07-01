@@ -37,4 +37,4 @@ export type AdminPermission =
   | "MANAGE_SETTINGS"
   | "MANAGE_SUBSCRIPTIONS";
 export type NotificationType = "task_assigned" | "task_updated" | "mention" | "invite" | "system" | "comment" | "status_change";
-export type OrgPlan = "starter" | "pro" | "enterprise";
+export type OrgPlan = "free" | "growth" | "enterprise" | string;

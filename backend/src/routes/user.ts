@@ -90,7 +90,7 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
           authorizedPersonMobile: org.authorizedPersonMobile || "",
           numberOfEmployees: org.numberOfEmployees || 0,
           companyDescription: org.companyDescription || "",
-          plan: org.plan || "starter",
+          plan: org.plan || "free",
           createdAt: org.createdAt || new Date().toISOString(),
         }
       : null,

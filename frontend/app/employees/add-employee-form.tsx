@@ -169,7 +169,8 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       trackEvent('save_employee_success')
     },
     onError: (error: any) => {
-      setFormError(error?.message || "Failed to create employee. Please try again.")
+      const msg = error?.message === "Validation failed" ? "Please fill in all required fields correctly." : (error?.message || "Failed to create employee. Please try again.")
+      setFormError(msg)
     },
   })
 
@@ -227,7 +228,8 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       trackEvent('save_employee_success')
       setSuccessModalOpen(true)
     } catch (err: any) {
-      setFormError(err?.message || "Failed to create employee. Please try again.")
+      const msg = err?.message === "Validation failed" ? "Please fill in all required fields correctly." : (err?.message || "Failed to create employee. Please try again.")
+      setFormError(msg)
     }
   }
 

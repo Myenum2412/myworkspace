@@ -273,7 +273,7 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
       router.push(result.data?.workspaceUrl || `/clients/${created.id}`);
     } else {
       if (result.fields) setFormErrors(result.fields);
-      setApiError(result.error || "Failed to create client");
+      setApiError(result.fields && Object.keys(result.fields).length > 0 ? "Please correct the errors below" : (result.error || "Failed to create client"));
     }
     setSaving(false);
   }
@@ -317,7 +317,7 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
       handleCloseEdit(false);
     } else {
       if (result.fields) setEditErrors(result.fields);
-      setEditApiError(result.error || "Failed to update client");
+      setEditApiError(result.fields && Object.keys(result.fields).length > 0 ? "Please correct the errors below" : (result.error || "Failed to update client"));
     }
     setEditSaving(false);
   }

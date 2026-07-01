@@ -70,7 +70,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
       if (d.success) {
         router.push("/projects");
       } else {
-        setError(d.error || "Failed to create project");
+        setError(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Failed to create project"));
       }
     } catch {
       setError("Network error. Try again.");

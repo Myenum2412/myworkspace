@@ -28,7 +28,7 @@ export interface IOrganization extends Document {
   authorizedPersonMobile?: string;
   numberOfEmployees?: number;
   companyDescription?: string;
-  plan: "starter" | "pro" | "enterprise";
+  plan: "free" | "growth" | "enterprise" | string;
   ownerId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -62,7 +62,7 @@ const organizationSchema = new Schema<IOrganization>(
     authorizedPersonMobile: String,
     numberOfEmployees: Number,
     companyDescription: String,
-    plan: { type: String, enum: ["starter", "pro", "enterprise"], default: "starter" },
+    plan: { type: String, enum: ["free", "starter", "growth", "pro", "enterprise"], default: "free" },
     ownerId: { type: String, required: true },
   },
   { timestamps: true }
