@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import compression from "compression";
+import { brotliCompress } from "./lib/brotli.js";
 import path from "path";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
@@ -55,7 +55,7 @@ app.use(helmet({
   crossOriginEmbedderPolicy: true,
 }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
-app.use(compression());
+app.use(brotliCompress);
 app.use(express.json());
 app.use("/api/auth", authLimiter);
 app.use("/api/client-auth", authLimiter);
