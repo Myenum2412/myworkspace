@@ -29,4 +29,5 @@ export declare const env: {
     AUTH_DEBUG: string;
     AZURE_STORAGE_CONNECTION_STRING: string;
     AZURE_STORAGE_CONTAINER: string;
+    REDIS_URL: string;
 };

@@ -17,6 +17,38 @@ const dbgError = (...a) => {
 };
 const JWE_ALG = "dir";
 const JWE_ENC = "A256CBC-HS512";
+// --- In-memory caches for auth hot path ---
+const JWE_CACHE_TTL = 60_000; // 60s TTL for JWT decrypt results
+const USER_CACHE_TTL = 300_000; // 5min TTL for userId resolution
+const jweCache = new Map();
+const resolveUserIdCache = new Map();
+function jweCacheGet(key) {
+    const hit = jweCache.get(key);
+    if (!hit)
+        return null;
+    if (Date.now() > hit.exp) {
+        jweCache.delete(key);
+        return null;
+    }
+    return hit.payload;
+}
+function jweCacheSet(key, payload) {
+    jweCache.set(key, { payload, exp: Date.now() + JWE_CACHE_TTL });
+}
+function resolveCacheGet(userId) {
+    const hit = resolveUserIdCache.get(userId);
+    if (!hit)
+        return null;
+    if (Date.now() > hit.exp) {
+        resolveUserIdCache.delete(userId);
+        return null;
+    }
+    return hit.found;
+}
+function resolveCacheSet(userId, found) {
+    resolveUserIdCache.set(userId, { found, exp: Date.now() + USER_CACHE_TTL });
+}
+// --- End caches ---
 async function getDerivedEncryptionKey(secret, salt) {
     return await hkdf("sha256", secret, salt, `Auth.js Generated Encryption Key (${salt})`, 64);
 }
@@ -35,6 +67,13 @@ async function tryNextAuthCookie(req) {
         if (name === "authjs.session-token" || name === "__Secure-authjs.session-token") {
             const token = rest.join("=");
             dbg(`[BACKEND AUTH] Found NextAuth session token, length: ${token.length}`);
+            // JWE decrypt cache hit — skip HKDF + JWE entirely
+            const cacheKey = `jwe:${token.slice(0, 64)}`;
+            const cached = jweCacheGet(cacheKey);
+            if (cached) {
+                dbg(`[BACKEND AUTH] JWE cache hit`);
+                return cached;
+            }
             try {
                 const salt = name;
                 const encryptionSecret = await getDerivedEncryptionKey(env.JWT_SECRET, salt);
@@ -63,6 +102,7 @@ async function tryNextAuthCookie(req) {
                     orgId: (payload.orgId || undefined),
                 };
                 dbg(`[BACKEND AUTH] Decrypted payload:`, JSON.stringify(result));
+                jweCacheSet(cacheKey, result);
                 return result;
             }
             catch (err) {
@@ -129,10 +169,19 @@ export async function resolveStaleUserId(req) {
     if (!req.user)
         return;
     const { userId, email } = req.user;
+    // Cache hit — userId already verified as valid
+    const cached = resolveCacheGet(userId);
+    if (cached === true)
+        return;
+    if (cached === false) {
+        // Previously known to need resolution; skip OrgMember query, go straight to User lookup
+    }
     // Fast path: userId has a valid membership
     const member = await OrgMember.findOne({ userId }).lean();
-    if (member)
+    if (member) {
+        resolveCacheSet(userId, true);
         return;
+    }
     let resolvedId = null;
     // Try looking up user by userId first (in case userId matches a User doc but not OrgMember)
     if (userId) {
@@ -152,7 +201,10 @@ export async function resolveStaleUserId(req) {
     if (resolvedId && resolvedId !== userId) {
         dbg(`[BACKEND AUTH] Resolved stale userId: ${userId} → ${resolvedId}`);
         req.user.userId = resolvedId;
+        resolveCacheSet(resolvedId, true);
     }
+    // Even if resolution failed, cache the miss to avoid re-querying
+    resolveCacheSet(userId, false);
 }
 export async function optionalAuth(req, _res, next) {
     const header = req.headers.authorization;

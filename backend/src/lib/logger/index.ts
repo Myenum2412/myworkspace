@@ -1,6 +1,24 @@
+import pino from "pino";
 import { env } from "../../config/env.js";
 
 const isTest = env.NODE_ENV === "test";
+const isDev = env.NODE_ENV !== "production";
+
+const pinoLogger = pino({
+  level: isTest ? "silent" : (env.LOG_LEVEL || (isDev ? "debug" : "info")),
+  transport: isDev ? {
+    target: "pino-pretty",
+    options: { colorize: true, translateTime: "HH:MM:ss.l" },
+  } : undefined,
+  serializers: {
+    err: pino.stdSerializers.err,
+    error: pino.stdSerializers.err,
+  },
+  redact: {
+    paths: ["req.headers.cookie", "req.headers.authorization", "password", "secret", "token"],
+    censor: "[REDACTED]",
+  },
+});
 
 type LogArg = string | Record<string, unknown>;
 
@@ -15,52 +33,40 @@ export interface Logger {
   child: (bindings: Record<string, unknown>) => Logger;
 }
 
-function formatArgs(prefix: string, level: string, args: LogArg[]): [string, ...any[]] {
-  if (args.length === 0) return [`[${level}] ${prefix}`];
-  if (typeof args[0] === "string") {
-    return [`[${level}] ${prefix} ${args[0]}`, ...args.slice(1)];
-  }
-  const { msg, ...rest } = args[0] as Record<string, unknown>;
-  const message = typeof msg === "string" ? msg : JSON.stringify(args[0]);
-  return [`[${level}] ${prefix} ${message}`, rest, ...args.slice(1)];
-}
+function createPinoLogger(name?: string): Logger {
+  const instance = name ? pinoLogger.child({ module: name }) : pinoLogger;
 
-function createConsoleLogger(name?: string): Logger {
-  const prefix = name ? `[${name}]` : "";
-  const noop = () => {};
-  if (isTest) {
-    return {
-      level: "silent",
-      info: noop,
-      warn: noop,
-      error: noop,
-      debug: noop,
-      fatal: noop,
-      trace: noop,
-      child: () => createConsoleLogger(name),
-    };
-  }
+  const adapt = (level: string, args: LogArg[]) => {
+    if (args.length === 0) return instance[level as keyof typeof instance]("");
+    if (typeof args[0] === "string") {
+      instance[level as keyof typeof instance](args[0], ...args.slice(1));
+    } else {
+      const { msg, ...rest } = args[0] as Record<string, unknown>;
+      instance[level as keyof typeof instance](rest, (msg as string) || "");
+    }
+  };
+
   return {
-    level: "debug",
-    info: (...args: LogArg[]) => console.log(...formatArgs(prefix, "INFO", args)),
-    warn: (...args: LogArg[]) => console.warn(...formatArgs(prefix, "WARN", args)),
-    error: (...args: LogArg[]) => console.error(...formatArgs(prefix, "ERROR", args)),
-    debug: (...args: LogArg[]) => console.debug(...formatArgs(prefix, "DEBUG", args)),
-    fatal: (...args: LogArg[]) => console.error(...formatArgs(prefix, "FATAL", args)),
-    trace: (...args: LogArg[]) => console.trace(...formatArgs(prefix, "TRACE", args)),
-    child: (bindings: Record<string, unknown>) => createConsoleLogger((bindings.module as string) || name),
+    level: instance.level,
+    info: (...args: LogArg[]) => adapt("info", args),
+    warn: (...args: LogArg[]) => adapt("warn", args),
+    error: (...args: LogArg[]) => adapt("error", args),
+    debug: (...args: LogArg[]) => adapt("debug", args),
+    fatal: (...args: LogArg[]) => adapt("fatal", args),
+    trace: (...args: LogArg[]) => adapt("trace", args),
+    child: (bindings: Record<string, unknown>) => createPinoLogger((bindings.module as string) || name),
   };
 }
 
-export const logger = createConsoleLogger();
-export const uploadLogger = createConsoleLogger("upload");
-export const queueLogger = createConsoleLogger("queue");
-export const storageLogger = createConsoleLogger("storage");
-export const authLogger = createConsoleLogger("auth");
-export const rbacLogger = createConsoleLogger("rbac");
+export const logger = createPinoLogger();
+export const uploadLogger = createPinoLogger("upload");
+export const queueLogger = createPinoLogger("queue");
+export const storageLogger = createPinoLogger("storage");
+export const authLogger = createPinoLogger("auth");
+export const rbacLogger = createPinoLogger("rbac");
 
 export function createModuleLogger(module: string): Logger {
-  return createConsoleLogger(module);
+  return createPinoLogger(module);
 }
 
 export function initializeLogger() {}

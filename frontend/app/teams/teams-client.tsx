@@ -77,11 +77,11 @@ type TeamDetail = Team & {
   }[];
 };
 
-export default function TeamsClient({ teams: initialTeams, members: initialMembers }: { teams: Team[]; members: OrgMember[] }) {
+export default function TeamsClient({ teams: initialTeams, members: initialMembers, orgId: initialOrgId }: { teams: Team[]; members: OrgMember[]; orgId?: string }) {
   const [teams, setTeams] = useState<Team[]>(initialTeams);
   const [members, setMembers] = useState<OrgMember[]>(initialMembers);
   const [loading, setLoading] = useState(false);
-  const [orgId, setOrgId] = useState("");
+  const [orgId, setOrgId] = useState(initialOrgId || "");
   const [showForm, setShowForm] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [teamName, setTeamName] = useState("");

@@ -1,0 +1,33 @@
+myworkspace.myenum.in {
+    # Reverse proxy to backend
+    reverse_proxy backend:4000 {
+        # Forward real IP
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+    }
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    }
+
+    # File upload size limit (10GB for TUS)
+    request_body /api/files-tus/* {
+        max_size 10737418240
+    }
+
+    # Gzip/Brotli compression
+    encode zstd brotli gzip
+
+    # Logs
+    log {
+        output file /var/log/caddy/myworkspace.log
+        format json
+    }
+}

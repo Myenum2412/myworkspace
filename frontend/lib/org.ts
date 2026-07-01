@@ -4,14 +4,22 @@ import { ObjectId } from "mongodb";
 
 export async function getUserOrgId(userId: string, email?: string): Promise<string | null> {
   const possibleIds = await resolvePossibleUserIds(userId, email);
-  const members = await (await db.collection(collections.orgMembers).find({ userId: { $in: possibleIds } }).toArray()) as Record<string, unknown>[];
+
+  // Query both NextAuth (org_members) and Mongoose (orgmembers) collections
+  const [nextAuthMembers, mongooseMembers] = await Promise.all([
+    db.collection(collections.orgMembers).find({ userId: { $in: possibleIds } }).toArray() as Promise<Record<string, unknown>[]>,
+    db.collection("orgmembers").find({ userId: { $in: possibleIds } }).toArray() as Promise<Record<string, unknown>[]>,
+  ]);
+
+  const members = [...nextAuthMembers, ...mongooseMembers];
   if (members.length === 0) return null;
   if (members.length === 1) return String(members[0].orgId);
+
   const orgIds = [...new Set(members.map(m => String(m.orgId)))];
-  const counts = await (await db.collection(collections.orgMembers).aggregate([
+  const counts = await db.collection(collections.orgMembers).aggregate([
     { $match: { orgId: { $in: orgIds } } },
     { $group: { _id: "$orgId", count: { $sum: 1 } } },
-  ]).toArray()) as { _id: string; count: number }[];
+  ]).toArray() as { _id: string; count: number }[];
   const countMap = new Map(counts.map(c => [c._id, c.count]));
   orgIds.sort((a, b) => (countMap.get(b) || 0) - (countMap.get(a) || 0));
   return orgIds[0];

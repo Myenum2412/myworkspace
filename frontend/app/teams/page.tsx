@@ -44,8 +44,8 @@ export default async function TeamsPage() {
         { $match: { orgId } },
         {
           $lookup: {
-            from: "team_members",
-            localField: "id",
+            from: "teammembers",
+            localField: "_id",
             foreignField: "teamId",
             as: "members",
           },
@@ -65,6 +65,7 @@ export default async function TeamsPage() {
           $addFields: {
             memberCount: { $size: "$members" },
             leadUser: { $arrayElemAt: ["$leadUsers", 0] },
+            id: "$_id",
           },
         },
         {
@@ -82,7 +83,13 @@ export default async function TeamsPage() {
         },
         { $sort: { createdAt: -1 } },
       ]).toArray(),
-      db.collection(collections.orgMembers).find({ orgId }).toArray(),
+      (async () => {
+        const [fromNextAuth, fromMongoose] = await Promise.all([
+          db.collection(collections.orgMembers).find({ orgId }).toArray(),
+          db.collection("orgmembers").find({ orgId }).toArray(),
+        ]);
+        return [...fromNextAuth, ...fromMongoose];
+      })(),
     ]);
 
     teams = (teamDocs as unknown as Record<string, unknown>[]).map((t) => ({
@@ -128,5 +135,5 @@ export default async function TeamsPage() {
     }
   }
 
-  return <TeamsClient teams={teams} members={members} />;
+  return <TeamsClient teams={teams} members={members} orgId={orgId} />;
 }

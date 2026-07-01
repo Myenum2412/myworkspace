@@ -5,8 +5,11 @@ import { brotliCompress } from "./lib/brotli.js";
 import path from "path";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
+import { requestIdMiddleware } from "./lib/request-id.js";
 import { perfMiddleware } from "./lib/perf/middleware.js";
-import { authLimiter, apiLimiter } from "./middleware/rate-limit.js";
+import { authLimiter, socketTokenLimiter, apiLimiter } from "./middleware/rate-limit.js";
+import mongoose from "mongoose";
+import { isRedisConnected } from "./lib/redis.js";
 import authRoutes from "./routes/auth.js";
 import tasksRoutes from "./routes/tasks.js";
 import sessionsRoutes from "./routes/sessions.js";
@@ -57,7 +60,11 @@ app.use(helmet({
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(brotliCompress);
 app.use(express.json());
-app.use("/api/auth", authLimiter);
+app.use(requestIdMiddleware);
+app.use("/api/auth", authLimiter, (req, _res, next) => {
+  if (req.path === "/socket-token") socketTokenLimiter(req, _res, next);
+  else next();
+});
 app.use("/api/client-auth", authLimiter);
 app.use("/api", apiLimiter);
 app.use(perfMiddleware);
@@ -68,7 +75,33 @@ app.use("/banners", express.static(path.resolve("public", "banners")));
 
 // Health check
 app.get("/api/health", (_req, res) => {
-  res.json({ success: true, message: "API is running", timestamp: new Date().toISOString() });
+  const checks: Record<string, string> = {};
+  let healthy = true;
+
+  try {
+    if (mongoose.connection.readyState === 1) {
+      checks.mongodb = "connected";
+    } else {
+      checks.mongodb = "disconnected";
+      healthy = false;
+    }
+  } catch {
+    checks.mongodb = "error";
+    healthy = false;
+  }
+
+  try {
+    checks.redis = isRedisConnected() ? "connected" : "disconnected";
+  } catch {
+    checks.redis = "error";
+  }
+
+  res.status(200).json({
+    success: true,
+    status: healthy ? "ok" : "degraded",
+    checks,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Routes

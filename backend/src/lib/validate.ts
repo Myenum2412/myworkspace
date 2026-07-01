@@ -28,6 +28,7 @@ export function optionalString(value: unknown, path: string, { max = 10_000 }: {
   if (value === undefined || value === null) return undefined;
   if (typeof value !== "string") fail([{ path, message: `${path} must be a string` }]);
   const v = value.trim();
+  if (v.length === 0) return undefined;
   if (v.length > max) fail([{ path, message: `${path} must be at most ${max} chars` }]);
   return v;
 }

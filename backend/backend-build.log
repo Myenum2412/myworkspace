@@ -2,3 +2,22 @@
 > myworkspace-backend@1.0.0 build
 > tsc
 
+src/lib/logger/index.ts(8,35): error TS2339: Property 'LOG_LEVEL' does not exist on type '{ PORT: number; MONGODB_URI: string; JWT_SECRET: string; JWT_EXPIRES_IN: string; ADMIN_EMAIL: string; ADMIN_PASSWORD: string; CORS_ORIGIN: string[]; NODE_ENV: string; R2_ENDPOINT: string; R2_BUCKET_NAME: string; ... 20 more ...; REDIS_URL: string; }'.
+src/lib/logger/index.ts(40,35): error TS2349: This expression is not callable.
+  Not all constituents of type 'string | number | boolean | (string & {}) | LogFn | (<ChildCustomLevels extends string = never>(bindings: Bindings, options?: ChildLoggerOptions<ChildCustomLevels> | undefined) => Logger<...>) | ... 22 more ... | {}' are callable.
+    Type 'string' has no call signatures.
+src/lib/logger/index.ts(40,35): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/lib/logger/index.ts(42,7): error TS2349: This expression is not callable.
+  Not all constituents of type 'string | number | boolean | (string & {}) | LogFn | (<ChildCustomLevels extends string = never>(bindings: Bindings, options?: ChildLoggerOptions<ChildCustomLevels> | undefined) => Logger<...>) | ... 22 more ... | {}' are callable.
+    Type 'string' has no call signatures.
+src/lib/logger/index.ts(42,7): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/lib/logger/index.ts(45,7): error TS2349: This expression is not callable.
+  Not all constituents of type 'string | number | boolean | (string & {}) | LogFn | (<ChildCustomLevels extends string = never>(bindings: Bindings, options?: ChildLoggerOptions<ChildCustomLevels> | undefined) => Logger<...>) | ... 22 more ... | {}' are callable.
+    Type 'string' has no call signatures.
+src/lib/logger/index.ts(45,7): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/lib/redis.ts(5,13): error TS2709: Cannot use namespace 'Redis' as a type.
+src/lib/redis.ts(8,29): error TS2709: Cannot use namespace 'Redis' as a type.
+src/lib/redis.ts(10,18): error TS2351: This expression is not constructable.
+  Type 'typeof import("/root/myworkspace/backend/node_modules/ioredis/built/index")' has no construct signatures.
+src/lib/redis.ts(12,21): error TS7006: Parameter 'times' implicitly has an 'any' type.
+src/lib/redis.ts(24,25): error TS7006: Parameter 'err' implicitly has an 'any' type.

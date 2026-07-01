@@ -38,4 +38,5 @@ export const env = {
     AUTH_DEBUG: process.env.AUTH_DEBUG || "0",
     AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING || "",
     AZURE_STORAGE_CONTAINER: process.env.AZURE_STORAGE_CONTAINER || "",
+    REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
 };
