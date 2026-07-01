@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -82,23 +83,15 @@ type ActivityItem = {
   createdAt: string;
 };
 
-export default async function DashboardPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+type DashboardData = {
+  totalTasks: number; completedTasks: number; inProgressTasks: number; overdueTasks: number;
+  activeMembers: number; recentActivity: number; totalProjects: number; activeProjects: number;
+  totalClients: number; totalTeams: number;
+  tasks: Task[]; projects: Project[]; clients: Client[]; activities: ActivityItem[]; members: Member[];
+};
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
-
-  let totalTasks = 0, completedTasks = 0, inProgressTasks = 0, overdueTasks = 0;
-  let activeMembers = 0, recentActivity = 0;
-  let totalProjects = 0, activeProjects = 0;
-  let totalClients = 0, totalTeams = 0;
-  let tasks: Task[] = [];
-  let projects: Project[] = [];
-  let members: Member[] = [];
-  let clients: Client[] = [];
-  let activities: ActivityItem[] = [];
-
-  if (orgId) {
+const getCachedDashboardData = unstable_cache(
+  async (orgId: string): Promise<DashboardData> => {
     const oneDayAgo = new Date(Date.now() - 86400000);
     const now = new Date();
 
@@ -126,12 +119,7 @@ export default async function DashboardPage() {
       db.collection(collections.activityLogs).find({ orgId }).sort({ createdAt: -1 }).limit(20).toArray(),
     ]);
 
-    totalTasks = tCount; completedTasks = doneCount; inProgressTasks = ipCount; overdueTasks = overdueCount;
-    activeMembers = memberCount; recentActivity = activityCount;
-    totalProjects = projCount; activeProjects = activeProjCount;
-    totalClients = clientCount; totalTeams = teamCount;
-
-    tasks = (taskDocs as unknown as Record<string, unknown>[]).map((t) => ({
+    const tasks: Task[] = (taskDocs as unknown as Record<string, unknown>[]).map((t) => ({
       _id: (t._id as { toString: () => string }).toString(),
       title: (t.title as string) || "",
       status: (t.status as string) || "todo",
@@ -142,7 +130,7 @@ export default async function DashboardPage() {
       createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
     }));
 
-    projects = (projDocs as unknown as Record<string, unknown>[]).map((p) => ({
+    const projects: Project[] = (projDocs as unknown as Record<string, unknown>[]).map((p) => ({
       id: (p.id as string) || String(p._id || ""),
       name: (p.name as string) || "",
       client: (p.client as string) || "",
@@ -151,7 +139,7 @@ export default async function DashboardPage() {
       deadline: (p.dueDate as string) || (p.deadline as string) || null,
     }));
 
-    clients = (clientDocs as unknown as Record<string, unknown>[]).map((c) => ({
+    const clients: Client[] = (clientDocs as unknown as Record<string, unknown>[]).map((c) => ({
       id: (c.id as string) || "",
       name: (c.name as string) || "",
       company: (c.company as string) || "",
@@ -159,16 +147,16 @@ export default async function DashboardPage() {
       status: (c.status as string) || "",
     }));
 
-    activities = (activityDocs as unknown as Record<string, unknown>[]).map((a) => ({
+    const activities: ActivityItem[] = (activityDocs as unknown as Record<string, unknown>[]).map((a) => ({
       _id: (a._id as { toString: () => string }).toString(),
       action: (a.action as string) || "",
       description: (a.description as string) || "",
       createdAt: a.createdAt ? new Date(a.createdAt as string).toISOString() : "",
     }));
 
-    // Fetch members
     const orgMemberDocs = await db.collection(collections.orgMembers).find({ orgId }).toArray();
     const userIds = (orgMemberDocs as unknown as Record<string, unknown>[]).map((m) => m.userId as string).filter(Boolean);
+    let members: Member[] = [];
     if (userIds.length > 0) {
       const userDocs = await db.collection(collections.users).find({ id: { $in: userIds } }).project({ id: 1, name: 1, email: 1, image: 1, status: 1 }).toArray();
       const userMap = new Map((userDocs as unknown as Record<string, unknown>[]).map((u) => [u.id, u]));
@@ -183,7 +171,37 @@ export default async function DashboardPage() {
         };
       });
     }
+
+    return {
+      totalTasks: tCount, completedTasks: doneCount, inProgressTasks: ipCount, overdueTasks: overdueCount,
+      activeMembers: memberCount, recentActivity: activityCount,
+      totalProjects: projCount, activeProjects: activeProjCount,
+      totalClients: clientCount, totalTeams: teamCount,
+      tasks, projects, clients, activities, members,
+    };
+  },
+  ["dashboard-data"],
+  { revalidate: 30, tags: ["dashboard"] }
+);
+
+export default async function DashboardPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const orgId = await getUserOrgId(session.user.id, session.user.email);
+
+  let dashboardData: DashboardData | null = null;
+  if (orgId) {
+    dashboardData = await getCachedDashboardData(orgId);
   }
+
+  const {
+    totalTasks = 0, completedTasks = 0, inProgressTasks = 0, overdueTasks = 0,
+    activeMembers = 0, recentActivity = 0,
+    totalProjects = 0, activeProjects = 0,
+    totalClients = 0, totalTeams = 0,
+    tasks = [], projects = [], clients = [], activities = [], members = [],
+  } = dashboardData || {};
 
   const metricCards = [
     { title: "Total Tasks", value: totalTasks, icon: ListTodo, color: "text-muted-foreground" },

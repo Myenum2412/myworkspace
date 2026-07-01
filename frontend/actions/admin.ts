@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
@@ -36,6 +36,7 @@ export async function updateOrganization(_prevState: ActionResult, formData: For
     );
     revalidatePath("/orgmenu/org");
     revalidatePath("/orgmenu");
+    revalidateTag('dashboard', 'max');
     return { success: true };
   } catch {
     return { error: "Failed to update organization" };
@@ -53,6 +54,7 @@ export async function deleteOrganizationAction(_prevState: ActionResult, formDat
     await db.collection(collections.orgMembers).deleteMany({ orgId: id });
     revalidatePath("/orgmenu/org");
     revalidatePath("/orgmenu");
+    revalidateTag('dashboard', 'max');
     return { success: true };
   } catch {
     return { error: "Failed to delete organization" };
@@ -70,6 +72,7 @@ export async function deleteOrganization(formData: FormData): Promise<void> {
     await db.collection(collections.orgMembers).deleteMany({ orgId: id });
     revalidatePath("/orgmenu/org");
     revalidatePath("/orgmenu");
+    revalidateTag('dashboard', 'max');
   } catch { /* ignore */ }
 }
 
@@ -95,6 +98,7 @@ export async function updateMember(_prevState: ActionResult, formData: FormData)
     );
     revalidatePath("/orgmenu/members");
     revalidatePath("/orgmenu");
+    revalidateTag('dashboard', 'max');
     return { success: true };
   } catch {
     return { error: "Failed to update member" };
@@ -113,6 +117,7 @@ export async function deleteMember(formData: FormData): Promise<void> {
     await db.collection(collections.users).deleteOne({ id: userId });
     revalidatePath("/orgmenu/members");
     revalidatePath("/orgmenu");
+    revalidateTag('dashboard', 'max');
   } catch { /* ignore */ }
 }
 
@@ -141,6 +146,7 @@ export async function updateRecentUser(_prevState: ActionResult, formData: FormD
       { $set: updateData },
     );
     revalidatePath("/orgmenu");
+    revalidateTag('dashboard', 'max');
     return { success: true };
   } catch {
     return { error: "Failed to update user" };
@@ -157,5 +163,6 @@ export async function deleteRecentUser(formData: FormData): Promise<void> {
     await db.collection(collections.users).deleteOne({ id: userId });
     await db.collection(collections.orgMembers).deleteMany({ userId });
     revalidatePath("/orgmenu");
+    revalidateTag('dashboard', 'max');
   } catch { /* ignore */ }
 }

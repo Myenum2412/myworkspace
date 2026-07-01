@@ -44,4 +44,6 @@ export const env = {
 
   AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING || "",
   AZURE_STORAGE_CONTAINER: process.env.AZURE_STORAGE_CONTAINER || "",
+
+  REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
 };

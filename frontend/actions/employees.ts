@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
@@ -75,5 +75,6 @@ export async function addEmployeeAction(formData: FormData) {
   });
 
   revalidatePath("/employees");
+  revalidateTag('dashboard', 'max');
   return { success: true };
 }

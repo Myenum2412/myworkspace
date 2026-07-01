@@ -1,4 +1,5 @@
 import NodeCache from "node-cache";
+import { redisGet, redisSet, redisDel, isRedisConnected } from "./redis.js";
 
 const env = {
   CACHE_TTL: parseInt(process.env.CACHE_TTL || "300", 10),
@@ -21,14 +22,20 @@ export class CacheManager {
   }
 
   set<T>(key: string, value: T, ttl?: number): void {
+    const ttlSec = ttl ?? env.CACHE_TTL;
     if (ttl !== undefined) {
       this.cache.set(key, value, ttl);
     } else {
       this.cache.set(key, value);
     }
+    redisSet(key, value, ttlSec).catch(() => {});
   }
 
   del(keyOrKeys: string | string[]): number {
+    const keys = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys];
+    for (const k of keys) {
+      redisDel(k).catch(() => {});
+    }
     return this.cache.del(keyOrKeys);
   }
 
@@ -46,12 +53,25 @@ export class CacheManager {
     return this.cache.getStats();
   }
 
-  // Helper: get or set with async factory
   async getOrSet<T>(key: string, factory: () => Promise<T>, ttl?: number): Promise<T> {
-    const cached = this.get<T>(key);
-    if (cached !== undefined) return cached;
+    const ttlSec = ttl ?? env.CACHE_TTL;
+
+    // L1: NodeCache
+    const l1 = this.get<T>(key);
+    if (l1 !== undefined) return l1;
+
+    // L2: Redis
+    if (isRedisConnected()) {
+      const l2 = await redisGet<T>(key);
+      if (l2 !== null) {
+        this.set(key, l2, ttlSec);
+        return l2;
+      }
+    }
+
+    // Miss: fetch from source
     const value = await factory();
-    this.set(key, value, ttl);
+    this.set(key, value, ttlSec);
     return value;
   }
 }

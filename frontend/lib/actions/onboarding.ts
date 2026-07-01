@@ -3,7 +3,7 @@
 import { auth, unstable_update } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 export interface OnboardingData {
@@ -128,5 +128,6 @@ export async function completeOnboarding(data: OnboardingData) {
   await unstable_update({});
   revalidatePath("/dashboard");
   revalidatePath("/orgmenu/members");
+  revalidateTag('dashboard', 'max');
   redirect("/dashboard");
 }

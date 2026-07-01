@@ -1,8 +1,8 @@
-import { cache } from "react";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
+import { unstable_cache } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewUsersChart } from "@/components/NewUsersChart";
 import { MonthlyRevenueChart } from "@/components/MonthlyRevenueChart";
@@ -12,16 +12,16 @@ import { UsersIcon, ClipboardListIcon, ActivityIcon, Building2Icon, CheckCircle2
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Organization Dashboard" };
 
-const getOrgMetrics = cache(async (orgId: string) => {
+const getOrgMetrics = unstable_cache(async (orgId: string) => {
   const memberCount = await db.collection(collections.orgMembers).countDocuments({ orgId });
   const taskCount = await db.collection(collections.tasks).countDocuments({ orgId });
   const completedTasks = await db.collection(collections.tasks).countDocuments({ orgId, status: "done" });
   const inProgressTasks = await db.collection(collections.tasks).countDocuments({ orgId, status: "in_progress" });
   const activityCount = await db.collection(collections.activityLogs).countDocuments({ orgId });
   return { memberCount, taskCount, completedTasks, inProgressTasks, activityCount };
-});
+}, ["org-metrics"], { revalidate: 30, tags: ["dashboard"] });
 
-const getAllMetrics = cache(async () => {
+const getAllMetrics = unstable_cache(async () => {
   const orgCount = await db.collection(collections.organizations).countDocuments({});
   const memberCount = await db.collection(collections.orgMembers).countDocuments({});
   const taskCount = await db.collection(collections.tasks).countDocuments({});
@@ -29,9 +29,9 @@ const getAllMetrics = cache(async () => {
   const inProgressTasks = await db.collection(collections.tasks).countDocuments({ status: "in_progress" });
   const activityCount = await db.collection(collections.activityLogs).countDocuments({});
   return { orgCount, memberCount, taskCount, completedTasks, inProgressTasks, activityCount };
-});
+}, ["all-metrics"], { revalidate: 30, tags: ["dashboard"] });
 
-const getUsersByState = cache(async (orgId?: string | null) => {
+const getUsersByState = unstable_cache(async (orgId?: string | null) => {
   const pipeline = orgId
     ? [
         { $match: { orgId } },
@@ -71,9 +71,9 @@ const getUsersByState = cache(async (orgId?: string | null) => {
     state: r._id as string,
     users: r.users as number,
   }));
-});
+}, ["users-by-state"], { revalidate: 60, tags: ["dashboard"] });
 
-const getMonthlyRevenue = cache(async (orgId?: string | null) => {
+const getMonthlyRevenue = unstable_cache(async (orgId?: string | null) => {
   const match = orgId ? { orgId } : {};
   const pipeline = [
     { $match: { status: "completed", ...match } },
@@ -98,9 +98,9 @@ const getMonthlyRevenue = cache(async (orgId?: string | null) => {
   } catch {
     return [];
   }
-});
+}, ["monthly-revenue"], { revalidate: 60, tags: ["dashboard"] });
 
-const getRecentUsers = cache(async (orgId?: string | null) => {
+const getRecentUsers = unstable_cache(async (orgId?: string | null) => {
   const cursor = await db.collection(
     orgId ? collections.orgMembers : collections.users,
   ).find(
@@ -171,7 +171,7 @@ const getRecentUsers = cache(async (orgId?: string | null) => {
       orgId: userOrgId || undefined,
     };
   });
-});
+}, ["recent-users"], { revalidate: 30, tags: ["dashboard"] });
 
 export default async function OrgDashboardPage() {
   const session = await auth();

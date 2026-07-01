@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
@@ -62,6 +62,7 @@ export async function deleteFileAction(fileId: string) {
 
   revalidatePath("/files");
   revalidatePath("/shared");
+  revalidateTag('dashboard', 'max');
 
   return { success: true };
 }
@@ -100,6 +101,7 @@ export async function shareFileAction(fileId: string, sharedWithUserId: string |
 
   revalidatePath("/files");
   revalidatePath("/shared");
+  revalidateTag('dashboard', 'max');
 
   return { success: true };
 }
@@ -112,6 +114,7 @@ export async function unshareFileAction(shareId: string) {
 
   revalidatePath("/files");
   revalidatePath("/shared");
+  revalidateTag('dashboard', 'max');
 
   return { success: true };
 }

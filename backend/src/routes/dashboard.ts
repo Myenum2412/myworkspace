@@ -5,31 +5,19 @@ import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { env } from "../config/env.js";
+import { cacheManager, CacheKeys } from "../lib/cache.js";
 
-// Per-request dashboard logging gated behind PERF_LOG=1 (see auth.ts dbg helper).
-// These routes are hot (loaded on every navigation to /dashboard) and each line
-// is synchronous stdout — real cost under load.
 const dbg = (...a: unknown[]) => { if (env.PERF_LOG === "1") console.log(...a); };
 
 const router = Router();
 
 router.use(authenticate);
 
-// Helper: resolve orgId from token or membership
 async function resolveOrgId(req: AuthRequest): Promise<string> {
-  dbg(`[DASHBOARD] resolveOrgId called, req.user:`, JSON.stringify(req.user));
-  if (req.user!.orgId) {
-    dbg(`[DASHBOARD] Using orgId from token: ${req.user!.orgId}`);
-    return req.user!.orgId;
-  }
+  if (req.user!.orgId) return req.user!.orgId;
   const userId = req.user!.userId;
-  dbg(`[DASHBOARD] No orgId in token, looking up OrgMember for userId: ${userId}`);
   const member = await OrgMember.findOne({ userId }).lean();
-  if (member) {
-    dbg(`[DASHBOARD] Found OrgMember:`, JSON.stringify(member));
-    return member.orgId.toString();
-  }
-  dbg(`[DASHBOARD] No OrgMember found for userId: ${userId}`);
+  if (member) return member.orgId.toString();
   const { Organization } = await import("../lib/db/models/Organization.js");
   const anyOrg = await Organization.findOne({}).sort({ createdAt: 1 }).lean();
   if (anyOrg) {
@@ -40,14 +28,7 @@ async function resolveOrgId(req: AuthRequest): Promise<string> {
   throw new AppError(400, "No organization found. Please set up company details first.");
 }
 
-router.get("/metrics", async (req: AuthRequest, res: Response) => {
-  dbg(`[DASHBOARD] ========== GET /metrics START ==========`);
-  dbg(`[DASHBOARD] GET /metrics called, query:`, req.query);
-  dbg(`[DASHBOARD] req.orgId (from middleware): ${req.orgId || 'NOT SET'}`);
-  dbg(`[DASHBOARD] req.user:`, JSON.stringify(req.user));
-  const orgId = (req.query.orgId as string) || req.orgId || await resolveOrgId(req);
-  dbg(`[DASHBOARD] Final orgId being used: ${orgId}`);
-
+async function fetchDashboardMetrics(orgId: string) {
   const queryFilters = {
     totalTasks: { orgId },
     completedTasks: { orgId, status: "done" },
@@ -56,7 +37,6 @@ router.get("/metrics", async (req: AuthRequest, res: Response) => {
     activeMembers: { orgId },
     recentActivity: { orgId, createdAt: { $gt: new Date(Date.now() - 86400000) } },
   };
-  dbg(`[DASHBOARD] Query filters:`, JSON.stringify(queryFilters, null, 2));
 
   const [
     totalTasks,
@@ -74,21 +54,14 @@ router.get("/metrics", async (req: AuthRequest, res: Response) => {
     ActivityLog.countDocuments(queryFilters.recentActivity),
   ]);
 
-  const result = {
-    totalTasks,
-    completedTasks,
-    inProgressTasks,
-    overdueTasks,
-    activeMembers,
-    recentActivity,
-  };
-  dbg(`[DASHBOARD] Query results:`, JSON.stringify(result));
-  dbg(`[DASHBOARD] ========== GET /metrics END ==========`);
+  return { totalTasks, completedTasks, inProgressTasks, overdueTasks, activeMembers, recentActivity };
+}
 
-  res.json({
-    success: true,
-    data: result,
-  });
+router.get("/metrics", async (req: AuthRequest, res: Response) => {
+  const orgId = (req.query.orgId as string) || req.orgId || await resolveOrgId(req);
+  const cacheKey = CacheKeys.dashboardMetrics(orgId);
+  const data = await cacheManager.getOrSet(cacheKey, () => fetchDashboardMetrics(orgId), 30);
+  res.json({ success: true, data });
 });
 
 export default router;

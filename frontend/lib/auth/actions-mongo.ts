@@ -2,7 +2,7 @@
 
 import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { signIn } from "./config";
 import { db } from "@/lib/db";
@@ -79,5 +79,6 @@ export async function signupActionMongo(formData: FormData) {
   await signIn("credentials", { email, password, redirect: false });
   console.log(`[AUTH] signupActionMongo: ${email} signed up → redirecting to /dashboard`);
   revalidatePath("/dashboard");
+  revalidateTag('dashboard', 'max');
   redirect("/dashboard");
 }

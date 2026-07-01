@@ -76,6 +76,7 @@ export async function createTask(formData: FormData) {
   });
 
   revalidateTag(`tasks:${orgId}`, 'max');
+  revalidateTag('dashboard', 'max');
   revalidatePath("/overview", "page");
   revalidatePath("/dashboard", "page");
 
@@ -121,6 +122,7 @@ export async function updateTask(formData: FormData) {
   });
 
   revalidateTag(`tasks:${orgId}`, 'max');
+  revalidateTag('dashboard', 'max');
   revalidatePath("/overview", "page");
   revalidatePath("/dashboard", "page");
 
@@ -137,6 +139,7 @@ export async function deleteTask(formData: FormData) {
   await db.collection(collections.tasks).deleteOne({ id: taskId, orgId });
 
   revalidateTag(`tasks:${orgId}`, 'max');
+  revalidateTag('dashboard', 'max');
   revalidatePath("/overview", "page");
   revalidatePath("/dashboard", "page");
 
@@ -153,5 +156,6 @@ export async function updateTaskStatus(taskId: string, status: string) {
   );
 
   revalidateTag(`tasks:${orgId}`, 'max');
+  revalidateTag('dashboard', 'max');
   return { success: true };
 }

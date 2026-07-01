@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createUserWorkspace } from "@/actions/user-folder";
 import { getNextSequence } from "@/lib/db/counter";
@@ -113,6 +113,7 @@ export async function loginAction(formData: FormData) {
   const redirectPath = getRedirectPath(role);
   console.log(`[AUTH] loginAction: ${email} role=${role} → ${redirectPath}`);
   revalidatePath(redirectPath);
+  revalidateTag('dashboard', 'max');
   redirect(redirectPath);
 }
 
@@ -192,6 +193,7 @@ export async function signupAction(formData: FormData) {
   await signIn("credentials", { email, password, redirect: false });
   console.log(`[AUTH] signupAction: ${email} signed up → redirecting to /dashboard`);
   revalidatePath("/dashboard");
+  revalidateTag('dashboard', 'max');
   redirect("/dashboard");
 }
 

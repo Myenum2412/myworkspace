@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
@@ -105,6 +105,7 @@ export async function createProjectAction(formData: FormData) {
 
   await db.collection(collections.projects).insertOne(doc);
   revalidatePath("/projects");
+  revalidateTag('dashboard', 'max');
   return { success: true };
 }
 
@@ -121,6 +122,7 @@ export async function updateProjectAction(id: string, formData: FormData) {
 
   await db.collection(collections.projects).updateOne({ id }, { $set: update });
   revalidatePath("/projects");
+  revalidateTag('dashboard', 'max');
   return { success: true };
 }
 
@@ -130,5 +132,6 @@ export async function deleteProjectAction(id: string) {
 
   await db.collection(collections.projects).deleteOne({ id });
   revalidatePath("/projects");
+  revalidateTag('dashboard', 'max');
   return { success: true };
 }
