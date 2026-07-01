@@ -36,6 +36,8 @@ const nextConfig: NextConfig = {
   // Generate etags for caching
   generateEtags: true,
   poweredByHeader: false,
+  // CDN asset prefix — set CDN_URL env var to enable (e.g. https://cdn.example.com)
+  assetPrefix: process.env.CDN_URL || undefined,
 };
 
 export default nextConfig;

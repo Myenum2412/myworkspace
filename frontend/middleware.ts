@@ -59,7 +59,13 @@ export default auth((req) => {
   const isOrgAdmin = userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL;
   const isWorkspaceUser = !isOrgAdmin;
 
-  if (pathname.startsWith("/api") || pathname.startsWith("/_next") || pathname === "/favicon.ico") {
+  if (pathname.startsWith("/_next/static") || pathname === "/favicon.ico") {
+    const response = NextResponse.next();
+    response.headers.set("Cache-Control", "public, max-age=31536000, immutable");
+    return response;
+  }
+
+  if (pathname.startsWith("/api") || pathname.startsWith("/_next")) {
     return;
   }
 
