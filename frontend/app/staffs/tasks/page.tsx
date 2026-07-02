@@ -80,9 +80,25 @@ export default async function StaffTasksPage() {
       .aggregate(pipeline)
       .toArray()) as unknown as Record<string, unknown>[];
 
-    tasks = raw.map((t) => {
+    const rawTasks = raw as unknown as Record<string, unknown>[];
+    const allUserIds = new Set<string>();
+    rawTasks.forEach((t) => {
+      const aId = t.assigneeId ? ((t.assigneeId as { toString?: () => string }).toString?.() || (t.assigneeId as string)) : "";
+      const cId = t.creatorId ? ((t.creatorId as { toString?: () => string }).toString?.() || (t.creatorId as string)) : "";
+      if (aId) allUserIds.add(aId);
+      if (cId) allUserIds.add(cId);
+    });
+    let userMap = new Map<string, { name: string; image: string }>();
+    if (allUserIds.size > 0) {
+      const userDocs = await db.collection(collections.users).find({ id: { $in: [...allUserIds] } }).project({ _id: 0, id: 1, name: 1, image: 1 }).toArray() as unknown as Record<string, unknown>[];
+      userMap = new Map(userDocs.map((u) => [u.id as string, { name: (u.name as string) || "", image: (u.image as string) || "" }]));
+    }
+
+    tasks = rawTasks.map((t) => {
       const assignee = t.assignee as Record<string, unknown> | null;
       const creator = t.creator as Record<string, unknown> | null;
+      const assigneeId = t.assigneeId ? ((t.assigneeId as { toString?: () => string }).toString?.() || (t.assigneeId as string)) : "";
+      const creatorId = t.creatorId ? ((t.creatorId as { toString?: () => string }).toString?.() || (t.creatorId as string)) : "";
       return {
         id: (t._id as { toString: () => string }).toString(),
         _id: (t._id as { toString: () => string }).toString(),
@@ -91,11 +107,11 @@ export default async function StaffTasksPage() {
         status: (t.status as string) || "todo",
         priority: (t.priority as string) || "medium",
         dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
-        assigneeId: t.assigneeId ? (t.assigneeId as { toString?: () => string }).toString?.() || (t.assigneeId as string) : "",
-        assigneeName: assignee ? (assignee.name as string) || "" : "",
-        assigneeAvatar: assignee ? (assignee.image as string) || "" : "",
-        creatorId: t.creatorId ? (t.creatorId as { toString?: () => string }).toString?.() || (t.creatorId as string) : "",
-        creatorName: creator ? (creator.name as string) || "" : "",
+        assigneeId,
+        assigneeName: assignee ? (assignee.name as string) || "" : userMap.get(assigneeId)?.name || assigneeId.slice(0, 8),
+        assigneeAvatar: assignee ? (assignee.image as string) || "" : userMap.get(assigneeId)?.image || "",
+        creatorId,
+        creatorName: creator ? (creator.name as string) || "" : userMap.get(creatorId)?.name || creatorId.slice(0, 8),
         createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
       };
     });

@@ -339,7 +339,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
         {/* Table */}
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
           <div className="overflow-x-auto overflow-y-auto flex-1">
-            <table className="w-full text-sm" style={{ minWidth: 900 }}>
+            <table className="w-full text-sm text-left border-collapse" style={{ minWidth: 900 }}>
               <thead className="sticky top-0 z-10">
                 <tr className="bg-[#f3f4f6] text-gray-900">
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
@@ -385,7 +385,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {paginatedEmployees.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="text-center py-16 bg-white">
@@ -412,7 +412,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
                     return (
                       <tr
                         key={emp.id}
-                        className="group bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+                        className="group border-b bg-white hover:bg-slate-50 transition-colors cursor-pointer"
                         onClick={() => handleView(emp)}
                       >
                         {/* Employee name + avatar */}

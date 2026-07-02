@@ -97,9 +97,11 @@ export default async function EmployeesPage() {
       possibleUserIds.push(sessionUserIdStr);
       const uniqueIds = [...new Set(possibleUserIds)];
 
-      const userOrgMembers = await (await db.collection(collections.orgMembers).find({ userId: { $in: uniqueIds } }).toArray()) as Record<string, unknown>[];
-      let orgId: string | null = null;
-      if (userOrgMembers.length === 0) {
+      let orgId: string | null = session.user.orgId || null;
+
+      if (!orgId) {
+        const userOrgMembers = await (await db.collection(collections.orgMembers).find({ userId: { $in: uniqueIds } }).toArray()) as Record<string, unknown>[];
+        if (userOrgMembers.length === 0) {
         const org = await db.collection(collections.organizations).findOne({ ownerId: { $in: uniqueIds } }) as Record<string, unknown> | null;
         if (org) {
           orgId = (org.id as string) || (org._id as ObjectId).toString();
@@ -124,8 +126,9 @@ export default async function EmployeesPage() {
         orgIds.sort((a, b) => (countMap.get(b) || 0) - (countMap.get(a) || 0));
         orgId = orgIds[0];
       }
+    }
 
-      const allOrgMembers: Record<string, unknown>[] = [];
+    const allOrgMembers: Record<string, unknown>[] = [];
 
       if (orgId) {
         const members = await (await db.collection(collections.orgMembers).find({ orgId })).toArray();

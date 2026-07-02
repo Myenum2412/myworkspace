@@ -1,5 +1,6 @@
 import NodeCache from "node-cache";
-import { redisGet, redisSet, redisDel, isRedisConnected } from "./redis.js";
+import { redisGet, redisSet, redisDel, isRedisConnected, redisDelByPattern } from "./redis.js";
+import { logger } from "./logger/index.js";
 
 const env = {
   CACHE_TTL: parseInt(process.env.CACHE_TTL || "300", 10),
@@ -28,13 +29,18 @@ export class CacheManager {
     } else {
       this.cache.set(key, value);
     }
-    redisSet(key, value, ttlSec).catch(() => {});
+    // Fire-and-forget to Redis — non-blocking, but log if it fails
+    redisSet(key, value, ttlSec).catch((err: Error) => {
+      logger.warn({ err, key }, "Redis cache set failed (L2 write)");
+    });
   }
 
   del(keyOrKeys: string | string[]): number {
     const keys = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys];
     for (const k of keys) {
-      redisDel(k).catch(() => {});
+      redisDel(k).catch((err: Error) => {
+        logger.warn({ err, key: k }, "Redis cache del failed (L2 delete)");
+      });
     }
     return this.cache.del(keyOrKeys);
   }
@@ -43,13 +49,24 @@ export class CacheManager {
     const keys = this.cache.keys();
     const matchingKeys = keys.filter((k: string) => k.includes(pattern));
     for (const k of matchingKeys) {
-      redisDel(k).catch(() => {});
+      redisDel(k).catch((err: Error) => {
+        logger.warn({ err, key: k, pattern }, "Redis cache del-by-pattern failed");
+      });
     }
     return this.cache.del(matchingKeys);
   }
 
   async invalidatePattern(pattern: string): Promise<void> {
+    // Invalidate L1 (local)
     this.delByPattern(pattern);
+    // Invalidate L2 (Redis)
+    if (isRedisConnected()) {
+      try {
+        await redisDelByPattern(`*${pattern}*`);
+      } catch (err) {
+        logger.warn({ err, pattern }, "Redis pattern invalidation failed");
+      }
+    }
   }
 
   flush(): void {
@@ -69,17 +86,26 @@ export class CacheManager {
 
     // L2: Redis
     if (isRedisConnected()) {
-      const l2 = await redisGet<T>(key);
-      if (l2 !== null) {
-        this.set(key, l2, ttlSec);
-        return l2;
+      try {
+        const l2 = await redisGet<T>(key);
+        if (l2 !== null) {
+          this.set(key, l2, ttlSec);
+          return l2;
+        }
+      } catch (err) {
+        logger.warn({ err, key }, "Redis L2 read failed, falling through to source");
       }
     }
 
     // Miss: fetch from source
-    const value = await factory();
-    this.set(key, value, ttlSec);
-    return value;
+    try {
+      const value = await factory();
+      this.set(key, value, ttlSec);
+      return value;
+    } catch (err) {
+      logger.error({ err, key }, "Cache factory function failed");
+      throw err;
+    }
   }
 }
 

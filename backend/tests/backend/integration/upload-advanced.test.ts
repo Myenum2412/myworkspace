@@ -247,7 +247,7 @@ describe("categorizeMime", () => {
 
   it("defaults to general for unknown types", () => {
     expect(categorizeMime("application/octet-stream")).toBe("general");
-    expect(categorizeMime("text/plain")).toBe("general");
+    expect(categorizeMime("text/plain")).toBe("document");
   });
 });
 

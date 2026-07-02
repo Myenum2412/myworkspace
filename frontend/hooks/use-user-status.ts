@@ -12,8 +12,8 @@ export function useUserStatus(userId?: string) {
     if (!userId) return;
 
     const client = getWsClient();
-    const unsub = client.on("user:status", (data) => {
-      const payload = data.payload as WsEventPayload["user:status"];
+    const unsub = client.on("user:status", (data: unknown) => {
+      const payload = data as WsEventPayload["user:status"];
       if (payload.userId === userId) {
         setStatus(payload.status);
       }

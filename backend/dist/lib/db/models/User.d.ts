@@ -28,6 +28,8 @@ export interface IUser extends Document {
     bannerUrl?: string;
     resetToken?: string;
     resetTokenExpires?: Date;
+    emailVerificationToken?: string;
+    emailVerificationExpires?: Date;
     createdAt: Date;
     updatedAt: Date;
 }

@@ -4,7 +4,9 @@ import app from "../../../src/app.js";
 
 let server: Server;
 beforeAll(() => { server = app.listen(0); });
-afterAll((done) => server.close(done));
+afterAll((done) => {
+  server.close(done);
+});
 
 describe("health check", () => {
   it("GET /api/health returns 200 with ok payload", async () => {

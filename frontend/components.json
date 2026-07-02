@@ -23,6 +23,8 @@
   },
   "registries": {
     "@evilcharts": "https://evilcharts.com/r/{name}.json",
-    "@reui": "https://reui.io/r/{style}/{name}.json"
+    "@reui": "https://reui.io/r/{style}/{name}.json",
+    "@kokonutui": "https://kokonutui.com/r/{name}.json",
+    "@smoothui": "https://smoothui.dev/r/{name}.json"
   }
 }

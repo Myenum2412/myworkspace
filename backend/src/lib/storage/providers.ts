@@ -1,7 +1,8 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { env } from "../../config/env.js";
 import path from "path";
-import fs from "fs";
+import fs from "fs/promises";
+import { constants as fsConstants } from "fs";
 
 export type StorageProviderType = "local" | "r2" | "s3" | "gcs" | "azure";
 
@@ -18,36 +19,64 @@ class LocalStorageProvider implements IStorageProvider {
 
   constructor() {
     this.baseDir = path.resolve(process.cwd(), "data", "uploads");
-    if (!fs.existsSync(this.baseDir)) {
-      fs.mkdirSync(this.baseDir, { recursive: true });
-    }
   }
 
+  /**
+   * Sanitize key: prevent path traversal by resolving relative to baseDir
+   * and ensuring the result stays within baseDir.
+   */
   private fullPath(key: string): string {
-    const sanitized = key.replace(/\.\.\//g, "").replace(/~/g, "");
-    return path.join(this.baseDir, sanitized);
+    // Strip null bytes and reject suspicious patterns
+    const clean = key.replace(/\0/g, "");
+    const resolved = path.resolve(this.baseDir, clean);
+    if (!resolved.startsWith(this.baseDir)) {
+      throw new Error(`Path traversal detected: ${key}`);
+    }
+    return resolved;
+  }
+
+  private async ensureDir(fp: string): Promise<void> {
+    const dir = path.dirname(fp);
+    try {
+      await fs.mkdir(dir, { recursive: true });
+    } catch (err: any) {
+      if (err.code !== "EEXIST") throw err;
+    }
   }
 
   async save(buffer: Buffer, key: string): Promise<void> {
     const fp = this.fullPath(key);
-    const dir = path.dirname(fp);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(fp, buffer);
+    await this.ensureDir(fp);
+    await fs.writeFile(fp, buffer);
   }
 
   async get(key: string): Promise<Buffer | null> {
     const fp = this.fullPath(key);
-    if (!fs.existsSync(fp)) return null;
-    return fs.readFileSync(fp);
+    try {
+      return await fs.readFile(fp);
+    } catch (err: any) {
+      if (err.code === "ENOENT") return null;
+      throw err;
+    }
   }
 
   async delete(key: string): Promise<void> {
     const fp = this.fullPath(key);
-    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+    try {
+      await fs.unlink(fp);
+    } catch (err: any) {
+      if (err.code !== "ENOENT") throw err;
+    }
   }
 
   async exists(key: string): Promise<boolean> {
-    return fs.existsSync(this.fullPath(key));
+    const fp = this.fullPath(key);
+    try {
+      await fs.access(fp, fsConstants.F_OK);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   getUrl(key: string): string {

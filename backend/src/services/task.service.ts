@@ -6,7 +6,9 @@ import { AppError } from "../middleware/error.js";
 import { recordAuditLog } from "./audit.service.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 import { requireString, optionalString, requireEnum, TASK_STATUSES, TASK_PRIORITIES } from "../lib/validate.js";
+import type { TaskStatus, TaskPriority } from "../lib/validate.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
+import { logger } from "../lib/logger/index.js";
 
 export interface TaskListOptions {
   orgId: string;
@@ -316,7 +318,7 @@ export async function deleteTask(id: string, userId: string, scope?: string): Pr
   });
 }
 
-export async function batchUpdateStatus(taskIds: string[], status: string, userId: string): Promise<{ matched: number; modified: number }> {
+export async function batchUpdateStatus(taskIds: string[], status: TaskStatus, userId: string): Promise<{ matched: number; modified: number }> {
   if (!status) throw new AppError(400, "Status is required");
   if (!Array.isArray(taskIds) || taskIds.length === 0) throw new AppError(400, "taskIds must be a non-empty array");
 
@@ -329,7 +331,7 @@ export async function batchUpdateStatus(taskIds: string[], status: string, userI
   const bulkOps = tasks.map((t) => ({
     updateOne: {
       filter: { _id: t._id },
-      update: { $set: { status: status as any } },
+      update: { $set: { status } },
     },
   }));
 
@@ -346,7 +348,7 @@ export async function batchUpdateStatus(taskIds: string[], status: string, userI
   };
 }
 
-export async function updateTaskStatus(id: string, status: string, userId: string): Promise<void> {
+export async function updateTaskStatus(id: string, status: TaskStatus, userId: string): Promise<void> {
   if (!status) throw new AppError(400, "Status is required");
   const userOrgId = await requireOrgMembership(userId);
 

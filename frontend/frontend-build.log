@@ -16,15 +16,15 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 8.5s
+✓ Compiled successfully in 8.2s
   Running TypeScript ...
-  Finished TypeScript in 10.0s ...
+  Finished TypeScript in 9.6s ...
   Collecting page data using 11 workers ...
   Generating static pages using 11 workers (0/56) ...
   Generating static pages using 11 workers (14/56) 
   Generating static pages using 11 workers (28/56) 
   Generating static pages using 11 workers (42/56) 
-✓ Generating static pages using 11 workers (56/56) in 472ms
+✓ Generating static pages using 11 workers (56/56) in 415ms
   Finalizing page optimization ...
 
 Route (app)
@@ -123,7 +123,6 @@ Route (app)
 ├ ƒ /settings/plans
 ├ ƒ /share/[token]
 ├ ƒ /signup
-├ ƒ /signup-mongo
 ├ ƒ /staffs
 ├ ƒ /staffs/activity
 ├ ƒ /staffs/add
@@ -147,7 +146,8 @@ Route (app)
 ├ ƒ /time-reports
 ├ ƒ /time-tracker
 ├ ƒ /upcomingtasks
-└ ƒ /upload
+├ ƒ /upload
+└ ƒ /verify-email
 
 
 ƒ Proxy (Middleware)

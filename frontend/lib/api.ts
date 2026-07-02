@@ -23,3 +23,21 @@ export function qs(params: Record<string, string | number | boolean | null | und
   const s = sp.toString();
   return s ? `?${s}` : "";
 }
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+const CSRF_COOKIE = "csrf-token";
+const CSRF_HEADER = "x-csrf-token";
+
+export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const headers = new Headers(init?.headers);
+  if (!headers.has(CSRF_HEADER)) {
+    const token = getCookie(CSRF_COOKIE);
+    if (token) headers.set(CSRF_HEADER, token);
+  }
+  return fetch(input, { ...init, headers, credentials: "include" });
+}

@@ -8,9 +8,10 @@ export interface JwtPayload {
     projectId?: string;
     clientId?: string;
 }
-export interface AuthRequest extends Request {
+export interface AuthRequest extends Omit<Request, "params"> {
     user?: JwtPayload;
     orgId?: string;
+    params: Record<string, string>;
 }
 export interface ApiResponse<T = unknown> {
     success: boolean;

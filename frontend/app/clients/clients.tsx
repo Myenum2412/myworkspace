@@ -28,12 +28,13 @@ import {
   FieldSet,
   FieldLegend,
 } from "@/components/ui/field";
-import { PlusIcon, Loader2, CheckCircle2, Copy, Eye, EyeOff, RefreshCw, AlertCircle, X, Trash2, FolderOpen, FileText } from "lucide-react";
+import { PlusIcon, Loader2, CheckCircle2, Copy, Eye, EyeOff, AlertCircle, X, Trash2, FolderOpen, FileText } from "lucide-react";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { INDUSTRIES } from "@/lib/industries";
 import { columns, makeActionsCell, type Client } from "./columns";
 import { DataTable } from "./data-table";
 import { getSocketIO } from "@/lib/socketio-client";
+import { apiFetch } from "@/lib/api";
 import {
   ClientValues,
   EMPTY_VALUES,
@@ -83,27 +84,6 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [email, setEmail] = useState("");
   const [generatedPassword, setGeneratedPassword] = useState("");
-
-  function generateRandomPassword(length = 12) {
-    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const lower = "abcdefghijklmnopqrstuvwxyz";
-    const digits = "0123456789";
-    const special = "!@#$%^&*";
-    const all = upper + lower + digits + special;
-    let pwd = "";
-    pwd += upper[Math.floor(Math.random() * upper.length)];
-    pwd += lower[Math.floor(Math.random() * lower.length)];
-    pwd += digits[Math.floor(Math.random() * digits.length)];
-    pwd += special[Math.floor(Math.random() * special.length)];
-    for (let i = 4; i < length; i++) {
-      pwd += all[Math.floor(Math.random() * all.length)];
-    }
-    return pwd.split("").sort(() => Math.random() - 0.5).join("");
-  }
-
-  useEffect(() => {
-    setGeneratedPassword(generateRandomPassword());
-  }, []);
 
   const [primaryContact, setPrimaryContact] = useState("");
   const [designation, setDesignation] = useState("");
@@ -211,7 +191,7 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
 
   function resetForm() {
     setClientName(""); setCompanyName(""); setClientType(""); setIndustry(""); setWebsiteUrl("");
-    setEmail(""); setGeneratedPassword(generateRandomPassword());
+    setEmail(""); setGeneratedPassword("");
     setPrimaryContact(""); setDesignation(""); setMobileNumber(""); setAlternatePhone(""); setWhatsappNumber("");
     setAddressLine1(""); setAddressLine2(""); setCity(""); setStateProvince(""); setCountry(""); setPostalCode("");
     setGstNumber(""); setPanNumber(""); setCompanyRegNumber(""); setTaxId("");
@@ -233,6 +213,8 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Invalid email format";
     if (!primaryContact.trim()) errors.primaryContact = "Primary contact is required";
     if (!companyName.trim()) errors.company = "Company name is required";
+    if (!generatedPassword.trim()) errors.password = "Password is required";
+    else if (generatedPassword.length < 6) errors.password = "Password must be at least 6 characters";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -254,10 +236,9 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
       sourceOfLead, notes,
       assignedSalesPerson, assignedProjectManager,
     };
-    const res = await fetch("/api/clients", {
+    const res = await apiFetch("/api/clients", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(payload),
     });
     const result = await res.json();
@@ -304,10 +285,9 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
     setEditSaving(true);
     setEditApiError("");
     setEditErrors({});
-    const res = await fetch(`/api/clients/${encodeURIComponent(editingClient.id)}`, {
+    const res = await apiFetch(`/api/clients/${encodeURIComponent(editingClient.id)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(payloadFromValues(editValues)),
     });
     const result = await res.json().catch(() => ({}));
@@ -325,8 +305,8 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
   async function handleDeleteConfirm() {
     if (!deletingClient) return;
     setDeleteError("");
-    const res = await fetch(`/api/clients/${encodeURIComponent(deletingClient.id)}`, {
-      method: "DELETE", credentials: "include",
+    const res = await apiFetch(`/api/clients/${encodeURIComponent(deletingClient.id)}`, {
+      method: "DELETE",
     });
     if (res.ok) {
       const result = await res.json().catch(() => ({}));
@@ -478,15 +458,14 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
                     {fieldError("email") && <p className="text-xs text-red-500 mt-1">{fieldError("email")}</p>}
                   </Field>
                   <Field>
-                    <Label className="text-xs text-muted-foreground mb-1.5 block">Generated Password</Label>
-                    <div className="flex gap-2">
-                      <Input value={generatedPassword} readOnly className="font-mono text-xs flex-1" />
-                      <Button type="button" variant="outline" size="icon" className="size-9 shrink-0"
-                        onClick={() => setGeneratedPassword(generateRandomPassword())}
-                        title="Regenerate password">
-                        <RefreshCw className="size-4" />
-                      </Button>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block">Password</Label>
+                    <div className="relative">
+                      <Input placeholder="Enter password" type={showPassword ? "text" : "password"} value={generatedPassword} onChange={(e) => setGeneratedPassword(e.target.value)} className={fieldClass("password")} />
+                      <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
                     </div>
+                    {fieldError("password") && <p className="text-xs text-red-500 mt-1">{fieldError("password")}</p>}
                   </Field>
                   <Field>
                     <Label className="text-xs text-muted-foreground mb-1.5 block">Client Type</Label>

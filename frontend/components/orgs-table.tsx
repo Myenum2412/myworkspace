@@ -2,14 +2,6 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -262,65 +254,68 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader className="bg-blue-50">
-              <TableRow>
-                <TableHead className="w-10">
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-[#f3f4f6] text-gray-900 border-b">
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-10">
                   <Checkbox
                     checked={selected.size === filtered.length && filtered.length > 0}
                     onCheckedChange={toggleAll}
                   />
-                </TableHead>
-                <TableHead className="bg-blue-50">Name</TableHead>
-                <TableHead className="bg-blue-50">Plan</TableHead>
-                <TableHead className="bg-blue-50">Domain</TableHead>
-                <TableHead className="bg-blue-50">Slug</TableHead>
-                <TableHead className="bg-blue-50">Created</TableHead>
-                <TableHead className="w-24">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+                </th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Name</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Plan</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Domain</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Slug</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Created</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
               {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                    {search ? "No organizations match your search" : "No organizations found"}
-                  </TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={7} className="h-32 text-center text-muted-foreground px-4 py-3">
+                    <div className="flex flex-col items-center justify-center gap-2 py-8">
+                      <Building2Icon className="size-8 text-muted-foreground/40" />
+                      <span>{search ? "No organizations match your search" : "No organizations found"}</span>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 filtered.map((o) => (
-                  <TableRow key={o.id} className={selected.has(o.id) ? "bg-muted/30" : ""}>
-                    <TableCell>
+                  <tr key={o.id} className={`bg-white group hover:bg-slate-50 transition-colors ${selected.has(o.id) ? "bg-muted/30" : ""}`}>
+                    <td className="px-4 py-3">
                       <Checkbox
                         checked={selected.has(o.id)}
                         onCheckedChange={() => toggle(o.id)}
                       />
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Building2Icon className="size-4 text-muted-foreground shrink-0" />
                         <span className="font-medium">{o.name}</span>
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-4 py-3">
                       <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize">
                         {o.plan || "free"}
                       </span>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{o.domain || "—"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{o.slug || "—"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{o.createdAt}</TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{o.domain || "—"}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{o.slug || "—"}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{o.createdAt}</td>
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <EditOrgDialog org={o} />
                         <DeleteOrgButton org={o} />
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))
               )}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

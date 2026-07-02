@@ -10,7 +10,7 @@ export const WORKSPACE_ROUTES = [
   "/teamtasks", "/team-time", "/settings", "/profile", "/admin",
   "/departments", "/addemployees", "/addprojects", "/files",
   "/savedtasks", "/upcomingtasks", "/terminated",
-  "/recycle-bin", "/upload", "/billing",
+  "/recycle-bin", "/upload", "/billing", "/ai-chat", "/automation",
 ];
 
 export function getAppContext(pathname: string): AppContextType {

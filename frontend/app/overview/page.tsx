@@ -56,9 +56,26 @@ export default async function OverviewPage() {
       { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
     ]).toArray();
     
-    tasks = (raw as unknown as Record<string, unknown>[]).map((t) => {
+    const rawTasks = raw as unknown as Record<string, unknown>[];
+    const allUserIds = new Set<string>();
+    rawTasks.forEach((t) => {
+      const aId = (t.assigneeId as string) || "";
+      const cId = (t.creatorId as string) || "";
+      if (aId) allUserIds.add(aId);
+      if (cId) allUserIds.add(cId);
+    });
+    const userIdsArr = [...allUserIds];
+    let userMap = new Map<string, { name: string; image: string }>();
+    if (userIdsArr.length > 0) {
+      const userDocs = await db.collection(collections.users).find({ id: { $in: userIdsArr } }).project({ _id: 0, id: 1, name: 1, image: 1 }).toArray() as unknown as Record<string, unknown>[];
+      userMap = new Map(userDocs.map((u) => [u.id as string, { name: (u.name as string) || "", image: (u.image as string) || "" }]));
+    }
+
+    tasks = rawTasks.map((t) => {
       const assignee = (t.assignee as Record<string, unknown> | null) || null;
       const creator = (t.creator as Record<string, unknown> | null) || null;
+      const assigneeId = (t.assigneeId as string) || "";
+      const creatorId = (t.creatorId as string) || "";
       return {
       _id: (t._id as { toString: () => string }).toString(),
       title: (t.title as string) || "",
@@ -66,11 +83,11 @@ export default async function OverviewPage() {
       status: (t.status as string) || "",
       priority: (t.priority as string) || "",
       dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
-      assigneeId: (t.assigneeId as string) || "",
-      assigneeName: (assignee?.name as string) || "",
-      assigneeAvatar: (assignee?.image as string) || "",
-      creatorId: (t.creatorId as string) || "",
-      creatorName: (creator?.name as string) || "",
+      assigneeId,
+      assigneeName: (assignee?.name as string) || userMap.get(assigneeId)?.name || assigneeId.slice(0, 8),
+      assigneeAvatar: (assignee?.image as string) || userMap.get(assigneeId)?.image || "",
+      creatorId,
+      creatorName: (creator?.name as string) || userMap.get(creatorId)?.name || creatorId.slice(0, 8),
       createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
       isBookmarked: (t.isBookmarked as boolean) || false,
       };

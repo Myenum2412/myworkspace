@@ -6,14 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -264,33 +256,33 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             <CardTitle className="text-sm">Recent Tasks</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-blue-50">
-                  <TableRow>
-                    <TableHead className="bg-blue-50 w-10"><Checkbox /></TableHead>
-                    <TableHead className="bg-blue-50 w-20">Task #</TableHead>
-                    <TableHead className="bg-blue-50">Task</TableHead>
-                    <TableHead className="bg-blue-50">Assigned To</TableHead>
-                    <TableHead className="bg-blue-50">Delegated By</TableHead>
-                    <TableHead className="bg-blue-50">Status</TableHead>
-                    <TableHead className="bg-blue-50">Priority</TableHead>
-                    <TableHead className="bg-blue-50">Due Date</TableHead>
-                    <TableHead className="bg-blue-50 w-16">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+              <table className="w-full text-sm text-left">
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-[#f3f4f6] text-gray-900 border-b">
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"><Checkbox /></th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-20">Task #</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Task</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Assigned To</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Delegated By</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Priority</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Due Date</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-16">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {recentTasks.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">No tasks yet</TableCell>
-                    </TableRow>
+                    <tr className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group">
+                      <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">No tasks yet</td>
+                    </tr>
                   ) : (
                     recentTasks.map((t, idx) => (
-                      <TableRow key={t._id} className="bg-white">
-                        <TableCell><Checkbox /></TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground">#{idx + 1}</TableCell>
-                        <TableCell className="font-medium">{t.title}</TableCell>
-                        <TableCell>
+                      <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group">
+                        <td className="px-4 py-3"><Checkbox /></td>
+                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">#{idx + 1}</td>
+                        <td className="px-4 py-3 font-medium">{t.title}</td>
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <div className="size-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
                               {t.assigneeAvatar ? (
@@ -303,12 +295,12 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
                             </div>
                             <span className="text-sm">{t.assigneeName || "—"}</span>
                           </div>
-                        </TableCell>
-                        <TableCell><span className="text-sm">{t.creatorName || "—"}</span></TableCell>
-                        <TableCell><Badge className={statusStyles[t.status] || ""}>{t.status.replace(/_/g, " ")}</Badge></TableCell>
-                        <TableCell><Badge className={priorityStyles[t.priority] || ""}>{t.priority}</Badge></TableCell>
-                        <TableCell className="text-muted-foreground">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}</TableCell>
-                        <TableCell>
+                        </td>
+                        <td className="px-4 py-3"><span className="text-sm">{t.creatorName || "—"}</span></td>
+                        <td className="px-4 py-3"><Badge className={statusStyles[t.status] || ""}>{t.status.replace(/_/g, " ")}</Badge></td>
+                        <td className="px-4 py-3"><Badge className={priorityStyles[t.priority] || ""}>{t.priority}</Badge></td>
+                        <td className="px-4 py-3 text-muted-foreground">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}</td>
+                        <td className="px-4 py-3">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
@@ -320,12 +312,12 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
                               <DropdownMenuItem className="text-destructive"><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
                     ))
                   )}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>

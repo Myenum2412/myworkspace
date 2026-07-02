@@ -15,7 +15,9 @@ export const env = {
   R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || "myworkspace",
   R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID || "",
   R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY || "",
-  RESEND_API_KEY: process.env.RESEND_API_KEY || "",
+  SES_REGION: process.env.SES_REGION || "us-east-1",
+  SES_ACCESS_KEY_ID: process.env.SES_ACCESS_KEY_ID || "",
+  SES_SECRET_ACCESS_KEY: process.env.SES_SECRET_ACCESS_KEY || "",
   MAIL_FROM: process.env.MAIL_FROM || "MyWorkspace <welcome@myworkspace.myenum.in>",
   APP_URL: process.env.APP_URL || "http://localhost:3000",
 

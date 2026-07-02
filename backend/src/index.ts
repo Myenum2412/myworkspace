@@ -52,6 +52,48 @@ async function start() {
   promoteRateLimitersToRedis();
 
   logger.info("MyWorkSpace startup complete");
+
+  // ---- Graceful Shutdown ----
+  const shutdown = async (signal: string) => {
+    logger.info({ signal }, "Received shutdown signal — beginning graceful shutdown");
+
+    // Stop accepting new connections
+    server.close(() => {
+      logger.info("HTTP server closed");
+    });
+
+    // Close Socket.IO
+    try {
+      socketIOManager.close();
+      logger.info("Socket.IO closed");
+    } catch (err) {
+      logger.warn({ err }, "Socket.IO close error during shutdown");
+    }
+
+    // Close RabbitMQ channel
+    try {
+      const { closeConnection } = await import("./lib/queue/connection.js");
+      await closeConnection();
+      logger.info("RabbitMQ connection closed");
+    } catch (err) {
+      logger.warn({ err }, "RabbitMQ close error during shutdown");
+    }
+
+    // Disconnect MongoDB
+    try {
+      const { default: mongoose } = await import("mongoose");
+      await mongoose.disconnect();
+      logger.info("MongoDB disconnected");
+    } catch (err) {
+      logger.warn({ err }, "MongoDB disconnect error during shutdown");
+    }
+
+    logger.info("Graceful shutdown complete");
+    process.exit(0);
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 start();

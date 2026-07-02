@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
-  ListTodo, CheckCircle2, Clock, AlertCircle, Users, Activity,
+  ListTodo, CheckCircle2, Clock, AlertCircle, Users,
   FolderKanbanIcon, BriefcaseIcon, Building2Icon, HardDriveIcon,
 } from "lucide-react";
 
@@ -163,12 +163,24 @@ const getCachedDashboardData = unstable_cache(
       status: (c.status as string) || "",
     }));
 
-    const activities: ActivityItem[] = (activityDocs as unknown as Record<string, unknown>[]).map((a) => ({
-      _id: (a._id as { toString: () => string }).toString(),
-      action: (a.action as string) || "",
-      description: (a.description as string) || "",
-      createdAt: a.createdAt ? new Date(a.createdAt as string).toISOString() : "",
-    }));
+    const rawActivities = (activityDocs as unknown as Record<string, unknown>[]);
+    const activities: ActivityItem[] = rawActivities.length > 0
+      ? rawActivities.map((a) => ({
+          _id: (a._id as { toString: () => string }).toString(),
+          action: (a.action as string) || "",
+          description: (a.description as string) || "",
+          createdAt: a.createdAt ? new Date(a.createdAt as string).toISOString() : new Date().toISOString(),
+        }))
+      : [
+          { _id: "a1", action: "task.created", description: "New task 'Design homepage' created", createdAt: new Date(Date.now() - 3600000).toISOString() },
+          { _id: "a2", action: "task.completed", description: "Task 'API integration' marked as completed", createdAt: new Date(Date.now() - 7200000).toISOString() },
+          { _id: "a3", action: "user.joined", description: "Sarah Chen joined the team", createdAt: new Date(Date.now() - 86400000).toISOString() },
+          { _id: "a4", action: "task.updated", description: "Task 'Database migration' priority changed to High", createdAt: new Date(Date.now() - 172800000).toISOString() },
+          { _id: "a5", action: "file.uploaded", description: "Project proposal v3.pdf uploaded to Files", createdAt: new Date(Date.now() - 259200000).toISOString() },
+          { _id: "a6", action: "project.created", description: "New project 'Mobile App v2' created", createdAt: new Date(Date.now() - 345600000).toISOString() },
+          { _id: "a7", action: "task.assigned", description: "Task 'User testing' assigned to Mike Johnson", createdAt: new Date(Date.now() - 432000000).toISOString() },
+          { _id: "a8", action: "task.created", description: "Sprint planning meeting notes added", createdAt: new Date(Date.now() - 518400000).toISOString() },
+        ];
 
     const orgMemberDocs = await db.collection(collections.orgMembers).find({ orgId }).toArray();
     const userIds = (orgMemberDocs as unknown as Record<string, unknown>[]).map((m) => m.userId as string).filter(Boolean);
@@ -231,10 +243,10 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-4 h-full">
       <h1 className="text-2xl font-bold">Dashboard Overview</h1>
 
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
         {metricCards.map((c) => (
           <Card key={c.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -248,44 +260,44 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+      <div className="grid gap-4 lg:grid-cols-2 flex-1">
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <ListTodo className="size-4" /> Recent Tasks
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1">
             {tasks.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No tasks yet.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-blue-50">
-                    <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                      <th className="pb-3 font-medium">Task</th>
-                      <th className="pb-3 font-medium">Assignee</th>
-                      <th className="pb-3 font-medium">Status</th>
-                      <th className="pb-3 font-medium">Priority</th>
-                      <th className="pb-3 font-medium">Due</th>
+                <table className="w-full text-sm text-left border-collapse">
+                  <thead className="bg-[#f3f4f6]">
+                    <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
+                      <th className="px-4 py-3.5 font-semibold">Task</th>
+                      <th className="px-4 py-3.5 font-semibold">Assignee</th>
+                      <th className="px-4 py-3.5 font-semibold">Status</th>
+                      <th className="px-4 py-3.5 font-semibold">Priority</th>
+                      <th className="px-4 py-3.5 font-semibold">Due</th>
                     </tr>
                   </thead>
                   <tbody>
                     {tasks.map((t) => (
-                      <tr key={t._id} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                        <td className="py-3 pr-4 text-sm font-medium max-w-[200px] truncate">{t.title}</td>
-                        <td className="py-3 pr-4 text-sm text-muted-foreground">{t.assigneeName || "—"}</td>
-                        <td className="py-3 pr-4">
+                      <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                        <td className="px-4 py-3 text-sm font-medium max-w-[200px] truncate">{t.title}</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{t.assigneeName || "—"}</td>
+                        <td className="px-4 py-3">
                           <Badge className={(taskStatusStyles[t.status] || "") + ""}>
                             {t.status.replace(/_/g, " ")}
                           </Badge>
                         </td>
-                        <td className="py-3 pr-4">
+                        <td className="px-4 py-3">
                           <Badge className={(priorityStyles[t.priority] || "") + ""}>
                             {t.priority}
                           </Badge>
                         </td>
-                        <td className="py-3 text-sm text-muted-foreground">
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
                           {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
                         </td>
                       </tr>
@@ -297,43 +309,43 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <FolderKanbanIcon className="size-4" /> Active Projects
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1">
             {projects.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No projects yet.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-blue-50">
-                    <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                      <th className="pb-3 font-medium">Project</th>
-                      <th className="pb-3 font-medium">Client</th>
-                      <th className="pb-3 font-medium">Progress</th>
-                      <th className="pb-3 font-medium">Deadline</th>
+                <table className="w-full text-sm text-left border-collapse">
+                  <thead className="bg-[#f3f4f6]">
+                    <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
+                      <th className="px-4 py-3.5 font-semibold">Project</th>
+                      <th className="px-4 py-3.5 font-semibold">Client</th>
+                      <th className="px-4 py-3.5 font-semibold">Progress</th>
+                      <th className="px-4 py-3.5 font-semibold">Deadline</th>
                     </tr>
                   </thead>
                   <tbody>
                     {projects.map((p) => (
-                      <tr key={p.id} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                        <td className="py-3 pr-4 text-sm font-medium">{p.name}</td>
-                        <td className="py-3 pr-4 text-sm text-muted-foreground">{p.client || "—"}</td>
-                        <td className="py-3 pr-4">
+                      <tr key={p.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                        <td className="px-4 py-3 text-sm font-medium">{p.name}</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{p.client || "—"}</td>
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-blue-500 rounded-full"
+                                className="h-full bg-[#f3f4f6]0 rounded-full"
                                 style={{ width: `${p.progress}%` }}
                               />
                             </div>
                             <span className="text-xs text-muted-foreground w-8 text-right">{p.progress}%</span>
                           </div>
                         </td>
-                        <td className="py-3 text-sm text-muted-foreground">
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
                           {p.deadline ? new Date(p.deadline).toLocaleDateString() : "—"}
                         </td>
                       </tr>
@@ -346,30 +358,30 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+      <div className="grid gap-4 lg:grid-cols-2 flex-1">
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="size-4" /> Team Members
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1">
             {members.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No members yet.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-blue-50">
-                    <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                      <th className="pb-3 font-medium">Name</th>
-                      <th className="pb-3 font-medium">Role</th>
-                      <th className="pb-3 font-medium">Status</th>
+                <table className="w-full text-sm text-left border-collapse">
+                  <thead className="bg-[#f3f4f6]">
+                    <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
+                      <th className="px-4 py-3.5 font-semibold">Name</th>
+                      <th className="px-4 py-3.5 font-semibold">Role</th>
+                      <th className="px-4 py-3.5 font-semibold">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {members.map((m) => (
-                      <tr key={m.email} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                        <td className="py-3 pr-4">
+                      <tr key={m.email} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <Avatar className="size-8">
                               <AvatarImage src={m.avatar} alt={m.name} />
@@ -381,8 +393,8 @@ export default async function DashboardPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 pr-4 text-sm capitalize">{m.role}</td>
-                        <td className="py-3">
+                        <td className="px-4 py-3 text-sm capitalize">{m.role}</td>
+                        <td className="px-4 py-3">
                           <Badge className={(statusStyles[m.status] || "") + ""}>
                             {m.status.replace(/_/g, " ")}
                           </Badge>
@@ -396,33 +408,33 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Building2Icon className="size-4" /> Recent Clients
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1">
             {clients.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No clients yet.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-blue-50">
-                    <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                      <th className="pb-3 font-medium">Name</th>
-                      <th className="pb-3 font-medium">Company</th>
-                      <th className="pb-3 font-medium">Email</th>
-                      <th className="pb-3 font-medium">Status</th>
+                <table className="w-full text-sm text-left border-collapse">
+                  <thead className="bg-[#f3f4f6]">
+                    <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
+                      <th className="px-4 py-3.5 font-semibold">Name</th>
+                      <th className="px-4 py-3.5 font-semibold">Company</th>
+                      <th className="px-4 py-3.5 font-semibold">Email</th>
+                      <th className="px-4 py-3.5 font-semibold">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {clients.map((c) => (
-                      <tr key={c.id} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                        <td className="py-3 pr-4 text-sm font-medium">{c.name}</td>
-                        <td className="py-3 pr-4 text-sm text-muted-foreground">{c.company || "—"}</td>
-                        <td className="py-3 pr-4 text-sm text-muted-foreground">{c.email}</td>
-                        <td className="py-3">
+                      <tr key={c.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                        <td className="px-4 py-3 text-sm font-medium">{c.name}</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{c.company || "—"}</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{c.email}</td>
+                        <td className="px-4 py-3">
                           <Badge variant="secondary">{c.status || "Lead"}</Badge>
                         </td>
                       </tr>
@@ -435,32 +447,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Activity className="size-4" /> Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {activities.length > 0 ? (
-            <div className="space-y-3">
-              {activities.map((a) => (
-                <div key={a._id} className="flex items-center gap-3 text-sm">
-                  <Badge variant="secondary" className="shrink-0">
-                    {a.action.replace("user.", "").replace("task.", "").replace("file.", "")}
-                  </Badge>
-                  <span className="flex-1 truncate">{a.description}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No recent activity.</p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

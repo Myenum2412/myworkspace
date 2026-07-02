@@ -62,20 +62,20 @@ export default async function StaffAttendancePage() {
           <CardTitle>Today</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-blue-50">
-                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                  <th className="pb-3 font-medium">Staff</th>
-                  <th className="pb-3 font-medium">Check In</th>
-                  <th className="pb-3 font-medium">Check Out</th>
-                  <th className="pb-3 font-medium">Status</th>
-                </tr>
-              </thead>
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+            <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="bg-[#f3f4f6]">
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Staff</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Check In</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Check Out</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
+                  </tr>
+                </thead>
               <tbody>
                 {today.map((t, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                    <td className="py-3 pr-4">
+                  <tr key={i} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8">
                           <AvatarFallback>{getInitials(t.name)}</AvatarFallback>
@@ -83,9 +83,9 @@ export default async function StaffAttendancePage() {
                         <span className="text-sm font-medium">{t.name}</span>
                       </div>
                     </td>
-                    <td className="py-3 pr-4 text-sm">{t.checkIn || "—"}</td>
-                    <td className="py-3 pr-4 text-sm">{t.checkOut || "—"}</td>
-                    <td className="py-3">
+                    <td className="px-4 py-3">{t.checkIn || "—"}</td>
+                    <td className="px-4 py-3">{t.checkOut || "—"}</td>
+                    <td className="px-4 py-3">
                       <Badge className={statusStyles[t.status] || ""}>{t.status}</Badge>
                     </td>
                   </tr>

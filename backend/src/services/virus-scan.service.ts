@@ -58,6 +58,12 @@ export async function scanBuffer(buffer: Buffer): Promise<ScanResult> {
     await fs.promises.writeFile(tmpPath, buffer);
     return await scanFile(tmpPath);
   } finally {
-    fs.promises.unlink(tmpPath).catch(() => {});
+    import("fs/promises").then(({ unlink }) => {
+      unlink(tmpPath).catch((err: NodeJS.ErrnoException) => {
+        if (err.code !== "ENOENT") {
+          logger.warn({ err, tmpPath }, "Failed to clean up temp virus scan file");
+        }
+      });
+    });
   }
 }

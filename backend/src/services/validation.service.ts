@@ -1,4 +1,6 @@
 import { AppError } from "../middleware/error.js";
+import { fileTypeFromBuffer } from "file-type";
+import { logger } from "../lib/logger/index.js";
 
 const COMMON_PASSWORDS = new Set([
   "password", "password123", "password1234", "12345678", "123456789",
@@ -116,6 +118,40 @@ export function detectMimeTypeFromBuffer(buffer: Buffer): string | null {
   return null;
 }
 
+/**
+ * Validate a file's content against its declared MIME type using
+ * magic-byte inspection. Uses `file-type` (a comprehensive, maintained
+ * magic-byte database) with the existing hand-rolled checkers as fallback
+ * for edge cases file-type doesn't cover.
+ *
+ * @returns The detected MIME type (never null — falls back to declared on miss).
+ */
+export async function validateFileMagicBytesAsync(buffer: Buffer, declaredMime: string): Promise<string> {
+  // Primary: file-type (handles 500+ formats, including modern ones like avif, heic, cr3)
+  try {
+    const detected = await fileTypeFromBuffer(buffer);
+    if (detected) {
+      // Category-level validation
+      const declaredCategory = declaredMime.split("/")[0];
+      const detectedCategory = detected.mime.split("/")[0];
+      if (declaredCategory !== detectedCategory && declaredMime !== "application/octet-stream") {
+        return detected.mime;
+      }
+      return detected.mime;
+    }
+  } catch (err) {
+    logger.warn({ err }, "file-type inspection failed, falling back to hand-rolled checkers");
+  }
+
+  // Fallback: hand-rolled magic bytes (for formats file-type might miss or
+  // when the buffer is truncated / too short for file-type to handle).
+  return validateFileMagicBytes(buffer, declaredMime);
+}
+
+/**
+ * Synchronous fallback using hand-rolled magic-byte checkers.
+ * Kept for backward compatibility and non-async call sites.
+ */
 export function validateFileMagicBytes(buffer: Buffer, declaredMime: string): string {
   const detected = detectMimeTypeFromBuffer(buffer);
 

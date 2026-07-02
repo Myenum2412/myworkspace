@@ -12,7 +12,7 @@ import { getUserOrgId } from "../lib/org-utils.js";
 import { env } from "../config/env.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail } from "../lib/mail/index.js";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, sendOrganizationInviteEmail, sendClientWelcomeEmail } from "../lib/mail/index.js";
 import { mongoose } from "../lib/db/index.js";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "../types/index.js";
@@ -441,6 +441,81 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
       orgId: orgId || undefined,
     },
   });
+});
+
+// Send welcome email endpoint (for frontend to call)
+router.post("/send-welcome-email", async (req: AuthRequest, res: Response) => {
+  try {
+    const { email, name } = req.body;
+    if (!email || !name) {
+      return res.status(400).json({ success: false, message: "Email and name are required" });
+    }
+    await sendWelcomeEmail(email, name);
+    res.json({ success: true, message: "Welcome email sent" });
+  } catch (err) {
+    console.error("[auth] send-welcome-email error:", err);
+    res.status(500).json({ success: false, message: "Failed to send welcome email" });
+  }
+});
+
+// Send organization invite email endpoint
+router.post("/send-organization-invite-email", async (req: AuthRequest, res: Response) => {
+  try {
+    const { email, name, orgName, inviteUrl } = req.body;
+    if (!email || !name || !orgName || !inviteUrl) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+    await sendOrganizationInviteEmail(email, name, orgName, inviteUrl);
+    res.json({ success: true, message: "Organization invite email sent" });
+  } catch (err) {
+    console.error("[auth] send-organization-invite-email error:", err);
+    res.status(500).json({ success: false, message: "Failed to send organization invite email" });
+  }
+});
+
+// Send verification email endpoint
+router.post("/send-verification-email", async (req: AuthRequest, res: Response) => {
+  try {
+    const { email, name, verificationUrl } = req.body;
+    if (!email || !name || !verificationUrl) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+    await sendVerificationEmail(email, name, verificationUrl);
+    res.json({ success: true, message: "Verification email sent" });
+  } catch (err) {
+    console.error("[auth] send-verification-email error:", err);
+    res.status(500).json({ success: false, message: "Failed to send verification email" });
+  }
+});
+
+// Send client welcome email endpoint
+router.post("/send-client-welcome-email", async (req: AuthRequest, res: Response) => {
+  try {
+    const { email, clientName, username, tempPassword, loginUrl } = req.body;
+    if (!email || !clientName || !username || !tempPassword || !loginUrl) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+    await sendClientWelcomeEmail(email, clientName, username, tempPassword, loginUrl);
+    res.json({ success: true, message: "Client welcome email sent" });
+  } catch (err) {
+    console.error("[auth] send-client-welcome-email error:", err);
+    res.status(500).json({ success: false, message: "Failed to send client welcome email" });
+  }
+});
+
+// Send password reset email endpoint
+router.post("/send-password-reset-email", async (req: AuthRequest, res: Response) => {
+  try {
+    const { email, name, resetLink } = req.body;
+    if (!email || !name || !resetLink) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+    await sendPasswordResetEmail(email, name, resetLink);
+    res.json({ success: true, message: "Password reset email sent" });
+  } catch (err) {
+    console.error("[auth] send-password-reset-email error:", err);
+    res.status(500).json({ success: false, message: "Failed to send password reset email" });
+  }
 });
 
 export default router;

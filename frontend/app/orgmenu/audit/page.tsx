@@ -3,14 +3,6 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
@@ -122,49 +114,49 @@ export default async function AuditPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border">
-        <Table>
-          <TableHeader className="bg-blue-50">
-            <TableRow>
-              <TableHead className="bg-blue-50">User</TableHead>
-              <TableHead className="bg-blue-50">Action</TableHead>
-              <TableHead className="bg-blue-50 max-w-md">Description</TableHead>
-              <TableHead className="bg-blue-50">Entity</TableHead>
-              <TableHead className="bg-blue-50">Timestamp</TableHead>
-              {isSuperAdmin && <TableHead className="bg-blue-50">Organization</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-[#f3f4f6] text-gray-900 border-b">
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">User</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Action</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap max-w-md">Description</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Entity</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Timestamp</th>
+              {isSuperAdmin && <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Organization</th>}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
             {logs.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={isSuperAdmin ? 6 : 5} className="h-32 text-center text-muted-foreground">
+              <tr className="bg-white group hover:bg-slate-50 transition-colors">
+                <td colSpan={isSuperAdmin ? 6 : 5} className="px-4 py-3 h-32 text-center text-muted-foreground">
                   No audit logs found
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             ) : (
               logs.map((log) => (
-                <TableRow key={log.id} className="bg-white">
-                  <TableCell className="text-sm font-medium">{log.userName}</TableCell>
-                  <TableCell>
+                <tr key={log.id} className="bg-white group hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3 font-medium">{log.userName}</td>
+                  <td className="px-4 py-3">
                     <Badge className={`text-xs ${actionColors[log.action] || "bg-muted text-muted-foreground"}`}>
                       {log.action.replace(/^[^.]+\./, "")}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm max-w-md truncate" title={log.description}>
+                  </td>
+                  <td className="px-4 py-3 max-w-md truncate" title={log.description}>
                     {log.description}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
                     {log.entityType ? `${log.entityType}${log.entityId ? ` #${log.entityId.slice(0, 8)}` : ""}` : "—"}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{fmt(log.createdAt)}</TableCell>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{fmt(log.createdAt)}</td>
                   {isSuperAdmin && (
-                    <TableCell className="text-sm text-muted-foreground">{log.orgName || "—"}</TableCell>
+                    <td className="px-4 py-3 text-muted-foreground">{log.orgName || "—"}</td>
                   )}
-                </TableRow>
+                </tr>
               ))
             )}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
     </div>
   );

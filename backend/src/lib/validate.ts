@@ -1,5 +1,9 @@
 import { AppError } from "../middleware/error.js";
 
+// Mongoose model enum types
+export type TaskStatus = "todo" | "in_progress" | "review" | "done" | "cancelled";
+export type TaskPriority = "low" | "medium" | "high" | "urgent";
+
 /**
  * Field validation helpers. Fail fast with 400 + field list so the existing
  * error handler surfaces consistent `{ success:false, fields }` payloads.

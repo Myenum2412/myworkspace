@@ -207,7 +207,7 @@ export default async function OrgDashboardPage() {
         </div>
       </div>
 
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid auto-rows-min gap-4 grid-cols-8">
         {isSuperAdmin && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">

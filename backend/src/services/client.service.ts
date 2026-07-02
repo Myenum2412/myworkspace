@@ -8,10 +8,13 @@ import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
 import { Organization } from "../lib/db/models/Organization.js";
+import { Project } from "../lib/db/models/Project.js";
+import { Task } from "../lib/db/models/Task.js";
 import { AppError } from "../middleware/error.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 import { cacheManager } from "../lib/cache.js";
 import { sendClientWelcomeEmail } from "../lib/mail/index.js";
+import { eventProducer } from "../lib/queue/producer.js";
 import { provisionClientWorkspace } from "../lib/workspace/provision.js";
 import { requireString, requireEmail } from "../lib/validate.js";
 import { env } from "../config/env.js";
@@ -248,6 +251,7 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
   });
   cacheManager.invalidatePattern(`clients:${orgId}`);
 
+  // Send welcome email with queue-backed reliability
   sendClientWelcomeEmail(
     email,
     name,
@@ -255,7 +259,17 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
     rawPassword,
     `${env.APP_URL}/client/login`
   ).catch((err: Error) => {
-    logger.error({ err }, "client welcome email failed");
+    logger.error({ err, clientId, email }, "Direct welcome email failed, enqueuing for retry");
+    eventProducer.notificationSend({
+      userId: adminId,
+      orgId,
+      type: "email_retry",
+      title: `Welcome email for ${name}`,
+      message: `Failed to send welcome email to ${email}. Will retry via queue.`,
+      link: `/clients/${clientId}`,
+    }).catch((retryErr: Error) => {
+      logger.error({ err: retryErr, clientId, email }, "Failed to enqueue email retry notification");
+    });
   });
 
   return {
@@ -287,6 +301,19 @@ export async function updateClient(orgId: string, clientId: string, adminId: str
     throw new AppError(404, "Client not found");
   }
 
+  if (body.password) {
+    const hashedPassword = await hash(body.password, 10);
+    await ClientUser.updateOne(
+      { clientId: client.id, orgId },
+      { $set: { password: hashedPassword, mustChangePassword: true, updatedBy: adminId } },
+    );
+    await ClientAuditLog.create({
+      orgId, clientId, createdBy: adminId,
+      action: "client.password_changed", entityType: "client", entityId: clientId,
+      description: `Password changed for client ${client.name} by ${adminEmail}`,
+    });
+  }
+
   await ClientAuditLog.create({
     orgId,
     clientId,
@@ -316,9 +343,19 @@ export async function deleteClient(orgId: string, clientId: string, adminId: str
     throw new AppError(404, "Client not found");
   }
 
+  // Cascade: delete projects linked to this client by name, and their tasks
+  const projects = await Project.find({ orgId, client: client.name }).lean();
+  const projectNames = projects.map((p) => p.name);
+
   await Promise.allSettled([
     ClientUser.deleteOne({ clientId }),
     ClientAuditLog.deleteMany({ clientId }),
+    ...(projectNames.length > 0
+      ? [Task.deleteMany({ orgId, project: { $in: projectNames } })]
+      : []),
+    ...(projects.length > 0
+      ? [Project.deleteMany({ orgId, client: client.name })]
+      : []),
   ]);
 
   await ClientAuditLog.create({
@@ -327,7 +364,7 @@ export async function deleteClient(orgId: string, clientId: string, adminId: str
     action: "client.deleted",
     entityType: "client",
     entityId: clientId,
-    description: `Client ${client.name} deleted`,
+    description: `Client ${client.name} deleted (including ${projects.length} project(s) and associated tasks)`,
   });
 
   socketIOManager.emitToOrg(orgId, "client:deleted", {

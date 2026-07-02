@@ -65,29 +65,31 @@ export default async function StaffPerformancePage() {
           <CardTitle>Recent Reviews</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-blue-50">
-                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                  <th className="pb-3 font-medium">Staff</th>
-                  <th className="pb-3 font-medium">Rating</th>
-                  <th className="pb-3 font-medium">Review</th>
-                  <th className="pb-3 font-medium">Date</th>
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b bg-[#f3f4f6] text-gray-900 font-semibold">
+                    <th className="px-4 py-3.5 font-semibold">Staff</th>
+                    <th className="px-4 py-3.5 font-semibold">Rating</th>
+                    <th className="px-4 py-3.5 font-semibold">Review</th>
+                    <th className="px-4 py-3.5 font-semibold">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {reviews.map((r, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                    <td className="py-3 pr-4 text-sm font-medium">{r.name}</td>
-                    <td className="py-3 pr-4">
+                  <tr key={i} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                    <td className="px-4 py-3 text-sm font-medium">{r.name}</td>
+                    <td className="px-4 py-3">
                       <Badge className={ratingColor(r.rating)}>{r.rating}</Badge>
                     </td>
-                    <td className="py-3 pr-4 text-sm text-muted-foreground">{r.review}</td>
-                    <td className="py-3 text-sm text-muted-foreground">{r.date}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{r.review}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{r.date}</td>
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

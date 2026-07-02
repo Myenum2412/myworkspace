@@ -8,6 +8,7 @@ import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
 import { requestIdMiddleware } from "./lib/request-id.js";
 import { authLimiter, socketTokenLimiter, apiLimiter } from "./middleware/rate-limit.js";
+import { inputSanitizer } from "./middleware/sanitize.js";
 import { csrfProtection } from "./lib/csrf.js";
 import mongoose from "mongoose";
 import { isRedisConnected } from "./lib/redis.js";
@@ -36,30 +37,46 @@ import fileApprovalRoutes from "./routes/file-approval.js";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 const isProd = env.NODE_ENV === "production";
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", "'strict-dynamic'", ...(isProd ? [] : ["'unsafe-inline'", "'unsafe-eval'"])],
       styleSrc: ["'self'", "https://fonts.googleapis.com", ...(isProd ? [] : ["'unsafe-inline'"])],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
       imgSrc: ["'self'", "data:", "blob:", env.APP_URL, env.S3_ENDPOINT, env.R2_ENDPOINT].filter(Boolean),
       connectSrc: ["'self'", env.APP_URL, env.BASE_URL_WS].filter(Boolean),
       objectSrc: ["'none'"],
-      frameAncestors: ["'self'"],
+      mediaSrc: ["'self'", "blob:", "data:"],
+      frameAncestors: ["'none'"],
       baseUri: ["'self'"],
-      formAction: ["'self'"],
+      formAction: ["'self'", env.APP_URL].filter(Boolean),
+      manifestSrc: ["'self'"],
+      workerSrc: ["'self'", "blob:"],
       ...(isProd ? { upgradeInsecureRequests: [] } : {}),
     },
+    reportOnly: false,
   },
   crossOriginEmbedderPolicy: true,
+  crossOriginOpenerPolicy: { policy: "same-origin" },
+  crossOriginResourcePolicy: { policy: "same-origin" },
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  hsts: isProd ? { maxAge: 63072000, includeSubDomains: true, preload: true } : false,
+  dnsPrefetchControl: { allow: false },
+  noSniff: true,
+  xssFilter: true,
+  frameguard: { action: "deny" },
+  ieNoOpen: true,
 }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(compression({ level: 6 }));
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(requestIdMiddleware);
+app.use(inputSanitizer);
 app.use(csrfProtection());
 app.use("/api/auth", authLimiter, (req, _res, next) => {
   if (req.path === "/socket-token") socketTokenLimiter(req, _res, next);

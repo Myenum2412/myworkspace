@@ -62,20 +62,21 @@ export default async function StaffListPage() {
           <CardTitle>All Staff</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-blue-50">
-                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                  <th className="pb-3 font-medium">Name</th>
-                  <th className="pb-3 font-medium">Department</th>
-                  <th className="pb-3 font-medium">Role</th>
-                  <th className="pb-3 font-medium">Status</th>
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b bg-[#f3f4f6] text-gray-900 font-semibold">
+                    <th className="px-4 py-3.5 font-semibold">Name</th>
+                    <th className="px-4 py-3.5 font-semibold">Department</th>
+                    <th className="px-4 py-3.5 font-semibold">Role</th>
+                    <th className="px-4 py-3.5 font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {staff.map((s) => (
-                  <tr key={s.email} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                    <td className="py-3 pr-4">
+                  <tr key={s.email} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8">
                           <AvatarImage src={s.avatar} alt={s.name} />
@@ -87,9 +88,9 @@ export default async function StaffListPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 pr-4 text-sm">{s.department}</td>
-                    <td className="py-3 pr-4 text-sm text-muted-foreground">{s.role}</td>
-                    <td className="py-3">
+                    <td className="px-4 py-3 text-sm">{s.department}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{s.role}</td>
+                    <td className="px-4 py-3">
                       <Badge className={statusStyles[s.status] || ""}>
                         {s.status === "on_leave" ? "On Leave" : "Active"}
                       </Badge>
@@ -97,7 +98,8 @@ export default async function StaffListPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

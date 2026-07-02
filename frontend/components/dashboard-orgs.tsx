@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import {
   Card,
   CardContent,
@@ -52,52 +45,54 @@ export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader className="bg-blue-50">
-            <TableRow>
-              <TableHead className="w-10">
-                <Checkbox
-                  checked={selected.size === orgs.length && orgs.length > 0}
-                  onCheckedChange={toggleAll}
-                />
-              </TableHead>
-              <TableHead className="bg-blue-50">Name</TableHead>
-              <TableHead className="bg-blue-50">Plan</TableHead>
-              <TableHead className="text-right">Created</TableHead>
-              <TableHead className="w-20">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orgs.map((org) => (
-              <TableRow
-                key={org.id as string}
-                className={selected.has(org.id as string) ? "bg-muted/30" : ""}
-              >
-                <TableCell>
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-[#f3f4f6] text-gray-900 border-b">
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-10">
                   <Checkbox
-                    checked={selected.has(org.id as string)}
-                    onCheckedChange={() => toggle(org.id as string)}
+                    checked={selected.size === orgs.length && orgs.length > 0}
+                    onCheckedChange={toggleAll}
                   />
-                </TableCell>
-                <TableCell className="font-medium">
-                  {org.name as string}
-                </TableCell>
-                <TableCell>{(org.plan as string) || "free"}</TableCell>
-                <TableCell className="text-right text-muted-foreground">
-                  {org.createdAt
-                    ? new Date(org.createdAt as string).toLocaleDateString()
-                    : "—"}
-                </TableCell>
-                <TableCell>
-                  <DeleteOrgDashboardButton
-                    orgId={org.id as string}
-                    orgName={org.name as string}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Name</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Plan</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Created</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-20">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {orgs.map((org) => (
+                <tr
+                  key={org.id as string}
+                  className={`bg-white group hover:bg-slate-50 transition-colors ${selected.has(org.id as string) ? "bg-muted/30" : ""}`}
+                >
+                  <td className="px-4 py-3">
+                    <Checkbox
+                      checked={selected.has(org.id as string)}
+                      onCheckedChange={() => toggle(org.id as string)}
+                    />
+                  </td>
+                  <td className="px-4 py-3 font-medium">
+                    {org.name as string}
+                  </td>
+                  <td className="px-4 py-3">{(org.plan as string) || "free"}</td>
+                  <td className="px-4 py-3 text-right text-muted-foreground">
+                    {org.createdAt
+                      ? new Date(org.createdAt as string).toLocaleDateString()
+                      : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <DeleteOrgDashboardButton
+                      orgId={org.id as string}
+                      orgName={org.name as string}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </CardContent>
     </Card>
   );

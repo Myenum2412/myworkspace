@@ -114,6 +114,13 @@ export class SocketIOManager {
     return this.io;
   }
 
+  close() {
+    if (this.io) {
+      this.io.close();
+      this.io = null;
+    }
+  }
+
   emitToUser<T = any>(userId: string, event: string, data: T) {
     this.io?.to(`user:${userId}`).emit(event, data);
   }

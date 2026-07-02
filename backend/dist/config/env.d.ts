@@ -11,7 +11,9 @@ export declare const env: {
     R2_BUCKET_NAME: string;
     R2_ACCESS_KEY_ID: string;
     R2_SECRET_ACCESS_KEY: string;
-    RESEND_API_KEY: string;
+    SES_REGION: string;
+    SES_ACCESS_KEY_ID: string;
+    SES_SECRET_ACCESS_KEY: string;
     MAIL_FROM: string;
     APP_URL: string;
     BASE_URL_WS: string;

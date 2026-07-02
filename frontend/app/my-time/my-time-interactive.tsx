@@ -97,45 +97,45 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
               <p className="text-sm">Go to Time Tracker to log your hours</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-blue-50">
-                  <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                    <th className="pb-3 font-medium">Description</th>
-                    <th className="pb-3 font-medium">Time</th>
-                    <th className="pb-3 font-medium">Duration</th>
-                    <th className="pb-3 font-medium">Status</th>
-                    <th className="pb-3 font-medium w-10"></th>
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="bg-[#f3f4f6]">
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Description</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Time</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Duration</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredEntries.map((entry) => (
-                    <tr key={entry.id} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                      <td className="py-3 pr-4">
+                    <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                      <td className="px-4 py-3">
                         <p className="text-sm font-medium">{entry.description || "No description"}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(entry.date).toLocaleDateString()}
                           {entry.startTime && entry.endTime && ` · ${entry.startTime} - ${entry.endTime}`}
                         </p>
                       </td>
-                      <td className="py-3 pr-4">
+                      <td className="px-4 py-3">
                         <span className="text-sm">
                           {entry.startTime && entry.endTime
                             ? `${entry.startTime} - ${entry.endTime}`
                             : "—"}
                         </span>
                       </td>
-                      <td className="py-3 pr-4">
+                      <td className="px-4 py-3">
                         <span className="text-sm font-mono font-medium">
                           {Math.floor(entry.duration / 60)}h {entry.duration % 60}m
                         </span>
                       </td>
-                      <td className="py-3 pr-4">
+                      <td className="px-4 py-3">
                         <Badge className={statusColors[entry.status]}>
                           {entry.status}
                         </Badge>
                       </td>
-                      <td className="py-3">
+                      <td className="px-4 py-3">
                         <button
                           onClick={() => handleDelete(entry.id)}
                           className="text-muted-foreground hover:text-black transition-colors"

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { AiChatSidebar } from "@/components/ai/ai-chat-sidebar";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -11,6 +12,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import {
+  Bot,
   Building2Icon,
   LayoutDashboardIcon,
   UsersIcon,
@@ -89,6 +91,11 @@ export const defaultOrgNavData = [
     ],
   },
   {
+    title: "AI Chat",
+    url: "/ai-chat",
+    icon: <Bot className="size-6" />,
+  },
+  {
     title: "Settings",
     url: "/orgmenu/settings",
     icon: <Settings2Icon className="size-6" />,
@@ -134,6 +141,7 @@ export function OrgSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navItems.slice(0, -1)} label="Platform" />
+        <AiChatSidebar />
         <NavMain items={navItems.slice(-1)} label="Configuration" className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

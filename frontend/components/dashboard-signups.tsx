@@ -6,14 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Card,
   CardContent,
   CardHeader,
@@ -125,49 +117,52 @@ export function DashboardSignupsTable({
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader className="bg-blue-50">
-              <TableRow>
-                <TableHead className="w-10">
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-[#f3f4f6] text-gray-900 border-b">
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-10">
                   <Checkbox
                     checked={selected.size === filtered.length && filtered.length > 0}
                     onCheckedChange={toggleAll}
                   />
-                </TableHead>
-                <TableHead className="bg-blue-50">Name</TableHead>
-                <TableHead className="bg-blue-50">Email</TableHead>
-                <TableHead className="bg-blue-50">Role</TableHead>
-                <TableHead className="bg-blue-50">Status</TableHead>
-                <TableHead className="bg-blue-50">Provider</TableHead>
-                <TableHead className="bg-blue-50">Verified</TableHead>
-                <TableHead className="bg-blue-50">Joined</TableHead>
-                <TableHead className="bg-blue-50">Last Login</TableHead>
-                {isSuperAdmin && <TableHead className="bg-blue-50">Organization</TableHead>}
-                {isSuperAdmin && <TableHead className="bg-blue-50">Org ID</TableHead>}
-                <TableHead className="w-24">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+                </th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Name</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Email</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Role</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Status</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Provider</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Verified</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Joined</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Last Login</th>
+                {isSuperAdmin && <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Organization</th>}
+                {isSuperAdmin && <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Org ID</th>}
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
               {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={colSpan} className="h-32 text-center text-muted-foreground">
-                    {search ? "No signups match your search" : "No recent signups"}
-                  </TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={colSpan} className="px-4 py-3 h-32 text-center text-muted-foreground">
+                    <div className="flex flex-col items-center justify-center gap-2 py-8">
+                      <UserPlusIcon className="size-8 text-muted-foreground/40" />
+                      <span>{search ? "No signups match your search" : "No recent signups"}</span>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 filtered.map((u) => (
-                  <TableRow
+                  <tr
                     key={u.userId}
-                    className={selected.has(u.userId) ? "bg-muted/30" : ""}
+                    className={`bg-white group hover:bg-slate-50 transition-colors ${selected.has(u.userId) ? "bg-muted/30" : ""}`}
                   >
-                    <TableCell>
+                    <td className="px-4 py-3">
                       <Checkbox
                         checked={selected.has(u.userId)}
                         onCheckedChange={() => toggle(u.userId)}
                       />
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Avatar className="size-7">
                           <AvatarImage src={u.avatar} alt={u.name} />
@@ -175,43 +170,43 @@ export function DashboardSignupsTable({
                         </Avatar>
                         <span className="font-medium text-sm">{u.name}</span>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm">{u.email}</TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-4 py-3 text-sm">{u.email}</td>
+                    <td className="px-4 py-3">
                       <Badge variant={u.role === "admin" ? "default" : u.role === "manager" ? "secondary" : "outline"} className="text-xs">
                         {u.role}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-4 py-3">
                       <Badge variant={statusVariant[u.status] || "outline"} className="text-xs capitalize">
                         {u.status}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-4 py-3">
                       <span className={`text-xs font-medium capitalize ${providerColors[u.provider] || "text-muted-foreground"}`}>
                         {u.provider}
                       </span>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-4 py-3">
                       {u.emailVerified ? (
                         <CheckCircle2Icon className="size-4 text-success" />
                       ) : (
                         <XCircleIcon className="size-4 text-muted-foreground" />
                       )}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{fmt(u.createdAt || u.joinedAt)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{fmt(u.lastLogin)}</TableCell>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(u.createdAt || u.joinedAt)}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(u.lastLogin)}</td>
                     {isSuperAdmin && (
-                      <TableCell>
+                      <td className="px-4 py-3">
                         <Badge variant="outline" className="text-xs">{u.orgName || "—"}</Badge>
-                      </TableCell>
+                      </td>
                     )}
                     {isSuperAdmin && (
-                      <TableCell>
+                      <td className="px-4 py-3">
                         <span className="text-xs text-muted-foreground font-mono">{u.orgId || "—"}</span>
-                      </TableCell>
+                      </td>
                     )}
-                    <TableCell>
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <EditSignupDialog user={{ ...u, createdAt: u.createdAt || u.joinedAt || new Date().toISOString() }}>
                           <Button variant="ghost" size="icon" className="size-8">
@@ -220,12 +215,12 @@ export function DashboardSignupsTable({
                         </EditSignupDialog>
                         <DeleteSignupForm user={{ ...u, createdAt: u.createdAt || u.joinedAt || new Date().toISOString() }} />
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))
               )}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

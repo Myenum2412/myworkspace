@@ -83,36 +83,37 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
               <p className="text-sm text-muted-foreground">Recycle bin is empty.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-blue-50">
-                  <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                    <th className="pb-3 pr-4 font-medium">Name</th>
-                    <th className="pb-3 pr-4 font-medium">Type</th>
-                    <th className="pb-3 pr-4 font-medium">Size</th>
-                    <th className="pb-3 pr-4 font-medium">Deleted</th>
-                    <th className="pb-3 pr-4 font-medium">Uploaded by</th>
-                    <th className="pb-3 font-medium">Actions</th>
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b bg-[#f3f4f6] text-gray-900 font-semibold">
+                    <th className="px-4 py-3.5 font-semibold">Name</th>
+                    <th className="px-4 py-3.5 font-semibold">Type</th>
+                    <th className="px-4 py-3.5 font-semibold">Size</th>
+                    <th className="px-4 py-3.5 font-semibold">Deleted</th>
+                    <th className="px-4 py-3.5 font-semibold">Uploaded by</th>
+                    <th className="px-4 py-3.5 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {files.map((f) => (
-                    <tr key={f.id} className="border-b last:border-0 bg-white hover:bg-blue-50/50 transition-colors">
-                      <td className="py-3 pr-4">
+                    <tr key={f.id} className="border-b last:border-0 bg-white hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <FileIcon className="size-4 text-muted-foreground shrink-0" />
                           <span className="font-medium truncate max-w-[200px]">{f.originalName}</span>
                         </div>
                       </td>
-                      <td className="py-3 pr-4">
+                      <td className="px-4 py-3">
                         <Badge variant="outline">{f.mimeType.split("/").pop()?.toUpperCase() || "FILE"}</Badge>
                       </td>
-                      <td className="py-3 pr-4 text-muted-foreground">{formatSize(f.size)}</td>
-                      <td className="py-3 pr-4 text-muted-foreground">
+                      <td className="px-4 py-3 text-muted-foreground">{formatSize(f.size)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
                         {f.deletedAt ? new Date(f.deletedAt).toLocaleDateString() : "—"}
                       </td>
-                      <td className="py-3 pr-4 text-muted-foreground">{f.uploaderName || "—"}</td>
-                      <td className="py-3">
+                      <td className="px-4 py-3 text-muted-foreground">{f.uploaderName || "—"}</td>
+                      <td className="px-4 py-3">
                         {confirmDelete === f.id ? (
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1 text-xs text-destructive mr-1">
@@ -171,7 +172,8 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           )}
         </CardContent>

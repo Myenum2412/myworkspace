@@ -40,7 +40,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
 
     const clients = await db.collection(collections.clients).find({ orgId }, { sort: { createdAt: -1 } }).toArray() as Record<string, unknown>[];
     const clientUsers = await (await db.collection(collections.clientUsers).find({ orgId }).toArray()) as Record<string, unknown>[];
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
     const adminId = session.user.id;
 
     const body = await request.json();
@@ -211,7 +211,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
     const id = request.nextUrl.searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "Client ID is required" }, { status: 400 });
@@ -242,7 +242,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
     const id = request.nextUrl.searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "Client ID is required" }, { status: 400 });
@@ -253,8 +253,22 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    await db.collection(collections.clients).deleteOne({ id, orgId });
-    await db.collection(collections.clientUsers).deleteMany({ clientId: id });
+    const clientName = client.name as string;
+
+    // Cascade: delete related projects and tasks
+    const relatedProjectDocs = await db.collection(collections.projects).find({ orgId, client: clientName }).toArray() as Record<string, unknown>[];
+    const projectNames = relatedProjectDocs.map((p) => p.name as string);
+
+    await Promise.all([
+      db.collection(collections.clients).deleteOne({ id, orgId }),
+      db.collection(collections.clientUsers).deleteMany({ clientId: id }),
+      ...(projectNames.length > 0
+        ? [db.collection(collections.tasks).deleteMany({ orgId, project: { $in: projectNames } })]
+        : []),
+      ...(relatedProjectDocs.length > 0
+        ? [db.collection(collections.projects).deleteMany({ orgId, client: clientName })]
+        : []),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

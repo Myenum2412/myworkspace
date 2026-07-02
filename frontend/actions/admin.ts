@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
+import { deleteFile } from "@/lib/storage";
 
 async function requireAdmin() {
   const session = await auth();
@@ -76,6 +77,34 @@ export async function deleteOrganization(formData: FormData): Promise<void> {
   } catch { /* ignore */ }
 }
 
+// ─── Cascade Deletion Helpers ────────────────────────────────────────
+
+async function deleteUserFiles(userId: string): Promise<void> {
+  const files = await db.collection(collections.fileAttachments).find({ uploaderId: userId }).toArray();
+
+  for (const file of files) {
+    try { await deleteFile(file.storagePath); } catch { /* ignore */ }
+
+    const versions = await db.collection(collections.fileVersions).find({ fileId: file.id }).toArray();
+    for (const v of versions) {
+      try { await deleteFile(v.storagePath); } catch { /* ignore */ }
+    }
+    await db.collection(collections.fileVersions).deleteMany({ fileId: file.id });
+    await db.collection(collections.fileShares).deleteMany({ fileId: file.id });
+    await db.collection(collections.shareLinks).deleteMany({ fileId: file.id });
+    await db.collection(collections.fileAttachments).deleteOne({ id: file.id });
+
+    try {
+      await db.collection(collections.storageQuotas).updateOne(
+        { orgId: file.orgId },
+        { $inc: { usedStorageBytes: -file.size } },
+      );
+    } catch { /* ignore */ }
+  }
+
+  await db.collection(collections.folders).deleteMany({ createdBy: userId });
+}
+
 // ─── Member / User CRUD ──────────────────────────────────────────────
 
 export async function updateMember(_prevState: ActionResult, formData: FormData): Promise<ActionResult> {
@@ -113,6 +142,7 @@ export async function deleteMember(formData: FormData): Promise<void> {
   if (!userId) return;
 
   try {
+    await deleteUserFiles(userId);
     await db.collection(collections.orgMembers).deleteOne({ userId, ...(orgId ? { orgId } : {}) });
     await db.collection(collections.users).deleteOne({ id: userId });
     revalidatePath("/orgmenu/members");
@@ -160,6 +190,7 @@ export async function deleteRecentUser(formData: FormData): Promise<void> {
   if (!userId) return;
 
   try {
+    await deleteUserFiles(userId);
     await db.collection(collections.users).deleteOne({ id: userId });
     await db.collection(collections.orgMembers).deleteMany({ userId });
     revalidatePath("/orgmenu");

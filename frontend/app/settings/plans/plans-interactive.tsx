@@ -24,6 +24,7 @@ import {
   CheckCircle2Icon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StorageUsage } from "@/components/storage-usage";
 import { priceTiers, getPrice, type Currency } from "@/lib/currency";
 import { useUserCountry, isINR } from "@/hooks/use-user-country";
 
@@ -257,6 +258,8 @@ export function SettingsPlansPageInteractive({ orgPlan: initialOrgPlan, orgId, u
           )}
         </CardContent>
       </Card>
+
+      <StorageUsage />
 
       <Card>
         <CardHeader>

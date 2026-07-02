@@ -8,7 +8,9 @@ beforeAll(async () => {
   await connectTestDb();
   server = app.listen(0);
 });
-afterAll((done) => server.close(done));
+afterAll((done) => {
+  server.close(done);
+});
 beforeEach(async () => {
   await resetDb();
 });

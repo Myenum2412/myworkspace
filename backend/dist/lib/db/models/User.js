@@ -29,5 +29,7 @@ const userSchema = new Schema({
     bannerUrl: String,
     resetToken: { type: String, index: true },
     resetTokenExpires: Date,
+    emailVerificationToken: { type: String, index: true },
+    emailVerificationExpires: Date,
 }, { timestamps: true });
 export const User = model("User", userSchema);

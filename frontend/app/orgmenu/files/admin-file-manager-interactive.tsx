@@ -8,14 +8,6 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -351,40 +343,40 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader className="bg-blue-50">
-              <TableRow>
-                <TableHead className="bg-blue-50">Name</TableHead>
-                <TableHead className="bg-blue-50">Type</TableHead>
-                <TableHead className="bg-blue-50">Size</TableHead>
-                <TableHead className="bg-blue-50">Uploaded</TableHead>
-                <TableHead className="bg-blue-50 w-20">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-[#f3f4f6] text-gray-900 border-b">
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Name</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Type</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Size</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Uploaded</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-20">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
               {filteredFiles.map((f) => (
-                <TableRow
+                <tr
                   key={f.id}
-                  className="cursor-pointer bg-white hover:bg-blue-50/50 transition-colors"
+                  className="bg-white group hover:bg-slate-50 transition-colors cursor-pointer"
                   onClick={() => setPreviewFile(f)}
                 >
-                  <TableCell>
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       {getFileIcon(f.mimeType)}
                       <span className="font-medium text-sm">{f.originalName}</span>
                     </div>
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3">
                     <Badge variant="outline" className="text-[10px] font-normal">
                       {f.mimeType.split("/").pop()?.toUpperCase() || "FILE"}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{formatSize(f.size)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{formatSize(f.size)}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
                     {f.createdAt ? new Date(f.createdAt).toLocaleDateString() : "—"}
-                  </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+                  </td>
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
@@ -398,11 +390,11 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
                         setFileList((prev) => prev.filter((x) => x.id !== f.id));
                       }} />
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       )}
 

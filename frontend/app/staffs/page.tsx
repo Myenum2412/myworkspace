@@ -329,39 +329,41 @@ export default async function StaffsPage() {
           {recentTasks.length === 0 ? (
             <p className="text-sm text-muted-foreground">No tasks allocated yet</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-blue-50">
-                  <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                    <th className="pb-3 font-medium">Task</th>
-                    <th className="pb-3 font-medium">Assignee</th>
-                    <th className="pb-3 font-medium">Priority</th>
-                    <th className="pb-3 font-medium">Status</th>
-                    <th className="pb-3 font-medium">Due</th>
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b bg-[#f3f4f6] text-gray-900 font-semibold">
+                    <th className="px-4 py-3.5 font-semibold">Task</th>
+                    <th className="px-4 py-3.5 font-semibold">Assignee</th>
+                    <th className="px-4 py-3.5 font-semibold">Priority</th>
+                    <th className="px-4 py-3.5 font-semibold">Status</th>
+                    <th className="px-4 py-3.5 font-semibold">Due</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentTasks.map((t) => (
-                    <tr key={t._id} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                      <td className="py-3 pr-4 text-sm font-medium">{t.title}</td>
-                      <td className="py-3 pr-4 text-sm text-muted-foreground">{t.assigneeName || "Unassigned"}</td>
-                      <td className="py-3 pr-4">
+                    <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                      <td className="px-4 py-3 text-sm font-medium">{t.title}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{t.assigneeName || "Unassigned"}</td>
+                      <td className="px-4 py-3">
                         <Badge className={(priorityStyles[t.priority] || "") + ""}>
                           {t.priority}
                         </Badge>
                       </td>
-                      <td className="py-3 pr-4">
+                      <td className="px-4 py-3">
                         <Badge className={(statusStyles[t.status] || "") + ""}>
                           {t.status.replace(/_/g, " ")}
                         </Badge>
                       </td>
-                      <td className="py-3 text-sm text-muted-foreground">
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
                         {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
                       </td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           )}
         </CardContent>

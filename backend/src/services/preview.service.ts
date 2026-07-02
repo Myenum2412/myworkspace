@@ -1,13 +1,17 @@
 import sharp from "sharp";
 import path from "path";
-import fs from "fs";
+import fs from "fs/promises";
 import { getStorageProvider } from "../lib/storage/providers.js";
 import { logger } from "../lib/logger/index.js";
 
 const PREVIEW_DIR = path.resolve(process.cwd(), "data", "previews");
 
-function ensureDir(dir: string) {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+async function ensureDir(dir: string) {
+  try {
+    await fs.mkdir(dir, { recursive: true });
+  } catch (err: any) {
+    if (err.code !== "EEXIST") throw err;
+  }
 }
 
 export interface PreviewResult {
@@ -29,7 +33,7 @@ export async function generatePreview(
 
   try {
     if (PREVIEWABLE_IMAGE_TYPES.includes(mimeType)) {
-      ensureDir(PREVIEW_DIR);
+      await ensureDir(PREVIEW_DIR);
 
       const thumbPath = path.join(PREVIEW_DIR, `${fileId}-thumb.webp`);
       const previewPath = path.join(PREVIEW_DIR, `${fileId}-preview.webp`);

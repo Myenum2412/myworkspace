@@ -154,23 +154,23 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
               <p className="text-sm">Select a different date to view team activity</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-blue-50">
-                  <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                    <th className="pb-3 font-medium">Member</th>
-                    <th className="pb-3 font-medium">Department</th>
-                    <th className="pb-3 font-medium">Status</th>
-                    <th className="pb-3 font-medium text-right">Entries</th>
-                    <th className="pb-3 font-medium text-right">Hours</th>
-                    <th className="pb-3 font-medium text-right">Approved</th>
-                    <th className="pb-3 font-medium text-right">Pending</th>
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="bg-[#f3f4f6]">
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Member</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Department</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Entries</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Hours</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Approved</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Pending</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMembers.map((member) => (
-                    <tr key={member.userId} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                      <td className="py-3 pr-4">
+                    <tr key={member.userId} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <Avatar className="size-8">
                             <AvatarImage src={member.avatar} alt={member.name} />
@@ -182,25 +182,25 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 pr-4">
+                      <td className="px-4 py-3">
                         <span className="text-sm">{member.department || "—"}</span>
                       </td>
-                      <td className="py-3 pr-4">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {getStatusDot(member.status)}
                           <span className="text-sm capitalize">{member.status}</span>
                         </div>
                       </td>
-                      <td className="py-3 pr-4 text-right">
+                      <td className="px-4 py-3 text-right">
                         <span className="text-sm font-medium">{member.entryCount}</span>
                       </td>
-                      <td className="py-3 pr-4 text-right">
+                      <td className="px-4 py-3 text-right">
                         <span className="text-sm font-medium">{member.totalHours}h</span>
                       </td>
-                      <td className="py-3 pr-4 text-right">
+                      <td className="px-4 py-3 text-right">
                         <Badge variant="secondary" className="font-mono text-xs">{member.approvedEntries}</Badge>
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="px-4 py-3 text-right">
                         <Badge variant="outline" className="font-mono text-xs">{member.pendingEntries}</Badge>
                       </td>
                     </tr>

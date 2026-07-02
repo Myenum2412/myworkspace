@@ -103,9 +103,9 @@ export default function TerminatedInteractive() {
             <p className="text-sm font-medium text-muted-foreground mt-4">No terminated employees.</p>
           </div>
         ) : (
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
             <div className="overflow-x-auto overflow-y-auto flex-1">
-              <table className="w-full text-sm" style={{ minWidth: 900 }}>
+              <table className="w-full text-sm text-left" style={{ minWidth: 900 }}>
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-[#f3f4f6] text-gray-900">
                     <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Employee</th>
@@ -116,9 +116,9 @@ export default function TerminatedInteractive() {
                     <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody>
                   {paginatedTerminated.map((emp) => (
-                    <tr key={emp.id} className="group bg-white hover:bg-slate-50 transition-colors">
+                    <tr key={emp.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {emp.avatar ? (

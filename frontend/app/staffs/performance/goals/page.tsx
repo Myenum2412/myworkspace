@@ -70,29 +70,31 @@ export default async function StaffGoalsPage() {
           <CardTitle>Active Goals</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-blue-50">
-                <tr className="border-b bg-blue-50 text-left text-sm text-blue-800 font-medium">
-                  <th className="pb-3 font-medium">Goal</th>
-                  <th className="pb-3 font-medium">Assignee</th>
-                  <th className="pb-3 font-medium">Target Date</th>
-                  <th className="pb-3 font-medium">Status</th>
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b bg-[#f3f4f6] text-gray-900 font-semibold">
+                    <th className="px-4 py-3.5 font-semibold">Goal</th>
+                    <th className="px-4 py-3.5 font-semibold">Assignee</th>
+                    <th className="px-4 py-3.5 font-semibold">Target Date</th>
+                    <th className="px-4 py-3.5 font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {goals.map((g, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-blue-50/50 transition-colors bg-white">
-                    <td className="py-3 pr-4 text-sm font-medium">{g.title}</td>
-                    <td className="py-3 pr-4 text-sm text-muted-foreground">{g.assignee}</td>
-                    <td className="py-3 pr-4 text-sm text-muted-foreground">{g.target}</td>
-                    <td className="py-3">
+                  <tr key={i} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                    <td className="px-4 py-3 text-sm font-medium">{g.title}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{g.assignee}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{g.target}</td>
+                    <td className="px-4 py-3">
                       <Badge className={goalStyles[g.status] || ""}>{g.status.replace("_", " ")}</Badge>
                     </td>
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

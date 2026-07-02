@@ -4,7 +4,9 @@ import app from "../../../src/app.js";
 
 let server: Server;
 beforeAll(() => { server = app.listen(0); });
-afterAll((done) => server.close(done));
+afterAll((done) => {
+  server.close(done);
+});
 
 function agent() {
   return request(server);

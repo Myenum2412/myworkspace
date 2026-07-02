@@ -9,14 +9,14 @@ import ClientWorkspace from "./client-workspace";
 
 export const dynamic = "force-dynamic";
 
-export default async function ClientWorkspacePage({ params }: { params: { id: string } }) {
+export default async function ClientWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
   if (!orgId) redirect("/login");
 
-  const clientId = params.id;
+  const { id: clientId } = await params;
 
   const clientDoc = await db
     .collection(collections.clients)

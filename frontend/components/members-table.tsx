@@ -2,14 +2,7 @@
 
 import { useActionState, useState, useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -302,52 +295,55 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
         />
       </div>
 
-      <div className="rounded-lg border">
-        <div className="flex items-center gap-2 px-4 py-2 border-b">
+      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-200 bg-[#f3f4f6]">
           {selected.size > 0 && (
             <span className="text-sm text-muted-foreground">
               {selected.size} selected
             </span>
           )}
         </div>
-        <Table>
-          <TableHeader className="bg-blue-50">
-            <TableRow>
-              <TableHead className="w-10">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-[#f3f4f6] text-gray-900 border-b">
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-10">
                 <Checkbox
                   checked={selected.size === filtered.length && filtered.length > 0}
                   onCheckedChange={toggleAll}
                 />
-              </TableHead>
-              <TableHead className="bg-blue-50">Name</TableHead>
-              <TableHead className="bg-blue-50">Email</TableHead>
-              <TableHead className="bg-blue-50">Role</TableHead>
-              <TableHead className="bg-blue-50">Status</TableHead>
-              <TableHead className="bg-blue-50">Provider</TableHead>
-              <TableHead className="bg-blue-50">Verified</TableHead>
-              <TableHead className="bg-blue-50">Joined</TableHead>
-              <TableHead className="bg-blue-50">Last Login</TableHead>
-              <TableHead className="bg-blue-50">Organization</TableHead>
-              <TableHead className="w-24">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+              </th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Name</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Email</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Role</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Status</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Provider</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Verified</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Joined</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Last Login</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Organization</th>
+              <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
             {filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={colSpan} className="h-32 text-center text-muted-foreground">
-                  {search ? "No members match your search" : "No members found"}
-                </TableCell>
-              </TableRow>
+              <tr>
+                <td colSpan={colSpan} className="px-4 py-3 h-32 text-center text-muted-foreground">
+                  <div className="flex flex-col items-center justify-center gap-2 py-8">
+                    <span className="text-muted-foreground/40 text-lg font-semibold">👤</span>
+                    <span>{search ? "No members match your search" : "No members found"}</span>
+                  </div>
+                </td>
+              </tr>
             ) : (
               filtered.map((member) => (
-                <TableRow key={member.id} className={selected.has(member.id) ? "bg-muted/30" : ""}>
-                  <TableCell>
+                <tr key={member.id} className={`bg-white group hover:bg-slate-50 transition-colors ${selected.has(member.id) ? "bg-muted/30" : ""}`}>
+                  <td className="px-4 py-3">
                     <Checkbox
                       checked={selected.has(member.id)}
                       onCheckedChange={() => toggle(member.id)}
                     />
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Avatar className="size-7">
                         <AvatarImage src={member.avatar} alt={member.name} />
@@ -355,36 +351,36 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                       </Avatar>
                       <span className="font-medium text-sm">{member.name}</span>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-sm">{member.email}</TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3 text-sm">{member.email}</td>
+                  <td className="px-4 py-3">
                     <Badge variant={member.role === "admin" ? "default" : member.role === "manager" ? "secondary" : "outline"} className="text-xs">
                       {member.role}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3">
                     <Badge variant={statusVariant[member.status] || "outline"} className="text-xs capitalize">
                       {member.status}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3">
                     <span className={`text-xs font-medium capitalize ${providerColors[member.provider] || "text-muted-foreground"}`}>
                       {member.provider}
                     </span>
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3">
                     {member.emailVerified ? (
                       <CheckCircle2Icon className="size-4 text-success" />
                     ) : (
                       <XCircleIcon className="size-4 text-muted-foreground" />
                     )}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{fmt(member.createdAt || member.joinedAt)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{fmt(member.lastLogin)}</TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.createdAt || member.joinedAt)}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.lastLogin)}</td>
+                  <td className="px-4 py-3">
                     <Badge variant="outline" className="text-xs">{member.orgName}</Badge>
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="icon" className="size-8" onClick={() => setEditingMember(member)}>
                         <PencilIcon className="size-4" />
@@ -405,12 +401,12 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                         </Button>
                       </form>
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))
             )}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
     </>
   );

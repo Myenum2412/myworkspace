@@ -1,6 +1,8 @@
 "use client"
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Eye, EyeOff } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -222,6 +224,7 @@ export function EditClientFormFields(props: {
   errors: Record<string, string>;
   members: string[];
 }) {
+  const [showPw, setShowPw] = useState(false);
   return (
     <div className="space-y-8 py-2">
       <FieldSet>
@@ -241,6 +244,16 @@ export function EditClientFormFields(props: {
             <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
             <Input placeholder="client@company.com" type="email" value={props.v.email} onChange={(e) => props.set("email", e.target.value)} className={fieldClass(props.errors, "email")} />
             {fieldError(props.errors, "email") && <p className="text-xs text-red-500 mt-1">{fieldError(props.errors, "email")}</p>}
+          </Field>
+          <Field>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Password</Label>
+            <div className="relative">
+              <Input placeholder="Leave blank to keep current password" type={showPw ? "text" : "password"} value={props.v.password} onChange={(e) => props.set("password", e.target.value)} className={fieldClass(props.errors, "password")} />
+              <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPw(!showPw)} tabIndex={-1}>
+                {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+            {fieldError(props.errors, "password") && <p className="text-xs text-red-500 mt-1">{fieldError(props.errors, "password")}</p>}
           </Field>
         </div>
       </FieldSet>
