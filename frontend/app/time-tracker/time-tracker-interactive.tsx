@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Tag, Calendar, Clock, List, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Clock, Loader2, Trash2, PlusCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,19 +19,45 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
 
+interface TimeEntry {
+  id: string;
+  userId: string;
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  duration: number;
+  description: string;
+  projectId?: string;
+  projectName?: string;
+  billable: boolean;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+}
+
+interface Project {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface TimeTrackerProps {
   user: { name: string; email: string; avatar: string; id: string };
   orgId: string;
+  initialEntries: TimeEntry[];
+  projects: Project[];
 }
 
-export default function TimeTracker({ user, orgId }: TimeTrackerProps) {
+export default function TimeTracker({ user, orgId, initialEntries, projects }: TimeTrackerProps) {
+  const [entries, setEntries] = useState<TimeEntry[]>(initialEntries);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const totalMinutes = entries.reduce((s, e) => s + e.duration, 0);
+  const totalHours = (totalMinutes / 60).toFixed(1);
 
   const handleAdd = async () => {
     if (!description.trim() || !orgId || !user.id) return;
@@ -55,9 +82,13 @@ export default function TimeTracker({ user, orgId }: TimeTrackerProps) {
           endTime: endTime || undefined,
           duration,
           description,
+          projectId: selectedProject?.id || undefined,
+          projectName: selectedProject?.name || undefined,
         }),
       });
       if (res.ok) {
+        const data = await res.json();
+        setEntries((prev) => [data.entry, ...prev]);
         setDescription("");
         setStartTime("");
         setEndTime("");
@@ -67,22 +98,10 @@ export default function TimeTracker({ user, orgId }: TimeTrackerProps) {
     }
   };
 
-  if (loading) {
-    return (
-      <main className="flex flex-1 flex-col bg-background min-h-screen items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="flex flex-1 flex-col bg-background min-h-screen items-center justify-center">
-        <p className="text-sm text-destructive">{error}</p>
-      </main>
-    );
-  }
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/time-entries/${id}`, { method: "DELETE", credentials: "include" });
+    if (res.ok) setEntries((prev) => prev.filter((e) => e.id !== id));
+  };
 
   return (
     <main className="flex flex-1 flex-col bg-background min-h-screen">
@@ -104,37 +123,51 @@ export default function TimeTracker({ user, orgId }: TimeTrackerProps) {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-[6px] text-primary hover:text-accent font-medium text-[14px] transition-colors outline-none">
                 <PlusCircle className="size-[15px]" />
-                Project
+                {selectedProject ? selectedProject.name : "Project"}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[220px]">
-              <DropdownMenuLabel className="text-xs text-gray-500 font-medium uppercase tracking-wider">Recent Projects</DropdownMenuLabel>
+              {selectedProject && (
+                <>
+                  <DropdownMenuItem
+                    className="text-muted-foreground text-xs cursor-pointer"
+                    onClick={() => setSelectedProject(null)}
+                  >
+                    Clear selection
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuLabel className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                {projects.length > 0 ? "Recent Projects" : "No projects"}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">
-                <div className="w-2 h-2 rounded-full bg-red-500 mr-2 shadow-sm"></div>
-                Website Redesign
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <div className="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-sm"></div>
-                Mobile App
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mr-2 shadow-sm"></div>
-                Marketing Campaign
-              </DropdownMenuItem>
+              {projects.length === 0 ? (
+                <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+                  No projects yet
+                </div>
+              ) : (
+                projects.map((project) => (
+                  <DropdownMenuItem
+                    key={project.id}
+                    className="cursor-pointer"
+                    onClick={() => setSelectedProject(project)}
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full mr-2 shadow-sm shrink-0"
+                      style={{ backgroundColor: project.color }}
+                    />
+                    {project.name}
+                  </DropdownMenuItem>
+                ))
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer text-primary font-medium hover:text-primary focus:text-primary focus:bg-secondary">
                 <PlusCircle className="size-4 mr-2" />
-                Create new project
+                <a href="/projects">Create new project</a>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <div className="h-6 w-px bg-gray-200"></div>
-
-          <button className="hover:text-gray-800 transition-colors">
-            <Tag className="size-[18px]" />
-          </button>
 
           <div className="h-6 w-px bg-gray-200"></div>
 
@@ -178,7 +211,8 @@ export default function TimeTracker({ user, orgId }: TimeTrackerProps) {
           <div className="h-6 w-px bg-gray-200"></div>
 
           <div className="font-bold text-gray-800 text-[19px] w-24 text-center tracking-tight font-mono">
-            00:00:00
+            {String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:
+            {String(totalMinutes % 60).padStart(2, "0")}:00
           </div>
 
           <Button
@@ -189,14 +223,85 @@ export default function TimeTracker({ user, orgId }: TimeTrackerProps) {
             {saving ? <Loader2 className="size-4 animate-spin" /> : null}
             {saving ? "SAVING" : "ADD"}
           </Button>
-
-          <div className="h-6 w-px bg-gray-200"></div>
-
-          <div className="flex flex-col items-center justify-center gap-[2px] opacity-60 hover:opacity-100 cursor-pointer transition-opacity px-1">
-            <Clock className="size-[14px]" />
-            <List className="size-[14px]" />
-          </div>
         </div>
+      </div>
+
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="size-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">
+            {totalHours}h logged today
+          </span>
+          <Badge variant="secondary" className="text-xs">{entries.length} entries</Badge>
+        </div>
+
+        {entries.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+            <Clock className="size-10 mb-3 opacity-50" />
+            <p>No time entries for today</p>
+            <p className="text-sm">Add your first entry above</p>
+          </div>
+        ) : (
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+            <table className="w-full text-sm text-left">
+              <thead>
+                <tr className="bg-[#f3f4f6]">
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Description</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Project</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Time</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Duration</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map((entry) => (
+                  <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                    <td className="px-4 py-3">
+                      <p className="text-sm font-medium">{entry.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(entry.date).toLocaleDateString()}
+                        {entry.startTime && entry.endTime && ` · ${entry.startTime} - ${entry.endTime}`}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      {entry.projectName ? (
+                        <span className="text-sm">{entry.projectName}</span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm">
+                        {entry.startTime && entry.endTime
+                          ? `${entry.startTime} - ${entry.endTime}`
+                          : "—"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-mono font-medium">
+                        {Math.floor(entry.duration / 60)}h {entry.duration % 60}m
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant="secondary" className="text-xs">
+                        {entry.status}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleDelete(entry.id)}
+                        className="text-muted-foreground hover:text-black transition-colors"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </main>
   );

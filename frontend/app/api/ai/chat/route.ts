@@ -2,10 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.NVIDIA_API_KEY!,
-  baseURL: process.env.NVIDIA_API_BASE || "https://integrate.api.nvidia.com/v1",
-});
+function getOpenAI() {
+  const apiKey = process.env.NVIDIA_API_KEY;
+  if (!apiKey) {
+    throw new Error("NVIDIA_API_KEY environment variable is not configured");
+  }
+  return new OpenAI({
+    apiKey,
+    baseURL: process.env.NVIDIA_API_BASE || "https://integrate.api.nvidia.com/v1",
+  });
+}
 
 export async function POST(req: NextRequest) {
   let session;
@@ -25,6 +31,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Messages are required" }, { status: 400 });
   }
 
+  const openai = getOpenAI();
   const completion = await openai.chat.completions.create({
     model: "nvidia/nemotron-3-ultra-550b-a55b",
     messages,
