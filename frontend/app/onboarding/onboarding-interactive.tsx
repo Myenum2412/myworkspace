@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { PricingCards } from "@/components/pricing-cards";
 import { CompanyDetailsForm, type CompanyDetails } from "@/components/company-details-form";
 import { completeOnboarding } from "@/lib/actions/onboarding";
@@ -38,7 +39,7 @@ export function OnboardingInteractive() {
       if ((error as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
         throw error;
       }
-      console.error("[ONBOARDING] client error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to save. Try again.");
       setSubmitError(error instanceof Error ? error.message : "Failed to save. Try again.");
       setIsSubmitting(false);
     }

@@ -1,6 +1,6 @@
 import { ConsumeMessage } from "amqplib";
 import { registerHandler, startConsumers } from "./consumer.js";
-import { QUEUES } from "./connection.js";
+import { QUEUES, isRabbitMQConfigured } from "./connection.js";
 import { logger } from "../logger/index.js";
 import { FileAttachment } from "../db/models/FileAttachment.js";
 import { ActivityLog } from "../db/models/ActivityLog.js";
@@ -158,11 +158,15 @@ registerHandler(QUEUES.CLEANUP, async (_msg, data) => {
 });
 
 export async function startWorkers() {
+  if (!isRabbitMQConfigured()) {
+    logger.info("RabbitMQ not configured — skipping worker startup");
+    return;
+  }
   logger.info("Starting RabbitMQ workers...");
   try {
     await startConsumers();
     logger.info("RabbitMQ workers started successfully");
   } catch (err) {
-    logger.error({ err }, "Failed to start RabbitMQ workers");
+    logger.warn({ err }, "RabbitMQ workers not started (RabbitMQ unavailable)");
   }
 }

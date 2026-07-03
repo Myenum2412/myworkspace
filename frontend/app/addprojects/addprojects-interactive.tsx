@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { Loader2Icon, AlertCircleIcon } from "lucide-react";
 
 const colors = [
@@ -37,7 +38,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
         if (id) setOrgId(id);
       })
       .catch((err) => {
-        console.error("[ADDPROJECTS] Failed to fetch profile:", err);
+        toast.error("Failed to load data. Please try again.");
         setPageError("Failed to load data. Please try again.");
       })
       .finally(() => setPageLoading(false));
@@ -91,7 +92,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
     return (
       <main className="flex flex-1 flex-col items-center justify-center p-4 gap-4">
         <p className="text-destructive text-sm">{pageError}</p>
-        <Button variant="outline" onClick={() => window.location.reload()}>
+        <Button variant="outline" onClick={() => router.refresh()}>
           Retry
         </Button>
       </main>

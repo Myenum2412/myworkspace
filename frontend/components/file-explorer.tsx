@@ -1,104 +1,38 @@
 "use client";
 
-import { useState, useEffect, useCallback, Fragment } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
-  Card, CardContent,
-} from "@/components/ui/card";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  FolderIcon, FileIcon, UploadIcon, SearchIcon, Grid3X3Icon, ListIcon,
-  MoreHorizontalIcon, DownloadIcon, Trash2Icon, PencilIcon, CopyIcon,
-  MoveIcon, Share2Icon, LockIcon, UnlockIcon, HistoryIcon,
-  ChevronRightIcon, ChevronDownIcon, PlusIcon, ArrowUpIcon,
-  Loader2Icon, AlertCircleIcon, ImageIcon, FileTextIcon, ArchiveIcon,
-  FolderOpenIcon, RotateCcwIcon, Building2Icon, UserPlusIcon, CheckCircle2Icon, InfoIcon,
+  Loader2Icon, CheckCircle2Icon, Trash2Icon,
 } from "lucide-react";
-import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover";
 import { DropZoneUpload } from "@/components/dropzone-upload";
 import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import { FileShareDialog } from "@/components/file-share-dialog";
 import { getSocketIO } from "@/lib/socketio-client";
-
-type FileItem = {
-  id: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  description?: string;
-  tags?: string[];
-  isLocked?: boolean;
-  lockedBy?: string | null;
-  currentVersion?: number;
-  uploaderName?: string;
-  uploaderId?: string;
-  createdAt: string;
-  updatedAt?: string;
-  folderId?: string | null;
-  category?: string;
-};
-
-type FolderItem = {
-  id: string;
-  name: string;
-  path: string;
-  parentId: string | null;
-  clientId?: string | null;
-  children?: FolderItem[];
-};
-
-type ViewMode = "grid" | "list";
-
-function formatSize(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-}
-
-function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return <ImageIcon className="size-5 text-muted-foreground" />;
-  if (mimeType.startsWith("video/")) return <FileIcon className="size-5 text-muted-foreground" />;
-  if (mimeType.startsWith("audio/")) return <FileIcon className="size-5 text-muted-foreground" />;
-  if (mimeType.includes("pdf")) return <FileTextIcon className="size-5 text-muted-foreground" />;
-  if (mimeType.includes("zip") || mimeType.includes("rar")) return <ArchiveIcon className="size-5 text-muted-foreground" />;
-  if (mimeType.includes("sheet") || mimeType.includes("excel")) return <FileTextIcon className="size-5 text-muted-foreground" />;
-  if (mimeType.includes("document") || mimeType.includes("word")) return <FileTextIcon className="size-5 text-muted-foreground" />;
-  if (mimeType.startsWith("text/")) return <FileTextIcon className="size-5 text-muted-foreground" />;
-  return <FileIcon className="size-5 text-muted-foreground" />;
-}
+import { FileItem, FolderItem, ViewMode, formatSize } from "./files/types";
+import { FileBreadcrumb } from "./files/file-breadcrumb";
+import { FileToolbar } from "./files/file-toolbar";
+import { FileList } from "./files/file-list";
 
 interface FileExplorerProps {
   orgId: string;
   userId: string;
-  /**
-   * When set, the explorer is scoped to a single client — only folders and
-   * files with that clientId are shown. Used by the per-client workspace
-   * view inside the Client File Manager.
-   */
   clientId?: string | null;
 }
 
 export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerProps) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [folders, setFolders] = useState<FolderItem[]>([]);
-  const [clientNames, setClientNames] = useState<Record<string, string>>({});
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([{ id: null, name: "Files" }]);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Upload
   const [showUpload, setShowUpload] = useState(false);
 
-  // Dialogs
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [shareFile, setShareFile] = useState<FileItem | null>(null);
@@ -113,7 +47,6 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; type: "file" | "folder"; name: string } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Folder properties
   const [propertiesOpen, setPropertiesOpen] = useState(false);
   const [propertiesData, setPropertiesData] = useState<{
     name: string;
@@ -124,23 +57,15 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
     totalSize: number;
   } | null>(null);
   const [propertiesLoading, setPropertiesLoading] = useState(false);
+
+  const [sortBy, setSortBy] = useState<string>("-createdAt");
+
   useEffect(() => {
     if (toastMessage) {
       const t = setTimeout(() => setToastMessage(null), 3000);
       return () => clearTimeout(t);
     }
   }, [toastMessage]);
-
-  // Client folder auto-creation
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
-  const [clientPickerOpen, setClientPickerOpen] = useState(false);
-  const [creatingClientFolder, setCreatingClientFolder] = useState<string | null>(null);
-
-  // Sort
-  const [sortBy, setSortBy] = useState<string>("-createdAt");
-
-  // Bulk action state
-  const [bulkAction, setBulkAction] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -168,7 +93,6 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
       const fetchedFolders: FolderItem[] = foldersData.data || [];
       setFolders(fetchedFolders);
 
-      // Resolve client names for folders grouped under a clientId.
       const clientIds = [...new Set(foldersData.data?.map((f: FolderItem) => f.clientId).filter(Boolean) || [])] as string[];
       if (clientIds.length > 0) {
         fetch(`/api/clients?ids=${encodeURIComponent(clientIds.join(","))}`, { credentials: "include" })
@@ -182,19 +106,16 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
           .catch(() => {});
       }
     } catch (err) {
-      console.error("Failed to load files:", err);
+      toast.error("Failed to load files");
     } finally {
       setLoading(false);
     }
   }, [orgId, currentFolderId, search, sortBy, clientId]);
 
+  const [clientNames, setClientNames] = useState<Record<string, string>>({});
+
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Realtime refresh — backend emits `folder:*`, `file:*`, `client:*` to the
-  // org room over socket.io. Use the app's shared socket client (cookie-aware
-  // NextAuth bridge). A full refetch is simplest and safe: per-org data volume
-  // is bounded, and it guarantees the grid + the per-client explorer stay
-  // consistent after uploads performed in another view.
   useEffect(() => {
     let cancelled = false;
     const refresh = () => { if (!cancelled) fetchData(); };
@@ -255,48 +176,6 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         fetchData();
       }
     } catch {}
-  };
-
-  const fetchClients = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/clients?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" });
-      const d = await res.json();
-      const arr: Record<string, unknown>[] = Array.isArray(d) ? d : (d.data || []);
-      setClients(arr.map((c) => ({ id: String(c.id), name: String(c.name || c.id) })));
-    } catch {}
-  }, []);
-
-  const createClientFolder = async (clientId: string, clientName: string) => {
-    if (!clientId || currentFolderId !== null) return; // only at root
-    setCreatingClientFolder(clientId);
-    try {
-      // Create a top-level folder named after the client. Subfolders mirror
-      // the workspace provision template.
-      const subfolders = ["Documents", "Reports", "Projects", "Settings"];
-      const clientFolderRes = await fetch("/api/folders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ orgId, parentId: null, name: clientName, clientId }),
-      });
-      if (!clientFolderRes.ok) {
-        setCreatingClientFolder(null);
-        setClientPickerOpen(false);
-        return;
-      }
-      const { folderId: clientFolderId } = await clientFolderRes.json();
-      for (const sub of subfolders) {
-        await fetch("/api/folders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ orgId, parentId: clientFolderId, name: sub, clientId }),
-        });
-      }
-      setClientPickerOpen(false);
-      fetchData();
-    } catch {}
-    setCreatingClientFolder(null);
   };
 
   const renameItem = async (id: string, type: "file" | "folder") => {
@@ -438,15 +317,8 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
     setInlineRenameValue("");
   };
 
-  const fileTypeCount = (type: string) =>
-    files.filter(f => f.mimeType?.startsWith(type)).length;
-
-  const displayFolders = folders;
-  const displayFiles = files;
-
   return (
     <div className="space-y-4">
-      {/* Upload Dropzone */}
       <div className={showUpload ? "block" : "hidden"}>
         <DropZoneUpload
           orgId={orgId}
@@ -457,383 +329,56 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         />
       </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Search files..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Button variant="outline" size="sm" onClick={() => navigateToFolder(null)} disabled={!currentFolderId}>
-          <ArrowUpIcon className="size-4" />
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => setShowNewFolder(!showNewFolder)}>
-          <PlusIcon className="mr-1 size-4" /> Folder
-        </Button>
-        <Popover open={clientPickerOpen} onOpenChange={(o) => { setClientPickerOpen(o); if (o && clients.length === 0) fetchClients(); }}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Building2Icon className="mr-1 size-4" /> New Client Folder
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 p-2" align="start">
-            <p className="text-xs font-medium text-muted-foreground px-2 py-1">Pick a client</p>
-            <div className="max-h-64 overflow-y-auto space-y-1">
-              {clients.length === 0 && (
-                <p className="text-xs text-muted-foreground px-2 py-2">No clients yet.</p>
-              )}
-              {clients.map((c) => (
-                <button
-                  key={c.id}
-                  className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted text-left disabled:opacity-50"
-                  disabled={creatingClientFolder === c.id}
-                  onClick={() => createClientFolder(c.id, c.name)}
-                >
-                  {creatingClientFolder === c.id
-                    ? <Loader2Icon className="size-3 animate-spin" />
-                    : <UserPlusIcon className="size-3 text-muted-foreground" />}
-                  {c.name}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-        <Button size="sm" onClick={() => setShowUpload((v) => !v)} variant={showUpload ? "secondary" : "default"}>
-          <UploadIcon className="mr-1 size-4" /> {showUpload ? "Close Upload" : "Upload"}
-        </Button>
-        <div className="flex border rounded-md">
-          <button
-            className={`p-2 ${viewMode === "grid" ? "bg-muted" : ""}`}
-            onClick={() => setViewMode("grid")}
-          ><Grid3X3Icon className="size-4" /></button>
-          <button
-            className={`p-2 ${viewMode === "list" ? "bg-muted" : ""}`}
-            onClick={() => setViewMode("list")}
-          ><ListIcon className="size-4" /></button>
-        </div>
-        <select
-          className="text-sm border rounded-md px-2 py-1"
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value)}
-        >
-          <option value="-createdAt">Newest</option>
-          <option value="createdAt">Oldest</option>
-          <option value="name">Name A-Z</option>
-          <option value="-name">Name Z-A</option>
-          <option value="-size">Largest</option>
-          <option value="size">Smallest</option>
-        </select>
-      </div>
+      <FileToolbar
+        search={search}
+        onSearchChange={setSearch}
+        currentFolderId={currentFolderId}
+        onNavigateUp={() => navigateToFolder(null)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        showUpload={showUpload}
+        onToggleUpload={() => setShowUpload((v) => !v)}
+        orgId={orgId}
+        showNewFolder={showNewFolder}
+        newFolderName={newFolderName}
+        onNewFolderNameChange={setNewFolderName}
+        onToggleNewFolder={() => setShowNewFolder(!showNewFolder)}
+        onCreateFolder={createFolder}
+        onCancelNewFolder={() => { setShowNewFolder(false); setNewFolderName(""); }}
+        onRefresh={fetchData}
+      />
 
-      {/* New Folder Input */}
-      {showNewFolder && (
-        <div className="flex items-center gap-2 p-2 border rounded-md">
-          <FolderIcon className="size-5 text-muted-foreground" />
-          <Input
-            placeholder="Folder name"
-            value={newFolderName}
-            onChange={e => setNewFolderName(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && createFolder()}
-            className="flex-1"
-            autoFocus
-          />
-          <Button size="sm" onClick={createFolder}>Create</Button>
-          <Button size="sm" variant="ghost" onClick={() => { setShowNewFolder(false); setNewFolderName(""); }}>Cancel</Button>
-        </div>
-      )}
+      <FileBreadcrumb breadcrumbs={breadcrumbs} onNavigate={navigateToBreadcrumb} />
 
-      {/* Breadcrumbs */}
-      <div className="flex items-center gap-1 text-sm flex-wrap">
-        {breadcrumbs.map((crumb, index) => (
-          <span key={crumb.id || "root"} className="flex items-center gap-1">
-            {index > 0 && <ChevronRightIcon className="size-3 text-muted-foreground" />}
-            <button
-              className={`hover:underline ${index === breadcrumbs.length - 1 ? "font-medium" : "text-muted-foreground"}`}
-              onClick={() => navigateToBreadcrumb(index)}
-            >
-              {index === 0 ? <><FolderOpenIcon className="inline size-3 mr-1" />{crumb.name}</> : crumb.name}
-            </button>
-          </span>
-        ))}
-      </div>
+      <FileList
+        loading={loading}
+        viewMode={viewMode}
+        folders={folders}
+        files={files}
+        selectedIds={selectedIds}
+        onToggleSelect={toggleSelect}
+        onSelectAll={selectAll}
+        onNavigateToFolder={navigateToFolder}
+        onPreviewFile={(file) => { setPreviewFile(file); setPreviewOpen(true); }}
+        onDownloadFile={handleDownload}
+        onDuplicateFile={duplicateFile}
+        onShareFile={(file) => { setShareFile(file); setShareOpen(true); }}
+        onToggleLock={toggleLock}
+        onConfirmDelete={confirmDeleteItem}
+        onFolderProperties={openFolderProperties}
+        onRenameStart={startRename}
+        onBulkDelete={doBulkDelete}
+        onClearSelection={() => setSelectedIds(new Set())}
+        inlineRenamingId={inlineRenamingId}
+        inlineRenameValue={inlineRenameValue}
+        onInlineRenameChange={setInlineRenameValue}
+        onStartInlineRename={startInlineRename}
+        onSubmitInlineRename={submitInlineRename}
+        onCancelInlineRename={() => setInlineRenamingId(null)}
+      />
 
-      {/* Quick Stats */}
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <span>{files.length} file{files.length !== 1 ? "s" : ""}</span>
-        <span>{folders.length} folder{folders.length !== 1 ? "s" : ""}</span>
-        {fileTypeCount("image/") > 0 && <Badge variant="outline" className="text-xs">{fileTypeCount("image/")} images</Badge>}
-        {fileTypeCount("video/") > 0 && <Badge variant="outline" className="text-xs">{fileTypeCount("video/")} videos</Badge>}
-        {fileTypeCount("audio/") > 0 && <Badge variant="outline" className="text-xs">{fileTypeCount("audio/")} audio</Badge>}
-      </div>
-
-      {/* Bulk Actions */}
-      {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-          <span className="text-sm font-medium">{selectedIds.size} selected</span>
-          <Button variant="outline" size="sm" onClick={doBulkDelete}>
-            <Trash2Icon className="mr-1 size-4" /> Delete
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
-            Clear
-          </Button>
-        </div>
-      )}
-
-      {/* Content */}
-      {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : viewMode === "grid" ? (
-        <div className="space-y-6">
-          {/* Folders */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-            {displayFolders.map((folder) => (
-              <Card key={folder.id} className="group cursor-pointer hover:border-primary/50 transition-colors relative">
-                <CardContent className="p-3" onClick={() => navigateToFolder(folder.id, folder.name)}>
-                  <div className="flex flex-col items-center gap-2 py-2">
-                    <FolderIcon className="size-10 text-muted-foreground" />
-                    {inlineRenamingId === folder.id ? (
-                      <Input
-                        value={inlineRenameValue}
-                        onChange={e => setInlineRenameValue(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === "Enter") { e.stopPropagation(); submitInlineRename(folder.id); }
-                          if (e.key === "Escape") { e.stopPropagation(); setInlineRenamingId(null); }
-                        }}
-                        onBlur={() => submitInlineRename(folder.id)}
-                        onClick={e => e.stopPropagation()}
-                        className="h-6 text-xs"
-                        autoFocus
-                      />
-                    ) : (
-                      <p
-                        className="text-xs font-medium text-center truncate w-full"
-                        onDoubleClick={e => { e.stopPropagation(); startInlineRename(folder.id, folder.name); }}
-                      >
-                        {folder.name}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                    <Button variant="ghost" size="sm" className="absolute top-1 right-1 size-6 opacity-0 group-hover:opacity-100">
-                      <MoreHorizontalIcon className="size-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-36">
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); startRename(folder.id, folder.name); }}>
-                      <PencilIcon className="mr-2 size-4" /> Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openFolderProperties(folder.id); }}>
-                      <InfoIcon className="mr-2 size-4" /> Properties
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); confirmDeleteItem(folder.id, "folder", folder.name); }} className="text-destructive">
-                      <Trash2Icon className="mr-2 size-4" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </Card>
-            ))}
-          </div>
-          {/* Files */}
-          {displayFiles.map((file) => (
-            <Card
-              key={file.id}
-              className={`group cursor-pointer hover:border-primary/50 transition-colors relative ${
-                selectedIds.has(file.id) ? "ring-2 ring-primary" : ""
-              }`}
-            >
-              <CardContent className="p-3">
-                <div className="absolute top-2 left-2 z-10">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(file.id)}
-                    onChange={() => toggleSelect(file.id)}
-                    className="size-4 opacity-0 group-hover:opacity-100 checked:opacity-100"
-                    onClick={e => e.stopPropagation()}
-                  />
-                </div>
-                <div className="flex flex-col items-center gap-2 py-2" onClick={() => { if (inlineRenamingId !== file.id) { setPreviewFile(file); setPreviewOpen(true); } }}>
-                  {getFileIcon(file.mimeType)}
-                  {inlineRenamingId === file.id ? (
-                    <Input
-                      value={inlineRenameValue}
-                      onChange={e => setInlineRenameValue(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === "Enter") { e.stopPropagation(); submitInlineRename(file.id); }
-                        if (e.key === "Escape") { e.stopPropagation(); setInlineRenamingId(null); }
-                      }}
-                      onBlur={() => submitInlineRename(file.id)}
-                      onClick={e => e.stopPropagation()}
-                      className="h-6 text-xs"
-                      autoFocus
-                    />
-                  ) : (
-                    <p
-                      className="text-xs font-medium text-center truncate w-full"
-                      onDoubleClick={e => { e.stopPropagation(); startInlineRename(file.id, file.originalName); }}
-                    >
-                      {file.originalName}
-                    </p>
-                  )}
-                  <p className="text-[10px] text-muted-foreground">{formatSize(file.size)}</p>
-                  {file.isLocked && <LockIcon className="size-3 text-muted-foreground" />}
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="absolute top-1 right-1 size-6 opacity-0 group-hover:opacity-100">
-                      <MoreHorizontalIcon className="size-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem onClick={() => { setPreviewFile(file); setPreviewOpen(true); }}>
-                      <FileTextIcon className="mr-2 size-4" /> Preview
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDownload(file.id)}>
-                      <DownloadIcon className="mr-2 size-4" /> Download
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => startRename(file.id, file.originalName)}>
-                      <PencilIcon className="mr-2 size-4" /> Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => duplicateFile(file.id)}>
-                      <CopyIcon className="mr-2 size-4" /> Duplicate
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setShareFile(file); setShareOpen(true); }}>
-                      <Share2Icon className="mr-2 size-4" /> Share
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => toggleLock(file.id, !!file.isLocked)}>
-                      {file.isLocked ? <><UnlockIcon className="mr-2 size-4" /> Unlock</> : <><LockIcon className="mr-2 size-4" /> Lock</>}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => confirmDeleteItem(file.id, "file", file.originalName)} className="text-destructive">
-                      <Trash2Icon className="mr-2 size-4" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        /* List View */
-        <div className="border border-gray-200 bg-white shadow-sm overflow-x-auto rounded-md">
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-[#f3f4f6]">
-              <tr className="border-b text-left text-sm text-gray-900 font-semibold">
-                <th className="px-4 py-3.5 text-left w-8 font-semibold">
-                  <input type="checkbox" checked={selectedIds.size === files.length && files.length > 0} onChange={selectAll} className="size-4" />
-                </th>
-                <th className="px-4 py-3.5 text-left font-semibold">Name</th>
-                <th className="px-4 py-3.5 text-left font-semibold hidden sm:table-cell">Type</th>
-                <th className="px-4 py-3.5 text-left font-semibold hidden md:table-cell">Owner</th>
-                <th className="px-4 py-3.5 text-right font-semibold">Size</th>
-                <th className="px-4 py-3.5 text-right font-semibold hidden lg:table-cell">Modified</th>
-                <th className="px-4 py-3.5 text-right font-semibold w-20">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayFolders.map((folder) => (
-                <tr key={folder.id} className="border-b last:border-0 hover:bg-slate-50 bg-white cursor-pointer" onClick={() => { if (inlineRenamingId !== folder.id) navigateToFolder(folder.id, folder.name); }}>
-                  <td className="px-4 py-3"><FolderIcon className="size-4 text-muted-foreground" /></td>
-                  <td className="px-4 py-3 text-sm font-medium" onDoubleClick={() => startInlineRename(folder.id, folder.name)}>
-                    {inlineRenamingId === folder.id ? (
-                      <Input
-                        value={inlineRenameValue}
-                        onChange={e => setInlineRenameValue(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === "Enter") { e.stopPropagation(); submitInlineRename(folder.id); }
-                          if (e.key === "Escape") { e.stopPropagation(); setInlineRenamingId(null); }
-                        }}
-                        onBlur={() => submitInlineRename(folder.id)}
-                        className="h-6 text-xs"
-                        autoFocus
-                      />
-                    ) : (
-                      folder.name
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">Folder</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">—</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground text-right">—</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground text-right hidden lg:table-cell">—</td>
-                  <td className="px-4 py-3 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" className="size-6"><MoreHorizontalIcon className="size-3" /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-36">
-                        <DropdownMenuItem onClick={() => startRename(folder.id, folder.name)}><PencilIcon className="mr-2 size-4" /> Rename</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openFolderProperties(folder.id)}><InfoIcon className="mr-2 size-4" /> Properties</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => confirmDeleteItem(folder.id, "folder", folder.name)} className="text-destructive"><Trash2Icon className="mr-2 size-4" /> Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              ))}
-              {displayFiles.map((file) => (
-                <tr key={file.id} className="border-b last:border-0 hover:bg-slate-50 bg-white">
-                  <td className="px-4 py-3">
-                    <input type="checkbox" checked={selectedIds.has(file.id)} onChange={() => toggleSelect(file.id)} className="size-4" />
-                  </td>
-                  <td className="px-4 py-3 text-sm cursor-pointer" onClick={() => { if (inlineRenamingId !== file.id) { setPreviewFile(file); setPreviewOpen(true); } }}>
-                    <span className="flex items-center gap-2" onDoubleClick={() => startInlineRename(file.id, file.originalName)}>
-                      {getFileIcon(file.mimeType)}
-                      {inlineRenamingId === file.id ? (
-                        <Input
-                          value={inlineRenameValue}
-                          onChange={e => setInlineRenameValue(e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === "Enter") { e.stopPropagation(); submitInlineRename(file.id); }
-                            if (e.key === "Escape") { e.stopPropagation(); setInlineRenamingId(null); }
-                          }}
-                          onBlur={() => submitInlineRename(file.id)}
-                          className="h-6 text-xs"
-                          autoFocus
-                        />
-                      ) : (
-                        <span className="truncate max-w-[200px]">{file.originalName}</span>
-                      )}
-                      {file.isLocked && <LockIcon className="size-3 text-muted-foreground shrink-0" />}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">{file.mimeType.split("/")[1]?.toUpperCase() || file.mimeType}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">{file.uploaderName || "Unknown"}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground text-right">{formatSize(file.size)}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground text-right hidden lg:table-cell">
-                    {file.updatedAt ? new Date(file.updatedAt).toLocaleDateString() : ""}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="size-6"><MoreHorizontalIcon className="size-3" /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-36">
-                        <DropdownMenuItem onClick={() => { setPreviewFile(file); setPreviewOpen(true); }}><FileTextIcon className="mr-2 size-4" /> Preview</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDownload(file.id)}><DownloadIcon className="mr-2 size-4" /> Download</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => startRename(file.id, file.originalName)}><PencilIcon className="mr-2 size-4" /> Rename</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => duplicateFile(file.id)}><CopyIcon className="mr-2 size-4" /> Duplicate</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => { setShareFile(file); setShareOpen(true); }}><Share2Icon className="mr-2 size-4" /> Share</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => confirmDeleteItem(file.id, "file", file.originalName)} className="text-destructive"><Trash2Icon className="mr-2 size-4" /> Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Rename dialog inline */}
       {renamingId && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setRenamingId(null)}>
           <div className="bg-background rounded-lg p-4 w-80" onClick={e => e.stopPropagation()}>
@@ -850,7 +395,6 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         </div>
       )}
 
-      {/* Delete Confirmation Dialog */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setConfirmDelete(null)}>
           <div className="bg-background rounded-lg p-5 w-96" onClick={e => e.stopPropagation()}>
@@ -873,7 +417,6 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         </div>
       )}
 
-      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-4 right-4 z-50 bg-foreground text-background px-4 py-2.5 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
           <CheckCircle2Icon className="size-4" />
@@ -881,7 +424,6 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         </div>
       )}
 
-      {/* Dialogs */}
       <FilePreviewDialog
         file={previewFile}
         open={previewOpen}
@@ -903,7 +445,6 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         />
       )}
 
-      {/* Folder Properties Dialog */}
       {propertiesOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => { setPropertiesOpen(false); setPropertiesData(null); }}>
           <div className="bg-background rounded-lg p-5 w-96" onClick={e => e.stopPropagation()}>
@@ -948,3 +489,5 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
     </div>
   );
 }
+
+

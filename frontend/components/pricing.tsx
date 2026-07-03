@@ -6,7 +6,7 @@ import { useUserCountry, isINR, getCurrencySymbol } from "@/hooks/use-user-count
 import { priceTiers } from "@/lib/currency";
 
 export function Pricing() {
-  const { country, loading } = useUserCountry();
+  const { country, loading, toggleCurrency } = useUserCountry();
   const inr = isINR(country);
   const sym = getCurrencySymbol(country);
 
@@ -32,11 +32,7 @@ export function Pricing() {
               className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${
                 inr ? "bg-brand-800" : "bg-brand-200"
               }`}
-              onClick={() => {
-                const next = inr ? "USD" : "INR";
-                sessionStorage.setItem("user_country", next === "INR" ? "IN" : "US");
-                window.location.reload();
-              }}
+              onClick={toggleCurrency}
             >
               <span
                 className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${

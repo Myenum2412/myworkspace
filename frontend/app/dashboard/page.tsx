@@ -11,6 +11,8 @@ import {
   ListTodo, CheckCircle2, Clock, AlertCircle, Users,
   FolderKanbanIcon, BriefcaseIcon, Building2Icon, HardDriveIcon,
 } from "lucide-react";
+import { ProfitLossChart } from "@/components/dashboard/profit-loss-chart";
+import type { ProfitLossRow } from "@/components/dashboard/profit-loss-chart";
 
 export const revalidate = 30;
 
@@ -231,6 +233,18 @@ export default async function DashboardPage() {
     tasks = [], projects = [], clients = [], activities = [], members = [],
   } = dashboardData || {};
 
+  let profitLossData: ProfitLossRow[] = [];
+  try {
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
+    const plRes = await fetch(`${backendUrl}/api/dashboard/profit-loss?orgId=${orgId}`, {
+      cache: "no-store",
+    });
+    if (plRes.ok) {
+      const plJson = await plRes.json();
+      profitLossData = plJson.data || [];
+    }
+  } catch {} // non-critical; chart renders empty state
+
   const metricCards = [
     { title: "Total Tasks", value: totalTasks, icon: ListTodo, color: "text-muted-foreground" },
     { title: "Completed", value: completedTasks, icon: CheckCircle2, color: "text-green-600" },
@@ -245,6 +259,8 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-4 h-full">
       <h1 className="text-2xl font-bold">Dashboard Overview</h1>
+
+      <ProfitLossChart data={profitLossData} />
 
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
         {metricCards.map((c) => (

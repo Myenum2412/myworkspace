@@ -74,6 +74,18 @@ router.post("/login", async (req, res) => {
     user.status = "online";
     await user.save();
     const resolvedOrgId = user.orgId || await getUserPrimaryOrgId(user.id) || "";
+    if (user.twoFactorEnabled) {
+        const tempToken = jwt.sign({ userId: user.id, email: user.email, purpose: "2fa" }, env.JWT_SECRET, { expiresIn: "5m" });
+        res.json({
+            success: true,
+            data: {
+                requiresTwoFactor: true,
+                tempToken,
+                email: user.email,
+            },
+        });
+        return;
+    }
     await recordAuditLog({
         orgId: resolvedOrgId,
         userId: user.id,
@@ -367,6 +379,7 @@ router.get("/me", authenticate, async (req, res) => {
             status: user.status,
             isActive: user.isActive,
             emailVerified: user.emailVerified || false,
+            twoFactorEnabled: user.twoFactorEnabled,
             createdAt: user.createdAt,
             orgId: orgId || undefined,
         },

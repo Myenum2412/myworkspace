@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ats-config
+  namespace: cache-system
+  labels:
+    app.kubernetes.io/name: trafficserver
+    app.kubernetes.io/part-of: myworkspace
+    app.kubernetes.io/component: cache
+data:
+  records.config: |
+    CONFIG proxy.config.exec_thread.autoconfig INT 1
+    CONFIG proxy.config.exec_thread.autoconfig.scale FLOAT 1.5
+    CONFIG proxy.config.exec_thread.limit INT 16
+    CONFIG proxy.config.cache.ram_cache.size INT 1G
+    CONFIG proxy.config.cache.ram_cache_cutoff INT 524288
+    CONFIG proxy.config.cache.max_disk_size INT 100G
+    CONFIG proxy.config.cache.min_average_object_size INT 4096
+    CONFIG proxy.config.cache.permit_pipelining INT 1
+    CONFIG proxy.config.http.server_port INT 8080
+    CONFIG proxy.config.http.insert_request_via_str INT 1
+    CONFIG proxy.config.http.insert_response_via_str INT 1
+    CONFIG proxy.config.http.response_server_enabled INT 1
+    CONFIG proxy.config.http.send_http11_requests INT 1
+    CONFIG proxy.config.http.keep_alive_enabled_in_incoming INT 1
+    CONFIG proxy.config.http.keep_alive_enabled_in_outgoing INT 1
+    CONFIG proxy.config.http.keep_alive_no_activity_timeout_in INT 120
+    CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT 120
+    CONFIG proxy.config.http.transaction_no_activity_timeout_in INT 30
+    CONFIG proxy.config.http.transaction_no_activity_timeout_out INT 30
+    CONFIG proxy.config.http.accept_no_activity_timeout INT 30
+    CONFIG proxy.config.http.cache.http INT 1
+    CONFIG proxy.config.http.cache.ignore_client_cc_max_age INT 0
+    CONFIG proxy.config.http.cache.ignore_client_no_cache INT 0
+    CONFIG proxy.config.http.cache.cache_urls_that_look_dynamic INT 0
+    CONFIG proxy.config.http.keep_server_response_headers INT 1
+    CONFIG proxy.config.http.send_x_forwarded_for INT 1
+    CONFIG proxy.config.http.send_global_accept INT 1
+    CONFIG proxy.config.dns.resolv_conf STRING /etc/resolv.conf
+    CONFIG proxy.config.dns.search_default_domains INT 1
+    CONFIG proxy.config.dns.splitdns_enabled INT 0
+    CONFIG proxy.config.log.logging_enabled INT 3
+    CONFIG proxy.config.log.squid_log_enabled INT 1
+    CONFIG proxy.config.log.squid_log_is_ascii INT 1
+    CONFIG proxy.config.log.squid_log_name STRING squid
+    CONFIG proxy.config.log.rolling_enabled INT 1
+    CONFIG proxy.config.log.rolling_interval_sec INT 86400
+    CONFIG proxy.config.log.rolling_size_threshold INT 1073741824
+    CONFIG proxy.config.restricted_headers.enabled INT 1
+    CONFIG proxy.config.restricted_headers.headers STRING Proxy-Connection
+    CONFIG proxy.config.http.negative_revalidating_enabled INT 1
+    CONFIG proxy.config.admin.synthetic_path STRING /__ats__
+    CONFIG proxy.config.admin.user_id STRING ats
+
+  remap.config: |
+    map / http://nginx.cache-system.svc.cluster.local:80/
+    map https://myworkspace.myenum.in/ http://nginx.cache-system.svc.cluster.local:80/
+    map /_next/static/ http://nginx.cache-system.svc.cluster.local:80/_next/static/
+    map /uploads/ http://nginx.cache-system.svc.cluster.local:80/uploads/
+    map /api/ http://nginx.cache-system.svc.cluster.local:80/api/
+
+  cache.config: |
+    regex .*\.(jpg|jpeg|png|gif|webp|avif|svg|ico|css|js|woff2?|ttf|eot|otf)$
+      ttl=31536000
+      cache-responses=yes
+
+    regex /_next/static/.*
+      ttl=31536000
+      cache-responses=yes
+
+    regex /uploads/.*
+      ttl=604800
+      cache-responses=yes
+
+    regex /banners/.*
+      ttl=86400
+      cache-responses=yes
+
+    regex /api/.*
+      cache-responses=no
+
+    regex .*\.html?$
+      cache-responses=no
+
+    regex .*
+      ttl=0
+      cache-responses=no

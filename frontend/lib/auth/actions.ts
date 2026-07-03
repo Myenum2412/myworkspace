@@ -24,7 +24,19 @@ export async function loginAction(formData: FormData) {
     redirect("/login?error=Email+and+password+are+required");
   }
 
-  console.log(`[AUTH] loginAction: attempting signIn for ${email}`);
+  console.log(`[AUTH] loginAction: attempting login for ${email}`);
+
+  const apiUrl = process.env.API_URL || "http://localhost:4000";
+
+  const challengeRes = await fetch(`${apiUrl}/api/two-factor/challenge`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const challengeData = await challengeRes.json();
+  if (challengeData?.data?.requiresTwoFactor) {
+    redirect(`/login/verify-2fa?email=${encodeURIComponent(email)}`);
+  }
 
   try {
     await signIn("credentials", { email, password, redirect: false });

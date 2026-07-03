@@ -13,10 +13,8 @@ export default async function RoleRedirectPage() {
   const isOrgAdmin = role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN";
 
   if (isOrgAdmin) {
-    console.log(`[AUTH role-redirect] email=${session.user.email} role=${role} → /orgmenu`);
     redirect("/orgmenu");
   }
 
-  console.log(`[AUTH role-redirect] email=${session.user.email} role=${role} -> /dashboard`);
   redirect("/dashboard");
 }

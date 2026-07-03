@@ -4,7 +4,7 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import ProjectsInteractive from "./projects-interactive";
-import type { Project } from "./columns";
+import type { Project } from "@/components/projects/project-types";
 
 export const dynamic = "force-dynamic";
 

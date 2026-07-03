@@ -2,13 +2,17 @@ import amqplib, { Channel, ChannelModel } from "amqplib";
 import { env } from "../../config/env.js";
 import { logger } from "../logger/index.js";
 
-const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost:5672";
+const RABBITMQ_URL = process.env.RABBITMQ_URL || "";
 const RABBITMQ_PREFETCH = Number(process.env.RABBITMQ_PREFETCH || 10);
 
 let connection: ChannelModel | null = null;
 let channel: Channel | null = null;
 let connecting = false;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function isRabbitMQConfigured(): boolean {
+  return Boolean(RABBITMQ_URL && !RABBITMQ_URL.startsWith("amqp://localhost"));
+}
 
 export const EXCHANGES = {
   UPLOAD_EVENTS: "upload.events",
@@ -50,6 +54,10 @@ export const ROUTING_KEYS = {
 } as const;
 
 export async function getChannel(): Promise<Channel> {
+  if (!isRabbitMQConfigured()) {
+    throw new Error("RabbitMQ not configured — set RABBITMQ_URL in .env");
+  }
+
   if (channel) return channel;
 
   if (connecting) {
@@ -86,7 +94,7 @@ export async function getChannel(): Promise<Channel> {
     connecting = false;
     return channel;
   } catch (err) {
-    logger.error({ err }, "Failed to connect to RabbitMQ");
+    logger.warn({ err }, "RabbitMQ not available — queue functionality disabled");
     connecting = false;
     throw err;
   }

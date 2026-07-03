@@ -13,7 +13,7 @@ beforeAll(async () => {
   await connectTestDb();
   server = app.listen(0);
 });
-afterAll((done) => server.close(done));
+afterAll(() => server.close());
 beforeEach(async () => {
   await resetDb();
 });
@@ -143,8 +143,8 @@ describe("Client File Management — folders & files (backend canonical)", () =>
     const root = await Folder.findOne({ id: rootId }).lean();
     const child = await Folder.findOne({ id: childId }).lean();
     expect(root?.name).toBe("Documents");
-    expect(root?.path).toBe(`/clients/${clientId}/Documents`);
-    expect(child?.path).toBe(`/clients/${clientId}/Documents/Sub`);
+    expect(root?.path).toBe(`/Documents`);
+    expect(child?.path).toBe(`/Documents/Sub`);
   });
 
   it("POST /api/files/upload persists orgId, clientId, uploader, timestamps, metadata", async () => {

@@ -23,13 +23,13 @@ describe("categoriseMime()", () => {
     }
   });
 
-  it("returns 'other' for unrecognised MIME types", () => {
-    expect(categoriseMime("application/x-unknown")).toBe("other");
-    expect(categoriseMime("text/calendar")).toBe("other");
+  it("returns 'general' for unrecognised MIME types", () => {
+    expect(categoriseMime("application/x-unknown")).toBe("general");
+    expect(categoriseMime("text/calendar")).toBe("general");
   });
 
-  it("returns 'other' for empty string", () => {
-    expect(categoriseMime("")).toBe("other");
+  it("returns 'general' for empty string", () => {
+    expect(categoriseMime("")).toBe("general");
   });
 });
 

@@ -108,6 +108,7 @@ export default function FilesInteractive({
 
   // Upload
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [fileExplorerKey, setFileExplorerKey] = useState(0);
 
   const orgId = orgInfo?.id || "";
   const userId = session?.user?.id || "";
@@ -173,12 +174,12 @@ export default function FilesInteractive({
           <DropZoneUpload
             orgId={orgId}
             clientId={activeClientId}
-            onUploadComplete={() => window.location.reload()}
+            onUploadComplete={() => { setUploadOpen(false); setFileExplorerKey((k) => k + 1); }}
             maxConcurrency={3}
           />
         )}
 
-        <FileExplorer orgId={orgId} userId={userId} clientId={activeClientId} />
+        <FileExplorer key={fileExplorerKey} orgId={orgId} userId={userId} clientId={activeClientId} />
       </div>
     );
   }

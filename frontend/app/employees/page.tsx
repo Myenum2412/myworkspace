@@ -187,7 +187,6 @@ export default async function EmployeesPage() {
           });
       }
     } catch (err) {
-      console.error("[EmployeesPage] Error fetching employees:", err);
       employees = [];
     }
   }

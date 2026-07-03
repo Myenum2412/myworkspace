@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { Task } from "../lib/db/models/Task.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { Project } from "../lib/db/models/Project.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { env } from "../config/env.js";
@@ -61,6 +62,50 @@ router.get("/metrics", async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || req.orgId || await resolveOrgId(req);
   const cacheKey = CacheKeys.dashboardMetrics(orgId);
   const data = await cacheManager.getOrSet(cacheKey, () => fetchDashboardMetrics(orgId), 30);
+  res.json({ success: true, data });
+});
+
+function buildMonthlyRange() {
+  const now = new Date();
+  const months: { label: string; start: Date; end: Date }[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+    months.push({ label: d.toLocaleDateString("en-US", { month: "short", year: "numeric" }), start: d, end });
+  }
+  return months;
+}
+
+function estimateRevenue(projectsCreated: number, tasksCompleted: number): number {
+  return projectsCreated * 5000 + tasksCompleted * 200;
+}
+
+function estimateExpenses(memberCount: number): number {
+  return memberCount * 3000;
+}
+
+async function fetchProfitLossData(orgId: string) {
+  const months = buildMonthlyRange();
+  const memberCount = await OrgMember.countDocuments({ orgId });
+
+  const results = await Promise.all(
+    months.map(async (m) => {
+      const [projectsCreated, tasksCompleted] = await Promise.all([
+        Project.countDocuments({ orgId, createdAt: { $gte: m.start, $lte: m.end } }),
+        Task.countDocuments({ orgId, status: "done", updatedAt: { $gte: m.start, $lte: m.end } }),
+      ]);
+      const revenue = estimateRevenue(projectsCreated, tasksCompleted);
+      const expenses = estimateExpenses(memberCount);
+      return { date: m.start.toISOString(), revenue, expenses, profit: revenue - expenses, projectsCreated, tasksCompleted, memberCount };
+    })
+  );
+  return results;
+}
+
+router.get("/profit-loss", async (req: AuthRequest, res: Response) => {
+  const orgId = (req.query.orgId as string) || req.orgId || await resolveOrgId(req);
+  const cacheKey = `dashboard:${orgId}:profit-loss`;
+  const data = await cacheManager.getOrSet(cacheKey, () => fetchProfitLossData(orgId), 120);
   res.json({ success: true, data });
 });
 

@@ -5,7 +5,7 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "developer@myenum.in";
 
 const ORIGIN_PREFIXES = ["/orgmenu"];
 const STAFF_PREFIXES = ["/staffs"];
-const PUBLIC_PATHS = new Set(["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/client/login", "/auth/not-found"]);
+const PUBLIC_PATHS = new Set(["/login", "/login/verify-2fa", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/client/login", "/auth/not-found"]);
 const PUBLIC_PREFIXES = new Set(["/share"]);
 const CLIENT_PREFIXES = ["/client/dashboard", "/client/profile", "/client/projects", "/client/documents", "/client/notifications", "/client/settings"];
 const WORKSPACE_PREFIXES = [
@@ -48,7 +48,7 @@ function getRouteContext(pathname: string): "origin" | "staff" | "workspace" | "
   return "unknown";
 }
 
-export default auth((req) => {
+export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
   const userEmail = req.auth?.user?.email?.toLowerCase().trim();

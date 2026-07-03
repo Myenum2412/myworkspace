@@ -15,6 +15,7 @@ import { TaskDetailedView } from "@/components/task-detailed-view";
 import { TaskEditForm } from "@/components/task-edit-form";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDataTable } from "@/components/task-data-table";
+import { toast } from "sonner";
 
 export type TeamTask = {
   _id: string;
@@ -62,7 +63,8 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
       const res = await fetch(`/api/tasks/${t._id}`, { method: "DELETE", credentials: "include" });
       if (res.ok) setLocalTasks((prev) => prev.filter((x) => x._id !== t._id));
     } catch (error) {
-      console.error("[TEAMTASKS] Failed to delete task:", error);
+      const message = error instanceof Error ? error.message : "Failed to delete task";
+      toast.error(message);
     }
   }, []);
 

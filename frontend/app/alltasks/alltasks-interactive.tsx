@@ -20,6 +20,7 @@ import { ViewToggle } from "@/components/view-toggle";
 import { TaskDataTable } from "@/components/task-data-table";
 import { Task, useRealtimeTasks } from "@/hooks/use-realtime-tasks";
 import { getSocketIO } from "@/lib/socketio-client";
+import { toast } from "sonner";
 import { perfLog, perfNow } from "@/lib/perf";
 
 
@@ -100,7 +101,8 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
         perfLog("tasks.delete", perfNow() - t0);
       }
     } catch (error) {
-      console.error("[ALLTASKS] Failed to delete task:", error);
+      const message = error instanceof Error ? error.message : "Failed to delete task";
+      toast.error(message);
     }
   }, [setTasks]);
 
@@ -284,7 +286,8 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
                     throw new Error(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Save failed"));
                   }
                 } catch (error) {
-                  console.error("[ALLTASKS] Failed to save task:", error);
+                  const message = error instanceof Error ? error.message : "Failed to save task";
+                  toast.error(message);
                   return;
                 }
                 setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as unknown as Task) : t));

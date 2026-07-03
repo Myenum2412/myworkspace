@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { Loader2Icon, MailIcon, PlusIcon, XIcon } from "lucide-react";
 
 export function InviteMemberFormInteractive() {
@@ -45,7 +46,7 @@ export function InviteMemberFormInteractive() {
       setSending(false);
       setSent(true);
     } catch (err: any) {
-      console.error("[INVITE FORM] Failed to send invitations:", err);
+      toast.error(err?.message === "Validation failed" ? "Please provide valid email addresses." : (err?.message || "Failed to send invitations"));
       const msg = err?.message === "Validation failed" ? "Please provide valid email addresses." : (err?.message || "Failed to send invitations. Please try again.");
       setError(msg);
       setSending(false);

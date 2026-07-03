@@ -7,7 +7,7 @@ import path from "path";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
 import { requestIdMiddleware } from "./lib/request-id.js";
-import { authLimiter, socketTokenLimiter, apiLimiter } from "./middleware/rate-limit.js";
+import { authLimiter, socketTokenLimiter, apiLimiter, uploadLimiter, shareDownloadLimiter, searchLimiter } from "./middleware/rate-limit.js";
 import { inputSanitizer } from "./middleware/sanitize.js";
 import { csrfProtection } from "./lib/csrf.js";
 import mongoose from "mongoose";
@@ -34,6 +34,10 @@ import timeEntriesRoutes from "./routes/time-entries.js";
 import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
 import fileApprovalRoutes from "./routes/file-approval.js";
+import billingRoutes from "./routes/billing.js";
+import twoFactorRoutes from "./routes/two-factor.js";
+import automationRoutes from "./routes/automation.js";
+import automationWebhookRoutes from "./routes/automation-webhook.js";
 const app = express();
 app.set("trust proxy", 1);
 const isProd = env.NODE_ENV === "production";
@@ -70,6 +74,8 @@ app.use(helmet({
 }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(compression({ level: 6 }));
+// Stripe webhook needs raw body (before JSON parser)
+app.use("/api/billing/webhook", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(requestIdMiddleware);
@@ -82,6 +88,10 @@ app.use("/api/auth", authLimiter, (req, _res, next) => {
         next();
 });
 app.use("/api/client-auth", authLimiter);
+app.use("/api/files", uploadLimiter);
+app.use("/api/files-tus", uploadLimiter);
+app.use("/api/shares", shareDownloadLimiter);
+app.use("/api/search", searchLimiter);
 app.use("/api", apiLimiter);
 // Serve uploads and banners statically
 app.use("/uploads", express.static(path.resolve("data", "uploads")));
@@ -139,6 +149,10 @@ app.use("/api/time-entries", timeEntriesRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/file-approval", fileApprovalRoutes);
+app.use("/api/two-factor", twoFactorRoutes);
+app.use("/api/billing", billingRoutes);
+app.use("/api/automation", automationRoutes);
+app.use("/api/automation/webhook", automationWebhookRoutes);
 // 404 catch-all — log unmatched routes with clear diagnostics
 app.use((req, res) => {
     const method = req.method;

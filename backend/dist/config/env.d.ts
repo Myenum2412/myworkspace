@@ -33,4 +33,9 @@ export declare const env: {
     AZURE_STORAGE_CONTAINER: string;
     LOG_LEVEL: string;
     REDIS_URL: string;
+    STRIPE_SECRET_KEY: string;
+    STRIPE_WEBHOOK_SECRET: string;
+    STRIPE_GROWTH_PRICE_ID: string;
+    STRIPE_ENTERPRISE_PRICE_ID: string;
+    SENTRY_DSN: string;
 };

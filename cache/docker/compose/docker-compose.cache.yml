@@ -1,0 +1,330 @@
+networks:
+  cache-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.20.0.0/16
+  app-network:
+    external: true
+    name: myworkspace-network
+
+volumes:
+  valkey-data-0:
+  valkey-data-1:
+  valkey-data-2:
+  valkey-data-3:
+  valkey-data-4:
+  valkey-data-5:
+  valkey-sentinel-data:
+  nginx-cache-api:
+  nginx-cache-static:
+  nginx-cache-cdn:
+  trafficserver-cache:
+  prometheus-data:
+  grafana-data:
+  alertmanager-data:
+
+services:
+  # ============================================
+  # Layer 1 & 2: Valkey (In-Memory + Distributed)
+  # ============================================
+  valkey-sentinel-0:
+    image: valkey/valkey:8-alpine
+    container_name: valkey-sentinel-0
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    command: valkey-sentinel /etc/valkey/sentinel.conf
+    networks:
+      - cache-network
+    volumes:
+      - ../../valkey/sentinel/sentinel.conf:/etc/valkey/sentinel.conf
+      - ../../valkey/docker-entrypoint.sh:/entrypoint.sh:ro
+      - valkey-sentinel-data:/data
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-myworkspace}
+    depends_on:
+      valkey-0:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-p", "26379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  valkey-0: &valkey-standalone
+    image: valkey/valkey:8-alpine
+    container_name: valkey-0
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    command: valkey-server /etc/valkey/valkey.conf
+    networks:
+      - cache-network
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../../valkey/standalone/valkey.conf:/etc/valkey/valkey.conf
+      - ../../valkey/docker-entrypoint.sh:/entrypoint.sh:ro
+      - valkey-data-0:/data
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-myworkspace}
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-a", "${VALKEY_PASSWORD:-myworkspace}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2"
+        reservations:
+          memory: 1g
+
+  valkey-cluster-0: &valkey-cluster
+    image: valkey/valkey:8-alpine
+    container_name: valkey-cluster-0
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    command: valkey-server /etc/valkey/valkey.conf
+    networks:
+      cache-network:
+        ipv4_address: 10.20.0.10
+    volumes:
+      - ../../valkey/cluster/valkey-cluster.conf:/etc/valkey/valkey.conf
+      - ../../valkey/docker-entrypoint.sh:/entrypoint.sh:ro
+      - valkey-data-0:/data
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-myworkspace}
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-a", "${VALKEY_PASSWORD:-myworkspace}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  valkey-cluster-1:
+    <<: *valkey-cluster
+    container_name: valkey-cluster-1
+    networks:
+      cache-network:
+        ipv4_address: 10.20.0.11
+    volumes:
+      - valkey-data-1:/data
+
+  valkey-cluster-2:
+    <<: *valkey-cluster
+    container_name: valkey-cluster-2
+    networks:
+      cache-network:
+        ipv4_address: 10.20.0.12
+    volumes:
+      - valkey-data-2:/data
+
+  valkey-cluster-3:
+    <<: *valkey-cluster
+    container_name: valkey-cluster-3
+    networks:
+      cache-network:
+        ipv4_address: 10.20.0.13
+    volumes:
+      - valkey-data-3:/data
+
+  valkey-cluster-4:
+    <<: *valkey-cluster
+    container_name: valkey-cluster-4
+    networks:
+      cache-network:
+        ipv4_address: 10.20.0.14
+    volumes:
+      - valkey-data-4:/data
+
+  valkey-cluster-5:
+    <<: *valkey-cluster
+    container_name: valkey-cluster-5
+    networks:
+      cache-network:
+        ipv4_address: 10.20.0.15
+    volumes:
+      - valkey-data-5:/data
+
+  valkey-cluster-init:
+    image: valkey/valkey:8-alpine
+    container_name: valkey-cluster-init
+    networks:
+      - cache-network
+    depends_on:
+      valkey-cluster-0:
+        condition: service_healthy
+      valkey-cluster-1:
+        condition: service_healthy
+      valkey-cluster-2:
+        condition: service_healthy
+      valkey-cluster-3:
+        condition: service_healthy
+      valkey-cluster-4:
+        condition: service_healthy
+      valkey-cluster-5:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/scripts/init-cluster.sh"]
+    volumes:
+      - ../../valkey/init-cluster.sh:/scripts/init-cluster.sh:ro
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-myworkspace}
+
+  # ============================================
+  # Layer 4: Varnish Cache (HTTP Cache)
+  # ============================================
+  varnish:
+    image: varnish:7.6
+    container_name: varnish
+    networks:
+      - cache-network
+    ports:
+      - "80:80"
+      - "6082:6082"
+    volumes:
+      - ../../varnish/vcl/default.vcl:/etc/varnish/default.vcl:ro
+    environment:
+      VARNISH_MEMORY: ${VARNISH_MEMORY:-2g}
+      VARNISH_STORAGE: ${VARNISH_STORAGE:-malloc,2g}
+      VARNISH_INSTANCE: varnish
+    tmpfs:
+      - /var/lib/varnish:uid=1000,gid=1000,size=2g,exec
+    depends_on:
+      nginx:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "varnishadm", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2"
+
+  # ============================================
+  # Layer 5: Nginx (Reverse Proxy + CDN)
+  # ============================================
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: nginx
+    networks:
+      - cache-network
+      - app-network
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../../nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../../nginx/conf/conf.d:/etc/nginx/conf.d:ro
+      - ../../nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-cache-api:/var/cache/nginx/api
+      - nginx-cache-static:/var/cache/nginx/static
+      - nginx-cache-cdn:/var/cache/nginx/cdn
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/nginx-health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: "2"
+
+  # ============================================
+  # Layer 6: Apache Traffic Server (CDN)
+  # ============================================
+  trafficserver:
+    image: apache/trafficserver:9.2
+    container_name: trafficserver
+    networks:
+      - cache-network
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../trafficserver/conf/records.config:/opt/trafficserver/etc/trafficserver/records.config:ro
+      - ../../trafficserver/conf/remap.config:/opt/trafficserver/etc/trafficserver/remap.config:ro
+      - ../../trafficserver/conf/cache.config:/opt/trafficserver/etc/trafficserver/cache.config:ro
+      - trafficserver-cache:/var/cache/trafficserver
+    healthcheck:
+      test: ["CMD", "traffic_ctl", "server", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+          cpus: "4"
+
+  # ============================================
+  # Monitoring
+  # ============================================
+  prometheus:
+    image: prom/prometheus:v2.55
+    container_name: prometheus
+    networks:
+      - cache-network
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../../monitoring/prometheus/valkey.yml:/etc/prometheus/valkey.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:11.3
+    container_name: grafana
+    networks:
+      - cache-network
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ../../monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - grafana-data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: redis-datasource
+    depends_on:
+      - prometheus
+
+  valkey-exporter:
+    image: oliver006/redis_exporter:v1.67
+    container_name: valkey-exporter
+    networks:
+      - cache-network
+    environment:
+      REDIS_ADDR: redis://valkey-0:6379
+      REDIS_PASSWORD: ${VALKEY_PASSWORD:-myworkspace}
+    ports:
+      - "9121:9121"
+    depends_on:
+      valkey-0:
+        condition: service_healthy
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.3
+    container_name: nginx-exporter
+    networks:
+      - cache-network
+    environment:
+      NGINX_STATUS: http://nginx:80/nginx-health
+    ports:
+      - "9113:9113"
+    depends_on:
+      - nginx

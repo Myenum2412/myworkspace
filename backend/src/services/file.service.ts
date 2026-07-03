@@ -10,7 +10,7 @@ import { AppError } from "../middleware/error.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 import { recordAuditLog } from "./audit.service.js";
 import { cacheManager, CacheKeys } from "../lib/cache.js";
-import { validateFileMagicBytes } from "./validation.service.js";
+import { validateFileMagicBytes, validateFileExtension } from "./validation.service.js";
 import { logger } from "../lib/logger/index.js";
 
 export interface FileUploadInput {
@@ -50,6 +50,11 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
   } = input;
 
   const actualMimeType = validateFileMagicBytes(buffer, mimeType);
+
+  if (!validateFileExtension(originalName, actualMimeType)) {
+    throw new AppError(400, `File extension does not match the detected file type (${actualMimeType})`);
+  }
+
   const sha = checksum ?? await computeChecksum(buffer);
 
   if (skipDuplicates) {

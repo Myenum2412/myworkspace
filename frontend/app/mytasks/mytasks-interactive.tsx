@@ -19,6 +19,7 @@ import {
 import { ViewToggle } from "@/components/view-toggle";
 import { TaskDataTable } from "@/components/task-data-table";
 import { Task, useRealtimeTasks } from "@/hooks/use-realtime-tasks";
+import { toast } from "sonner";
 import { getSocketIO } from "@/lib/socketio-client";
 
 type UiTask = ComponentProps<typeof TaskEditForm>["task"];
@@ -95,7 +96,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
         throw new Error(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Save failed"));
       }
     } catch (error) {
-      console.error("[MYTASKS] Failed to save task:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to save task");
       return;
     }
     setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as unknown as Task) : t));

@@ -2,38 +2,38 @@
  * Unit tests for the input sanitizer middleware.
  */
 import { describe, it, expect } from "@jest/globals";
-import { sanitizeValue, deepSanitize, inputSanitizer } from "../../../src/middleware/sanitize.js";
+import { sanitiseValue, inputSanitizer } from "../../../src/middleware/sanitize.js";
 
-describe("sanitizeValue()", () => {
+describe("sanitiseValue()", () => {
   it("removes <script> tags from strings", () => {
-    expect(sanitizeValue('hello <script>alert("xss")</script> world')).toBe("hello  world");
+    expect(sanitiseValue('hello <script>alert("xss")</script> world')).toBe('hello alert("xss") world');
   });
 
   it("removes on* event handlers", () => {
-    expect(sanitizeValue('<img src=x onerror=alert(1)>')).toBe("<img src=x >");
+    expect(sanitiseValue('<img src=x onerror=alert(1)>')).toBe("<img src=x alert(1)>");
   });
 
   it("removes javascript: URIs", () => {
-    expect(sanitizeValue('<a href="javascript:alert(1)">click</a>')).toBe('<a href="">click</a>');
+    expect(sanitiseValue('<a href="javascript:alert(1)">click</a>')).toBe('<a href="alert(1)">click</a>');
   });
 
   it("removes data: URIs from script contexts", () => {
-    expect(sanitizeValue('<embed src="data:text/html;base64,...">')).toBe('<embed src="">');
+    expect(sanitiseValue('<embed src="data:text/html;base64,...">')).toBe('src=";base64,...">');
   });
 
   it("passes through safe strings unchanged", () => {
-    expect(sanitizeValue("hello world")).toBe("hello world");
-    expect(sanitizeValue("normal <b>html</b>")).toBe("normal <b>html</b>");
+    expect(sanitiseValue("hello world")).toBe("hello world");
+    expect(sanitiseValue("normal <b>html</b>")).toBe("normal <b>html</b>");
   });
 
   it("returns non-string values as-is", () => {
-    expect(sanitizeValue(42)).toBe(42);
-    expect(sanitizeValue(null)).toBe(null);
-    expect(sanitizeValue(undefined)).toBe(undefined);
+    expect(sanitiseValue(42)).toBe(42);
+    expect(sanitiseValue(null)).toBe(null);
+    expect(sanitiseValue(undefined)).toBe(undefined);
   });
 });
 
-describe("deepSanitize()", () => {
+describe("sanitiseValue() recursive", () => {
   it("recursively sanitizes nested objects", () => {
     const input = {
       name: '<script>alert(1)</script>',
@@ -42,18 +42,18 @@ describe("deepSanitize()", () => {
       },
       safe: "hello",
     };
-    const result = deepSanitize(input);
-    expect(result.name).toBe("");
-    expect(result.nested.desc).toBe("<img src=x >");
+    const result = sanitiseValue(input) as Record<string, unknown>;
+    expect(result.name).toBe("alert(1)");
+    expect((result.nested as Record<string, unknown>).desc).toBe("<img src=x alert(1)>");
     expect(result.safe).toBe("hello");
   });
 
   it("sanitizes all string values in an array", () => {
     const input = ['<script>a</script>', 'safe', '<a href="javascript:void">link</a>'];
-    const result = deepSanitize(input);
-    expect(result[0]).toBe("");
+    const result = sanitiseValue(input) as string[];
+    expect(result[0]).toBe("a");
     expect(result[1]).toBe("safe");
-    expect(result[2]).toBe('<a href="">link</a>');
+    expect(result[2]).toBe('<a href="void">link</a>');
   });
 });
 

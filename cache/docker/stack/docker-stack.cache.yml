@@ -1,0 +1,834 @@
+version: "3.9"
+
+networks:
+  cache-network:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 10.20.0.0/16
+    driver_opts:
+      encrypted: "true"
+  app-network:
+    external: true
+    name: myworkspace-network
+
+volumes:
+  valkey-data-0:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/valkey/0
+      o: bind
+  valkey-data-1:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/valkey/1
+      o: bind
+  valkey-data-2:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/valkey/2
+      o: bind
+  valkey-data-3:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/valkey/3
+      o: bind
+  valkey-data-4:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/valkey/4
+      o: bind
+  valkey-data-5:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/valkey/5
+      o: bind
+  valkey-sentinel-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/valkey/sentinel
+      o: bind
+  prometheus-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/prometheus
+      o: bind
+  grafana-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/grafana
+      o: bind
+  alertmanager-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/alertmanager
+      o: bind
+  nginx-cache-api:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/nginx/api
+      o: bind
+  nginx-cache-static:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/nginx/static
+      o: bind
+  nginx-cache-cdn:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/nginx/cdn
+      o: bind
+  trafficserver-cache:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/cache/trafficserver
+      o: bind
+
+configs:
+  valkey_standalone_conf:
+    file: ../../valkey/standalone/valkey.conf
+  valkey_cluster_conf:
+    file: ../../valkey/cluster/valkey-cluster.conf
+  valkey_sentinel_conf:
+    file: ../../valkey/sentinel/sentinel.conf
+  valkey_entrypoint:
+    file: ../../valkey/docker-entrypoint.sh
+  valkey_init_cluster:
+    file: ../../valkey/init-cluster.sh
+  varnish_default_vcl:
+    file: ../../varnish/vcl/default.vcl
+  varnish_entrypoint:
+    file: ../../varnish/docker-entrypoint.sh
+  nginx_conf:
+    file: ../../nginx/conf/nginx.conf
+  nginx_myworkspace_conf:
+    file: ../../nginx/conf/conf.d/myworkspace.conf
+  nginx_cdn_conf:
+    file: ../../nginx/conf/conf.d/cdn.conf
+  nginx_ssl_params:
+    file: ../../nginx/conf/ssl/ssl-params.conf
+  trafficserver_records:
+    file: ../../trafficserver/conf/records.config
+  trafficserver_remap:
+    file: ../../trafficserver/conf/remap.config
+  trafficserver_cache:
+    file: ../../trafficserver/conf/cache.config
+  prometheus_yml:
+    file: ../../monitoring/prometheus/prometheus.yml
+  prometheus_valkey_yml:
+    file: ../../monitoring/prometheus/valkey.yml
+  grafana_datasource:
+    file: ../../monitoring/grafana/datasources/datasource.yml
+  grafana_dashboard:
+    file: ../../monitoring/grafana/dashboards/cache-overview.json
+
+secrets:
+  valkey_password:
+    external: true
+    name: valkey_password
+  session_cache_password:
+    external: true
+    name: session_cache_password
+  api_cache_password:
+    external: true
+    name: api_cache_password
+  readonly_password:
+    external: true
+    name: readonly_password
+  monitoring_password:
+    external: true
+    name: monitoring_password
+  grafana_password:
+    external: true
+    name: grafana_password
+  nginx_ssl_cert:
+    external: true
+    name: nginx_fullchain
+  nginx_ssl_key:
+    external: true
+    name: nginx_privkey
+
+services:
+  # ============================================
+  # Layer 2: Valkey Standalone (In-Memory Cache)
+  # ============================================
+  valkey-standalone:
+    image: valkey/valkey:8-alpine
+    hostname: "{{.Task.Slot}}-valkey-standalone"
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    command: valkey-server /etc/valkey/valkey.conf
+    networks:
+      - cache-network
+    ports:
+      - target: 6379
+        published: 6379
+        protocol: tcp
+        mode: host
+    configs:
+      - source: valkey_standalone_conf
+        target: /etc/valkey/valkey.conf
+        mode: 0440
+      - source: valkey_entrypoint
+        target: /entrypoint.sh
+        mode: 0550
+    secrets:
+      - source: valkey_password
+        target: /run/secrets/valkey_password
+        uid: "1000"
+        gid: "1000"
+        mode: 0400
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-myworkspace}
+    volumes:
+      - valkey-data-0:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-a", "${VALKEY_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.cache == valkey
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2"
+        reservations:
+          memory: 1g
+          cpus: "0.5"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 30s
+        order: stop-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+
+  # ============================================
+  # Layer 2 HA: Valkey Sentinel (High Availability)
+  # ============================================
+  valkey-sentinel:
+    image: valkey/valkey:8-alpine
+    hostname: "sentinel-{{.Task.Slot}}"
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    command: valkey-sentinel /etc/valkey/sentinel.conf
+    networks:
+      - cache-network
+    configs:
+      - source: valkey_sentinel_conf
+        target: /etc/valkey/sentinel.conf
+        mode: 0440
+      - source: valkey_entrypoint
+        target: /entrypoint.sh
+        mode: 0550
+    secrets:
+      - source: valkey_password
+        target: /run/secrets/valkey_password
+        mode: 0400
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-myworkspace}
+    volumes:
+      - valkey-sentinel-data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-p", "26379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 3
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.cache == valkey
+        preferences:
+          - spread: node.id
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.5"
+        reservations:
+          memory: 128m
+          cpus: "0.1"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+
+  # ============================================
+  # Layer 3: Valkey Cluster (Distributed Cache)
+  # ============================================
+  valkey-cluster:
+    image: valkey/valkey:8-alpine
+    hostname: "cluster-{{.Task.Slot}}"
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    command: valkey-server /etc/valkey/valkey.conf
+    networks:
+      cache-network:
+        aliases:
+          - valkey-cluster
+    configs:
+      - source: valkey_cluster_conf
+        target: /etc/valkey/valkey.conf
+        mode: 0440
+      - source: valkey_entrypoint
+        target: /entrypoint.sh
+        mode: 0550
+    secrets:
+      - source: valkey_password
+        target: /run/secrets/valkey_password
+        mode: 0400
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-myworkspace}
+    volumes:
+      - valkey-data-{{.Task.Slot}}:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-a", "${VALKEY_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      mode: replicated
+      replicas: 6
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.cache == valkey-cluster
+        preferences:
+          - spread: node.id
+      resources:
+        limits:
+          memory: 2g
+          cpus: "1"
+        reservations:
+          memory: 1g
+          cpus: "0.5"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 30s
+        order: stop-first
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+
+  # ============================================
+  # Valkey Cluster Initialization (One-shot Job)
+  # ============================================
+  valkey-cluster-init:
+    image: valkey/valkey:8-alpine
+    entrypoint: ["/bin/sh", "/scripts/init-cluster.sh"]
+    networks:
+      - cache-network
+    configs:
+      - source: valkey_init_cluster
+        target: /scripts/init-cluster.sh
+        mode: 0550
+    secrets:
+      - source: valkey_password
+        target: /run/secrets/valkey_password
+        mode: 0400
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-myworkspace}
+    deploy:
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: none
+    depends_on:
+      - valkey-cluster
+
+  # ============================================
+  # Layer 4: Varnish Cache (HTTP Accelerator)
+  # ============================================
+  varnish:
+    image: varnish:7.6
+    hostname: "varnish-{{.Task.Slot}}"
+    networks:
+      - cache-network
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 6082
+        published: 6082
+        protocol: tcp
+        mode: host
+    configs:
+      - source: varnish_default_vcl
+        target: /etc/varnish/default.vcl
+        mode: 0440
+      - source: varnish_entrypoint
+        target: /docker-entrypoint.sh
+        mode: 0550
+    environment:
+      VARNISH_MEMORY: ${VARNISH_MEMORY:-2g}
+      VARNISH_STORAGE: ${VARNISH_STORAGE:-malloc,2g}
+      VARNISH_INSTANCE: varnish
+      THREAD_POOL_MIN: ${THREAD_POOL_MIN:-50}
+      THREAD_POOL_MAX: ${THREAD_POOL_MAX:-1000}
+      THREAD_POOL_TIMEOUT: ${THREAD_POOL_TIMEOUT:-300}
+      WORKSPACE_CLIENT: ${WORKSPACE_CLIENT:-256k}
+      WORKSPACE_BACKEND: ${WORKSPACE_BACKEND:-256k}
+      DEFAULT_TTL: ${DEFAULT_TTL:-120}
+      DEFAULT_GRACE: ${DEFAULT_GRACE:-3600}
+    tmpfs:
+      - /var/lib/varnish:uid=1000,gid=1000,size=2g,exec
+    healthcheck:
+      test: ["CMD", "varnishadm", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.cache == varnish
+        preferences:
+          - spread: node.id
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2"
+        reservations:
+          memory: 1g
+          cpus: "0.5"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 30s
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+
+  # ============================================
+  # Layer 5: Nginx (Reverse Proxy + CDN Edge)
+  # ============================================
+  nginx:
+    image: nginx:1.27-alpine
+    hostname: "nginx-{{.Task.Slot}}"
+    networks:
+      - cache-network
+      - app-network
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: udp
+        mode: host
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/nginx.conf
+        mode: 0440
+      - source: nginx_myworkspace_conf
+        target: /etc/nginx/conf.d/myworkspace.conf
+        mode: 0440
+      - source: nginx_cdn_conf
+        target: /etc/nginx/conf.d/cdn.conf
+        mode: 0440
+      - source: nginx_ssl_params
+        target: /etc/nginx/conf.d/ssl-params.conf
+        mode: 0440
+    secrets:
+      - source: nginx_ssl_cert
+        target: /etc/nginx/ssl/fullchain.pem
+        mode: 0440
+      - source: nginx_ssl_key
+        target: /etc/nginx/ssl/privkey.pem
+        mode: 0440
+    volumes:
+      - type: volume
+        source: nginx-cache-api
+        target: /var/cache/nginx/api
+      - type: volume
+        source: nginx-cache-static
+        target: /var/cache/nginx/static
+      - type: volume
+        source: nginx-cache-cdn
+        target: /var/cache/nginx/cdn
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/nginx-health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.cache == nginx
+        preferences:
+          - spread: node.id
+      resources:
+        limits:
+          memory: 1g
+          cpus: "2"
+        reservations:
+          memory: 512m
+          cpus: "0.5"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 30s
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+
+  # ============================================
+  # Layer 6: Apache Traffic Server (CDN Cache)
+  # ============================================
+  trafficserver:
+    image: apache/trafficserver:9.2
+    hostname: "ats-{{.Task.Slot}}"
+    networks:
+      - cache-network
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
+    configs:
+      - source: trafficserver_records
+        target: /opt/trafficserver/etc/trafficserver/records.config
+        mode: 0440
+      - source: trafficserver_remap
+        target: /opt/trafficserver/etc/trafficserver/remap.config
+        mode: 0440
+      - source: trafficserver_cache
+        target: /opt/trafficserver/etc/trafficserver/cache.config
+        mode: 0440
+    volumes:
+      - type: volume
+        source: trafficserver-cache
+        target: /var/cache/trafficserver
+    healthcheck:
+      test: ["CMD", "traffic_ctl", "server", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.cache == trafficserver
+        preferences:
+          - spread: node.id
+      resources:
+        limits:
+          memory: 8g
+          cpus: "4"
+        reservations:
+          memory: 2g
+          cpus: "1"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 60s
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+
+  # ============================================
+  # Monitoring: Prometheus
+  # ============================================
+  prometheus:
+    image: prom/prometheus:v2.55
+    hostname: "prometheus-{{.Task.Slot}}"
+    networks:
+      - cache-network
+    ports:
+      - target: 9090
+        published: 9090
+        protocol: tcp
+        mode: host
+    configs:
+      - source: prometheus_yml
+        target: /etc/prometheus/prometheus.yml
+        mode: 0440
+      - source: prometheus_valkey_yml
+        target: /etc/prometheus/valkey.yml
+        mode: 0440
+    volumes:
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2"
+        reservations:
+          memory: 1g
+          cpus: "0.5"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+
+  # ============================================
+  # Monitoring: Grafana
+  # ============================================
+  grafana:
+    image: grafana/grafana:11.3
+    hostname: "grafana-{{.Task.Slot}}"
+    networks:
+      - cache-network
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
+        mode: host
+    configs:
+      - source: grafana_datasource
+        target: /etc/grafana/provisioning/datasources/datasource.yml
+        mode: 0440
+      - source: grafana_dashboard
+        target: /etc/grafana/provisioning/dashboards/cache-overview.json
+        mode: 0440
+    secrets:
+      - source: grafana_password
+        target: /run/secrets/grafana_password
+        mode: 0400
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_password
+      GF_SECURITY_ADMIN_USER: admin
+      GF_INSTALL_PLUGINS: redis-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+    healthcheck:
+      test: ["CMD", "wget", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 1g
+          cpus: "1"
+        reservations:
+          memory: 256m
+          cpus: "0.2"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+
+  # ============================================
+  # Monitoring: Valkey Exporter
+  # ============================================
+  valkey-exporter:
+    image: oliver006/redis_exporter:v1.67
+    hostname: "valkey-exporter-{{.Task.Slot}}"
+    networks:
+      - cache-network
+    ports:
+      - target: 9121
+        published: 9121
+        protocol: tcp
+        mode: host
+    secrets:
+      - source: valkey_password
+        target: /run/secrets/valkey_password
+        mode: 0400
+    environment:
+      REDIS_ADDR: redis://valkey-standalone:6379
+      REDIS_PASSWORD_FILE: /run/secrets/valkey_password
+    healthcheck:
+      test: ["CMD", "wget", "-q", "http://localhost:9121/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.5"
+        reservations:
+          memory: 128m
+          cpus: "0.1"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+
+  # ============================================
+  # Monitoring: Nginx Exporter
+  # ============================================
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.3
+    hostname: "nginx-exporter-{{.Task.Slot}}"
+    networks:
+      - cache-network
+    ports:
+      - target: 9113
+        published: 9113
+        protocol: tcp
+        mode: host
+    environment:
+      NGINX_STATUS: http://nginx:80/nginx-health
+    healthcheck:
+      test: ["CMD", "wget", "-q", "http://localhost:9113/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.5"
+        reservations:
+          memory: 128m
+          cpus: "0.1"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+
+  # ============================================
+  # Monitoring: Node Exporter
+  # ============================================
+  node-exporter:
+    image: prom/node-exporter:v1.8
+    hostname: "node-exporter-{{.Task.Slot}}"
+    networks:
+      - cache-network
+    ports:
+      - target: 9100
+        published: 9100
+        protocol: tcp
+        mode: host
+    command:
+      - "--path.rootfs=/host"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    volumes:
+      - /:/host:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.platform.os == linux
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5"
+        reservations:
+          memory: 256m
+          cpus: "0.2"
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s

@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trafficserver
+  namespace: cache-system
+  labels:
+    app.kubernetes.io/name: trafficserver
+    app.kubernetes.io/part-of: myworkspace
+    app.kubernetes.io/component: cache
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trafficserver
+  template:
+    metadata:
+      labels:
+        app: trafficserver
+        app.kubernetes.io/name: trafficserver
+        app.kubernetes.io/part-of: myworkspace
+        app.kubernetes.io/component: cache
+    spec:
+      containers:
+        - name: trafficserver
+          image: apache/trafficserver:9.2
+          ports:
+            - containerPort: 8080
+              name: http
+          volumeMounts:
+            - name: ats-config
+              mountPath: /opt/trafficserver/etc/trafficserver/records.config
+              subPath: records.config
+              readOnly: true
+            - name: ats-config
+              mountPath: /opt/trafficserver/etc/trafficserver/remap.config
+              subPath: remap.config
+              readOnly: true
+            - name: ats-config
+              mountPath: /opt/trafficserver/etc/trafficserver/cache.config
+              subPath: cache.config
+              readOnly: true
+          resources:
+            limits:
+              memory: 8Gi
+              cpu: "4"
+            requests:
+              memory: 2Gi
+              cpu: "1"
+          readinessProbe:
+            exec:
+              command:
+                - traffic_ctl
+                - server
+                - status
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - traffic_ctl
+                - server
+                - status
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+      volumes:
+        - name: ats-config
+          configMap:
+            name: ats-config

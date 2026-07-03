@@ -1,5 +1,5 @@
 import { Channel, ConsumeMessage } from "amqplib";
-import { getChannel, QUEUES, EXCHANGES, ROUTING_KEYS } from "./connection.js";
+import { getChannel, isRabbitMQConfigured, QUEUES, EXCHANGES, ROUTING_KEYS } from "./connection.js";
 import { logger, queueLogger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
 
@@ -88,6 +88,7 @@ async function handleMessage(ch: Channel, msg: ConsumeMessage) {
 }
 
 export async function startConsumers() {
+  if (!isRabbitMQConfigured()) return;
   const ch = await getChannel();
 
   for (const [queue] of handlers) {
@@ -102,6 +103,7 @@ export async function startConsumers() {
 }
 
 export async function stopConsumers() {
+  if (!isRabbitMQConfigured()) return;
   const ch = await getChannel();
   await ch.close();
   logger.info("All queue consumers stopped");

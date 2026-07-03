@@ -8,23 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FolderOpenIcon, PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon } from "lucide-react";
-
-export type Project = {
-  id: string;
-  name: string;
-  client: string;
-  color: string;
-  description: string;
-  deadline: string | null;
-  tracked: number;
-  progress: number;
-  access: "Public" | "Private";
-  status: "Active" | "Inactive";
-  members?: string[];
-  headId?: string;
-  headName?: string;
-  headAvatar?: string;
-};
+import type { Project } from "@/components/projects/project-types";
 
 export const columns: ColumnDef<Project>[] = [
   {

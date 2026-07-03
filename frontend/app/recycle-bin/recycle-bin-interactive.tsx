@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Trash2Icon, RotateCcwIcon, Loader2Icon, FileIcon, AlertTriangleIcon } from "lucide-react";
 
 type RecycledFile = {
@@ -38,7 +39,7 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
         setFiles((prev) => prev.filter((f) => f.id !== id));
       }
     } catch (err) {
-      console.error("[RECYCLE-BIN] Failed to restore:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to restore file");
     } finally {
       setActionId(null);
     }
@@ -55,7 +56,7 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
         setFiles((prev) => prev.filter((f) => f.id !== id));
       }
     } catch (err) {
-      console.error("[RECYCLE-BIN] Failed to delete:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to delete file permanently");
     } finally {
       setActionId(null);
       setConfirmDelete(null);

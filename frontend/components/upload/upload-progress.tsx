@@ -1,118 +1,124 @@
 "use client";
 
-import { Pause, Play, X, RefreshCw, File, AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import type { UploadFile } from "../../lib/upload/types";
+import {
+  XIcon, RefreshCwIcon, FileIcon,
+  Loader2Icon, AlertCircleIcon, CheckCircle2Icon, BanIcon,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatSize, formatSpeed } from "./upload-types";
 
-interface UploadProgressProps {
-  file: UploadFile;
-  onPause?: () => void;
-  onResume?: () => void;
-  onCancel?: () => void;
-  onRetry?: () => void;
-}
+type UploadProgressStatus = string;
 
-function formatSpeed(bytesPerSecond: number): string {
-  if (bytesPerSecond === 0) return "";
-  if (bytesPerSecond < 1024) return `${bytesPerSecond.toFixed(0)} B/s`;
-  if (bytesPerSecond < 1024 * 1024) return `${(bytesPerSecond / 1024).toFixed(1)} KB/s`;
-  return `${(bytesPerSecond / 1024 / 1024).toFixed(1)} MB/s`;
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
-}
-
-function formatEta(seconds: number): string {
-  if (seconds === 0) return "";
-  if (seconds < 60) return `${Math.round(seconds)}s`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`;
-  return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
-}
-
-function getStatusIcon(status: UploadFile["status"]) {
+function getStatusIcon(status: UploadProgressStatus) {
   switch (status) {
-    case "completed": return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-    case "failed": return <AlertCircle className="h-4 w-4 text-destructive" />;
-    case "cancelled": return <X className="h-4 w-4 text-muted-foreground" />;
-    case "duplicate": return <CheckCircle2 className="h-4 w-4 text-yellow-500" />;
-    case "paused": return <Clock className="h-4 w-4 text-muted-foreground" />;
-    case "pending_approval": return <Clock className="h-4 w-4 text-amber-500" />;
-    default: return <File className="h-4 w-4 text-primary" />;
+    case "uploading": return <Loader2Icon className="size-4 animate-spin" />;
+    case "completed":
+    case "duplicate": return <CheckCircle2Icon className="size-4 text-emerald-600" />;
+    case "failed": return <AlertCircleIcon className="size-4 text-destructive" />;
+    case "cancelled": return <BanIcon className="size-4 text-muted-foreground" />;
+    default: return null;
   }
 }
 
-export function UploadProgress({ file, onPause, onResume, onCancel, onRetry }: UploadProgressProps) {
-  const isActive = file.status === "uploading" || file.status === "pending";
-  const showProgress = file.status === "uploading" || file.status === "pending" || file.status === "paused";
+interface UploadProgressItem {
+  id: string;
+  file: File;
+  name?: string;
+  size: number;
+  progress: number;
+  status: string;
+  speed: number;
+  error?: string;
+}
+
+interface UploadProgressProps {
+  item: UploadProgressItem;
+  onCancel: (id: string) => void;
+  onRetry: (id: string) => void;
+  onRemove: (id: string) => void;
+}
+
+export function UploadProgress({ item, onCancel, onRetry, onRemove }: UploadProgressProps) {
+  const isActive = item.status === "uploading" || item.status === "pending";
+  const isDone = item.status === "completed" || item.status === "duplicate" || item.status === "cancelled";
 
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
-      <div className="mt-0.5 flex-shrink-0">
-        {getStatusIcon(file.status)}
+    <div className="flex items-center gap-3 px-4 py-2.5 text-sm">
+      <div className="size-8 shrink-0 rounded-lg bg-muted flex items-center justify-center">
+        <FileIcon className="size-4 text-muted-foreground" />
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-medium truncate">{file.name}</p>
-          <p className="text-xs text-muted-foreground whitespace-nowrap">{formatSize(file.size)}</p>
+        <div className="flex items-center gap-2">
+          <p className="truncate font-medium text-sm">
+            {item.name || item.file.name}
+          </p>
+          {item.status === "duplicate" && (
+            <span className="shrink-0 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+              Duplicate
+            </span>
+          )}
         </div>
-
-        {showProgress && (
-          <div className="mt-1.5">
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <span className="text-xs text-muted-foreground">{file.progress}%</span>
-              <span className="text-xs text-muted-foreground">{formatSpeed(file.speed)}</span>
-            </div>
-            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-300 ${
-                  file.status === "failed" ? "bg-destructive" : "bg-primary"
-                }`}
-                style={{ width: `${file.progress}%` }}
-              />
-            </div>
-            {file.eta > 0 && file.status === "uploading" && (
-              <p className="text-xs text-muted-foreground mt-0.5">ETA: {formatEta(file.eta)}</p>
-            )}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{formatSize(item.size)}</span>
+          {(item.status === "uploading" || item.status === "completed") && (
+            <>
+              <span>&middot;</span>
+              <span>{item.progress}%</span>
+            </>
+          )}
+          {item.status === "uploading" && item.speed > 0 && (
+            <>
+              <span>&middot;</span>
+              <span>{formatSpeed(item.speed)}</span>
+            </>
+          )}
+        </div>
+        {(item.status === "uploading" || item.status === "pending" || item.status === "paused") && (
+          <div className="mt-1.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-300",
+                item.progress > 0 ? "bg-primary" : "bg-muted-foreground/20",
+              )}
+              style={{ width: `${Math.max(item.progress, item.status === "pending" ? 2 : 0)}%` }}
+            />
           </div>
         )}
-
-        {file.status === "failed" && file.error && (
-          <p className="text-xs text-destructive mt-1">{file.error}</p>
-        )}
-
-        {file.status === "duplicate" && (
-          <p className="text-xs text-yellow-600 mt-1">Duplicate file skipped</p>
-        )}
-        {file.status === "pending_approval" && (
-          <p className="text-xs text-amber-600 mt-1">Upload complete — pending approval</p>
+        {(item.status === "failed") && item.error && (
+          <p className="text-xs text-destructive mt-0.5 truncate">{item.error}</p>
         )}
       </div>
 
-      <div className="flex items-center gap-1 flex-shrink-0">
-        {file.status === "uploading" && onPause && (
-          <button onClick={onPause} className="p-1 rounded hover:bg-muted transition-colors" title="Pause">
-            <Pause className="h-3.5 w-3.5" />
+      <div className="flex items-center gap-1 shrink-0">
+        {isActive && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onCancel(item.id); }}
+            className="flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            title="Cancel"
+          >
+            <XIcon className="size-4" />
           </button>
         )}
-        {file.status === "paused" && onResume && (
-          <button onClick={onResume} className="p-1 rounded hover:bg-muted transition-colors" title="Resume">
-            <Play className="h-3.5 w-3.5" />
+        {item.status === "failed" && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onRetry(item.id); }}
+            className="flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+            title="Retry"
+          >
+            <RefreshCwIcon className="size-4" />
           </button>
         )}
-        {file.status === "failed" && onRetry && (
-          <button onClick={onRetry} className="p-1 rounded hover:bg-muted transition-colors" title="Retry">
-            <RefreshCw className="h-3.5 w-3.5" />
+        {isDone && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onRemove(item.id); }}
+            className="flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title="Remove"
+          >
+            <XIcon className="size-4" />
           </button>
         )}
-        {(file.status === "pending" || file.status === "uploading" || file.status === "paused" || file.status === "pending_approval") && onCancel && (
-          <button onClick={onCancel} className="p-1 rounded hover:bg-muted transition-colors" title="Cancel">
-            <X className="h-3.5 w-3.5" />
-          </button>
-        )}
+        {!isActive && getStatusIcon(item.status)}
       </div>
     </div>
   );

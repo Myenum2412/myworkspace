@@ -13,6 +13,8 @@ describe("health check", () => {
     const res = await request(server).get("/api/health");
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.message).toBeTruthy();
+    expect(["ok", "degraded"]).toContain(res.body.status);
+    expect(res.body.checks).toBeDefined();
+    expect(res.body.timestamp).toBeDefined();
   });
 });

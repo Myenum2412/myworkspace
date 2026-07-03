@@ -1,0 +1,9 @@
+{
+  "name": "valkey-cache-warming",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "ioredis": "^5.11.1"
+  }
+}

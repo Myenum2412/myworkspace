@@ -1,0 +1,40 @@
+# Valkey Alerting Rules
+groups:
+  - name: valkey
+    interval: 30s
+    rules:
+      - alert: ValkeyDown
+        expr: redis_up{job="valkey"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Valkey instance {{ $labels.instance }} is down"
+          description: "Valkey instance {{ $labels.instance }} has been down for more than 30 seconds."
+
+      - alert: ValkeyMemoryHigh
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Valkey memory usage above 90%"
+          description: "Valkey {{ $labels.instance }} memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: ValkeyCacheHitRateLow
+        expr: rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) * 100 < 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Valkey cache hit rate below 80%"
+          description: "Cache hit rate on {{ $labels.instance }} is {{ $value | humanizePercentage }}"
+
+      - alert: ValkeyConnectedClientsHigh
+        expr: redis_connected_clients > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Valkey connected clients high"
+          description: "{{ $labels.instance }} has {{ $value }} connected clients"

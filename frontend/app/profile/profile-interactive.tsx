@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,14 +39,10 @@ import {
   HardDrive as HardDriveIcon,
   MapPinIcon,
   LinkIcon,
-  ImageIcon,
-  FileTextIcon,
-  VideoIcon,
-  FileAudioIcon,
-  FileIcon,
 } from "lucide-react";
-import Link from "next/link";
 import nextDynamic from "next/dynamic";
+import { useProfileForm, statusColors, roleBadge } from "@/hooks/use-profile-form";
+import type { ProfileData } from "@/hooks/use-profile-form";
 
 const BannerUpload = nextDynamic(
   () => import("@/components/ui/file-upload-1").then((m) => m.BannerUpload),
@@ -57,25 +53,6 @@ const ProfileImageUpload = nextDynamic(
   { ssr: false }
 );
 
-const planLabels: Record<string, string> = {
-  starter: "Free",
-  pro: "Pro",
-  growth: "Growth",
-  enterprise: "Enterprise",
-};
-
-const statusColors: Record<string, string> = {
-  online: "bg-green-500",
-  offline: "bg-gray-400",
-  break: "bg-yellow-500",
-};
-
-const roleBadge: Record<string, "default" | "secondary" | "outline"> = {
-  admin: "default",
-  manager: "secondary",
-  member: "outline",
-};
-
 const TABS = [
   { id: "profile", label: "Profile", icon: UserIcon },
   { id: "company", label: "Company", icon: Building2Icon },
@@ -84,359 +61,47 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-type ProfileData = {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    department: string;
-    company: string;
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-    zipCode: string;
-    linkedin: string;
-    github: string;
-    twitter: string;
-    website: string;
-    status: string;
-    role: string;
-    createdAt: string;
-    bannerUrl?: string;
-    image?: string;
-  } | null;
-  org: {
-    id: string;
-    name: string;
-    domain: string;
-    businessType: string;
-    industry: string;
-    gstNumber: string;
-    panNumber: string;
-    cinNumber: string;
-    companyEmail: string;
-    mobileNumber: string;
-    alternateMobileNumber: string;
-    website: string;
-    addressLine1: string;
-    addressLine2: string;
-    city: string;
-    state: string;
-    pincode: string;
-    country: string;
-    logoUrl: string;
-    authorizedPersonName: string;
-    designation: string;
-    authorizedPersonEmail: string;
-    authorizedPersonMobile: string;
-    numberOfEmployees: number;
-    companyDescription: string;
-    plan: string;
-    createdAt: string;
-  } | null;
-  memberCount: number;
-};
-
 type ProfilePageInteractiveProps = {
   data: ProfileData;
 };
 
 export function ProfilePageInteractive({ data: initialData }: ProfilePageInteractiveProps) {
   const { data: session } = useSession();
-  const [data, setData] = useState<ProfileData>(initialData);
   const [activeTab, setActiveTab] = useState<TabId>("profile");
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
-  const [saveSuccess, setSaveSuccess] = useState("");
 
-  const [showBannerEditor, setShowBannerEditor] = useState(false);
-  const [showImageEditor, setShowImageEditor] = useState(false);
-  const [urlInput, setUrlInput] = useState("");
+  const form = useProfileForm(initialData);
 
-  const [uploading, setUploading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [fileKey, setFileKey] = useState(0);
-  const [imageFileKey, setImageFileKey] = useState(0);
-
-  const [bannerUrl, setBannerUrl] = useState(initialData?.user?.bannerUrl || "");
-  const [profileImage, setProfileImage] = useState(initialData?.user?.image || "");
-  const [editName, setEditName] = useState(initialData?.user?.name || "");
-  const [editEmail, setEditEmail] = useState(initialData?.user?.email || "");
-  const [editPhone, setEditPhone] = useState(initialData?.user?.phone || "");
-  const [editDepartment, setEditDepartment] = useState(initialData?.user?.department || "");
-  const [editCompany, setEditCompany] = useState(initialData?.user?.company || "");
-  const [editAddress, setEditAddress] = useState(initialData?.user?.address || "");
-  const [editCity, setEditCity] = useState(initialData?.user?.city || "");
-  const [editState, setEditState] = useState(initialData?.user?.state || "");
-  const [editCountry, setEditCountry] = useState(initialData?.user?.country || "");
-  const [editZipCode, setEditZipCode] = useState(initialData?.user?.zipCode || "");
-  const [editLinkedin, setEditLinkedin] = useState(initialData?.user?.linkedin || "");
-  const [editGithub, setEditGithub] = useState(initialData?.user?.github || "");
-  const [editTwitter, setEditTwitter] = useState(initialData?.user?.twitter || "");
-  const [editWebsite, setEditWebsite] = useState(initialData?.user?.website || "");
-  const [editCompanyName, setEditCompanyName] = useState(initialData?.org?.name || "");
-  const [editDomain, setEditDomain] = useState(initialData?.org?.domain || "");
-  const [editBusinessType, setEditBusinessType] = useState(initialData?.org?.businessType || "");
-  const [editIndustry, setEditIndustry] = useState(initialData?.org?.industry || "");
-  const [editGstNumber, setEditGstNumber] = useState(initialData?.org?.gstNumber || "");
-  const [editPanNumber, setEditPanNumber] = useState(initialData?.org?.panNumber || "");
-  const [editCinNumber, setEditCinNumber] = useState(initialData?.org?.cinNumber || "");
-  const [editCompanyEmail, setEditCompanyEmail] = useState(initialData?.org?.companyEmail || "");
-  const [editMobileNumber, setEditMobileNumber] = useState(initialData?.org?.mobileNumber || "");
-  const [editAltMobile, setEditAltMobile] = useState(initialData?.org?.alternateMobileNumber || "");
-  const [editOrgWebsite, setEditOrgWebsite] = useState(initialData?.org?.website || "");
-  const [editAddressLine1, setEditAddressLine1] = useState(initialData?.org?.addressLine1 || "");
-  const [editAddressLine2, setEditAddressLine2] = useState(initialData?.org?.addressLine2 || "");
-  const [editOrgCity, setEditOrgCity] = useState(initialData?.org?.city || "");
-  const [editOrgState, setEditOrgState] = useState(initialData?.org?.state || "");
-  const [editPincode, setEditPincode] = useState(initialData?.org?.pincode || "");
-  const [editOrgCountry, setEditOrgCountry] = useState(initialData?.org?.country || "India");
-  const [editAuthorizedPerson, setEditAuthorizedPerson] = useState(initialData?.org?.authorizedPersonName || "");
-  const [editDesignation, setEditDesignation] = useState(initialData?.org?.designation || "");
-  const [editAuthorizedEmail, setEditAuthorizedEmail] = useState(initialData?.org?.authorizedPersonEmail || "");
-  const [editAuthorizedMobile, setEditAuthorizedMobile] = useState(initialData?.org?.authorizedPersonMobile || "");
-  const [editNumEmployees, setEditNumEmployees] = useState(initialData?.org?.numberOfEmployees?.toString() || "");
-  const [editCompanyDesc, setEditCompanyDesc] = useState(initialData?.org?.companyDescription || "");
-
-  const dbUser = data?.user;
-  const org = data?.org;
-  const memberCount = data?.memberCount ?? 0;
+  const {
+    data, editing, setEditing, saving, saveError, saveSuccess,
+    bannerUrl, profileImage,
+    editName, setEditName, editEmail, setEditEmail, editPhone, setEditPhone,
+    editDepartment, setEditDepartment, editCompany, setEditCompany,
+    editAddress, setEditAddress, editCity, setEditCity, editState, setEditState,
+    editCountry, setEditCountry, editZipCode, setEditZipCode,
+    editLinkedin, setEditLinkedin, editGithub, setEditGithub,
+    editTwitter, setEditTwitter, editWebsite, setEditWebsite,
+    editCompanyName, setEditCompanyName,
+    editBusinessType, setEditBusinessType, editIndustry, setEditIndustry,
+    editGstNumber, setEditGstNumber, editPanNumber, setEditPanNumber,
+    editCinNumber, setEditCinNumber, editCompanyEmail, setEditCompanyEmail,
+    editMobileNumber, setEditMobileNumber, editAltMobile, setEditAltMobile,
+    editOrgWebsite, setEditOrgWebsite,
+    editAddressLine1, setEditAddressLine1, editAddressLine2, setEditAddressLine2,
+    editOrgCity, setEditOrgCity, editOrgState, setEditOrgState,
+    editPincode, setEditPincode, editOrgCountry, setEditOrgCountry,
+    editAuthorizedPerson, setEditAuthorizedPerson, editDesignation, setEditDesignation,
+    editAuthorizedEmail, setEditAuthorizedEmail, editAuthorizedMobile, setEditAuthorizedMobile,
+    editNumEmployees, setEditNumEmployees, editCompanyDesc, setEditCompanyDesc,
+    showBannerEditor, setShowBannerEditor, showImageEditor, setShowImageEditor,
+    urlInput, setUrlInput, uploading, uploadingImage, fileKey, imageFileKey,
+    dbUser, org,
+    handleSave, handleCancel, updateBanner, handleBannerFile,
+    removeProfileImage, handleProfileImageFile,
+  } = form;
 
   const displayName = session?.user?.name || dbUser?.name || "User";
   const displayEmail = session?.user?.email || dbUser?.email || "user@example.com";
   const displayAvatar = profileImage || session?.user?.image || dbUser?.image || "";
-
-  async function handleSave() {
-    setSaveError("");
-    setSaveSuccess("");
-
-    const errors: string[] = [];
-    if (!editName.trim()) errors.push("Name is required");
-    if (!editEmail.trim()) errors.push("Email is required");
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail)) errors.push("Invalid email format");
-    if (editCompanyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editCompanyEmail)) errors.push("Invalid company email format");
-    if (editNumEmployees && isNaN(Number(editNumEmployees))) errors.push("Number of employees must be a number");
-    if (errors.length > 0) {
-      setSaveError(errors.join("; "));
-      return;
-    }
-
-    setSaving(true);
-    try {
-      console.log("[profile] saving profile...");
-      const res = await fetch("/api/user/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name: editName,
-          email: editEmail,
-          phone: editPhone,
-          department: editDepartment,
-          company: editCompany,
-          address: editAddress,
-          city: editCity,
-          state: editState,
-          country: editCountry,
-          zipCode: editZipCode,
-          linkedin: editLinkedin,
-          github: editGithub,
-          twitter: editTwitter,
-          website: editWebsite,
-          companyName: editCompanyName,
-          companyDomain: editDomain,
-          businessType: editBusinessType,
-          industry: editIndustry,
-          gstNumber: editGstNumber,
-          panNumber: editPanNumber,
-          cinNumber: editCinNumber,
-          companyEmail: editCompanyEmail,
-          mobileNumber: editMobileNumber,
-          alternateMobileNumber: editAltMobile,
-          orgWebsite: editOrgWebsite,
-          addressLine1: editAddressLine1,
-          addressLine2: editAddressLine2,
-          orgCity: editOrgCity,
-          orgState: editOrgState,
-          pincode: editPincode,
-          orgCountry: editOrgCountry,
-          authorizedPersonName: editAuthorizedPerson,
-          designation: editDesignation,
-          authorizedPersonEmail: editAuthorizedEmail,
-          authorizedPersonMobile: editAuthorizedMobile,
-          numberOfEmployees: editNumEmployees ? Number(editNumEmployees) : undefined,
-          companyDescription: editCompanyDesc,
-        }),
-      });
-
-      if (!res.ok) {
-        let errMsg = `Request failed (${res.status})`;
-        try { const err = await res.json(); errMsg = err.error || errMsg; } catch {}
-        console.error("[profile] save failed:", errMsg);
-        setSaveError(errMsg);
-        return;
-      }
-
-      const result = await res.json();
-      console.log("[profile] save success:", result);
-
-      setSaveSuccess("Profile updated successfully");
-      setEditing(false);
-      setTimeout(() => setSaveSuccess(""), 4000);
-      window.location.reload();
-    } catch (e) {
-      console.error("[profile] save error:", e);
-      setSaveError(e instanceof TypeError && e.message === "Failed to fetch"
-        ? "Cannot connect to server. Please check your connection and try again."
-        : (e instanceof Error ? e.message : "Network error"));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function handleCancel() {
-    setEditName(dbUser?.name || "");
-    setEditEmail(dbUser?.email || "");
-    setEditPhone(dbUser?.phone || "");
-    setEditDepartment(dbUser?.department || "");
-    setEditCompany(dbUser?.company || "");
-    setEditAddress(dbUser?.address || "");
-    setEditCity(dbUser?.city || "");
-    setEditState(dbUser?.state || "");
-    setEditCountry(dbUser?.country || "");
-    setEditZipCode(dbUser?.zipCode || "");
-    setEditLinkedin(dbUser?.linkedin || "");
-    setEditGithub(dbUser?.github || "");
-    setEditTwitter(dbUser?.twitter || "");
-    setEditWebsite(dbUser?.website || "");
-    setEditCompanyName(org?.name || "");
-    setEditDomain(org?.domain || "");
-    setEditBusinessType(org?.businessType || "");
-    setEditIndustry(org?.industry || "");
-    setEditGstNumber(org?.gstNumber || "");
-    setEditPanNumber(org?.panNumber || "");
-    setEditCinNumber(org?.cinNumber || "");
-    setEditCompanyEmail(org?.companyEmail || "");
-    setEditMobileNumber(org?.mobileNumber || "");
-    setEditAltMobile(org?.alternateMobileNumber || "");
-    setEditOrgWebsite(org?.website || "");
-    setEditAddressLine1(org?.addressLine1 || "");
-    setEditAddressLine2(org?.addressLine2 || "");
-    setEditOrgCity(org?.city || "");
-    setEditOrgState(org?.state || "");
-    setEditPincode(org?.pincode || "");
-    setEditOrgCountry(org?.country || "India");
-    setEditAuthorizedPerson(org?.authorizedPersonName || "");
-    setEditDesignation(org?.designation || "");
-    setEditAuthorizedEmail(org?.authorizedPersonEmail || "");
-    setEditAuthorizedMobile(org?.authorizedPersonMobile || "");
-    setEditNumEmployees(org?.numberOfEmployees?.toString() || "");
-    setEditCompanyDesc(org?.companyDescription || "");
-    setSaveError("");
-    setSaveSuccess("");
-    setEditing(false);
-  }
-
-  async function updateBanner(url: string) {
-    try {
-      const res = await fetch("/api/user/banner", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ url }),
-      });
-      if (res.ok) {
-        const result = await res.json();
-        setBannerUrl(result.bannerUrl);
-        setShowBannerEditor(false);
-        setUrlInput("");
-      } else {
-        console.error("[profile] banner update failed:", await res.text());
-      }
-    } catch (e) {
-      console.error("[profile] banner update error:", e);
-    }
-  }
-
-  async function handleBannerFile(file: File) {
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Banner image must be under 5MB");
-      return;
-    }
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("banner", file);
-      const res = await fetch("/api/user/banner", {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      if (res.ok) {
-        const result = await res.json();
-        setBannerUrl(result.bannerUrl);
-        setShowBannerEditor(false);
-        setFileKey((k) => k + 1);
-      } else {
-        console.error("[profile] banner upload failed:", await res.text());
-      }
-    } catch (e) {
-      console.error("[profile] banner upload error:", e);
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  async function removeProfileImage() {
-    try {
-      const res = await fetch("/api/user/profile-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ image: "", url: "" }),
-      });
-      if (res.ok) {
-        setProfileImage("");
-        setShowImageEditor(false);
-      } else {
-        console.error("[profile] remove image failed:", await res.text());
-      }
-    } catch (e) {
-      console.error("[profile] remove image error:", e);
-    }
-  }
-
-  async function handleProfileImageFile(file: File) {
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Profile image must be under 5MB");
-      return;
-    }
-    setUploadingImage(true);
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await fetch("/api/user/profile-image", {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      if (res.ok) {
-        const result = await res.json();
-        setProfileImage(result.image);
-        setShowImageEditor(false);
-        setImageFileKey((k) => k + 1);
-      } else {
-        console.error("[profile] image upload failed:", await res.text());
-      }
-    } catch (e) {
-      console.error("[profile] image upload error:", e);
-    } finally {
-      setUploadingImage(false);
-    }
-  }
 
   return (
     <div className="-m-4 w-[calc(100%+32px)] h-[calc(100%+32px)] flex flex-col">
@@ -550,7 +215,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                       className="h-8 text-sm mt-1"
                     />
                   ) : (
-                    <p className="text-sm font-medium">{dbUser?.name || "—"}</p>
+                    <p className="text-sm font-medium">{dbUser?.name || "\u2014"}</p>
                   )}
                 </div>
               </div>
@@ -567,7 +232,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                       className="h-8 text-sm mt-1"
                     />
                   ) : (
-                    <p className="text-sm font-medium">{dbUser?.phone || "—"}</p>
+                    <p className="text-sm font-medium">{dbUser?.phone || "\u2014"}</p>
                   )}
                 </div>
               </div>
@@ -584,7 +249,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                       className="h-8 text-sm mt-1"
                     />
                   ) : (
-                    <p className="text-sm font-medium">{dbUser?.department || "—"}</p>
+                    <p className="text-sm font-medium">{dbUser?.department || "\u2014"}</p>
                   )}
                 </div>
               </div>
@@ -601,7 +266,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                       className="h-8 text-sm mt-1"
                     />
                   ) : (
-                    <p className="text-sm font-medium">{dbUser?.company || "—"}</p>
+                    <p className="text-sm font-medium">{dbUser?.company || "\u2014"}</p>
                   )}
                 </div>
               </div>
@@ -625,7 +290,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                           month: "long",
                           year: "numeric",
                         })
-                      : "—"}
+                      : "\u2014"}
                   </p>
                 </div>
               </div>
@@ -648,7 +313,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     {editing ? (
                       <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="h-8 text-sm" />
                     ) : (
-                      <p className="text-sm font-medium">{dbUser?.address || "—"}</p>
+                      <p className="text-sm font-medium">{dbUser?.address || "\u2014"}</p>
                     )}
                   </div>
                   <div>
@@ -656,7 +321,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     {editing ? (
                       <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="h-8 text-sm" />
                     ) : (
-                      <p className="text-sm font-medium">{dbUser?.city || "—"}</p>
+                      <p className="text-sm font-medium">{dbUser?.city || "\u2014"}</p>
                     )}
                   </div>
                   <div>
@@ -664,7 +329,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     {editing ? (
                       <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="h-8 text-sm" />
                     ) : (
-                      <p className="text-sm font-medium">{dbUser?.state || "—"}</p>
+                      <p className="text-sm font-medium">{dbUser?.state || "\u2014"}</p>
                     )}
                   </div>
                   <div>
@@ -672,7 +337,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     {editing ? (
                       <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="h-8 text-sm" />
                     ) : (
-                      <p className="text-sm font-medium">{dbUser?.country || "—"}</p>
+                      <p className="text-sm font-medium">{dbUser?.country || "\u2014"}</p>
                     )}
                   </div>
                   <div>
@@ -680,7 +345,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     {editing ? (
                       <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="h-8 text-sm" />
                     ) : (
-                      <p className="text-sm font-medium">{dbUser?.zipCode || "—"}</p>
+                      <p className="text-sm font-medium">{dbUser?.zipCode || "\u2014"}</p>
                     )}
                   </div>
                 </div>
@@ -701,7 +366,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                         className="h-8 text-sm"
                       />
                     ) : (
-                      <p className="text-sm font-medium truncate">{dbUser?.linkedin || "—"}</p>
+                      <p className="text-sm font-medium truncate">{dbUser?.linkedin || "\u2014"}</p>
                     )}
                   </div>
                   <div>
@@ -716,7 +381,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                         className="h-8 text-sm"
                       />
                     ) : (
-                      <p className="text-sm font-medium truncate">{dbUser?.github || "—"}</p>
+                      <p className="text-sm font-medium truncate">{dbUser?.github || "\u2014"}</p>
                     )}
                   </div>
                   <div>
@@ -731,7 +396,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                         className="h-8 text-sm"
                       />
                     ) : (
-                      <p className="text-sm font-medium truncate">{dbUser?.twitter || "—"}</p>
+                      <p className="text-sm font-medium truncate">{dbUser?.twitter || "\u2014"}</p>
                     )}
                   </div>
                   <div>
@@ -746,7 +411,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                         className="h-8 text-sm"
                       />
                     ) : (
-                      <p className="text-sm font-medium truncate">{dbUser?.website || "—"}</p>
+                      <p className="text-sm font-medium truncate">{dbUser?.website || "\u2014"}</p>
                     )}
                   </div>
                 </div>
@@ -902,38 +567,38 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <p className="text-xs text-muted-foreground">Company Name</p>
-                      <p className="text-sm font-medium">{org?.name || "—"}</p>
+                      <p className="text-sm font-medium">{org?.name || "\u2014"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Business Type</p>
-                      <p className="text-sm font-medium">{org?.businessType || "—"}</p>
+                      <p className="text-sm font-medium">{org?.businessType || "\u2014"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Industry</p>
-                      <p className="text-sm font-medium">{org?.industry || "—"}</p>
+                      <p className="text-sm font-medium">{org?.industry || "\u2014"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">GST / PAN / CIN</p>
-                      <p className="text-sm font-medium">{[org?.gstNumber, org?.panNumber, org?.cinNumber].filter(Boolean).join(" / ") || "—"}</p>
+                      <p className="text-sm font-medium">{[org?.gstNumber, org?.panNumber, org?.cinNumber].filter(Boolean).join(" / ") || "\u2014"}</p>
                     </div>
                   </div>
                   <Separator />
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <p className="text-xs text-muted-foreground">Company Email</p>
-                      <p className="text-sm font-medium">{org?.companyEmail || "—"}</p>
+                      <p className="text-sm font-medium">{org?.companyEmail || "\u2014"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Mobile</p>
-                      <p className="text-sm font-medium">{org?.mobileNumber || "—"}</p>
+                      <p className="text-sm font-medium">{org?.mobileNumber || "\u2014"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Alternate Mobile</p>
-                      <p className="text-sm font-medium">{org?.alternateMobileNumber || "—"}</p>
+                      <p className="text-sm font-medium">{org?.alternateMobileNumber || "\u2014"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Website</p>
-                      <p className="text-sm font-medium">{org?.website || "—"}</p>
+                      <p className="text-sm font-medium">{org?.website || "\u2014"}</p>
                     </div>
                   </div>
                   <Separator />
@@ -941,7 +606,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     <div className="sm:col-span-2">
                       <p className="text-xs text-muted-foreground">Address</p>
                       <p className="text-sm font-medium">
-                        {[org?.addressLine1, org?.addressLine2, org?.city, org?.state, org?.pincode, org?.country].filter(Boolean).join(", ") || "—"}
+                        {[org?.addressLine1, org?.addressLine2, org?.city, org?.state, org?.pincode, org?.country].filter(Boolean).join(", ") || "\u2014"}
                       </p>
                     </div>
                   </div>
@@ -949,26 +614,26 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <p className="text-xs text-muted-foreground">Authorized Person</p>
-                      <p className="text-sm font-medium">{org?.authorizedPersonName || "—"}</p>
+                      <p className="text-sm font-medium">{org?.authorizedPersonName || "\u2014"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Designation</p>
-                      <p className="text-sm font-medium">{org?.designation || "—"}</p>
+                      <p className="text-sm font-medium">{org?.designation || "\u2014"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Authorized Email</p>
-                      <p className="text-sm font-medium">{org?.authorizedPersonEmail || "—"}</p>
+                      <p className="text-sm font-medium">{org?.authorizedPersonEmail || "\u2014"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Authorized Mobile</p>
-                      <p className="text-sm font-medium">{org?.authorizedPersonMobile || "—"}</p>
+                      <p className="text-sm font-medium">{org?.authorizedPersonMobile || "\u2014"}</p>
                     </div>
                   </div>
                   <Separator />
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <p className="text-xs text-muted-foreground">Employees</p>
-                      <p className="text-sm font-medium">{org?.numberOfEmployees || "—"}</p>
+                      <p className="text-sm font-medium">{org?.numberOfEmployees || "\u2014"}</p>
                     </div>
                   </div>
                   {org?.companyDescription && (
@@ -1103,5 +768,3 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
     </div>
   );
 }
-
-

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -46,7 +47,7 @@ export default function TerminatedInteractive() {
         setTerminated(stored);
       }
     } catch (err) {
-      console.error("[TERMINATED] Failed to parse localStorage:", err);
+      toast.error("Failed to load terminated employees data");
     } finally {
       setPageLoading(false);
     }

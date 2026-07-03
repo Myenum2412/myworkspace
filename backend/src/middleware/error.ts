@@ -49,6 +49,26 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
     return;
   }
 
+  // Body parser / malformed JSON errors
+  if (err instanceof SyntaxError && "body" in err) {
+    console.warn(`[400] ${method} ${url} — Malformed request body`);
+    res.status(400).json({
+      success: false,
+      error: "Malformed request body",
+    });
+    return;
+  }
+
+  // Mongoose CastError (invalid ObjectId, etc.)
+  if (err.name === "CastError") {
+    console.warn(`[400] ${method} ${url} — Invalid ID format`);
+    res.status(400).json({
+      success: false,
+      error: "Invalid resource identifier",
+    });
+    return;
+  }
+
   const statusCode = err instanceof AppError ? err.statusCode : 500;
 
   if (statusCode === 404) {

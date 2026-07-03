@@ -30,7 +30,9 @@ const nextConfig: NextConfig = {
       ],
     };
   },
-  turbopack: {},
+  turbopack: {
+    root: process.cwd(),
+  },
   // Compress responses
   compress: true,
   // Generate etags for caching

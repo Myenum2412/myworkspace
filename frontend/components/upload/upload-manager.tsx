@@ -170,11 +170,10 @@ export function UploadManager({ options, maxSize }: UploadManagerProps) {
         {uploads.map((file) => (
           <UploadProgress
             key={file.id}
-            file={file}
-            onPause={() => pauseUpload(file.id)}
-            onResume={() => resumeUpload(file.id)}
-            onCancel={() => cancelUpload(file.id)}
-            onRetry={() => retryUpload(file.id)}
+            item={file}
+            onCancel={cancelUpload}
+            onRetry={retryUpload}
+            onRemove={clearCompleted}
           />
         ))}
 

@@ -1,4 +1,4 @@
 
 > myworkspace-backend@1.0.0 build
-> tsc
+> tsc && cp src/config/*.conf src/config/*.csv dist/config/ 2>/dev/null; true
 

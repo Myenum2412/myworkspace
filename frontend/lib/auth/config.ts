@@ -240,11 +240,36 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        twoFactorToken: { label: "2FA Token", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-        const email = credentials.email as string;
-        const password = credentials.password as string;
+        const email = credentials?.email as string;
+        if (!email) return null;
+
+        const twoFactorToken = credentials?.twoFactorToken as string | undefined;
+        if (twoFactorToken) {
+          const apiUrl = process.env.API_URL || "http://localhost:4000";
+          const res = await fetch(`${apiUrl}/api/two-factor/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, token: twoFactorToken }),
+          });
+          const data = await res.json();
+          if (!data.success || !data.data) return null;
+          const userData = data.data.user;
+          return {
+            id: userData.id,
+            email: userData.email,
+            name: userData.name,
+            image: userData.image,
+            role: userData.role,
+            permissions: userData.permissions || [],
+            orgId: data.data.orgId,
+          };
+        }
+
+        const password = credentials?.password as string;
+        if (!password) return null;
         const { db } = await import("@/lib/db");
         console.log("[AUTH authorize] looking up", email);
         const user = await db.collection("users").findOne({ email });

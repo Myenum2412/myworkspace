@@ -12,7 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Search } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { usePathname } from "next/navigation";
 import {
@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUserStatus } from "@/hooks/use-user-status";
 import { SessionTracker } from "@/components/session-tracker";
-import { Fragment } from "react";
+import { GlobalSearch } from "@/components/search/global-search";
+import { Fragment, useEffect, useState } from "react";
 import { getAppContext, type AppContextType } from "@/lib/app-context";
 
 const CONTEXT_LABELS: Record<AppContextType, string> = {
@@ -39,6 +40,18 @@ export function Header({ context }: { context?: AppContextType }) {
   const segments = pathname.split("/").filter(Boolean);
   const { data: session } = useSession();
   const { status, updateStatus } = useUserStatus(session?.user?.id);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(o => !o);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
 
   const statusColors = {
     online: "bg-green-500",
@@ -99,6 +112,16 @@ export function Header({ context }: { context?: AppContextType }) {
       </div>
 
       <div className="flex items-center gap-4 text-sm pr-2">
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="hidden md:flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+        >
+          <Search className="size-4" />
+          <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium">⌘K</kbd>
+        </button>
+
+        <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
+
         <div className="hidden md:flex items-center gap-2 text-muted-foreground font-medium">
           <CalendarIcon className="size-4" />
           <time suppressHydrationWarning>

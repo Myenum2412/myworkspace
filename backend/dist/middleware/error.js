@@ -40,6 +40,24 @@ export function errorHandler(err, req, res, _next) {
         });
         return;
     }
+    // Body parser / malformed JSON errors
+    if (err instanceof SyntaxError && "body" in err) {
+        console.warn(`[400] ${method} ${url} — Malformed request body`);
+        res.status(400).json({
+            success: false,
+            error: "Malformed request body",
+        });
+        return;
+    }
+    // Mongoose CastError (invalid ObjectId, etc.)
+    if (err.name === "CastError") {
+        console.warn(`[400] ${method} ${url} — Invalid ID format`);
+        res.status(400).json({
+            success: false,
+            error: "Invalid resource identifier",
+        });
+        return;
+    }
     const statusCode = err instanceof AppError ? err.statusCode : 500;
     if (statusCode === 404) {
         console.warn(`[404] ${method} ${url} — Route not found. Check if the route is registered.`);

@@ -1,0 +1,47 @@
+# Prometheus Configuration - MyWorkSpace Cache Monitoring
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+rule_files:
+  - "valkey.yml"
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "valkey"
+    static_configs:
+      - targets: ["valkey-exporter:9121"]
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: "nginx"
+    static_configs:
+      - targets: ["nginx-exporter:9113"]
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: "varnish"
+    static_configs:
+      - targets: ["varnish:6082"]
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: "trafficserver"
+    static_configs:
+      - targets: ["trafficserver:8080"]
+    metrics_path: /__ats__/stats
+    scrape_interval: 30s
+
+  - job_name: "node"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    scrape_interval: 15s

@@ -1,5 +1,6 @@
 "use client"
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export default function AddEmployeeError({
@@ -10,7 +11,7 @@ export default function AddEmployeeError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[addemployees] page error:", error);
+    toast.error(error?.message || "Something went wrong loading the employee form");
   }, [error]);
 
   return (

@@ -3,14 +3,14 @@ const UPLOAD_SYNC_INTERVAL = 30000;
 
 const PRECACHE_URLS = [];
 
-self.addEventListener("install", (event: ExtendableEvent) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)),
   );
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (event: ExtendableEvent) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) =>
       Promise.all(
@@ -23,7 +23,7 @@ self.addEventListener("activate", (event: ExtendableEvent) => {
   self.clients.claim();
 });
 
-self.addEventListener("fetch", (event: FetchEvent) => {
+self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
@@ -42,7 +42,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
   );
 });
 
-async function networkFirst(request: Request): Promise<Response> {
+async function networkFirst(request) {
   try {
     const response = await fetch(request);
     if (response.ok) {
@@ -60,7 +60,7 @@ async function networkFirst(request: Request): Promise<Response> {
   }
 }
 
-async function handleTusUpload(request: Request): Promise<Response> {
+async function handleTusUpload(request) {
   try {
     const response = await fetch(request);
     return response;
@@ -82,7 +82,7 @@ async function syncPendingUploads() {
 
 setInterval(syncPendingUploads, UPLOAD_SYNC_INTERVAL);
 
-self.addEventListener("message", (event: ExtendableMessageEvent) => {
+self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {
     self.skipWaiting();
   }

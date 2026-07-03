@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -209,7 +210,6 @@ export default function ProfileClient({ data }: Props) {
 
     setSaving(true);
     try {
-      console.log("[profile] saving profile...");
       const res = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -258,20 +258,22 @@ export default function ProfileClient({ data }: Props) {
       if (!res.ok) {
         let errMsg = `Request failed (${res.status})`;
         try { const err = await res.json(); errMsg = err.error || errMsg; } catch {}
-        console.error("[profile] save failed:", errMsg);
+        toast.error(errMsg);
         setSaveError(errMsg);
         return;
       }
 
       const result = await res.json();
-      console.log("[profile] save success:", result);
-
+      toast.success("Profile updated successfully");
       setSaveSuccess("Profile updated successfully");
       setEditing(false);
       // Clear success message after 4s
       setTimeout(() => setSaveSuccess(""), 4000);
     } catch (e) {
-      console.error("[profile] save error:", e);
+      const errMsg = e instanceof TypeError && e.message === "Failed to fetch"
+        ? "Cannot connect to server. Please check your connection and try again."
+        : (e instanceof Error ? e.message : "Network error");
+      toast.error(errMsg);
       setSaveError(e instanceof TypeError && e.message === "Failed to fetch"
         ? "Cannot connect to server. Please check your connection and try again."
         : (e instanceof Error ? e.message : "Network error"));
@@ -338,10 +340,10 @@ export default function ProfileClient({ data }: Props) {
         setShowBannerEditor(false);
         setUrlInput("");
       } else {
-        console.error("[profile] banner update failed:", await res.text());
+        toast.error("Failed to update banner");
       }
     } catch (e) {
-      console.error("[profile] banner update error:", e);
+      toast.error("Failed to update banner");
     }
   }
 
@@ -365,10 +367,10 @@ export default function ProfileClient({ data }: Props) {
         setShowBannerEditor(false);
         setFileKey((k) => k + 1);
       } else {
-        console.error("[profile] banner upload failed:", await res.text());
+        toast.error("Failed to upload banner");
       }
     } catch (e) {
-      console.error("[profile] banner upload error:", e);
+      toast.error("Failed to upload banner");
     } finally {
       setUploading(false);
     }
@@ -386,10 +388,10 @@ export default function ProfileClient({ data }: Props) {
         setProfileImage("");
         setShowImageEditor(false);
       } else {
-        console.error("[profile] remove image failed:", await res.text());
+        toast.error("Failed to remove profile image");
       }
     } catch (e) {
-      console.error("[profile] remove image error:", e);
+      toast.error("Failed to remove profile image");
     }
   }
 
@@ -413,10 +415,10 @@ export default function ProfileClient({ data }: Props) {
         setShowImageEditor(false);
         setImageFileKey((k) => k + 1);
       } else {
-        console.error("[profile] image upload failed:", await res.text());
+        toast.error("Failed to upload profile image");
       }
     } catch (e) {
-      console.error("[profile] image upload error:", e);
+      toast.error("Failed to upload profile image");
     } finally {
       setUploadingImage(false);
     }

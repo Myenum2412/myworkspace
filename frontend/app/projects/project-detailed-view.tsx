@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Project } from "./columns";
+import type { Project } from "@/components/projects/project-types";
 
 const TABS = ["Project Info", "Team"];
 

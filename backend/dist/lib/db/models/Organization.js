@@ -29,5 +29,10 @@ const organizationSchema = new Schema({
     companyDescription: String,
     plan: { type: String, enum: ["free", "starter", "growth", "pro", "enterprise"], default: "free" },
     ownerId: { type: String, required: true },
+    stripeCustomerId: { type: String, sparse: true, unique: true },
+    stripeSubscriptionId: { type: String, sparse: true, unique: true },
+    subscriptionStatus: { type: String, enum: ["active", "past_due", "canceled", "incomplete", "incomplete_expired", "trialing", "unpaid"] },
+    currentPeriodEnd: Date,
+    trialEnd: Date,
 }, { timestamps: true });
 export const Organization = model("Organization", organizationSchema);

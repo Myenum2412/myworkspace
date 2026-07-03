@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { AppLayout } from "@/components/app-layout";
 import { OfflineBanner } from "@/components/offline-banner";
+import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -46,6 +47,7 @@ export default function RootLayout({
           </AppLayout>
           <OfflineBanner />
           <Analytics />
+          <Toaster richColors position="bottom-right" />
         </Providers>
       </body>
     </html>

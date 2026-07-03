@@ -50,4 +50,11 @@ export const env = {
   LOG_LEVEL: process.env.LOG_LEVEL || "",
 
   REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
+
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || "",
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || "",
+  STRIPE_GROWTH_PRICE_ID: process.env.STRIPE_GROWTH_PRICE_ID || "",
+  STRIPE_ENTERPRISE_PRICE_ID: process.env.STRIPE_ENTERPRISE_PRICE_ID || "",
+
+  SENTRY_DSN: process.env.SENTRY_DSN || "",
 };

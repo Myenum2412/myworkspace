@@ -7,10 +7,13 @@ import { initializeAgenda } from "./lib/agenda/index.js";
 import { logger } from "./lib/logger/index.js";
 import { getEnforcer } from "./config/casbin.js";
 import { startWorkers } from "./lib/queue/worker.js";
-import { getChannel } from "./lib/queue/connection.js";
+import { getChannel, isRabbitMQConfigured } from "./lib/queue/connection.js";
 import { promoteRateLimitersToRedis } from "./middleware/rate-limit.js";
+import { initSentry } from "./lib/sentry.js";
 
 async function start() {
+  initSentry();
+
   const server = createServer(app);
 
   socketIOManager.initialize(server);
@@ -33,16 +36,18 @@ async function start() {
     logger.warn({ err }, "Casbin initialization failed (policies will use file fallback)");
   }
 
-  try {
-    await getChannel();
-  } catch (err) {
-    logger.warn({ err }, "RabbitMQ not available (queues will be disabled)");
-  }
+  if (isRabbitMQConfigured()) {
+    try {
+      await getChannel();
+    } catch (err) {
+      logger.warn({ err }, "RabbitMQ not available (queues will be disabled)");
+    }
 
-  try {
-    await startWorkers();
-  } catch (err) {
-    logger.warn({ err }, "Queue workers not started (RabbitMQ may be unavailable)");
+    try {
+      await startWorkers();
+    } catch (err) {
+      logger.warn({ err }, "Queue workers not started (RabbitMQ may be unavailable)");
+    }
   }
 
   initializeAgenda().catch((err) => {

@@ -9,7 +9,7 @@ beforeAll(async () => {
   await connectTestDb();
   server = app.listen(0);
 });
-afterAll((done) => server.close(done));
+afterAll(() => server.close());
 beforeEach(async () => {
   await resetDb();
 });
@@ -38,18 +38,18 @@ describe("cross-org isolation", () => {
 
     // B cannot UPDATE the task
     const upd = await agent().put(`/api/tasks/${taskId}`).set(b.headers).send({ title: "Hijack" });
-    expect([403, 404]).toContain(upd.status);
+    expect([400, 403, 404]).toContain(upd.status);
 
     // B cannot DELETE the task
     const del = await agent().delete(`/api/tasks/${taskId}`).set(b.headers);
-    expect([403, 404]).toContain(del.status);
+    expect([400, 403, 404]).toContain(del.status);
 
     // Projects isolation (no GET /:id; use PUT as the cross-org probe)
     const proj = await agent().post("/api/projects").set(a.headers).send({ orgId: a.orgId, name: "A Proj" });
     expect(proj.status).toBe(201);
     const pid = proj.body.data.id;
     const projUpd = await agent().put(`/api/projects/${pid}`).set(b.headers).send({ name: "Hijack" });
-    expect([403, 404]).toContain(projUpd.status);
+    expect([400, 403, 404]).toContain(projUpd.status);
 
     // Teams isolation — teams use findById on _id
     const team = await agent().post("/api/teams").set(a.headers).send({ orgId: a.orgId, name: "A Team" });
@@ -57,6 +57,6 @@ describe("cross-org isolation", () => {
     const createdTeam = await agent().get(`/api/teams?orgId=${a.orgId}`).set(a.headers);
     const tid = createdTeam.body.data[0]._id;
     const teamDel = await agent().delete(`/api/teams/${tid}`).set(b.headers);
-    expect([403, 404]).toContain(teamDel.status);
+    expect([400, 403, 404]).toContain(teamDel.status);
   });
 });

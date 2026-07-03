@@ -13,6 +13,16 @@ export function authorizeRole(...roles: string[]) {
     if (!roles.includes(req.user.role)) {
       throw new AppError(403, "Forbidden: insufficient role permissions");
     }
+    recordAuditLog({
+      orgId: req.user?.orgId || "system",
+      userId: req.user?.userId || "system",
+      createdBy: req.user?.userId || "system",
+      action: "authorization.role",
+      entityType: "access",
+      entityId: req.user?.userId || "unknown",
+      description: `Role-based access granted: ${req.user?.role} for ${req.method} ${req.originalUrl}`,
+      metadata: JSON.stringify({ roles, ip: req.ip, userAgent: req.headers["user-agent"] }),
+    });
     next();
   };
 }
@@ -39,6 +49,16 @@ export function authorizePermission(...permissions: string[]) {
     if (!hasAll) {
       throw new AppError(403, "Forbidden: missing required permissions");
     }
+    recordAuditLog({
+      orgId: req.user?.orgId || "system",
+      userId: req.user?.userId || "system",
+      createdBy: req.user?.userId || "system",
+      action: "authorization.permission",
+      entityType: "access",
+      entityId: req.user?.userId || "unknown",
+      description: `Permission-based access granted for ${req.method} ${req.originalUrl}`,
+      metadata: JSON.stringify({ permissions, ip: req.ip, userAgent: req.headers["user-agent"] }),
+    });
     next();
   };
 }
