@@ -78,7 +78,78 @@ export function SettingsPlansPageInteractive({ orgPlan: initialOrgPlan, orgId, u
     setSaving(true);
     setError("");
     setSaved(false);
+
+    const isFree = normalizedPlan === "free";
+    const isUpgrade = planId === "growth" || (planId === "enterprise" && isFree);
+    const isDowngrade = planId === "free";
+    const isEnterprise = planId === "enterprise";
+
     try {
+      if (isEnterprise) {
+        setError("Contact our sales team to upgrade to Enterprise.");
+        return;
+      }
+
+      if (isUpgrade) {
+        // Use Stripe Checkout for paid plans
+        const res = await fetch("/api/billing/create-checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ plan: planId, orgId }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setError(err.error || "Failed to create checkout session");
+          return;
+        }
+        const json = await res.json();
+        if (json.data?.url) {
+          window.location.href = json.data.url;
+        } else {
+          setError("Failed to start checkout. Please try again.");
+        }
+        return;
+      }
+
+      if (isDowngrade) {
+        // Use Stripe Customer Portal to manage/cancel subscription
+        const res = await fetch("/api/billing/portal-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ orgId }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setError(err.error || "Failed to open portal");
+          return;
+        }
+        const json = await res.json();
+        if (json.data?.url) {
+          window.location.href = json.data.url;
+        } else {
+          setError("No active subscription found. You can change plans directly.");
+          // Fallback: direct update if no Stripe subscription
+          const fallbackRes = await fetch(`/api/organizations/${orgId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ plan: planId }),
+          });
+          if (fallbackRes.ok) {
+            setOrgPlan(planId);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
+          } else {
+            const err = await fallbackRes.json().catch(() => ({}));
+            setError(err.error || "Failed to update plan");
+          }
+        }
+        return;
+      }
+
+      // For other plan changes (e.g. changing between non-paid tiers), update directly
       const res = await fetch(`/api/organizations/${orgId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -102,8 +173,7 @@ export function SettingsPlansPageInteractive({ orgPlan: initialOrgPlan, orgId, u
 
   async function handlePurchaseStorage() {
     if (orgPlan === "enterprise") return;
-    const growthTier = priceTiers.find((t) => t.id === "growth");
-    if (growthTier && orgPlan !== "growth") {
+    if (orgPlan !== "growth") {
       await handleChangePlan("growth");
     }
   }

@@ -1,4 +1,5 @@
 import { Router, Response } from "express";
+import mongoose from "mongoose";
 import { Organization } from "../lib/db/models/Organization.js";
 import { StorageQuota, getPlanLimits } from "../lib/db/models/StorageQuota.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
@@ -7,6 +8,14 @@ import { stripe, getPriceId } from "../config/stripe.js";
 import { env } from "../config/env.js";
 
 const router = Router();
+
+async function resolveOrg(orgId: string) {
+  const filter: Record<string, unknown>[] = [{ id: orgId }];
+  if (mongoose.Types.ObjectId.isValid(orgId)) {
+    filter.push({ _id: new mongoose.Types.ObjectId(orgId) });
+  }
+  return Organization.findOne({ $or: filter });
+}
 
 async function requireAdmin(req: AuthRequest, orgId: string) {
   const { default: mongoose } = await import("mongoose");
@@ -58,7 +67,7 @@ router.post("/webhook", async (req: AuthRequest, res: Response) => {
       const orgId = session.metadata?.orgId;
       const plan = session.metadata?.plan || "growth";
       if (orgId) {
-        const org = await Organization.findById(orgId);
+        const org = await resolveOrg(orgId);
         if (org) {
           org.plan = plan;
           org.stripeCustomerId = session.customer as string;
@@ -157,7 +166,7 @@ router.post("/create-checkout-session", async (req: AuthRequest, res: Response) 
   const targetOrgId = parseOrgId(orgId || req.user!.orgId);
   await requireAdmin(req, targetOrgId);
 
-  const org = await Organization.findById(targetOrgId);
+  const org = await resolveOrg(targetOrgId);
   if (!org) throw new AppError(404, "Organization not found");
 
   const priceId = getPriceId(plan);
@@ -196,7 +205,7 @@ router.post("/portal-session", async (req: AuthRequest, res: Response) => {
   const targetOrgId = parseOrgId(orgId || req.user!.orgId);
   await requireAdmin(req, targetOrgId);
 
-  const org = await Organization.findById(targetOrgId);
+  const org = await resolveOrg(targetOrgId);
   if (!org) throw new AppError(404, "Organization not found");
   if (!org.stripeCustomerId) throw new AppError(400, "No Stripe customer found. Subscribe to a plan first.");
 
@@ -217,7 +226,7 @@ router.get("/subscription", async (req: AuthRequest, res: Response) => {
   const membership = await OrgMember.findOne({ orgId, userId: req.user!.userId }).lean();
   if (!membership) throw new AppError(403, "Not a member of this organization");
 
-  const org = await Organization.findById(orgId).lean();
+  const org = await resolveOrg(orgId);
   if (!org) throw new AppError(404, "Organization not found");
 
   let stripeSubscription: any = null;
@@ -253,7 +262,7 @@ router.get("/invoices", async (req: AuthRequest, res: Response) => {
   const membership = await OrgMember.findOne({ orgId, userId: req.user!.userId }).lean();
   if (!membership) throw new AppError(403, "Not a member of this organization");
 
-  const org = await Organization.findById(orgId).lean();
+  const org = await resolveOrg(orgId);
   if (!org) throw new AppError(404, "Organization not found");
   if (!org.stripeCustomerId) {
     res.json({ success: true, data: { invoices: [] } });

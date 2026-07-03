@@ -119,7 +119,7 @@ router.post("/invite", async (req: AuthRequest, res: Response) => {
 
 // GET /api/organizations/:id -- get single org (with tenant isolation)
 router.get("/:id", async (req: AuthRequest, res: Response) => {
-  const org = await Organization.findById(req.params.id).lean();
+  const org = await resolveOrg(req.params.id).lean();
   if (!org) throw new AppError(404, "Organization not found");
 
   // Tenant isolation: verify membership
@@ -172,9 +172,17 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   res.status(201).json({ success: true, data: { orgId: org._id } });
 });
 
+function resolveOrg(orgId: string) {
+  const filter: Record<string, unknown>[] = [{ id: orgId }];
+  if (mongoose.Types.ObjectId.isValid(orgId)) {
+    filter.push({ _id: new mongoose.Types.ObjectId(orgId) });
+  }
+  return Organization.findOne({ $or: filter });
+}
+
 // PUT /api/organizations/:id -- update org (admin only)
 router.put("/:id", async (req: AuthRequest, res: Response) => {
-  const org = await Organization.findById(req.params.id);
+  const org = await resolveOrg(req.params.id);
   if (!org) throw new AppError(404, "Organization not found");
 
   // Only org admin or owner can update
@@ -214,7 +222,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 
 // DELETE /api/organizations/:id -- delete org (owner only)
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
-  const org = await Organization.findById(req.params.id);
+  const org = await resolveOrg(req.params.id);
   if (!org) throw new AppError(404, "Organization not found");
 
   // Only owner can delete
