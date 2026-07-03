@@ -12,6 +12,8 @@ export interface ITask extends Document {
     status: "todo" | "in_progress" | "review" | "done" | "cancelled";
     priority: "low" | "medium" | "high" | "urgent";
     dueDate?: Date;
+    isSaved?: boolean;
+    isActive?: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

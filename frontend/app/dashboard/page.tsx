@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { ProfitLossChart } from "@/components/dashboard/profit-loss-chart";
 import type { ProfitLossRow } from "@/components/dashboard/profit-loss-chart";
+import { PriorityBreakdownChart } from "@/components/dashboard/priority-breakdown-chart";
 
 export const revalidate = 30;
 
@@ -90,6 +91,7 @@ type DashboardData = {
   activeMembers: number; recentActivity: number; totalProjects: number; activeProjects: number;
   totalClients: number; totalTeams: number;
   tasks: Task[]; projects: Project[]; clients: Client[]; activities: ActivityItem[]; members: Member[];
+  priorityBreakdown: { name: string; value: number }[];
 };
 
 const getCachedDashboardData = unstable_cache(
@@ -102,6 +104,7 @@ const getCachedDashboardData = unstable_cache(
       memberCount, activityCount,
       projCount, activeProjCount,
       clientCount, teamCount,
+      priorityDocs,
       taskDocs, projDocs, clientDocs,
       activityDocs,
     ] = await Promise.all([
@@ -115,6 +118,10 @@ const getCachedDashboardData = unstable_cache(
       db.collection(collections.projects).countDocuments({ orgId, status: "Active" }),
       db.collection(collections.clients).countDocuments({ orgId }),
       db.collection(collections.teams).countDocuments({ orgId }),
+      db.collection(collections.tasks).aggregate([
+        { $match: { orgId } },
+        { $group: { _id: "$priority", count: { $sum: 1 } } }
+      ]).toArray(),
       db.collection(collections.tasks).aggregate([
         { $match: { orgId } },
         { $sort: { createdAt: -1 } },
@@ -147,6 +154,11 @@ const getCachedDashboardData = unstable_cache(
       assigneeAvatar: (assignee?.image as string) || (t.assigneeAvatar as string) || "",
       createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
     }});
+
+    const priorityBreakdown = (priorityDocs as unknown as { _id: string, count: number }[]).map(p => ({
+      name: p._id || "unassigned",
+      value: p.count || 0
+    }));
 
     const projects: Project[] = (projDocs as unknown as Record<string, unknown>[]).map((p) => ({
       id: (p.id as string) || String(p._id || ""),
@@ -207,7 +219,7 @@ const getCachedDashboardData = unstable_cache(
       activeMembers: memberCount, recentActivity: activityCount,
       totalProjects: projCount, activeProjects: activeProjCount,
       totalClients: clientCount, totalTeams: teamCount,
-      tasks, projects, clients, activities, members,
+      tasks, projects, clients, activities, members, priorityBreakdown
     };
   },
   ["dashboard-data"],
@@ -230,7 +242,7 @@ export default async function DashboardPage() {
     activeMembers = 0, recentActivity = 0,
     totalProjects = 0, activeProjects = 0,
     totalClients = 0, totalTeams = 0,
-    tasks = [], projects = [], clients = [], activities = [], members = [],
+    tasks = [], projects = [], clients = [], activities = [], members = [], priorityBreakdown = [],
   } = dashboardData || {};
 
   let profitLossData: ProfitLossRow[] = [];
@@ -257,10 +269,8 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-4 h-full">
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-4 overflow-y-auto">
       <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-
-      <ProfitLossChart data={profitLossData} />
 
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
         {metricCards.map((c) => (
@@ -277,13 +287,13 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 flex-1">
-        <Card className="flex flex-col">
+        <Card className="flex flex-col h-[320px]">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <ListTodo className="size-4" /> Recent Tasks
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1">
+          <CardContent className="flex-1 overflow-y-auto min-h-0">
             {tasks.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No tasks yet.</p>
             ) : (
@@ -325,13 +335,13 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col">
+        <Card className="flex flex-col h-[320px]">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <FolderKanbanIcon className="size-4" /> Active Projects
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1">
+          <CardContent className="flex-1 overflow-y-auto min-h-0">
             {projects.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No projects yet.</p>
             ) : (
@@ -375,13 +385,13 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 flex-1">
-        <Card className="flex flex-col">
+        <Card className="flex flex-col h-[320px]">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="size-4" /> Team Members
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1">
+          <CardContent className="flex-1 overflow-y-auto min-h-0">
             {members.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No members yet.</p>
             ) : (
@@ -424,13 +434,13 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col">
+        <Card className="flex flex-col h-[320px]">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Building2Icon className="size-4" /> Recent Clients
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1">
+          <CardContent className="flex-1 overflow-y-auto min-h-0">
             {clients.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No clients yet.</p>
             ) : (
@@ -461,6 +471,11 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2 mt-4">
+        <ProfitLossChart data={profitLossData} className="h-[400px]" />
+        <PriorityBreakdownChart data={priorityBreakdown} className="h-[400px]" />
       </div>
 
     </div>

@@ -3,14 +3,16 @@
 import { useId } from "react";
 
 interface SwitchProps {
+  id?: string;
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   defaultChecked?: boolean;
   disabled?: boolean;
 }
 
-export function Switch({ checked, onCheckedChange, defaultChecked, disabled }: SwitchProps) {
-  const id = useId();
+export function Switch({ id: customId, checked, onCheckedChange, defaultChecked, disabled }: SwitchProps) {
+  const generatedId = useId();
+  const id = customId || generatedId;
   const isControlled = checked !== undefined;
   const isChecked = isControlled ? checked : defaultChecked;
 

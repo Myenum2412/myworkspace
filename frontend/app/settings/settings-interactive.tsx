@@ -36,6 +36,7 @@ import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } fro
 const SECTION_LIMITS_KEY = "myworkspace_section_limits";
 
 const DEFAULT_SECTION_LIMITS: Record<string, number> = {
+  projects: 20,
   departments: 20,
   locations: 15,
   designations: 20,
@@ -65,8 +66,8 @@ export type SettingsPageClientProps = {
   orgId: string;
   user: { name: string; email: string; avatar: string };
   initialSettings: {
-    general?: { orgName?: string; orgSlug?: string; timezone?: string; language?: string };
-    team?: { defaultTeamRole?: string; allowSelfAssign?: boolean; maxTeamSize?: number; autoAssignLead?: boolean };
+    general?: { orgName?: string; orgSlug?: string; timezone?: string; language?: string; monthlyProjectLimit?: number };
+    team?: { defaultTeamRole?: string; allowSelfAssign?: boolean; maxTeamSize?: number; autoAssignLead?: boolean; showTeamAsAssignee?: boolean };
     notifications?: {
       taskAssigned?: boolean;
       taskStatusChange?: boolean;
@@ -100,8 +101,8 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
   const [saved, setSaved] = useState(false);
 
   const [formData, setFormData] = useState({
-    general: initialSettings?.general || { orgName: "", orgSlug: "", timezone: "UTC", language: "en" },
-    team: initialSettings?.team || { defaultTeamRole: "member", allowSelfAssign: true, maxTeamSize: 50, autoAssignLead: false },
+    general: initialSettings?.general || { orgName: "", orgSlug: "", timezone: "UTC", language: "en", monthlyProjectLimit: 10 },
+    team: initialSettings?.team || { defaultTeamRole: "member", allowSelfAssign: true, maxTeamSize: 50, autoAssignLead: false, showTeamAsAssignee: false },
     notifications: initialSettings?.notifications || defaultNotifSettings,
   });
 
@@ -117,10 +118,23 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
-    await new Promise((r) => setTimeout(r, 600));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        setSaved(true);
+      } else {
+        console.error("Failed to save settings");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+      setTimeout(() => setSaved(false), 2000);
+    }
   };
 
   const addDropdownItem = (section: string) => {
@@ -152,6 +166,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
   };
 
   const sectionLabels: Record<string, string> = {
+    projects: "Projects",
     departments: "Departments",
     locations: "Locations",
     designations: "Designations",
@@ -211,6 +226,29 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
           <TabsContent value="general" className="h-full m-0 p-0">
             <ScrollArea className="h-full">
               <div className="p-6 space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold">General Settings</h2>
+                  <p className="text-sm text-muted-foreground">Manage workspace-wide configurations</p>
+                </div>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Project Target</CardTitle>
+                    <CardDescription>Set your target goals for monthly project creation</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-4">
+                    <div className="grid gap-2 max-w-xs">
+                      <Label htmlFor="monthlyProjectLimit">Monthly Project Target</Label>
+                      <Input
+                        id="monthlyProjectLimit"
+                        type="number"
+                        min={1}
+                        value={formData.general.monthlyProjectLimit ?? 10}
+                        onChange={(e) => setFormData({ ...formData, general: { ...formData.general, monthlyProjectLimit: parseInt(e.target.value) || 1 } })}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Separator />
                 <div>
                   <h2 className="text-lg font-semibold">Section Cards</h2>
                   <p className="text-sm text-muted-foreground">Manage dropdown options and set maximum item limits for each section.</p>
@@ -320,6 +358,14 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         <p className="text-xs text-muted-foreground">Auto-assign team lead on creation</p>
                       </div>
                       <Switch checked={formData.team.autoAssignLead ?? false} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, autoAssignLead: v } })} />
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Show Teams as Assignees</Label>
+                        <p className="text-xs text-muted-foreground">When turned ON, show Teams in New Task form; when turned OFF, show Staffs</p>
+                      </div>
+                      <Switch checked={formData.team.showTeamAsAssignee ?? false} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, showTeamAsAssignee: v } })} />
                     </div>
                     <Separator />
                     <div className="grid gap-2 max-w-xs">

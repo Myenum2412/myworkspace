@@ -11,6 +11,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
 } from "@/components/ui/select";
 
 export type AssigneeType = "staff" | "team";
@@ -50,6 +52,7 @@ export function AssigneeSelector({
   onSelect,
   onRemove,
   onQuickAdd,
+  showTeamAsAssignee = false,
 }: {
   selectedAssignee: string | null;
   selectedAssigneeType: AssigneeType | null;
@@ -58,8 +61,13 @@ export function AssigneeSelector({
   onSelect: (id: string, type: string) => void;
   onRemove: () => void;
   onQuickAdd?: (type: "staff" | "team") => void;
+  showTeamAsAssignee?: boolean;
 }) {
-  const [mode, setMode] = useState<"staff" | "team">("staff");
+  const [mode, setMode] = useState<"staff" | "team">(showTeamAsAssignee ? "team" : "staff");
+
+  React.useEffect(() => {
+    setMode(showTeamAsAssignee ? "team" : "staff");
+  }, [showTeamAsAssignee]);
 
   const selectedName = selectedAssigneeType === "staff"
     ? employees.find((e) => e.id === selectedAssignee)?.name
@@ -67,35 +75,6 @@ export function AssigneeSelector({
 
   return (
     <div className="space-y-2">
-      {/* Toggle: Staff / Team */}
-      <div className="flex gap-1 p-0.5 rounded-lg bg-muted/60">
-        <button
-          type="button"
-          onClick={() => setMode("staff")}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-md transition-all duration-200",
-            mode === "staff"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          )}
-        >
-          <UserIcon className="size-3.5" />
-          Staff
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("team")}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-md transition-all duration-200",
-            mode === "team"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          )}
-        >
-          <UsersIcon className="size-3.5" />
-          Team
-        </button>
-      </div>
 
       {selectedAssignee && selectedName ? (
         <div className="flex items-center gap-2">
@@ -109,50 +88,45 @@ export function AssigneeSelector({
         </div>
       ) : (
         <div className="space-y-2">
-          {mode === "staff" ? (
-            <Select onValueChange={(val) => onSelect(val, "staff")}>
-              <SelectTrigger className="h-9 bg-background/50">
-                <SelectValue placeholder="Select staff member..." />
-              </SelectTrigger>
-              <SelectContent>
-                {employees.length === 0 ? (
-                  <SelectItem value="" disabled>No staff available</SelectItem>
-                ) : (
-                  employees.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>
-                      {e.name}{e.role ? ` (${e.role})` : ""}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Select onValueChange={(val) => onSelect(val, "team")}>
-              <SelectTrigger className="h-9 bg-background/50">
-                <SelectValue placeholder="Select team..." />
-              </SelectTrigger>
-              <SelectContent>
-                {teams.length === 0 ? (
-                  <SelectItem value="" disabled>No teams available</SelectItem>
-                ) : (
-                  teams.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name} ({t.memberCount} members)
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          )}
-          {onQuickAdd && (
-            <button
-              type="button"
-              onClick={() => onQuickAdd(mode)}
-              className="text-xs text-primary hover:underline flex items-center gap-1"
-            >
-              <PlusIcon className="size-3" /> Quick add {mode}
-            </button>
-          )}
+          <Select onValueChange={(val) => {
+            const type = val.startsWith("team_") ? "team" : "staff";
+            const id = val.replace(/^(team_|staff_)/, "");
+            onSelect(id, type);
+          }}>
+            <SelectTrigger className="h-9 bg-background/50">
+              <SelectValue placeholder="Select assignee..." />
+            </SelectTrigger>
+            <SelectContent>
+              {!showTeamAsAssignee && (
+                <SelectGroup>
+                  <SelectLabel>Staff</SelectLabel>
+                  {employees.length === 0 ? (
+                    <SelectItem value="no_staff" disabled>No staff available</SelectItem>
+                  ) : (
+                    employees.map((e) => (
+                      <SelectItem key={`staff_${e.id}`} value={`staff_${e.id}`}>
+                        {e.name}{e.role ? ` (${e.role})` : ""}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectGroup>
+              )}
+              {showTeamAsAssignee && (
+                <SelectGroup>
+                  <SelectLabel>Teams</SelectLabel>
+                  {teams.length === 0 ? (
+                    <SelectItem value="no_teams" disabled>No teams available</SelectItem>
+                  ) : (
+                    teams.map((t) => (
+                      <SelectItem key={`team_${t.id}`} value={`team_${t.id}`}>
+                        {t.name} ({t.memberCount} members)
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectGroup>
+              )}
+            </SelectContent>
+          </Select>
         </div>
       )}
     </div>

@@ -20,5 +20,7 @@ const taskSchema = new Schema({
         default: "medium",
     },
     dueDate: Date,
+    isSaved: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 export const Task = model("Task", taskSchema);

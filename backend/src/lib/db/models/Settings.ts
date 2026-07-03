@@ -7,12 +7,14 @@ export interface ISettings extends Document {
     orgSlug: string;
     timezone: string;
     language: string;
+    monthlyProjectLimit: number;
   };
   team: {
     defaultTeamRole: string;
     allowSelfAssign: boolean;
     maxTeamSize: number;
     autoAssignLead: boolean;
+    showTeamAsAssignee: boolean;
   };
   notifications: {
     taskAssigned: boolean;
@@ -38,12 +40,14 @@ const settingsSchema = new Schema<ISettings>(
       orgSlug: { type: String, default: "myworkspace" },
       timezone: { type: String, default: "UTC" },
       language: { type: String, default: "en" },
+      monthlyProjectLimit: { type: Number, default: 10 },
     },
     team: {
       defaultTeamRole: { type: String, default: "member" },
       allowSelfAssign: { type: Boolean, default: true },
       maxTeamSize: { type: Number, default: 20 },
       autoAssignLead: { type: Boolean, default: false },
+      showTeamAsAssignee: { type: Boolean, default: false },
     },
     notifications: {
       taskAssigned: { type: Boolean, default: true },

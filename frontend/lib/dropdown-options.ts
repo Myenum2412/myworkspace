@@ -1,4 +1,5 @@
 export const DEFAULT_DROPDOWN_OPTIONS = {
+  projects: ["Internal", "Client", "Open Source", "Research", "Maintenance"],
   departments: ["Engineering", "Marketing", "Sales", "HR", "Finance", "Operations", "Design", "Support"],
   locations: ["New York", "San Francisco", "London", "Berlin", "Tokyo", "Bangalore", "Remote"],
   designations: ["Software Engineer", "Senior Engineer", "Lead Engineer", "Manager", "Director", "VP", "Associate", "Intern"],

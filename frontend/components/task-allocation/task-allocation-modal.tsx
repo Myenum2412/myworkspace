@@ -8,6 +8,7 @@ import {
   ListTodoIcon,
   CalendarIcon,
   AlertCircleIcon,
+  BookmarkIcon,
 } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -15,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { BlogEditor } from "@/components/ui/blog-editor";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -87,6 +90,9 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
+  const [isActive, setIsActive] = useState(true);
+  const [localTaskDefs, setLocalTaskDefs] = useState<TaskDefinition[]>([]);
 
   const [employees, setEmployees] = useState<Array<{ id: string; name: string; role: string }>>([]);
   const [teams, setTeams] = useState<TeamOption[]>([]);
@@ -95,6 +101,8 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
   const [dueDateOpen, setDueDateOpen] = useState(false);
   const [repeatStartDateOpen, setRepeatStartDateOpen] = useState(false);
   const [userOrgId, setUserOrgId] = useState("");
+
+  const [showTeamAsAssignee, setShowTeamAsAssignee] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -105,7 +113,9 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
         fetch("/api/clients", { credentials: "include" }).then((r) => r.json()).catch(() => []),
         fetch("/api/projects", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
         fetch("/api/user/me", { credentials: "include" }).then((r) => r.json()).catch(() => ({})),
-      ]).then(([staff, teamList, clientsRes, projectsRes, userRes]) => {
+        fetch("/api/settings", { credentials: "include" }).then((r) => r.json()).catch(() => null),
+        fetch("/api/tasks?limit=100", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
+      ]).then(([staff, teamList, clientsRes, projectsRes, userRes, settingsRes, tasksRes]) => {
         setUserOrgId((userRes as any)?.orgId || "");
         setEmployees((staff as any[]).map((s) => ({
           id: s.id,
@@ -126,6 +136,22 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
           name: p.name || "",
           client: p.client || "",
         })));
+        
+        
+        const settings = settingsRes?.data;
+        setShowTeamAsAssignee(!!settings?.team?.showTeamAsAssignee);
+
+        const tasksArr = Array.isArray(tasksRes?.data) ? tasksRes.data : [];
+        const savedDefs = tasksArr
+          .filter((t: any) => t.isSaved)
+          .map((t: any) => ({
+            id: t.id || t._id,
+            name: t.title,
+            description: t.description,
+            isActive: t.isActive !== false,
+          }));
+        setLocalTaskDefs(savedDefs.length > 0 ? savedDefs : taskDefinitions);
+
         setIsLoadingData(false);
       });
     }
@@ -145,6 +171,8 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
     setRepeatStartDate(undefined);
     setUploadedFiles([]);
     setFormError("");
+    setIsSaved(false);
+    setIsActive(true);
   };
 
   const handleClose = () => {
@@ -167,6 +195,8 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
         project: projectName.trim() || undefined,
         priority,
         dueDate: dueDate?.toISOString(),
+        isSaved,
+        isActive,
       };
       if (selectedAssignee && selectedAssigneeType === "staff") {
         payload.assigneeId = selectedAssignee;
@@ -185,16 +215,32 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !isSubmitting) handleClose(); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !isSubmitting) onClose(); }}>
       <DialogContent className="p-0 flex flex-col w-auto h-auto max-w-[90vw] max-h-[90vh]">
-        <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <ListTodoIcon className="size-5" />
-            New Task
-          </DialogTitle>
-          <DialogDescription>
-            Create a new task and assign it to a staff member or team.
-          </DialogDescription>
+        <DialogHeader className="px-6 pt-6 pb-2 shrink-0 pr-14">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <ListTodoIcon className="size-5" />
+                New Task
+              </DialogTitle>
+              <DialogDescription>
+                Create a new task and assign it to a staff member or team.
+              </DialogDescription>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                type="button"
+                variant={isSaved ? "default" : "outline"}
+                size="sm"
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 ${!isSaved ? 'border-primary/20 hover:bg-primary/5 text-primary' : ''}`}
+                onClick={() => setIsSaved(!isSaved)}
+              >
+                <BookmarkIcon className="size-4" />
+                {isSaved ? "Task Saved" : "Save Task"}
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
 
         {formError && (
@@ -205,18 +251,18 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
         )}
 
         <div className="flex-1 overflow-y-auto px-6 py-3 space-y-4">
-          {taskDefinitions.length > 0 && (
+          {localTaskDefs.length > 0 && (
             <div className="flex items-center gap-3">
               <Label className="text-xs font-medium text-muted-foreground shrink-0">Quick fill from saved task:</Label>
               <Select onValueChange={(val) => {
-                const selected = taskDefinitions.find((d) => d.id === val);
+                const selected = localTaskDefs.find((d) => d.id === val);
                 if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
               }}>
                 <SelectTrigger className="max-w-[220px] h-8 text-xs">
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {taskDefinitions.filter((d) => d.isActive).map((def) => (
+                  {localTaskDefs.filter((d) => d.isActive).map((def) => (
                     <SelectItem key={def.id} value={def.id}>{def.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -299,13 +345,20 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium">Assignee</Label>
-              <div className="mt-1.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <Label className="text-sm font-medium">Assignee</Label>
+                <div className="flex items-center gap-1.5">
+                  <Switch id="showTeam" checked={showTeamAsAssignee} onCheckedChange={setShowTeamAsAssignee} />
+                  <Label htmlFor="showTeam" className="text-xs cursor-pointer text-muted-foreground">Assign to Team</Label>
+                </div>
+              </div>
+              <div>
                 <AssigneeSelector
                   selectedAssignee={selectedAssignee}
                   selectedAssigneeType={selectedAssigneeType}
                   employees={employees}
                   teams={teams}
+                  showTeamAsAssignee={showTeamAsAssignee}
                   onSelect={(id: string, type: string) => {
                     setSelectedAssignee(id);
                     setSelectedAssigneeType(type as AssigneeType);
@@ -314,7 +367,6 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
                     setSelectedAssignee(null);
                     setSelectedAssigneeType(null);
                   }}
-                  onQuickAdd={(type) => router.push(type === "staff" ? "/staffs" : "/teams")}
                 />
               </div>
             </div>
@@ -334,7 +386,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
                   <SelectItem value="Monthly">Monthly</SelectItem>
                 </SelectContent>
               </Select>
-              {isRepeatedTask && (
+              {isRepeatedTask && repeatFrequency !== "Daily" && (
                 <div className="mt-2">
                   <Popover open={repeatStartDateOpen} onOpenChange={setRepeatStartDateOpen}>
                     <PopoverTrigger asChild>
@@ -354,14 +406,13 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
 
           <div>
             <Label htmlFor="taskDescription" className="text-sm font-medium">Description *</Label>
-            <Textarea
-              id="taskDescription"
-              placeholder="Describe the task details..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="mt-1.5"
-            />
+            <div className="mt-1.5">
+              <BlogEditor
+                value={description}
+                onChange={setDescription}
+                placeholder="Describe the task details..."
+              />
+            </div>
           </div>
 
           <div>
@@ -370,10 +421,17 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
               <TableUpload onFilesChange={setUploadedFiles} compactImage={true} />
             </div>
           </div>
+          
+
         </div>
 
-        <DialogFooter className="shrink-0 border-t px-6 py-4 gap-2">
-          <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
+        <DialogFooter className="shrink-0 border-t px-6 py-4 flex flex-row items-center justify-between sm:justify-between w-full">
+          <Button
+            variant="ghost"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+          >
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting || !title.trim() || !description.trim() || !priority}>

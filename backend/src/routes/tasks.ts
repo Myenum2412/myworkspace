@@ -56,6 +56,8 @@ router.post("/", async (req: AuthRequest, res: Response) => {
       teamId: req.body.teamId,
       project: req.body.project,
       dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
+      isSaved: req.body.isSaved,
+      isActive: req.body.isActive,
     });
 
     res.status(201).json({ success: true, data: { taskId: result.taskId } });

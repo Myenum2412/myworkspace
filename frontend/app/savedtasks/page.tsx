@@ -24,7 +24,7 @@ export default async function SavedTasksPage() {
     const rawTasks = (await db
       .collection(collections.tasks)
       .aggregate([
-        { $match: { orgId } },
+        { $match: { orgId, isSaved: true } },
         {
           $lookup: {
             from: "users",

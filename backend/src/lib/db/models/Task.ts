@@ -13,6 +13,8 @@ export interface ITask extends Document {
   status: "todo" | "in_progress" | "review" | "done" | "cancelled";
   priority: "low" | "medium" | "high" | "urgent";
   dueDate?: Date;
+  isSaved?: boolean;
+  isActive?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +41,8 @@ const taskSchema = new Schema<ITask>(
       default: "medium",
     },
     dueDate: Date,
+    isSaved: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

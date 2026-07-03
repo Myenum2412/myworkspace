@@ -83,7 +83,7 @@ export function ProfitLossChart({ data, className }: Props) {
             aspectRatio="3 / 1"
             margin={{ top: 16, right: 16, bottom: 20, left: 16 }}
           >
-            <Grid horizontal vertical={false} numTicksRows={5} />
+            <Grid horizontal={false} vertical={false} highlightRowValues={[0]} />
             <ProfitLossLine dataKey="profit" strokeWidth={2.5} />
             <ChartTooltip
               rows={costToRows}
