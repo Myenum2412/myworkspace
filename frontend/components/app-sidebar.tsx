@@ -129,8 +129,6 @@ export const defaultNavData = {
       items: [
         { title: "General", url: "/settings" },
         { title: "Plans & Billing", url: "/settings/plans" },
-        { title: "Team", url: "/settings" },
-        { title: "Notifications", url: "/settings" },
       ],
     },
   ],
