@@ -19,6 +19,12 @@ export type Task = {
   dueDate?: string | null;
   createdAt: string;
   updatedAt?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  approvalNote?: string;
+  rejectedBy?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
 };
 
 interface TasksResponse {

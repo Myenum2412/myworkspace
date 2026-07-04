@@ -175,6 +175,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
             <TaskDetailedView
               task={selectedTask}
               onEdit={(t) => { setViewOpen(false); setSelectedTask(t as TeamTask); setEditOpen(true); }}
+              onClose={() => setViewOpen(false)}
             />
           )}
         </DialogContent>

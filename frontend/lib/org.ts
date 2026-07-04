@@ -9,10 +9,29 @@ export async function getUserOrgId(userId: string, email?: string): Promise<stri
     .map((id) => { try { return new ObjectId(id); } catch { return null; } })
     .filter((oid): oid is ObjectId => oid !== null);
 
-  // Query Mongoose collection first — all app data (teams, tasks, projects)
-  // uses the Mongoose orgId format (24-char hex string from orgmembers).
-  // Some userId fields in orgmembers are stored as ObjectId, others as string,
-  // so we match both to avoid type-sensitive $in comparison failures.
+  // Query NextAuth org_members collection FIRST — the JWT/Session uses this
+  // orgId format (UUID), and the majority of frontend features (projects,
+  // clients, etc.) operate with it. Some userId fields are stored as ObjectId,
+  // others as string, so match both to avoid type-sensitive $in failures.
+  const nextAuthMembers = await db.collection(collections.orgMembers).find({
+    $or: [
+      { userId: { $in: possibleIds } },
+      ...(objectIdIds.length > 0 ? [{ userId: { $in: objectIdIds } }] : []),
+    ],
+  }).toArray() as unknown as Record<string, unknown>[];
+  if (nextAuthMembers.length > 0) {
+    if (nextAuthMembers.length === 1) return String(nextAuthMembers[0].orgId);
+    const orgIds = [...new Set(nextAuthMembers.map(m => String(m.orgId)))];
+    const counts = await db.collection(collections.orgMembers).aggregate([
+      { $match: { orgId: { $in: orgIds } } },
+      { $group: { _id: "$orgId", count: { $sum: 1 } } },
+    ]).toArray() as { _id: string; count: number }[];
+    const countMap = new Map(counts.map(c => [c._id, c.count]));
+    orgIds.sort((a, b) => (countMap.get(b) || 0) - (countMap.get(a) || 0));
+    return orgIds[0];
+  }
+
+  // Fallback to Mongoose orgmembers collection
   const mongooseMembers = await db.collection("orgmembers").find({
     $or: [
       { userId: { $in: possibleIds } },
@@ -20,31 +39,12 @@ export async function getUserOrgId(userId: string, email?: string): Promise<stri
     ],
   }).toArray() as unknown as Record<string, unknown>[];
   if (mongooseMembers.length > 0) {
-    // Prefer ObjectId userId matches (created by Mongoose) — they carry the
-    // correct orgId for Mongoose-backed data (clients, projects, tasks).
     const objIdMatch = mongooseMembers.find((m) => typeof m.userId !== "string");
     if (objIdMatch) return String(objIdMatch.orgId);
     return String(mongooseMembers[0].orgId);
   }
 
-  // Fallback to NextAuth org_members collection (UUID format)
-  const nextAuthMembers = await db.collection(collections.orgMembers).find({
-    $or: [
-      { userId: { $in: possibleIds } },
-      ...(objectIdIds.length > 0 ? [{ userId: { $in: objectIdIds } }] : []),
-    ],
-  }).toArray() as unknown as Record<string, unknown>[];
-  if (nextAuthMembers.length === 0) return null;
-  if (nextAuthMembers.length === 1) return String(nextAuthMembers[0].orgId);
-
-  const orgIds = [...new Set(nextAuthMembers.map(m => String(m.orgId)))];
-  const counts = await db.collection(collections.orgMembers).aggregate([
-    { $match: { orgId: { $in: orgIds } } },
-    { $group: { _id: "$orgId", count: { $sum: 1 } } },
-  ]).toArray() as { _id: string; count: number }[];
-  const countMap = new Map(counts.map(c => [c._id, c.count]));
-  orgIds.sort((a, b) => (countMap.get(b) || 0) - (countMap.get(a) || 0));
-  return orgIds[0];
+  return null;
 }
 
 async function resolvePossibleUserIds(userId: string, email?: string): Promise<string[]> {

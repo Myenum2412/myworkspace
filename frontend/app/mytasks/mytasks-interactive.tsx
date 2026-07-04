@@ -31,7 +31,7 @@ const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-600",
 };
 
-const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
+const statusGroups = ["todo", "in_progress", "review", "done", "postponed", "cancelled"];
 
 export type MyTasksProps = {
   /** SSR-fetched org tasks (assignee/creator already resolved server-side). */
@@ -245,6 +245,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
               <TaskDetailedView
                 task={selectedTask}
                 onEdit={(t) => { setViewOpen(false); setSelectedTask(t as unknown as UiTask); setEditOpen(true); }}
+                onClose={() => setViewOpen(false)}
               />
             )}
           </DialogContent>

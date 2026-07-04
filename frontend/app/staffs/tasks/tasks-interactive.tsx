@@ -43,6 +43,7 @@ const statusStyles: Record<string, string> = {
   review: "bg-purple-100 text-purple-700",
   done: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
+  postponed: "bg-orange-100 text-orange-700",
 };
 
 const priorityStyles: Record<string, string> = {
@@ -52,7 +53,7 @@ const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-600",
 };
 
-export default function TasksInteractive({ tasks }: { tasks: Task[] }) {
+export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task[]; sessionUserId?: string }) {
   const [viewOpen, setViewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -182,9 +183,6 @@ export default function TasksInteractive({ tasks }: { tasks: Task[] }) {
                               <DropdownMenuItem onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
                                 <EyeIcon className="mr-2 size-4" />View
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => { setSelectedTask(t); setEditOpen(true); }}>
-                                <PencilIcon className="mr-2 size-4" />Edit
-                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -200,11 +198,16 @@ export default function TasksInteractive({ tasks }: { tasks: Task[] }) {
       </main>
 
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="p-0 flex flex-col">
+        <DialogContent className="p-0 flex flex-col max-w-5xl w-[95vw]">
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
-              onEdit={(t) => { setViewOpen(false); setSelectedTask(t as Task); setEditOpen(true); }}
+              sessionUserId={sessionUserId}
+              onTaskUpdate={(updatedTask) => {
+                setLocalTasks((prev) => prev.map((t) => t._id === updatedTask._id ? (updatedTask as Task) : t));
+                setSelectedTask(updatedTask as Task);
+              }}
+              onClose={() => setViewOpen(false)}
             />
           )}
         </DialogContent>

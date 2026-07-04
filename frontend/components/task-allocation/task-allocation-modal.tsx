@@ -111,7 +111,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
         employeeService.getAllEmployees().catch(() => []),
         teamService.getAllTeams().catch(() => []),
         fetch("/api/clients", { credentials: "include" }).then((r) => r.json()).catch(() => []),
-        fetch("/api/projects", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch("/api/projects-list", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
         fetch("/api/user/me", { credentials: "include" }).then((r) => r.json()).catch(() => ({})),
         fetch("/api/settings", { credentials: "include" }).then((r) => r.json()).catch(() => null),
         fetch("/api/tasks?limit=100", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
@@ -129,13 +129,16 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
           memberCount: t.memberIds?.length || 0,
         })));
         const clientArr = Array.isArray(clientsRes) ? clientsRes : clientsRes?.data || [];
-        setClientList(clientArr.map((c: { name?: string }) => c.name).filter(Boolean));
+        const clientNames = clientArr.map((c: { name?: string }) => c.name).filter(Boolean);
         const projectArr = Array.isArray(projectsRes) ? projectsRes : projectsRes?.data || [];
-        setProjectList(projectArr.map((p: { id?: string; name?: string; client?: string }) => ({
+        const mappedProjects = projectArr.map((p: { id?: string; name?: string; client?: string }) => ({
           id: p.id || "",
           name: p.name || "",
           client: p.client || "",
-        })));
+        }));
+        setProjectList(mappedProjects);
+        const projectClientNames = [...new Set(mappedProjects.map((p: { client: string }) => p.client).filter(Boolean))];
+        setClientList([...new Set([...clientNames, ...projectClientNames])]);
         
         
         const settings = settingsRes?.data;
@@ -299,17 +302,23 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
               <Select
                 value={projectName}
                 onValueChange={setProjectName}
-                disabled={!selectedClient}
               >
                 <SelectTrigger id="project" className="mt-1.5">
-                  <SelectValue placeholder={selectedClient ? "Select project" : "Select client first"} />
+                  <SelectValue placeholder="Select project" />
                 </SelectTrigger>
                 <SelectContent>
-                  {projectList
-                    .filter((p) => p.client === selectedClient)
-                    .map((p) => (
-                      <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
-                    ))}
+                  {selectedClient
+                    ? projectList.filter((p) => p.client === selectedClient).map((p) => (
+                        <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+                      ))
+                    : projectList.map((p) => (
+                        <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
+                      ))}
+                  {projectList.length === 0 && (
+                    <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                      No projects available
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>

@@ -39,7 +39,7 @@ const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-600",
 };
 
-const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
+const statusGroups = ["todo", "in_progress", "review", "done", "postponed", "cancelled"];
 
 export default function UpcomingTasksInteractive({ initialTasks }: { initialTasks: UpcomingTask[] }) {
   const [tasks, setTasks] = useState<UpcomingTask[]>(initialTasks);
@@ -210,6 +210,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
             <TaskDetailedView
               task={selectedTask}
               onEdit={(t) => { setViewOpen(false); setSelectedTask(t as UpcomingTask); setEditOpen(true); }}
+              onClose={() => setViewOpen(false)}
             />
           )}
         </DialogContent>

@@ -58,9 +58,17 @@ export default function ApprovalsInteractive({ initialTasks }: ApprovalsInteract
     setActionError("");
     setActionSubmitting(true);
 
-    const body = actionType === "approve"
-      ? { status: "done", approvalNote: actionNote || null }
-      : { status: "cancelled", rejectionReason: actionNote };
+    let body: any = {};
+    if (actionTask.status === "postponed") {
+      body = actionType === "approve"
+        ? { status: "postponed", approvalNote: actionNote || "Approved postponement" }
+        : { status: "in_progress", rejectionReason: actionNote };
+    } else {
+      // Default for "review"
+      body = actionType === "approve"
+        ? { status: "done", approvalNote: actionNote || null }
+        : { status: "cancelled", rejectionReason: actionNote };
+    }
 
     try {
       const res = await fetch(`/api/tasks/${actionTask._id}`, {

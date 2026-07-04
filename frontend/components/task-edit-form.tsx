@@ -35,6 +35,7 @@ const statusOptions = [
   { value: "in_progress", label: "In Progress", color: "bg-red-500" },
   { value: "review", label: "Review", color: "bg-red-500" },
   { value: "done", label: "Done", color: "bg-red-500" },
+  { value: "postponed", label: "Postponed", color: "bg-orange-500" },
   { value: "cancelled", label: "Cancelled", color: "bg-red-500" },
 ];
 

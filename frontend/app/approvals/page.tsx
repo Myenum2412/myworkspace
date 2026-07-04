@@ -18,7 +18,7 @@ export default async function ApprovalsPage() {
   }
 
   const raw = await db.collection(collections.tasks)
-    .find({ orgId, status: "review" })
+    .find({ orgId, status: { $in: ["review", "postponed"] }, approvedBy: null, rejectedBy: null })
     .sort({ createdAt: -1 })
     .toArray();
 

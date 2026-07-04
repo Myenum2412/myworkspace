@@ -261,6 +261,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
             <TaskDetailedView
               task={selectedTask}
               onEdit={(t) => { setViewOpen(false); setSelectedTask(t as unknown as UiTask); setEditOpen(true); }}
+              onClose={() => setViewOpen(false)}
             />
           )}
         </DialogContent>

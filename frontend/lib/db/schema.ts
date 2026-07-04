@@ -30,6 +30,7 @@ export const collections = {
   counters: "counters",
   aiConversations: "ai_conversations",
   aiMessages: "ai_messages",
+  taskComments: "task_comments",
   workflows: "workflows",
   workflowVersions: "workflow_versions",
   workflowExecutions: "workflow_executions",

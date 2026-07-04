@@ -32,22 +32,8 @@ export default async function StaffTasksPage() {
   let tasks: Task[] = [];
 
   if (orgId) {
-    const userId = session.user.id;
-
-    // Staff scope: only show tasks assigned to the user or their teams
-    // (mirrors backend /api/tasks?scope=staff logic)
-    const userTeams = (await db
-      .collection(collections.teamMembers)
-      .find({ userId })
-      .toArray()) as unknown as { teamId: string }[];
-    const teamIds = userTeams.map((t) => t.teamId);
-
-    const orConditions: Record<string, unknown>[] = [{ assigneeId: userId }];
-    if (teamIds.length > 0) {
-      orConditions.push({ teamId: { $in: teamIds } });
-    }
-
-    const match: Record<string, unknown> = { orgId, $or: orConditions };
+    // Show all tasks for the org
+    const match: Record<string, unknown> = { orgId };
 
     const pipeline: Record<string, unknown>[] = [
       { $match: match },
@@ -57,7 +43,6 @@ export default async function StaffTasksPage() {
           localField: "assigneeId",
           foreignField: "id",
           as: "assignee",
-          pipeline: [{ $project: { _id: 1, name: 1, email: 1, image: 1 } }],
         },
       },
       { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
@@ -67,7 +52,6 @@ export default async function StaffTasksPage() {
           localField: "creatorId",
           foreignField: "id",
           as: "creator",
-          pipeline: [{ $project: { _id: 1, name: 1, email: 1, image: 1 } }],
         },
       },
       { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
@@ -119,7 +103,7 @@ export default async function StaffTasksPage() {
 
   return (
     <Suspense fallback={<div className="flex items-center justify-center py-12"><div className="text-sm text-muted-foreground">Loading tasks...</div></div>}>
-      <TasksInteractive tasks={tasks} />
+      <TasksInteractive tasks={tasks} sessionUserId={session?.user?.id} />
     </Suspense>
   );
 }

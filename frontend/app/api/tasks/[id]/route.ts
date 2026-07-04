@@ -27,7 +27,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Status is required" }, { status: 400 });
   }
 
-  const validStatuses = ["todo", "in_progress", "review", "done", "cancelled"];
+  const validStatuses = ["todo", "in_progress", "review", "done", "cancelled", "postponed"];
   if (!validStatuses.includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
@@ -61,22 +61,26 @@ export async function PATCH(
       updatedAt: new Date(),
     };
 
-    if (status === "done") {
-      updateFields.approvedBy = session.user.id;
-      updateFields.approvedAt = new Date();
-      updateFields.approvalNote = approvalNote || null;
-      updateFields.rejectedBy = null;
-      updateFields.rejectedAt = null;
-      updateFields.rejectionReason = null;
+    if (status === "done" || (status === "postponed" && approvalNote !== undefined)) {
+      if (status === "done" || approvalNote) {
+        updateFields.approvedBy = session.user.id;
+        updateFields.approvedAt = new Date();
+        updateFields.approvalNote = approvalNote || null;
+        updateFields.rejectedBy = null;
+        updateFields.rejectedAt = null;
+        updateFields.rejectionReason = null;
+      }
     }
 
-    if (status === "cancelled") {
-      updateFields.rejectedBy = session.user.id;
-      updateFields.rejectedAt = new Date();
-      updateFields.rejectionReason = rejectionReason || null;
-      updateFields.approvedBy = null;
-      updateFields.approvedAt = null;
-      updateFields.approvalNote = null;
+    if (status === "cancelled" || (status === "postponed" && rejectionReason !== undefined)) {
+      if (status === "cancelled" || rejectionReason) {
+        updateFields.rejectedBy = session.user.id;
+        updateFields.rejectedAt = new Date();
+        updateFields.rejectionReason = rejectionReason || null;
+        updateFields.approvedBy = null;
+        updateFields.approvedAt = null;
+        updateFields.approvalNote = null;
+      }
     }
 
     const result = await db.collection(collections.tasks).findOneAndUpdate(

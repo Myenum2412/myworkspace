@@ -12,18 +12,18 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CalendarIcon, Search } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { usePathname } from "next/navigation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useUserStatus } from "@/hooks/use-user-status";
 import { SessionTracker } from "@/components/session-tracker";
 import { GlobalSearch } from "@/components/search/global-search";
+import { StaffStatusForm } from "@/components/staff-status-form";
 import { Fragment, useEffect, useState } from "react";
 import { getAppContext, type AppContextType } from "@/lib/app-context";
 
@@ -53,11 +53,34 @@ export function Header({ context }: { context?: AppContextType }) {
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
+    available: "bg-green-500",
     online: "bg-green-500",
+    busy: "bg-red-500",
+    break: "bg-amber-500",
+    meeting: "bg-purple-500",
     offline: "bg-gray-400",
-    break: "bg-yellow-500",
+    remote: "bg-blue-500",
   };
+
+  const statusLabels: Record<string, string> = {
+    available: "Available",
+    online: "Available",
+    busy: "Busy",
+    break: "On Break",
+    meeting: "In Meeting",
+    offline: "Offline",
+    remote: "Remote",
+  };
+
+  function handleStatusUpdateFromForm(newStatus: string) {
+    const wsStatus = newStatus === "available" ? "online" : newStatus === "remote" || newStatus === "busy" || newStatus === "meeting" ? "online" : newStatus;
+    if (["online", "offline", "break"].includes(wsStatus)) {
+      updateStatus(wsStatus as "online" | "offline" | "break");
+    } else {
+      updateStatus("online");
+    }
+  }
 
   const contextLabel = CONTEXT_LABELS[appContext];
 
@@ -139,35 +162,30 @@ export function Header({ context }: { context?: AppContextType }) {
 
         <SessionTracker />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <Popover>
+          <PopoverTrigger asChild>
             <Badge
               variant="secondary"
-              className="gap-2 w-24 h-9 justify-start px-3 text-sm font-normal cursor-pointer hover:bg-muted transition-colors"
+              className="gap-2 min-w-[100px] h-9 justify-start px-3 text-sm font-normal cursor-pointer hover:bg-muted transition-colors"
             >
               <span className="relative flex size-2">
                 {status === "online" && (
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
                 )}
                 <span
-                  className={`relative inline-flex size-2 rounded-full ${statusColors[status]}`}
+                  className={`relative inline-flex size-2 rounded-full ${statusColors[status] || "bg-gray-400"}`}
                 />
               </span>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {statusLabels[status] || status.charAt(0).toUpperCase() + status.slice(1)}
             </Badge>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => updateStatus("online")}>
-              <span className="flex size-2 rounded-full bg-green-500 mr-2" /> Online
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => updateStatus("break")}>
-              <span className="flex size-2 rounded-full bg-yellow-500 mr-2" /> Break
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => updateStatus("offline")}>
-              <span className="flex size-2 rounded-full bg-gray-400 mr-2" /> Offline
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </PopoverTrigger>
+          <PopoverContent align="end" sideOffset={8} className="w-[320px] p-0">
+            <StaffStatusForm
+              userId={session?.user?.id}
+              onStatusUpdate={handleStatusUpdateFromForm}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
     </header>
   );

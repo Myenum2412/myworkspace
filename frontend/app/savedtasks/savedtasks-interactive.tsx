@@ -39,7 +39,7 @@ const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-600",
 };
 
-const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
+const statusGroups = ["todo", "in_progress", "review", "done", "postponed", "cancelled"];
 
 export default function SavedTasksInteractive({ initialTasks }: { initialTasks: SavedTask[] }) {
   const [tasks, setTasks] = useState<SavedTask[]>(initialTasks);
@@ -208,6 +208,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
             <TaskDetailedView
               task={selectedTask}
               onEdit={(t) => { setViewOpen(false); setSelectedTask(t as SavedTask); setEditOpen(true); }}
+              onClose={() => setViewOpen(false)}
             />
           )}
         </DialogContent>

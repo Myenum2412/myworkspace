@@ -45,17 +45,30 @@ export default async function TeamsPage() {
         {
           $lookup: {
             from: "teammembers",
-            localField: "_id",
-            foreignField: "teamId",
+            let: { teamObjId: "$_id" },
+            pipeline: [
+              { $match: { $expr: { $eq: ["$teamId", { $toString: "$$teamObjId" }] } } },
+            ],
             as: "members",
+          },
+        },
+        {
+          $addFields: {
+            leadIds: {
+              $filter: {
+                input: "$members",
+                as: "m",
+                cond: { $eq: ["$$m.role", "lead"] },
+              },
+            },
           },
         },
         {
           $lookup: {
             from: "users",
-            let: { memberUserIds: "$members.userId" },
+            let: { leadUserIds: "$leadIds.userId" },
             pipeline: [
-              { $match: { $expr: { $and: [{ $in: ["$id", "$$memberUserIds"] }, { $eq: ["$role", "lead"] }] } } },
+              { $match: { $expr: { $in: ["$id", "$$leadUserIds"] } } },
               { $project: { name: 1, email: 1, image: 1 } },
             ],
             as: "leadUsers",

@@ -10,6 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   ListTodo, CheckCircle2, Clock, AlertCircle, Users,
   FolderKanbanIcon, BriefcaseIcon, Building2Icon, HardDriveIcon,
+  MessageSquareReply,
 } from "lucide-react";
 import { ProfitLossChart } from "@/components/dashboard/profit-loss-chart";
 import type { ProfitLossRow } from "@/components/dashboard/profit-loss-chart";
@@ -86,12 +87,23 @@ type ActivityItem = {
   createdAt: string;
 };
 
+type RecentComment = {
+  _id: string;
+  content: string;
+  taskTitle: string;
+  taskId: string;
+  senderName: string;
+  senderAvatar: string;
+  createdAt: string;
+};
+
 type DashboardData = {
   totalTasks: number; completedTasks: number; inProgressTasks: number; overdueTasks: number;
   activeMembers: number; recentActivity: number; totalProjects: number; activeProjects: number;
   totalClients: number; totalTeams: number;
   tasks: Task[]; projects: Project[]; clients: Client[]; activities: ActivityItem[]; members: Member[];
   priorityBreakdown: { name: string; value: number }[];
+  recentComments: RecentComment[];
 };
 
 const getCachedDashboardData = unstable_cache(
@@ -107,6 +119,7 @@ const getCachedDashboardData = unstable_cache(
       priorityDocs,
       taskDocs, projDocs, clientDocs,
       activityDocs,
+      commentDocs,
     ] = await Promise.all([
       db.collection(collections.tasks).countDocuments({ orgId }),
       db.collection(collections.tasks).countDocuments({ orgId, status: "done" }),
@@ -140,6 +153,31 @@ const getCachedDashboardData = unstable_cache(
       db.collection(collections.projects).find({ orgId }).sort({ createdAt: -1 }).limit(10).toArray(),
       db.collection(collections.clients).find({ orgId }).sort({ createdAt: -1 }).limit(5).toArray(),
       db.collection(collections.activityLogs).find({ orgId }).sort({ createdAt: -1 }).limit(20).toArray(),
+      db.collection(collections.taskComments).aggregate([
+        { $match: { orgId } },
+        { $sort: { createdAt: -1 } },
+        { $limit: 15 },
+        {
+          $lookup: {
+            from: "tasks",
+            localField: "taskId",
+            foreignField: "id",
+            as: "task",
+            pipeline: [{ $project: { _id: 0, id: 1, title: 1 } }],
+          },
+        },
+        { $unwind: { path: "$task", preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "senderId",
+            foreignField: "id",
+            as: "sender",
+            pipeline: [{ $project: { _id: 0, name: 1, image: 1 } }],
+          },
+        },
+        { $unwind: { path: "$sender", preserveNullAndEmptyArrays: true } },
+      ]).toArray(),
     ]);
 
     const tasks: Task[] = (taskDocs as unknown as Record<string, unknown>[]).map((t) => {
@@ -196,6 +234,20 @@ const getCachedDashboardData = unstable_cache(
           { _id: "a8", action: "task.created", description: "Sprint planning meeting notes added", createdAt: new Date(Date.now() - 518400000).toISOString() },
         ];
 
+    const recentComments: RecentComment[] = (commentDocs as unknown as Record<string, unknown>[]).map((c) => {
+      const task = (c.task as Record<string, unknown> | null) || null;
+      const sender = (c.sender as Record<string, unknown> | null) || null;
+      return {
+        _id: (c._id as { toString: () => string }).toString(),
+        content: (c.content as string) || "",
+        taskTitle: (task?.title as string) || "Unknown task",
+        taskId: String(task?.id || c.taskId || ""),
+        senderName: (sender?.name as string) || "Unknown",
+        senderAvatar: (sender?.image as string) || "",
+        createdAt: c.createdAt ? new Date(c.createdAt as string).toISOString() : "",
+      };
+    });
+
     const orgMemberDocs = await db.collection(collections.orgMembers).find({ orgId }).toArray();
     const userIds = (orgMemberDocs as unknown as Record<string, unknown>[]).map((m) => m.userId as string).filter(Boolean);
     let members: Member[] = [];
@@ -219,7 +271,7 @@ const getCachedDashboardData = unstable_cache(
       activeMembers: memberCount, recentActivity: activityCount,
       totalProjects: projCount, activeProjects: activeProjCount,
       totalClients: clientCount, totalTeams: teamCount,
-      tasks, projects, clients, activities, members, priorityBreakdown
+      tasks, projects, clients, activities, members, priorityBreakdown, recentComments
     };
   },
   ["dashboard-data"],
@@ -243,6 +295,7 @@ export default async function DashboardPage() {
     totalProjects = 0, activeProjects = 0,
     totalClients = 0, totalTeams = 0,
     tasks = [], projects = [], clients = [], activities = [], members = [], priorityBreakdown = [],
+    recentComments = [],
   } = dashboardData || {};
 
   let profitLossData: ProfitLossRow[] = [];
@@ -290,47 +343,32 @@ export default async function DashboardPage() {
         <Card className="flex flex-col h-[320px]">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <ListTodo className="size-4" /> Recent Tasks
+              <MessageSquareReply className="size-4" /> Recently wanted to reply
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto min-h-0">
-            {tasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No tasks yet.</p>
+          <CardContent className="flex-1 overflow-y-auto min-h-0 space-y-3">
+            {recentComments.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No comments yet.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left border-collapse">
-                  <thead className="bg-[#f3f4f6]">
-                    <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
-                      <th className="px-4 py-3.5 font-semibold">Task</th>
-                      <th className="px-4 py-3.5 font-semibold">Assignee</th>
-                      <th className="px-4 py-3.5 font-semibold">Status</th>
-                      <th className="px-4 py-3.5 font-semibold">Priority</th>
-                      <th className="px-4 py-3.5 font-semibold">Due</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tasks.map((t) => (
-                      <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
-                        <td className="px-4 py-3 text-sm font-medium max-w-[200px] truncate">{t.title}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{t.assigneeName || "—"}</td>
-                        <td className="px-4 py-3">
-                          <Badge className={(taskStatusStyles[t.status] || "") + ""}>
-                            {t.status.replace(/_/g, " ")}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge className={(priorityStyles[t.priority] || "") + ""}>
-                            {t.priority}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              recentComments.map((c) => (
+                <div key={c._id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/60 transition-colors">
+                  <Avatar className="size-8 mt-0.5 shrink-0">
+                    <AvatarImage src={c.senderAvatar} alt={c.senderName} />
+                    <AvatarFallback>{getInitials(c.senderName)}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-sm font-semibold">{c.senderName}</span>
+                      <span className="text-xs text-muted-foreground">on</span>
+                      <span className="text-sm font-medium text-primary truncate">{c.taskTitle}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{c.content}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(c.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))
             )}
           </CardContent>
         </Card>

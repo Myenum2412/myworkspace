@@ -86,6 +86,24 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
   // for Mongoose-backed data (clients, projects, tasks).
   const member = oidMember || stringMember;
   if (!member) {
+    // Fallback to NextAuth org_members collection — users created via frontend
+    // sign-up may not have a matching Mongoose orgmembers entry.
+    try {
+      const db = mongoose.connection.db;
+      if (db) {
+        const nextAuthFilter: Record<string, unknown> = {
+          userId: { $in: [...new Set([resolvedId, userId].filter(Boolean))] },
+        };
+        if (orgId) nextAuthFilter.orgId = orgId;
+        const nextAuthMember = (await db.collection("org_members").findOne(nextAuthFilter)) as Record<string, unknown> | null;
+        if (nextAuthMember) {
+          const orgIdVal = typeof nextAuthMember.orgId === "string" ? nextAuthMember.orgId : String(nextAuthMember.orgId);
+          cacheManager.set(cacheKey, orgIdVal, ORG_CACHE_TTL);
+          return orgIdVal;
+        }
+      }
+    } catch {}
+
     // No DB row, but token claims an org → keep the session usable instead of
     // hard-failing. Caller can still enforce stricter checks where needed.
     if (tokenOrgId && !orgId) return tokenOrgId;

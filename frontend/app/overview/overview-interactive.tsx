@@ -329,6 +329,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             <TaskDetailedView
               task={selectedTask}
               onEdit={(t) => { setViewOpen(false); setSelectedTask(t); setEditOpen(true); }}
+              onClose={() => setViewOpen(false)}
             />
           )}
         </DialogContent>
