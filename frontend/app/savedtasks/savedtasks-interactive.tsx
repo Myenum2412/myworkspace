@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskEditForm } from "@/components/task-edit-form";
 import {
   Dialog,
   DialogContent,
@@ -46,7 +45,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
   const [view, setView] = useState<"kanban" | "table">("kanban");
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<SavedTask | null>(null);
 
   const grouped = useMemo(
@@ -148,7 +147,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
               <TaskDataTable
                 data={tasks}
                 onView={(t) => { setSelectedTask(t as unknown as SavedTask); setViewOpen(true); }}
-                onEdit={(t) => { setSelectedTask(t as unknown as SavedTask); setEditOpen(true); }}
+                onEdit={(t) => { setSelectedTask(t as unknown as SavedTask); setViewOpen(true); setEditMode(true); }}
                 searchPlaceholder="Search saved tasks..."
                 emptyMessage="No saved tasks."
                 label="task"
@@ -202,29 +201,16 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
         )}
       </main>
 
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setEditMode(false); setSelectedTask(null); } }}>
         <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
-              onEdit={(t) => { setViewOpen(false); setSelectedTask(t as SavedTask); setEditOpen(true); }}
-              onClose={() => setViewOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
-          {selectedTask && (
-            <TaskEditForm
-              task={selectedTask}
-              onSave={(updated) => {
+              editable
+              onTaskUpdate={(updated) => {
                 setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as SavedTask) : t));
-                setEditOpen(false);
-                setSelectedTask(null);
               }}
-              onCancel={() => setEditOpen(false)}
+              onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
             />
           )}
         </DialogContent>

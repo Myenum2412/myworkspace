@@ -17,15 +17,44 @@ async function resolveOrg(orgId: string) {
   return Organization.findOne({ $or: filter });
 }
 
-async function requireAdmin(req: AuthRequest, orgId: string) {
+async function findOrgMembership(orgId: string, userId: string): Promise<Record<string, any> | null> {
   const { default: mongoose } = await import("mongoose");
   const { OrgMember } = await import("../lib/db/models/OrgMember.js");
 
-  const adminFilter: Record<string, any>[] = [{ orgId, userId: req.user!.userId }];
-  if (mongoose.Types.ObjectId.isValid(req.user!.userId)) {
-    adminFilter.push({ orgId, userId: new mongoose.Types.ObjectId(req.user!.userId) });
+  const filters: Record<string, any>[] = [{ orgId, userId }];
+  if (mongoose.Types.ObjectId.isValid(userId)) {
+    filters.push({ orgId, userId: new mongoose.Types.ObjectId(userId) });
   }
-  const membership = await OrgMember.findOne({ $or: adminFilter }).lean();
+  let membership = await OrgMember.findOne({ $or: filters }).lean();
+
+  if (membership) return membership;
+
+  // Fallback to NextAuth org_members collection — users created via frontend
+  // sign-up have their membership in org_members, not in Mongoose's orgmembers.
+  const db = mongoose.connection.db;
+  if (db) {
+    const nextAuthFilter: Record<string, unknown> = {
+      orgId,
+      userId: { $in: [userId] },
+    };
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      (nextAuthFilter.userId as any[]).push(new mongoose.Types.ObjectId(userId));
+    }
+    const nextAuthMember = await db.collection("org_members").findOne(nextAuthFilter) as Record<string, unknown> | null;
+    if (nextAuthMember) {
+      membership = {
+        orgId: nextAuthMember.orgId as string,
+        userId: nextAuthMember.userId as string,
+        role: nextAuthMember.role as string,
+      } as any;
+    }
+  }
+
+  return membership;
+}
+
+async function requireAdmin(req: AuthRequest, orgId: string) {
+  const membership = await findOrgMembership(orgId, req.user!.userId);
   if (!membership || membership.role !== "admin") {
     throw new AppError(403, "Only organization admins can manage billing");
   }
@@ -221,9 +250,7 @@ router.post("/portal-session", async (req: AuthRequest, res: Response) => {
 router.get("/subscription", async (req: AuthRequest, res: Response) => {
   const orgId = parseOrgId((req.query.orgId as string) || req.user!.orgId);
 
-  const { default: mongoose } = await import("mongoose");
-  const { OrgMember } = await import("../lib/db/models/OrgMember.js");
-  const membership = await OrgMember.findOne({ orgId, userId: req.user!.userId }).lean();
+  const membership = await findOrgMembership(orgId, req.user!.userId);
   if (!membership) throw new AppError(403, "Not a member of this organization");
 
   const org = await resolveOrg(orgId);
@@ -257,9 +284,7 @@ router.get("/subscription", async (req: AuthRequest, res: Response) => {
 router.get("/invoices", async (req: AuthRequest, res: Response) => {
   const orgId = parseOrgId((req.query.orgId as string) || req.user!.orgId);
 
-  const { default: mongoose } = await import("mongoose");
-  const { OrgMember } = await import("../lib/db/models/OrgMember.js");
-  const membership = await OrgMember.findOne({ orgId, userId: req.user!.userId }).lean();
+  const membership = await findOrgMembership(orgId, req.user!.userId);
   if (!membership) throw new AppError(403, "Not a member of this organization");
 
   const org = await resolveOrg(orgId);

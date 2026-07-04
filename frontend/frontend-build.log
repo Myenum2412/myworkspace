@@ -8,15 +8,15 @@
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 10.8s
+✓ Compiled successfully in 13.9s
   Running TypeScript ...
-  Finished TypeScript in 14.1s ...
+  Finished TypeScript in 11.8s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/69) ...
-  Generating static pages using 11 workers (17/69) 
-  Generating static pages using 11 workers (34/69) 
-  Generating static pages using 11 workers (51/69) 
-✓ Generating static pages using 11 workers (69/69) in 583ms
+  Generating static pages using 11 workers (0/72) ...
+  Generating static pages using 11 workers (18/72) 
+  Generating static pages using 11 workers (36/72) 
+  Generating static pages using 11 workers (54/72) 
+✓ Generating static pages using 11 workers (72/72) in 473ms
   Finalizing page optimization ...
 
 Route (app)
@@ -48,6 +48,7 @@ Route (app)
 ├ ƒ /api/billing/portal-session
 ├ ƒ /api/clients
 ├ ƒ /api/clients/[id]/workspace
+├ ƒ /api/dashboard/profit-loss
 ├ ƒ /api/employees
 ├ ƒ /api/employees/[id]
 ├ ƒ /api/files
@@ -64,21 +65,29 @@ Route (app)
 ├ ƒ /api/files/stats
 ├ ƒ /api/folders
 ├ ƒ /api/folders/[id]
+├ ƒ /api/organizations/[id]
+├ ƒ /api/projects-list
 ├ ƒ /api/search
 ├ ƒ /api/shares/internal
 ├ ƒ /api/shares/links/[token]
 ├ ƒ /api/shares/links/[token]/download
 ├ ƒ /api/shares/links/[token]/verify
 ├ ƒ /api/tasks/[id]
+├ ƒ /api/tasks/[id]/comments
+├ ƒ /api/tasks/[id]/comments/[commentId]
+├ ƒ /api/tasks/[id]/comments/read
 ├ ƒ /api/time-entries
 ├ ƒ /api/time-entries/[id]
 ├ ƒ /api/time-entries/summary
 ├ ƒ /api/user/banner
 ├ ƒ /api/user/profile
 ├ ƒ /api/user/profile-image
+├ ƒ /api/user/status
 ├ ƒ /approvals
 ├ ƒ /approvals/approved
 ├ ƒ /approvals/rejected
+├ ƒ /attendance
+├ ○ /attendance/reports
 ├ ○ /auth/not-found
 ├ ƒ /auth/role-redirect
 ├ ○ /automation
@@ -142,8 +151,6 @@ Route (app)
 ├ ƒ /staffs
 ├ ƒ /staffs/activity
 ├ ƒ /staffs/add
-├ ƒ /staffs/attendance
-├ ƒ /staffs/attendance/reports
 ├ ƒ /staffs/files
 ├ ƒ /staffs/list
 ├ ƒ /staffs/performance

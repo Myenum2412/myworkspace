@@ -19,7 +19,7 @@ export interface IFileAttachment extends Document {
   mimeType: string;
   size: number;
   storagePath: string;
-  storageProvider: "local" | "r2" | "s3" | "gcs" | "azure";
+  storageProvider: "local" | "s3" | "gcs" | "azure";
   category: FileCategory;
   description: string;
   tags: string[];
@@ -62,7 +62,7 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
     storagePath: { type: String, required: true },
     storageProvider: {
       type: String,
-      enum: ["local", "r2", "s3", "gcs", "azure"],
+      enum: ["local", "s3", "gcs", "azure"],
       default: "local",
     },
     category: {

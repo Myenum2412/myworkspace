@@ -68,7 +68,8 @@ export async function POST(request: NextRequest) {
     const adminId = session.user.id;
 
     const body = await request.json();
-    const { name, email, password } = body;
+    const { name, password } = body;
+    const email = (body.email || "").toLowerCase();
 
     if (!name || !email) {
       return NextResponse.json({ error: "Name and email are required" }, { status: 400 });

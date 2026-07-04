@@ -11,9 +11,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   try {
+    const cookie = req.headers.get("cookie") || "";
     const res = await apiFetch(apiUrl(`/api/organizations/${id}`), {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Cookie: cookie },
       body: JSON.stringify(body),
     });
     const data = await res.json();

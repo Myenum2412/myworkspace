@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
-import { getFileBuffer, isR2Configured } from "@/lib/storage";
+import { getFileBuffer, isS3Configured } from "@/lib/storage";
 import { validateOrgMembership } from "@/lib/org";
 import fs from "fs";
 import path from "path";
@@ -43,7 +43,7 @@ export async function GET(
 
     const mime = file.mimeType || "application/octet-stream";
 
-    if (isR2Configured()) {
+    if (isS3Configured()) {
       const buffer = await getFileBuffer(file.storagePath);
       if (!buffer) {
         return NextResponse.json({ error: "File not found in storage" }, { status: 404 });

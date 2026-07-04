@@ -84,7 +84,7 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
     id: fileId, orgId, folderId: folderId || null, clientId: clientId || null,
     uploaderId, createdBy: uploaderId, name, originalName,
     mimeType: actualMimeType, size, storagePath,
-    storageProvider: env.R2_ENDPOINT ? "r2" : "local",
+    storageProvider: env.S3_ENDPOINT ? "s3" : "local",
     category: fileCategory as any,
     checksum: sha, currentVersion: 1,
     description: description || "", tags: tags || [],

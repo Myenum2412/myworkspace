@@ -12,7 +12,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskEditForm } from "@/components/task-edit-form";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDataTable } from "@/components/task-data-table";
 import { toast } from "sonner";
@@ -51,7 +50,7 @@ const priorityStyles: Record<string, string> = {
 export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
   const [view, setView] = useState<"cards" | "table">("table");
   const [viewOpen, setViewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TeamTask | null>(null);
 
@@ -119,7 +118,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
               <TaskDataTable
                 data={localTasks}
                 onView={(t) => { setSelectedTask(t as TeamTask); setViewOpen(true); }}
-                onEdit={(t) => { setSelectedTask(t as TeamTask); setEditOpen(true); }}
+                onEdit={(t) => { setSelectedTask(t as TeamTask); setViewOpen(true); setEditMode(true); }}
                 onDelete={(t) => handleDelete(t as TeamTask)}
                 searchPlaceholder="Search team tasks..."
                 emptyMessage="No team tasks found."
@@ -169,29 +168,16 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
         )}
       </main>
 
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setEditMode(false); setSelectedTask(null); } }}>
         <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
-              onEdit={(t) => { setViewOpen(false); setSelectedTask(t as TeamTask); setEditOpen(true); }}
-              onClose={() => setViewOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
-          {selectedTask && (
-            <TaskEditForm
-              task={selectedTask}
-              onSave={(updated) => {
+              editable
+              onTaskUpdate={(updated) => {
                 setLocalTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as TeamTask) : t));
-                setEditOpen(false);
-                setSelectedTask(null);
               }}
-              onCancel={() => setEditOpen(false)}
+              onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
             />
           )}
         </DialogContent>

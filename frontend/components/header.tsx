@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon, Search } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
+import { LanguageSelect } from "@/components/language-select";
 import { usePathname } from "next/navigation";
 import { useUserStatus } from "@/hooks/use-user-status";
 import { SessionTracker } from "@/components/session-tracker";
@@ -159,6 +160,8 @@ export function Header({ context }: { context?: AppContextType }) {
         <Separator orientation="vertical" className="hidden md:block h-6" />
 
         <NotificationBell />
+
+        <LanguageSelect />
 
         <SessionTracker />
 

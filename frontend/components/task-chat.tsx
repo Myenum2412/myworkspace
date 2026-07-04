@@ -128,6 +128,29 @@ export function TaskChat({
     
     setIsUploading(true);
     const text = input.trim();
+    
+    if (editingId) {
+      try {
+        const res = await fetch(`/api/tasks/${taskId}/comments/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ content: text }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setComments((prev) => prev.map(c => c.id === editingId ? { ...c, content: data.content } : c));
+          setEditingId(null);
+          setInput("");
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsUploading(false);
+      }
+      return;
+    }
+
     setInput("");
     
     // Simulate upload delay for attachments
@@ -176,7 +199,6 @@ export function TaskChat({
   }
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState("");
 
   async function deleteComment(id: string) {
     if (!confirm("Delete this message?")) return;
@@ -193,24 +215,7 @@ export function TaskChat({
     }
   }
 
-  async function saveEdit(id: string) {
-    if (!editContent.trim()) return;
-    try {
-      const res = await fetch(`/api/tasks/${taskId}/comments/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ content: editContent.trim() }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setComments((prev) => prev.map(c => c.id === id ? { ...c, content: data.content } : c));
-        setEditingId(null);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
+
 
   return (
     <div 
@@ -315,21 +320,6 @@ export function TaskChat({
                           ? "bg-[#F4F4F5] text-gray-900 border border-gray-200 rounded-tr-sm" 
                           : "bg-white text-gray-900 rounded-tl-sm border border-gray-200"
                       }`}>
-                        {editingId === c.id ? (
-                          <div className="flex flex-col gap-2 pb-1 pr-1 min-w-[200px]">
-                            <textarea
-                              value={editContent}
-                              onChange={(e) => setEditContent(e.target.value)}
-                              className="w-full min-h-[60px] resize-none rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
-                              autoFocus
-                            />
-                            <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)} className="h-6 px-2 text-xs">Cancel</Button>
-                              <Button size="sm" onClick={() => saveEdit(c.id)} className="h-6 px-3 text-xs bg-gray-900 hover:bg-gray-800 text-white">Save</Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
                             <div className="pb-3 pr-4">
                               {c.content}
                             </div>
@@ -339,8 +329,6 @@ export function TaskChat({
                               </span>
                               {isMe && <CheckCheckIcon className={`size-3 ${c.seenBy?.some(id => id !== sessionUserId) ? "text-blue-500" : "text-gray-400"}`} />}
                             </div>
-                          </>
-                        )}
                       </div>
                     )}
 
@@ -351,7 +339,7 @@ export function TaskChat({
                       </Button>
                       {isMe && (
                         <>
-                          <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900 h-6 w-6" onClick={() => { setEditingId(c.id); setEditContent(c.content); }}>
+                          <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900 h-6 w-6" onClick={() => { setEditingId(c.id); setInput(c.content); }}>
                             <PencilIcon className="size-3.5" />
                           </Button>
                           <Button variant="ghost" size="icon" className="size-6 text-red-500 hover:text-red-600 hover:bg-red-50 h-6 w-6" onClick={() => deleteComment(c.id)}>
@@ -409,9 +397,23 @@ export function TaskChat({
           </div>
         )}
 
+        {editingId && (
+          <div className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-t-xl border-x border-t border-blue-100 text-sm mb-[-1px]">
+            <span className="text-blue-700 font-medium flex items-center gap-2">
+              <PencilIcon className="size-3.5" />
+              Editing message
+            </span>
+            <button 
+              onClick={() => { setEditingId(null); setInput(""); }} 
+              className="text-blue-600 hover:text-blue-800"
+            >
+              <XIcon className="size-4" />
+            </button>
+          </div>
+        )}
         <form
           onSubmit={(e) => { e.preventDefault(); send(); }}
-          className="flex flex-col gap-2 bg-white rounded-xl border border-gray-200 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all p-1"
+          className={`flex flex-col gap-2 bg-white border border-gray-200 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all p-1 ${editingId ? 'rounded-b-xl rounded-t-none' : 'rounded-xl'}`}
         >
           <textarea
             value={input}
@@ -459,7 +461,7 @@ export function TaskChat({
               ) : (
                 <SendIcon className="size-4 mr-1.5" />
               )}
-              Send
+              {editingId ? "Save" : "Send"}
             </Button>
           </div>
         </form>

@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { jwtDecrypt, base64url, calculateJwkThumbprint } from "jose";
 import { hkdf } from "@panva/hkdf";
 import { env } from "../config/env.js";
+import mongoose from "mongoose";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
 // Per-request auth logging is gated behind AUTH_DEBUG=1. The JWE/cookie path
@@ -178,6 +179,14 @@ export async function resolveStaleUserId(req) {
     }
     // Fast path: userId has a valid membership
     const member = await OrgMember.findOne({ userId }).lean();
+    // Fallback to NextAuth org_members collection
+    if (!member && mongoose.connection.db) {
+        const nextAuthMember = await mongoose.connection.db.collection("org_members").findOne({ userId }).catch(() => null);
+        if (nextAuthMember) {
+            resolveCacheSet(userId, true);
+            return;
+        }
+    }
     if (member) {
         resolveCacheSet(userId, true);
         return;

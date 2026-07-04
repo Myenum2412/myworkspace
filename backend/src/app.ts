@@ -51,7 +51,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'strict-dynamic'", ...(isProd ? [] : ["'unsafe-inline'", "'unsafe-eval'"])],
       styleSrc: ["'self'", "https://fonts.googleapis.com", ...(isProd ? [] : ["'unsafe-inline'"])],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-      imgSrc: ["'self'", "data:", "blob:", env.APP_URL, env.S3_ENDPOINT, env.R2_ENDPOINT].filter(Boolean),
+      imgSrc: ["'self'", "data:", "blob:", env.APP_URL, env.S3_ENDPOINT].filter(Boolean),
       connectSrc: ["'self'", env.APP_URL, env.BASE_URL_WS].filter(Boolean),
       objectSrc: ["'none'"],
       mediaSrc: ["'self'", "blob:", "data:"],

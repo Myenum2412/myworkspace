@@ -21,7 +21,14 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     throw new AppError(400, "Email and password are required");
   }
 
-  const clientUser = await ClientUser.findOne({ email });
+  const normalizedEmail = (email as string).toLowerCase();
+  const escapedEmail = normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  let clientUser = await ClientUser.findOne({ email: normalizedEmail });
+  if (!clientUser) {
+    clientUser = await ClientUser.findOne({
+      email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') }
+    });
+  }
   if (!clientUser) {
     throw new AppError(401, "Invalid email or password");
   }

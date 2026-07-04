@@ -10,9 +10,10 @@ export async function POST(req: Request) {
   }
 
   try {
+    const cookie = req.headers.get("cookie") || "";
     const res = await apiFetch(apiUrl("/api/billing/create-checkout-session"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Cookie: cookie },
       body: JSON.stringify(body),
     });
     const data = await res.json();

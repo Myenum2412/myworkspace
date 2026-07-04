@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskEditForm } from "@/components/task-edit-form";
-import type { ComponentProps } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +20,7 @@ import { Task, useRealtimeTasks } from "@/hooks/use-realtime-tasks";
 import { toast } from "sonner";
 import { getSocketIO } from "@/lib/socketio-client";
 
-type UiTask = ComponentProps<typeof TaskEditForm>["task"];
+type UiTask = Task;
 
 const priorityStyles: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
@@ -47,7 +45,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
   const [view, setView] = useState<"kanban" | "table">("table");
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
 
   // Seed React Query with the SSR payload so the realtime hook's fetcher
@@ -81,27 +79,8 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
     }, init);
   }, [myTasks]);
 
-  const handleSave = useCallback(async (updated: UiTask, selected: UiTask | null) => {
-    try {
-      const payload: Record<string, unknown> = { _id: updated._id };
-      if (updated.title !== selected?.title) payload.title = updated.title;
-      if (updated.description !== selected?.description) payload.description = updated.description;
-      if (updated.status !== selected?.status) payload.status = updated.status;
-      if (updated.priority !== selected?.priority) payload.priority = updated.priority;
-      if (updated.assigneeId !== selected?.assigneeId) payload.assigneeId = updated.assigneeId;
-      if (updated.dueDate !== selected?.dueDate) payload.dueDate = updated.dueDate;
-      const res = await fetch(`/api/tasks/${updated._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(payload) });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Save failed"));
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save task");
-      return;
-    }
+  const handleTaskUpdate = useCallback((updated: UiTask) => {
     setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as unknown as Task) : t));
-    setEditOpen(false);
-    setSelectedTask(null);
   }, [setTasks]);
 
   return (
@@ -183,8 +162,8 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
           <CardContent>
             <TaskDataTable
               data={myTasks}
-              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setEditOpen(true); }}
+              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
+              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(true); }}
               searchPlaceholder="Search my tasks..."
               emptyMessage="No tasks assigned to you."
               label="task"
@@ -239,25 +218,14 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
           </div>
         )}
 
-        <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+        <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
           <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
             {selectedTask && (
               <TaskDetailedView
                 task={selectedTask}
-                onEdit={(t) => { setViewOpen(false); setSelectedTask(t as unknown as UiTask); setEditOpen(true); }}
-                onClose={() => setViewOpen(false)}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
-            {selectedTask && (
-              <TaskEditForm
-                task={selectedTask}
-                onSave={(updated) => handleSave(updated, selectedTask)}
-                onCancel={() => setEditOpen(false)}
+                editable
+                onTaskUpdate={handleTaskUpdate}
+                onClose={() => { setViewOpen(false); setSelectedTask(null); }}
               />
             )}
           </DialogContent>

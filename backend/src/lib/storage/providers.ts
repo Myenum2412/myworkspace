@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 import { constants as fsConstants } from "fs";
 
-export type StorageProviderType = "local" | "r2" | "s3" | "gcs" | "azure";
+export type StorageProviderType = "local" | "s3" | "gcs" | "azure";
 
 export interface IStorageProvider {
   save(buffer: Buffer, key: string): Promise<void>;
@@ -141,17 +141,6 @@ let provider: IStorageProvider | null = null;
 
 export function getStorageProvider(): IStorageProvider {
   if (provider) return provider;
-
-  if (env.R2_ENDPOINT && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY) {
-    provider = new S3CompatibleProvider({
-      endpoint: env.R2_ENDPOINT,
-      bucket: env.R2_BUCKET_NAME,
-      accessKeyId: env.R2_ACCESS_KEY_ID,
-      secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-      region: "auto",
-    });
-    return provider;
-  }
 
   if (env.S3_ENDPOINT && env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY) {
     provider = new S3CompatibleProvider({

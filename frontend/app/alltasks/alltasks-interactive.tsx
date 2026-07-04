@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskEditForm } from "@/components/task-edit-form";
-import type { ComponentProps } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,10 +25,9 @@ import { perfLog, perfNow } from "@/lib/perf";
 
 const statusGroups = ["todo", "assigned", "in_progress", "review", "done", "cancelled"];
 
-// Local UI shape expected by the shared edit/detail components (they ship their
-// own non-exported Task type). We keep the hook's Task as the source of truth
-// for the list and coerce at the small boundary where these are rendered.
-type UiTask = ComponentProps<typeof TaskEditForm>["task"];
+// Local UI shape for the detailed view. We keep the hook's Task as the source
+// of truth for the list and coerce at the small boundary where these are rendered.
+type UiTask = Task;
 
 export type AllTasksProps = {
   /** SSR-fetched org tasks (assignee/creator already resolved server-side). */
@@ -51,7 +48,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
   const [view, setView] = useState<"kanban" | "table">("table");
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
 
   // Seed React Query with the SSR payload. The realtime hook specs the key
@@ -198,8 +195,8 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           <CardContent>
             <TaskDataTable
               data={tasks}
-              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setEditOpen(true); }}
+              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
+              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(true); }}
               onDelete={(t) => handleDelete(t as Task)}
               searchPlaceholder="Search all tasks..."
               emptyMessage="No tasks found."
@@ -255,47 +252,16 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </div>
         )}
 
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
         <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
-              onEdit={(t) => { setViewOpen(false); setSelectedTask(t as unknown as UiTask); setEditOpen(true); }}
-              onClose={() => setViewOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
-          {selectedTask && (
-            <TaskEditForm
-              task={selectedTask}
-              onSave={async (updated) => {
-                try {
-                  const payload: Record<string, unknown> = { _id: updated._id };
-                  if (updated.title !== selectedTask?.title) payload.title = updated.title;
-                  if (updated.description !== selectedTask?.description) payload.description = updated.description;
-                  if (updated.status !== selectedTask?.status) payload.status = updated.status;
-                  if (updated.priority !== selectedTask?.priority) payload.priority = updated.priority;
-                  if (updated.assigneeId !== selectedTask?.assigneeId) payload.assigneeId = updated.assigneeId;
-                  if (updated.dueDate !== selectedTask?.dueDate) payload.dueDate = updated.dueDate;
-                  const res = await fetch(`/api/tasks/${updated._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(payload) });
-                  if (!res.ok) {
-                    const d = await res.json().catch(() => ({}));
-                    throw new Error(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Save failed"));
-                  }
-                } catch (error) {
-                  const message = error instanceof Error ? error.message : "Failed to save task";
-                  toast.error(message);
-                  return;
-                }
+              editable
+              onTaskUpdate={(updated) => {
                 setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as unknown as Task) : t));
-                setEditOpen(false);
-                setSelectedTask(null);
               }}
-              onCancel={() => setEditOpen(false)}
+              onClose={() => { setViewOpen(false); setSelectedTask(null); }}
             />
           )}
         </DialogContent>

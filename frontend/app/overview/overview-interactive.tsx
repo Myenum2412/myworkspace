@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { PlusIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon, BookmarkIcon, CalendarClockIcon, ChartNoAxesCombinedIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,10 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskEditForm } from "@/components/task-edit-form";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EyeIcon, PencilIcon, Trash2Icon, MoreHorizontalIcon } from "lucide-react";
 import {
@@ -30,42 +27,13 @@ import {
   ActiveDot,
 } from "@/components/evilcharts/charts/radar-chart";
 import type { ChartConfig } from "@/components/evilcharts/ui/chart";
-
-export type Task = {
-  _id: string;
-  title: string;
-  description: string;
-  status: string;
-  priority: string;
-  dueDate: string | null;
-  assigneeId: string;
-  assigneeName: string;
-  assigneeAvatar: string;
-  creatorId: string;
-  creatorName: string;
-  createdAt: string;
-  isBookmarked?: boolean;
-};
+import { DataTable } from "@/components/data-table";
+import { columns as baseColumns, type Task } from "./columns";
 
 export interface OverviewInteractiveProps {
   tasks: Task[];
   currentUserId: string;
 }
-
-const statusStyles: Record<string, string> = {
-  todo: "bg-gray-200 text-gray-700",
-  in_progress: "bg-red-900 text-red-700",
-  review: "bg-gray-700 text-gray-700",
-  done: "bg-red-900 text-red-700",
-  cancelled: "bg-red-100 text-red-700",
-};
-
-const priorityStyles: Record<string, string> = {
-  low: "bg-gray-100 text-gray-600",
-  medium: "bg-gray-700 text-gray-700",
-  high: "bg-orange-100 text-orange-600",
-  urgent: "bg-red-100 text-red-600",
-};
 
 const statusInfo = [
   { key: "todo", label: "To Do", icon: ListTodoIcon, color: "bg-gray-1000" },
@@ -78,15 +46,15 @@ const statusInfo = [
 const priorityColors: Record<string, string> = {
   low: "bg-gray-100",
   medium: "bg-gray-200 text-gray-800",
-  high: "bg-orange-100",
-  urgent: "bg-red-100",
+  high: "bg-orange-500",
+  urgent: "bg-red-500",
 };
 
 export default function OverviewInteractive({ tasks: initialTasks, currentUserId }: OverviewInteractiveProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const total = tasks.length;
@@ -230,18 +198,18 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               <CardTitle className="text-sm">Priority Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-6">
                 {priorityDist.map((p) => (
-                  <div key={p.priority} className="flex items-center gap-3">
-                    <div className={`size-3 rounded-full ${p.color}`} />
+                  <div key={p.priority} className="flex items-center justify-center gap-4">
+                    <div className={`size-4 rounded-full ${p.color}`} />
                     <span className="text-sm capitalize w-16">{p.priority}</span>
-                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="w-full max-w-lg h-8 bg-muted rounded-full overflow-hidden">
                       <div
                         className={`h-full ${p.color} rounded-full`}
                         style={{ width: `${total > 0 ? (p.count / total) * 100 : 0}%` }}
                       />
                     </div>
-                    <span className="text-sm font-medium w-8 text-right">{p.count}</span>
+                    <span className="text-sm font-semibold w-8 text-right">{p.count}</span>
                   </div>
                 ))}
               </div>
@@ -256,96 +224,49 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             <CardTitle className="text-sm">Recent Tasks</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-              <table className="w-full text-sm text-left">
-                <thead className="sticky top-0 z-10">
-                  <tr className="bg-[#f3f4f6] text-gray-900 border-b">
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"><Checkbox /></th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-20">Task #</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Task</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Assigned To</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Delegated By</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Priority</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Due Date</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-16">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentTasks.length === 0 ? (
-                    <tr className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group">
-                      <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">No tasks yet</td>
-                    </tr>
-                  ) : (
-                    recentTasks.map((t, idx) => (
-                      <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group">
-                        <td className="px-4 py-3"><Checkbox /></td>
-                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">#{idx + 1}</td>
-                        <td className="px-4 py-3 font-medium">{t.title}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="size-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                              {t.assigneeAvatar ? (
-                                <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
-                              ) : (
-                                <span className="text-[10px] font-medium text-muted-foreground">
-                                  {(t.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-sm">{t.assigneeName || "—"}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3"><span className="text-sm">{t.creatorName || "—"}</span></td>
-                        <td className="px-4 py-3"><Badge className={statusStyles[t.status] || ""}>{t.status.replace(/_/g, " ")}</Badge></td>
-                        <td className="px-4 py-3"><Badge className={priorityStyles[t.priority] || ""}>{t.priority}</Badge></td>
-                        <td className="px-4 py-3 text-muted-foreground">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}</td>
-                        <td className="px-4 py-3">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => { setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => { setSelectedTask(t); setEditOpen(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive"><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              columns={baseColumns.map((col) => ({
+                ...col,
+                cell: col.id === "actions"
+                  ? ({ row }: { row: { original: Task } }) => {
+                      const t = row.original;
+                      return (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive"><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      );
+                    }
+                  : col.cell,
+              }))}
+              data={recentTasks}
+              onRowClick={(t) => { setSelectedTask(t); setViewOpen(true); }}
+              searchPlaceholder="Search tasks..."
+              label="task(s)"
+              emptyMessage="No tasks yet."
+              emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
+            />
           </CardContent>
         </Card>
       </main>
 
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setEditMode(false); setSelectedTask(null); } }}>
         <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
-              onEdit={(t) => { setViewOpen(false); setSelectedTask(t); setEditOpen(true); }}
-              onClose={() => setViewOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
-          {selectedTask && (
-            <TaskEditForm
-              task={selectedTask}
-              onSave={(updated) => {
+              editable
+              onTaskUpdate={(updated) => {
                 setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
-                setEditOpen(false);
-                setSelectedTask(null);
               }}
-              onCancel={() => setEditOpen(false)}
+              onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
             />
           )}
         </DialogContent>

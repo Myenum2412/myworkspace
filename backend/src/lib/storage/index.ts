@@ -3,19 +3,19 @@ import { env } from "../../config/env.js";
 
 function getClient(): S3Client {
   return new S3Client({
-    region: "auto",
-    endpoint: env.R2_ENDPOINT,
-    credentials: { accessKeyId: env.R2_ACCESS_KEY_ID, secretAccessKey: env.R2_SECRET_ACCESS_KEY },
+    region: env.S3_REGION || "us-east-1",
+    endpoint: env.S3_ENDPOINT,
+    credentials: { accessKeyId: env.S3_ACCESS_KEY_ID, secretAccessKey: env.S3_SECRET_ACCESS_KEY },
   });
 }
 
-function isR2Configured(): boolean {
-  return !!(env.R2_ENDPOINT && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY);
+function isS3Configured(): boolean {
+  return !!(env.S3_ENDPOINT && env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY);
 }
 
 export async function saveFile(buffer: Buffer, fileName: string): Promise<string> {
   const storagePath = `${Date.now()}-${fileName}`;
-  if (!isR2Configured()) {
+  if (!isS3Configured()) {
     const fs = await import("fs");
     const path = await import("path");
     const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
@@ -25,7 +25,7 @@ export async function saveFile(buffer: Buffer, fileName: string): Promise<string
   }
   const client = getClient();
   await client.send(new PutObjectCommand({
-    Bucket: env.R2_BUCKET_NAME,
+    Bucket: env.S3_BUCKET_NAME,
     Key: storagePath,
     Body: buffer,
   }));
@@ -33,7 +33,7 @@ export async function saveFile(buffer: Buffer, fileName: string): Promise<string
 }
 
 export async function getFileBuffer(storagePath: string): Promise<Buffer | null> {
-  if (!isR2Configured()) {
+  if (!isS3Configured()) {
     const fs = await import("fs");
     const path = await import("path");
     const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
@@ -43,7 +43,7 @@ export async function getFileBuffer(storagePath: string): Promise<Buffer | null>
   }
   try {
     const client = getClient();
-    const resp = await client.send(new GetObjectCommand({ Bucket: env.R2_BUCKET_NAME, Key: storagePath }));
+    const resp = await client.send(new GetObjectCommand({ Bucket: env.S3_BUCKET_NAME, Key: storagePath }));
     const chunks: Uint8Array[] = [];
     for await (const chunk of resp.Body as any) {
       chunks.push(chunk);
@@ -55,7 +55,7 @@ export async function getFileBuffer(storagePath: string): Promise<Buffer | null>
 }
 
 export async function deleteFile(storagePath: string): Promise<void> {
-  if (!isR2Configured()) {
+  if (!isS3Configured()) {
     const fs = await import("fs");
     const path = await import("path");
     const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
@@ -64,7 +64,7 @@ export async function deleteFile(storagePath: string): Promise<void> {
     return;
   }
   const client = getClient();
-  await client.send(new DeleteObjectCommand({ Bucket: env.R2_BUCKET_NAME, Key: storagePath }));
+  await client.send(new DeleteObjectCommand({ Bucket: env.S3_BUCKET_NAME, Key: storagePath }));
 }
 
 export function getFilePath(storagePath: string): string {
@@ -73,7 +73,7 @@ export function getFilePath(storagePath: string): string {
 }
 
 export async function fileExists(storagePath: string): Promise<boolean> {
-  if (!isR2Configured()) {
+  if (!isS3Configured()) {
     const fs = await import("fs");
     const path = await import("path");
     const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
@@ -81,7 +81,7 @@ export async function fileExists(storagePath: string): Promise<boolean> {
   }
   try {
     const client = getClient();
-    await client.send(new HeadObjectCommand({ Bucket: env.R2_BUCKET_NAME, Key: storagePath }));
+    await client.send(new HeadObjectCommand({ Bucket: env.S3_BUCKET_NAME, Key: storagePath }));
     return true;
   } catch {
     return false;

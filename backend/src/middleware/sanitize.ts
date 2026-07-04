@@ -80,12 +80,18 @@ function sanitiseValue(value: unknown): unknown {
 /**
  * Express middleware that sanitises req.body in-place.
  * Safe to skip for routes that process binary data (uploads).
+ * Password fields are excluded to avoid corrupting credentials.
  */
 export { sanitiseValue };
 export function inputSanitizer(req: Request, _res: Response, next: NextFunction): void {
   if (req.body && typeof req.body === "object" && !Buffer.isBuffer(req.body)) {
+    // Preserve raw password values — sanitization can corrupt credentials
+    const rawPassword = req.body.password;
     try {
       req.body = sanitiseValue(req.body);
+      if (rawPassword !== undefined) {
+        req.body.password = rawPassword;
+      }
     } catch (err) {
       logger.warn({ err, path: req.path, method: req.method }, "Input sanitisation failed");
       // Fail open — don't block the request if sanitisation errors

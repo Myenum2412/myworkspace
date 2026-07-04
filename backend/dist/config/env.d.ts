@@ -7,10 +7,6 @@ export declare const env: {
     ADMIN_PASSWORD: string;
     CORS_ORIGIN: string[];
     NODE_ENV: string;
-    R2_ENDPOINT: string;
-    R2_BUCKET_NAME: string;
-    R2_ACCESS_KEY_ID: string;
-    R2_SECRET_ACCESS_KEY: string;
     SES_REGION: string;
     SES_ACCESS_KEY_ID: string;
     SES_SECRET_ACCESS_KEY: string;

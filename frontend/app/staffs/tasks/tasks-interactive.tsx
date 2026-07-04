@@ -19,7 +19,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskEditForm } from "@/components/task-edit-form";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type Task = {
@@ -55,7 +54,6 @@ const priorityStyles: Record<string, string> = {
 
 export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task[]; sessionUserId?: string }) {
   const [viewOpen, setViewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [localTasks, setLocalTasks] = useState<Task[]>(tasks);
 
@@ -197,33 +195,18 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
         </Card>
       </main>
 
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
         <DialogContent className="p-0 flex flex-col max-w-5xl w-[95vw]">
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
               sessionUserId={sessionUserId}
+              editable
               onTaskUpdate={(updatedTask) => {
                 setLocalTasks((prev) => prev.map((t) => t._id === updatedTask._id ? (updatedTask as Task) : t));
                 setSelectedTask(updatedTask as Task);
               }}
-              onClose={() => setViewOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
-          {selectedTask && (
-            <TaskEditForm
-              task={selectedTask}
-              onSave={(updated) => {
-                setLocalTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as Task) : t));
-                setEditOpen(false);
-                setSelectedTask(null);
-              }}
-              onCancel={() => setEditOpen(false)}
+              onClose={() => { setViewOpen(false); setSelectedTask(null); }}
             />
           )}
         </DialogContent>

@@ -1,25 +1,26 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 
-const R2_ENDPOINT = process.env.R2_ENDPOINT || "";
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || "";
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || "";
-const R2_BUCKET = process.env.R2_BUCKET_NAME || "myworkspace";
+const S3_ENDPOINT = process.env.S3_ENDPOINT || "";
+const S3_ACCESS_KEY_ID = process.env.S3_ACCESS_KEY_ID || "";
+const S3_SECRET_ACCESS_KEY = process.env.S3_SECRET_ACCESS_KEY || "";
+const S3_BUCKET = process.env.S3_BUCKET_NAME || "myworkspace";
+const S3_REGION = process.env.S3_REGION || "us-east-1";
 
 function getClient(): S3Client {
   return new S3Client({
-    region: "auto",
-    endpoint: R2_ENDPOINT,
-    credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY },
+    region: S3_REGION,
+    endpoint: S3_ENDPOINT,
+    credentials: { accessKeyId: S3_ACCESS_KEY_ID, secretAccessKey: S3_SECRET_ACCESS_KEY },
   });
 }
 
-export function isR2Configured(): boolean {
-  return !!(R2_ENDPOINT && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY);
+export function isS3Configured(): boolean {
+  return !!(S3_ENDPOINT && S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY);
 }
 
 export async function saveFile(buffer: Buffer, fileName: string): Promise<string> {
   const storagePath = `${Date.now()}-${fileName}`;
-  if (!isR2Configured()) {
+  if (!isS3Configured()) {
     const fs = await import("fs");
     const path = await import("path");
     const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
@@ -29,7 +30,7 @@ export async function saveFile(buffer: Buffer, fileName: string): Promise<string
   }
   const client = getClient();
   await client.send(new PutObjectCommand({
-    Bucket: R2_BUCKET,
+    Bucket: S3_BUCKET,
     Key: storagePath,
     Body: buffer,
   }));
@@ -37,7 +38,7 @@ export async function saveFile(buffer: Buffer, fileName: string): Promise<string
 }
 
 export async function getFileBuffer(storagePath: string): Promise<Buffer | null> {
-  if (!isR2Configured()) {
+  if (!isS3Configured()) {
     const fs = await import("fs");
     const path = await import("path");
     const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
@@ -47,7 +48,7 @@ export async function getFileBuffer(storagePath: string): Promise<Buffer | null>
   }
   try {
     const client = getClient();
-    const resp = await client.send(new GetObjectCommand({ Bucket: R2_BUCKET, Key: storagePath }));
+    const resp = await client.send(new GetObjectCommand({ Bucket: S3_BUCKET, Key: storagePath }));
     const chunks: Uint8Array[] = [];
     for await (const chunk of resp.Body as AsyncIterable<Uint8Array>) {
       chunks.push(chunk);
@@ -59,7 +60,7 @@ export async function getFileBuffer(storagePath: string): Promise<Buffer | null>
 }
 
 export async function deleteFile(storagePath: string): Promise<void> {
-  if (!isR2Configured()) {
+  if (!isS3Configured()) {
     const fs = await import("fs");
     const path = await import("path");
     const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
@@ -68,11 +69,11 @@ export async function deleteFile(storagePath: string): Promise<void> {
     return;
   }
   const client = getClient();
-  await client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: storagePath }));
+  await client.send(new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: storagePath }));
 }
 
 export async function fileExists(storagePath: string): Promise<boolean> {
-  if (!isR2Configured()) {
+  if (!isS3Configured()) {
     const fs = await import("fs");
     const path = await import("path");
     const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
@@ -80,7 +81,7 @@ export async function fileExists(storagePath: string): Promise<boolean> {
   }
   try {
     const client = getClient();
-    await client.send(new HeadObjectCommand({ Bucket: R2_BUCKET, Key: storagePath }));
+    await client.send(new HeadObjectCommand({ Bucket: S3_BUCKET, Key: storagePath }));
     return true;
   } catch {
     return false;

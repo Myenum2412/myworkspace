@@ -9,7 +9,10 @@ export const STRIPE_PRICE_IDS: Record<string, string | undefined> = {
 function getStripe(): Stripe {
   const key = env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("STRIPE_SECRET_KEY environment variable is required");
-  return new Stripe(key, { apiVersion: "2025-03-31" as any, typescript: true });
+  return new Stripe(key, { 
+    typescript: true,
+    apiVersion: '2026-06-24.dahlia' as any
+  });
 }
 
 export const stripe = getStripe();

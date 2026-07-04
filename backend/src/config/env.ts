@@ -11,10 +11,6 @@ export const env = {
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || "",
   CORS_ORIGIN: (process.env.CORS_ORIGIN || "http://localhost:3000,https://myworkspace.myenum.in").split(",").map(s => s.trim()),
   NODE_ENV: process.env.NODE_ENV || "development",
-  R2_ENDPOINT: process.env.R2_ENDPOINT || "",
-  R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || "myworkspace",
-  R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID || "",
-  R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY || "",
   SES_REGION: process.env.SES_REGION || "us-east-1",
   SES_ACCESS_KEY_ID: process.env.SES_ACCESS_KEY_ID || "",
   SES_SECRET_ACCESS_KEY: process.env.SES_SECRET_ACCESS_KEY || "",
@@ -31,7 +27,7 @@ export const env = {
   S3_REGION: process.env.S3_REGION || "us-east-1",
 
   // TUS resumable upload (tus-node-server + FileStore). Chunk persistence lands
-  // under data/tus-uploads/; final objects go to R2 via the orchestrator.
+  // under data/tus-uploads/; final objects go to S3 via the orchestrator.
   TUS_PREFIX: process.env.TUS_PREFIX || "/files-tus",
   TUS_MAX_SIZE: Number(process.env.TUS_MAX_SIZE || 10 * 1024 * 1024 * 1024),
   TUS_TTL_MS: Number(process.env.TUS_TTL_MS || 24 * 60 * 60 * 1000),
