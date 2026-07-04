@@ -240,7 +240,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
         )}
 
         <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-          <DialogContent className="p-0 flex flex-col">
+          <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
             {selectedTask && (
               <TaskDetailedView
                 task={selectedTask}
@@ -252,7 +252,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
         </Dialog>
 
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogContent className="p-0 flex flex-col">
+          <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
             {selectedTask && (
               <TaskEditForm
                 task={selectedTask}

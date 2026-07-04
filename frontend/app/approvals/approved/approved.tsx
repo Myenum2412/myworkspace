@@ -57,7 +57,7 @@ export default function Approved({ initialTasks }: ApprovedProps) {
       </main>
 
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 flex flex-col">
+        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <>
               <DialogHeader className="px-6 pt-6 pb-2 shrink-0">

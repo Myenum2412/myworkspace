@@ -38,6 +38,7 @@ export async function GET(
         senderAvatar: sender?.image || "",
         content: c.content,
         createdAt: c.createdAt,
+        seenBy: Array.isArray(c.seenBy) ? c.seenBy : [],
       };
     });
 
@@ -69,6 +70,7 @@ export async function POST(
       senderId: session.user.id,
       content: content.trim(),
       createdAt: new Date(),
+      seenBy: [session.user.id],
     };
 
     const result = await db.collection(collections.taskComments).insertOne(doc);

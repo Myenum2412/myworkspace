@@ -360,8 +360,18 @@ export function TaskDetailedView({
       </div>
 
       {/* Right Column - Comments / Chat */}
-      <div className="w-[380px] shrink-0 flex flex-col bg-white border-l">
-        <TaskChat taskId={task._id} sessionUserId={sessionUserId || ""} onClose={onClose} />
+      <div className="w-[380px] shrink-0 flex flex-col bg-white border-l z-10">
+        <TaskChat 
+          taskId={task._id} 
+          sessionUserId={sessionUserId || ""} 
+          onClose={onClose} 
+          taskTitle={task.title}
+          taskStatus={task.status}
+          taskPriority={task.priority}
+          taskDueDate={task.dueDate}
+          assigneeName={task.assigneeName}
+          assigneeAvatar={task.assigneeAvatar}
+        />
       </div>
     </div>
   );

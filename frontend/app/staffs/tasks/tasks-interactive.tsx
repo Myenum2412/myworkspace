@@ -214,7 +214,7 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
       </Dialog>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="p-0 flex flex-col">
+        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <TaskEditForm
               task={selectedTask}

@@ -140,7 +140,7 @@ export default function ApprovalsInteractive({ initialTasks }: ApprovalsInteract
       </main>
 
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 flex flex-col">
+        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <>
               <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
@@ -177,7 +177,7 @@ export default function ApprovalsInteractive({ initialTasks }: ApprovalsInteract
       </Dialog>
 
       <Dialog open={!!actionTask} onOpenChange={(o) => { if (!o) { setActionTask(null); setActionType(null); setActionNote(""); setActionError(""); } }}>
-        <DialogContent className="p-0 flex flex-col">
+        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-lg">
               {actionType === "approve" ? <CheckCircleIcon className="size-5 text-success" /> : <XCircleIcon className="size-5 text-destructive" />}

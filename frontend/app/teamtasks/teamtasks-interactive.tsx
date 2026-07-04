@@ -170,7 +170,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
       </main>
 
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="p-0 flex flex-col">
+        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
@@ -182,7 +182,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
       </Dialog>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="p-0 flex flex-col">
+        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <TaskEditForm
               task={selectedTask}
