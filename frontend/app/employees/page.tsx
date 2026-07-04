@@ -160,13 +160,39 @@ export default async function EmployeesPage() {
           fileMap = new Map(fileDocs.map((f) => [f.id as string, f]));
         }
 
+        const allUserIds = allOrgMembers.map((m) => m.userId as string).filter(Boolean);
+        const [workExDocs, eduDocs, depDocs] = await Promise.all([
+          db.collection(collections.workExperience).find({ userId: { $in: allUserIds } }).toArray() as Promise<Record<string, unknown>[]>,
+          db.collection(collections.educationDetails).find({ userId: { $in: allUserIds } }).toArray() as Promise<Record<string, unknown>[]>,
+          db.collection(collections.dependentDetails).find({ userId: { $in: allUserIds } }).toArray() as Promise<Record<string, unknown>[]>,
+        ]);
+        const workExMap = new Map<string, Record<string, unknown>[]>();
+        for (const w of workExDocs) {
+          const uid = w.userId as string;
+          if (!workExMap.has(uid)) workExMap.set(uid, []);
+          workExMap.get(uid)!.push(w);
+        }
+        const eduMap = new Map<string, Record<string, unknown>[]>();
+        for (const e of eduDocs) {
+          const uid = e.userId as string;
+          if (!eduMap.has(uid)) eduMap.set(uid, []);
+          eduMap.get(uid)!.push(e);
+        }
+        const depMap = new Map<string, Record<string, unknown>[]>();
+        for (const d of depDocs) {
+          const uid = d.userId as string;
+          if (!depMap.has(uid)) depMap.set(uid, []);
+          depMap.get(uid)!.push(d);
+        }
+
         employees = allOrgMembers
           .filter((m) => userMap.has(m.userId as string))
           .map((m) => {
             const u = userMap.get(m.userId as string)!;
+            const uid = m.userId as string;
             const userFiles = (u.files as string[]) || [];
             return {
-              id: userDocToId(u) || (m.userId as string) || "",
+              id: userDocToId(u) || uid || "",
               displayId: (u.displayId as string) || "",
               name: (u.name as string) || "Unknown",
               email: (u.email as string) || "",
@@ -179,6 +205,46 @@ export default async function EmployeesPage() {
               branchName: (u.branchName as string) || "",
               joiningDate: u.joiningDate ? new Date(u.joiningDate as string | number).toISOString() : "",
               avatar: (u.image as string) || (u.avatar as string) || "",
+              firstName: (u.firstName as string) || "",
+              lastName: (u.lastName as string) || "",
+              nickname: (u.nickname as string) || "",
+              location: (u.location as string) || "",
+              shift: (u.shift as string) || "",
+              sourceOfHire: (u.sourceOfHire as string) || "",
+              currentExperience: (u.currentExperience as string) || "",
+              totalExperience: (u.totalExperience as string) || "",
+              alternateEmail: (u.alternateEmail as string) || "",
+              address: (u.address as string) || "",
+              city: (u.city as string) || "",
+              state: (u.state as string) || "",
+              country: (u.country as string) || "",
+              zipCode: (u.zipCode as string) || "",
+              linkedin: (u.linkedin as string) || "",
+              github: (u.github as string) || "",
+              twitter: (u.twitter as string) || "",
+              website: (u.website as string) || "",
+              workExperience: (workExMap.get(uid) || []).map((w) => ({
+                id: (w.id as string) || "",
+                company: (w.company as string) || "",
+                title: (w.title as string) || "",
+                from: (w.from as string) || "",
+                to: (w.to as string) || "",
+                description: (w.description as string) || "",
+                relevant: !!w.relevant,
+              })),
+              educationDetails: (eduMap.get(uid) || []).map((e) => ({
+                id: (e.id as string) || "",
+                institute: (e.institute as string) || "",
+                degree: (e.degree as string) || "",
+                specialization: (e.specialization as string) || "",
+                completionDate: (e.completionDate as string) || "",
+              })),
+              dependentDetails: (depMap.get(uid) || []).map((d) => ({
+                id: (d.id as string) || "",
+                name: (d.name as string) || "",
+                relationship: (d.relationship as string) || "",
+                dob: (d.dob as string) || "",
+              })),
               files: userFiles.map((fid: string) => {
                 const file = fileMap.get(fid);
                 return file ? { id: file.id as string, name: file.originalName as string, size: file.size as number, mimeType: file.mimeType as string } : { id: fid, name: fid, size: 0 };

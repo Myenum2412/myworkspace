@@ -10,10 +10,7 @@ import { Header } from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
 
-const STAFF_RESTRICTED_ROUTES = [
-  "/alltasks", "/mytasks", "/teamtasks", "/upcomingtasks", "/savedtasks",
-  "/overview",
-];
+
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -28,14 +25,17 @@ export function AppLayout({ children }: AppLayoutProps) {
   const context: AppContextType = getAppContext(pathname);
   const isApp = isAppPage(pathname);
 
-  // Redirect staff users away from workspace task pages
+  // Redirect staff/member users away from non-staff pages
   useEffect(() => {
-    if (session?.user?.role === "member" || session?.user?.role === "staff") {
-      if (STAFF_RESTRICTED_ROUTES.some((r) => pathname.startsWith(r))) {
-        router.replace("/staffs/tasks");
+    const role = session?.user?.role?.toLowerCase() || "";
+    const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(role);
+    
+    if (session?.user && !isWorkspaceAdmin) {
+      if (!pathname.startsWith("/staffs") && !pathname.startsWith("/login")) {
+        router.replace("/staffs");
       }
     }
-  }, [session?.user?.role, pathname, router]);
+  }, [session?.user, session?.user?.role, pathname, router]);
 
   const user = useMemo(() => ({
     name: session?.user?.name || "User",

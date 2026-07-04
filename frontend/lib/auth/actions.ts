@@ -11,9 +11,11 @@ import { createUserWorkspace } from "@/actions/user-folder";
 import { getNextSequence } from "@/lib/db/counter";
 
 function getRedirectPath(role?: string): string {
-  if (role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN") return "/orgmenu";
-  if (role === "member" || role === "staff") return "/staffs";
-  return "/dashboard";
+  const r = role?.toLowerCase() || "";
+  if (r === "org_menu_admin" || r === "super_admin") return "/orgmenu";
+  const isWorkspaceAdmin = ["workspace", "admin", "manager"].includes(r);
+  if (isWorkspaceAdmin) return "/dashboard";
+  return "/staffs";
 }
 
 export async function loginAction(formData: FormData) {

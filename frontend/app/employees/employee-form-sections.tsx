@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Camera } from "lucide-react"
+import { Camera, Eye, EyeOff } from "lucide-react"
 import { getDropdownOptions } from "@/lib/dropdown-options"
 
 export interface FirstSlideEmployeeForm {
@@ -110,6 +110,7 @@ interface BasicInfoSectionProps {
 }
 
 export function BasicInfoSection({ formData, onChange, options }: BasicInfoSectionProps) {
+  const [showPassword, setShowPassword] = React.useState(false)
   return (
     <FieldSet>
       <h1>Create Employee Account</h1>
@@ -159,12 +160,22 @@ export function BasicInfoSection({ formData, onChange, options }: BasicInfoSecti
         </Field>
         <Field>
           <FieldLabel>Password</FieldLabel>
-          <Input
-            type="password"
-            placeholder="Leave blank for auto-generated"
-            value={formData.password}
-            onChange={(e) => onChange("password", e.target.value)}
-          />
+          <div className="relative">
+            <Input
+              type={showPassword ? "text" : "password"}
+              placeholder="Leave blank for auto-generated"
+              value={formData.password}
+              onChange={(e) => onChange("password", e.target.value)}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
+          </div>
         </Field>
         <Field>
           <FieldLabel>Department</FieldLabel>
@@ -250,11 +261,15 @@ export function WorkInfoSection({ formData, onChange, options }: WorkInfoSection
           </Field>
           <Field>
             <FieldLabel>Role Name</FieldLabel>
-            <Input
-              placeholder="Role name"
-              value={formData.roleName}
-              onChange={(e) => onChange("roleName", e.target.value)}
-            />
+            <Select value={formData.roleName || "member"} onValueChange={(v) => onChange("roleName", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="member">Member</SelectItem>
+                <SelectItem value="staff">Staff</SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
           <Field>
             <FieldLabel>Employment Type</FieldLabel>
@@ -487,9 +502,11 @@ export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: D
 interface SelectWithAddProps {
   label: string
   options: string[]
+  value?: string
+  onChange?: (value: string) => void
 }
 
-export function SelectWithAdd({ label, options }: SelectWithAddProps) {
+export function SelectWithAdd({ label, options, value, onChange }: SelectWithAddProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [customValue, setCustomValue] = React.useState("")
 
@@ -497,7 +514,7 @@ export function SelectWithAdd({ label, options }: SelectWithAddProps) {
     <Field>
       <FieldLabel>{label}</FieldLabel>
       <div className="flex gap-2">
-        <Select>
+        <Select value={value} onValueChange={onChange}>
           <SelectTrigger className="flex-1">
             <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
           </SelectTrigger>

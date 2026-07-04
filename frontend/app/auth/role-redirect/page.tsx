@@ -9,12 +9,18 @@ export default async function RoleRedirectPage() {
     redirect("/login?error=Session+not+found.+Please+sign+in+again.");
   }
 
-  const role = session.user.role;
-  const isOrgAdmin = role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN";
+  const role = session.user.role?.toLowerCase() || "";
+  const isOrgAdmin = role === "org_menu_admin" || role === "super_admin";
 
   if (isOrgAdmin) {
     redirect("/orgmenu");
   }
 
-  redirect("/dashboard");
+  const isWorkspaceAdmin = ["workspace", "admin", "manager"].includes(role);
+
+  if (isWorkspaceAdmin) {
+    redirect("/dashboard");
+  }
+
+  redirect("/staffs");
 }

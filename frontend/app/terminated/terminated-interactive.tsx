@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,30 +28,16 @@ import type { TerminatedEmployee } from "../employees/columns";
 
 const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
-export default function TerminatedInteractive() {
-  const [terminated, setTerminated] = useState<TerminatedEmployee[]>([]);
+export default function TerminatedInteractive({ terminated: initial }: { terminated: TerminatedEmployee[] }) {
+  const [terminated, setTerminated] = useState<TerminatedEmployee[]>(initial);
   const [reactivateEmp, setReactivateEmp] = useState<TerminatedEmployee | null>(null);
   const [reactivateReason, setReactivateReason] = useState("");
   const [reactivating, setReactivating] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  
+
   const totalPages = Math.ceil(terminated.length / rowsPerPage);
   const paginatedTerminated = terminated.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("terminated_employees") || "[]") as TerminatedEmployee[];
-      if (stored.length > 0) {
-        setTerminated(stored);
-      }
-    } catch (err) {
-      toast.error("Failed to load terminated employees data");
-    } finally {
-      setPageLoading(false);
-    }
-  }, []);
 
   function handleReactivateClick(emp: TerminatedEmployee) {
     setReactivateEmp(emp);
@@ -59,32 +45,47 @@ export default function TerminatedInteractive() {
     setReactivating(false);
   }
 
-  function handleReactivateConfirm() {
+  async function handleReactivateConfirm() {
     if (!reactivateEmp) return;
     setReactivating(true);
 
-    const { terminateReason: _terminateReason, terminateDate: _terminateDate, ...employeeData } = reactivateEmp;
-    const reactivated = {
-      ...employeeData,
-      status: "active" as const,
-    };
+    try {
+      const res = await fetch(`/api/employees/${encodeURIComponent(reactivateEmp.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: "active", terminateReason: "", terminateDate: null }),
+      });
 
-    const employees = JSON.parse(localStorage.getItem("employees") || "[]");
-    localStorage.setItem("employees", JSON.stringify([...employees, reactivated]));
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to reactivate employee");
+      }
 
-    setTerminated((prev) => prev.filter((e) => e.id !== reactivateEmp.id));
-    const stored = JSON.parse(localStorage.getItem("terminated_employees") || "[]") as TerminatedEmployee[];
-    localStorage.setItem("terminated_employees", JSON.stringify(stored.filter((e) => e.id !== reactivateEmp.id)));
-
-    setReactivateEmp(null);
-    setReactivateReason("");
-    setReactivating(false);
+      setTerminated((prev) => prev.filter((e) => e.id !== reactivateEmp.id));
+      toast.success("Employee reactivated successfully");
+      setReactivateEmp(null);
+      setReactivateReason("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reactivate employee");
+    } finally {
+      setReactivating(false);
+    }
   }
 
-  if (pageLoading) {
+  if (terminated.length === 0 && initial.length === 0) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center p-4">
-        <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
+      <main className="flex flex-1 flex-col gap-4 p-4">
+        <div>
+          <h1 className="text-2xl font-bold">Terminated</h1>
+          <p className="text-sm text-muted-foreground mt-1">0 former employees</p>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px]">
+          <div className="flex items-center justify-center size-12 rounded-full bg-muted">
+            <UserX className="size-6 text-muted-foreground/50" />
+          </div>
+          <p className="text-sm font-medium text-muted-foreground mt-4">No terminated employees.</p>
+        </div>
       </main>
     );
   }

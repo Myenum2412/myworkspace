@@ -8,6 +8,10 @@ import { getSocketIO } from "@/lib/socketio-client";
 import { TeamList } from "@/components/teams/team-list";
 import { TeamForm } from "@/components/teams/team-form";
 import { TeamMembers } from "@/components/teams/team-members";
+import { TeamTreeView } from "@/components/teams/team-tree-view";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { UsersIcon } from "lucide-react";
 
 export default function TeamsClient({ teams: initialTeams, members: initialMembers, orgId: initialOrgId }: { teams: Team[]; members: OrgMember[]; orgId?: string }) {
   const [teams, setTeams] = useState<Team[]>(initialTeams);
@@ -263,27 +267,23 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
       {selectedTeam ? (
-        <TeamMembers
-          team={selectedTeam}
-          members={members}
-          tableView={true}
-          memberPage={memberPage}
-          memberRowsPerPage={memberRowsPerPage}
-          onMemberPageChange={setMemberPage}
-          onMemberRowsPerPageChange={setMemberRowsPerPage}
-          onBack={() => setSelectedTeam(null)}
-          onDelete={handleDelete}
-          showAddMember={showAddMember}
-          onShowAddMemberChange={setShowAddMember}
-          addingMember={addingMember}
-          onAddMember={handleAddMember}
-          onRemoveMember={handleRemoveMember}
-          onSetLead={handleSetLead}
-          viewMemberOpen={viewMemberOpen}
-          onViewMemberOpenChange={setViewMemberOpen}
-          viewMember={viewMember}
-          onViewMemberChange={setViewMember}
-        />
+        <div className="flex flex-col flex-1 min-h-0 gap-4">
+          <div className="flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={() => setSelectedTeam(null)}>← Back</Button>
+              <div>
+                <h1 className="text-2xl font-bold flex items-center gap-2"><UsersIcon className="size-6" />{selectedTeam.name}</h1>
+                {selectedTeam.description && <p className="text-sm text-muted-foreground mt-0.5">{selectedTeam.description}</p>}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{selectedTeam.members.length} members</Badge>
+            </div>
+          </div>
+          <div className="flex-1 min-h-0 rounded-xl border bg-card p-4">
+            <TeamTreeView team={selectedTeam} />
+          </div>
+        </div>
       ) : (
         <TeamList
           teams={teams}

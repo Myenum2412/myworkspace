@@ -13,6 +13,12 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    // Block employee users from listing all employees
+    const role = session.user.role?.toLowerCase() || "";
+    const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(role);
+    if (!isWorkspaceAdmin) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const orgId = await ensureUserOrg(session.user.id, session.user.email);
 
@@ -68,6 +74,12 @@ export async function POST(request: Request) {
     }
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    // Block employee users from creating employees
+    const role = session.user.role?.toLowerCase() || "";
+    const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(role);
+    if (!isWorkspaceAdmin) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const orgId = await ensureUserOrg(session.user.id, session.user.email);

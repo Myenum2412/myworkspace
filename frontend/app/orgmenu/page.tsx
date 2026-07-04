@@ -6,28 +6,37 @@ import { unstable_cache } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MonthlyRevenueChart, NewUsersChart } from "@/components/dynamic-charts";
 import { DashboardSignupsTable } from "@/components/dashboard-signups";
-import { UsersIcon, ClipboardListIcon, ActivityIcon, Building2Icon, CheckCircle2Icon, ClockIcon, UserPlusIcon } from "lucide-react";
+import { UsersIcon, ActivityIcon, Building2Icon, UserXIcon } from "lucide-react";
 
 export const revalidate = 30;
 export const metadata = { title: "Organization Dashboard" };
 
 const getOrgMetrics = unstable_cache(async (orgId: string) => {
   const memberCount = await db.collection(collections.orgMembers).countDocuments({ orgId });
-  const taskCount = await db.collection(collections.tasks).countDocuments({ orgId });
-  const completedTasks = await db.collection(collections.tasks).countDocuments({ orgId, status: "done" });
-  const inProgressTasks = await db.collection(collections.tasks).countDocuments({ orgId, status: "in_progress" });
   const activityCount = await db.collection(collections.activityLogs).countDocuments({ orgId });
-  return { memberCount, taskCount, completedTasks, inProgressTasks, activityCount };
+  const inactiveMembers = await db.collection(collections.orgMembers).aggregate<{ count: number }>([
+    { $match: { orgId } },
+    { $lookup: { from: "users", localField: "userId", foreignField: "id", as: "user" } },
+    { $unwind: "$user" },
+    { $match: { "user.isActive": false } },
+    { $count: "count" },
+  ]).toArray();
+  const inactiveMemberCount = inactiveMembers[0]?.count ?? 0;
+  return { memberCount, activityCount, inactiveMemberCount };
 }, ["org-metrics"], { revalidate: 30, tags: ["dashboard"] });
 
 const getAllMetrics = unstable_cache(async () => {
   const orgCount = await db.collection(collections.organizations).countDocuments({});
   const memberCount = await db.collection(collections.orgMembers).countDocuments({});
-  const taskCount = await db.collection(collections.tasks).countDocuments({});
-  const completedTasks = await db.collection(collections.tasks).countDocuments({ status: "done" });
-  const inProgressTasks = await db.collection(collections.tasks).countDocuments({ status: "in_progress" });
   const activityCount = await db.collection(collections.activityLogs).countDocuments({});
-  return { orgCount, memberCount, taskCount, completedTasks, inProgressTasks, activityCount };
+  const inactiveMembers = await db.collection(collections.orgMembers).aggregate<{ count: number }>([
+    { $lookup: { from: "users", localField: "userId", foreignField: "id", as: "user" } },
+    { $unwind: "$user" },
+    { $match: { "user.isActive": false } },
+    { $count: "count" },
+  ]).toArray();
+  const inactiveMemberCount = inactiveMembers[0]?.count ?? 0;
+  return { orgCount, memberCount, activityCount, inactiveMemberCount };
 }, ["all-metrics"], { revalidate: 30, tags: ["dashboard"] });
 
 const getUsersByState = unstable_cache(async (orgId?: string | null) => {
@@ -207,7 +216,7 @@ export default async function OrgDashboardPage() {
         </div>
       </div>
 
-      <div className="grid auto-rows-min gap-4 grid-cols-8">
+      <div className="grid grid-cols-3 gap-4">
         {isSuperAdmin && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -230,29 +239,11 @@ export default async function OrgDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Tasks</CardTitle>
-            <ClipboardListIcon className="size-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">InActive Members</CardTitle>
+            <UserXIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.taskCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-            <CheckCircle2Icon className="size-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics.completedTasks}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
-            <ClockIcon className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics.inProgressTasks}</div>
+            <div className="text-2xl font-bold">{metrics.inactiveMemberCount}</div>
           </CardContent>
         </Card>
         <Card>

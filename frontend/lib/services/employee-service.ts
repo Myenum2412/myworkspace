@@ -11,6 +11,7 @@ type CreateEmployeeInput = {
   location?: string | null;
   phone?: string | null;
   roleName?: string | null;
+  role?: string | null;
   branchName?: string | null;
   shift?: string | null;
   employmentType?: string | null;

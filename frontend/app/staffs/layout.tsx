@@ -9,5 +9,8 @@ export default async function StaffsLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
+  // Note: Admins are allowed to visit staff pages if they navigate to them.
+  // We no longer forcefully redirect admins back to /dashboard.
+
   return <>{children}</>;
 }

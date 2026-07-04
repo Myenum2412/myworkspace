@@ -16,6 +16,11 @@ import {
   ListTodoIcon,
   FolderOpenIcon,
   ClockIcon,
+  CalendarDaysIcon,
+  ActivityIcon,
+  SettingsIcon,
+  BriefcaseIcon,
+  StarIcon,
 } from "lucide-react";
 
 function buildStaffNavData(orgId: string) {
@@ -30,21 +35,31 @@ function buildStaffNavData(orgId: string) {
       title: "Task",
       url: "/staffs/tasks",
       icon: <ListTodoIcon className="size-6" />,
-      items: [
-        { title: "My Tasks", url: "/staffs/tasks" },
-        { title: "Team Tasks", url: "/staffs/tasks?filter=team" },
-      ],
     },
     {
       title: "Time Sheet",
       url: "/staffs/timesheet",
       icon: <ClockIcon className="size-6" />,
     },
+
+
+    {
+      title: "Schedule",
+      url: "/staffs/schedule",
+      icon: <CalendarDaysIcon className="size-6" />,
+    },
+
     {
       title: "File Management",
       url: `/staffs/files${orgId ? `?orgId=${orgId}` : ""}`,
       icon: <FolderOpenIcon className="size-6" />,
     },
+    {
+      title: "Activity",
+      url: "/staffs/activity",
+      icon: <ActivityIcon className="size-6" />,
+    },
+
   ];
 }
 

@@ -1,16 +1,28 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { env } from "../../config/env.js";
 
-const sesClient = new SESClient({
-  region: env.SES_REGION,
-  credentials: {
-    accessKeyId: env.SES_ACCESS_KEY_ID,
-    secretAccessKey: env.SES_SECRET_ACCESS_KEY,
-  },
-});
-
 function isSesConfigured(): boolean {
-  return !!(env.SES_ACCESS_KEY_ID && env.SES_SECRET_ACCESS_KEY && env.MAIL_FROM);
+  const key = env.SES_ACCESS_KEY_ID;
+  const secret = env.SES_SECRET_ACCESS_KEY;
+  const from = env.MAIL_FROM;
+  if (!key || !secret || !from) return false;
+  if (key === "your-ses-access-key" || secret === "your-ses-secret-key") return false;
+  return true;
+}
+
+let sesClient: SESClient | null = null;
+
+function getSesClient(): SESClient {
+  if (!sesClient) {
+    sesClient = new SESClient({
+      region: env.SES_REGION,
+      credentials: {
+        accessKeyId: env.SES_ACCESS_KEY_ID,
+        secretAccessKey: env.SES_SECRET_ACCESS_KEY,
+      },
+    });
+  }
+  return sesClient;
 }
 
 async function sendEmail(
@@ -19,20 +31,23 @@ async function sendEmail(
   htmlBody: string
 ): Promise<void> {
   if (!isSesConfigured()) {
-    console.warn("SES not configured — skipping email");
     return;
   }
 
-  const command = new SendEmailCommand({
-    Source: env.MAIL_FROM,
-    Destination: { ToAddresses: [to] },
-    Message: {
-      Subject: { Data: subject, Charset: "UTF-8" },
-      Body: { Html: { Data: htmlBody, Charset: "UTF-8" } },
-    },
-  });
+  try {
+    const command = new SendEmailCommand({
+      Source: env.MAIL_FROM,
+      Destination: { ToAddresses: [to] },
+      Message: {
+        Subject: { Data: subject, Charset: "UTF-8" },
+        Body: { Html: { Data: htmlBody, Charset: "UTF-8" } },
+      },
+    });
 
-  await sesClient.send(command);
+    await getSesClient().send(command);
+  } catch (err: any) {
+    console.warn(`[mail] Failed to send email to ${to}: ${err?.message || err}`);
+  }
 }
 
 export async function sendPasswordResetEmail(

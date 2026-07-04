@@ -16,6 +16,7 @@ const WORKSPACE_PREFIXES = [
   "/departments", "/addemployees", "/addprojects", "/files",
   "/savedtasks", "/upcomingtasks", "/terminated",
   "/recycle-bin", "/upload", "/billing", "/ai-chat", "/automation",
+  "/attendance",
 ];
 
 // Pre-compile startsWith prefixes into a structure for faster matching
@@ -25,10 +26,13 @@ const ORIGIN_SET = new Set(ORIGIN_PREFIXES);
 const STAFF_SET = new Set(STAFF_PREFIXES);
 
 function getHomePath(role?: string): string {
-  if (role === "member" || role === "staff") {
-    return "/staffs";
+  const roleLower = role?.toLowerCase() || "";
+  const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(roleLower);
+  
+  if (isWorkspaceAdmin) {
+    return "/dashboard";
   }
-  return "/dashboard";
+  return "/staffs";
 }
 
 function pathMatchesPrefix(pathname: string, prefixes: Set<string>): boolean {
@@ -99,6 +103,13 @@ export const proxy = auth((req) => {
     if (isOrgAdmin) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
     }
+    // Block non-admin users (employees with member, staff, or custom roles) from workspace routes
+    const roleLower = userRole?.toLowerCase() || "";
+    const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(roleLower);
+    
+    if (!isWorkspaceAdmin) {
+      return NextResponse.redirect(new URL("/staffs", req.url));
+    }
     return;
   }
 
@@ -123,10 +134,8 @@ export const proxy = auth((req) => {
     if (isOrgAdmin) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
     }
-    if (userRole === "member" || userRole === "staff" || userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL) {
-      return;
-    }
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    // Allow all other users (workspace admins, custom roles, members, staff) to view the staff panel
+    return;
   }
 
   if (routeContext === "unknown") {

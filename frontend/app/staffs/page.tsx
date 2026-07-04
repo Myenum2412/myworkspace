@@ -332,13 +332,13 @@ export default async function StaffsPage() {
             <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                <thead>
-                  <tr className="border-b bg-[#f3f4f6] text-gray-900 font-semibold">
-                    <th className="px-4 py-3.5 font-semibold">Task</th>
-                    <th className="px-4 py-3.5 font-semibold">Assignee</th>
-                    <th className="px-4 py-3.5 font-semibold">Priority</th>
-                    <th className="px-4 py-3.5 font-semibold">Status</th>
-                    <th className="px-4 py-3.5 font-semibold">Due</th>
+                <thead className="bg-[#f3f4f6]">
+                  <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
+                    <th className="px-4 py-3.5 font-semibold text-left">Task</th>
+                    <th className="px-4 py-3.5 font-semibold text-left">Assignee</th>
+                    <th className="px-4 py-3.5 font-semibold text-left">Priority</th>
+                    <th className="px-4 py-3.5 font-semibold text-left">Status</th>
+                    <th className="px-4 py-3.5 font-semibold text-left">Due</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -49,7 +49,8 @@ export async function addEmployeeAction(formData: FormData) {
   if (!refreshedMember) return { error: "No organization found" };
 
   const userId = uuid();
-  const defaultPassword = await hash(Math.random().toString(36).slice(-12) + "A1!", 12);
+  const plainPassword = Math.random().toString(36).slice(-12) + "A1!";
+  const defaultPassword = await hash(plainPassword, 12);
   const userNumber = await getNextSequence("userNumber");
   const displayId = await getNextEmployeeDisplayId(refreshedMember.orgId);
 
@@ -76,5 +77,5 @@ export async function addEmployeeAction(formData: FormData) {
 
   revalidatePath("/employees");
   revalidateTag('dashboard', 'max');
-  return { success: true };
+  return { success: true, password: plainPassword };
 }

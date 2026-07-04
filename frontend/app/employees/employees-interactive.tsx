@@ -128,6 +128,18 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
     }
   }, [terminatingEmployee, terminateReason]);
 
+  const refreshEmployees = useCallback(async () => {
+    try {
+      const res = await fetch("/api/employees");
+      if (res.ok) {
+        const data = await res.json();
+        setEmployees((data.data || data || []) as Employee[]);
+      }
+    } catch {
+      // fallback: keep current state
+    }
+  }, []);
+
   const handleBack = useCallback(() => {
     setPageView("list");
     setSelectedEmployee(null);
@@ -186,8 +198,8 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
           <div className="max-w-5xl mx-auto py-6 bg-white my-6">
             <AddEmployeeForm
               onCancel={handleBack}
-              onEmployeeAdded={(employee) => {
-                setEmployees((prev) => [...prev, employee as Employee]);
+              onEmployeeAdded={() => {
+                refreshEmployees();
                 handleBack();
               }}
             />
@@ -205,8 +217,8 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
         isViewMode={pageView === "view"}
         onBack={handleBack}
         onSwitchToEdit={() => setPageView("edit")}
-        onSave={(updated) => {
-          setEmployees((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+        onSave={() => {
+          refreshEmployees();
           handleBack();
         }}
         onCancel={handleBack}

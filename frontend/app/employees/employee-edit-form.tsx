@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -11,6 +11,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, HistoryIcon, CheckCircle2Icon, PencilIcon } from "lucide-react"
 import { employeeService } from "@/lib/services/employee-service"
+import { getDropdownOptions } from "@/lib/dropdown-options"
 
 import {
   ProfileImageUpload,
@@ -21,7 +22,7 @@ import {
   SelectWithAdd,
   type FirstSlideEmployeeForm,
   type Row,
-} from "@/app/addemployees/employee-form-sections"
+} from "@/app/employees/employee-form-sections"
 import type { Employee } from "./columns"
 
 function generateId(): string {
@@ -58,6 +59,11 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
   const [formError, setFormError] = useState("")
   const [formSuccess, setFormSuccess] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const [dropdownOptions, setDropdownOptions] = useState<Record<string, string[]>>({})
+
+  useEffect(() => {
+    setDropdownOptions(getDropdownOptions());
+  }, [])
 
   const nameParts = employee.name ? employee.name.trim().split(" ") : []
   const defaultFirstName = employee.firstName || nameParts[0] || ""
@@ -84,12 +90,16 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
     totalExperience: employee.totalExperience || "",
     avatar: employee.avatar || "",
     phone: employee.phone || "",
-    alternateEmail: employee.alternateEmail || "",
+    secondaryPhone: employee.alternateEmail || "",
     address: employee.address || "",
     city: employee.city || "",
     state: employee.state || "",
     country: employee.country || "",
-    zipCode: employee.zipCode || "",
+    postalCode: employee.zipCode || "",
+    linkedin: employee.linkedin || "",
+    github: employee.github || "",
+    twitter: employee.twitter || "",
+    portfolio: employee.website || "",
   })
 
   const [workExperience, setWorkExperience] = useState<Row[]>(
@@ -140,7 +150,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
         lastName: formData.lastName,
         nickname: formData.nickname,
         email: formData.email,
-        roleName: formData.roleName || formData.designation,
+        role: formData.roleName || formData.designation,
         status: formData.status.toLowerCase(),
         department: formData.department,
         designation: formData.designation,
@@ -154,12 +164,16 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
         currentExperience: formData.currentExperience,
         totalExperience: formData.totalExperience,
         avatar: formData.avatar || "",
-        alternateEmail: formData.alternateEmail,
+        alternateEmail: formData.secondaryPhone,
         address: formData.address,
         city: formData.city,
         state: formData.state,
         country: formData.country,
-        zipCode: formData.zipCode,
+        zipCode: formData.postalCode,
+        linkedin: formData.linkedin || null,
+        github: formData.github || null,
+        twitter: formData.twitter || null,
+        website: formData.portfolio || null,
         workExperience: workExperience.filter(w => w.company || w.title),
         educationDetails: educationDetails.filter(e => e.institute || e.degree),
         dependentDetails: dependentDetails.filter(d => d.name),
@@ -215,7 +229,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
               />
             </div>
             <div className="flex-1">
-              <BasicInfoSection formData={formData} onChange={updateField} />
+              <BasicInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
             </div>
           </div>
         </Section>
@@ -224,7 +238,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
 
         {/* Work Info */}
         <Section icon={BriefcaseIcon} title="Work Info">
-          <WorkInfoSection formData={formData} onChange={updateField} />
+          <WorkInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field>
               <FieldLabel>Date of Exit</FieldLabel>
@@ -237,7 +251,23 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
 
         {/* Contact */}
         <Section icon={PhoneIcon} title="Contact">
-          <ContactDetailsSection formData={formData} onChange={updateField} />
+          <ContactDetailsSection
+                phone={formData.phone}
+                secondaryPhone={formData.secondaryPhone}
+                address={formData.address}
+                city={formData.city}
+                state={formData.state}
+                postalCode={formData.postalCode}
+                country={formData.country}
+                onPhoneChange={(v) => updateField("phone", v)}
+                onSecondaryPhoneChange={(v) => updateField("secondaryPhone", v)}
+                onAddressChange={(v) => updateField("address", v)}
+                onCityChange={(v) => updateField("city", v)}
+                onStateChange={(v) => updateField("state", v)}
+                onPostalCodeChange={(v) => updateField("postalCode", v)}
+                onCountryChange={(v) => updateField("country", v)}
+                options={dropdownOptions}
+              />
         </Section>
 
         <Separator />
