@@ -8,7 +8,6 @@
     "build": "next build",
     "start": "NODE_ENV=production next start",
     "start:next": "next start",
-    "lint": "eslint",
     "db:seed": "tsx lib/db/migrate.ts"
   },
   "dependencies": {
@@ -88,8 +87,6 @@
     "@types/spark-md5": "^3.0.5",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.9",
     "tsx": "^4.22.4",
     "typescript": "^5"
   },
