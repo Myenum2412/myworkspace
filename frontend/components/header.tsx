@@ -32,7 +32,8 @@ const CONTEXT_LABELS: Record<AppContextType, string> = {
   origin: "Origin Menu",
   workspace: "Workspace",
   staff: "Staff Panel",
-  public: "",
+  public: "Public",
+  client: "Client Portal",
 };
 
 export function Header({ context }: { context?: AppContextType }) {

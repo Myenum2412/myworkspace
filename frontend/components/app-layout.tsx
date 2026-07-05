@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { OrgSidebar } from "@/components/org-sidebar";
 import { StaffSidebar } from "@/components/staff-sidebar";
+import { ClientSidebar } from "@/components/client-sidebar";
 import { Header } from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
@@ -31,8 +32,14 @@ export function AppLayout({ children }: AppLayoutProps) {
     const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(role);
     
     if (session?.user && !isWorkspaceAdmin) {
-      if (!pathname.startsWith("/staffs") && !pathname.startsWith("/login")) {
-        router.replace("/staffs");
+      if (role === "client") {
+        if (!pathname.startsWith("/client") && !pathname.startsWith("/login")) {
+          router.replace("/client/dashboard");
+        }
+      } else {
+        if (!pathname.startsWith("/staffs") && !pathname.startsWith("/login")) {
+          router.replace("/staffs");
+        }
       }
     }
   }, [session?.user, session?.user?.role, pathname, router]);
@@ -61,6 +68,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         return <OrgSidebar user={user} />;
       case "staff":
         return <StaffSidebar user={user} />;
+      case "client":
+        return <ClientSidebar user={user} />;
       default:
         return <AppSidebar user={user} />;
     }

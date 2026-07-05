@@ -1,4 +1,4 @@
-export type AppContextType = "origin" | "workspace" | "staff" | "public";
+export type AppContextType = "origin" | "workspace" | "staff" | "public" | "client";
 
 export const ORIGIN_ROUTES = ["/orgmenu"];
 export const STAFF_ROUTES = ["/staffs"];
@@ -17,6 +17,7 @@ export const WORKSPACE_ROUTES = [
 export function getAppContext(pathname: string): AppContextType {
   if (pathname.startsWith("/orgmenu")) return "origin";
   if (pathname.startsWith("/staffs")) return "staff";
+  if (pathname.startsWith("/client")) return "client";
   if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "public";
   if (WORKSPACE_ROUTES.some((p) => pathname.startsWith(p))) return "workspace";
   if (pathname.startsWith("/api") || pathname.startsWith("/_next")) return "public";

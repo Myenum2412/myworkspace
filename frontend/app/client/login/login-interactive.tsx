@@ -46,10 +46,9 @@ export default function LoginInteractive() {
       localStorage.setItem("client_user", JSON.stringify(data.data.user));
 
       if (data.data.user.mustChangePassword) {
-        router.push(`/client/settings?forcePasswordChange=true`);
-      } else {
-        router.push("/client/dashboard");
+        localStorage.setItem("must_change_password", "true");
       }
+      router.push("/client/dashboard");
     } catch {
       setError("Unable to connect to server");
     } finally {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, FileText, FolderOpen, Loader2 } from "lucide-react";
@@ -15,37 +16,42 @@ type FileItem = {
   createdAt: string;
 };
 
-export default function DocumentsInteractive() {
+export default function FileManagerInteractive() {
   const router = useRouter();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { status } = useSession();
+
   useEffect(() => {
-    const token = localStorage.getItem("client_token");
-    if (!token) {
-      router.push("/client/login");
+    if (status === "unauthenticated") {
+      router.push("/login");
       return;
     }
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/client-auth/workspace-stats`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success && d.data?.recentFiles) {
-          setFiles(d.data.recentFiles.map((f: { id: string; name: string; mimeType: string; size: number; category: string; createdAt: string }) => ({
-            id: f.id,
-            name: f.name,
-            mimeType: f.mimeType,
-            size: f.size,
-            category: f.category,
-            createdAt: f.createdAt,
-          })));
-        }
-      })
-      .catch(() => setError("Failed to load documents"))
-      .finally(() => setLoading(false));
-  }, []);
+    if (status === "authenticated") {
+      const token = localStorage.getItem("client_token") || "";
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      
+      fetch(`/api/client-auth/workspace-stats`, { headers })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success && d.data?.recentFiles) {
+            setFiles(d.data.recentFiles.map((f: { id: string; name: string; mimeType: string; size: number; category: string; createdAt: string }) => ({
+              id: f.id,
+              name: f.name,
+              mimeType: f.mimeType,
+              size: f.size,
+              category: f.category,
+              createdAt: f.createdAt,
+            })));
+          }
+        })
+        .catch(() => setError("Failed to load documents"))
+        .finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
   if (error) {
     return (
@@ -62,18 +68,14 @@ export default function DocumentsInteractive() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <div className="max-w-4xl mx-auto space-y-4">
-        <Button variant="ghost" onClick={() => router.push("/client/dashboard")}>
-          <ArrowLeft className="size-4 mr-1" /> Back to Dashboard
-        </Button>
+    <div className="max-w-4xl mx-auto w-full space-y-4">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-primary/10 p-2">
                 <FolderOpen className="size-5 text-primary" />
               </div>
-              <CardTitle>Documents & Files</CardTitle>
+              <CardTitle>File Manager</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -98,7 +100,6 @@ export default function DocumentsInteractive() {
             )}
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

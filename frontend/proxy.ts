@@ -7,7 +7,7 @@ const ORIGIN_PREFIXES = ["/orgmenu"];
 const STAFF_PREFIXES = ["/staffs"];
 const PUBLIC_PATHS = new Set(["/login", "/login/verify-2fa", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/client/login", "/auth/not-found"]);
 const PUBLIC_PREFIXES = new Set(["/share"]);
-const CLIENT_PREFIXES = ["/client/dashboard", "/client/profile", "/client/projects", "/client/documents", "/client/notifications", "/client/settings"];
+const CLIENT_PREFIXES = ["/client/dashboard", "/client/projects", "/client/file-manager", "/client/notifications"];
 const WORKSPACE_PREFIXES = [
   "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
   "/projects", "/teams", "/clients", "/approvals", "/reports",

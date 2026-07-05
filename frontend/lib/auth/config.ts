@@ -273,21 +273,41 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         const { db } = await import("@/lib/db");
         console.log("[AUTH authorize] looking up", email);
         const user = await db.collection("users").findOne({ email });
-        console.log("[AUTH authorize] user found:", !!user, "has password:", !!user?.password);
-        if (!user) return null;
-        if (!user.password) return null;
-        const valid = await compare(password, user.password);
-        console.log("[AUTH authorize] password valid:", valid);
-        if (!valid) return null;
-        const userId = user.id || user._id?.toString();
-        const memberDoc = await db.collection("org_members").findOne({ userId });
-        const orgId = memberDoc?.orgId?.toString() || "";
-        let onboardingCompleted = true;
-        if (orgId) {
-          const org = await db.collection("organizations").findOne({ id: orgId });
-          onboardingCompleted = org?.onboardingCompleted === true;
+        
+        if (user && user.password) {
+          const valid = await compare(password, user.password);
+          console.log("[AUTH authorize] password valid:", valid);
+          if (valid) {
+            const userId = user.id || user._id?.toString();
+            const memberDoc = await db.collection("org_members").findOne({ userId });
+            const orgId = memberDoc?.orgId?.toString() || "";
+            let onboardingCompleted = true;
+            if (orgId) {
+              const org = await db.collection("organizations").findOne({ id: orgId });
+              onboardingCompleted = org?.onboardingCompleted === true;
+            }
+            return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [], orgId, onboardingCompleted };
+          }
         }
-        return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [], orgId, onboardingCompleted };
+        
+        // If not found or invalid in users, try client_users
+        const clientUser = await db.collection("client_users").findOne({ email });
+        if (clientUser && clientUser.password && clientUser.isActive) {
+          const valid = await compare(password, clientUser.password);
+          if (valid) {
+            return {
+              id: clientUser.id || clientUser._id?.toString(),
+              email: clientUser.email,
+              name: clientUser.name,
+              role: "client",
+              permissions: [],
+              orgId: clientUser.orgId,
+              onboardingCompleted: true,
+            };
+          }
+        }
+        
+        return null;
       },
     }),
   ],

@@ -13,6 +13,7 @@ import { getNextSequence } from "@/lib/db/counter";
 function getRedirectPath(role?: string): string {
   const r = role?.toLowerCase() || "";
   if (r === "org_menu_admin" || r === "super_admin") return "/orgmenu";
+  if (r === "client" || r === "client_user") return "/client/dashboard";
   const isWorkspaceAdmin = ["workspace", "admin", "manager"].includes(r);
   if (isWorkspaceAdmin) return "/dashboard";
   return "/staffs";
@@ -47,81 +48,108 @@ export async function loginAction(formData: FormData) {
     redirect("/login?error=Invalid+email+or+password");
   }
 
-  const user = await db.collection(collections.users).findOne({ email });
+  let user = await db.collection(collections.users).findOne({ email });
+  let isClient = false;
+
+  if (!user) {
+    user = await db.collection(collections.clientUsers).findOne({ email });
+    if (user) {
+      isClient = true;
+    }
+  }
+
   if (!user) {
     console.error(`[AUTH] loginAction: user not found in DB after signIn: ${email}`);
     redirect("/login?error=User+not+found");
   }
 
   const userId = user.id || user._id?.toString();
-  await db.collection(collections.users).updateOne(
-    { _id: user._id },
-    { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
-  );
+  
+  if (isClient) {
+    await db.collection(collections.clientUsers).updateOne(
+      { _id: user._id },
+      { $set: { lastLogin: new Date() } }
+    );
+    
+    await db.collection(collections.clientAuditLogs).insertOne({
+      orgId: user.orgId,
+      clientId: user.clientId,
+      clientUserId: userId,
+      action: "client.login.success",
+      entityType: "client_user",
+      entityId: userId,
+      description: `${user.name} logged in`,
+    });
+  } else {
+    await db.collection(collections.users).updateOne(
+      { _id: user._id },
+      { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
+    );
 
-  const member = await db.collection(collections.orgMembers).findOne({ userId: userId });
+    const member = await db.collection(collections.orgMembers).findOne({ userId: userId });
 
-  // Auto-create org if user has none
-  if (!member) {
-    const userName = user.name || email.split("@")[0];
-    const newOrgId = uuid();
-    let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
-    const existingSlug = await db.collection(collections.organizations).findOne({ slug });
-    if (existingSlug) {
-      slug = `${slug}-${userId}`;
-    }
+    // Auto-create org if user has none
+    if (!member) {
+      const userName = user.name || email.split("@")[0];
+      const newOrgId = uuid();
+      let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
+      const existingSlug = await db.collection(collections.organizations).findOne({ slug });
+      if (existingSlug) {
+        slug = `${slug}-${userId}`;
+      }
 
-    const existingOrg = await db.collection(collections.organizations).findOne({ ownerId: userId });
-    const orgIdToUse = existingOrg?.id || newOrgId;
+      const existingOrg = await db.collection(collections.organizations).findOne({ ownerId: userId });
+      const orgIdToUse = existingOrg?.id || newOrgId;
 
-    if (!existingOrg) {
-      await db.collection(collections.organizations).updateOne(
-        { slug },
-        {
-          $setOnInsert: {
-            id: newOrgId,
-            name: `${userName}'s Organization`,
-            slug,
-            plan: "free",
-            ownerId: userId,
-            onboardingCompleted: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+      if (!existingOrg) {
+        await db.collection(collections.organizations).updateOne(
+          { slug },
+          {
+            $setOnInsert: {
+              id: newOrgId,
+              name: `${userName}'s Organization`,
+              slug,
+              plan: "free",
+              ownerId: userId,
+              onboardingCompleted: true,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
           },
-        },
-        { upsert: true }
-      );
+          { upsert: true }
+        );
+      }
+
+      const orgMemberExists = await db.collection(collections.orgMembers).findOne({ userId });
+      if (!orgMemberExists) {
+        await db.collection(collections.orgMembers).updateOne(
+          { userId, orgId: orgIdToUse },
+          {
+            $setOnInsert: {
+              id: uuid(),
+              orgId: orgIdToUse,
+              userId,
+              role: "admin",
+              joinedAt: new Date(),
+            },
+          },
+          { upsert: true }
+        );
+      }
     }
 
-    const orgMemberExists = await db.collection(collections.orgMembers).findOne({ userId });
-    if (!orgMemberExists) {
-      await db.collection(collections.orgMembers).updateOne(
-        { userId, orgId: orgIdToUse },
-        {
-          $setOnInsert: {
-            id: uuid(),
-            orgId: orgIdToUse,
-            userId,
-            role: "admin",
-            joinedAt: new Date(),
-          },
-        },
-        { upsert: true }
-      );
-    }
+    await db.collection(collections.activityLogs).insertOne({
+      id: uuid(),
+      orgId: member?.orgId || "system",
+      userId,
+      action: "user.login",
+      entityType: "user",
+      entityId: userId,
+      description: `${user.name} logged in`,
+    });
   }
 
-  await db.collection(collections.activityLogs).insertOne({
-    id: uuid(),
-    orgId: member?.orgId || "system",
-    userId,
-    action: "user.login",
-    entityType: "user",
-    entityId: userId,
-    description: `${user.name} logged in`,
-  });
-
-  const role = user?.role;
+  const role = isClient ? "client" : user?.role;
   const isOrgAdmin = role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN";
 
   const redirectPath = getRedirectPath(role);
