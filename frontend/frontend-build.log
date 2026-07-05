@@ -12,3 +12,167 @@
   Running TypeScript ...
   Finished TypeScript in 20.0s ...
   Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/72) ...
+  Generating static pages using 11 workers (18/72) 
+  Generating static pages using 11 workers (36/72) 
+  Generating static pages using 11 workers (54/72) 
+✓ Generating static pages using 11 workers (72/72) in 561ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /addemployees
+├ ƒ /addprojects
+├ ƒ /admin/profile
+├ ○ /ai-chat
+├ ƒ /ai-chat/[id]
+├ ƒ /alltasks
+├ ƒ /api/ai/chat
+├ ƒ /api/ai/conversations
+├ ƒ /api/ai/conversations/[id]
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/automation/apps
+├ ƒ /api/automation/apps/[id]
+├ ƒ /api/automation/followups
+├ ƒ /api/automation/followups/[id]
+├ ƒ /api/automation/leads
+├ ƒ /api/automation/leads/[id]
+├ ƒ /api/automation/rules
+├ ƒ /api/automation/rules/[id]
+├ ƒ /api/automation/triggers
+├ ƒ /api/automation/triggers/[id]
+├ ƒ /api/automation/workflows
+├ ƒ /api/automation/workflows/[id]
+├ ƒ /api/billing/create-checkout
+├ ƒ /api/billing/portal-session
+├ ƒ /api/clients
+├ ƒ /api/clients/[id]/workspace
+├ ƒ /api/dashboard/profit-loss
+├ ƒ /api/employees
+├ ƒ /api/employees/[id]
+├ ƒ /api/files
+├ ƒ /api/files/[id]
+├ ƒ /api/files/[id]/duplicate
+├ ƒ /api/files/[id]/lock
+├ ƒ /api/files/[id]/unlock
+├ ƒ /api/files/bulk-delete
+├ ƒ /api/files/bulk-move
+├ ƒ /api/files/bulk-restore
+├ ƒ /api/files/bulk-tag
+├ ƒ /api/files/members
+├ ƒ /api/files/recent
+├ ƒ /api/files/stats
+├ ƒ /api/folders
+├ ƒ /api/folders/[id]
+├ ƒ /api/organizations/[id]
+├ ƒ /api/projects-list
+├ ƒ /api/search
+├ ƒ /api/shares/internal
+├ ƒ /api/shares/links/[token]
+├ ƒ /api/shares/links/[token]/download
+├ ƒ /api/shares/links/[token]/verify
+├ ƒ /api/tasks/[id]
+├ ƒ /api/tasks/[id]/comments
+├ ƒ /api/tasks/[id]/comments/[commentId]
+├ ƒ /api/tasks/[id]/comments/read
+├ ƒ /api/time-entries
+├ ƒ /api/time-entries/[id]
+├ ƒ /api/time-entries/summary
+├ ƒ /api/user/banner
+├ ƒ /api/user/profile
+├ ƒ /api/user/profile-image
+├ ƒ /api/user/status
+├ ƒ /approvals
+├ ƒ /approvals/approved
+├ ƒ /approvals/rejected
+├ ƒ /attendance
+├ ○ /attendance/reports
+├ ○ /auth/not-found
+├ ƒ /auth/role-redirect
+├ ○ /automation
+├ ○ /billing
+├ ○ /billing/invoices
+├ ○ /billing/plans
+├ ƒ /calendar
+├ ƒ /client/dashboard
+├ ƒ /client/file-manager
+├ ƒ /client/login
+├ ○ /client/notifications
+├ ○ /client/projects
+├ ƒ /clients
+├ ƒ /clients/[id]
+├ ƒ /dashboard
+├ ƒ /departments
+├ ƒ /employees
+├ ƒ /files
+├ ƒ /files/audit
+├ ƒ /forgot-password
+├ ƒ /login
+├ ƒ /login/verify-2fa
+├ ƒ /my-time
+├ ƒ /mytasks
+├ ƒ /onboarding
+├ ƒ /orgmenu
+├ ƒ /orgmenu/analytics
+├ ƒ /orgmenu/audit
+├ ƒ /orgmenu/audit/exports
+├ ƒ /orgmenu/files
+├ ƒ /orgmenu/members
+├ ƒ /orgmenu/members/invite
+├ ƒ /orgmenu/members/roles
+├ ƒ /orgmenu/org
+├ ƒ /orgmenu/org/billing
+├ ƒ /orgmenu/org/plans
+├ ƒ /orgmenu/profile
+├ ƒ /orgmenu/reports
+├ ƒ /orgmenu/reports/activity
+├ ƒ /orgmenu/reports/usage
+├ ƒ /orgmenu/security
+├ ƒ /orgmenu/security/policies
+├ ƒ /orgmenu/security/sso
+├ ƒ /orgmenu/settings
+├ ƒ /orgmenu/settings/notifications
+├ ƒ /overview
+├ ○ /pricing
+├ ƒ /profile
+├ ƒ /projects
+├ ƒ /recycle-bin
+├ ƒ /reports
+├ ƒ /reset-password
+├ ƒ /savedtasks
+├ ƒ /settings
+├ ƒ /settings/plans
+├ ƒ /settings/security
+├ ƒ /share/[token]
+├ ƒ /signup
+├ ƒ /staffs
+├ ƒ /staffs/activity
+├ ƒ /staffs/add
+├ ƒ /staffs/files
+├ ƒ /staffs/list
+├ ƒ /staffs/performance
+├ ƒ /staffs/performance/goals
+├ ƒ /staffs/profile
+├ ƒ /staffs/schedule
+├ ƒ /staffs/settings
+├ ƒ /staffs/settings/roles
+├ ƒ /staffs/tasks
+├ ƒ /staffs/time-off
+├ ƒ /staffs/timesheet
+├ ƒ /team-time
+├ ƒ /teams
+├ ƒ /teamtasks
+├ ƒ /terminated
+├ ƒ /time-reports
+├ ƒ /time-tracker
+├ ƒ /upcomingtasks
+├ ƒ /upload
+└ ƒ /verify-email
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
