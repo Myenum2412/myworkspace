@@ -2,21 +2,21 @@
 > my-app@0.1.0 build
 > next build
 
-▲ Next.js 16.2.9 (Turbopack)
+▲ Next.js 16.2.10 (Turbopack)
 - Environments: .env
 - Experiments (use with caution):
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 15.9s
+✓ Compiled successfully in 10.1s
   Running TypeScript ...
-  Finished TypeScript in 20.0s ...
+  Finished TypeScript in 13.8s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/72) ...
-  Generating static pages using 11 workers (18/72) 
-  Generating static pages using 11 workers (36/72) 
-  Generating static pages using 11 workers (54/72) 
-✓ Generating static pages using 11 workers (72/72) in 561ms
+  Generating static pages using 11 workers (0/62) ...
+  Generating static pages using 11 workers (15/62) 
+  Generating static pages using 11 workers (30/62) 
+  Generating static pages using 11 workers (46/62) 
+✓ Generating static pages using 11 workers (62/62) in 504ms
   Finalizing page optimization ...
 
 Route (app)
@@ -25,25 +25,8 @@ Route (app)
 ├ ƒ /addemployees
 ├ ƒ /addprojects
 ├ ƒ /admin/profile
-├ ○ /ai-chat
-├ ƒ /ai-chat/[id]
 ├ ƒ /alltasks
-├ ƒ /api/ai/chat
-├ ƒ /api/ai/conversations
-├ ƒ /api/ai/conversations/[id]
 ├ ƒ /api/auth/[...nextauth]
-├ ƒ /api/automation/apps
-├ ƒ /api/automation/apps/[id]
-├ ƒ /api/automation/followups
-├ ƒ /api/automation/followups/[id]
-├ ƒ /api/automation/leads
-├ ƒ /api/automation/leads/[id]
-├ ƒ /api/automation/rules
-├ ƒ /api/automation/rules/[id]
-├ ƒ /api/automation/triggers
-├ ƒ /api/automation/triggers/[id]
-├ ƒ /api/automation/workflows
-├ ƒ /api/automation/workflows/[id]
 ├ ƒ /api/billing/create-checkout
 ├ ƒ /api/billing/portal-session
 ├ ƒ /api/clients
@@ -90,7 +73,6 @@ Route (app)
 ├ ○ /attendance/reports
 ├ ○ /auth/not-found
 ├ ƒ /auth/role-redirect
-├ ○ /automation
 ├ ○ /billing
 ├ ○ /billing/invoices
 ├ ○ /billing/plans

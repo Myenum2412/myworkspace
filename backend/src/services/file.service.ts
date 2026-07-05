@@ -17,6 +17,7 @@ export interface FileUploadInput {
   orgId: string;
   folderId?: string | null;
   clientId?: string | null;
+  projectId?: string | null;
   uploaderId: string;
   name: string;
   originalName: string;
@@ -44,7 +45,7 @@ function invalidateFileCaches(orgId: string): void {
 
 export async function uploadFile(input: FileUploadInput): Promise<FileUploadResult> {
   const {
-    orgId, clientId, folderId, uploaderId,
+    orgId, clientId, folderId, projectId, uploaderId,
     name, originalName, mimeType, size, buffer, checksum,
     description, tags, skipDuplicates = true, category,
   } = input;
@@ -60,7 +61,12 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
   if (skipDuplicates) {
     const existingDuplicate = await FileAttachment.findOne({
       orgId, checksum: sha, deletedAt: null,
-      $or: [{ folderId: folderId || null }, { folderId: { $exists: false } }],
+      $or: [
+        { folderId: folderId || null },
+        { folderId: { $exists: false }, projectId: { $exists: false }, clientId: { $exists: false } },
+        ...(projectId ? [{ projectId }] : []),
+        ...(clientId ? [{ clientId }] : []),
+      ],
     }).lean();
 
     if (existingDuplicate) {
@@ -81,7 +87,7 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
   const fileCategory = category || categorizeMime(actualMimeType);
 
   await FileAttachment.create({
-    id: fileId, orgId, folderId: folderId || null, clientId: clientId || null,
+    id: fileId, orgId, folderId: folderId || null, clientId: clientId || null, projectId: projectId || null,
     uploaderId, createdBy: uploaderId, name, originalName,
     mimeType: actualMimeType, size, storagePath,
     storageProvider: env.S3_ENDPOINT ? "s3" : "local",

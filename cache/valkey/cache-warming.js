@@ -131,7 +131,7 @@ const PREDEFINED_DATA: Record<string, unknown[]> = {
     { app: { name: "myworkspace", version: "1.0.0", debug: false } },
   ],
   "features": [
-    { aiChat: true, automation: true, billing: true, sso: false, advancedReporting: true, webhooks: true },
+    { billing: true, sso: false, advancedReporting: true, webhooks: true },
   ],
   "plans": [
     { id: "free", name: "Free", storage: 10e9, features: ["basic", "tasks"], rateLimit: 100 },

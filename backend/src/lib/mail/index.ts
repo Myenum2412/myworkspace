@@ -1,53 +1,26 @@
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+import { Resend } from "resend";
 import { env } from "../../config/env.js";
 
-function isSesConfigured(): boolean {
-  const key = env.SES_ACCESS_KEY_ID;
-  const secret = env.SES_SECRET_ACCESS_KEY;
-  const from = env.MAIL_FROM;
-  if (!key || !secret || !from) return false;
-  if (key === "your-ses-access-key" || secret === "your-ses-secret-key") return false;
-  return true;
-}
-
-let sesClient: SESClient | null = null;
-
-function getSesClient(): SESClient {
-  if (!sesClient) {
-    sesClient = new SESClient({
-      region: env.SES_REGION,
-      credentials: {
-        accessKeyId: env.SES_ACCESS_KEY_ID,
-        secretAccessKey: env.SES_SECRET_ACCESS_KEY,
-      },
-    });
-  }
-  return sesClient;
-}
+const resend = new Resend(env.RESEND_API_KEY);
 
 async function sendEmail(
   to: string,
   subject: string,
   htmlBody: string
 ): Promise<void> {
-  if (!isSesConfigured()) {
+  if (!env.RESEND_API_KEY) {
+    console.warn("[mail] RESEND_API_KEY not configured - skipping email");
     return;
   }
 
-  try {
-    const command = new SendEmailCommand({
-      Source: env.MAIL_FROM,
-      Destination: { ToAddresses: [to] },
-      Message: {
-        Subject: { Data: subject, Charset: "UTF-8" },
-        Body: { Html: { Data: htmlBody, Charset: "UTF-8" } },
-      },
-    });
+  const result = await resend.emails.send({
+    from: env.MAIL_FROM,
+    to,
+    subject,
+    html: htmlBody,
+  });
 
-    await getSesClient().send(command);
-  } catch (err: any) {
-    console.warn(`[mail] Failed to send email to ${to}: ${err?.message || err}`);
-  }
+  console.log(`[mail] Email sent to ${to}`);
 }
 
 export async function sendPasswordResetEmail(
@@ -89,17 +62,34 @@ export async function sendWelcomeEmail(
   name: string
 ): Promise<void> {
   const html = `
-    <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
-      <h1 style="font-size: 22px; margin: 0 0 16px;">Welcome aboard, ${name}!</h1>
-      <p style="font-size: 15px; line-height: 1.6; color: #1f2937;">
-        Your MyWorkspace account is ready. Jump in, set up your org, and start tracking work in real time.
-      </p>
-      <a href="${env.APP_URL}/orgmenu"
-         style="display: inline-block; margin-top: 16px; padding: 10px 18px; background: #3b82f6; color: #fff; border-radius: 8px; text-decoration: none; font-size: 14px;">
-        Open Dashboard
-      </a>
-      <p style="margin-top: 24px; font-size: 12px; color: #6b7280;">
-        If you did not create this account, you can safely ignore this email.
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <img src="https://cdn-icons-png.flaticon.com/512/833/833314.png" width="40" height="40" alt="MyWorkspace" style="border-radius:10px;" />
+        <h1 style="margin:8px 0 0;font-size:18px;color:#1a1a2e;">MyWorkspace</h1>
+      </div>
+
+      <div style="background:#ffffff;border-radius:12px;padding:24px;border:1px solid #e2e8f0;">
+        <h2 style="margin:0 0 12px;font-size:18px;color:#1a1a2e;">Welcome, ${name}!</h2>
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#475569;">
+          Your account is ready. Start managing projects, tasks, and your team.
+        </p>
+
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;border:1px solid #e2e8f0;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/5968/5968534.png" width="20" height="20" alt="" />
+            <span style="font-size:13px;color:#64748b;">${to}</span>
+          </div>
+        </div>
+
+        <a href="${env.APP_URL}/orgmenu"
+           style="display:block;padding:10px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;text-align:center;">
+          Get Started
+        </a>
+      </div>
+
+      <p style="margin-top:16px;font-size:11px;color:#94a3b8;text-align:center;">
+        If you didn't create this account, ignore this email.<br>
+        &copy; ${new Date().getFullYear()} MyWorkspace
       </p>
     </div>
   `;

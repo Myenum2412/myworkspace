@@ -8,12 +8,39 @@ import ProfileClient from "./client";
 
 export const dynamic = "force-dynamic";
 
+type ExperienceRow = {
+  id?: string;
+  company?: string;
+  title?: string;
+  roles?: string;
+  from?: string;
+  to?: string;
+  description?: string;
+  relevant?: boolean;
+};
+
+type EducationRow = {
+  id?: string;
+  institute?: string;
+  degree?: string;
+  specialization?: string;
+  completionDate?: string;
+};
+
+type DependentRow = {
+  id?: string;
+  name?: string;
+  relationship?: string;
+  dob?: string;
+};
+
 type ProfileData = {
   user: {
     id: string;
     name: string;
     email: string;
     phone: string;
+    secondaryPhone: string;
     department: string;
     company: string;
     address: string;
@@ -30,6 +57,23 @@ type ProfileData = {
     createdAt: string;
     bannerUrl: string;
     image: string;
+    displayId: string;
+    firstName: string;
+    lastName: string;
+    nickname: string;
+    location: string;
+    designation: string;
+    employmentType: string;
+    branchName: string;
+    shift: string;
+    sourceOfHire: string;
+    joiningDate: string;
+    currentExperience: string;
+    totalExperience: string;
+    workExperience: ExperienceRow[];
+    educationDetails: EducationRow[];
+    dependentDetails: DependentRow[];
+    offerLetter: string;
   } | null;
   org: {
     id: string;
@@ -110,6 +154,7 @@ export default async function ProfilePage() {
       name: (user.name as string) || "",
       email: (user.email as string) || "",
       phone: (user.phone as string) || "",
+      secondaryPhone: (user.secondaryPhone as string) || (user.alternateEmail as string) || "",
       department: (user.department as string) || "",
       company: (user.company as string) || "",
       address: (user.address as string) || "",
@@ -125,6 +170,23 @@ export default async function ProfilePage() {
       role: (user.role as string) || "member",
       image: (user.image as string) || "",
       bannerUrl: (user.bannerUrl as string) || "",
+      displayId: (user.displayId as string) || "",
+      firstName: (user.firstName as string) || "",
+      lastName: (user.lastName as string) || "",
+      nickname: (user.nickname as string) || "",
+      location: (user.location as string) || "",
+      designation: (user.designation as string) || "",
+      employmentType: (user.employmentType as string) || "",
+      branchName: (user.branchName as string) || "",
+      shift: (user.shift as string) || "",
+      sourceOfHire: (user.sourceOfHire as string) || "",
+      joiningDate: (user.joiningDate as string) || "",
+      currentExperience: (user.currentExperience as string) || "",
+      totalExperience: (user.totalExperience as string) || "",
+      workExperience: (user.workExperience as ExperienceRow[]) || [],
+      educationDetails: (user.educationDetails as EducationRow[]) || [],
+      dependentDetails: (user.dependentDetails as DependentRow[]) || [],
+      offerLetter: (user.offerLetter as string) || "",
       createdAt: user.createdAt ? new Date(user.createdAt as string).toISOString() : new Date().toISOString(),
     },
     org: org

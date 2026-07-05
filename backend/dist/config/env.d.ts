@@ -7,9 +7,7 @@ export declare const env: {
     ADMIN_PASSWORD: string;
     CORS_ORIGIN: string[];
     NODE_ENV: string;
-    SES_REGION: string;
-    SES_ACCESS_KEY_ID: string;
-    SES_SECRET_ACCESS_KEY: string;
+    RESEND_API_KEY: string;
     MAIL_FROM: string;
     APP_URL: string;
     BASE_URL_WS: string;
@@ -18,6 +16,7 @@ export declare const env: {
     S3_ACCESS_KEY_ID: string;
     S3_SECRET_ACCESS_KEY: string;
     S3_REGION: string;
+    S3_PUBLIC_URL: string;
     TUS_PREFIX: string;
     TUS_MAX_SIZE: number;
     TUS_TTL_MS: number;

@@ -1,6 +1,4 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   serverExternalPackages: ["better-sqlite3", "mongodb"],
   experimental: {
     serverActions: {
@@ -10,7 +8,7 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    minimumCacheTTL: 60 * 60 * 24, // 24 hours
+    minimumCacheTTL: 60 * 60 * 24,
   },
   async rewrites() {
     return {
@@ -33,13 +31,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
-  // Compress responses
   compress: true,
-  // Generate etags for caching
   generateEtags: true,
   poweredByHeader: false,
-  // CDN asset prefix — set CDN_URL env var to enable (e.g. https://cdn.example.com)
-  assetPrefix: process.env.CDN_URL || undefined,
 };
 
-export default nextConfig;
+if (process.env.CDN_URL) {
+  nextConfig.assetPrefix = process.env.CDN_URL;
+}
+
+module.exports = nextConfig;

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { AiChatSidebar } from "@/components/ai/ai-chat-sidebar";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -11,9 +10,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import AutoModeIcon from "@mui/icons-material/AutoMode";
 import {
-  Bot,
   LayoutDashboardIcon,
   ListChecksIcon,
   UsersIcon,
@@ -89,14 +86,6 @@ export const defaultNavData = {
       ],
     },
     {
-      title: "Automation",
-      url: "/automation",
-      icon: <AutoModeIcon className="size-6" />,
-      items: [
-        { title: "Workflows", url: "/automation" },
-      ],
-    },
-    {
       title: "Time Tracker",
       url: "/time-tracker",
       icon: <ClockIcon className="size-6" />,
@@ -126,11 +115,6 @@ export const defaultNavData = {
         { title: "Plans", url: "/billing/plans" },
         { title: "Invoices", url: "/billing/invoices" },
       ],
-    },
-    {
-      title: "AI Chat",
-      url: "/ai-chat",
-      icon: <Bot className="size-6" />,
     },
     {
       title: "Settings",
@@ -179,7 +163,6 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain.slice(0, -1)} label="Platform" />
-        <AiChatSidebar />
         <NavMain items={data.navMain.slice(-1)} label="Settings" className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

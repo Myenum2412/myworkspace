@@ -27,7 +27,7 @@ router.get("/", async (req, res) => {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(200, Math.max(1, parseInt(req.query.limit) || 50));
     const skip = (page - 1) * limit;
-    const queryFilter = { orgId };
+    const queryFilter = { orgId, userId: req.user.userId };
     if (entityType) {
         queryFilter.entityType = { $in: entityType.split(",") };
     }

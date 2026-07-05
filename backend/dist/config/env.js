@@ -11,10 +11,8 @@ export const env = {
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || "",
     CORS_ORIGIN: (process.env.CORS_ORIGIN || "http://localhost:3000,https://myworkspace.myenum.in").split(",").map(s => s.trim()),
     NODE_ENV: process.env.NODE_ENV || "development",
-    SES_REGION: process.env.SES_REGION || "us-east-1",
-    SES_ACCESS_KEY_ID: process.env.SES_ACCESS_KEY_ID || "",
-    SES_SECRET_ACCESS_KEY: process.env.SES_SECRET_ACCESS_KEY || "",
-    MAIL_FROM: process.env.MAIL_FROM || "MyWorkspace <welcome@myworkspace.myenum.in>",
+    RESEND_API_KEY: process.env.RESEND_API_KEY || "",
+    MAIL_FROM: process.env.MAIL_FROM || "onboarding@resend.dev",
     APP_URL: process.env.APP_URL || "http://localhost:3000",
     // Websocket connect-src for Helmet CSP (derived from APP_URL).
     BASE_URL_WS: process.env.BASE_URL_WS || (process.env.APP_URL || "http://localhost:3000").replace(/^http/, "ws"),
@@ -22,7 +20,8 @@ export const env = {
     S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || "",
     S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || "",
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || "",
-    S3_REGION: process.env.S3_REGION || "us-east-1",
+    S3_REGION: process.env.S3_REGION || "auto",
+    S3_PUBLIC_URL: process.env.S3_PUBLIC_URL || "",
     // TUS resumable upload (tus-node-server + FileStore). Chunk persistence lands
     // under data/tus-uploads/; final objects go to S3 via the orchestrator.
     TUS_PREFIX: process.env.TUS_PREFIX || "/files-tus",

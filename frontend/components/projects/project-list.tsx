@@ -1,8 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { PlusIcon, Loader2Icon } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import { DataTable } from "@/components/data-table";
 import { columns } from "@/app/projects/columns";
 import type { ProjectListProps } from "./project-types";
@@ -17,13 +16,7 @@ export default function ProjectList({
 }: ProjectListProps) {
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">All Projects</h1>
-        <Button onClick={onNewProject}>
-          <PlusIcon className="mr-2 size-4" />
-          New Project
-        </Button>
-      </div>
+      <h1 className="text-2xl font-bold">All Projects</h1>
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>

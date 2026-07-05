@@ -36,8 +36,6 @@ import settingsRoutes from "./routes/settings.js";
 import fileApprovalRoutes from "./routes/file-approval.js";
 import billingRoutes from "./routes/billing.js";
 import twoFactorRoutes from "./routes/two-factor.js";
-import automationRoutes from "./routes/automation.js";
-import automationWebhookRoutes from "./routes/automation-webhook.js";
 const app = express();
 app.set("trust proxy", 1);
 const isProd = env.NODE_ENV === "production";
@@ -151,8 +149,6 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/file-approval", fileApprovalRoutes);
 app.use("/api/two-factor", twoFactorRoutes);
 app.use("/api/billing", billingRoutes);
-app.use("/api/automation", automationRoutes);
-app.use("/api/automation/webhook", automationWebhookRoutes);
 // 404 catch-all — log unmatched routes with clear diagnostics
 app.use((req, res) => {
     const method = req.method;

@@ -4,6 +4,7 @@ import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { verifyOwnership } from "../middleware/ownership.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import type { PipelineStage } from "mongoose";
 
@@ -11,23 +12,24 @@ const router = Router();
 
 router.use(authenticate);
 
-// Get team summary - aggregated time entries per org member using aggregation pipeline
+// Get team summary - aggregated time entries scoped to the current user
 router.get("/team-summary", async (req: AuthRequest, res: Response) => {
   try {
     const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
+    const userId = req.user!.userId;
     const date = req.query.date as string;
 
-    const dateFilter: Record<string, unknown> = {};
+    const matchFilter: Record<string, unknown> = { orgId, userId };
     if (date) {
       const d = new Date(date);
-      dateFilter.date = {
+      matchFilter.date = {
         $gte: new Date(d.setHours(0, 0, 0, 0)),
         $lt: new Date(d.setHours(23, 59, 59, 999)),
       };
     }
 
     const pipeline: PipelineStage[] = [
-      { $match: { orgId, ...dateFilter } },
+      { $match: matchFilter },
       {
         $group: {
           _id: "$userId",
@@ -40,18 +42,6 @@ router.get("/team-summary", async (req: AuthRequest, res: Response) => {
             $sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] },
           },
         },
-      },
-      {
-        $lookup: {
-          from: "orgmembers",
-          localField: "_id",
-          foreignField: "userId",
-          as: "membership",
-        },
-      },
-      { $unwind: "$membership" },
-      {
-        $match: { "membership.orgId": orgId },
       },
       {
         $lookup: {
@@ -69,10 +59,6 @@ router.get("/team-summary", async (req: AuthRequest, res: Response) => {
           name: { $ifNull: ["$userData.name", "Unknown"] },
           email: { $ifNull: ["$userData.email", ""] },
           avatar: { $ifNull: ["$userData.image", ""] },
-          status: { $ifNull: ["$userData.status", "offline"] },
-          department: { $ifNull: ["$userData.department", ""] },
-          designation: { $ifNull: ["$userData.designation", ""] },
-          role: "$membership.role",
           totalMinutes: 1,
           totalHours: { $toString: { $divide: ["$totalMinutes", 60] } },
           entryCount: 1,
@@ -84,7 +70,6 @@ router.get("/team-summary", async (req: AuthRequest, res: Response) => {
 
     const result = await TimeEntry.aggregate(pipeline).exec();
 
-    // Fix totalHours to be a fixed-decimal string
     for (const r of result) {
       r.totalHours = (r.totalMinutes / 60).toFixed(1);
     }
@@ -120,13 +105,8 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
     const skip = (page - 1) * limit;
 
-    // Filtering
-    const matchStage: Record<string, unknown> = { orgId };
-
-    const userId = req.query.userId as string;
-    if (userId) {
-      matchStage.userId = userId;
-    }
+    // Filtering — always scope to the requesting user
+    const matchStage: Record<string, unknown> = { orgId, userId: req.user!.userId };
 
     const status = req.query.status as string;
     if (status) {
@@ -238,19 +218,21 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Create time entry
+// Create time entry — always owned by the requesting user
 router.post("/", async (req: AuthRequest, res: Response) => {
   try {
-    const { orgId: bodyOrgId, userId, date, startTime, endTime, duration, description, billable, status } = req.body;
+    const { orgId: bodyOrgId, date, startTime, endTime, duration, description, billable, status } = req.body;
 
     const orgId = bodyOrgId || await requireOrgMembership(req.user!.userId);
+    const userId = req.user!.userId;
 
-    const membership = await OrgMember.findOne({ userId: userId || req.user!.userId, orgId }).lean();
+    const membership = await OrgMember.findOne({ userId, orgId }).lean();
     if (!membership) throw new AppError(403, "Not authorized");
 
     const entry = await TimeEntry.create({
       orgId,
-      userId: userId || req.user!.userId,
+      userId,
+      createdBy: userId,
       date: date ? new Date(date) : new Date(),
       startTime,
       endTime,
@@ -267,15 +249,9 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Update time entry
-router.put("/:id", async (req: AuthRequest, res: Response) => {
+// Update time entry — must own the entry
+router.put("/:id", verifyOwnership(TimeEntry, "userId"), async (req: AuthRequest, res: Response) => {
   try {
-    const entry = await TimeEntry.findById(req.params.id).lean();
-    if (!entry) throw new AppError(404, "Time entry not found");
-
-    const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: entry.orgId.toString() }).lean();
-    if (!membership) throw new AppError(403, "Not authorized");
-
     const updates: Record<string, unknown> = {};
     const allowed = ["date", "startTime", "endTime", "duration", "description", "billable", "status"];
     for (const field of allowed) {
@@ -292,15 +268,9 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Delete time entry
-router.delete("/:id", async (req: AuthRequest, res: Response) => {
+// Delete time entry — must own the entry
+router.delete("/:id", verifyOwnership(TimeEntry, "userId"), async (req: AuthRequest, res: Response) => {
   try {
-    const entry = await TimeEntry.findById(req.params.id).lean();
-    if (!entry) throw new AppError(404, "Time entry not found");
-
-    const membership = await OrgMember.findOne({ userId: req.user!.userId, orgId: entry.orgId.toString() }).lean();
-    if (!membership) throw new AppError(403, "Not authorized");
-
     await TimeEntry.findByIdAndDelete(req.params.id);
     res.json({ success: true });
   } catch (error) {

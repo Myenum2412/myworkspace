@@ -17,7 +17,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 *
 const isObjectId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
 
 router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
-  const user = await User.findOne({ email: req.user!.email }).lean();
+  const user = await User.findOne({ id: req.user!.userId }).lean();
   if (!user) throw new AppError(404, "User not found");
 
   res.json({
@@ -35,7 +35,7 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => {
-  const user = await User.findOne({ email: req.user!.email }).lean();
+  const user = await User.findOne({ id: req.user!.userId }).lean();
   if (!user) throw new AppError(404, "User not found");
 
   const userId = user.id || (user as any)._id?.toString();
@@ -104,7 +104,7 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
 });
 
 router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) => {
-  const user = await User.findOne({ email: req.user!.email });
+  const user = await User.findOne({ id: req.user!.userId });
   if (!user) throw new AppError(404, "User not found");
 
   const {
@@ -225,7 +225,7 @@ router.post("/status", authenticate, async (req: AuthRequest, res: Response) => 
 });
 
 router.get("/banner", authenticate, async (req: AuthRequest, res: Response) => {
-  const user = await User.findOne({ email: req.user!.email }).select("image").lean();
+  const user = await User.findOne({ id: req.user!.userId }).select("image").lean();
   res.json({ success: true, data: { bannerUrl: user?.image || null } });
 });
 
@@ -244,7 +244,7 @@ router.post("/banner", authenticate, upload.single("banner"), async (req: AuthRe
   }
 
   if (bannerUrl) {
-    await User.findOneAndUpdate({ email: req.user!.email }, { image: bannerUrl });
+    await User.findOneAndUpdate({ id: req.user!.userId }, { image: bannerUrl });
   }
 
   cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);

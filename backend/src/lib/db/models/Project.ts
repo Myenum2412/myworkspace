@@ -13,6 +13,11 @@ export interface IProject extends Document {
   access: "Public" | "Private";
   status: "Active" | "Inactive";
   members: string[];
+  priority: "low" | "medium" | "high" | "critical";
+  category: string;
+  budget: number;
+  spent: number;
+  startDate: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +36,11 @@ const projectSchema = new Schema<IProject>(
     access: { type: String, enum: ["Public", "Private"], default: "Public" },
     status: { type: String, enum: ["Active", "Inactive"], default: "Active" },
     members: { type: [String], default: [] },
+    priority: { type: String, enum: ["low", "medium", "high", "critical"], default: "medium" },
+    category: { type: String, default: "" },
+    budget: { type: Number, default: 0 },
+    spent: { type: Number, default: 0 },
+    startDate: { type: Date, default: null },
   },
   { timestamps: true }
 );

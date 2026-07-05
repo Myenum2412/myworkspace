@@ -14,11 +14,12 @@ const router = Router();
 router.use(authenticate);
 
 router.post("/", async (req: AuthRequest, res: Response) => {
-  const { userId, orgId, type, title, message, link } = req.body;
-  if (!userId || !type || !title) {
-    throw new AppError(400, "userId, type, and title are required");
+  const { type, title, message, link } = req.body;
+  if (!type || !title) {
+    throw new AppError(400, "type and title are required");
   }
-  const targetOrgId = orgId || req.user!.orgId;
+  const userId = req.user!.userId;
+  const targetOrgId = req.body.orgId || req.user!.orgId;
   if (!targetOrgId) {
     throw new AppError(400, "orgId is required");
   }
@@ -26,7 +27,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   const payload = await createNotification({
     userId,
     orgId: targetOrgId,
-    createdBy: req.user!.userId,
+    createdBy: userId,
     type,
     title,
     message,

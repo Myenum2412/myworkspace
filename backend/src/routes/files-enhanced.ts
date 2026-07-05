@@ -34,6 +34,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   const orgId = req.query.orgId as string;
   const folderId = req.query.folderId as string | undefined;
   const clientId = req.query.clientId as string | undefined;
+  const projectId = req.query.projectId as string | undefined;
   const category = req.query.category as string | undefined;
   const mimeType = req.query.mimeType as string | undefined;
   const uploaderId = req.query.uploaderId as string | undefined;
@@ -49,6 +50,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   const filter: Record<string, unknown> = { orgId, deletedAt: null };
   if (folderId !== undefined) filter.folderId = folderId || null;
   if (clientId) filter.clientId = clientId;
+  if (projectId) filter.projectId = projectId;
   if (category) filter.category = category;
   if (mimeType) filter.mimeType = { $regex: mimeType.replace("*", ".*"), $options: "i" };
   if (uploaderId) filter.uploaderId = uploaderId;

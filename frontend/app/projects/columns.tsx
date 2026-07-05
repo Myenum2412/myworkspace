@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FolderOpenIcon, PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon } from "lucide-react";
+import { FolderOpenIcon, PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
 
 export const columns: ColumnDef<Project>[] = [
@@ -56,6 +56,35 @@ export const columns: ColumnDef<Project>[] = [
       return color
         ? <span className="inline-block size-5 rounded-full border" style={{ backgroundColor: color }} title={color} />
         : <span className="text-muted-foreground">—</span>;
+    },
+  },
+  {
+    accessorKey: "priority",
+    header: "Priority",
+    cell: ({ row }) => {
+      const priority = row.getValue<string>("priority") || "medium";
+      const colors: Record<string, string> = {
+        low: "bg-slate-100 text-slate-600",
+        medium: "bg-blue-100 text-blue-600",
+        high: "bg-amber-100 text-amber-600",
+        critical: "bg-red-100 text-red-600",
+      };
+      return (
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${colors[priority] || colors.medium}`}>
+          {priority === "critical" || priority === "high" ? <AlertCircleIcon className="size-2.5" /> : null}
+          {priority}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "category",
+    header: "Category",
+    cell: ({ row }) => {
+      const category = row.getValue<string>("category");
+      return category
+        ? <span className="text-xs capitalize text-muted-foreground">{category}</span>
+        : <span className="text-muted-foreground">\u2014</span>;
     },
   },
   {

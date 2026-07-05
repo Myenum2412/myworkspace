@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2Icon } from "lucide-react";
+import { Trash2Icon, LayoutDashboardIcon, Table2Icon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Project } from "@/components/projects/project-types";
 import { PROJECT_COLORS } from "@/components/projects/project-types";
 import { getSocketIO } from "@/lib/socketio-client";
 import { ProjectDetailedView } from "./project-detailed-view";
 import ProjectList from "@/components/projects/project-list";
+import ProjectsDashboard from "./projects-dashboard";
+
 import { ProjectCreateForm, ProjectEditForm } from "@/components/projects/project-form";
 import ProjectDeleteDialog from "@/components/projects/project-card";
 
@@ -45,6 +48,13 @@ export default function ProjectsInteractive({
   const [memberSearch, setMemberSearch] = useState("");
   const [clientList, setClientList] = useState<string[]>(initialClientList);
   const [employees, setEmployees] = useState<{ id: string; name: string; email: string; image?: string }[]>([]);
+  const [projectPriority, setProjectPriority] = useState("medium");
+  const [projectCategory, setProjectCategory] = useState("");
+  const [projectStartDate, setProjectStartDate] = useState("");
+  const [projectBudget, setProjectBudget] = useState(0);
+  const [projectAttachment, setProjectAttachment] = useState<File | null>(null);
+  const [projectAccess, setProjectAccess] = useState<"Public" | "Private">("Public");
+  const [projectHealth, setProjectHealth] = useState("on-track");
 
   const filteredMembers = useMemo(() => {
     if (!memberSearch) return employees;
@@ -121,21 +131,28 @@ export default function ProjectsInteractive({
     setFormError("");
 
     try {
+      const formData = new FormData();
+      formData.append("orgId", orgId);
+      formData.append("name", projectName);
+      formData.append("client", selectedClient);
+      formData.append("color", projectColor);
+      formData.append("description", projectDescription);
+      if (projectDeadline) formData.append("deadline", projectDeadline);
+      formData.append("access", projectAccess);
+      formData.append("status", "Active");
+      formData.append("health", projectHealth);
+      formData.append("priority", projectPriority);
+      formData.append("category", projectCategory);
+      if (projectStartDate) formData.append("startDate", projectStartDate);
+      formData.append("budget", String(projectBudget || 0));
+      if (projectAttachment) {
+        formData.append("attachment", projectAttachment);
+      }
+
       const res = await fetch("/api/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          orgId,
-          name: projectName,
-          client: selectedClient,
-          color: projectColor,
-          description: projectDescription,
-          deadline: projectDeadline || null,
-          access: "Public",
-          status: "Active",
-          members: projectMembers,
-        }),
+        body: formData,
       });
       const d = await res.json();
       if (d.success && d.data) {
@@ -155,9 +172,14 @@ export default function ProjectsInteractive({
         deadline: projectDeadline || null,
         tracked: 0,
         progress: 0,
-        access: "Public",
+        access: projectAccess,
         status: "Active",
+        health: projectHealth as Project["health"],
         members: projectMembers,
+        priority: projectPriority as Project["priority"],
+        category: projectCategory,
+        startDate: projectStartDate || null,
+        budget: projectBudget || 0,
       };
       setProjects((prev) => [...prev, newProject]);
     } finally {
@@ -176,6 +198,7 @@ export default function ProjectsInteractive({
   const [editDeadline, setEditDeadline] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [viewMode, setViewMode] = useState<"dashboard" | "list">("dashboard");
 
   function handleView(project: Project) {
     setViewProject(project);
@@ -259,6 +282,13 @@ export default function ProjectsInteractive({
     setProjectDeadline("");
     setProjectColor("#93c5fd");
     setProjectMembers([]);
+    setProjectPriority("medium");
+    setProjectCategory("");
+    setProjectStartDate("");
+    setProjectBudget(0);
+    setProjectAttachment(null);
+    setProjectAccess("Public");
+    setProjectHealth("on-track");
     setFormError("");
   }
 
@@ -266,6 +296,11 @@ export default function ProjectsInteractive({
     setShowEdit(false);
     setEditingProject(null);
   }
+
+  const VIEW_TABS = [
+    { id: "dashboard", label: "Overview", icon: LayoutDashboardIcon },
+    { id: "list", label: "List", icon: Table2Icon },
+  ] as const;
 
   return (
     <>
@@ -286,45 +321,104 @@ export default function ProjectsInteractive({
                 </Button>
               </div>
             </div>
-            <ProjectDetailedView project={viewProject} />
+            <ProjectDetailedView project={viewProject} orgId={orgId} />
           </div>
         ) : (
-          <ProjectList
-            projects={projects}
-            loading={loading}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={(p) => setDeleteConfirm(p)}
-            onNewProject={() => setShowForm(true)}
-          />
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1 rounded-lg border p-0.5 bg-muted/50">
+                {VIEW_TABS.map((t) => {
+                  const Icon = t.icon;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => setViewMode(t.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                        viewMode === t.id
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <Icon className="size-3.5" />
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <Button onClick={() => setShowForm(true)} size="sm">
+                New Project
+              </Button>
+            </div>
+            {showForm ? (
+              <ProjectCreateForm
+                projectName={projectName}
+                onProjectNameChange={setProjectName}
+                selectedClient={selectedClient}
+                onSelectedClientChange={setSelectedClient}
+                projectDescription={projectDescription}
+                onProjectDescriptionChange={setProjectDescription}
+                projectDeadline={projectDeadline}
+                onProjectDeadlineChange={setProjectDeadline}
+                projectColor={projectColor}
+                onProjectColorChange={setProjectColor}
+                projectMembers={projectMembers}
+                onProjectMembersChange={setProjectMembers}
+                projectPriority={projectPriority}
+                onProjectPriorityChange={setProjectPriority}
+                projectCategory={projectCategory}
+                onProjectCategoryChange={setProjectCategory}
+                projectStartDate={projectStartDate}
+                onProjectStartDateChange={setProjectStartDate}
+                projectBudget={projectBudget}
+                onProjectBudgetChange={setProjectBudget}
+                projectAttachment={projectAttachment}
+                onProjectAttachmentChange={setProjectAttachment}
+                projectAccess={projectAccess}
+                onProjectAccessChange={setProjectAccess}
+                projectHealth={projectHealth}
+                onProjectHealthChange={setProjectHealth}
+                submitting={submitting}
+                formError={formError}
+                clientList={clientList}
+                filteredMembers={filteredMembers}
+                memberSearch={memberSearch}
+                onMemberSearchChange={setMemberSearch}
+                colors={PROJECT_COLORS}
+                onSubmit={handleSubmit}
+                onCancel={() => { setShowForm(false); resetForm(); }}
+              />
+            ) : (
+              <>
+                {viewMode === "dashboard" && (
+                  <>
+                    <ProjectsDashboard projects={projects} onView={handleView} />
+                    <ProjectList
+                      projects={projects}
+                      loading={loading}
+                      onView={handleView}
+                      onEdit={handleEdit}
+                      onDelete={(p) => setDeleteConfirm(p)}
+                      onNewProject={() => setShowForm(true)}
+                    />
+                  </>
+                )}
+                {viewMode === "list" && (
+                  <ProjectList
+                    projects={projects}
+                    loading={loading}
+                    onView={handleView}
+                    onEdit={handleEdit}
+                    onDelete={(p) => setDeleteConfirm(p)}
+                    onNewProject={() => setShowForm(true)}
+                  />
+                )}
+              </>
+            )}
+
+          </div>
         )}
       </main>
-
-      <ProjectCreateForm
-        open={showForm}
-        onOpenChange={setShowForm}
-        projectName={projectName}
-        onProjectNameChange={setProjectName}
-        selectedClient={selectedClient}
-        onSelectedClientChange={setSelectedClient}
-        projectDescription={projectDescription}
-        onProjectDescriptionChange={setProjectDescription}
-        projectDeadline={projectDeadline}
-        onProjectDeadlineChange={setProjectDeadline}
-        projectColor={projectColor}
-        onProjectColorChange={setProjectColor}
-        projectMembers={projectMembers}
-        onProjectMembersChange={setProjectMembers}
-        submitting={submitting}
-        formError={formError}
-        clientList={clientList}
-        filteredMembers={filteredMembers}
-        memberSearch={memberSearch}
-        onMemberSearchChange={setMemberSearch}
-        colors={PROJECT_COLORS}
-        onSubmit={handleSubmit}
-        onCancel={() => { setShowForm(false); resetForm(); }}
-      />
 
       <ProjectEditForm
         open={showEdit}

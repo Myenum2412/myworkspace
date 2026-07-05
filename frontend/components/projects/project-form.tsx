@@ -1,10 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectValue,
@@ -17,6 +17,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -25,13 +27,21 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { PlusIcon, AlertCircleIcon, UsersIcon, XIcon } from "lucide-react";
+import {
+  PlusIcon,
+  AlertCircleIcon,
+  UsersIcon,
+  XIcon,
+  CalendarIcon,
+  FlagIcon,
+  FolderOpenIcon,
+  FileIcon,
+  UploadIcon,
+  UserIcon,
+} from "lucide-react";
 import type { ProjectCreateFormProps, ProjectEditFormProps } from "./project-types";
 
 export function ProjectCreateForm({
-  open,
-  onOpenChange,
   projectName,
   onProjectNameChange,
   selectedClient,
@@ -44,6 +54,20 @@ export function ProjectCreateForm({
   onProjectColorChange,
   projectMembers,
   onProjectMembersChange,
+  projectPriority = "medium",
+  onProjectPriorityChange,
+  projectCategory = "",
+  onProjectCategoryChange,
+  projectStartDate = "",
+  onProjectStartDateChange,
+  projectBudget = 0,
+  onProjectBudgetChange,
+  projectAttachment,
+  onProjectAttachmentChange,
+  projectAccess,
+  onProjectAccessChange,
+  projectHealth,
+  onProjectHealthChange,
   submitting,
   formError,
   clientList,
@@ -54,200 +78,345 @@ export function ProjectCreateForm({
   onSubmit,
   onCancel,
 }: ProjectCreateFormProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!submitting) onOpenChange(o); }}>
-      <DialogContent className="p-0 flex flex-col">
-        <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <PlusIcon className="size-5" />
-            New Project
-          </DialogTitle>
-          <DialogDescription>
-            Create a new project for your organization.
-          </DialogDescription>
-        </DialogHeader>
-
-        {formError && (
-          <div className="mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            <AlertCircleIcon className="size-4 shrink-0" />
-            {formError}
+    <div className="rounded-2xl border bg-card shadow-sm">
+      <div className="flex items-center justify-between gap-3 px-6 py-4 border-b">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+            <PlusIcon className="size-5 text-primary" />
           </div>
-        )}
+          <div>
+            <h2 className="text-lg font-semibold">New Project</h2>
+            <p className="text-sm text-muted-foreground">Fill in the details below to create a new project.</p>
+          </div>
+        </div>
+        <Button variant="ghost" size="icon" onClick={onCancel} disabled={submitting} className="size-8">
+          <XIcon className="size-4" />
+        </Button>
+      </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-3 space-y-5">
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              Project Information
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="projectName" className="text-sm">Project Name *</Label>
-                <Input
-                  id="projectName"
-                  placeholder="e.g. Website Redesign"
-                  value={projectName}
-                  onChange={(e) => onProjectNameChange(e.target.value)}
-                  disabled={submitting}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="client" className="text-sm">Client *</Label>
-                <Select value={selectedClient} onValueChange={onSelectedClientChange} disabled={submitting}>
-                  <SelectTrigger id="client" className="mt-1">
-                    <SelectValue placeholder="Select a client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clientList.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="description" className="text-sm">Description</Label>
-              <textarea
-                id="description"
-                placeholder="Brief project description"
-                value={projectDescription}
-                onChange={(e) => onProjectDescriptionChange(e.target.value)}
+      {formError && (
+        <div className="mx-6 mt-4 flex items-center gap-2.5 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive border border-destructive/20">
+          <AlertCircleIcon className="size-4 shrink-0 mt-0.5" />
+          <span>{formError}</span>
+        </div>
+      )}
+
+      <div className="px-6 py-5 space-y-6">
+
+        {/* Basic Information */}
+        <div className="rounded-xl border bg-card p-4 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <UserIcon className="size-4 text-muted-foreground" />
+            Basic Information
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="projectName" className="text-sm font-medium">Project Name <span className="text-destructive">*</span></Label>
+              <Input
+                id="projectName"
+                placeholder="e.g. Website Redesign"
+                value={projectName}
+                onChange={(e) => onProjectNameChange(e.target.value)}
                 disabled={submitting}
-                rows={2}
-                className="mt-1 flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="client" className="text-sm font-medium">Client <span className="text-destructive">*</span></Label>
+              <Select value={selectedClient} onValueChange={onSelectedClientChange} disabled={submitting}>
+                <SelectTrigger id="client">
+                  <SelectValue placeholder="Select a client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientList.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+            <Textarea
+              id="description"
+              placeholder="Brief project description..."
+              value={projectDescription}
+              onChange={(e) => onProjectDescriptionChange(e.target.value)}
+              disabled={submitting}
+              rows={2}
+            />
+          </div>
+        </div>
+
+        {/* Timeline & Team */}
+        <div className="rounded-xl border bg-card p-4 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <CalendarIcon className="size-4 text-muted-foreground" />
+            Timeline & Team
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="startDate" className="text-sm font-medium">Start Date</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={projectStartDate}
+                onChange={(e) => onProjectStartDateChange(e.target.value)}
+                disabled={submitting}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="deadline" className="text-sm font-medium">Deadline</Label>
+              <Input
+                id="deadline"
+                type="date"
+                value={projectDeadline}
+                onChange={(e) => onProjectDeadlineChange(e.target.value)}
+                disabled={submitting}
               />
             </div>
           </div>
-
-          <Separator />
-
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              Timeline & Team
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="deadline" className="text-sm">Deadline</Label>
-                <Input
-                  id="deadline"
-                  type="date"
-                  value={projectDeadline}
-                  onChange={(e) => onProjectDeadlineChange(e.target.value)}
-                  disabled={submitting}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="members" className="text-sm">Team Members</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="mt-1 w-full justify-start font-normal" disabled={submitting}>
-                      <UsersIcon className="mr-2 size-4 shrink-0" />
-                      {projectMembers.length === 0
-                        ? "Select team members"
-                        : `${projectMembers.length} member${projectMembers.length > 1 ? "s" : ""} selected`}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-72 p-2" align="start">
-                    <div className="relative mb-2">
-                      <Input
-                        placeholder="Search members..."
-                        value={memberSearch}
-                        onChange={(e) => onMemberSearchChange(e.target.value)}
-                        className="pl-8"
-                      />
-                      <svg
-                        className="absolute left-2.5 top-2.5 size-4 text-muted-foreground"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
-                      </svg>
-                    </div>
-                    <div className="max-h-48 space-y-1 overflow-y-auto">
-                      {filteredMembers.length === 0 ? (
-                        <p className="text-sm text-muted-foreground py-4 text-center">
-                          {memberSearch ? "No matching members" : "No employees available"}
-                        </p>
-                      ) : filteredMembers.map((m) => {
-                        const checked = projectMembers.includes(m.id);
-                        return (
-                          <label key={m.id} className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-muted">
-                            <Checkbox
-                              checked={checked}
-                              onCheckedChange={() => {
-                                onProjectMembersChange(
-                                  checked ? projectMembers.filter((id) => id !== m.id) : [...projectMembers, m.id]
-                                );
-                              }}
-                            />
-                            <div className="size-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium shrink-0 overflow-hidden">
-                              {m.image ? (
-                                <img src={m.image} alt={m.name} className="size-full object-cover" />
-                              ) : (
-                                <span>{m.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</span>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium truncate">{m.name}</p>
-                              <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
-                            </div>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              Branding
-            </h3>
-            <div>
-              <Label className="text-sm">Color</Label>
-              <div className="flex items-center gap-3 mt-1">
-                <div className="flex gap-2 flex-wrap">
-                  {colors.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => onProjectColorChange(c)}
-                      disabled={submitting}
-                      className={`size-7 rounded-full ring-offset-2 ring-offset-background transition-all ${
-                        projectColor === c ? "ring-2 ring-foreground scale-110" : ""
-                      }`}
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Team Members</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start font-normal h-9" disabled={submitting}>
+                  <UsersIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
+                  {projectMembers.length === 0
+                    ? "Select team members"
+                    : `${projectMembers.length} member${projectMembers.length > 1 ? "s" : ""} selected`}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-2" align="start">
+                <div className="relative mb-2">
+                  <Input
+                    placeholder="Search members..."
+                    value={memberSearch}
+                    onChange={(e) => onMemberSearchChange(e.target.value)}
+                    className="pl-8 h-8"
+                  />
+                  <svg
+                    className="absolute left-2.5 top-2 size-4 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                  </svg>
                 </div>
-                <input
-                  type="color"
-                  value={projectColor}
-                  onChange={(e) => onProjectColorChange(e.target.value)}
-                  disabled={submitting}
-                  className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
-                />
-              </div>
+                <div className="max-h-48 space-y-1 overflow-y-auto">
+                  {filteredMembers.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">
+                      {memberSearch ? "No matching members" : "No employees available"}
+                    </p>
+                  ) : filteredMembers.map((m) => {
+                    const checked = projectMembers.includes(m.id);
+                    return (
+                      <label key={m.id} className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-muted">
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={() => {
+                            onProjectMembersChange(
+                              checked ? projectMembers.filter((id) => id !== m.id) : [...projectMembers, m.id]
+                            );
+                          }}
+                        />
+                        <div className="size-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium shrink-0 overflow-hidden">
+                          {m.image ? (
+                            <img src={m.image} alt={m.name} className="size-full object-cover" />
+                          ) : (
+                            <span>{m.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">{m.name}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
+        {/* Classification */}
+        <div className="rounded-xl border bg-card p-4 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <FlagIcon className="size-4 text-muted-foreground" />
+            Classification
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">Priority</Label>
+              <Select value={projectPriority} onValueChange={onProjectPriorityChange} disabled={submitting}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">Category</Label>
+              <Select value={projectCategory} onValueChange={onProjectCategoryChange} disabled={submitting}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="development">Development</SelectItem>
+                  <SelectItem value="design">Design</SelectItem>
+                  <SelectItem value="marketing">Marketing</SelectItem>
+                  <SelectItem value="research">Research</SelectItem>
+                  <SelectItem value="operations">Operations</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
 
-        <DialogFooter className="px-6 pb-6 pt-2 shrink-0 flex gap-2 sm:gap-2">
-          <Button variant="outline" className="flex-1" onClick={onCancel} disabled={submitting}>
-            Cancel
-          </Button>
-          <Button className="flex-1" disabled={!projectName || !selectedClient || submitting} onClick={onSubmit}>
-            {submitting ? "Creating..." : "Create"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {/* Budget & Planning */}
+        <div className="rounded-xl border bg-card p-4 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <FolderOpenIcon className="size-4 text-muted-foreground" />
+            Budget & Planning
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">Budget ($)</Label>
+              <Input
+                type="number"
+                min="0"
+                placeholder="e.g. 50000"
+                value={projectBudget || ""}
+                onChange={(e) => onProjectBudgetChange(e.target.value ? Number(e.target.value) : 0)}
+                disabled={submitting}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Branding */}
+        <div className="rounded-xl border bg-card p-4 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <div className="size-4 rounded-full border border-muted-foreground/30" style={{ backgroundColor: projectColor }} />
+            Branding
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Project Color</Label>
+            <div className="flex items-center gap-3 mt-1">
+              <div className="flex gap-2 flex-wrap">
+                {colors.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => onProjectColorChange(c)}
+                    disabled={submitting}
+                    className={`size-8 rounded-full ring-offset-2 ring-offset-background transition-all ${
+                      projectColor === c ? "ring-2 ring-foreground scale-110 shadow-md" : "hover:scale-105"
+                    }`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+              <input
+                type="color"
+                value={projectColor}
+                onChange={(e) => onProjectColorChange(e.target.value)}
+                disabled={submitting}
+                className="size-9 cursor-pointer rounded-lg border border-border bg-transparent p-0.5"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Attachments */}
+        <div className="rounded-xl border bg-card p-4 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <FileIcon className="size-4 text-muted-foreground" />
+            Attachments
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Project File</Label>
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (file) onProjectAttachmentChange(file);
+              }}
+              onDragOver={(e) => e.preventDefault()}
+              className="mt-1 border-2 border-dashed border-muted-foreground/20 rounded-lg p-5 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all group"
+            >
+              {projectAttachment ? (
+                <div className="flex items-center justify-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                    <FileIcon className="size-5 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium">{projectAttachment.name}</p>
+                    <p className="text-xs text-muted-foreground">{(projectAttachment.size / 1024).toFixed(1)} KB</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onProjectAttachmentChange(null); }}
+                    className="ml-auto p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <XIcon className="size-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <UploadIcon className="size-8 mx-auto text-muted-foreground/40 group-hover:text-primary/40 transition-colors" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-medium text-foreground">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-muted-foreground/60 mt-0.5">PDF, DOC, XLS, PNG, JPG up to 10MB</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onProjectAttachmentChange(file);
+                e.target.value = "";
+              }}
+              disabled={submitting}
+            />
+          </div>
+        </div>
+
+      </div>
+
+      <div className="flex items-center justify-end gap-3 px-6 py-4 border-t">
+        <Button variant="outline" onClick={onCancel} disabled={submitting}>
+          Cancel
+        </Button>
+        <Button disabled={!projectName || !selectedClient || submitting} onClick={onSubmit}>
+          {submitting ? (
+            <span className="flex items-center gap-2">
+              <span className="size-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+              Creating...
+            </span>
+          ) : (
+            "Create Project"
+          )}
+        </Button>
+      </div>
+    </div>
   );
 }
 

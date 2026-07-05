@@ -190,6 +190,11 @@ export async function PATCH(req: NextRequest) {
     addressLine1, addressLine2, orgCity, orgState, pincode, orgCountry,
     authorizedPersonName, designation, authorizedPersonEmail, authorizedPersonMobile,
     numberOfEmployees, companyDescription,
+    secondaryPhone, nickname, displayId, firstName, lastName,
+    location: userLocation, employmentType, branchName, shift,
+    sourceOfHire, joiningDate, currentExperience, totalExperience,
+    empDesignation, workExperience, educationDetails, dependentDetails,
+    offerLetter,
   } = body;
 
   // Required-field validation
@@ -213,7 +218,7 @@ export async function PATCH(req: NextRequest) {
 
   try {
     // Update user fields
-    const userFields = { name, email, phone, department, company, address, city, state, country, zipCode };
+    const userFields = { name, email, phone, department, company, address, city, state, country, zipCode, secondaryPhone: secondaryPhone || "", nickname, displayId, firstName, lastName, location: userLocation || "", employmentType, branchName, shift, sourceOfHire, joiningDate, currentExperience, totalExperience, designation: empDesignation || "", workExperience, educationDetails, dependentDetails, offerLetter };
     const updates: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(userFields)) {
       if (val !== undefined) updates[key] = val;

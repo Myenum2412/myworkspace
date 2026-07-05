@@ -13,6 +13,12 @@ export type Project = {
   headId?: string;
   headName?: string;
   headAvatar?: string;
+  priority?: "low" | "medium" | "high" | "critical";
+  category?: string;
+  budget?: number;
+  spent?: number;
+  health?: "on-track" | "at-risk" | "delayed";
+  startDate?: string | null;
 };
 
 export interface Employee {
@@ -32,8 +38,6 @@ export interface ProjectListProps {
 }
 
 export interface ProjectCreateFormProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   projectName: string;
   onProjectNameChange: (value: string) => void;
   selectedClient: string;
@@ -46,6 +50,20 @@ export interface ProjectCreateFormProps {
   onProjectColorChange: (value: string) => void;
   projectMembers: string[];
   onProjectMembersChange: (members: string[]) => void;
+  projectPriority: string;
+  onProjectPriorityChange: (value: string) => void;
+  projectCategory: string;
+  onProjectCategoryChange: (value: string) => void;
+  projectStartDate: string;
+  onProjectStartDateChange: (value: string) => void;
+  projectBudget: number;
+  onProjectBudgetChange: (value: number) => void;
+  projectAttachment: File | null;
+  onProjectAttachmentChange: (file: File | null) => void;
+  projectAccess: "Public" | "Private";
+  onProjectAccessChange: (value: "Public" | "Private") => void;
+  projectHealth: string;
+  onProjectHealthChange: (value: string) => void;
   submitting: boolean;
   formError: string;
   clientList: string[];
@@ -90,3 +108,13 @@ export const PROJECT_COLORS = [
   "#93c5fd", "#fca5a5", "#86efac", "#fcd34d", "#c4b5fd",
   "#f9a8d4", "#67e8f9", "#fdba74", "#6ee7b7", "#a5b4fc",
 ];
+
+export const PROJECT_PRIORITIES = ["low", "medium", "high", "critical"] as const;
+export const PROJECT_CATEGORIES = ["development", "design", "marketing", "research", "operations", "other"] as const;
+
+export type BoardColumn = {
+  id: string;
+  title: string;
+  color: string;
+  filter: (p: Project) => boolean;
+};

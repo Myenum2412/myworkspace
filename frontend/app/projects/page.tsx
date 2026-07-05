@@ -38,6 +38,11 @@ export default async function ProjectsPage() {
       headId: (p.headId as string) || undefined,
       headName: (p.headName as string) || undefined,
       headAvatar: (p.headAvatar as string) || undefined,
+      priority: (p.priority as Project["priority"]) || "medium",
+      category: (p.category as string) || "",
+      budget: Number(p.budget ?? 0),
+      spent: Number(p.spent ?? 0),
+      startDate: (p.startDate as string) || (p.startDate as string) || null,
     }));
 
     const clientsRaw = (await db.collection(collections.clients)
