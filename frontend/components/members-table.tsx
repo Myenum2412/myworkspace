@@ -347,14 +347,18 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
         <EditMemberDialog member={editingMember} onClose={() => setEditingMember(null)} />
       )}
 
-      <div className="relative max-w-sm">
-        <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          placeholder="Search members..."
-          className="pl-9 h-9"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex mb-4">
+        <div className="flex-1" />
+        <div className="relative w-full max-w-sm">
+          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Search members..."
+            className="pl-9 h-9 w-full"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex-1" />
       </div>
 
       <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">

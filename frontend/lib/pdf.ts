@@ -69,22 +69,12 @@ export async function generateInvoicePDF(baseInvoice: Invoice) {
   const mR = 200; // Right margin
   const width = mR - mX; // 190
 
-  // 1. Draw Wavy Header (Cyan + Dark Blue)
+  // 1. Draw Header Strip (Cyan + Dark Blue)
   doc.setFillColor(0, 160, 180);
-  doc.beginPath();
-  doc.moveTo(0, 0);
-  doc.lineTo(pageWidth, 0);
-  doc.lineTo(pageWidth, 8);
-  doc.bezierCurveTo(150, 18, 60, -2, 0, 12);
-  doc.fill();
+  doc.rect(0, 0, pageWidth, 12, "F");
 
   doc.setFillColor(0, 50, 80);
-  doc.beginPath();
-  doc.moveTo(0, 0);
-  doc.lineTo(pageWidth, 0);
-  doc.lineTo(pageWidth, 3);
-  doc.bezierCurveTo(150, 12, 50, -4, 0, 6);
-  doc.fill();
+  doc.rect(0, 0, pageWidth, 6, "F");
 
   // 2. Logo & Company Details
   let startY = 20;
@@ -431,22 +421,12 @@ export async function generateInvoicePDF(baseInvoice: Invoice) {
   doc.text(sgstTotal.toFixed(2), hCols[3].x + hCols[3].w - 2, hty, { align: "right" });
   doc.text((cgstTotal + sgstTotal).toFixed(2), hCols[4].x + hCols[4].w - 2, hty, { align: "right" });
 
-  // 7. Draw Wavy Footer
+  // 7. Draw Footer Strip
   doc.setFillColor(0, 50, 80);
-  doc.beginPath();
-  doc.moveTo(0, pageHeight);
-  doc.lineTo(pageWidth, pageHeight);
-  doc.lineTo(pageWidth, pageHeight - 6);
-  doc.bezierCurveTo(150, pageHeight - 16, 50, pageHeight, 0, pageHeight - 8);
-  doc.fill();
+  doc.rect(0, pageHeight - 8, pageWidth, 8, "F");
 
   doc.setFillColor(0, 160, 180);
-  doc.beginPath();
-  doc.moveTo(0, pageHeight);
-  doc.lineTo(pageWidth, pageHeight);
-  doc.lineTo(pageWidth, pageHeight - 3);
-  doc.bezierCurveTo(150, pageHeight - 10, 50, pageHeight + 4, 0, pageHeight - 5);
-  doc.fill();
+  doc.rect(0, pageHeight - 4, pageWidth, 4, "F");
 
   doc.save(`Invoice_${invoice.invoiceNumber || invoice.number || invoice.id.slice(0,8)}.pdf`);
 }

@@ -76,7 +76,7 @@ export function EmployeeList({
     <>
       <main className="flex flex-1 flex-col gap-0 p-6">
         <div className="flex items-center justify-between mb-6 gap-4">
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3 flex-1">
             <div className="flex items-center justify-center size-10 rounded-xl bg-primary/10">
               <UsersIcon className="size-5 text-primary" />
             </div>
@@ -96,7 +96,7 @@ export function EmployeeList({
                 placeholder="Search employees..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-9 h-9 border-0 shadow-none focus-visible:ring-0"
+                className="pl-9 h-9 border-0 shadow-none focus-visible:ring-0 w-full"
               />
               {searchQuery && (
                 <button
@@ -109,10 +109,12 @@ export function EmployeeList({
             </div>
           </div>
 
-          <Button onClick={onAdd} className="gap-2 shrink-0">
-            <PlusIcon className="size-4" />
-            Add Employee
-          </Button>
+          <div className="flex items-center gap-3 flex-1 justify-end">
+            <Button onClick={onAdd} className="gap-2 shrink-0">
+              <PlusIcon className="size-4" />
+              Add Employee
+            </Button>
+          </div>
         </div>
 
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>

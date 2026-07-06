@@ -311,14 +311,18 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="relative max-w-sm">
-          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Search organizations..."
-            className="pl-9 h-9"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex">
+          <div className="flex-1" />
+          <div className="relative w-full max-w-sm">
+            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search organizations..."
+              className="pl-9 h-9 w-full"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex-1" />
         </div>
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
           <table className="w-full text-sm text-left border-collapse">

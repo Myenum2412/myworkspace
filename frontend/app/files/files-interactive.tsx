@@ -195,14 +195,18 @@ export default function FilesInteractive({
       </div>
 
       {/* Search */}
-      <div className="relative max-w-sm">
-        <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          placeholder="Search clients..."
-          className="pl-9 h-9"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex">
+        <div className="flex-1" />
+        <div className="relative w-full max-w-sm">
+          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Search clients..."
+            className="pl-9 h-9 w-full"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex-1" />
       </div>
 
       {/* Client Grid */}

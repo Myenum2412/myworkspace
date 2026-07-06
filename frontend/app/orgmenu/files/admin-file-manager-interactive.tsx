@@ -206,14 +206,18 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
           })}
         </div>
 
-        <div className="relative max-w-sm">
-          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Search members..."
-            className="pl-9 h-9"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex">
+          <div className="flex-1" />
+          <div className="relative w-full max-w-sm">
+            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search members..."
+              className="pl-9 h-9 w-full"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex-1" />
         </div>
 
         {members.length === 0 ? (
@@ -297,40 +301,43 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
         </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        {(["all", "profile", "report", "general"] as const).map((cat) => {
-          const icon = cat === "all" ? <FolderOpenIcon className="size-3.5" />
-            : cat === "profile" ? <UserIcon className="size-3.5" />
-            : cat === "report" ? <BarChart3Icon className="size-3.5" />
-            : <FilesIcon className="size-3.5" />;
-          const label = cat === "all" ? "All"
-            : cat === "profile" ? "Profile"
-            : cat === "report" ? "Report"
-            : "General";
-          return (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeCategory === cat
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              }`}
-            >
-              {icon}
-              {label}
-            </button>
-          );
-        })}
-        <div className="relative max-w-sm flex-1 ml-auto">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2 flex-1">
+          {(["all", "profile", "report", "general"] as const).map((cat) => {
+            const icon = cat === "all" ? <FolderOpenIcon className="size-3.5" />
+              : cat === "profile" ? <UserIcon className="size-3.5" />
+              : cat === "report" ? <BarChart3Icon className="size-3.5" />
+              : <FilesIcon className="size-3.5" />;
+            const label = cat === "all" ? "All"
+              : cat === "profile" ? "Profile"
+              : cat === "report" ? "Report"
+              : "General";
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  activeCategory === cat
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                }`}
+              >
+                {icon}
+                {label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="relative w-full max-w-sm">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Search files..."
-            className="pl-9 h-9"
+            className="pl-9 h-9 w-full"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <div className="flex-1" />
       </div>
 
       {filteredFiles.length === 0 ? (

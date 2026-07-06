@@ -76,16 +76,17 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
+        <div className="flex-1" />
+        <div className="relative w-full max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder={searchPlaceholder}
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="pl-9"
+            className="pl-9 w-full"
           />
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="flex-1 flex justify-end text-sm text-muted-foreground">
           {rowCount} {label ?? "item(s)"}
         </div>
       </div>
