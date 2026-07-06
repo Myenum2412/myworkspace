@@ -1,260 +1,236 @@
 import { Resend } from "resend";
 import { env } from "../../config/env.js";
+import nodemailer from "nodemailer";
+import fs from "fs";
+import path from "path";
+import { buildEmailHtml } from "./templates/builder.js";
+import * as Factory from "./templates/factory.js";
+import { AttachmentItem } from "./templates/types.js";
 
 const resend = new Resend(env.RESEND_API_KEY);
+
+const transporter = env.SMTP_HOST
+  ? nodemailer.createTransport({
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
+      secure: env.SMTP_PORT === 465,
+      auth: {
+        user: env.SMTP_USER,
+        pass: env.SMTP_PASS,
+      },
+    })
+  : null;
+
+const RESEND_TEST_SENDER = "onboarding@resend.dev";
+
+if (!transporter && env.MAIL_FROM === RESEND_TEST_SENDER) {
+  console.warn(
+    "[mail] WARNING: Using Resend test sender (onboarding@resend.dev). " +
+    "Emails will ONLY be delivered to the email address verified with your Resend API key. " +
+    "Set MAIL_FROM to a verified domain (e.g., 'noreply@yourdomain.com') to send to any recipient."
+  );
+}
+
+// Ensure the logo path is correct relative to the backend execution context
+const logoPath = path.resolve(process.cwd(), "../frontend/public/logo.jpeg");
+const defaultAttachments: AttachmentItem[] = fs.existsSync(logoPath) 
+  ? [{ filename: "logo.jpeg", path: logoPath, cid: "workspace_logo" }]
+  : [];
 
 async function sendEmail(
   to: string,
   subject: string,
-  htmlBody: string
+  htmlBody: string,
+  attachments: AttachmentItem[] = defaultAttachments
 ): Promise<void> {
+  if (transporter) {
+    try {
+      const info = await transporter.sendMail({
+        from: env.MAIL_FROM,
+        to,
+        subject,
+        html: htmlBody,
+        attachments: attachments.map(a => ({
+          filename: a.filename,
+          path: a.path,
+          content: a.content,
+          cid: a.cid
+        }))
+      });
+      console.log(`[mail] Email sent to ${to} (messageId: ${info.messageId})`);
+      return;
+    } catch (error: any) {
+      console.error(`[mail] Failed to send email via SMTP to ${to}:`, error);
+      throw new Error(`Failed to send email: ${error.message}`);
+    }
+  }
+
   if (!env.RESEND_API_KEY) {
-    console.warn("[mail] RESEND_API_KEY not configured - skipping email");
+    console.warn("[mail] Neither SMTP nor RESEND_API_KEY configured - skipping email");
     return;
   }
 
-  const result = await resend.emails.send({
+  // Map attachments for Resend
+  const resendAttachments = attachments.map(a => {
+    let content: string | Buffer = "";
+    if (a.content) {
+      content = a.content;
+    } else if (a.path && fs.existsSync(a.path)) {
+      content = fs.readFileSync(a.path);
+    }
+    return {
+      filename: a.filename,
+      content,
+    };
+  }).filter(a => a.content !== "");
+
+  const { data, error } = await resend.emails.send({
     from: env.MAIL_FROM,
     to,
     subject,
     html: htmlBody,
+    attachments: resendAttachments.length > 0 ? resendAttachments : undefined
   });
 
-  console.log(`[mail] Email sent to ${to}`);
+  if (error) {
+    console.error(`[mail] Failed to send email via Resend to ${to}:`, error);
+    throw new Error(`Failed to send email via Resend: ${error.message}`);
+  }
+
+  console.log(`[mail] Email sent to ${to} (id: ${data?.id})`);
 }
 
-export async function sendPasswordResetEmail(
-  to: string,
-  name: string,
-  resetLink: string
-): Promise<void> {
-  const html = `
-    <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
-      <div style="text-align: center; margin-bottom: 32px;">
-        <h1 style="font-size: 24px; color: #1a1a2e; margin: 0;">MyWorkspace</h1>
-      </div>
-      <div style="background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-        <h1 style="font-size: 20px; color: #1a1a2e; margin: 0 0 16px;">Reset your password</h1>
-        <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 8px;">Hi ${name},</p>
-        <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 24px;">
-          We received a request to reset your MyWorkspace password. Click the button below to choose a new one.
-        </p>
-        <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${resetLink}"
-             style="display: inline-block; padding: 12px 28px; background: #3b82f6; color: #ffffff; border-radius: 8px; text-decoration: none; font-size: 15px; font-weight: 500;">
-            Reset Password
-          </a>
-        </div>
-        <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0;">
-          This link will expire in 1 hour. If you did not request a password reset, you can safely ignore this email.
-        </p>
-      </div>
-      <p style="text-align: center; margin-top: 24px; font-size: 12px; color: #94a3b8;">
-        © ${new Date().getFullYear()} MyWorkspace. All rights reserved.
-      </p>
-    </div>
-  `;
-  await sendEmail(to, "Reset your MyWorkspace password", html);
+// Backward compatible methods
+export async function sendPasswordResetEmail(to: string, name: string, resetLink: string): Promise<void> {
+  const data = Factory.buildPasswordReset(name, resetLink);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
 }
 
-export async function sendWelcomeEmail(
-  to: string,
-  name: string
-): Promise<void> {
-  const html = `
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
-      <div style="text-align:center;margin-bottom:24px;">
-        <img src="https://cdn-icons-png.flaticon.com/512/833/833314.png" width="40" height="40" alt="MyWorkspace" style="border-radius:10px;" />
-        <h1 style="margin:8px 0 0;font-size:18px;color:#1a1a2e;">MyWorkspace</h1>
-      </div>
-
-      <div style="background:#ffffff;border-radius:12px;padding:24px;border:1px solid #e2e8f0;">
-        <h2 style="margin:0 0 12px;font-size:18px;color:#1a1a2e;">Welcome, ${name}!</h2>
-        <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#475569;">
-          Your account is ready. Start managing projects, tasks, and your team.
-        </p>
-
-        <div style="background:#f8fafc;border-radius:8px;padding:12px;border:1px solid #e2e8f0;margin-bottom:16px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/5968/5968534.png" width="20" height="20" alt="" />
-            <span style="font-size:13px;color:#64748b;">${to}</span>
-          </div>
-        </div>
-
-        <a href="${env.APP_URL}/orgmenu"
-           style="display:block;padding:10px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;text-align:center;">
-          Get Started
-        </a>
-      </div>
-
-      <p style="margin-top:16px;font-size:11px;color:#94a3b8;text-align:center;">
-        If you didn't create this account, ignore this email.<br>
-        &copy; ${new Date().getFullYear()} MyWorkspace
-      </p>
-    </div>
-  `;
-  await sendEmail(to, `Welcome to MyWorkspace, ${name}!`, html);
+export async function sendWelcomeEmail(to: string, name: string): Promise<void> {
+  const data = Factory.buildWelcomeEmail(name, to, "MyWorkspace", null, "User", `${env.APP_URL}/login`);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
 }
 
-export async function sendOrganizationInviteEmail(
-  to: string,
-  name: string,
-  orgName: string,
-  inviteUrl: string
-): Promise<void> {
-  const html = `
-    <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
-      <div style="text-align: center; margin-bottom: 32px;">
-        <h1 style="font-size: 24px; color: #1a1a2e; margin: 0;">MyWorkspace</h1>
-      </div>
-      <div style="background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-        <h1 style="font-size: 20px; color: #1a1a2e; margin: 0 0 16px;">You've been invited!</h1>
-        <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 8px;">Hi ${name},</p>
-        <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 24px;">
-          You have been invited to join <strong>${orgName}</strong> on MyWorkspace. Click the button below to access your workspace.
-        </p>
-        <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${inviteUrl}"
-             style="display: inline-block; padding: 12px 28px; background: #3b82f6; color: #ffffff; border-radius: 8px; text-decoration: none; font-size: 15px; font-weight: 500;">
-            Open Workspace
-          </a>
-        </div>
-        <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0;">
-          If you were not expecting this invitation, you can safely ignore this email.
-        </p>
-      </div>
-      <p style="text-align: center; margin-top: 24px; font-size: 12px; color: #94a3b8;">
-        &copy; ${new Date().getFullYear()} MyWorkspace. All rights reserved.
-      </p>
-    </div>
-  `;
-  await sendEmail(to, `You've been invited to ${orgName} on MyWorkspace`, html);
+export async function sendOrganizationInviteEmail(to: string, name: string, orgName: string, inviteUrl: string): Promise<void> {
+  const data = Factory.buildWorkspaceInvite(name, "An administrator", orgName, inviteUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
 }
 
-export async function sendVerificationEmail(
-  to: string,
-  name: string,
-  verificationUrl: string
-): Promise<void> {
-  const html = `
-    <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
-      <div style="text-align: center; margin-bottom: 32px;">
-        <h1 style="font-size: 24px; color: #1a1a2e; margin: 0;">MyWorkspace</h1>
-      </div>
-      <div style="background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-        <h1 style="font-size: 20px; color: #1a1a2e; margin: 0 0 16px;">Verify your email address</h1>
-        <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 8px;">Hi ${name},</p>
-        <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 24px;">
-          Thanks for creating a MyWorkspace account. Please verify your email address by clicking the button below.
-        </p>
-        <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${verificationUrl}"
-             style="display: inline-block; padding: 12px 28px; background: #3b82f6; color: #ffffff; border-radius: 8px; text-decoration: none; font-size: 15px; font-weight: 500;">
-            Verify Email
-          </a>
-        </div>
-        <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0;">
-          This link will expire in 24 hours. If you did not create this account, you can safely ignore this email.
-        </p>
-      </div>
-      <p style="text-align: center; margin-top: 24px; font-size: 12px; color: #94a3b8;">
-        © ${new Date().getFullYear()} MyWorkspace. All rights reserved.
-      </p>
-    </div>
-  `;
-  await sendEmail(to, "Verify your MyWorkspace email address", html);
+export async function sendVerificationEmail(to: string, name: string, verificationUrl: string): Promise<void> {
+  const data = Factory.buildVerificationEmail(name, verificationUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
 }
 
-export async function sendClientWelcomeEmail(
-  to: string,
-  clientName: string,
-  username: string,
-  tempPassword: string,
-  loginUrl: string
-): Promise<void> {
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head><meta charset="utf-8"></head>
-    <body style="margin:0;padding:0;background:#f4f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:40px 0;">
-        <tr>
-          <td align="center">
-            <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-              <tr>
-                <td style="padding:32px 32px 0;">
-                  <h1 style="margin:0 0 8px;font-size:24px;color:#1a1a2e;">Welcome to MyWorkspace</h1>
-                  <p style="margin:0 0 24px;font-size:16px;color:#64748b;">Your client portal is ready</p>
-                  <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#334155;">Hi ${clientName},</p>
-                  <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#334155;">
-                    An administrator has created a client account for you. Use the credentials below to log in and access your portal.
-                  </p>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:0 32px;">
-                  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
-                    <tr>
-                      <td style="padding:20px;">
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                          <tr>
-                            <td style="font-size:13px;color:#64748b;padding-bottom:4px;">Login URL</td>
-                          </tr>
-                          <tr>
-                            <td style="font-size:14px;color:#1a1a2e;padding-bottom:16px;word-break:break-all;">
-                              <a href="${loginUrl}" style="color:#3b82f6;text-decoration:none;">${loginUrl}</a>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style="font-size:13px;color:#64748b;padding-bottom:4px;">Username / Email</td>
-                          </tr>
-                          <tr>
-                            <td style="font-size:14px;color:#1a1a2e;padding-bottom:16px;font-weight:600;">${username}</td>
-                          </tr>
-                          <tr>
-                            <td style="font-size:13px;color:#64748b;padding-bottom:4px;">Temporary Password</td>
-                          </tr>
-                          <tr>
-                            <td style="font-size:14px;color:#1a1a2e;padding-bottom:0;font-weight:600;letter-spacing:0.5px;">${tempPassword}</td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:24px 32px 0;">
-                  <p style="margin:0 0 8px;font-size:14px;color:#ef4444;font-weight:600;">Important</p>
-                  <ul style="margin:0 0 24px;padding-left:20px;font-size:14px;line-height:1.6;color:#334155;">
-                    <li>You will be required to change your password after first login.</li>
-                    <li>Please verify your email address when prompted.</li>
-                    <li>For security, do not share these credentials with anyone.</li>
-                  </ul>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:0 32px 32px;">
-                  <a href="${loginUrl}"
-                     style="display:inline-block;padding:12px 28px;background:#3b82f6;color:#ffffff;border-radius:8px;text-decoration:none;font-size:15px;font-weight:500;">
-                    Log In to Your Portal
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:0 32px 32px;border-top:1px solid #e2e8f0;">
-                  <p style="margin:24px 0 0;font-size:12px;color:#94a3b8;line-height:1.5;">
-                    If you did not expect this email, you can safely ignore it.<br>
-                    &copy; ${new Date().getFullYear()} MyWorkspace. All rights reserved.
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
-  await sendEmail(to, `Welcome to MyWorkspace — Your Client Account is Ready`, html);
+export async function sendClientWelcomeEmail(to: string, clientName: string, username: string, tempPassword: string, loginUrl: string): Promise<void> {
+  const data = Factory.buildWelcomeEmail(clientName, to, "MyWorkspace", null, "Client", loginUrl);
+  // Add temp password details securely
+  data.intro = [
+    ...data.intro || [],
+    "An administrator has created a client account for you.",
+    `Username: ${username}`,
+    `Temporary Password: ${tempPassword}`
+  ];
+  data.securityNotice = true;
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+// New 20 Email Functions
+export async function sendUserWelcomeEmail(to: string, firstName: string, workspaceName: string, companyName: string | null, role: string, loginUrl: string, providerIcon?: string): Promise<void> {
+  const data = Factory.buildWelcomeEmail(firstName, to, workspaceName, companyName, role, loginUrl, providerIcon);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendUserVerificationEmail(to: string, firstName: string, verificationUrl: string): Promise<void> {
+  const data = Factory.buildVerificationEmail(firstName, verificationUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendVerifiedEmail(to: string, firstName: string, loginUrl: string): Promise<void> {
+  const data = Factory.buildVerifiedEmail(firstName, loginUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendWorkspaceInvite(to: string, firstName: string, inviterName: string, workspaceName: string, inviteUrl: string): Promise<void> {
+  const data = Factory.buildWorkspaceInvite(firstName, inviterName, workspaceName, inviteUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendTeamMemberAdded(to: string, firstName: string, teamName: string, loginUrl: string): Promise<void> {
+  const data = Factory.buildTeamMemberAdded(firstName, teamName, loginUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendFirstLogin(to: string, firstName: string): Promise<void> {
+  const data = Factory.buildFirstLogin(firstName);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendGettingStarted(to: string, firstName: string, docsUrl: string): Promise<void> {
+  const data = Factory.buildGettingStarted(firstName, docsUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendProfileReminder(to: string, firstName: string, profileUrl: string): Promise<void> {
+  const data = Factory.buildProfileReminder(firstName, profileUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendWorkspaceSetupComplete(to: string, workspaceName: string, loginUrl: string): Promise<void> {
+  const data = Factory.buildWorkspaceSetupComplete(workspaceName, loginUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendPasswordChanged(to: string, firstName: string): Promise<void> {
+  const data = Factory.buildPasswordChanged(firstName);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendNewDeviceLogin(to: string, firstName: string, deviceName: string, location: string): Promise<void> {
+  const data = Factory.buildNewDeviceLogin(firstName, deviceName, location);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendSecurityAlert(to: string, firstName: string, alertDetails: string): Promise<void> {
+  const data = Factory.buildSecurityAlert(firstName, alertDetails);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendSubscriptionActivated(to: string, firstName: string, planName: string, loginUrl: string): Promise<void> {
+  const data = Factory.buildSubscriptionActivated(firstName, planName, loginUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendTrialStarted(to: string, firstName: string, daysLeft: number, loginUrl: string): Promise<void> {
+  const data = Factory.buildTrialStarted(firstName, daysLeft, loginUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendTrialEndingSoon(to: string, firstName: string, daysLeft: number, upgradeUrl: string): Promise<void> {
+  const data = Factory.buildTrialEndingSoon(firstName, daysLeft, upgradeUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendRenewalConfirmation(to: string, firstName: string, amount: string): Promise<void> {
+  const data = Factory.buildRenewalConfirmation(firstName, amount);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendPasswordReset(to: string, firstName: string, resetUrl: string): Promise<void> {
+  const data = Factory.buildPasswordReset(firstName, resetUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendPasswordResetSuccess(to: string, firstName: string, loginUrl: string): Promise<void> {
+  const data = Factory.buildPasswordResetSuccess(firstName, loginUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendAccountDeactivated(to: string, firstName: string): Promise<void> {
+  const data = Factory.buildAccountDeactivated(firstName);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendAccountReactivated(to: string, firstName: string, loginUrl: string): Promise<void> {
+  const data = Factory.buildAccountReactivated(firstName, loginUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
 }

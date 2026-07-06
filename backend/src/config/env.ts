@@ -13,6 +13,10 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV || "development",
   RESEND_API_KEY: process.env.RESEND_API_KEY || "",
   MAIL_FROM: process.env.MAIL_FROM || "onboarding@resend.dev",
+  SMTP_HOST: process.env.SMTP_HOST || "",
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || "587", 10),
+  SMTP_USER: process.env.SMTP_USER || "",
+  SMTP_PASS: process.env.SMTP_PASS || "",
   APP_URL: process.env.APP_URL || "http://localhost:3000",
 
   // Websocket connect-src for Helmet CSP (derived from APP_URL).

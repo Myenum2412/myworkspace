@@ -9,6 +9,10 @@ export declare const env: {
     NODE_ENV: string;
     RESEND_API_KEY: string;
     MAIL_FROM: string;
+    SMTP_HOST: string;
+    SMTP_PORT: number;
+    SMTP_USER: string;
+    SMTP_PASS: string;
     APP_URL: string;
     BASE_URL_WS: string;
     S3_ENDPOINT: string;
