@@ -8,15 +8,15 @@
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 8.9s
+✓ Compiled successfully in 11.5s
   Running TypeScript ...
   Finished TypeScript in 14.7s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/65) ...
-  Generating static pages using 11 workers (16/65) 
-  Generating static pages using 11 workers (32/65) 
-  Generating static pages using 11 workers (48/65) 
-✓ Generating static pages using 11 workers (65/65) in 622ms
+  Generating static pages using 11 workers (0/64) ...
+  Generating static pages using 11 workers (16/64) 
+  Generating static pages using 11 workers (32/64) 
+  Generating static pages using 11 workers (48/64) 
+✓ Generating static pages using 11 workers (64/64) in 627ms
   Finalizing page optimization ...
 
 Route (app)
@@ -29,6 +29,7 @@ Route (app)
 ├ ƒ /api/auth/[...nextauth]
 ├ ƒ /api/billing/create-checkout
 ├ ƒ /api/billing/invoices
+├ ƒ /api/billing/invoices/[id]
 ├ ƒ /api/billing/portal-session
 ├ ƒ /api/clients
 ├ ƒ /api/clients/[id]/workspace
@@ -76,7 +77,7 @@ Route (app)
 ├ ƒ /auth/role-redirect
 ├ ○ /billing
 ├ ○ /billing/invoices
-├ ○ /billing/invoices/new
+├ ƒ /billing/invoices/[id]
 ├ ○ /billing/plans
 ├ ○ /billing/services
 ├ ƒ /billing/services/[id]/edit

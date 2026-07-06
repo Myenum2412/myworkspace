@@ -37,8 +37,8 @@ export async function GET(req: Request) {
           pdfUrl: null,
           hostedUrl: null,
           createdAt: inv.createdAt,
-          periodStart: inv.invoiceDate,
-          periodEnd: null,
+          customerName: inv.customerName || inv.clientName || "—",
+          services: inv.items?.map((i: any) => (i.details || i.description || "Service").split(" - ")[0]).join(", ") || "—",
         })),
       },
     });
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { orgId, invoiceNumber, invoiceDate, items, subTotal, discountPercent, discountAmount, tdsTcsType, tdsTcsRate, tdsTcsAmount, adjustmentValue, total } = body;
+  const { orgId, clientId, customerName, invoiceNumber, invoiceDate, items, subTotal, discountPercent, discountAmount, tdsTcsType, tdsTcsRate, tdsTcsAmount, adjustmentValue, total, isSimplifiedView } = body;
 
   if (!orgId || !items?.length) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -64,6 +64,8 @@ export async function POST(req: Request) {
   const invoice = {
     id: uuid(),
     orgId,
+    clientId: clientId || null,
+    customerName: customerName || null,
     invoiceNumber: invoiceNumber || `INV-${Date.now()}`,
     invoiceDate: invoiceDate || new Date().toISOString(),
     status: "open",
@@ -76,6 +78,7 @@ export async function POST(req: Request) {
     tdsTcsAmount: tdsTcsAmount || 0,
     adjustmentValue: adjustmentValue || 0,
     total: total || 0,
+    isSimplifiedView: isSimplifiedView || false,
     createdBy: session.user.id,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

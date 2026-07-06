@@ -16,10 +16,15 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { defaultServices } from "@/lib/data/services";
 
-export default function NewInvoicePage() {
+export default function InvoiceFormPage() {
   const router = useRouter();
+  const params = useParams();
+  const invoiceId = params.id as string;
+  const isEditing = invoiceId !== "new";
+
   const [saving, setSaving] = useState(false);
   const [isSimplifiedView, setIsSimplifiedView] = useState(false);
   const [items, setItems] = useState([
@@ -61,17 +66,48 @@ export default function NewInvoicePage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [currentDate, setCurrentDate] = useState("");
+  const [selectedClient, setSelectedClient] = useState("");
 
   useEffect(() => {
-    const last = parseInt(localStorage.getItem("lastInvoiceNum") || "0", 10);
-    const next = last + 1;
-    localStorage.setItem("lastInvoiceNum", String(next));
-    setInvoiceNumber(`INV-${String(next).padStart(6, "0")}`);
-    const today = new Date();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const yyyy = today.getFullYear();
-    setCurrentDate(`${yyyy}-${mm}-${dd}`);
+    if (!isEditing) {
+      const last = parseInt(localStorage.getItem("lastInvoiceNum") || "0", 10);
+      const next = last + 1;
+      localStorage.setItem("lastInvoiceNum", String(next));
+      setInvoiceNumber(`INV-${String(next).padStart(6, "0")}`);
+      const today = new Date();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      setCurrentDate(`${yyyy}-${mm}-${dd}`);
+    } else {
+      // Fetch existing invoice
+      fetch(`/api/billing/invoices/${invoiceId}`)
+        .then(res => res.json())
+        .then(data => {
+          const inv = data.data || data; // handle unwrapped or wrapped response
+          if (inv) {
+            setInvoiceNumber(inv.invoiceNumber || inv.number || inv.id?.slice(0,8) || "");
+            const dateStr = inv.invoiceDate || inv.periodStart || inv.createdAt;
+            if (dateStr) {
+              try {
+                setCurrentDate(new Date(dateStr).toISOString().split('T')[0]);
+              } catch {
+                setCurrentDate(dateStr.split('T')[0]);
+              }
+            }
+            if (inv.items && Array.isArray(inv.items) && inv.items.length > 0) {
+              setItems(inv.items);
+            }
+            if (inv.discountPercent !== undefined) setDiscountPercent(inv.discountPercent);
+            if (inv.tdsTcsType) setTdsTcsType(inv.tdsTcsType);
+            if (inv.tdsTcsRate) setTdsTcsRate(inv.tdsTcsRate);
+            if (inv.adjustmentValue !== undefined) setAdjustmentValue(inv.adjustmentValue);
+            if (inv.clientId) setSelectedClient(inv.clientId);
+            if (inv.isSimplifiedView !== undefined) setIsSimplifiedView(inv.isSimplifiedView);
+          }
+        })
+        .catch(console.error);
+    }
 
     fetch("/api/clients").then(res => res.json()).then(data => {
       if (data.success && data.data) setClients(data.data);
@@ -123,6 +159,8 @@ export default function NewInvoicePage() {
 
       const payload = {
         orgId: oid,
+        clientId: selectedClient,
+        customerName: clients.find(c => c.id === selectedClient)?.name || "",
         invoiceNumber,
         invoiceDate: currentDate,
         items: items.filter((i) => i.rate > 0),
@@ -134,10 +172,14 @@ export default function NewInvoicePage() {
         tdsTcsAmount: tdsAmt,
         adjustmentValue,
         total: tot,
+        isSimplifiedView
       };
 
-      const res = await fetch("/api/billing/invoices", {
-        method: "POST",
+      const url = isEditing ? `/api/billing/invoices/${invoiceId}` : "/api/billing/invoices";
+      const method = isEditing ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(payload),
@@ -151,7 +193,7 @@ export default function NewInvoicePage() {
     } finally {
       setSaving(false);
     }
-  }, [invoiceNumber, currentDate, items, discountPercent, tdsTcsType, tdsTcsRate, adjustmentValue, isSimplifiedView, router]);
+  }, [invoiceNumber, currentDate, items, discountPercent, tdsTcsType, tdsTcsRate, adjustmentValue, isSimplifiedView, router, selectedClient, clients]);
 
   return (
     <div className="min-h-screen bg-white text-sm font-sans flex flex-col">
@@ -160,7 +202,7 @@ export default function NewInvoicePage() {
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <FileText className="size-5 text-gray-700" />
-            <h1 className="text-xl font-semibold text-gray-800">New Invoice</h1>
+            <h1 className="text-xl font-semibold text-gray-800">{isEditing ? "Edit Invoice" : "New Invoice"}</h1>
           </div>
           <div className="flex items-center gap-2">
             <Label htmlFor="simplified" className="text-gray-500 text-xs font-medium cursor-pointer">Use Simplified View</Label>
@@ -168,9 +210,6 @@ export default function NewInvoicePage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button onClick={handleSave} disabled={saving} size="sm" className="h-8">
-            {saving ? "Saving…" : "Save Invoice"}
-          </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" asChild>
             <Link href="/billing/invoices">
               <X className="size-5" />
@@ -188,7 +227,7 @@ export default function NewInvoicePage() {
             <div className="col-span-2 grid grid-cols-2 gap-6 items-start mb-6">
               <div>
                 <Label className="text-red-500 font-medium">Customer Name*</Label>
-                <Select>
+                <Select value={selectedClient} onValueChange={setSelectedClient}>
                   <SelectTrigger className="w-full h-9 text-gray-500 bg-white">
                     <SelectValue placeholder="Select or add a customer" />
                   </SelectTrigger>
@@ -503,19 +542,30 @@ export default function NewInvoicePage() {
             </div>
           </div>
 
-          {/* File Attachment */}
-          <div className="mt-8 border-t border-gray-100 pt-8">
-            <Label className="text-gray-700 font-medium mb-3 block text-sm">Attach File(s) to Invoice</Label>
-            <div className="inline-flex items-center rounded overflow-hidden border border-gray-200  bg-white">
-              <Button variant="ghost" size="sm" className="h-8 gap-2 bg-white hover:bg-gray-50 font-medium border-r border-gray-200 rounded-none px-4 text-gray-700">
-                <Upload className="size-3.5" />
-                Upload File
+          {/* File Attachment & Actions */}
+          <div className="mt-8 border-t border-gray-100 pt-8 flex justify-between items-end">
+            <div>
+              <Label className="text-gray-700 font-medium mb-3 block text-sm">Attach File(s) to Invoice</Label>
+              <div className="inline-flex items-center rounded overflow-hidden border border-gray-200  bg-white">
+                <Button variant="ghost" size="sm" className="h-8 gap-2 bg-white hover:bg-gray-50 font-medium border-r border-gray-200 rounded-none px-4 text-gray-700">
+                  <Upload className="size-3.5" />
+                  Upload File
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 px-2 bg-white hover:bg-gray-50 rounded-none text-gray-500">
+                  <ChevronDown className="size-4" />
+                </Button>
+              </div>
+              <p className="text-[11px] text-gray-400 mt-2">You can upload a maximum of 3 files, 10MB each</p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Button variant="outline" asChild>
+                <Link href="/billing/invoices">Cancel</Link>
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 px-2 bg-white hover:bg-gray-50 rounded-none text-gray-500">
-                <ChevronDown className="size-4" />
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "Saving…" : "Save Invoice"}
               </Button>
             </div>
-            <p className="text-[11px] text-gray-400 mt-2">You can upload a maximum of 3 files, 10MB each</p>
           </div>
         </div>
       </div>

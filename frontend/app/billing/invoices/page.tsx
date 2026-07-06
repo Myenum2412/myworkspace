@@ -3,20 +3,25 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileTextIcon, ExternalLinkIcon, Loader2Icon, PlusCircleIcon, IndianRupee, ReceiptIcon, ClockIcon, CheckCircleIcon } from "lucide-react";
+import { PlusIcon, ReceiptIcon, CheckCircleIcon, ClockIcon, IndianRupee, Loader2Icon } from "lucide-react";
 import Link from "next/link";
+import { DataTable } from "./data-table";
+import { columns, type Invoice } from "./columns";
 
-interface Invoice {
-  id: string;
-  number: string;
-  amountPaid: number;
-  currency: string;
-  status: string;
-  pdfUrl: string;
-  hostedUrl: string;
-  createdAt: string;
-  periodStart: string;
-  periodEnd: string;
+function InvoiceStatsCard({ icon, label, value, valueClassName, subtitle }: { icon: React.ReactNode; label: string; value: string | number; valueClassName?: string; subtitle?: React.ReactNode }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+          {icon}{label}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className={`text-2xl font-bold ${valueClassName || ""}`}>{value}</div>
+        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function BillingInvoicesPage() {
@@ -53,6 +58,14 @@ export default function BillingInvoicesPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-4 text-destructive">
+        {error}
+      </div>
+    );
+  }
+
   const paidInvoices = invoices.filter((inv) => inv.status === "paid");
   const openInvoices = invoices.filter((inv) => inv.status === "open");
   const voidInvoices = invoices.filter((inv) => inv.status === "void");
@@ -60,147 +73,56 @@ export default function BillingInvoicesPage() {
   const totalPending = openInvoices.reduce((s, inv) => s + inv.amountPaid, 0);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
+    <div className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Invoices</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Invoices</h1>
+          <p className="text-sm text-muted-foreground">Manage your organization's invoices</p>
+        </div>
         <Button asChild>
           <Link href="/billing/invoices/new">
-            <PlusCircleIcon className="mr-2 h-4 w-4" />
+            <PlusIcon className="mr-2 size-4" />
             New Invoice
           </Link>
         </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Invoices</CardTitle>
-            <ReceiptIcon className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{invoices.length}</p>
-            <p className="text-xs text-muted-foreground">All time</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Paid</CardTitle>
-            <CheckCircleIcon className="size-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{paidInvoices.length}</p>
-            <p className="text-xs text-emerald-600">₹{(totalPaid / 100).toFixed(2)} collected</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Open</CardTitle>
-            <ClockIcon className="size-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{openInvoices.length}</p>
-            <p className="text-xs text-blue-600">₹{(totalPending / 100).toFixed(2)} pending</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Void</CardTitle>
-            <IndianRupee className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{voidInvoices.length}</p>
-            <p className="text-xs text-muted-foreground">Cancelled invoices</p>
-          </CardContent>
-        </Card>
+        <InvoiceStatsCard
+          icon={<ReceiptIcon className="size-4" />}
+          label="Total Invoices"
+          value={invoices.length}
+        />
+        <InvoiceStatsCard
+          icon={<CheckCircleIcon className="size-4" />}
+          label="Paid Invoices"
+          value={paidInvoices.length}
+          valueClassName="text-emerald-500"
+          subtitle={<span className="text-emerald-600 font-medium">₹{(totalPaid / 100).toFixed(2)} collected</span>}
+        />
+        <InvoiceStatsCard
+          icon={<ClockIcon className="size-4" />}
+          label="Pending Payment"
+          value={openInvoices.length}
+          valueClassName="text-blue-500"
+          subtitle={<span className="text-blue-600 font-medium">₹{(totalPending / 100).toFixed(2)} pending</span>}
+        />
+        <InvoiceStatsCard
+          icon={<IndianRupee className="size-4" />}
+          label="Cancelled / Void Invoices"
+          value={voidInvoices.length}
+        />
       </div>
 
-      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-        <table className="w-full text-sm text-left">
-          <thead>
-            <tr className="bg-[#f3f4f6]">
-              <th className="px-4 py-3 font-semibold whitespace-nowrap">Invoice</th>
-              <th className="px-4 py-3 font-semibold whitespace-nowrap">Date</th>
-              <th className="px-4 py-3 font-semibold whitespace-nowrap">Amount</th>
-              <th className="px-4 py-3 font-semibold whitespace-nowrap">Status</th>
-              <th className="px-4 py-3 font-semibold whitespace-nowrap">Period</th>
-              <th className="px-4 py-3 font-semibold whitespace-nowrap text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {error ? (
-              <tr>
-                <td colSpan={6} className="text-center py-16 text-sm text-destructive">{error}</td>
-              </tr>
-            ) : invoices.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center py-16">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="flex items-center justify-center size-12 rounded-full bg-muted">
-                      <FileTextIcon className="size-6 text-muted-foreground/50" />
-                    </div>
-                    <p className="text-sm font-medium text-muted-foreground">No invoices yet</p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              invoices.map((inv) => (
-                <tr key={inv.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    {inv.number || inv.id.slice(0, 8)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {new Date(inv.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">
-                    ₹{(inv.amountPaid / 100).toFixed(2)} {inv.currency.toUpperCase()}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {inv.status === "paid" ? (
-                      <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Paid</span>
-                    ) : inv.status === "open" ? (
-                      <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10">Open</span>
-                    ) : inv.status === "void" ? (
-                      <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">Void</span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">{inv.status}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {inv.periodStart ? (
-                      `${new Date(inv.periodStart).toLocaleDateString()} - ${new Date(inv.periodEnd).toLocaleDateString()}`
-                    ) : (
-                      <span className="text-muted-foreground/40">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {inv.pdfUrl && (
-                        <Button variant="outline" size="sm" asChild className="h-8">
-                          <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer">
-                            <FileTextIcon className="size-3.5 mr-1" />
-                            PDF
-                          </a>
-                        </Button>
-                      )}
-                      {inv.hostedUrl && (
-                        <Button variant="outline" size="sm" asChild className="h-8">
-                          <a href={inv.hostedUrl} target="_blank" rel="noopener noreferrer">
-                            <ExternalLinkIcon className="size-3.5 mr-1" />
-                            View
-                          </a>
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Card>
+        <CardHeader><CardTitle className="text-base">All Invoices</CardTitle></CardHeader>
+        <CardContent>
+          <DataTable
+            columns={columns}
+            data={invoices}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
