@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { generateInvoicePDF } from "@/lib/pdf";
 
 export type Invoice = {
   id: string;
@@ -133,11 +134,26 @@ export const columns: ColumnDef<Invoice>[] = [
               Edit
             </DropdownMenuItem>
             
-            <DropdownMenuItem asChild>
-              <a href={inv.pdfUrl || "#"} download={inv.pdfUrl ? `Invoice_${inv.number || inv.id}.pdf` : undefined}>
-                <DownloadIcon className="mr-2 size-4" />
-                Download PDF
-              </a>
+            <DropdownMenuItem 
+              onClick={(e) => {
+                if (!inv.pdfUrl) {
+                  e.preventDefault();
+                  generateInvoicePDF(inv);
+                }
+              }}
+              asChild={!!inv.pdfUrl}
+            >
+              {inv.pdfUrl ? (
+                <a href={inv.pdfUrl} download={`Invoice_${inv.number || inv.id}.pdf`}>
+                  <DownloadIcon className="mr-2 size-4" />
+                  Download PDF
+                </a>
+              ) : (
+                <div className="flex items-center cursor-pointer w-full">
+                  <DownloadIcon className="mr-2 size-4" />
+                  Download PDF
+                </div>
+              )}
             </DropdownMenuItem>
 
             {inv.pdfUrl && (
