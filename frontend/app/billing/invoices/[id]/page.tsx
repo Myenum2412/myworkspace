@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   FileText, Info,
   GripVertical, PlusCircle, ChevronDown, Trash2,
-  Upload, Sparkles, X, LayoutTemplate
+  Upload, Sparkles, X, LayoutTemplate, Loader2Icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,8 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { defaultServices } from "@/lib/data/services";
+import { queueOfflineRequest } from "@/lib/offline-sync";
+import { toast } from "sonner";
 
 export default function InvoiceFormPage() {
   const router = useRouter();
@@ -25,6 +27,7 @@ export default function InvoiceFormPage() {
   const invoiceId = params.id as string;
   const isEditing = invoiceId !== "new";
 
+  const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
   const [isSimplifiedView, setIsSimplifiedView] = useState(false);
   const [items, setItems] = useState([
@@ -106,7 +109,13 @@ export default function InvoiceFormPage() {
             if (inv.isSimplifiedView !== undefined) setIsSimplifiedView(inv.isSimplifiedView);
           }
         })
-        .catch(console.error);
+        .catch(err => {
+          console.error(err);
+          toast.error("Failed to load invoice details");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
 
     fetch("/api/clients").then(res => res.json()).then(data => {
@@ -178,6 +187,13 @@ export default function InvoiceFormPage() {
       const url = isEditing ? `/api/billing/invoices/${invoiceId}` : "/api/billing/invoices";
       const method = isEditing ? "PUT" : "POST";
 
+      if (!navigator.onLine) {
+        await queueOfflineRequest(url, method, payload);
+        toast.success("Saved offline. Will sync automatically when internet is restored.");
+        router.push("/billing");
+        return;
+      }
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -186,14 +202,25 @@ export default function InvoiceFormPage() {
       });
 
       if (res.ok) {
-        router.push("/billing/invoices");
+        toast.success("Invoice saved successfully.");
+        router.push("/billing");
+      } else {
+        toast.error("Failed to save invoice.");
       }
     } catch {
-      // ignore
+      toast.error("An error occurred while saving.");
     } finally {
       setSaving(false);
     }
-  }, [invoiceNumber, currentDate, items, discountPercent, tdsTcsType, tdsTcsRate, adjustmentValue, isSimplifiedView, router, selectedClient, clients]);
+  }, [invoiceNumber, currentDate, items, discountPercent, tdsTcsType, tdsTcsRate, adjustmentValue, isSimplifiedView, router, selectedClient, clients, invoiceId, isEditing]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8 min-h-screen bg-white">
+        <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white text-sm font-sans flex flex-col">
@@ -211,7 +238,7 @@ export default function InvoiceFormPage() {
         </div>
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" asChild>
-            <Link href="/billing/invoices">
+            <Link href="/billing">
               <X className="size-5" />
             </Link>
           </Button>
@@ -560,7 +587,7 @@ export default function InvoiceFormPage() {
             
             <div className="flex items-center gap-3">
               <Button variant="outline" asChild>
-                <Link href="/billing/invoices">Cancel</Link>
+                <Link href="/billing">Cancel</Link>
               </Button>
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? "Saving…" : "Save Invoice"}

@@ -1,3 +1,10 @@
+const withSerwist = require("@serwist/next").default({
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV !== "production",
+  reloadOnOnline: true,
+});
+
 const nextConfig = {
   serverExternalPackages: ["better-sqlite3", "mongodb"],
   experimental: {
@@ -40,4 +47,4 @@ if (process.env.CDN_URL) {
   nextConfig.assetPrefix = process.env.CDN_URL;
 }
 
-module.exports = nextConfig;
+module.exports = withSerwist(nextConfig);

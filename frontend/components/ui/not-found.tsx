@@ -49,9 +49,6 @@ export function NotFound({
             Go back
           </a>
         </Button>
-        <Button className="-order-1 sm:order-none" asChild>
-          <a href="#">Take me home</a>
-        </Button>
       </div>
     </div>
   )

@@ -114,6 +114,7 @@ export const defaultNavData = {
         { title: "Overview", url: "/billing" },
         { title: "Services", url: "/billing/services" },
         { title: "Invoices", url: "/billing/invoices" },
+        { title: "Receipt", url: "/billing/receipts" },
       ],
     },
     {

@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { AppLayout } from "@/components/app-layout";
 import { OfflineBanner } from "@/components/offline-banner";
+import { OfflineSyncManager } from "@/components/offline-sync-manager";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
@@ -15,6 +16,13 @@ const roboto = Roboto({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: {
     default: "MyWorkSpace",
@@ -22,6 +30,15 @@ export const metadata: Metadata = {
   },
   description: "MyWorkSpace — the platform that transforms how your team collaborates and ships.",
   metadataBase: new URL("https://myworkspace.io"),
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "MyWorkSpace",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     title: "MyWorkSpace",
     description: "The platform that transforms how your team collaborates and ships.",
@@ -46,6 +63,7 @@ export default function RootLayout({
             {children}
           </AppLayout>
           <OfflineBanner />
+          <OfflineSyncManager />
           <Analytics />
           <Toaster richColors position="bottom-right" />
         </Providers>
