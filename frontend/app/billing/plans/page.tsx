@@ -97,7 +97,7 @@ export default function BillingPlansPage() {
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         {plans.map((p, i) => {
           const planId = planIds[i];
           const isCurrent = currentPlanLabel === planId;

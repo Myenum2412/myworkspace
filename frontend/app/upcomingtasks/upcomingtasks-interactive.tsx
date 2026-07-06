@@ -78,7 +78,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
             </CardContent>
           </Card>
         ) : view === "table" ? (
-          <><div className="grid gap-4 md:grid-cols-6 mb-6">
+          <><div className="grid gap-4 grid-cols-2 md:grid-cols-6 mb-6">
             <Card className="bg-blue-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
@@ -155,7 +155,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
           </Card>
           </>
         ) : (
-          <div className="grid gap-4 md:grid-cols-5">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
             {statusGroups.map((s) => {
               const items = tasks.filter((t) => t.status === s);
               return (

@@ -167,7 +167,7 @@ export function KanbanBoard({ tasks, onStatusChange, onCardClick }: KanbanBoardP
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid gap-4 md:grid-cols-6">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-6">
         {statusGroups.map((s) => {
           const items = tasks.filter((t) => t.status === s);
           return (

@@ -177,7 +177,7 @@ export default async function StaffsPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
@@ -224,7 +224,7 @@ export default async function StaffsPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
@@ -312,7 +312,7 @@ export default async function StaffsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
             <div className="rounded-lg border p-4 text-center">
               <p className="text-2xl font-bold text-green-600">{completedTasks}</p>
               <p className="text-xs text-muted-foreground mt-1">Tasks Completed</p>

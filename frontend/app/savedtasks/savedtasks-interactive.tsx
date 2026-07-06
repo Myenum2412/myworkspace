@@ -79,7 +79,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
         </div>
 
         {view === "table" ? (
-          <><div className="grid gap-4 md:grid-cols-6 mb-6">
+          <><div className="grid gap-4 grid-cols-2 md:grid-cols-6 mb-6">
             <Card className="bg-blue-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
@@ -156,7 +156,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
           </Card>
           </>
         ) : (
-          <div className="grid gap-4 md:grid-cols-5">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
             {grouped.map((g) => (
               <div key={g.status} className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">

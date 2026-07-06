@@ -125,7 +125,7 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
         <p className="text-sm text-muted-foreground mt-1">Weekly overview of your tracked time</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Hours</CardTitle>

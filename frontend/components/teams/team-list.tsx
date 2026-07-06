@@ -42,7 +42,7 @@ export function TeamList({
         <Button onClick={onCreateTeam}><PlusIcon className="mr-2 size-4" />New Team</Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         <TeamStatsCard icon={<UsersIcon className="size-4" />} label="Total Teams" value={teams.length} />
         <TeamStatsCard icon={<UserPlusIcon className="size-4" />} label="Total Members" value={totalMembers} valueClassName="text-red-500" />
         <TeamStatsCard icon={<UsersIcon className="size-4" />} label="Avg Team Size" value={avgTeamSize} valueClassName="text-red-500" />

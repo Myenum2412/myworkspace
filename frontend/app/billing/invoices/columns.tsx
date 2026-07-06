@@ -46,6 +46,7 @@ export const columns: ColumnDef<Invoice>[] = [
     enableSorting: false,
     enableHiding: false,
     size: 40,
+    meta: { className: "hidden md:table-cell" },
   },
   {
     id: "sno",
@@ -53,6 +54,7 @@ export const columns: ColumnDef<Invoice>[] = [
     cell: ({ row }) => <span className="text-muted-foreground text-sm">{row.index + 1}</span>,
     enableSorting: false,
     size: 50,
+    meta: { className: "hidden md:table-cell" },
   },
   {
     accessorKey: "number",
@@ -74,6 +76,7 @@ export const columns: ColumnDef<Invoice>[] = [
         return <span>{val}</span>;
       }
     },
+    meta: { className: "hidden md:table-cell" },
   },
   {
     accessorKey: "customerName",
@@ -87,6 +90,7 @@ export const columns: ColumnDef<Invoice>[] = [
       const val = row.getValue("services") as string;
       return <span className="text-gray-600 truncate max-w-[200px] block" title={val}>{val || "—"}</span>;
     },
+    meta: { className: "hidden md:table-cell" },
   },
   {
     id: "amount",

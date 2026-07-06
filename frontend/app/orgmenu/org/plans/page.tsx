@@ -17,7 +17,7 @@ export default function PlansPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Plans</h1>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         {plans.map((plan) => (
           <Card key={plan.name} className={`relative ${plan.popular ? "border-primary shadow-lg" : ""}`}>
             {plan.popular && <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2">Popular</Badge>}

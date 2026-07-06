@@ -340,7 +340,7 @@ export function SettingsPlansPageInteractive({ orgPlan: initialOrgPlan, orgId, u
           <CardDescription>Upgrade or downgrade your plan at any time</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
             {priceTiers.map((plan) => {
               const Icon = planIcons[plan.id] || SparklesIcon;
               const isActive = orgPlan === plan.id || (orgPlan === "starter" && plan.id === "free") || (orgPlan === "pro" && plan.id === "growth");

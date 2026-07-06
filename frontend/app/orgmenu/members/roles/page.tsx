@@ -15,7 +15,7 @@ export default function RolesPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Roles</h1>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         {roles.map((role) => (
           <Card key={role.name}>
             <CardHeader>

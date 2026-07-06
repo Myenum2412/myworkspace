@@ -71,7 +71,7 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
           <Badge variant="secondary" className="ml-auto">{total} tasks</Badge>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">

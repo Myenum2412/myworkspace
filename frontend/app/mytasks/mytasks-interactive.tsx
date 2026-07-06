@@ -103,7 +103,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
           </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-6 mb-6">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-6 mb-6">
           <Card className="bg-blue-50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
           </CardContent>
         </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-5">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
             {statusGroups.map((s) => {
               const items = myTasks.filter((t) => t.status === s);
               return (

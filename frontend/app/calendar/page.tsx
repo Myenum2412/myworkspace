@@ -57,7 +57,7 @@ function CalendarView({ tasks }: { tasks: Task[] }) {
         <h1 className="text-2xl font-bold">Calendar</h1>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         <Card className="border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm text-red-600">Overdue</CardTitle></CardHeader>
           <CardContent>

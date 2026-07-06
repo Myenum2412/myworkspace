@@ -185,7 +185,7 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
           <BarChart3 className="size-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold">Client Dashboard</h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-5">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
           <MetricCard title="Folders" value={metrics.folders} />
           <MetricCard title="Files" value={metrics.files} />
           <MetricCard title="Projects" value={metrics.projects} />
@@ -248,7 +248,7 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
         </Card>
       </section>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         <ModuleCard id="projects" icon={Workflow} title="Projects" detail={`${metrics.projects} linked project records`} />
         <ModuleCard id="reports" icon={FileText} title="Reports" detail={`${metrics.reports} report files linked to this client`} />
         <ModuleCard id="settings" icon={Settings} title="Settings" detail="Workspace access and file permissions are scoped to this Client ID" />

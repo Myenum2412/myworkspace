@@ -56,7 +56,7 @@ export default async function ReportsPage() {
         <h1 className="text-2xl font-bold">Reports</h1>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><BarChart3Icon className="size-4" /> Total Tasks</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{total}</div></CardContent>

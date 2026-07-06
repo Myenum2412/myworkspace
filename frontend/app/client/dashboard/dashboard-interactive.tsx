@@ -134,7 +134,7 @@ export default function DashboardInteractive() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         <QuickActionCard icon={ClipboardList} title="Projects" description={`${client?.projects || 0} active`} href="/client/projects" />
         <QuickActionCard icon={FolderOpen} title="File Manager" description={`${stats?.fileCount ?? 0} files`} href="/client/file-manager" />
         <QuickActionCard icon={Bell} title="Notifications" description="View updates" href="/client/notifications" />
