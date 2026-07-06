@@ -10,12 +10,12 @@ export const buildWelcomeEmail = (
   loginUrl: string,
   providerIcon?: string
 ): EmailData => ({
-  subject: "Welcome to Workspace! \uD83C\uDF89",
+  subject: "Welcome to MyWorkspace",
   previewText: "Your account has been created successfully.",
   greeting: `Hi ${firstName},`,
   intro: [
-    "Welcome to Workspace! Your account has been created successfully.",
-    "We're thrilled to have you on board. Here is a quick overview of your account details:"
+    "Welcome to MyWorkspace. Your enterprise account has been successfully provisioned and is now active.",
+    "We are delighted to welcome you to our professional suite of productivity tools. Below is a detailed overview of your newly configured account:"
   ],
   accountInfo: [
     { label: "Full Name", value: firstName },
@@ -35,11 +35,11 @@ export const buildWelcomeEmail = (
     "Enable notifications"
   ],
   features: [
-    { title: "Project Management", description: "Organize tasks and track progress easily.", icon: "📋" },
-    { title: "Team Collaboration", description: "Communicate seamlessly with your team.", icon: "👥" },
-    { title: "Secure Authentication", description: "Your data is safe and protected.", icon: "🔒" },
-    { title: "Calendar & Tasks", description: "Stay on top of deadlines.", icon: "📅" },
-    { title: "File Management", description: "Store and share documents.", icon: "📁" }
+    { title: "Project Management", description: "Organize tasks and track progress easily." },
+    { title: "Team Collaboration", description: "Communicate seamlessly with your team." },
+    { title: "Secure Authentication", description: "Your data is safe and protected." },
+    { title: "Calendar & Tasks", description: "Stay on top of deadlines." },
+    { title: "File Management", description: "Store and share documents." }
   ],
   button: {
     text: "Go to Workspace",
@@ -114,7 +114,7 @@ export const buildTeamMemberAdded = (firstName: string, teamName: string, loginU
 
 // 6. First Login Congratulations
 export const buildFirstLogin = (firstName: string): EmailData => ({
-  subject: "Congratulations on your first login! \uD83D\uDE80",
+  subject: "Congratulations on your first login",
   greeting: `Hi ${firstName},`,
   intro: ["We noticed you just logged in for the first time. Welcome aboard!", "Here are a few tips to get the most out of your workspace."],
   quickStart: ["Set up your avatar", "Review notification preferences", "Create your first task"],

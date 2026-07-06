@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, Loader2 } from "lucide-react";
+import { PlusIcon, Loader2, ChevronLeftIcon } from "lucide-react";
 import { getSocketIO } from "@/lib/socketio-client";
 import type { Client } from "@/app/clients/columns";
 import type { Credentials } from "@/components/clients/client-types";
@@ -28,7 +28,7 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [loading] = useState(false);
   const [members, setMembers] = useState<string[]>([]);
-  const [showForm, setShowForm] = useState(false);
+  const [pageView, setPageView] = useState<"list" | "add">("list");
   const [showSuccess, setShowSuccess] = useState(false);
   const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -93,6 +93,20 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
     setDeletingClient(null);
   }
 
+  function handleBack() {
+    setPageView("list");
+  }
+
+  function refreshClients() {
+    fetch("/api/clients", { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => {
+        const list = data.data || data || [];
+        setClients(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {});
+  }
+
   if (loading) {
     return (
       <main className="flex flex-1 flex-col gap-4 p-4">
@@ -103,12 +117,44 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
     );
   }
 
+  if (pageView === "add") {
+    return (
+      <main className="flex flex-1 flex-col h-full bg-white">
+        <div className="flex items-center gap-3 px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
+          <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1.5">
+            <ChevronLeftIcon className="size-4" />
+            Back
+          </Button>
+          <div className="h-5 w-px bg-border" />
+          <h1 className="text-lg font-semibold text-black">Add New Customer</h1>
+        </div>
+        <div className="flex-1 overflow-auto bg-white">
+          <div className="max-w-5xl mx-auto py-6 bg-white my-6">
+            <ClientForm
+              onCancel={handleBack}
+              onClientAdded={() => {
+                refreshClients();
+                handleBack();
+              }}
+            />
+          </div>
+        </div>
+
+        <ClientSuccessDialog
+          open={showSuccess}
+          onOpenChange={setShowSuccess}
+          credentials={credentials}
+        />
+      </main>
+    );
+  }
+
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Clients</h1>
-          <Button onClick={() => setShowForm(true)}>
+          <Button onClick={() => setPageView("add")}>
             <PlusIcon className="mr-2 size-4" />
             Add Client
           </Button>
@@ -120,19 +166,6 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
           onDelete={(client) => { setDeletingClient(client); }}
         />
       </main>
-
-      <ClientForm
-        open={showForm}
-        onOpenChange={setShowForm}
-        onClientCreated={handleClientCreated}
-        members={members}
-      />
-
-      <ClientSuccessDialog
-        open={showSuccess}
-        onOpenChange={setShowSuccess}
-        credentials={credentials}
-      />
 
       <ClientEditDialog
         client={editingClient}

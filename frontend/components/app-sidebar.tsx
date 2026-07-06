@@ -112,7 +112,7 @@ export const defaultNavData = {
       icon: <CreditCardIcon className="size-6" />,
       items: [
         { title: "Overview", url: "/billing" },
-        { title: "Plans", url: "/billing/plans" },
+        { title: "Services", url: "/billing/services" },
         { title: "Invoices", url: "/billing/invoices" },
       ],
     },

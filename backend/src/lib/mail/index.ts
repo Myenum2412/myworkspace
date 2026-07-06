@@ -1,11 +1,8 @@
 import { Resend } from "resend";
 import { env } from "../../config/env.js";
 import nodemailer from "nodemailer";
-import fs from "fs";
-import path from "path";
 import { buildEmailHtml } from "./templates/builder.js";
 import * as Factory from "./templates/factory.js";
-import { AttachmentItem } from "./templates/types.js";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
@@ -31,18 +28,7 @@ if (!transporter && env.MAIL_FROM === RESEND_TEST_SENDER) {
   );
 }
 
-// Ensure the logo path is correct relative to the backend execution context
-const logoPath = path.resolve(process.cwd(), "../frontend/public/logo.jpeg");
-const defaultAttachments: AttachmentItem[] = fs.existsSync(logoPath) 
-  ? [{ filename: "logo.jpeg", path: logoPath, cid: "workspace_logo" }]
-  : [];
-
-async function sendEmail(
-  to: string,
-  subject: string,
-  htmlBody: string,
-  attachments: AttachmentItem[] = defaultAttachments
-): Promise<void> {
+async function sendEmail(to: string, subject: string, htmlBody: string): Promise<void> {
   if (transporter) {
     try {
       const info = await transporter.sendMail({
@@ -50,12 +36,6 @@ async function sendEmail(
         to,
         subject,
         html: htmlBody,
-        attachments: attachments.map(a => ({
-          filename: a.filename,
-          path: a.path,
-          content: a.content,
-          cid: a.cid
-        }))
       });
       console.log(`[mail] Email sent to ${to} (messageId: ${info.messageId})`);
       return;
@@ -70,26 +50,11 @@ async function sendEmail(
     return;
   }
 
-  // Map attachments for Resend
-  const resendAttachments = attachments.map(a => {
-    let content: string | Buffer = "";
-    if (a.content) {
-      content = a.content;
-    } else if (a.path && fs.existsSync(a.path)) {
-      content = fs.readFileSync(a.path);
-    }
-    return {
-      filename: a.filename,
-      content,
-    };
-  }).filter(a => a.content !== "");
-
   const { data, error } = await resend.emails.send({
     from: env.MAIL_FROM,
     to,
     subject,
     html: htmlBody,
-    attachments: resendAttachments.length > 0 ? resendAttachments : undefined
   });
 
   if (error) {

@@ -1,18 +1,34 @@
 import { env } from "../../../config/env.js";
 import { EmailData, SocialLinks } from "./types.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const logoBannerPath = path.resolve(__dirname, "../../../../../frontend/public/logobg.png");
+const logoBannerBase64 = fs.existsSync(logoBannerPath)
+  ? `data:image/png;base64,${fs.readFileSync(logoBannerPath).toString("base64")}`
+  : `${env.APP_URL}/logobg.png`;
+
+const logoSmallPath = path.resolve(__dirname, "../../../../../frontend/public/logo.jpeg");
+const logoSmallBase64 = fs.existsSync(logoSmallPath)
+  ? `data:image/jpeg;base64,${fs.readFileSync(logoSmallPath).toString("base64")}`
+  : `${env.APP_URL}/logo.jpeg`;
 
 const COLORS = {
-  primary: "#3b82f6",
-  primaryHover: "#2563eb",
-  bg: "#f4f5f7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  bg: "#f1f5f9",
   cardBg: "#ffffff",
-  textMain: "#1a1a2e",
-  textMuted: "#64748b",
+  textMain: "#0f172a",
+  textMuted: "#475569",
   textLight: "#94a3b8",
   border: "#e2e8f0",
-  success: "#10b981",
-  danger: "#ef4444",
-  warning: "#f59e0b",
+  success: "#059669",
+  danger: "#dc2626",
+  warning: "#d97706",
 };
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
@@ -29,7 +45,7 @@ const ICONS = {
 export function buildEmailHtml(data: EmailData): string {
   const currentYear = new Date().getFullYear();
   const appUrl = env.APP_URL || "https://myworkspace.com";
-  
+
   const renderPreviewText = () => {
     if (!data.previewText) return "";
     return `
@@ -42,14 +58,8 @@ export function buildEmailHtml(data: EmailData): string {
   const renderHeader = () => {
     return `
       <tr>
-        <td align="center" style="padding: 40px 0 20px;">
-          <table cellpadding="0" cellspacing="0" border="0">
-            <tr>
-              <td>
-                <img src="cid:workspace_logo" alt="Workspace Logo" width="64" height="64" style="display: block; border-radius: 12px; margin: 0 auto; border: 1px solid ${COLORS.border};" />
-              </td>
-            </tr>
-          </table>
+        <td align="center" style="padding: 0;">
+          <img src="${logoBannerBase64}" alt="MyWorkspace" width="100%" style="display: block; width: 100%; max-width: 100%; height: auto;" />
         </td>
       </tr>
     `;
@@ -59,10 +69,14 @@ export function buildEmailHtml(data: EmailData): string {
     if (data.providerIcon === "gmail") {
       return `
         <tr>
-          <td align="center" style="padding: 0 40px 16px;">
-             <div style="display:inline-block; padding:8px 16px; background:#f1f5f9; border-radius:20px; font-size:12px; font-family:${FONT}; color:${COLORS.textMuted}; font-weight:600;">
-               <img src="${ICONS.gmail}" width="14" height="14" style="vertical-align:middle; margin-right:6px;" alt="Gmail" /> Registered with Gmail
-             </div>
+          <td align="center" style="padding: 0 40px 20px;">
+             <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+               <tr>
+                 <td style="padding: 6px 14px; background: #f1f5f9; border-radius: 4px; font-size: 12px; font-family:${FONT}; color:${COLORS.textMuted}; font-weight: 600;">
+                   Registered with Gmail
+                 </td>
+               </tr>
+             </table>
           </td>
         </tr>
       `;
@@ -74,8 +88,8 @@ export function buildEmailHtml(data: EmailData): string {
     if (!data.greeting) return "";
     return `
       <tr>
-        <td style="padding: 0 40px 20px;">
-          <h1 style="margin: 0; font-family: ${FONT}; font-size: 24px; color: ${COLORS.textMain}; font-weight: 600;">
+        <td style="padding: 0 40px 16px;">
+          <h1 style="margin: 0; font-family: ${FONT}; font-size: 26px; color: ${COLORS.textMain}; font-weight: 700; letter-spacing: -0.5px;">
             ${data.greeting}
           </h1>
         </td>
@@ -87,8 +101,8 @@ export function buildEmailHtml(data: EmailData): string {
     if (!data.intro || data.intro.length === 0) return "";
     return data.intro.map(p => `
       <tr>
-        <td style="padding: 0 40px 16px;">
-          <p style="margin: 0; font-family: ${FONT}; font-size: 16px; line-height: 24px; color: ${COLORS.textMuted};">
+        <td style="padding: 0 40px 12px;">
+          <p style="margin: 0; font-family: ${FONT}; font-size: 16px; line-height: 26px; color: ${COLORS.textMuted};">
             ${p}
           </p>
         </td>
@@ -98,13 +112,13 @@ export function buildEmailHtml(data: EmailData): string {
 
   const renderAccountInfo = () => {
     if (!data.accountInfo || data.accountInfo.length === 0) return "";
-    
+
     const rows = data.accountInfo.map(info => `
       <tr>
-        <td width="40%" style="padding: 12px 16px; border-bottom: 1px solid ${COLORS.border}; font-family: ${FONT}; font-size: 14px; font-weight: 600; color: ${COLORS.textMain};">
+        <td width="35%" style="padding: 10px 16px; border-bottom: 1px solid ${COLORS.border}; font-family: ${FONT}; font-size: 13px; font-weight: 600; color: ${COLORS.textMain}; text-transform: uppercase; letter-spacing: 0.3px;">
           ${info.label}
         </td>
-        <td width="60%" style="padding: 12px 16px; border-bottom: 1px solid ${COLORS.border}; font-family: ${FONT}; font-size: 14px; color: ${COLORS.textMuted}; word-break: break-all;">
+        <td width="65%" style="padding: 10px 16px; border-bottom: 1px solid ${COLORS.border}; font-family: ${FONT}; font-size: 14px; color: ${COLORS.textMuted}; word-break: break-all;">
           ${info.value}
         </td>
       </tr>
@@ -112,8 +126,8 @@ export function buildEmailHtml(data: EmailData): string {
 
     return `
       <tr>
-        <td style="padding: 0 40px 24px;">
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border: 1px solid ${COLORS.border}; border-radius: 8px; overflow: hidden; background-color: #fafafa;">
+        <td style="padding: 20px 40px 28px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border: 1px solid ${COLORS.border};">
             ${rows}
           </table>
         </td>
@@ -123,13 +137,11 @@ export function buildEmailHtml(data: EmailData): string {
 
   const renderQuickStart = () => {
     if (!data.quickStart || data.quickStart.length === 0) return "";
-    
+
     const items = data.quickStart.map(item => `
       <tr>
-        <td width="24" valign="top" style="padding-bottom: 12px;">
-          <span style="color: ${COLORS.success}; font-size: 18px;">✓</span>
-        </td>
-        <td valign="top" style="padding-bottom: 12px; font-family: ${FONT}; font-size: 15px; color: ${COLORS.textMuted}; line-height: 22px;">
+        <td width="16" valign="top" style="padding-bottom: 10px; font-family: ${FONT}; font-size: 14px; color: ${COLORS.success}; font-weight: 700;">-</td>
+        <td valign="top" style="padding-bottom: 10px; font-family: ${FONT}; font-size: 15px; color: ${COLORS.textMuted}; line-height: 22px;">
           ${item}
         </td>
       </tr>
@@ -137,11 +149,11 @@ export function buildEmailHtml(data: EmailData): string {
 
     return `
       <tr>
-        <td style="padding: 0 40px 24px;">
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8fafc; border: 1px solid ${COLORS.border}; border-radius: 8px;">
+        <td style="padding: 0 40px 28px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8fafc; border: 1px solid ${COLORS.border};">
             <tr>
               <td style="padding: 24px;">
-                <h3 style="margin: 0 0 16px; font-family: ${FONT}; font-size: 16px; font-weight: 600; color: ${COLORS.textMain};">Quick Start</h3>
+                <h3 style="margin: 0 0 14px; font-family: ${FONT}; font-size: 15px; font-weight: 700; color: ${COLORS.textMain}; text-transform: uppercase; letter-spacing: 0.5px;">Quick Start</h3>
                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
                   ${items}
                 </table>
@@ -161,11 +173,8 @@ export function buildEmailHtml(data: EmailData): string {
         <td style="padding-bottom: 16px;">
           <table width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
-              ${feat.icon ? `<td width="32" valign="top" style="padding-right: 12px; font-size: 24px;">
-                ${feat.icon}
-              </td>` : ''}
               <td valign="top">
-                <h4 style="margin: 0 0 4px; font-family: ${FONT}; font-size: 15px; font-weight: 600; color: ${COLORS.textMain};">${feat.title}</h4>
+                <h4 style="margin: 0 0 2px; font-family: ${FONT}; font-size: 15px; font-weight: 700; color: ${COLORS.textMain};">${feat.title}</h4>
                 ${feat.description ? `<p style="margin: 0; font-family: ${FONT}; font-size: 14px; color: ${COLORS.textMuted}; line-height: 20px;">${feat.description}</p>` : ''}
               </td>
             </tr>
@@ -176,8 +185,8 @@ export function buildEmailHtml(data: EmailData): string {
 
     return `
       <tr>
-        <td style="padding: 0 40px 24px;">
-          <h3 style="margin: 0 0 16px; font-family: ${FONT}; font-size: 16px; font-weight: 600; color: ${COLORS.textMain};">Features you'll love</h3>
+        <td style="padding: 0 40px 28px;">
+          <h3 style="margin: 0 0 16px; font-family: ${FONT}; font-size: 15px; font-weight: 700; color: ${COLORS.textMain}; text-transform: uppercase; letter-spacing: 0.5px;">Features</h3>
           <table width="100%" cellpadding="0" cellspacing="0" border="0">
             ${items}
           </table>
@@ -190,10 +199,16 @@ export function buildEmailHtml(data: EmailData): string {
     if (!data.button) return "";
     return `
       <tr>
-        <td align="center" style="padding: 16px 40px 32px;">
-          <a href="${data.button.url}" style="display: inline-block; padding: 14px 32px; background-color: ${COLORS.primary}; color: #ffffff; text-decoration: none; font-family: ${FONT}; font-size: 16px; font-weight: 600; border-radius: 8px; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);">
-            ${data.button.text}
-          </a>
+        <td align="center" style="padding: 8px 40px 36px;">
+          <table cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="background-color: ${COLORS.primary}; padding: 14px 36px;">
+                <a href="${data.button.url}" style="color: #ffffff; text-decoration: none; font-family: ${FONT}; font-size: 15px; font-weight: 600; letter-spacing: 0.3px; display: inline-block;">
+                  ${data.button.text}
+                </a>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
     `;
@@ -203,12 +218,12 @@ export function buildEmailHtml(data: EmailData): string {
     if (!data.securityNotice) return "";
     return `
       <tr>
-        <td style="padding: 0 40px 24px;">
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fef2f2; border-left: 4px solid ${COLORS.danger}; border-radius: 0 8px 8px 0;">
+        <td style="padding: 0 40px 28px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fef2f2; border-left: 4px solid ${COLORS.danger};">
             <tr>
               <td style="padding: 16px;">
-                <h4 style="margin: 0 0 8px; font-family: ${FONT}; font-size: 14px; font-weight: 600; color: #b91c1c;">Security Notice</h4>
-                <p style="margin: 0; font-family: ${FONT}; font-size: 13px; color: #991b1b; line-height: 20px;">
+                <h4 style="margin: 0 0 6px; font-family: ${FONT}; font-size: 14px; font-weight: 700; color: #991b1b;">Security Notice</h4>
+                <p style="margin: 0; font-family: ${FONT}; font-size: 13px; color: #7f1d1d; line-height: 20px;">
                   Never share your password. Enable Two-Factor Authentication if available. Contact support immediately if you did not request this action.
                 </p>
               </td>
@@ -223,7 +238,7 @@ export function buildEmailHtml(data: EmailData): string {
     if (!data.outro || data.outro.length === 0) return "";
     return data.outro.map(p => `
       <tr>
-        <td style="padding: 0 40px 16px;">
+        <td style="padding: 0 40px 12px;">
           <p style="margin: 0; font-family: ${FONT}; font-size: 15px; line-height: 24px; color: ${COLORS.textMuted};">
             ${p}
           </p>
@@ -234,19 +249,19 @@ export function buildEmailHtml(data: EmailData): string {
 
   const renderSocials = () => {
     if (!data.socialLinks) return "";
-    
+
     const links = [];
-    if (data.socialLinks.linkedin) links.push(`<a href="${data.socialLinks.linkedin}" style="display:inline-block; margin:0 8px;"><img src="${ICONS.linkedin}" width="24" height="24" alt="LinkedIn" /></a>`);
-    if (data.socialLinks.twitter) links.push(`<a href="${data.socialLinks.twitter}" style="display:inline-block; margin:0 8px;"><img src="${ICONS.twitter}" width="24" height="24" alt="Twitter" /></a>`);
-    if (data.socialLinks.facebook) links.push(`<a href="${data.socialLinks.facebook}" style="display:inline-block; margin:0 8px;"><img src="${ICONS.facebook}" width="24" height="24" alt="Facebook" /></a>`);
-    if (data.socialLinks.instagram) links.push(`<a href="${data.socialLinks.instagram}" style="display:inline-block; margin:0 8px;"><img src="${ICONS.instagram}" width="24" height="24" alt="Instagram" /></a>`);
-    if (data.socialLinks.youtube) links.push(`<a href="${data.socialLinks.youtube}" style="display:inline-block; margin:0 8px;"><img src="${ICONS.youtube}" width="24" height="24" alt="YouTube" /></a>`);
-    
+    if (data.socialLinks.linkedin) links.push(`<a href="${data.socialLinks.linkedin}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.linkedin}" width="20" height="20" alt="LinkedIn" /></a>`);
+    if (data.socialLinks.twitter) links.push(`<a href="${data.socialLinks.twitter}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.twitter}" width="20" height="20" alt="Twitter" /></a>`);
+    if (data.socialLinks.facebook) links.push(`<a href="${data.socialLinks.facebook}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.facebook}" width="20" height="20" alt="Facebook" /></a>`);
+    if (data.socialLinks.instagram) links.push(`<a href="${data.socialLinks.instagram}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.instagram}" width="20" height="20" alt="Instagram" /></a>`);
+    if (data.socialLinks.youtube) links.push(`<a href="${data.socialLinks.youtube}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.youtube}" width="20" height="20" alt="YouTube" /></a>`);
+
     if (links.length === 0) return "";
-    
+
     return `
       <tr>
-        <td align="center" style="padding: 0 40px 24px;">
+        <td align="center" style="padding: 0 40px 20px;">
           ${links.join("")}
         </td>
       </tr>
@@ -256,29 +271,29 @@ export function buildEmailHtml(data: EmailData): string {
   const renderFooter = () => {
     return `
       <tr>
-        <td style="padding: 32px 40px; background-color: #f8fafc; border-top: 1px solid ${COLORS.border};">
+        <td style="padding: 28px 40px; background-color: #f8fafc; border-top: 1px solid ${COLORS.border};">
           <table width="100%" cellpadding="0" cellspacing="0" border="0">
             ${renderSocials()}
             <tr>
-              <td align="center" style="padding-bottom: 16px;">
-                <img src="cid:workspace_logo" alt="Workspace Logo" width="32" height="32" style="display: block; opacity: 0.5; border-radius: 6px;" />
+              <td align="center" style="padding-bottom: 12px;">
+                <img src="${logoSmallBase64}" alt="MyWorkspace" width="80" style="display: block; opacity: 0.4; border-radius: 4px;" />
               </td>
             </tr>
             <tr>
-              <td align="center" style="padding-bottom: 12px;">
-                <p style="margin: 0; font-family: ${FONT}; font-size: 13px; color: ${COLORS.textLight};">
-                  &copy; ${currentYear} Workspace Inc. All rights reserved.
+              <td align="center" style="padding-bottom: 10px;">
+                <p style="margin: 0; font-family: ${FONT}; font-size: 12px; color: ${COLORS.textLight};">
+                  &copy; ${currentYear} MyWorkspace Inc. All rights reserved.
                 </p>
               </td>
             </tr>
             <tr>
               <td align="center">
-                <p style="margin: 0; font-family: ${FONT}; font-size: 12px; color: ${COLORS.textLight}; line-height: 18px;">
-                  123 Innovation Drive, Tech City, TC 10001<br/>
-                  <a href="${appUrl}/privacy" style="color: ${COLORS.primary}; text-decoration: none;">Privacy Policy</a> &bull; 
-                  <a href="${appUrl}/terms" style="color: ${COLORS.primary}; text-decoration: none;">Terms &amp; Conditions</a>
-                  ${data.supportEmail ? ` &bull; <a href="mailto:${data.supportEmail}" style="color: ${COLORS.primary}; text-decoration: none;">Contact Support</a>` : ''}
-                  ${data.unsubscribeUrl ? ` &bull; <a href="${data.unsubscribeUrl}" style="color: ${COLORS.primary}; text-decoration: none;">Unsubscribe</a>` : ''}
+                <p style="margin: 0; font-family: ${FONT}; font-size: 11px; color: ${COLORS.textLight}; line-height: 18px;">
+                  <a href="${appUrl}/privacy" style="color: ${COLORS.primary}; text-decoration: none;">Privacy Policy</a>
+                  <span style="color: ${COLORS.textLight};"> &bull; </span>
+                  <a href="${appUrl}/terms" style="color: ${COLORS.primary}; text-decoration: none;">Terms</a>
+                  ${data.supportEmail ? ` <span style="color: ${COLORS.textLight};"> &bull; </span> <a href="mailto:${data.supportEmail}" style="color: ${COLORS.primary}; text-decoration: none;">Contact</a>` : ''}
+                  ${data.unsubscribeUrl ? ` <span style="color: ${COLORS.textLight};"> &bull; </span> <a href="${data.unsubscribeUrl}" style="color: ${COLORS.primary}; text-decoration: none;">Unsubscribe</a>` : ''}
                 </p>
               </td>
             </tr>
@@ -301,14 +316,14 @@ export function buildEmailHtml(data: EmailData): string {
           color-scheme: light dark;
           supported-color-schemes: light dark;
         }
-        body { margin: 0; padding: 0; background-color: ${COLORS.bg}; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        body { margin: 0; padding: 0; background-color: ${COLORS.bg}; -webkit-font-smoothing: antialiased; }
         table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
         img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
         a { color: ${COLORS.primary}; }
         a:hover { color: ${COLORS.primaryHover}; }
-        @media only screen and (max-width: 600px) {
-          .email-container { width: 100% !important; margin: 0 !important; border-radius: 0 !important; }
-          .content-cell { padding-left: 24px !important; padding-right: 24px !important; }
+        @media only screen and (max-width: 480px) {
+          .content-cell { padding-left: 20px !important; padding-right: 20px !important; }
+          h1 { font-size: 22px !important; }
         }
         @media (prefers-color-scheme: dark) {
           body, .body-bg { background-color: #0f172a !important; }
@@ -317,16 +332,15 @@ export function buildEmailHtml(data: EmailData): string {
           .text-muted { color: #cbd5e1 !important; }
           .border-table, .border-bottom { border-color: #334155 !important; }
           .bg-light { background-color: #0f172a !important; }
-          .bg-card { background-color: #1e293b !important; }
         }
       </style>
     </head>
     <body class="body-bg" style="margin: 0; padding: 0; background-color: ${COLORS.bg};">
       ${renderPreviewText()}
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: ${COLORS.bg}; padding: 40px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: ${COLORS.bg};">
         <tr>
           <td align="center">
-            <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: ${COLORS.cardBg}; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+            <table class="email-container" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: ${COLORS.cardBg}; width: 100%; max-width: 100%;">
               ${renderHeader()}
               ${renderProviderIcon()}
               ${renderGreeting()}
