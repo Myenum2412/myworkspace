@@ -13,12 +13,14 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import Link from "next/link";
+import { defaultServices } from "@/lib/data/services";
 
 export default function NewInvoicePage() {
   const [isSimplifiedView, setIsSimplifiedView] = useState(false);
   const [items, setItems] = useState([
-    { id: "1", details: "", quantity: 1, rate: 0, tax: "" }
+    { id: "1", details: "", description: "", quantity: 1, rate: 0, tax: "" }
   ]);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [tdsTcsType, setTdsTcsType] = useState("tds");
@@ -79,13 +81,14 @@ export default function NewInvoicePage() {
   }, []);
 
   const addNewRow = () => {
-    setItems((prev) => [...prev, { id: Date.now().toString() + Math.random(), details: "", quantity: 1, rate: 0, tax: "" }]);
+    setItems((prev) => [...prev, { id: Date.now().toString() + Math.random(), details: "", description: "", quantity: 1, rate: 0, tax: "" }]);
   };
 
   const addBulkRows = () => {
     const newRows = Array.from({ length: 3 }).map((_, i) => ({
       id: Date.now().toString() + i + Math.random(),
       details: "",
+      description: "",
       quantity: 1,
       rate: 0,
       tax: "",
@@ -263,12 +266,24 @@ export default function NewInvoicePage() {
                         <td className="px-2 align-top pt-4">
                           <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelectItem(item.id)} className="size-4 accent-blue-600" />
                         </td>
-                        <td className="p-0 border-r border-gray-200">
-                          <Textarea
-                            placeholder="Type or click to select an item."
+                        <td className="p-0 border-r border-gray-200 align-top pt-2 px-2 space-y-1 min-w-[250px]">
+                          <SearchableSelect
+                            placeholder="Select a service"
                             value={item.details}
-                            onChange={(e) => updateItem(item.id, 'details', e.target.value)}
-                            className="border-0  focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none resize-none min-h-[70px] bg-transparent text-sm pt-4"
+                            onValueChange={(val) => {
+                              const service = defaultServices.find(s => `${s.name} - ${s.description}` === val);
+                              if (service) {
+                                updateItem(item.id, 'details', val);
+                                updateItem(item.id, 'rate', service.rate);
+                              }
+                            }}
+                            options={defaultServices.filter(s => s.status === "Active").map(s => `${s.name} - ${s.description}`)}
+                          />
+                          <Textarea
+                            placeholder="Additional notes..."
+                            value={item.description}
+                            onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                            className="border-0 focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none resize-none min-h-[40px] bg-transparent text-sm"
                           />
                         </td>
                         <td className="p-0 align-top border-r border-gray-200">
