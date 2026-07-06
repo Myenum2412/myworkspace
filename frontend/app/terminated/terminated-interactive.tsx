@@ -23,13 +23,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserX, Undo2, Loader2Icon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { UserX, Undo2, Loader2Icon, ChevronLeftIcon, ChevronRightIcon, EyeIcon } from "lucide-react";
+import { TerminatedViewDialog } from "@/components/employees/terminated-view-dialog";
 import type { TerminatedEmployee } from "../employees/columns";
 
 const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
 export default function TerminatedInteractive({ terminated: initial }: { terminated: TerminatedEmployee[] }) {
   const [terminated, setTerminated] = useState<TerminatedEmployee[]>(initial);
+  const [viewEmployee, setViewEmployee] = useState<TerminatedEmployee | null>(null);
   const [reactivateEmp, setReactivateEmp] = useState<TerminatedEmployee | null>(null);
   const [reactivateReason, setReactivateReason] = useState("");
   const [reactivating, setReactivating] = useState(false);
@@ -120,7 +122,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                 </thead>
                 <tbody>
                   {paginatedTerminated.map((emp) => (
-                    <tr key={emp.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group">
+                    <tr key={emp.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group cursor-pointer" onClick={() => setViewEmployee(emp)}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {emp.avatar ? (
@@ -146,16 +148,27 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                           {emp.terminateReason}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={() => handleReactivateClick(emp)}
-                        >
-                          <Undo2 className="size-3 mr-1" />
-                          Reactivate
-                        </Button>
+                      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => setViewEmployee(emp)}
+                          >
+                            <EyeIcon className="size-3 mr-1" />
+                            View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => handleReactivateClick(emp)}
+                          >
+                            <Undo2 className="size-3 mr-1" />
+                            Reactivate
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -208,6 +221,12 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
           </div>
         )}
       </main>
+
+      <TerminatedViewDialog
+        employee={viewEmployee}
+        open={!!viewEmployee}
+        onOpenChange={(open) => { if (!open) setViewEmployee(null); }}
+      />
 
       <Dialog
         open={!!reactivateEmp}

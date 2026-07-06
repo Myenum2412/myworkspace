@@ -83,6 +83,8 @@ export default async function StaffTasksPage() {
       const creator = t.creator as Record<string, unknown> | null;
       const assigneeId = t.assigneeId ? ((t.assigneeId as { toString?: () => string }).toString?.() || (t.assigneeId as string)) : "";
       const creatorId = t.creatorId ? ((t.creatorId as { toString?: () => string }).toString?.() || (t.creatorId as string)) : "";
+      const assigneeUser = assignee || (assigneeId ? userMap.get(assigneeId) : undefined);
+      const creatorUser = creator || (creatorId ? userMap.get(creatorId) : undefined);
       return {
         id: (t._id as { toString: () => string }).toString(),
         _id: (t._id as { toString: () => string }).toString(),
@@ -92,10 +94,10 @@ export default async function StaffTasksPage() {
         priority: (t.priority as string) || "medium",
         dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
         assigneeId,
-        assigneeName: assignee ? (assignee.name as string) || "" : userMap.get(assigneeId)?.name || assigneeId.slice(0, 8),
-        assigneeAvatar: assignee ? (assignee.image as string) || "" : userMap.get(assigneeId)?.image || "",
+        assigneeName: assigneeUser?.name as string || "",
+        assigneeAvatar: assigneeUser?.image as string || "",
         creatorId,
-        creatorName: creator ? (creator.name as string) || "" : userMap.get(creatorId)?.name || creatorId.slice(0, 8),
+        creatorName: creatorUser?.name as string || "",
         createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
       };
     });

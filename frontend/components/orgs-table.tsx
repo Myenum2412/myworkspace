@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
@@ -36,6 +37,8 @@ import {
   TagIcon,
   HashIcon,
   CheckCircle2Icon,
+  EyeIcon,
+  CalendarDays,
 } from "lucide-react";
 import { updateOrganization, deleteOrganization } from "@/actions/admin";
 
@@ -46,6 +49,62 @@ interface OrgRow {
   domain: string;
   slug: string;
   createdAt: string;
+}
+
+function ViewOrgDialog({ org, open, onOpenChange }: { org: OrgRow | null; open: boolean; onOpenChange: (open: boolean) => void }) {
+  if (!org) return null;
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <div className="flex items-center gap-4">
+            <div className="size-12 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
+              <Building2Icon className="size-6 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg">{org.name}</DialogTitle>
+              <p className="text-sm text-muted-foreground">{org.domain || org.slug}</p>
+            </div>
+          </div>
+        </DialogHeader>
+        <div className="px-6 py-4 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+              <TagIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Plan</p>
+                <p className="text-sm font-medium mt-0.5 capitalize">{org.plan || "free"}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+              <GlobeIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Domain</p>
+                <p className="text-sm font-medium mt-0.5">{org.domain || "\u2014"}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+              <HashIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Slug</p>
+                <p className="text-sm font-medium mt-0.5">{org.slug || "\u2014"}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+              <CalendarDays className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Created</p>
+                <p className="text-sm font-medium mt-0.5">{org.createdAt}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <DialogFooter className="border-t px-6 py-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function EditOrgDialog({ org }: { org: OrgRow }) {
@@ -202,6 +261,7 @@ interface OrgsTableProps {
 export function OrgsTable({ orgs }: OrgsTableProps) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [viewOrg, setViewOrg] = useState<OrgRow | null>(null);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return orgs;
@@ -232,7 +292,13 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
   };
 
   return (
-    <Card>
+    <>
+      <ViewOrgDialog
+        org={viewOrg}
+        open={!!viewOrg}
+        onOpenChange={(open) => { if (!open) setViewOrg(null); }}
+      />
+      <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Building2Icon className="size-5" />
@@ -284,8 +350,8 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
                 </tr>
               ) : (
                 filtered.map((o) => (
-                  <tr key={o.id} className={`bg-white group hover:bg-slate-50 transition-colors ${selected.has(o.id) ? "bg-muted/30" : ""}`}>
-                    <td className="px-4 py-3">
+                  <tr key={o.id} className={`bg-white group hover:bg-slate-50 transition-colors cursor-pointer ${selected.has(o.id) ? "bg-muted/30" : ""}`} onClick={() => setViewOrg(o)}>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={selected.has(o.id)}
                         onCheckedChange={() => toggle(o.id)}
@@ -305,7 +371,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
                     <td className="px-4 py-3 text-sm text-muted-foreground">{o.domain || "—"}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{o.slug || "—"}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{o.createdAt}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1">
                         <EditOrgDialog org={o} />
                         <DeleteOrgButton org={o} />
@@ -319,5 +385,6 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }

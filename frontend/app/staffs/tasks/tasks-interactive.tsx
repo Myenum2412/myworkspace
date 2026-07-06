@@ -140,8 +140,8 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
                   </thead>
                   <tbody>
                     {localTasks.map((t, idx) => (
-                      <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group">
-                        <td className="px-4 py-3"><Checkbox /></td>
+                      <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group cursor-pointer" onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}><Checkbox /></td>
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground">#{idx + 1}</td>
                         <td className="px-4 py-3 font-medium">{t.title}</td>
                         <td className="px-4 py-3">
@@ -172,7 +172,7 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
                         <td className="px-4 py-3 text-muted-foreground">
                           {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>

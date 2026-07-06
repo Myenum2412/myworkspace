@@ -54,12 +54,18 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const orgId = searchParams.get("orgId") || await getUserOrgId(session.user.id, session.user.email);
   const date = searchParams.get("date");
+  const projectId = searchParams.get("projectId");
 
   if (!orgId) {
     return NextResponse.json({ error: "No org" }, { status: 404 });
   }
 
-  const filter: Record<string, unknown> = { orgId, userId: session.user.id };
+  const filter: Record<string, unknown> = { orgId };
+  if (projectId) {
+    filter.projectId = projectId;
+  } else {
+    filter.userId = session.user.id;
+  }
   if (date) filter.date = date;
 
   try {
@@ -69,13 +75,15 @@ export async function GET(req: Request) {
       .toArray();
 
     const entries = (raw as unknown as Record<string, unknown>[]).map((e) => ({
-      id: (e._id as { toString: () => string }).toString(),
+      id: (e.id as string) || (e._id as { toString: () => string }).toString(),
       userId: (e.userId as string) || "",
       date: (e.date as string) || "",
       startTime: (e.startTime as string) || undefined,
       endTime: (e.endTime as string) || undefined,
       duration: (e.duration as number) || 0,
       description: (e.description as string) || "",
+      projectId: (e.projectId as string) || undefined,
+      projectName: (e.projectName as string) || undefined,
       billable: (e.billable as boolean) ?? true,
       status: (e.status as "pending" | "approved" | "rejected") || "pending",
       createdAt: (e.createdAt as string) || "",

@@ -20,9 +20,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { SearchIcon, CheckCircle2Icon, XCircleIcon, PencilIcon, Trash2Icon, AlertCircleIcon } from "lucide-react";
+import { SearchIcon, CheckCircle2Icon, XCircleIcon, PencilIcon, Trash2Icon, AlertCircleIcon, EyeIcon, Building2, Briefcase, Phone, MapPin, CalendarDays, ShieldCheck, LogIn, Globe, BadgeCheck } from "lucide-react";
 import { updateMember, deleteMember } from "@/actions/admin";
 
 interface MemberData {
@@ -243,9 +244,65 @@ interface MembersTableProps {
   isSuperAdmin: boolean;
 }
 
+function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null | boolean }) {
+  const display = typeof value === "boolean"
+    ? value ? "Yes" : "No"
+    : (value ?? "\u2014");
+  return (
+    <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+      {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-sm font-medium mt-0.5">{display}</p>
+      </div>
+    </div>
+  );
+}
+
+function MemberViewDialog({ member, open, onOpenChange }: { member: MemberData | null; open: boolean; onOpenChange: (open: boolean) => void }) {
+  if (!member) return null;
+  const initials = member.name.split(" ").map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <div className="flex items-center gap-4">
+            <Avatar className="size-12 ring-2 ring-border">
+              <AvatarImage src={member.avatar} alt={member.name} />
+              <AvatarFallback className="text-base">{initials}</AvatarFallback>
+            </Avatar>
+            <div>
+              <DialogTitle className="text-lg">{member.name}</DialogTitle>
+              <p className="text-sm text-muted-foreground">{member.email}</p>
+            </div>
+          </div>
+        </DialogHeader>
+        <div className="px-6 py-4 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field icon={Building2} label="Department" value={member.department} />
+            <Field icon={Briefcase} label="Designation" value={member.designation} />
+            <Field icon={ShieldCheck} label="Role" value={member.role} />
+            <Field icon={BadgeCheck} label="Status" value={member.status} />
+            <Field icon={Globe} label="Provider" value={member.provider} />
+            <Field icon={CheckCircle2Icon} label="Email Verified" value={member.emailVerified} />
+            <Field icon={CalendarDays} label="Joined" value={fmt(member.createdAt || member.joinedAt)} />
+            <Field icon={LogIn} label="Last Login" value={fmt(member.lastLogin)} />
+            <Field icon={Phone} label="Phone" value={member.phone} />
+            <Field icon={MapPin} label="Location" value={member.location} />
+          </div>
+        </div>
+        <DialogFooter className="border-t px-6 py-4 shrink-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
   const [search, setSearch] = useState("");
   const [editingMember, setEditingMember] = useState<MemberData | null>(null);
+  const [viewMember, setViewMember] = useState<MemberData | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const filtered = useMemo(() => {
@@ -281,6 +338,11 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
 
   return (
     <>
+      <MemberViewDialog
+        member={viewMember}
+        open={!!viewMember}
+        onOpenChange={(open) => { if (!open) setViewMember(null); }}
+      />
       {editingMember && (
         <EditMemberDialog member={editingMember} onClose={() => setEditingMember(null)} />
       )}
@@ -336,8 +398,8 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
               </tr>
             ) : (
               filtered.map((member) => (
-                <tr key={member.id} className={`bg-white group hover:bg-slate-50 transition-colors ${selected.has(member.id) ? "bg-muted/30" : ""}`}>
-                  <td className="px-4 py-3">
+                <tr key={member.id} className={`bg-white group hover:bg-slate-50 transition-colors cursor-pointer ${selected.has(member.id) ? "bg-muted/30" : ""}`} onClick={() => setViewMember(member)}>
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={selected.has(member.id)}
                       onCheckedChange={() => toggle(member.id)}
@@ -380,7 +442,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                   <td className="px-4 py-3">
                     <Badge variant="outline" className="text-xs">{member.orgName}</Badge>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="icon" className="size-8" onClick={() => setEditingMember(member)}>
                         <PencilIcon className="size-4" />

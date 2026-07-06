@@ -44,13 +44,26 @@ export default async function TimeReportsPage() {
     db.collection(collections.orgMembers).find({ orgId }).toArray(),
   ]);
 
-  const thisWeekTotalMinutes = (thisWeekEntries as unknown as Record<string, unknown>[]).reduce((s, e) => s + ((e.duration as number) || 0), 0);
-  const lastWeekTotalMinutes = (lastWeekEntries as unknown as Record<string, unknown>[]).reduce((s, e) => s + ((e.duration as number) || 0), 0);
+  function entryMinutes(e: Record<string, unknown>): number {
+    const dur = (e.duration as number) || 0;
+    if (dur > 0) return dur;
+    const st = e.startTime as string | undefined;
+    const et = e.endTime as string | undefined;
+    if (st && et) {
+      const [sh, sm] = st.split(":").map(Number);
+      const [eh, em] = et.split(":").map(Number);
+      if (!isNaN(sh) && !isNaN(sm) && !isNaN(eh) && !isNaN(em)) return Math.max(0, (eh * 60 + em) - (sh * 60 + sm));
+    }
+    return 0;
+  }
+
+  const thisWeekTotalMinutes = (thisWeekEntries as unknown as Record<string, unknown>[]).reduce((s, e) => s + entryMinutes(e), 0);
+  const lastWeekTotalMinutes = (lastWeekEntries as unknown as Record<string, unknown>[]).reduce((s, e) => s + entryMinutes(e), 0);
   const totalHours = thisWeekTotalMinutes / 60;
   const lastWeekHours = lastWeekTotalMinutes / 60;
   const weeklyChange = lastWeekHours > 0 ? ((totalHours - lastWeekHours) / lastWeekHours) * 100 : 0;
 
-  const billableMinutes = (thisWeekEntries as unknown as Record<string, unknown>[]).filter((e) => e.billable === true).reduce((s, e) => s + ((e.duration as number) || 0), 0);
+  const billableMinutes = (thisWeekEntries as unknown as Record<string, unknown>[]).filter((e) => e.billable === true).reduce((s, e) => s + entryMinutes(e), 0);
   const billableHours = billableMinutes / 60;
   const utilization = totalHours > 0 ? (billableHours / totalHours) * 100 : 0;
 
@@ -65,13 +78,13 @@ export default async function TimeReportsPage() {
     const dayMinutes = (thisWeekEntries as unknown as Record<string, unknown>[]).filter((e) => {
       const d = new Date(e.date as string);
       return d >= dayStart && d <= dayEnd;
-    }).reduce((s, e) => s + ((e.duration as number) || 0), 0);
+    }).reduce((s, e) => s + entryMinutes(e), 0);
     weeklyData.push({ day: dayNames[dayStart.getDay()], hours: dayMinutes / 60 });
   }
 
   const projectSet = new Set<string>();
   (thisWeekEntries as unknown as Record<string, unknown>[]).forEach((e) => {
-    if (e.project && typeof e.project === "string") projectSet.add(e.project);
+    if (e.projectName && typeof e.projectName === "string") projectSet.add(e.projectName);
   });
 
   const userMinutesMap = new Map<string, number>();

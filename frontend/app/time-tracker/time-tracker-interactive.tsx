@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Loader2, Trash2, PlusCircle } from "lucide-react";
+import { Calendar, Clock, Loader2, Trash2, PlusCircle, EyeIcon } from "lucide-react";
+import { TimeEntryViewDialog } from "@/components/time-tracker/time-entry-view-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,31 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
+
+const hours = Array.from({ length: 12 }, (_, i) => String(i + 1));
+const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
+
+function to24h(hour: number, period: "AM" | "PM"): number {
+  if (period === "AM") return hour === 12 ? 0 : hour;
+  return hour === 12 ? 12 : hour + 12;
+}
+
+function to12h(time: string): string {
+  const parts = time.split(":").map(Number);
+  if (parts.length < 2 || parts.some(isNaN)) return time;
+  const [h, m] = parts;
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 || 12;
+  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
+function calcDuration(startTime?: string, endTime?: string): number {
+  if (!startTime || !endTime) return 0;
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  if (isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em)) return 0;
+  return Math.max(0, (eh * 60 + em) - (sh * 60 + sm));
+}
 
 interface TimeEntry {
   id: string;
@@ -51,22 +77,31 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
   const [entries, setEntries] = useState<TimeEntry[]>(initialEntries);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [description, setDescription] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [startHour, setStartHour] = useState("9");
+  const [startMinute, setStartMinute] = useState("00");
+  const [startPeriod, setStartPeriod] = useState<"AM" | "PM">("AM");
+  const [endHour, setEndHour] = useState("5");
+  const [endMinute, setEndMinute] = useState("00");
+  const [endPeriod, setEndPeriod] = useState<"AM" | "PM">("PM");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [saving, setSaving] = useState(false);
+  const [viewEntry, setViewEntry] = useState<TimeEntry | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const totalMinutes = entries.reduce((s, e) => s + e.duration, 0);
+  const totalMinutes = entries.reduce((s, e) => s + calcDuration(e.startTime, e.endTime), 0);
   const totalHours = (totalMinutes / 60).toFixed(1);
+
+  function get24hTime(hour: string, minute: string, period: "AM" | "PM"): string {
+    const h = to24h(Number(hour), period);
+    return `${String(h).padStart(2, "0")}:${minute}`;
+  }
 
   const handleAdd = async () => {
     if (!description.trim() || !orgId || !user.id) return;
 
-    const startParts = startTime.split(":").map(Number);
-    const endParts = endTime.split(":").map(Number);
-    const duration = startParts.length === 2 && endParts.length === 2
-      ? Math.max(0, (endParts[0] * 60 + endParts[1]) - (startParts[0] * 60 + startParts[1]))
-      : 0;
+    const startTime24 = get24hTime(startHour, startMinute, startPeriod);
+    const endTime24 = get24hTime(endHour, endMinute, endPeriod);
+    const duration = calcDuration(startTime24, endTime24);
 
     setSaving(true);
     try {
@@ -78,8 +113,8 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
           orgId,
           userId: user.id,
           date: date?.toISOString().slice(0, 10),
-          startTime: startTime || undefined,
-          endTime: endTime || undefined,
+          startTime: startTime24,
+          endTime: endTime24,
           duration,
           description,
           projectId: selectedProject?.id || undefined,
@@ -90,8 +125,6 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
         const data = await res.json();
         setEntries((prev) => [data.entry, ...prev]);
         setDescription("");
-        setStartTime("");
-        setEndTime("");
       }
     } finally {
       setSaving(false);
@@ -100,7 +133,36 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
 
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/time-entries/${id}`, { method: "DELETE", credentials: "include" });
-    if (res.ok) setEntries((prev) => prev.filter((e) => e.id !== id));
+    if (res.ok) {
+      setEntries((prev) => prev.filter((e) => e.id !== id));
+      setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = [...selectedIds];
+    const results = await Promise.allSettled(
+      ids.map((id) => fetch(`/api/time-entries/${id}`, { method: "DELETE", credentials: "include" }))
+    );
+    const deleted = ids.filter((_, i) => results[i].status === "fulfilled");
+    setEntries((prev) => prev.filter((e) => !deleted.includes(e.id)));
+    setSelectedIds(new Set());
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === entries.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(entries.map((e) => e.id)));
+    }
   };
 
   return (
@@ -171,22 +233,50 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
 
           <div className="h-6 w-px bg-gray-200"></div>
 
-          <div className="flex items-center text-gray-800 font-medium text-[13px] tracking-wide">
-            <input
-              type="text"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              placeholder="00:00"
-              className="w-[42px] text-center border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-text hover:text-gray-900 focus:text-gray-900"
-            />
-            <span className="mx-1 text-gray-600">-</span>
-            <input
-              type="text"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              placeholder="00:00"
-              className="w-[42px] text-center border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-text hover:text-gray-900 focus:text-gray-900"
-            />
+          <div className="flex items-center gap-1.5 text-gray-800 font-medium text-[13px] tracking-wide">
+            <select
+              value={startHour}
+              onChange={(e) => setStartHour(e.target.value)}
+              className="border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-pointer text-center font-medium text-[13px] appearance-none"
+            >
+              {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+            </select>
+            <span className="text-gray-600">:</span>
+            <select
+              value={startMinute}
+              onChange={(e) => setStartMinute(e.target.value)}
+              className="border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-pointer text-center font-medium text-[13px] appearance-none"
+            >
+              {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <button
+              onClick={() => setStartPeriod(startPeriod === "AM" ? "PM" : "AM")}
+              className="text-[11px] font-semibold uppercase text-muted-foreground hover:text-gray-800 transition-colors w-7 text-center"
+            >
+              {startPeriod}
+            </button>
+            <span className="mx-1.5 text-gray-400">-</span>
+            <select
+              value={endHour}
+              onChange={(e) => setEndHour(e.target.value)}
+              className="border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-pointer text-center font-medium text-[13px] appearance-none"
+            >
+              {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+            </select>
+            <span className="text-gray-600">:</span>
+            <select
+              value={endMinute}
+              onChange={(e) => setEndMinute(e.target.value)}
+              className="border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-pointer text-center font-medium text-[13px] appearance-none"
+            >
+              {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <button
+              onClick={() => setEndPeriod(endPeriod === "AM" ? "PM" : "AM")}
+              className="text-[11px] font-semibold uppercase text-muted-foreground hover:text-gray-800 transition-colors w-7 text-center"
+            >
+              {endPeriod}
+            </button>
           </div>
 
           <div className="h-6 w-px bg-gray-200"></div>
@@ -242,67 +332,115 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
             <p className="text-sm">Add your first entry above</p>
           </div>
         ) : (
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="bg-[#f3f4f6]">
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Description</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Project</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Time</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Duration</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((entry) => (
-                  <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
-                    <td className="px-4 py-3">
-                      <p className="text-sm font-medium">{entry.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(entry.date).toLocaleDateString()}
-                        {entry.startTime && entry.endTime && ` · ${entry.startTime} - ${entry.endTime}`}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      {entry.projectName ? (
-                        <span className="text-sm">{entry.projectName}</span>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm">
-                        {entry.startTime && entry.endTime
-                          ? `${entry.startTime} - ${entry.endTime}`
-                          : "—"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-mono font-medium">
-                        {Math.floor(entry.duration / 60)}h {entry.duration % 60}m
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant="secondary" className="text-xs">
-                        {entry.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        className="text-muted-foreground hover:text-black transition-colors"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </td>
+          <div>
+            {selectedIds.size > 0 && (
+              <div className="flex items-center justify-between mb-3 rounded-lg border bg-muted/50 px-4 py-2.5">
+                <span className="text-sm text-muted-foreground">
+                  {selectedIds.size} entry{selectedIds.size > 1 ? "ies" : "y"} selected
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                    <Trash2 className="size-3.5 mr-1.5" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            )}
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="bg-[#f3f4f6]">
+                    <th className="px-4 py-3.5 w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.size === entries.length && entries.length > 0}
+                        onChange={toggleSelectAll}
+                        className="size-4 rounded border-gray-300 cursor-pointer"
+                      />
+                    </th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Description</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Project</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Time</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Duration</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {entries.map((entry) => (
+                    <tr key={entry.id} className={`border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer ${selectedIds.has(entry.id) ? "bg-blue-50/50" : ""}`} onClick={() => setViewEntry(entry)}>
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(entry.id)}
+                          onChange={(e) => { e.stopPropagation(); toggleSelect(entry.id); }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="size-4 rounded border-gray-300 cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium">{entry.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(entry.date).toLocaleDateString()}
+                          {entry.startTime && entry.endTime && ` · ${to12h(entry.startTime)} - ${to12h(entry.endTime)}`}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        {entry.projectName ? (
+                          <span className="text-sm">{entry.projectName}</span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-sm">
+                          {entry.startTime && entry.endTime
+                            ? `${to12h(entry.startTime)} - ${to12h(entry.endTime)}`
+                            : "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-sm font-mono font-medium">
+                          {(() => {
+                            const dur = calcDuration(entry.startTime, entry.endTime) || entry.duration || 0;
+                            return `${Math.floor(dur / 60)}h ${dur % 60}m`;
+                          })()}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setViewEntry(entry); }}
+                            className="text-muted-foreground hover:text-black transition-colors"
+                            title="View"
+                          >
+                            <EyeIcon className="size-4" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
+                            className="text-muted-foreground hover:text-black transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
+
+      <TimeEntryViewDialog
+        entry={viewEntry}
+        open={!!viewEntry}
+        onOpenChange={(open) => { if (!open) setViewEntry(null); }}
+      />
     </main>
   );
 }

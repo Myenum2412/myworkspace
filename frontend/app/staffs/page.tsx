@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StaffTasksView } from "@/components/staffs/staff-tasks-view";
 
 export const dynamic = "force-dynamic";
 
@@ -99,24 +100,38 @@ export default async function StaffsPage() {
       };
     });
 
-    // Fetch last 10 tasks for this org (mirrors /api/tasks?orgId=...&limit=10)
+    // Fetch last 10 tasks for this org with assignee lookup
     const rawTasks = (await db
       .collection(collections.tasks)
-      .find({ orgId })
-      .sort({ createdAt: -1 })
-      .limit(10)
+      .aggregate([
+        { $match: { orgId } },
+        { $sort: { createdAt: -1 } },
+        { $limit: 10 },
+        {
+          $lookup: {
+            from: "users",
+            localField: "assigneeId",
+            foreignField: "id",
+            as: "assignee",
+          },
+        },
+        { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
+      ])
       .toArray()) as unknown as Record<string, unknown>[];
 
-    tasks = rawTasks.map((t) => ({
-      _id: (t._id as { toString: () => string }).toString(),
-      title: (t.title as string) || "",
-      priority: (t.priority as string) || "medium",
-      status: (t.status as string) || "todo",
-      assigneeId: (t.assigneeId as string) || "",
-      assigneeName: (t.assigneeName as string) || "",
-      createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
-      dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
-    }));
+    tasks = rawTasks.map((t) => {
+      const assignee = t.assignee as Record<string, unknown> | null;
+      return {
+        _id: (t._id as { toString: () => string }).toString(),
+        title: (t.title as string) || "",
+        priority: (t.priority as string) || "medium",
+        status: (t.status as string) || "todo",
+        assigneeId: (t.assigneeId as string) || "",
+        assigneeName: assignee?.name as string || "",
+        createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
+        dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
+      };
+    });
   }
 
   const totalStaff = staff.length;
@@ -326,46 +341,7 @@ export default async function StaffsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {recentTasks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks allocated yet</p>
-          ) : (
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                <thead className="bg-[#f3f4f6]">
-                  <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
-                    <th className="px-4 py-3.5 font-semibold text-left">Task</th>
-                    <th className="px-4 py-3.5 font-semibold text-left">Assignee</th>
-                    <th className="px-4 py-3.5 font-semibold text-left">Priority</th>
-                    <th className="px-4 py-3.5 font-semibold text-left">Status</th>
-                    <th className="px-4 py-3.5 font-semibold text-left">Due</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentTasks.map((t) => (
-                    <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
-                      <td className="px-4 py-3 text-sm font-medium">{t.title}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{t.assigneeName || "Unassigned"}</td>
-                      <td className="px-4 py-3">
-                        <Badge className={(priorityStyles[t.priority] || "") + ""}>
-                          {t.priority}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge className={(statusStyles[t.status] || "") + ""}>
-                          {t.status.replace(/_/g, " ")}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          <StaffTasksView tasks={recentTasks} />
         </CardContent>
       </Card>
     </main>

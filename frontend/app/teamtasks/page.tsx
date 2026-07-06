@@ -22,7 +22,7 @@ export default async function TeamTasksPage() {
   let tasks: TeamTask[] = [];
 
   if (orgId) {
-    const match: Record<string, unknown> = { orgId };
+    const match: Record<string, unknown> = { orgId, teamId: { $exists: true, $ne: null } };
 
     const pipeline: Record<string, unknown>[] = [
       { $match: match },
@@ -75,6 +75,7 @@ export default async function TeamTasksPage() {
           ? (t.creatorId as { toString?: () => string }).toString?.() || (t.creatorId as string)
           : "",
         creatorName: creator ? (creator.name as string) || "" : "",
+        teamId: (t.teamId as string) || "",
         createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
       };
     });

@@ -193,6 +193,7 @@ export function TaskDataTable({
       label={`${label}(s)`}
       emptyMessage={emptyMessage}
       emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
+      onRowClick={onView ? (row) => onView(row) : undefined}
     />
   );
 }

@@ -1,7 +1,7 @@
 "use client"
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { BarChart3, FolderOpen, MoreHorizontal, Pencil, Settings, Trash2, Workflow, FileText } from "lucide-react";
+import { BarChart3, FolderOpen, MoreHorizontal, Pencil, Settings, Trash2, Workflow, FileText, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -184,6 +184,7 @@ export const columns: ColumnDef<Client>[] = [
  * edit modal). Keeps the data-table dependency-injection free.
  */
 export function makeActionsCell(
+  onView: (client: Client) => void,
   onEdit: (client: Client) => void,
   onDelete: (client: Client) => void,
 ): ColumnDef<Client> {
@@ -200,6 +201,10 @@ export function makeActionsCell(
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => onView(client)}>
+              <Eye className="mr-2 size-4" />
+              View
+            </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onEdit(client)}>
               <Pencil className="mr-2 size-4" />
               Edit

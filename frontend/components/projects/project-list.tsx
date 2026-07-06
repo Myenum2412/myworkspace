@@ -69,6 +69,7 @@ export default function ProjectList({
             columns={columns}
             data={projects}
             meta={{ onView, onEdit, onDelete } as Record<string, unknown>}
+            onRowClick={(p) => onView(p)}
           />
         )}
       </div>

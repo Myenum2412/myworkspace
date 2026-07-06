@@ -55,7 +55,9 @@ export function TaskChat({
   taskPriority = "medium",
   taskDueDate = null,
   assigneeName = "Unassigned",
-  assigneeAvatar = ""
+  assigneeAvatar = "",
+  creatorName = "",
+  creatorAvatar = ""
 }: { 
   taskId: string; 
   sessionUserId: string; 
@@ -66,6 +68,8 @@ export function TaskChat({
   taskDueDate?: string | null;
   assigneeName?: string;
   assigneeAvatar?: string;
+  creatorName?: string;
+  creatorAvatar?: string;
 }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [input, setInput] = useState("");
@@ -259,6 +263,15 @@ export function TaskChat({
                 <>
                   <span className="size-1 bg-gray-300 rounded-full shrink-0"></span>
                   <span>Due {new Date(taskDueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5">
+              <span className="font-medium text-gray-500">{assigneeName}</span>
+              {creatorName && (
+                <>
+                  <span>Created by</span>
+                  <span className="font-medium text-gray-500">{creatorName}</span>
                 </>
               )}
             </div>

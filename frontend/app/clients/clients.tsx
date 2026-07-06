@@ -9,6 +9,7 @@ import { ClientList } from "@/components/clients/client-list";
 import { ClientForm } from "@/components/clients/client-form";
 import { ClientSuccessDialog } from "@/components/clients/client-details";
 import { ClientEditDialog, ClientDeleteDialog } from "@/components/clients/client-actions";
+import { ClientViewDialog } from "@/components/clients/client-view-dialog";
 
 type SessionUser = {
   id?: string;
@@ -31,6 +32,7 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
   const [pageView, setPageView] = useState<"list" | "add">("list");
   const [showSuccess, setShowSuccess] = useState(false);
   const [credentials, setCredentials] = useState<Credentials | null>(null);
+  const [viewingClient, setViewingClient] = useState<Client | null>(null);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
 
@@ -162,10 +164,17 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
 
         <ClientList
           clients={clients}
+          onView={(client) => setViewingClient(client)}
           onEdit={(client) => setEditingClient(client)}
           onDelete={(client) => { setDeletingClient(client); }}
         />
       </main>
+
+      <ClientViewDialog
+        client={viewingClient}
+        open={!!viewingClient}
+        onOpenChange={(open) => { if (!open) setViewingClient(null); }}
+      />
 
       <ClientEditDialog
         client={editingClient}

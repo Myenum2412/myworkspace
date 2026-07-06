@@ -1,11 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
-import { Building2, Users } from "lucide-react";
+import { DepartmentsClient } from "@/components/departments/departments-client";
 
 export const metadata = {
   title: "Departments",
@@ -15,8 +12,6 @@ const deptColors = [
   "bg-red-500", "bg-red-500", "bg-red-500", "bg-red-500",
   "bg-red-500", "bg-red-500", "bg-red-500", "bg-red-500",
 ];
-
-const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
 export default async function DepartmentsPage() {
   const session = await auth();
@@ -55,53 +50,5 @@ export default async function DepartmentsPage() {
   const totalMembers = departments.reduce((s, d) => s + d.memberCount, 0);
   const totalOpen = departments.reduce((s, d) => s + d.openPositions, 0);
 
-  return (
-                                <main className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">Departments</h1>
-              <p className="text-sm text-muted-foreground mt-1">{departments.length} departments · {totalMembers} members</p>
-            </div>
-            <Badge variant="secondary" className="text-sm px-3 py-1">
-              {totalOpen} open positions
-            </Badge>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {departments.map((dept) => (
-              <Card key={dept.name}>
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${dept.color} text-black`}>
-                      <Building2 className="size-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">{dept.name}</CardTitle>
-                      <p className="text-xs text-muted-foreground">{dept.budget} budget</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Users className="size-4" />
-                      {dept.memberCount} members
-                    </div>
-                    {dept.openPositions > 0 && (
-                      <Badge variant="outline">{dept.openPositions} open</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm border-t pt-3">
-                    <Avatar className="size-6">
-                      <AvatarImage src={dept.headAvatar} alt={dept.head} />
-                      <AvatarFallback className="text-[10px]">{getInitials(dept.head)}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-muted-foreground">Head: <span className="font-medium text-foreground">{dept.head}</span></span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </main>
-            );
+  return <DepartmentsClient departments={departments} totalMembers={totalMembers} totalOpen={totalOpen} />;
 }

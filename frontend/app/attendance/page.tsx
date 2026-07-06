@@ -2,20 +2,10 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AttendanceTable } from "@/components/attendance/attendance-table";
 
 export const metadata = {
   title: "Attendance",
-};
-
-const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-
-const statusStyles: Record<string, string> = {
-  present: "bg-red-100 text-red-700 border-red-300",
-  absent: "bg-gray-100 text-gray-700 border-gray-300",
-  late: "bg-orange-100 text-orange-700 border-orange-300",
 };
 
 export default async function StaffAttendancePage() {
@@ -57,44 +47,7 @@ export default async function StaffAttendancePage() {
         <h1 className="text-2xl font-bold">Attendance</h1>
         <p className="text-sm text-muted-foreground mt-1">Today's attendance record</p>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Today</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-            <table className="w-full text-sm text-left">
-                <thead>
-                  <tr className="bg-[#f3f4f6]">
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Staff</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Check In</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Check Out</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
-                  </tr>
-                </thead>
-              <tbody>
-                {today.map((t, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="size-8">
-                          <AvatarFallback>{getInitials(t.name)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium">{t.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">{t.checkIn || "—"}</td>
-                    <td className="px-4 py-3">{t.checkOut || "—"}</td>
-                    <td className="px-4 py-3">
-                      <Badge className={statusStyles[t.status] || ""}>{t.status}</Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <AttendanceTable data={today} />
     </main>
   );
 }

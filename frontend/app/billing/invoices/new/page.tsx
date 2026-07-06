@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   FileText, Info,
   GripVertical, PlusCircle, ChevronDown, Trash2,
@@ -18,6 +19,8 @@ import Link from "next/link";
 import { defaultServices } from "@/lib/data/services";
 
 export default function NewInvoicePage() {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
   const [isSimplifiedView, setIsSimplifiedView] = useState(false);
   const [items, setItems] = useState([
     { id: "1", details: "", description: "", quantity: 1, rate: 0, tax: "" }
@@ -99,11 +102,56 @@ export default function NewInvoicePage() {
   const updateItem = (id: string, field: string, value: any) => {
     setItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
   };
-  
+
   const subTotal = items.reduce((acc, item) => acc + (item.quantity * item.rate), 0);
   const discountAmount = subTotal * (discountPercent / 100);
   const tdsTcsAmount = subTotal * ((parseFloat(tdsTcsRate) || 0) / 100);
   const total = isSimplifiedView ? subTotal : subTotal - discountAmount - tdsTcsAmount + adjustmentValue;
+
+  const handleSave = useCallback(async () => {
+    const sub = items.reduce((acc, item) => acc + (item.quantity * item.rate), 0);
+    const discAmt = sub * (discountPercent / 100);
+    const tdsAmt = sub * ((parseFloat(tdsTcsRate) || 0) / 100);
+    const tot = isSimplifiedView ? sub : sub - discAmt - tdsAmt + adjustmentValue;
+
+    setSaving(true);
+    try {
+      const profileRes = await fetch("/api/user/profile");
+      const profileData = await profileRes.json();
+      const oid = profileData?.data?.org?.id;
+      if (!oid) return;
+
+      const payload = {
+        orgId: oid,
+        invoiceNumber,
+        invoiceDate: currentDate,
+        items: items.filter((i) => i.rate > 0),
+        subTotal: sub,
+        discountPercent,
+        discountAmount: discAmt,
+        tdsTcsType,
+        tdsTcsRate,
+        tdsTcsAmount: tdsAmt,
+        adjustmentValue,
+        total: tot,
+      };
+
+      const res = await fetch("/api/billing/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        router.push("/billing/invoices");
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false);
+    }
+  }, [invoiceNumber, currentDate, items, discountPercent, tdsTcsType, tdsTcsRate, adjustmentValue, isSimplifiedView, router]);
 
   return (
     <div className="min-h-screen bg-white text-sm font-sans flex flex-col">
@@ -120,6 +168,9 @@ export default function NewInvoicePage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Button onClick={handleSave} disabled={saving} size="sm" className="h-8">
+            {saving ? "Saving…" : "Save Invoice"}
+          </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" asChild>
             <Link href="/billing/invoices">
               <X className="size-5" />
@@ -283,7 +334,7 @@ export default function NewInvoicePage() {
                             placeholder="Additional notes..."
                             value={item.description}
                             onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                            className="border-0 focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none resize-none min-h-[40px] bg-transparent text-sm"
+                            className="border-0 focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none resize-none min-h-[60px] bg-transparent text-sm mt-1"
                           />
                         </td>
                         <td className="p-0 align-top border-r border-gray-200">

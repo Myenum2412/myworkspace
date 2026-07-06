@@ -30,7 +30,7 @@ export default async function StaffTimesheetPage() {
   ]);
 
   const entries = (rawEntries as unknown as Record<string, unknown>[]).map((e) => ({
-    id: (e._id as { toString: () => string }).toString(),
+    id: (e.id as string) || (e._id as { toString: () => string }).toString(),
     userId: (e.userId as string) || "",
     date: (e.date as string) || "",
     startTime: (e.startTime as string) || undefined,

@@ -9,12 +9,14 @@ import {
   CalendarIcon, ClockIcon, TargetIcon, AlertCircleIcon,
   CheckCircle2Icon, ArrowUpIcon, ArrowDownIcon, CircleIcon,
   DownloadIcon, EyeIcon, FileIcon, FileSpreadsheetIcon, FileImageIcon, FileArchiveIcon,
+  TimerIcon,
 } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
 
 const TABS = [
   { id: "overview", label: "Overview", icon: InfoIcon },
   { id: "team", label: "Team", icon: UsersIcon },
+  { id: "timesheet", label: "Timesheet", icon: TimerIcon },
   { id: "activity", label: "Activity", icon: ActivityIcon },
   { id: "files", label: "Files", icon: FileTextIcon },
   { id: "budget", label: "Budget", icon: BarChart3Icon },
@@ -46,9 +48,17 @@ function PriorityBadge({ priority }: { priority?: string }) {
   );
 }
 
+interface TimeEntry {
+  id: string; userId: string; date: string;
+  startTime?: string; endTime?: string; duration: number;
+  description: string; projectId?: string; projectName?: string;
+}
+
 export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Project; orgId?: string }) {
   const [tab, setTab] = useState(0);
   const [memberNames, setMemberNames] = useState<{ id: string; name: string; image?: string }[]>([]);
+  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
+  const [userMap, setUserMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!project.members?.length) return;
@@ -61,6 +71,26 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
       })
       .catch(() => {});
   }, [project.members]);
+
+  useEffect(() => {
+    if (!orgIdProp) return;
+    fetch(`/api/time-entries?orgId=${orgIdProp}&projectId=${project.id}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => setTimeEntries(d.data || []))
+      .catch(() => {});
+  }, [project.id, orgIdProp]);
+
+  useEffect(() => {
+    fetch("/api/employees", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const all = (d?.data || []) as { id?: string; _id?: string; name: string }[];
+        const map: Record<string, string> = {};
+        all.forEach((u) => { if (u.id || u._id) map[u.id || u._id!] = u.name; });
+        setUserMap(map);
+      })
+      .catch(() => {});
+  }, []);
 
   const progressColor =
     project.progress >= 100 ? "bg-green-500" : project.progress >= 50 ? "bg-blue-500" : project.progress > 0 ? "bg-amber-500" : "bg-muted-foreground/30";
@@ -197,6 +227,60 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
 
         {tab === 2 && (
           <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Time Entries ({timeEntries.length})</h3>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <TimerIcon className="size-3.5" />
+                <span className="font-medium">
+                  {Math.floor(timeEntries.reduce((s, e) => s + e.duration, 0) / 60)}h {timeEntries.reduce((s, e) => s + e.duration, 0) % 60}m
+                </span>
+              </div>
+            </div>
+            {timeEntries.length === 0 ? (
+              <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
+                <div className="text-center space-y-2">
+                  <TimerIcon className="size-8 mx-auto text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">No time entries for this project</p>
+                </div>
+              </div>
+            ) : (
+              <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+                <table className="w-full text-sm text-left">
+                  <thead>
+                    <tr className="bg-[#f3f4f6]">
+                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">User</th>
+                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Description</th>
+                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Date</th>
+                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Time</th>
+                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {timeEntries.map((entry) => {
+                      const dur = entry.startTime && entry.endTime
+                        ? (() => { const [sh,sm]=entry.startTime.split(":").map(Number); const [eh,em]=entry.endTime.split(":").map(Number); return Math.max(0,(eh*60+em)-(sh*60+sm)); })()
+                        : entry.duration;
+                      return (
+                        <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
+                          <td className="px-3 py-2.5 text-sm font-medium">{userMap[entry.userId] || entry.userId.slice(0, 8)}</td>
+                          <td className="px-3 py-2.5 text-sm">{entry.description}</td>
+                          <td className="px-3 py-2.5 text-sm text-muted-foreground">{new Date(entry.date).toLocaleDateString()}</td>
+                          <td className="px-3 py-2.5 text-sm text-muted-foreground">
+                            {entry.startTime && entry.endTime ? `${entry.startTime} - ${entry.endTime}` : "\u2014"}
+                          </td>
+                          <td className="px-3 py-2.5 text-sm font-mono font-medium">{Math.floor(dur / 60)}h {dur % 60}m</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 3 && (
+          <div className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent Activity</h3>
             <div className="space-y-3">
               {[
@@ -224,11 +308,11 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
           </div>
         )}
 
-        {tab === 3 && (
+        {tab === 4 && (
           <ProjectFiles projectId={project.id} orgId={orgIdProp || ""} />
         )}
 
-        {tab === 4 && (
+        {tab === 5 && (
           <div className="space-y-6">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Budget & Resources</h3>
             <div className="grid grid-cols-2 gap-4">

@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
-import TimeTracker from "./time-tracker-interactive";
+import TimeTrackerOverview from "./time-tracker-overview";
 
 export const dynamic = "force-dynamic";
 
@@ -12,25 +12,20 @@ export default async function TimeTrackerPage() {
   if (!session?.user?.id) redirect("/login");
 
   const orgId = await getUserOrgId(session.user.id, session.user.email);
-  if (!orgId || !session.user.id) {
-    return <TimeTracker initialEntries={[]} projects={[]} user={{ name: "", email: "", avatar: "", id: "" }} orgId="" />;
+  if (!orgId) {
+    return <TimeTrackerOverview data={null} />;
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const oneWeekAgo = new Date(now.getTime() - 7 * 86400000);
 
-  const [rawEntries, rawProjects] = await Promise.all([
-    db.collection(collections.timeEntries)
-      .find({ orgId, userId: session.user.id, date: today })
-      .sort({ createdAt: -1 })
-      .toArray(),
-    db.collection(collections.projects)
-      .find({ orgId })
-      .sort({ name: 1 })
-      .toArray(),
-  ]);
+  const rawEntries = await db.collection(collections.timeEntries)
+    .find({ orgId, userId: session.user.id, date: { $gte: oneWeekAgo.toISOString().slice(0, 10) } })
+    .sort({ date: -1, createdAt: -1 })
+    .toArray() as unknown as Record<string, unknown>[];
 
-  const entries = (rawEntries as unknown as Record<string, unknown>[]).map((e) => ({
-    id: (e._id as { toString: () => string }).toString(),
+  const entries = rawEntries.map((e) => ({
+    id: (e.id as string) || String(e._id || ""),
     userId: (e.userId as string) || "",
     date: (e.date as string) || "",
     startTime: (e.startTime as string) || undefined,
@@ -40,27 +35,9 @@ export default async function TimeTrackerPage() {
     projectId: (e.projectId as string) || undefined,
     projectName: (e.projectName as string) || undefined,
     billable: (e.billable as boolean) ?? true,
-    status: (e.status as "pending" | "approved" | "rejected") || "pending",
+    status: (e.status as string) || "pending",
     createdAt: (e.createdAt as string) || "",
   }));
 
-  const projects = (rawProjects as unknown as Record<string, unknown>[]).map((p) => ({
-    id: (p.id as string) || String(p._id || ""),
-    name: (p.name as string) || "",
-    color: (p.color as string) || "#93c5fd",
-  }));
-
-  return (
-    <TimeTracker
-      initialEntries={entries}
-      projects={projects}
-      user={{
-        name: (session.user.name as string) || "",
-        email: (session.user.email as string) || "",
-        avatar: (session.user.image as string) || "",
-        id: session.user.id,
-      }}
-      orgId={orgId}
-    />
-  );
+  return <TimeTrackerOverview data={entries} />;
 }

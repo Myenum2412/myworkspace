@@ -56,6 +56,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const total = tasks.length;
   const myTasks = currentUserId ? tasks.filter((t) => t.assigneeId === currentUserId).length : 0;
@@ -66,6 +67,25 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   }).length;
   const completedCount = tasks.filter((t) => t.status === "done").length;
   const completionRate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+
+  async function handleDeleteTask(taskId: string) {
+    if (!confirm("Delete this task? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, { method: "DELETE", credentials: "include" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Delete failed" }));
+        alert(err.error || "Failed to delete task");
+        return;
+      }
+      setTasks((prev) => prev.filter((t) => t._id !== taskId));
+      if (selectedTask?._id === taskId) { setSelectedTask(null); setViewOpen(false); }
+    } catch (e) {
+      alert("Network error while deleting task");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const upcomingSoon = tasks
     .filter((t) => t.dueDate && t.status !== "done" && t.status !== "cancelled")
@@ -239,7 +259,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
                             <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
                             <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive"><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive" disabled={deleting} onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDeleteTask(t._id); }}><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       );

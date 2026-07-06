@@ -9,7 +9,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
-import { Clock, Calendar, Loader2, Trash2 } from "lucide-react";
+import { Clock, Calendar, Loader2, Trash2, EyeIcon } from "lucide-react";
+import { TimeEntryViewDialog } from "@/components/time-tracker/time-entry-view-dialog";
 
 interface TimeEntry {
   id: string;
@@ -34,6 +35,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [viewEntry, setViewEntry] = useState<TimeEntry | null>(null);
 
   const filteredEntries = date
     ? entries.filter((e) => e.date === date.toISOString().slice(0, 10))
@@ -110,7 +112,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
                 </thead>
                 <tbody>
                   {filteredEntries.map((entry) => (
-                    <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                    <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer" onClick={() => setViewEntry(entry)}>
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium">{entry.description || "No description"}</p>
                         <p className="text-xs text-muted-foreground">
@@ -136,12 +138,21 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
                         </Badge>
                       </td>
                       <td className="px-4 py-3">
-                        <button
-                          onClick={() => handleDelete(entry.id)}
-                          className="text-muted-foreground hover:text-black transition-colors"
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setViewEntry(entry); }}
+                            className="text-muted-foreground hover:text-black transition-colors"
+                            title="View"
+                          >
+                            <EyeIcon className="size-4" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
+                            className="text-muted-foreground hover:text-black transition-colors"
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -151,6 +162,11 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
           )}
         </CardContent>
       </Card>
+      <TimeEntryViewDialog
+        entry={viewEntry}
+        open={!!viewEntry}
+        onOpenChange={(open) => { if (!open) setViewEntry(null); }}
+      />
     </main>
   );
 }

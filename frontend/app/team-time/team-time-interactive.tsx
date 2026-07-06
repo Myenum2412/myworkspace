@@ -10,7 +10,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
-import { Users, Clock, CalendarDays, Activity, Loader2, Calendar } from "lucide-react";
+import { Users, Clock, CalendarDays, Activity, Loader2, Calendar, EyeIcon } from "lucide-react";
+import { TeamMemberViewDialog } from "@/components/time-tracker/team-member-view-dialog";
 
 interface TeamMemberSummary {
   userId: string;
@@ -48,6 +49,7 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
   const [error, setError] = useState<string | null>(null);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [teamFilter, setTeamFilter] = useState("all");
+  const [viewMember, setViewMember] = useState<TeamMemberSummary | null>(null);
 
   const members = data?.members || [];
   const summary = data?.summary || { totalMembers: 0, activeMembers: 0, totalHoursAll: "0", totalEntries: 0 };
@@ -169,7 +171,7 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
                 </thead>
                 <tbody>
                   {filteredMembers.map((member) => (
-                    <tr key={member.userId} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                    <tr key={member.userId} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer" onClick={() => setViewMember(member)}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <Avatar className="size-8">
@@ -211,6 +213,11 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
           )}
         </CardContent>
       </Card>
+      <TeamMemberViewDialog
+        member={viewMember}
+        open={!!viewMember}
+        onOpenChange={(open) => { if (!open) setViewMember(null); }}
+      />
     </main>
   );
 }

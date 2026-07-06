@@ -5,11 +5,12 @@ import { columns, makeActionsCell, type Client } from "@/app/clients/columns";
 
 type ClientListProps = {
   clients: Client[];
+  onView: (client: Client) => void;
   onEdit: (client: Client) => void;
   onDelete: (client: Client) => void;
 };
 
-export function ClientList({ clients, onEdit, onDelete }: ClientListProps) {
+export function ClientList({ clients, onView, onEdit, onDelete }: ClientListProps) {
   return (
     <>
       <div className="grid gap-4 md:grid-cols-4">
@@ -55,8 +56,9 @@ export function ClientList({ clients, onEdit, onDelete }: ClientListProps) {
 
       <div className="flex-1 mt-4">
         <DataTable
-          columns={[...columns, makeActionsCell(onEdit, onDelete)]}
+          columns={[...columns, makeActionsCell(onView, onEdit, onDelete)]}
           data={clients}
+          onRowClick={onView}
         />
       </div>
     </>

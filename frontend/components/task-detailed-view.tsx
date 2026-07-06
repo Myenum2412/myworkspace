@@ -389,6 +389,7 @@ export function TaskDetailedView({
           taskDueDate={task.dueDate}
           assigneeName={task.assigneeName}
           assigneeAvatar={task.assigneeAvatar}
+          creatorName={task.creatorName}
         />
       </div>
     </div>

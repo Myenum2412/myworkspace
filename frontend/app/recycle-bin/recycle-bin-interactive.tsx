@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Trash2Icon, RotateCcwIcon, Loader2Icon, FileIcon, AlertTriangleIcon } from "lucide-react";
+import { Trash2Icon, RotateCcwIcon, Loader2Icon, FileIcon, AlertTriangleIcon, EyeIcon } from "lucide-react";
+import { FileViewDialog } from "@/components/files/file-view-dialog";
 
 type RecycledFile = {
   id: string;
@@ -27,6 +28,7 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
   const [files, setFiles] = useState<RecycledFile[]>(initialFiles);
   const [actionId, setActionId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [viewFile, setViewFile] = useState<RecycledFile | null>(null);
 
   async function handleRestore(id: string) {
     setActionId(id);
@@ -99,7 +101,7 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
                 </thead>
                 <tbody>
                   {files.map((f) => (
-                    <tr key={f.id} className="border-b last:border-0 bg-white hover:bg-slate-50 transition-colors">
+                    <tr key={f.id} className="border-b last:border-0 bg-white hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => setViewFile(f)}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <FileIcon className="size-4 text-muted-foreground shrink-0" />
@@ -114,7 +116,7 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
                         {f.deletedAt ? new Date(f.deletedAt).toLocaleDateString() : "—"}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{f.uploaderName || "—"}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         {confirmDelete === f.id ? (
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1 text-xs text-destructive mr-1">
@@ -144,10 +146,18 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
                           <div className="flex items-center gap-1">
                             <Button
                               size="sm"
+                              variant="ghost"
+                              className="h-7 text-xs px-2"
+                              onClick={(e) => { e.stopPropagation(); setViewFile(f); }}
+                            >
+                              <EyeIcon className="size-3" />
+                            </Button>
+                            <Button
+                              size="sm"
                               variant="outline"
                               className="h-7 text-xs px-2"
                               disabled={actionId === f.id}
-                              onClick={() => handleRestore(f.id)}
+                              onClick={(e) => { e.stopPropagation(); handleRestore(f.id); }}
                             >
                               {actionId === f.id ? (
                                 <Loader2Icon className="size-3 animate-spin" />
@@ -163,7 +173,7 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
                               variant="ghost"
                               className="h-7 text-xs px-2 text-destructive hover:text-destructive"
                               disabled={actionId === f.id}
-                              onClick={() => setConfirmDelete(f.id)}
+                              onClick={(e) => { e.stopPropagation(); setConfirmDelete(f.id); }}
                             >
                               <Trash2Icon className="size-3" />
                             </Button>
@@ -179,6 +189,11 @@ export default function RecycleBinInteractive({ files: initialFiles }: { files: 
           )}
         </CardContent>
       </Card>
+      <FileViewDialog
+        file={viewFile}
+        open={!!viewFile}
+        onOpenChange={(open) => { if (!open) setViewFile(null); }}
+      />
     </main>
   );
 }
