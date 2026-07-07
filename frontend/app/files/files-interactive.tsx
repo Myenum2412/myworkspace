@@ -187,32 +187,26 @@ export default function FilesInteractive({
   // ── Main view: Company details + Client folders ───────────────────
   return (
     <div className="space-y-6 min-w-0 max-w-full">
-      {/* Page Title */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Files</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage and organize your client files and folders</p>
-      </div>
-
-      {/* Client Files */}
-      <div className="flex items-center justify-end">
-        <Button size="sm" onClick={() => router.push("/clients")}>
-          <PlusIcon className="mr-1 size-4" /> Manage Clients
-        </Button>
-      </div>
-
-      {/* Search */}
-      <div className="flex">
-        <div className="flex-1" />
-        <div className="relative w-full max-w-sm">
-          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Search clients..."
-            className="pl-9 h-9 w-full"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      {/* Header Row: Title + Actions */}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold">Files</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage and organize your client files and folders</p>
         </div>
-        <div className="flex-1" />
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="relative w-56">
+            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search clients..."
+              className="pl-9 h-9 w-full"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Button size="sm" onClick={() => router.push("/clients")}>
+            <PlusIcon className="mr-1 size-4" /> Manage Clients
+          </Button>
+        </div>
       </div>
 
       {/* Client Grid */}
