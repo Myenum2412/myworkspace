@@ -15,7 +15,14 @@ function getStripe(): Stripe {
   });
 }
 
-export const stripe = getStripe();
+export let stripe: Stripe;
+
+try {
+  stripe = getStripe();
+} catch {
+  // Stripe not configured — will be set up lazily if needed
+  stripe = undefined as unknown as Stripe;
+}
 
 export function getPriceId(plan: string): string {
   const id = STRIPE_PRICE_IDS[plan];

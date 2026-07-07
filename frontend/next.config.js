@@ -5,6 +5,8 @@ const withSerwist = require("@serwist/next").default({
   reloadOnOnline: true,
 });
 
+const API_URL = process.env.API_URL || "http://localhost:4000";
+
 const nextConfig = {
   serverExternalPackages: ["better-sqlite3", "mongodb"],
   experimental: {
@@ -22,15 +24,15 @@ const nextConfig = {
       fallback: [
         {
           source: "/api/:path*",
-          destination: "http://localhost:4000/api/:path*",
+          destination: `${API_URL}/api/:path*`,
         },
         {
           source: "/uploads/:path*",
-          destination: "http://localhost:4000/uploads/:path*",
+          destination: `${API_URL}/uploads/:path*`,
         },
         {
           source: "/banners/:path*",
-          destination: "http://localhost:4000/banners/:path*",
+          destination: `${API_URL}/banners/:path*`,
         },
       ],
     };

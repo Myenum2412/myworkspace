@@ -41,13 +41,6 @@ export async function loginAction(formData: FormData) {
     redirect(`/login/verify-2fa?email=${encodeURIComponent(email)}`);
   }
 
-  try {
-    await signIn("credentials", { email, password, redirect: false });
-  } catch (err) {
-    console.error(`[AUTH] loginAction: signIn failed for ${email}:`, err);
-    redirect("/login?error=Invalid+email+or+password");
-  }
-
   let user = await db.collection(collections.users).findOne({ email });
   let isClient = false;
 
@@ -59,18 +52,18 @@ export async function loginAction(formData: FormData) {
   }
 
   if (!user) {
-    console.error(`[AUTH] loginAction: user not found in DB after signIn: ${email}`);
+    console.error(`[AUTH] loginAction: user not found in DB: ${email}`);
     redirect("/login?error=User+not+found");
   }
 
   const userId = user.id || user._id?.toString();
-  
+
   if (isClient) {
     await db.collection(collections.clientUsers).updateOne(
       { _id: user._id },
       { $set: { lastLogin: new Date() } }
     );
-    
+
     await db.collection(collections.clientAuditLogs).insertOne({
       orgId: user.orgId,
       clientId: user.clientId,
@@ -86,9 +79,8 @@ export async function loginAction(formData: FormData) {
       { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
     );
 
-    const member = await db.collection(collections.orgMembers).findOne({ userId: userId });
+    const member = await db.collection(collections.orgMembers).findOne({ userId });
 
-    // Auto-create org if user has none
     if (!member) {
       const userName = user.name || email.split("@")[0];
       const newOrgId = uuid();
@@ -150,13 +142,18 @@ export async function loginAction(formData: FormData) {
   }
 
   const role = isClient ? "client" : user?.role;
-  const isOrgAdmin = role === "ORG_MENU_ADMIN" || role === "SUPER_ADMIN";
-
   const redirectPath = getRedirectPath(role);
+
   console.log(`[AUTH] loginAction: ${email} role=${role} → ${redirectPath}`);
   revalidatePath(redirectPath);
   revalidateTag('dashboard', 'max');
-  redirect(redirectPath);
+
+  try {
+    await signIn("credentials", { email, password, redirect: true, redirectTo: redirectPath });
+  } catch (err) {
+    console.error(`[AUTH] loginAction: signIn failed for ${email}:`, err);
+    redirect("/login?error=Invalid+email+or+password");
+  }
 }
 
 export async function signupAction(formData: FormData) {
@@ -236,11 +233,13 @@ export async function signupAction(formData: FormData) {
 
   await createUserWorkspace(userId, name, orgId);
 
-  await signIn("credentials", { email, password, redirect: false });
-  console.log(`[AUTH] signupAction: ${email} signed up → redirecting to /dashboard`);
   revalidatePath("/dashboard");
   revalidateTag('dashboard', 'max');
-  redirect("/dashboard");
+  try {
+    await signIn("credentials", { email, password, redirect: true, redirectTo: "/dashboard" });
+  } catch {
+    redirect("/dashboard");
+  }
 }
 
 export async function logoutAction() {

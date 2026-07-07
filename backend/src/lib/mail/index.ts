@@ -4,7 +4,7 @@ import nodemailer from "nodemailer";
 import { buildEmailHtml } from "./templates/builder.js";
 import * as Factory from "./templates/factory.js";
 
-const resend = new Resend(env.RESEND_API_KEY);
+let resend: Resend | null = null;
 
 const transporter = env.SMTP_HOST
   ? nodemailer.createTransport({
@@ -48,6 +48,10 @@ async function sendEmail(to: string, subject: string, htmlBody: string): Promise
   if (!env.RESEND_API_KEY) {
     console.warn("[mail] Neither SMTP nor RESEND_API_KEY configured - skipping email");
     return;
+  }
+
+  if (!resend) {
+    resend = new Resend(env.RESEND_API_KEY);
   }
 
   const { data, error } = await resend.emails.send({

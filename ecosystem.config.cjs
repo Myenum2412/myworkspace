@@ -3,15 +3,25 @@ module.exports = {
     {
       name: "myworkspace-backend",
       script: "dist/index.js",
-      args: "--env-file=.env",
       cwd: "./backend",
-      interpreter: "none",
+      node_args: "--env-file=.env",
       env: {
         NODE_ENV: "production",
         HOST: "127.0.0.1",
         PORT: process.env.PORT || 4000,
       },
-    }
+    },
+    {
+      name: "myworkspace-frontend",
+      script: "node_modules/next/dist/bin/next-start",
+      args: "--port 3000",
+      cwd: "./frontend",
+      env: {
+        NODE_ENV: "production",
+        PORT: 3000,
+        API_URL: process.env.API_URL || "http://localhost:4000",
+      },
+    },
   ],
   deploy: {
     backend_production_server: {
