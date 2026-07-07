@@ -56,7 +56,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         try {
           const { db } = await import("@/lib/db");
           const dbUser = await db.collection("users").findOne({ id: token.id });
-          if (dbUser?.role && dbUser.role !== "USER") {
+          if (dbUser?.role && dbUser.role !== "USER" && token.role !== "client") {
             token.role = dbUser.role;
           } else if (!token.role || token.role === "USER") {
             token.role = "workspace";
@@ -241,6 +241,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         twoFactorToken: { label: "2FA Token", type: "text" },
+        loginSource: { label: "Login Source", type: "text" },
       },
       async authorize(credentials) {
         const email = credentials?.email as string;
@@ -270,10 +271,34 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
         const password = credentials?.password as string;
         if (!password) return null;
+
+        const loginSource = credentials?.loginSource as string | undefined;
+
         const { db } = await import("@/lib/db");
         console.log("[AUTH authorize] looking up", email);
+
+        // Client-source login: check client_users ONLY — ensures "client" role
+        if (loginSource === "client") {
+          const cu = await db.collection("client_users").findOne({ email });
+          if (cu && cu.password && cu.isActive) {
+            const valid = await compare(password, cu.password);
+            if (valid) {
+              return {
+                id: cu.id || cu._id?.toString(),
+                email: cu.email,
+                name: cu.name,
+                role: "client",
+                permissions: [],
+                orgId: cu.orgId,
+                onboardingCompleted: true,
+              };
+            }
+          }
+          return null;
+        }
+
+        // Staff / default login: check users first, then client_users as fallback
         const user = await db.collection("users").findOne({ email });
-        
         if (user && user.password) {
           const valid = await compare(password, user.password);
           console.log("[AUTH authorize] password valid:", valid);
@@ -289,8 +314,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [], orgId, onboardingCompleted };
           }
         }
-        
-        // If not found or invalid in users, try client_users
+
         const clientUser = await db.collection("client_users").findOne({ email });
         if (clientUser && clientUser.password && clientUser.isActive) {
           const valid = await compare(password, clientUser.password);
@@ -306,7 +330,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             };
           }
         }
-        
+
         return null;
       },
     }),

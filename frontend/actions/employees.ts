@@ -20,8 +20,11 @@ export async function addEmployeeAction(formData: FormData) {
 
   if (!name || !email) return { error: "Name and email are required" };
 
-  const existing = await (await db.collection(collections.users).find({ email })).toArray();
-  if (existing.length > 0) return { error: "User with this email already exists" };
+  const existingUser = await (await db.collection(collections.users).find({ email })).toArray();
+  if (existingUser.length > 0) return { error: "User with this email already exists" };
+
+  const existingClient = await db.collection(collections.clientUsers).findOne({ email });
+  if (existingClient) return { error: "User with this email already exists" };
 
   const orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
   if (!orgMember) {

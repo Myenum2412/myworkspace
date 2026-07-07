@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,6 +49,19 @@ export default function LoginInteractive() {
       if (data.data.user.mustChangePassword) {
         localStorage.setItem("must_change_password", "true");
       }
+
+      // Also create NextAuth session so useSession() works on dashboard
+      const signInResult = await signIn("credentials", {
+        email,
+        password,
+        loginSource: "client",
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        console.warn("[client-login] NextAuth signIn warning:", signInResult.error);
+      }
+
       router.push("/client/dashboard");
     } catch {
       setError("Unable to connect to server");

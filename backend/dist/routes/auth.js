@@ -3,6 +3,7 @@ import { hash, compare } from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import crypto from "crypto";
 import { User } from "../lib/db/models/User.js";
+import { ClientUser } from "../lib/db/models/ClientUser.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { Session } from "../lib/db/models/Session.js";
@@ -157,8 +158,12 @@ router.post("/signup", async (req, res) => {
     const password = requireString(req.body.password, "password", { min: 8, max: 1000 });
     const company = optionalString(req.body.company, "company", { max: 200 });
     validatePasswordStrength(password);
-    const existing = await User.findOne({ email });
-    if (existing) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        throw new AppError(409, "An account with this email already exists");
+    }
+    const existingClient = await ClientUser.findOne({ email });
+    if (existingClient) {
         throw new AppError(409, "An account with this email already exists");
     }
     const hashedPassword = await hash(password, 12);

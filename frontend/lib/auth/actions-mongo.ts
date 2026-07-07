@@ -22,8 +22,13 @@ export async function signupActionMongo(formData: FormData) {
     redirect("/signup-mongo?error=Password must be at least 8 characters");
   }
 
-  const existing = await db.collection("users").findOne({ email });
-  if (existing) {
+  const existingUser = await db.collection("users").findOne({ email });
+  if (existingUser) {
+    redirect("/signup-mongo?error=An account with this email already exists");
+  }
+
+  const existingClient = await db.collection("client_users").findOne({ email });
+  if (existingClient) {
     redirect("/signup-mongo?error=An account with this email already exists");
   }
 

@@ -12,10 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Field, FieldSet, FieldLegend } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import { Button } from "@/components/ui/button";
-import { INDUSTRIES } from "@/lib/industries";
+
 
 /** Editable subset of a Client. Maps 1:1 to the backend POST/PUT body. */
 export type ClientValues = Record<string, string>;
@@ -140,22 +137,17 @@ export function fieldError(errors: Record<string, string>, name: string): string
   return errors[name] || null;
 }
 
-/** Full create form (includes generated-password + identity fields). */
-export function CreateClientFormFields(props: {
+
+
+/** Edit form — single cohesive form for client editing. */
+export function EditClientFormFields(props: {
   v: ClientValues;
   set: (key: string, value: string) => void;
   errors: Record<string, string>;
   members: string[];
-  showPassword: boolean;
-  onTogglePassword: () => void;
-  onRegeneratePassword: () => void;
-  copyToClipboard: (text: string, label: string) => void;
-  copied: string;
-  PasswordIcon: React.ComponentType<{ className?: string }>;
-  RefreshCw: React.ComponentType<{ className?: string }>;
-  Copy: React.ComponentType<{ className?: string }>;
 }) {
   const { v, set, errors, members } = props;
+  const [showPw, setShowPw] = useState(false);
   const fc = (n: string) => fieldClass(errors, n);
   const fe = (n: string) => fieldError(errors, n);
   return (
@@ -163,10 +155,6 @@ export function CreateClientFormFields(props: {
       <FieldSet>
         <FieldLegend>Client Information</FieldLegend>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field>
-            <Label className="text-xs text-muted-foreground">Client ID</Label>
-            <Input value="Auto Generated" disabled className="text-muted-foreground" />
-          </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Client Name *</Label>
             <Input placeholder="Enter client name" value={v.name} onChange={(e) => set("name", e.target.value)} className={fc("name")} />
@@ -183,97 +171,18 @@ export function CreateClientFormFields(props: {
             {fe("email") && <p className="text-xs text-red-500 mt-1">{fe("email")}</p>}
           </Field>
           <Field>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">Generated Password</Label>
-            <div className="flex gap-2">
-              <Input value={v.password} readOnly className="font-mono text-xs flex-1" />
-              <Button type="button" variant="outline" size="icon" className="size-9 shrink-0" onClick={props.onRegeneratePassword} title="Regenerate password">
-                <props.RefreshCw className="size-4" />
-              </Button>
-            </div>
-          </Field>
-          <Field>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">Client Type</Label>
-            <Select value={v.clientType} onValueChange={(val) => set("clientType", val)}>
-              <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Individual">Individual</SelectItem>
-                <SelectItem value="Business">Business</SelectItem>
-                <SelectItem value="Government">Government</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <SearchableSelect id="client-industry" label="Industry" options={INDUSTRIES} value={v.industry} onValueChange={(val) => set("industry", val)} placeholder="Select industry" />
-          </Field>
-          <Field>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">Website URL</Label>
-            <Input placeholder="https://example.com" value={v.websiteUrl} onChange={(e) => set("websiteUrl", e.target.value)} />
-          </Field>
-        </div>
-      </FieldSet>
-
-      <ClientMainFormFields v={v} set={set} errors={errors} members={members} />
-    </div>
-  );
-}
-
-/** Edit form (no password/identity, since those belong to the client-user account). */
-export function EditClientFormFields(props: {
-  v: ClientValues;
-  set: (key: string, value: string) => void;
-  errors: Record<string, string>;
-  members: string[];
-}) {
-  const [showPw, setShowPw] = useState(false);
-  return (
-    <div className="space-y-8 py-2">
-      <FieldSet>
-        <FieldLegend>Client Information</FieldLegend>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">Client Name *</Label>
-            <Input placeholder="Enter client name" value={props.v.name} onChange={(e) => props.set("name", e.target.value)} className={fieldClass(props.errors, "name")} />
-            {fieldError(props.errors, "name") && <p className="text-xs text-red-500 mt-1">{fieldError(props.errors, "name")}</p>}
-          </Field>
-          <Field>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
-            <Input placeholder="Enter company name" value={props.v.company} onChange={(e) => props.set("company", e.target.value)} className={fieldClass(props.errors, "company")} />
-            {fieldError(props.errors, "company") && <p className="text-xs text-red-500 mt-1">{fieldError(props.errors, "company")}</p>}
-          </Field>
-          <Field>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
-            <Input placeholder="client@company.com" type="email" value={props.v.email} onChange={(e) => props.set("email", e.target.value)} className={fieldClass(props.errors, "email")} />
-            {fieldError(props.errors, "email") && <p className="text-xs text-red-500 mt-1">{fieldError(props.errors, "email")}</p>}
-          </Field>
-          <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Password</Label>
             <div className="relative">
-              <Input placeholder="Leave blank to keep current password" type={showPw ? "text" : "password"} value={props.v.password} onChange={(e) => props.set("password", e.target.value)} className={fieldClass(props.errors, "password")} />
+              <Input placeholder="Leave blank to keep current password" type={showPw ? "text" : "password"} value={v.password} onChange={(e) => set("password", e.target.value)} className={fc("password")} />
               <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPw(!showPw)} tabIndex={-1}>
                 {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
-            {fieldError(props.errors, "password") && <p className="text-xs text-red-500 mt-1">{fieldError(props.errors, "password")}</p>}
+            {fe("password") && <p className="text-xs text-red-500 mt-1">{fe("password")}</p>}
           </Field>
         </div>
       </FieldSet>
-      <ClientMainFormFields v={props.v} set={props.set} errors={props.errors} members={props.members} />
-    </div>
-  );
-}
 
-/** Shared sections between create and edit (contact → additional). */
-export function ClientMainFormFields(props: {
-  v: ClientValues;
-  set: (key: string, value: string) => void;
-  errors: Record<string, string>;
-  members: string[];
-}) {
-  const { v, set, errors, members } = props;
-  const fc = (n: string) => fieldClass(errors, n);
-  const fe = (n: string) => fieldError(errors, n);
-  return (
-    <>
       <Separator />
       <FieldSet>
         <FieldLegend>Contact Information</FieldLegend>
@@ -491,6 +400,6 @@ export function ClientMainFormFields(props: {
           </Field>
         </div>
       </FieldSet>
-    </>
+    </div>
   );
 }

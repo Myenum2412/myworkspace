@@ -178,9 +178,13 @@ export async function signupAction(formData: FormData) {
     redirect("/signup?error=Passwords+do+not+match");
   }
 
-  const existing = await (await db.collection(collections.users).find({ email })).toArray();
+  const existingUser = await (await db.collection(collections.users).find({ email })).toArray();
+  if (existingUser.length > 0) {
+    redirect("/signup?error=An+account+with+this+email+already+exists");
+  }
 
-  if (existing.length > 0) {
+  const existingClient = await db.collection(collections.clientUsers).findOne({ email });
+  if (existingClient) {
     redirect("/signup?error=An+account+with+this+email+already+exists");
   }
 
