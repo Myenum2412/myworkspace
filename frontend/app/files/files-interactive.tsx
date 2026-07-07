@@ -187,6 +187,12 @@ export default function FilesInteractive({
   // ── Main view: Company details + Client folders ───────────────────
   return (
     <div className="space-y-6 min-w-0 max-w-full">
+      {/* Page Title */}
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold">Files</h1>
+        <p className="text-sm text-muted-foreground mt-1">Manage and organize your client files and folders</p>
+      </div>
+
       {/* Client Files */}
       <div className="flex items-center justify-end">
         <Button size="sm" onClick={() => router.push("/clients")}>
