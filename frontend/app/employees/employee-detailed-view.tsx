@@ -59,7 +59,7 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
 
   return (
     <div className="flex flex-col h-full">
-      <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
+      <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 shrink-0">
         <DialogTitle className="flex items-center gap-2 text-xl">{fullName}</DialogTitle>
         <DialogDescription>
           <div className="flex items-center gap-2 mt-1">
@@ -71,19 +71,19 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
         </DialogDescription>
       </DialogHeader>
 
-      <div className="flex-1 overflow-y-auto px-6 py-3 min-h-0">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 min-h-0">
         <div className="space-y-12 max-w-4xl mx-auto">
 
           {/* Step 1: Profile */}
           <div className="space-y-8">
-            <div className="flex gap-12 items-start">
+            <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 items-center sm:items-start">
               <div className="flex-shrink-0">
                 <Avatar className="h-24 w-24 ring-2 ring-border">
                   <AvatarImage src={employee.avatar} alt={fullName} />
                   <AvatarFallback className="text-lg">{getInitials(fullName)}</AvatarFallback>
                 </Avatar>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 w-full">
                 <FieldSet>
                   <FieldLegend>Basic Information</FieldLegend>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

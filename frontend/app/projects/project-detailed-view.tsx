@@ -114,7 +114,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 px-6 pt-2 pb-3 shrink-0 overflow-x-auto">
+      <div className="flex items-center gap-2 px-4 sm:px-6 pt-2 pb-3 shrink-0 overflow-x-auto">
         {TABS.map((t, i) => {
           const Icon = t.icon;
           return (
@@ -135,19 +135,19 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
         })}
       </div>
 
-      <ScrollArea className="flex-1 px-6 pb-6">
+      <ScrollArea className="flex-1 px-4 sm:px-6 pb-6">
         {tab === 0 && (
           <div className="space-y-6">
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
               <div
-                className="size-14 rounded-xl shrink-0 flex items-center justify-center text-black text-lg font-bold bg-gray-200"
+                className="size-12 sm:size-14 rounded-xl shrink-0 flex items-center justify-center text-black text-lg font-bold bg-gray-200"
                 style={{ backgroundColor: project.color }}
               >
                 {project.name.charAt(0).toUpperCase()}
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 w-full sm:w-auto">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-lg font-semibold truncate">{project.name}</h2>
+                  <h2 className="text-base sm:text-lg font-semibold truncate">{project.name}</h2>
                   <PriorityBadge priority={project.priority} />
                 </div>
                 <p className="text-sm text-muted-foreground">{project.client}</p>
@@ -155,7 +155,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                   <Badge variant="outline" className="mt-1 text-[10px] capitalize">{project.category}</Badge>
                 )}
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-start sm:justify-end">
                 <Badge variant={project.access === "Public" ? "default" : "secondary"}>{project.access}</Badge>
                 <Badge variant={project.status === "Active" ? "default" : "outline"}>{project.status}</Badge>
               </div>
@@ -163,7 +163,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
 
             <div className="rounded-lg border p-4 space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Details</h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <FieldRow label="Project ID" value={project.id} />
                 <FieldRow label="Progress" value={`${project.progress}%`} />
                 <FieldRow label="Tracked Hours" value={`${project.tracked}h`} />
@@ -205,7 +205,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 <p className="text-sm text-muted-foreground">No team members assigned</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {memberNames.map((m) => (
                   <div key={m.id} className="flex items-center gap-3 rounded-lg border p-3">
                     <div className="size-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium shrink-0 overflow-hidden">
@@ -244,37 +244,59 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 </div>
               </div>
             ) : (
-              <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-                <table className="w-full text-sm text-left">
-                  <thead>
-                    <tr className="bg-[#f3f4f6]">
-                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">User</th>
-                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Description</th>
-                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Date</th>
-                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Time</th>
-                      <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Duration</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {timeEntries.map((entry) => {
-                      const dur = entry.startTime && entry.endTime
-                        ? (() => { const [sh,sm]=entry.startTime.split(":").map(Number); const [eh,em]=entry.endTime.split(":").map(Number); return Math.max(0,(eh*60+em)-(sh*60+sm)); })()
-                        : entry.duration;
-                      return (
-                        <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
-                          <td className="px-3 py-2.5 text-sm font-medium">{userMap[entry.userId] || entry.userId.slice(0, 8)}</td>
-                          <td className="px-3 py-2.5 text-sm">{entry.description}</td>
-                          <td className="px-3 py-2.5 text-sm text-muted-foreground">{new Date(entry.date).toLocaleDateString()}</td>
-                          <td className="px-3 py-2.5 text-sm text-muted-foreground">
-                            {entry.startTime && entry.endTime ? `${entry.startTime} - ${entry.endTime}` : "\u2014"}
-                          </td>
-                          <td className="px-3 py-2.5 text-sm font-mono font-medium">{Math.floor(dur / 60)}h {dur % 60}m</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                <div className="hidden sm:block border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+                  <table className="w-full text-sm text-left">
+                    <thead>
+                      <tr className="bg-[#f3f4f6]">
+                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">User</th>
+                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Description</th>
+                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Date</th>
+                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Time</th>
+                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Duration</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {timeEntries.map((entry) => {
+                        const dur = entry.startTime && entry.endTime
+                          ? (() => { const [sh,sm]=entry.startTime.split(":").map(Number); const [eh,em]=entry.endTime.split(":").map(Number); return Math.max(0,(eh*60+em)-(sh*60+sm)); })()
+                          : entry.duration;
+                        return (
+                          <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
+                            <td className="px-3 py-2.5 text-sm font-medium">{userMap[entry.userId] || entry.userId.slice(0, 8)}</td>
+                            <td className="px-3 py-2.5 text-sm">{entry.description}</td>
+                            <td className="px-3 py-2.5 text-sm text-muted-foreground">{new Date(entry.date).toLocaleDateString()}</td>
+                            <td className="px-3 py-2.5 text-sm text-muted-foreground">
+                              {entry.startTime && entry.endTime ? `${entry.startTime} - ${entry.endTime}` : "\u2014"}
+                            </td>
+                            <td className="px-3 py-2.5 text-sm font-mono font-medium">{Math.floor(dur / 60)}h {dur % 60}m</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="sm:hidden space-y-2">
+                  {timeEntries.map((entry) => {
+                    const dur = entry.startTime && entry.endTime
+                      ? (() => { const [sh,sm]=entry.startTime.split(":").map(Number); const [eh,em]=entry.endTime.split(":").map(Number); return Math.max(0,(eh*60+em)-(sh*60+sm)); })()
+                      : entry.duration;
+                    return (
+                      <div key={entry.id} className="rounded-lg border p-3 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{userMap[entry.userId] || entry.userId.slice(0, 8)}</span>
+                          <span className="text-xs font-mono font-medium">{Math.floor(dur / 60)}h {dur % 60}m</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{entry.description}</p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>{new Date(entry.date).toLocaleDateString()}</span>
+                          {entry.startTime && entry.endTime && <span>{entry.startTime} - {entry.endTime}</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         )}
@@ -315,7 +337,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
         {tab === 5 && (
           <div className="space-y-6">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Budget & Resources</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="rounded-lg border p-4 space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <TargetIcon className="size-4" />

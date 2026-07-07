@@ -35,11 +35,11 @@ export default function Rejected({ initialTasks }: RejectedProps) {
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
         <div className="flex items-center gap-2">
-          <XCircleIcon className="size-6 text-destructive" />
-          <h1 className="text-2xl font-bold">Rejected</h1>
-          <Badge variant="secondary" className="ml-auto">{tasks.length} rejected</Badge>
+          <XCircleIcon className="size-5 sm:size-6 text-destructive shrink-0" />
+          <h1 className="text-xl sm:text-2xl font-bold">Rejected</h1>
+          <Badge variant="secondary" className="ml-auto shrink-0">{tasks.length} rejected</Badge>
         </div>
 
         <Card>
@@ -60,12 +60,12 @@ export default function Rejected({ initialTasks }: RejectedProps) {
         <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedTask && (
             <>
-              <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
-                <DialogTitle className="flex items-center gap-2 text-lg"><ListTodoIcon className="size-5" />{selectedTask.title}</DialogTitle>
+              <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 shrink-0">
+                <DialogTitle className="flex items-center gap-2 text-base sm:text-lg"><ListTodoIcon className="size-4 sm:size-5" />{selectedTask.title}</DialogTitle>
                 <DialogDescription>Rejected task details.</DialogDescription>
               </DialogHeader>
 
-              <div className="flex-1 overflow-y-auto px-6 py-3 space-y-4">
+              <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-4">
                 {selectedTask.description && (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Description</p>
@@ -73,7 +73,7 @@ export default function Rejected({ initialTasks }: RejectedProps) {
                   </div>
                 )}
                 <Separator />
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Priority</p><p className="font-medium capitalize mt-0.5">{selectedTask.priority}</p></div>
                   <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Status</p><p className="font-medium text-red-600 mt-0.5">Rejected</p></div>
                   <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Assignee</p><p className="font-medium mt-0.5">{selectedTask.assigneeName || "—"}</p></div>
@@ -92,8 +92,8 @@ export default function Rejected({ initialTasks }: RejectedProps) {
                 )}
               </div>
 
-              <DialogFooter className="shrink-0 border-t px-6 py-4">
-                <Button variant="outline" onClick={() => { setViewOpen(false); setSelectedTask(null); }}>Close</Button>
+              <DialogFooter className="shrink-0 border-t px-4 sm:px-6 py-4">
+                <Button variant="outline" onClick={() => { setViewOpen(false); setSelectedTask(null); }} className="w-full sm:w-auto touch-target">Close</Button>
               </DialogFooter>
             </>
           )}

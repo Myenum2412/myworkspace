@@ -51,13 +51,13 @@ function CalendarView({ tasks }: { tasks: Task[] }) {
   const later = tasks.filter((t) => new Date(t.dueDate!) > new Date(today.getTime() + 7 * 86400000));
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
+    <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
       <div className="flex items-center gap-2">
-        <CalendarIcon className="size-6" />
-        <h1 className="text-2xl font-bold">Calendar</h1>
+        <CalendarIcon className="size-6 shrink-0" />
+        <h1 className="text-xl sm:text-2xl font-bold">Calendar</h1>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
         <Card className="border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm text-red-600">Overdue</CardTitle></CardHeader>
           <CardContent>

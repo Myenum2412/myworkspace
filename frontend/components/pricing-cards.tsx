@@ -17,7 +17,7 @@ export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) 
   const currency: Currency = isINR(country) ? "INR" : "USD";
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3 w-full max-w-5xl mx-auto">
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full max-w-5xl mx-auto">
       {priceTiers.map((plan) => {
         const Icon = plan.id === "free" ? Zap : plan.id === "growth" ? Sparkles : Building2;
         const isSelected = selectedPlan === plan.id;
@@ -75,7 +75,7 @@ export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) 
             <Button
               variant={isSelected ? "default" : "outline"}
               className={cn(
-                "w-full h-10",
+                "w-full h-11",
                 isSelected && "shadow-md"
               )}
               onClick={(e) => {

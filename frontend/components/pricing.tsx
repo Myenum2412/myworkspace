@@ -44,7 +44,7 @@ export function Pricing() {
           </div>
         )}
 
-        <div className="mt-16 grid gap-8 lg:grid-cols-3">
+        <div className="mt-16 grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {priceTiers.map((plan) => {
             const price = inr ? plan.inr : plan.usd;
             const period = plan.id === "enterprise" ? "" : plan.period;

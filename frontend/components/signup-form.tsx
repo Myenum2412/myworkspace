@@ -69,7 +69,7 @@ export function SignupForm({ className, error, ...props }: React.ComponentProps<
           <Label htmlFor="signup-confirm">Confirm password</Label>
           <PasswordInput id="signup-confirm" name="confirm" required autoComplete="new-password" placeholder="Re-enter your password" />
         </div>
-        <Button type="submit" className="w-full mt-1 font-semibold h-10">
+        <Button type="submit" className="w-full mt-1 font-semibold h-11">
           Create account
         </Button>
       </form>
@@ -80,10 +80,10 @@ export function SignupForm({ className, error, ...props }: React.ComponentProps<
         <Separator className="flex-1" />
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /> Google</Button>
-        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}><GitHubIcon /> GitHub</Button>
-        <Button variant="outline" type="button" className="flex flex-col items-center justify-center gap-1.5 h-20 text-sm font-medium" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}><LinkedInIcon /> LinkedIn</Button>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 sm:flex-col sm:gap-1.5 sm:h-20 text-sm font-medium" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /> Google</Button>
+        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 sm:flex-col sm:gap-1.5 sm:h-20 text-sm font-medium" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}><GitHubIcon /> GitHub</Button>
+        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 sm:flex-col sm:gap-1.5 sm:h-20 text-sm font-medium" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}><LinkedInIcon /> LinkedIn</Button>
       </div>
 
       <p className="text-center text-sm text-muted-foreground">

@@ -50,13 +50,13 @@ export default async function ReportsPage() {
   ];
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
+    <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
       <div className="flex items-center gap-2">
-        <BarChart3Icon className="size-6" />
-        <h1 className="text-2xl font-bold">Reports</h1>
+        <BarChart3Icon className="size-6 shrink-0" />
+        <h1 className="text-xl sm:text-2xl font-bold">Reports</h1>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><BarChart3Icon className="size-4" /> Total Tasks</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{total}</div></CardContent>
@@ -75,7 +75,7 @@ export default async function ReportsPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
         <Card>
           <CardHeader><CardTitle className="text-base">Priority Breakdown</CardTitle></CardHeader>
           <CardContent>

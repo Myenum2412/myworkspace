@@ -16,6 +16,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { ChevronRightIcon } from "lucide-react"
@@ -39,6 +40,11 @@ export function NavMain({
   className?: string
 }) {
   const pathname = usePathname()
+  const { setOpenMobile, isMobile } = useSidebar()
+
+  const closeMobile = useCallback(() => {
+    if (isMobile) setOpenMobile(false)
+  }, [isMobile, setOpenMobile])
 
   const isOpen = useCallback(
     (item: typeof items[number]) => {
@@ -64,7 +70,7 @@ export function NavMain({
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton size="lg" tooltip={item.title} className="text-base" asChild>
-                    <Link href={item.url}>
+                    <Link href={item.url} onClick={closeMobile}>
                       {item.icon}
                       <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                       <ChevronRightIcon className="ml-auto size-5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
@@ -76,7 +82,7 @@ export function NavMain({
                     {item.items.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton asChild className="text-sm py-2" data-active={pathname === subItem.url}>
-                          <Link href={subItem.url}>
+                          <Link href={subItem.url} onClick={closeMobile}>
                             <span>{subItem.title}</span>
                           </Link>
                         </SidebarMenuSubButton>
@@ -89,7 +95,7 @@ export function NavMain({
           ) : (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton size="lg" tooltip={item.title} className="text-base" asChild>
-                <Link href={item.url}>
+                <Link href={item.url} onClick={closeMobile}>
                   {item.icon}
                   <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                 </Link>

@@ -82,7 +82,7 @@ export function ProjectCreateForm({
 
   return (
     <div className="rounded-2xl border bg-card shadow-sm">
-      <div className="flex items-center justify-between gap-3 px-6 py-4 border-b">
+      <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
             <PlusIcon className="size-5 text-primary" />
@@ -104,7 +104,7 @@ export function ProjectCreateForm({
         </div>
       )}
 
-      <div className="px-6 py-5 space-y-6">
+      <div className="px-4 sm:px-6 py-5 space-y-6">
 
         {/* Basic Information */}
         <div className="rounded-xl border bg-card p-4 space-y-4">
@@ -112,7 +112,7 @@ export function ProjectCreateForm({
             <UserIcon className="size-4 text-muted-foreground" />
             Basic Information
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="projectName" className="text-sm font-medium">Project Name <span className="text-destructive">*</span></Label>
               <Input
@@ -156,7 +156,7 @@ export function ProjectCreateForm({
             <CalendarIcon className="size-4 text-muted-foreground" />
             Timeline & Team
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="startDate" className="text-sm font-medium">Start Date</Label>
               <Input
@@ -249,7 +249,7 @@ export function ProjectCreateForm({
             <FlagIcon className="size-4 text-muted-foreground" />
             Classification
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">Priority</Label>
               <Select value={projectPriority} onValueChange={onProjectPriorityChange} disabled={submitting}>
@@ -289,7 +289,7 @@ export function ProjectCreateForm({
             <FolderOpenIcon className="size-4 text-muted-foreground" />
             Budget & Planning
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">Budget ($)</Label>
               <Input
@@ -401,11 +401,11 @@ export function ProjectCreateForm({
 
       </div>
 
-      <div className="flex items-center justify-end gap-3 px-6 py-4 border-t">
-        <Button variant="outline" onClick={onCancel} disabled={submitting}>
+      <div className="flex flex-col sm:flex-row items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t">
+        <Button variant="outline" onClick={onCancel} disabled={submitting} className="w-full sm:w-auto">
           Cancel
         </Button>
-        <Button disabled={!projectName || !selectedClient || submitting} onClick={onSubmit}>
+        <Button disabled={!projectName || !selectedClient || submitting} onClick={onSubmit} className="w-full sm:w-auto touch-target">
           {submitting ? (
             <span className="flex items-center gap-2">
               <span className="size-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
@@ -475,7 +475,7 @@ export function ProjectEditForm({
               <Label className="text-sm">Deadline</Label>
               <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="mt-1" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm">Access</Label>
                 <Select value={editAccess} onValueChange={(v) => onEditAccessChange(v as "Public" | "Private")}>
@@ -527,9 +527,9 @@ export function ProjectEditForm({
             </div>
           </div>
         </ScrollArea>
-        <DialogFooter className="px-6 pb-6 pt-2 shrink-0 flex gap-2 sm:gap-2">
-          <Button variant="outline" className="flex-1" onClick={onCancel}>Cancel</Button>
-          <Button className="flex-1" onClick={onSubmit}>Save</Button>
+        <DialogFooter className="px-6 pb-6 pt-2 shrink-0 flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" className="w-full sm:flex-1 touch-target" onClick={onCancel}>Cancel</Button>
+          <Button className="w-full sm:flex-1 touch-target" onClick={onSubmit}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

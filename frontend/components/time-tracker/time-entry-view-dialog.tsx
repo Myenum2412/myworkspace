@@ -56,10 +56,10 @@ export function TimeEntryViewDialog({ entry, open, onOpenChange }: TimeEntryView
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl w-full p-0 flex flex-col">
-        <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b">
-          <DialogTitle className="text-lg flex items-center gap-2">
-            <Clock className="size-5 text-muted-foreground" />
+      <DialogContent className="max-w-xl w-full p-0 flex flex-col sm:max-h-[90vh]">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 shrink-0 border-b">
+          <DialogTitle className="text-base sm:text-lg flex items-center gap-2">
+            <Clock className="size-4 sm:size-5 text-muted-foreground" />
             Time Entry Details
           </DialogTitle>
           <DialogDescription>
@@ -69,7 +69,7 @@ export function TimeEntryViewDialog({ entry, open, onOpenChange }: TimeEntryView
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 px-6 py-4 space-y-3 overflow-y-auto">
+        <div className="flex-1 px-4 sm:px-6 py-4 space-y-3 overflow-y-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field icon={FileText} label="Description" value={entry.description} />
             <Field icon={Tag} label="Project" value={entry.projectName} />
@@ -87,8 +87,8 @@ export function TimeEntryViewDialog({ entry, open, onOpenChange }: TimeEntryView
           )}
         </div>
 
-        <DialogFooter className="shrink-0 border-t px-6 py-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+        <DialogFooter className="shrink-0 border-t px-4 sm:px-6 py-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto touch-target">Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

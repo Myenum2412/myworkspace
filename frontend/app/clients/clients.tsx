@@ -111,7 +111,7 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
 
   if (loading) {
     return (
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
@@ -121,8 +121,8 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
 
   if (pageView === "add") {
     return (
-      <main className="flex flex-1 flex-col h-full bg-white">
-        <div className="flex items-center gap-3 px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
+      <main className="flex flex-1 flex-col h-full bg-white min-w-0 max-w-full">
+        <div className="flex items-center gap-3 px-3 sm:px-4 md:px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
           <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1.5">
             <ChevronLeftIcon className="size-4" />
             Back
@@ -153,9 +153,9 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Clients</h1>
+      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold">Clients</h1>
           <Button onClick={() => setPageView("add")}>
             <PlusIcon className="mr-2 size-4" />
             Add Client

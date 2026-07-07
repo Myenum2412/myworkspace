@@ -322,69 +322,55 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-4 overflow-y-auto">
-      <h1 className="text-2xl font-bold">Dashboard Overview</h1>
+    <div className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 min-w-0 max-w-full">
+      <h1 className="text-xl sm:text-2xl font-bold px-0.5">Dashboard Overview</h1>
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
+      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
         {metricCards.map((c) => (
           <Card key={c.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{c.title}</CardTitle>
-              <c.icon className={`size-4 ${c.color}`} />
+            <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 px-3 sm:px-4 pt-3 sm:pt-4">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{c.title}</CardTitle>
+              <c.icon className={`size-3.5 sm:size-4 shrink-0 ${c.color}`} />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{c.value}</div>
+            <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold truncate">{c.value}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 flex-1">
-        <Card className="flex flex-col h-[320px]">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <MessageSquareReply className="size-4" /> Recently wanted to reply
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto min-h-0 space-y-3">
-            {recentComments.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No comments yet.</p>
-            ) : (
-              recentComments.map((c) => (
-                <div key={c._id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/60 transition-colors">
-                  <Avatar className="size-8 mt-0.5 shrink-0">
-                    <AvatarImage src={c.senderAvatar} alt={c.senderName} />
-                    <AvatarFallback>{getInitials(c.senderName)}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="text-sm font-semibold">{c.senderName}</span>
-                      <span className="text-xs text-muted-foreground">on</span>
-                      <span className="text-sm font-medium text-primary truncate">{c.taskTitle}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{c.content}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(c.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="flex flex-col h-[320px]">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <FolderKanbanIcon className="size-4" /> Active Projects
+      <div className="grid gap-2 sm:gap-3 md:gap-4 lg:grid-cols-2">
+        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px]">
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <FolderKanbanIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Active Projects</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto min-h-0">
             {projects.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No projects yet.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left border-collapse">
+              <div className="responsive-table">
+                <div className="sm:hidden space-y-2">
+                  {projects.map((p) => (
+                    <div key={p.id} className="border rounded-lg p-3 bg-card space-y-1.5 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{p.name}</span>
+                        <span className="text-xs text-muted-foreground">{p.client || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full" style={{ width: `${p.progress}%` }} />
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">{p.progress}%</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {p.deadline ? new Date(p.deadline).toLocaleDateString() : "No deadline"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <table className="hidden sm:table w-full text-sm text-left border-collapse">
                   <thead className="bg-[#f3f4f6]">
                     <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
                       <th className="px-4 py-3.5 font-semibold">Project</th>
@@ -402,7 +388,7 @@ export default async function DashboardPage() {
                           <div className="flex items-center gap-2">
                             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-[#f3f4f6]0 rounded-full"
+                                className="h-full bg-primary rounded-full"
                                 style={{ width: `${p.progress}%` }}
                               />
                             </div>
@@ -422,19 +408,39 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 flex-1">
-        <Card className="flex flex-col h-[320px]">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Users className="size-4" /> Team Members
+      <div className="grid gap-2 sm:gap-3 md:gap-4 lg:grid-cols-2">
+        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px]">
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Users className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Team Members</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto min-h-0">
             {members.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No members yet.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left border-collapse">
+              <div className="responsive-table">
+                <div className="sm:hidden space-y-2">
+                  {members.map((m) => (
+                    <div key={m.email} className="border rounded-lg p-3 bg-card flex items-center gap-3">
+                      <Avatar className="size-10 shrink-0">
+                        <AvatarImage src={m.avatar} alt={m.name} />
+                        <AvatarFallback>{getInitials(m.name)}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{m.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{m.email}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs capitalize text-muted-foreground">{m.role}</span>
+                          <Badge className={(statusStyles[m.status] || "")}>
+                            {m.status.replace(/_/g, " ")}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <table className="hidden sm:table w-full text-sm text-left border-collapse">
                   <thead className="bg-[#f3f4f6]">
                     <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
                       <th className="px-4 py-3.5 font-semibold">Name</th>
@@ -459,7 +465,7 @@ export default async function DashboardPage() {
                         </td>
                         <td className="px-4 py-3 text-sm capitalize">{m.role}</td>
                         <td className="px-4 py-3">
-                          <Badge className={(statusStyles[m.status] || "") + ""}>
+                          <Badge className={(statusStyles[m.status] || "")}>
                             {m.status.replace(/_/g, " ")}
                           </Badge>
                         </td>
@@ -472,18 +478,30 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col h-[320px]">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Building2Icon className="size-4" /> Recent Clients
+        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px]">
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Building2Icon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Recent Clients</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto min-h-0">
             {clients.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No clients yet.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left border-collapse">
+              <div className="responsive-table">
+                <div className="sm:hidden space-y-2">
+                  {clients.map((c) => (
+                    <div key={c.id} className="border rounded-lg p-3 bg-card space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{c.name}</span>
+                        <Badge variant="secondary" className="text-xs">{c.status || "Lead"}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{c.company || "—"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{c.email}</p>
+                    </div>
+                  ))}
+                </div>
+                <table className="hidden sm:table w-full text-sm text-left border-collapse">
                   <thead className="bg-[#f3f4f6]">
                     <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
                       <th className="px-4 py-3.5 font-semibold">Name</th>
@@ -511,9 +529,13 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 mt-4">
-        <ProfitLossChart data={profitLossData} className="h-[400px]" />
-        <PriorityBreakdownChart data={priorityBreakdown} className="h-[400px]" />
+      <div className="grid gap-2 sm:gap-3 md:gap-4 lg:grid-cols-2">
+        <div className="min-h-[250px] sm:min-h-[350px]">
+          <ProfitLossChart data={profitLossData} className="h-[250px] sm:h-[350px] lg:h-[400px]" />
+        </div>
+        <div className="min-h-[250px] sm:min-h-[350px]">
+          <PriorityBreakdownChart data={priorityBreakdown} className="h-[250px] sm:h-[350px] lg:h-[400px]" />
+        </div>
       </div>
 
     </div>

@@ -51,7 +51,7 @@ export function ForgotPasswordForm({ className, searchParams, ...props }: React.
           <Label htmlFor="reset-email">Email address</Label>
           <Input id="reset-email" name="email" type="email" required autoComplete="email" className="h-10" />
         </div>
-        <Button type="submit" className="w-full font-semibold h-10">
+        <Button type="submit" className="w-full font-semibold h-11">
           Send reset link
         </Button>
       </form>

@@ -167,7 +167,110 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
 
   return (
     <main className="flex flex-1 flex-col bg-background min-h-screen">
-      <div className="flex items-center bg-white border-b border-border px-4 py-[10px] shadow-sm w-full relative z-10 h-16">
+      {/* Mobile: stacked toolbar */}
+      <div className="sm:hidden bg-white border-b border-border px-3 py-3 space-y-3 shadow-sm w-full relative z-10">
+        <input
+          type="text"
+          placeholder="What have you worked on?"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none bg-transparent"
+        />
+        <div className="flex items-center flex-wrap gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-1.5 text-primary font-medium text-xs border border-gray-200 rounded-md px-2.5 py-2 transition-colors outline-none">
+                <PlusCircle className="size-3.5" />
+                <span className="max-w-[80px] truncate">{selectedProject ? selectedProject.name : "Project"}</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[200px]">
+              {selectedProject && (
+                <>
+                  <DropdownMenuItem className="text-muted-foreground text-xs cursor-pointer" onClick={() => setSelectedProject(null)}>
+                    Clear selection
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuLabel className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                {projects.length > 0 ? "Recent Projects" : "No projects"}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {projects.length === 0 ? (
+                <div className="px-3 py-4 text-sm text-muted-foreground text-center">No projects yet</div>
+              ) : (
+                projects.map((project) => (
+                  <DropdownMenuItem key={project.id} className="cursor-pointer" onClick={() => setSelectedProject(project)}>
+                    <div className="w-2 h-2 rounded-full mr-2 shadow-sm shrink-0" style={{ backgroundColor: project.color }} />
+                    {project.name}
+                  </DropdownMenuItem>
+                ))
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer text-primary font-medium hover:text-primary focus:text-primary focus:bg-secondary">
+                <PlusCircle className="size-4 mr-2" />
+                <a href="/projects">Create new project</a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1.5 text-gray-600 font-medium text-xs border border-gray-200 rounded-md px-2.5 py-2 transition-colors outline-none">
+                <Calendar className="size-3.5" />
+                {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString().slice(0, 6) : "Today"}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="center">
+              <CalendarUI mode="single" selected={date} onSelect={setDate} autoFocus />
+            </PopoverContent>
+          </Popover>
+
+          <div className="flex items-center gap-1 text-gray-800 font-medium text-xs">
+            <select value={startHour} onChange={(e) => setStartHour(e.target.value)} className="border border-gray-200 rounded px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
+              {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+            </select>
+            <span className="text-gray-400">:</span>
+            <select value={startMinute} onChange={(e) => setStartMinute(e.target.value)} className="border border-gray-200 rounded px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
+              {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <button onClick={() => setStartPeriod(startPeriod === "AM" ? "PM" : "AM")} className="text-[10px] font-semibold uppercase text-muted-foreground hover:text-gray-800 w-6 text-center">
+              {startPeriod}
+            </button>
+            <span className="text-gray-300 mx-0.5">-</span>
+            <select value={endHour} onChange={(e) => setEndHour(e.target.value)} className="border border-gray-200 rounded px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
+              {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+            </select>
+            <span className="text-gray-400">:</span>
+            <select value={endMinute} onChange={(e) => setEndMinute(e.target.value)} className="border border-gray-200 rounded px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
+              {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <button onClick={() => setEndPeriod(endPeriod === "AM" ? "PM" : "AM")} className="text-[10px] font-semibold uppercase text-muted-foreground hover:text-gray-800 w-6 text-center">
+              {endPeriod}
+            </button>
+          </div>
+
+          <Button
+            className="bg-primary hover:bg-accent text-primary-foreground rounded-lg h-9 px-4 font-semibold text-xs flex-1"
+            onClick={handleAdd}
+            disabled={saving || !description.trim()}
+          >
+            {saving ? <Loader2 className="size-3.5 animate-spin" /> : null}
+            {saving ? "SAVING" : "ADD"}
+          </Button>
+        </div>
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>{totalHours}h logged today</span>
+          <span className="font-mono font-bold text-gray-800">
+            {String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:
+            {String(totalMinutes % 60).padStart(2, "0")}:00
+          </span>
+        </div>
+      </div>
+
+      {/* Desktop toolbar */}
+      <div className="hidden sm:flex items-center bg-white border-b border-border px-4 py-[10px] shadow-sm w-full relative z-10 h-16">
         <div className="flex-1 h-full flex items-center">
           <input
             type="text"
@@ -350,7 +453,8 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
               </div>
             )}
             <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-              <table className="w-full text-sm text-left">
+              {/* Desktop table */}
+              <table className="hidden sm:table w-full text-sm text-left">
                 <thead>
                   <tr className="bg-[#f3f4f6]">
                     <th className="px-4 py-3.5 w-10">
@@ -413,14 +517,14 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                         <div className="flex items-center gap-1">
                           <button
                             onClick={(e) => { e.stopPropagation(); setViewEntry(entry); }}
-                            className="text-muted-foreground hover:text-black transition-colors"
+                            className="text-muted-foreground hover:text-black transition-colors p-1"
                             title="View"
                           >
                             <EyeIcon className="size-4" />
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
-                            className="text-muted-foreground hover:text-black transition-colors"
+                            className="text-muted-foreground hover:text-black transition-colors p-1"
                             title="Delete"
                           >
                             <Trash2 className="size-4" />
@@ -431,6 +535,47 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                   ))}
                 </tbody>
               </table>
+
+              {/* Mobile cards */}
+              <div className="sm:hidden space-y-2 p-2">
+                {entries.map((entry) => {
+                  const dur = calcDuration(entry.startTime, entry.endTime) || entry.duration || 0;
+                  return (
+                    <div
+                      key={entry.id}
+                      className={`border rounded-lg p-3 space-y-2 cursor-pointer ${selectedIds.has(entry.id) ? "bg-blue-50/50 border-blue-200" : "bg-white border-gray-200"}`}
+                      onClick={() => setViewEntry(entry)}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(entry.id)}
+                            onChange={(e) => { e.stopPropagation(); toggleSelect(entry.id); }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="size-4 rounded border-gray-300 cursor-pointer shrink-0"
+                          />
+                          <p className="text-sm font-medium truncate">{entry.description}</p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <button onClick={() => setViewEntry(entry)} className="text-muted-foreground hover:text-black p-1" title="View">
+                            <EyeIcon className="size-4" />
+                          </button>
+                          <button onClick={() => handleDelete(entry.id)} className="text-muted-foreground hover:text-red-500 p-1" title="Delete">
+                            <Trash2 className="size-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <span>Project: <span className="font-medium text-gray-700">{entry.projectName || "—"}</span></span>
+                        <span>Date: <span className="font-medium text-gray-700">{new Date(entry.date).toLocaleDateString()}</span></span>
+                        <span>Time: <span className="font-medium text-gray-700">{entry.startTime && entry.endTime ? `${to12h(entry.startTime)} - ${to12h(entry.endTime)}` : "—"}</span></span>
+                        <span>Duration: <span className="font-medium text-gray-700 font-mono">{Math.floor(dur / 60)}h {dur % 60}m</span></span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}

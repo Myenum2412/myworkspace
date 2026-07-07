@@ -147,8 +147,8 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
 
   // ──── OVERLAYS ────
   const terminateOverlay = terminatingEmployee && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-background rounded-xl shadow-2xl border w-full max-w-md mx-4 p-6 space-y-4 animate-in fade-in-0 zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-background rounded-t-xl sm:rounded-xl shadow-2xl border w-full sm:max-w-md mx-0 sm:mx-4 p-4 sm:p-6 space-y-4 animate-in fade-in-0 zoom-in-95">
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-lg font-semibold">Terminate Employee</h3>
@@ -172,9 +172,9 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
             onChange={(e) => setTerminateReason(e.target.value)}
           />
         </div>
-        <div className="flex justify-end gap-3 pt-2">
-          <Button variant="outline" onClick={() => setTerminatingEmployee(null)}>Cancel</Button>
-          <Button variant="destructive" onClick={handleTerminateConfirm} disabled={!terminateReason.trim()}>
+        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
+          <Button variant="outline" onClick={() => setTerminatingEmployee(null)} className="w-full sm:w-auto touch-target">Cancel</Button>
+          <Button variant="destructive" onClick={handleTerminateConfirm} disabled={!terminateReason.trim()} className="w-full sm:w-auto touch-target">
             Terminate
           </Button>
         </div>
@@ -186,16 +186,16 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
   if (pageView === "add") {
     return (
       <main className="flex flex-1 flex-col h-full bg-white">
-        <div className="flex items-center gap-3 px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
-          <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1.5">
+        <div className="flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b bg-white sticky top-0 z-10 shrink-0">
+          <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1.5 touch-target">
             <ChevronLeftIcon className="size-4" />
             Back
           </Button>
           <div className="h-5 w-px bg-border" />
-          <h1 className="text-lg font-semibold text-black">Add New Employee</h1>
+          <h1 className="text-base sm:text-lg font-semibold text-black">Add New Employee</h1>
         </div>
         <div className="flex-1 overflow-auto bg-white">
-          <div className="max-w-5xl mx-auto py-6 bg-white my-6">
+          <div className="max-w-5xl mx-auto py-4 sm:py-6 bg-white my-4 sm:my-6">
             <AddEmployeeForm
               onCancel={handleBack}
               onEmployeeAdded={() => {

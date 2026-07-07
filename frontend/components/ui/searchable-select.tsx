@@ -78,7 +78,7 @@ export function SearchableSelect({
             <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start" collisionPadding={16}>
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 size-4 shrink-0 opacity-50" />
             <Input
@@ -86,15 +86,15 @@ export function SearchableSelect({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`Search ${options.length} industries...`}
-              className="h-10 border-0 bg-transparent px-0 py-0 shadow-none outline-none focus-visible:ring-0"
+              className="h-10 sm:h-10 border-0 bg-transparent px-0 py-0 shadow-none outline-none focus-visible:ring-0"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="shrink-0 opacity-50 hover:opacity-100">
+              <button onClick={() => setSearch("")} className="shrink-0 opacity-50 hover:opacity-100 p-1">
                 <X className="size-4" />
               </button>
             )}
           </div>
-          <div className="max-h-60 overflow-y-auto">
+          <div className="max-h-60 sm:max-h-60 max-h-[40vh] overflow-y-auto">
             {filtered.length === 0 ? (
               <div className="py-6 text-center text-sm text-muted-foreground">{emptyText}</div>
             ) : (
@@ -103,7 +103,7 @@ export function SearchableSelect({
                   key={option}
                   onClick={() => handleSelect(option)}
                   className={cn(
-                    "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                    "flex w-full items-center gap-2 px-3 py-3 sm:py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground min-h-[44px] sm:min-h-0",
                     value === option && "bg-accent font-medium"
                   )}
                 >

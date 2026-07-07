@@ -59,20 +59,18 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookmarkIcon className="size-6" />
-            <h1 className="text-2xl font-bold">Saved Tasks</h1>
-            <Badge variant="secondary">{tasks.length} tasks</Badge>
-            <div className="flex gap-1 ml-2">
-              <ViewToggle
-                options={[{ value: "kanban", label: "Kanban" }, { value: "table", label: "Table" }]}
-                value={view}
-                onChange={(v) => setView(v as typeof view)}
-              />
-            </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <BookmarkIcon className="size-5 sm:size-6" />
+            <h1 className="text-xl sm:text-2xl font-bold">Saved Tasks</h1>
+            <Badge variant="secondary" className="text-[10px] sm:text-xs">{tasks.length} tasks</Badge>
+            <ViewToggle
+              options={[{ value: "kanban", label: "Kanban" }, { value: "table", label: "Table" }]}
+              value={view}
+              onChange={(v) => setView(v as typeof view)}
+            />
           </div>
-          <Button onClick={() => setShowTaskModal(true)}>
+          <Button onClick={() => setShowTaskModal(true)} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>

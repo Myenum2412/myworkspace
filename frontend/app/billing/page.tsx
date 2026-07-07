@@ -87,14 +87,14 @@ export default function BillingPage() {
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-4">
-      <h1 className="text-2xl font-bold">Billing</h1>
+    <div className="flex flex-1 flex-col gap-6 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+      <h1 className="text-xl sm:text-2xl font-bold">Billing</h1>
 
       {error && (
         <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>
       )}
 
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -142,7 +142,7 @@ export default function BillingPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Payment Overview</CardTitle>
@@ -153,8 +153,8 @@ export default function BillingPage() {
                 No invoice data to display
               </div>
             ) : (
-              <div className="flex items-center gap-6">
-                <ResponsiveContainer width="60%" height={220}>
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
                       data={pieData}
@@ -172,10 +172,10 @@ export default function BillingPage() {
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="space-y-3">
+                <div className="flex flex-row sm:flex-col gap-3 sm:gap-2 flex-wrap justify-center">
                   {pieData.map((entry) => (
                     <div key={entry.name} className="flex items-center gap-2 text-sm">
-                      <div className="size-3 rounded-full" style={{ backgroundColor: entry.color }} />
+                      <div className="size-3 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
                       <span className="text-muted-foreground">{entry.name}</span>
                       <span className="font-medium ml-auto">{entry.value}</span>
                     </div>
@@ -221,11 +221,11 @@ export default function BillingPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <ClockIcon className="size-5 text-amber-500" />
+              <ClockIcon className="size-5 text-amber-500 shrink-0" />
               <CardTitle>Pending Payment</CardTitle>
             </div>
           </CardHeader>

@@ -137,7 +137,7 @@ export default function FilesInteractive({
   // ── Inside a client: use the existing FileExplorer ────────────────
   if (activeClientId && orgId) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 min-w-0 max-w-full">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={closeClient}>
             ← Back
@@ -157,9 +157,9 @@ export default function FilesInteractive({
           </Breadcrumb>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant={uploadOpen ? "secondary" : "outline"} size="sm" onClick={() => setUploadOpen((v) => !v)}>
-            <UploadIcon className="mr-2 size-4" /> {uploadOpen ? "Close Upload" : "Upload to Client"}
+            <UploadIcon className="mr-2 size-4" /> {uploadOpen ? "Close Upload" : "Upload"}
           </Button>
           <Button
             variant="outline"
@@ -186,7 +186,7 @@ export default function FilesInteractive({
 
   // ── Main view: Company details + Client folders ───────────────────
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full">
       {/* Client Files */}
       <div className="flex items-center justify-end">
         <Button size="sm" onClick={() => router.push("/clients")}>

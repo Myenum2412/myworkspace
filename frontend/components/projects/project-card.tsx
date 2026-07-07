@@ -30,13 +30,13 @@ export default function ProjectDeleteDialog({
             Are you sure you want to delete <strong>{deleteConfirm?.name}</strong>? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex gap-2 sm:gap-2">
-          <Button variant="outline" className="flex-1" onClick={() => setDeleteConfirm(null)} disabled={deleting}>
+        <DialogFooter className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" className="w-full sm:flex-1 touch-target" onClick={() => setDeleteConfirm(null)} disabled={deleting}>
             Cancel
           </Button>
           <Button
             variant="destructive"
-            className="flex-1"
+            className="w-full sm:flex-1 touch-target"
             onClick={() => deleteConfirm && onDelete(deleteConfirm)}
             disabled={deleting}
           >

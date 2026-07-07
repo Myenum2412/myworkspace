@@ -304,19 +304,19 @@ export default function ProjectsInteractive({
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
         {viewProject ? (
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-3 min-w-0">
                 <Button variant="ghost" size="sm" onClick={() => setViewProject(null)}>← Back</Button>
-                <h1 className="text-2xl font-bold">{viewProject.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold truncate">{viewProject.name}</h1>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => handleEditFromView(viewProject)}>
+                <Button variant="outline" size="sm" className="touch-target" onClick={() => handleEditFromView(viewProject)}>
                   Edit Project
                 </Button>
-                <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm(viewProject)}>
+                <Button variant="destructive" size="sm" className="touch-target" onClick={() => setDeleteConfirm(viewProject)}>
                   <Trash2Icon className="mr-2 size-4" />Delete
                 </Button>
               </div>
@@ -325,8 +325,8 @@ export default function ProjectsInteractive({
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 rounded-lg border p-0.5 bg-muted/50">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1 rounded-lg border p-0.5 bg-muted/50 shrink-0">
                 {VIEW_TABS.map((t) => {
                   const Icon = t.icon;
                   return (

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function ForgotPasswordPage(props: { searchParams: Promise<Record<string, string>> }) {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-4 sm:p-6 md:p-10">
       {/* Logo */}
       <Link href="/login" className="flex items-center gap-2 font-semibold text-foreground">
         <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-8 rounded-lg object-cover shadow-sm" />

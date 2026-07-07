@@ -86,7 +86,8 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: ProfileImageUploa
         </Avatar>
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="absolute bottom-0 right-0 rounded-full bg-primary p-2 text-primary-foreground hover:bg-primary/90"
+          className="absolute bottom-0 right-0 rounded-full bg-primary p-2.5 sm:p-2 text-primary-foreground hover:bg-primary/90"
+          aria-label="Upload photo"
         >
           <Camera className="h-4 w-4" />
         </button>
@@ -113,7 +114,7 @@ export function BasicInfoSection({ formData, onChange, options }: BasicInfoSecti
   const [showPassword, setShowPassword] = React.useState(false)
   return (
     <FieldSet>
-      <h1>Create Employee Account</h1>
+      <h1 className="text-lg sm:text-xl font-semibold mb-4">Create Employee Account</h1>
       <FieldLegend>Basic Information</FieldLegend>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field>
@@ -474,20 +475,22 @@ export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: D
     <FieldSet>
       <div className="flex items-center justify-between mb-6">
         <FieldLegend>{title}</FieldLegend>
-        <Button onClick={onAdd} variant="outline" size="sm">
+        <Button onClick={onAdd} variant="outline" size="sm" className="touch-target">
           + Add {title}
         </Button>
       </div>
       <div className="space-y-6">
         {rows.map((row) => (
           <div key={row.id} className="relative border rounded-lg p-4">
-            {renderRow(row)}
+            <div className="pt-8 sm:pt-0">
+              {renderRow(row)}
+            </div>
             {rows.length > 1 && (
               <Button
                 onClick={() => onRemove(row.id)}
                 variant="ghost"
                 size="sm"
-                className="absolute top-2 right-2 text-destructive hover:text-destructive"
+                className="absolute top-2 right-2 text-destructive hover:text-destructive touch-target"
               >
                 Remove
               </Button>

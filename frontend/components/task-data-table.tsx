@@ -16,6 +16,7 @@ import {
   PencilIcon,
   Trash2Icon,
   ListTodoIcon,
+  CalendarIcon,
 } from "lucide-react";
 import { DataTable } from "@/components/data-table";
 
@@ -42,15 +43,15 @@ interface TaskDataTableProps {
 
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-100 text-gray-700",
-  in_progress: "bg-red-900 text-red-700",
-  review: "bg-gray-700 text-gray-700",
-  done: "bg-red-900 text-red-700",
+  in_progress: "bg-blue-100 text-blue-700",
+  review: "bg-purple-100 text-purple-700",
+  done: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
 const priorityStyles: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
-  medium: "bg-gray-700 text-gray-700",
+  medium: "bg-blue-100 text-blue-700",
   high: "bg-orange-100 text-orange-600",
   urgent: "bg-red-100 text-red-600",
 };
@@ -194,6 +195,59 @@ export function TaskDataTable({
       emptyMessage={emptyMessage}
       emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
       onRowClick={onView ? (row) => onView(row) : undefined}
+      mobileCardView={true}
+      renderMobileCard={(task: TaskRow) => (
+        <div
+          className="border rounded-lg bg-card p-3 space-y-2 shadow-sm active:bg-muted/50 transition-colors cursor-pointer"
+          onClick={() => onView?.(task)}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span className="font-medium text-sm flex-1 line-clamp-2">{task.title}</span>
+            <div className="flex items-center gap-1 shrink-0">
+              <Badge className={`text-[10px] px-1.5 py-0.5 ${statusStyles[task.status] || ""}`}>
+                {task.status.replace(/_/g, " ")}
+              </Badge>
+              <Badge className={`text-[10px] px-1.5 py-0.5 ${priorityStyles[task.priority] || ""}`}>
+                {task.priority}
+              </Badge>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="size-5 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                {task.assigneeAvatar ? (
+                  <img src={task.assigneeAvatar} alt={task.assigneeName} className="size-full object-cover" />
+                ) : (
+                  <span className="text-[8px] font-medium">
+                    {(task.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <span className="truncate">{task.assigneeName || "\u2014"}</span>
+            </div>
+            {task.dueDate && (
+              <span className="shrink-0 ml-2">{new Date(task.dueDate).toLocaleDateString()}</span>
+            )}
+          </div>
+          <div className="flex items-center justify-end gap-1 pt-1 border-t border-border">
+            {onView && (
+              <Button variant="ghost" size="icon-sm" className="size-7" onClick={(e) => { e.stopPropagation(); onView(task); }}>
+                <EyeIcon className="size-3.5" />
+              </Button>
+            )}
+            {onEdit && (
+              <Button variant="ghost" size="icon-sm" className="size-7" onClick={(e) => { e.stopPropagation(); onEdit(task); }}>
+                <PencilIcon className="size-3.5" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button variant="ghost" size="icon-sm" className="size-7 text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(task); }}>
+                <Trash2Icon className="size-3.5" />
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     />
   );
 }

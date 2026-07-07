@@ -311,19 +311,19 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       )}
 
       <div className="relative flex-1 overflow-hidden px-1">
-        <ScrollArea className="h-full px-5">
-          <div className="space-y-12 py-6 max-w-4xl mx-auto">
+        <ScrollArea className="h-full px-4 sm:px-5">
+          <div className="space-y-8 sm:space-y-12 py-4 sm:py-6 max-w-4xl mx-auto">
             
             {/* Step 1: Profile */}
             <div className="space-y-8">
-              <div className="flex gap-12 items-start mb-6">
+              <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 items-center sm:items-start mb-6">
                 <div className="flex-shrink-0">
                   <ProfileImageUpload 
                     avatar={firstSlideData.avatar} 
                     onAvatarChange={(url) => updateFirstSlideField("avatar", url)} 
                   />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 w-full">
                   <BasicInfoSection formData={firstSlideData} onChange={updateFirstSlideField} options={dropdownOptions} />
                 </div>
               </div>
@@ -495,12 +495,12 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
         </ScrollArea>
       </div>
 
-      <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/10">
-        <Button variant="ghost" onClick={onCancel}>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t bg-muted/10">
+        <Button variant="ghost" onClick={onCancel} className="order-2 sm:order-1">
           Cancel
         </Button>
-        <div className="flex gap-3">
-          <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSave} disabled={createEmployeeMutation.isPending}>
+        <div className="flex gap-3 order-1 sm:order-2">
+          <Button className="bg-primary hover:bg-primary/80 w-full sm:w-32 touch-target" onClick={handleSave} disabled={createEmployeeMutation.isPending}>
             {createEmployeeMutation.isPending ? "Saving..." : "Save Employee"}
           </Button>
         </div>

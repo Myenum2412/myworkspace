@@ -42,9 +42,9 @@ export default async function StaffAttendancePage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
+    <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
       <div>
-        <h1 className="text-2xl font-bold">Attendance</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">Attendance</h1>
         <p className="text-sm text-muted-foreground mt-1">Today's attendance record</p>
       </div>
       <AttendanceTable data={today} />

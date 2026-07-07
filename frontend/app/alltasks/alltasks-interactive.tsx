@@ -106,21 +106,19 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">All Tasks</h1>
-              <div className="flex gap-1">
-                <ViewToggle
-                  options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
-                  value={view}
-                  onChange={(v) => setView(v as typeof view)}
-                />
-              </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-bold">All Tasks</h1>
+              <ViewToggle
+                options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
+                value={view}
+                onChange={(v) => setView(v as typeof view)}
+              />
             </div>
-            <p className="text-sm text-muted-foreground">Manage all tasks across your organization</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Manage all tasks across your organization</p>
           </div>
-          <Button onClick={() => setShowTaskModal(true)}>
+          <Button onClick={() => setShowTaskModal(true)} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>

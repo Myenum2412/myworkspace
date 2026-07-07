@@ -192,7 +192,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
 
   return (
     <>
-      <div className="px-6 pt-6 pb-2 shrink-0 bg-white border-b">
+      <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 shrink-0 bg-white border-b">
         <h2 className="flex items-center gap-2 text-xl font-semibold text-black">
           <UserIcon className="size-5" />
           {isViewMode ? "Employee Details" : "Edit Employee"}
@@ -203,32 +203,32 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
       </div>
 
       {formSuccess && (
-        <div className="mx-6 flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
+        <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
           <CheckCircle2Icon className="size-4 shrink-0" />
           {formSuccess}
         </div>
       )}
       {formError && (
-        <div className="mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
           <AlertCircleIcon className="size-4 shrink-0" />
           {formError}
         </div>
       )}
 
-      <div className={`flex-1 overflow-y-auto px-6 py-3 space-y-5 ${
+      <div className={`flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-5 ${
         isViewMode ? "[&_input:disabled]:bg-white [&_input:disabled]:text-black [&_input:disabled]:opacity-100 [&_select:disabled]:bg-white [&_select:disabled]:text-black [&_select:disabled]:opacity-100 [&_textarea:disabled]:bg-white [&_textarea:disabled]:text-black [&_textarea:disabled]:opacity-100" : ""
       }`}>
         <fieldset disabled={isViewMode} className="space-y-5 border-0 p-0 m-0 min-w-0">
         {/* Profile */}
         <Section icon={UserIcon} title="Profile">
-          <div className="flex gap-8 items-start">
+          <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start">
             <div className="shrink-0">
               <ProfileImageUpload
                 avatar={formData.avatar}
                 onAvatarChange={(url: string) => updateField("avatar", url)}
               />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 w-full">
               <BasicInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
             </div>
           </div>
@@ -423,18 +423,18 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
         </fieldset>
       </div>
 
-      <div className="shrink-0 border-t px-6 py-4 flex gap-2 justify-end bg-white mt-4">
+      <div className="shrink-0 border-t px-4 sm:px-6 py-4 flex flex-col sm:flex-row gap-2 sm:gap-2 justify-end bg-white mt-4">
         {isViewMode ? (
-          <Button onClick={() => onSwitchToEdit && onSwitchToEdit()}>
+          <Button onClick={() => onSwitchToEdit && onSwitchToEdit()} className="w-full sm:w-auto touch-target">
             <PencilIcon className="size-3.5 mr-1.5" />
             Edit Employee
           </Button>
         ) : (
           <>
-            <Button variant="outline" onClick={onCancel} disabled={submitting}>
+            <Button variant="outline" onClick={onCancel} disabled={submitting} className="w-full sm:w-auto touch-target">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()}>
+            <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()} className="w-full sm:w-auto touch-target">
               {submitting ? <Loader2Icon className="size-4 animate-spin" /> : <><SaveIcon className="size-3.5 mr-1.5" />Save Changes</>}
             </Button>
           </>

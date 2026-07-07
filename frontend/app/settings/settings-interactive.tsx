@@ -179,14 +179,14 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
   };
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+    <div className="flex flex-col h-full w-full min-w-0 max-w-full">
+      <div className="border-b p-3 sm:p-4 md:p-6">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Settings</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Manage your workspace preferences</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button onClick={handleSave} disabled={saving}>
               {saving ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <SaveIcon className="size-4 mr-1" />}
               {saving ? "Saving..." : "Save Changes"}
@@ -201,23 +201,27 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
       </div>
 
       <Tabs defaultValue="general" className="flex-1 flex flex-col overflow-hidden">
-        <div className="border-b px-6">
-          <TabsList className="h-10">
+        <div className="border-b px-3 sm:px-4 md:px-6 overflow-x-auto">
+          <TabsList className="h-10 w-full sm:w-auto">
             <TabsTrigger value="general" className="gap-2">
-              <Settings2Icon className="size-4" />
-              General
+              <Settings2Icon className="size-4 shrink-0" />
+              <span className="hidden sm:inline">General</span>
+              <span className="sm:hidden">Gen</span>
             </TabsTrigger>
             <TabsTrigger value="team" className="gap-2">
-              <UsersIcon className="size-4" />
-              Team
+              <UsersIcon className="size-4 shrink-0" />
+              <span className="hidden sm:inline">Team</span>
+              <span className="sm:hidden">Team</span>
             </TabsTrigger>
             <TabsTrigger value="billing" className="gap-2">
-              <CreditCardIcon className="size-4" />
-              Billing
+              <CreditCardIcon className="size-4 shrink-0" />
+              <span className="hidden sm:inline">Billing</span>
+              <span className="sm:hidden">Bill</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="gap-2">
-              <BellIcon className="size-4" />
-              Notifications
+              <BellIcon className="size-4 shrink-0" />
+              <span className="hidden sm:inline">Notifications</span>
+              <span className="sm:hidden">Notif</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -225,7 +229,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
         <div className="flex-1 overflow-hidden">
           <TabsContent value="general" className="h-full m-0 p-0">
             <ScrollArea className="h-full">
-              <div className="p-6 space-y-6">
+              <div className="p-3 sm:p-4 md:p-6 space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold">General Settings</h2>
                   <p className="text-sm text-muted-foreground">Manage workspace-wide configurations</p>
@@ -253,7 +257,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                   <h2 className="text-lg font-semibold">Section Cards</h2>
                   <p className="text-sm text-muted-foreground">Manage dropdown options and set maximum item limits for each section.</p>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
                   {Object.entries(sectionLabels).map(([key, label]) => {
                     const items = dropdownOptions[key] || DEFAULT_DROPDOWN_OPTIONS[key as keyof typeof DEFAULT_DROPDOWN_OPTIONS] || [];
                     const limit = sectionLimits[key] ?? DEFAULT_SECTION_LIMITS[key] ?? 20;
@@ -337,7 +341,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
 
           <TabsContent value="team" className="h-full m-0 p-0">
             <ScrollArea className="h-full">
-              <div className="p-6 space-y-6">
+              <div className="p-3 sm:p-4 md:p-6 space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold">Team Settings</h2>
                   <p className="text-sm text-muted-foreground">Configure team defaults and permissions</p>
@@ -380,7 +384,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
 
           <TabsContent value="billing" className="h-full m-0 p-0">
             <ScrollArea className="h-full">
-              <div className="p-6 space-y-6">
+              <div className="p-3 sm:p-4 md:p-6 space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold">Billing</h2>
                   <p className="text-sm text-muted-foreground">Manage your subscription and invoices</p>
@@ -405,7 +409,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
 
           <TabsContent value="notifications" className="h-full m-0 p-0">
             <ScrollArea className="h-full">
-              <div className="p-6 space-y-6">
+              <div className="p-3 sm:p-4 md:p-6 space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold">Notification Preferences</h2>
                   <p className="text-sm text-muted-foreground">Choose which notifications to receive</p>

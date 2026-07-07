@@ -35,18 +35,18 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="py-20 sm:py-28">
+    <section id="features" className="py-20 sm:py-28 safe-paddings">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+          <h2 className="heading-responsive text-brand-900 font-bold">
             Everything you need to ship faster
           </h2>
-          <p className="mt-4 text-lg text-brand-600">
+          <p className="mt-4 text-responsive text-brand-600">
             Powerful features designed to streamline your workflow and help your team accomplish more.
           </p>
         </div>
 
-        <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-16 grid responsive-gap sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {features.map((feature) => (
             <div
               key={feature.title}
@@ -55,7 +55,7 @@ export function Features() {
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-50 transition-colors group-hover:bg-brand-100">
                 <feature.icon className="size-6 text-brand-600" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold text-brand-900">
+              <h3 className="mt-5 text-base font-semibold text-brand-900 sm:text-lg">
                 {feature.title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-brand-600">

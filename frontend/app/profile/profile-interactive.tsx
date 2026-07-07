@@ -39,6 +39,7 @@ import {
   HardDrive as HardDriveIcon,
   MapPinIcon,
   LinkIcon,
+  FileTextIcon,
 } from "lucide-react";
 import nextDynamic from "next/dynamic";
 import { useProfileForm, statusColors, roleBadge } from "@/hooks/use-profile-form";
@@ -57,6 +58,7 @@ const TABS = [
   { id: "profile", label: "Profile", icon: UserIcon },
   { id: "company", label: "Company", icon: Building2Icon },
   { id: "storage", label: "Storage", icon: HardDriveIcon },
+  { id: "terms", label: "Terms", icon: FileTextIcon },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -126,7 +128,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
           </button>
         </div>
 
-        <h1 className="mt-3 text-2xl font-bold">{displayName}</h1>
+        <h1 className="mt-3 text-xl sm:text-2xl font-bold">{displayName}</h1>
         <p className="text-sm text-muted-foreground mt-0.5">{displayEmail}</p>
         <div className="flex items-center gap-2 mt-2">
           <Badge variant="default">
@@ -187,7 +189,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
       </div>
 
       {activeTab === "profile" && (
-        <div className="flex-1 grid gap-6 xl:grid-cols-2 p-6 w-full overflow-auto">
+        <div className="flex-1 grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 xl:grid-cols-2 p-3 sm:p-4 md:p-6 w-full min-w-0 max-w-full overflow-auto">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -422,7 +424,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
       )}
 
       {activeTab === "company" && (
-        <div className="flex-1 p-6 w-full overflow-auto">
+        <div className="flex-1 p-3 sm:p-4 md:p-6 w-full min-w-0 max-w-full overflow-auto">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -653,8 +655,78 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
       )}
 
       {activeTab === "storage" && (
-        <div className="flex-1 p-6 w-full overflow-auto">
+        <div className="flex-1 p-3 sm:p-4 md:p-6 w-full min-w-0 max-w-full overflow-auto">
           <StorageUsage />
+        </div>
+      )}
+
+      {activeTab === "terms" && (
+        <div className="flex-1 p-3 sm:p-4 md:p-6 w-full min-w-0 max-w-full overflow-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileTextIcon className="size-5" />
+                Terms & Conditions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="prose prose-sm max-w-none text-muted-foreground space-y-4">
+                <p>
+                  Welcome to MyWorkSpace. By accessing or using our platform, you agree to be bound by these Terms & Conditions.
+                </p>
+
+                <h4 className="text-sm font-semibold text-foreground mt-6 mb-2">1. Acceptance of Terms</h4>
+                <p className="text-sm">
+                  By creating an account and using MyWorkSpace, you acknowledge that you have read, understood, and agree to be bound by these terms. If you do not agree, please do not use the service.
+                </p>
+
+                <h4 className="text-sm font-semibold text-foreground mt-6 mb-2">2. User Responsibilities</h4>
+                <p className="text-sm">
+                  You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use.
+                </p>
+
+                <h4 className="text-sm font-semibold text-foreground mt-6 mb-2">3. Data Privacy</h4>
+                <p className="text-sm">
+                  We take your privacy seriously. All data stored on our platform is encrypted and handled in accordance with our Privacy Policy. We do not share your personal information with third parties without your explicit consent.
+                </p>
+
+                <h4 className="text-sm font-semibold text-foreground mt-6 mb-2">4. Usage Limits</h4>
+                <p className="text-sm">
+                  Your access to the platform is subject to the plan you have subscribed to. Exceeding usage limits may result in service restrictions or additional charges.
+                </p>
+
+                <h4 className="text-sm font-semibold text-foreground mt-6 mb-2">5. Intellectual Property</h4>
+                <p className="text-sm">
+                  All content, features, and functionality of MyWorkSpace are owned by us and are protected by applicable intellectual property laws. You may not reproduce, distribute, or create derivative works without permission.
+                </p>
+
+                <h4 className="text-sm font-semibold text-foreground mt-6 mb-2">6. Limitation of Liability</h4>
+                <p className="text-sm">
+                  MyWorkSpace shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of the platform.
+                </p>
+
+                <h4 className="text-sm font-semibold text-foreground mt-6 mb-2">7. Termination</h4>
+                <p className="text-sm">
+                  We reserve the right to suspend or terminate your account at any time for violation of these terms or for any other reason at our discretion.
+                </p>
+
+                <h4 className="text-sm font-semibold text-foreground mt-6 mb-2">8. Changes to Terms</h4>
+                <p className="text-sm">
+                  We may update these terms from time to time. Continued use of the platform after changes constitutes acceptance of the new terms.
+                </p>
+
+                <div className="pt-4 border-t mt-6">
+                  <p className="text-xs text-muted-foreground">
+                    Last updated: {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    For questions about these terms, please contact{" "}
+                    <a href="mailto:support@myworkspace.io" className="text-primary hover:underline">support@myworkspace.io</a>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 

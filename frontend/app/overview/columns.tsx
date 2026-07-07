@@ -34,17 +34,17 @@ export type Task = {
   isBookmarked?: boolean;
 };
 
-const statusStyles: Record<string, string> = {
+export const statusStyles: Record<string, string> = {
   todo: "bg-gray-200 text-gray-700",
-  in_progress: "bg-red-900 text-red-700",
-  review: "bg-gray-700 text-gray-700",
-  done: "bg-red-900 text-red-700",
+  in_progress: "bg-blue-100 text-blue-700",
+  review: "bg-purple-100 text-purple-700",
+  done: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
-const priorityStyles: Record<string, string> = {
+export const priorityStyles: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
-  medium: "bg-gray-700 text-gray-700",
+  medium: "bg-blue-100 text-blue-700",
   high: "bg-orange-100 text-orange-600",
   urgent: "bg-red-100 text-red-600",
 };

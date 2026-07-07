@@ -265,14 +265,14 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
   const avgTeamSize = teams.length > 0 ? (totalMembers / teams.length).toFixed(1) : "0";
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
+    <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
       {selectedTeam ? (
         <div className="flex flex-col flex-1 min-h-0 gap-4">
-          <div className="flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between shrink-0 gap-2">
+            <div className="flex items-center gap-3 min-w-0">
               <Button variant="ghost" size="sm" onClick={() => setSelectedTeam(null)}>← Back</Button>
-              <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2"><UsersIcon className="size-6" />{selectedTeam.name}</h1>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 truncate"><UsersIcon className="size-6 shrink-0" />{selectedTeam.name}</h1>
                 {selectedTeam.description && <p className="text-sm text-muted-foreground mt-0.5">{selectedTeam.description}</p>}
               </div>
             </div>

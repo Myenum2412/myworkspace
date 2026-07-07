@@ -44,7 +44,7 @@ export function NavUser({
     role?: string;
   };
 }) {
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -69,7 +69,7 @@ export function NavUser({
         <DropdownMenu>
           <div className="flex items-center">
             <SidebarMenuButton size="lg" asChild className="flex-1">
-              <Link href={profileHref}>
+              <Link href={profileHref} onClick={() => isMobile && setOpenMobile(false)}>
                 <Avatar className="h-8 w-8 rounded-md">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="rounded-md">
@@ -109,7 +109,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/settings/plans">
+                <Link href="/settings/plans" onClick={() => isMobile && setOpenMobile(false)}>
                   <SparklesIcon />
                   Plans & Billing
                 </Link>
@@ -118,7 +118,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href={profileHref}>
+                <Link href={profileHref} onClick={() => isMobile && setOpenMobile(false)}>
                   <BadgeCheckIcon />
                   Account
                 </Link>

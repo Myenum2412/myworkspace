@@ -187,41 +187,41 @@ export function TaskDetailedView({
   const PriorityIcon = priorityIcons[task.priority] || CircleIcon;
 
   return (
-    <div className="flex flex-1 min-h-0 h-full max-h-[85vh] bg-background rounded-xl overflow-hidden shadow-2xl border">
+    <div className="flex flex-col sm:flex-row flex-1 min-h-0 h-full max-h-[85vh] bg-background rounded-xl overflow-hidden shadow-2xl border">
       {/* Left Column - Details */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-y-auto border-r bg-[#fafafa]/50">
+      <div className="flex flex-col flex-1 min-w-0 overflow-y-auto border-r sm:border-r bg-[#fafafa]/50">
 
         {/* Header */}
-        <div className="px-8 pt-8 pb-6 bg-white border-b">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground bg-muted/50 px-3 py-1 rounded-full w-fit">
-              <FolderIcon className="size-4" />
+        <div className="px-4 sm:px-8 pt-4 sm:pt-8 pb-4 sm:pb-6 bg-white border-b">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
+            <div className="flex items-center gap-2 text-[11px] sm:text-sm font-medium text-muted-foreground bg-muted/50 px-2 sm:px-3 py-1 rounded-full w-fit">
+              <FolderIcon className="size-3 sm:size-4" />
               <span>Project / {task.project || "General Workspace"}</span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className={`px-3 py-1 text-xs capitalize ${priorityStyles[task.priority]}`}>
-                <PriorityIcon className="size-3.5 mr-1.5" />
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <Badge variant="outline" className={`px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs capitalize ${priorityStyles[task.priority]}`}>
+                <PriorityIcon className="size-3 sm:size-3.5 mr-1 sm:mr-1.5" />
                 {task.priority} Priority
               </Badge>
               {task.dueDate && (
-                <Badge variant="outline" className="px-3 py-1 text-xs bg-white text-muted-foreground">
-                  <CalendarIcon className="size-3.5 mr-1.5" />
+                <Badge variant="outline" className="px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs bg-white text-muted-foreground">
+                  <CalendarIcon className="size-3 sm:size-3.5 mr-1 sm:mr-1.5" />
                   Due {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                 </Badge>
               )}
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold tracking-tight text-foreground mb-6">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-foreground mb-4 sm:mb-6">
             {task.title}
           </h1>
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Current Status</label>
                   <Select value={task.status} onValueChange={handleStatusChange} disabled={updating}>
-                    <SelectTrigger className="w-[180px] h-10 bg-white border-gray-200 shadow-sm font-medium">
+                    <SelectTrigger className="w-full sm:w-[180px] h-10 bg-white border-gray-200 shadow-sm font-medium">
                       {updating ? (
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Loader2Icon className="size-4 animate-spin" /> Updating...
@@ -249,7 +249,7 @@ export function TaskDetailedView({
                   </Select>
                 </div>
 
-                <div className="flex flex-col gap-1.5 flex-1 max-w-xs ml-auto">
+                <div className="flex flex-col gap-1.5 flex-1 max-w-none sm:max-w-xs sm:ml-auto">
                   <div className="flex justify-between items-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                     <span>Progress</span>
                     <span className={task.status === "done" ? "text-green-600" : ""}>{progress}%</span>
@@ -268,15 +268,15 @@ export function TaskDetailedView({
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 px-8 py-8 space-y-10">
+        <div className="flex-1 px-4 sm:px-8 py-4 sm:py-8 space-y-6 sm:space-y-10">
 
           <Section icon={AlignLeftIcon} title="Description">
-            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm">
               {task.description ? (
-                <p className="text-[15px] leading-relaxed text-gray-700 whitespace-pre-wrap">{task.description}</p>
+                <p className="text-sm sm:text-[15px] leading-relaxed text-gray-700 whitespace-pre-wrap">{task.description}</p>
               ) : (
-                <div className="flex flex-col items-center justify-center py-6 text-muted-foreground opacity-60">
-                  <AlignLeftIcon className="size-8 mb-2" />
+                <div className="flex flex-col items-center justify-center py-4 sm:py-6 text-muted-foreground opacity-60">
+                  <AlignLeftIcon className="size-6 sm:size-8 mb-2" />
                   <p className="text-sm italic">No description provided for this task.</p>
                 </div>
               )}
@@ -284,15 +284,15 @@ export function TaskDetailedView({
           </Section>
 
           <Section icon={UserIcon} title="People">
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
               <PersonBadge name={task.assigneeName} avatar={task.assigneeAvatar} role="Assigned To" />
               <PersonBadge name={task.creatorName} avatar="" role="Created By" />
             </div>
           </Section>
 
           <Section icon={PaperclipIcon} title="Attachments">
-            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-6 flex flex-col items-center justify-center text-center h-full min-h-[140px]">
-              <FileTextIcon className="size-8 text-gray-400 mb-2" />
+            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-4 sm:p-6 flex flex-col items-center justify-center text-center h-full min-h-[100px] sm:min-h-[140px]">
+              <FileTextIcon className="size-6 sm:size-8 text-gray-400 mb-2" />
               <p className="text-sm font-medium text-gray-600">No attachments yet</p>
               <p className="text-xs text-gray-500 mt-1">Attachments are not available in this view.</p>
             </div>
@@ -300,11 +300,13 @@ export function TaskDetailedView({
 
           {(task.status === "done" && task.approvedAt) && (
             <Section icon={CheckCircleIcon} title="Approval Details">
-              <div className="rounded-xl border border-green-200 bg-green-50 p-5 shadow-sm">
-                <div className="flex items-center gap-3 mb-3 text-green-800">
-                  <UserCheckIcon className="size-5" />
-                  <span className="font-semibold text-sm">Task Approved</span>
-                  <span className="text-xs ml-auto opacity-70 bg-green-200/50 px-2 py-1 rounded-md">
+              <div className="rounded-xl border border-green-200 bg-green-50 p-4 sm:p-5 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 text-green-800">
+                  <div className="flex items-center gap-2">
+                    <UserCheckIcon className="size-4 sm:size-5" />
+                    <span className="font-semibold text-sm">Task Approved</span>
+                  </div>
+                  <span className="text-[11px] sm:text-xs opacity-70 bg-green-200/50 px-2 py-1 rounded-md sm:ml-auto">
                     {new Date(task.approvedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" })}
                   </span>
                 </div>
@@ -320,11 +322,13 @@ export function TaskDetailedView({
 
           {(task.status === "postponed" && task.rejectedAt) && (
             <Section icon={XCircleIcon} title="Postponed Details">
-              <div className="rounded-xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
-                <div className="flex items-center gap-3 mb-3 text-orange-800">
-                  <XCircleIcon className="size-5" />
-                  <span className="font-semibold text-sm">Task Postponed</span>
-                  <span className="text-xs ml-auto opacity-70 bg-orange-200/50 px-2 py-1 rounded-md">
+              <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 sm:p-5 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 text-orange-800">
+                  <div className="flex items-center gap-2">
+                    <XCircleIcon className="size-4 sm:size-5" />
+                    <span className="font-semibold text-sm">Task Postponed</span>
+                  </div>
+                  <span className="text-[11px] sm:text-xs ml-0 sm:ml-auto opacity-70 bg-orange-200/50 px-2 py-1 rounded-md">
                     {new Date(task.rejectedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" })}
                   </span>
                 </div>
@@ -339,8 +343,8 @@ export function TaskDetailedView({
           )}
 
           <Section icon={ActivityIcon} title="Activity Timeline">
-            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-              <div className="relative border-l border-gray-200 ml-3 space-y-6 pb-2">
+            <div className="rounded-xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm">
+              <div className="relative border-l border-gray-200 ml-3 space-y-4 sm:space-y-6 pb-2">
                 <div className="relative pl-6">
                   <span className="absolute -left-1.5 top-1 size-3 rounded-full bg-blue-500 ring-4 ring-white" />
                   <p className="text-sm font-medium text-gray-900">Task Created</p>
@@ -369,16 +373,17 @@ export function TaskDetailedView({
         </div>
 
         {/* Bottom Banner */}
-        <div className="sticky bottom-0 bg-white/80 backdrop-blur-md border-t px-8 py-4 flex items-center justify-between z-10">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-100 px-3 py-1.5 rounded-full">
-            <AlertCircleIcon className="size-4" />
-            <span>Task details are <b>read-only</b>. Use the status dropdown to update progress.</span>
+        <div className="sticky bottom-0 bg-white/80 backdrop-blur-md border-t px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between z-10">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground bg-gray-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
+            <AlertCircleIcon className="size-3 sm:size-4" />
+            <span className="hidden sm:inline">Task details are <b>read-only</b>. Use the status dropdown to update progress.</span>
+            <span className="sm:hidden"><b>Read-only</b> view</span>
           </div>
         </div>
       </div>
 
       {/* Right Column - Comments / Chat */}
-      <div className="w-[380px] shrink-0 flex flex-col bg-white border-l z-10">
+      <div className="w-full sm:w-[380px] shrink-0 flex flex-col bg-white sm:border-l border-t sm:border-t-0 z-10 max-h-[300px] sm:max-h-none">
         <TaskChat
           taskId={task._id}
           sessionUserId={sessionUserId || ""}

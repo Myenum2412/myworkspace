@@ -4,22 +4,22 @@ import { LoginForm } from "@/components/login-form";
 
 export default async function LoginPage(props: { searchParams: Promise<Record<string, string>> }) {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10 bg-background">
-        <div className="flex justify-center gap-2 md:justify-start">
+    <div className="flex min-h-dvh flex-col lg:grid lg:min-h-svh lg:grid-cols-2">
+      <div className="flex flex-col gap-3 sm:gap-4 p-4 sm:p-6 md:p-10 bg-background safe-paddings">
+        <div className="flex justify-center gap-2 lg:justify-start">
           <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
-            <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-8 rounded-lg object-cover shadow-sm" />
-            <span className="text-base tracking-tight">MyWorkSpace</span>
+            <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-7 sm:size-8 rounded-lg object-cover shadow-sm" />
+            <span className="text-sm sm:text-base tracking-tight">MyWorkSpace</span>
           </Link>
         </div>
 
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-sm">
+        <div className="flex flex-1 items-center justify-center py-4 sm:py-0">
+          <div className="w-full max-w-sm px-2 sm:px-0">
             <LoginForm error={(await props.searchParams).error} />
           </div>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs text-muted-foreground safe-bottom">
           &copy; {new Date().getFullYear()} MyWorkSpace. All rights reserved.
         </p>
       </div>

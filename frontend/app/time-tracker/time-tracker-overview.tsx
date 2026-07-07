@@ -104,8 +104,8 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
 
   if (!data || !stats) {
     return (
-      <main className="flex flex-1 flex-col gap-4 p-4">
-        <h1 className="text-2xl font-bold">Time Tracker</h1>
+      <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Time Tracker</h1>
         <p className="text-sm text-muted-foreground">Weekly overview of your tracked time</p>
         <div className="flex items-center justify-center py-20">
           <div className="text-center space-y-2">
@@ -119,9 +119,9 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
+    <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
       <div>
-        <h1 className="text-2xl font-bold">Time Tracker</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">Time Tracker</h1>
         <p className="text-sm text-muted-foreground mt-1">Weekly overview of your tracked time</p>
       </div>
 
@@ -202,8 +202,8 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
                 No project data
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <ResponsiveContainer width="50%" height={160}>
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <ResponsiveContainer width="70%" height={160}>
                   <PieChart>
                     <Pie data={stats.projectData} cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2} dataKey="hours">
                       {stats.projectData.map((_, i) => (
@@ -239,7 +239,8 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
             <p className="text-sm text-muted-foreground py-4 text-center">No entries this week</p>
           ) : (
             <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-              <table className="w-full text-sm text-left">
+              {/* Desktop table */}
+              <table className="hidden sm:table w-full text-sm text-left">
                 <thead>
                   <tr className="bg-[#f3f4f6]">
                     <th className="px-4 py-3 font-semibold whitespace-nowrap">Description</th>
@@ -265,7 +266,7 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
                       <td className="px-4 py-3">
                         <button
                           onClick={() => handleDelete(entry.id)}
-                          className="text-muted-foreground hover:text-red-500 transition-colors"
+                          className="text-muted-foreground hover:text-red-500 transition-colors p-1"
                           title="Delete"
                         >
                           <Trash2 className="size-4" />
@@ -275,6 +276,30 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
                   ))}
                 </tbody>
               </table>
+
+              {/* Mobile cards */}
+              <div className="sm:hidden space-y-2 p-2">
+                {data.slice(0, 10).map((entry) => (
+                  <div key={entry.id} className="border border-gray-100 rounded-lg p-3 bg-white space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium flex-1">{entry.description}</p>
+                      <button
+                        onClick={() => handleDelete(entry.id)}
+                        className="text-muted-foreground hover:text-red-500 transition-colors p-1 shrink-0"
+                        title="Delete"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      <span>Project: <span className="font-medium text-gray-700">{entry.projectName || "—"}</span></span>
+                      <span>Date: <span className="font-medium text-gray-700">{new Date(entry.date).toLocaleDateString()}</span></span>
+                      <span>Time: <span className="font-medium text-gray-700">{entry.startTime && entry.endTime ? `${entry.startTime} - ${entry.endTime}` : "—"}</span></span>
+                      <span>Duration: <span className="font-medium text-gray-700 font-mono">{Math.floor(entryMinutes(entry) / 60)}h {entryMinutes(entry) % 60}m</span></span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>

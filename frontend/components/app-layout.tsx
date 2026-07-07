@@ -8,6 +8,7 @@ import { OrgSidebar } from "@/components/org-sidebar";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { ClientSidebar } from "@/components/client-sidebar";
 import { Header } from "@/components/header";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
 
@@ -54,8 +55,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) setOpen(false);
+      else setOpen(true);
     };
     handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   if (!isApp) {
@@ -80,9 +84,10 @@ export function AppLayout({ children }: AppLayoutProps) {
       {renderSidebar()}
       <SidebarInset>
         <Header context={context} />
-        <main className="flex flex-1 flex-col gap-4 p-4">
+        <main className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 lg:p-6 pb-16 sm:pb-3 md:pb-4 lg:pb-6 min-w-0 max-w-full">
           {children}
         </main>
+        <MobileBottomNav context={context} />
       </SidebarInset>
     </SidebarProvider>
   );
