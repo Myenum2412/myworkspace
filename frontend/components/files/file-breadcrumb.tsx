@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronRightIcon, FolderOpenIcon } from "lucide-react";
+import FolderIcon from "@mui/icons-material/Folder";
+import { ChevronRightIcon } from "lucide-react";
 
 interface FileBreadcrumbProps {
   breadcrumbs: { id: string | null; name: string }[];
@@ -17,7 +18,7 @@ export function FileBreadcrumb({ breadcrumbs, onNavigate }: FileBreadcrumbProps)
             className={`hover:underline ${index === breadcrumbs.length - 1 ? "font-medium" : "text-muted-foreground"}`}
             onClick={() => onNavigate(index)}
           >
-            {index === 0 ? <><FolderOpenIcon className="inline size-3 mr-1" />{crumb.name}</> : crumb.name}
+            {index === 0 ? <><FolderIcon className="inline size-3 mr-1" />{crumb.name}</> : crumb.name}
           </button>
         </span>
       ))}

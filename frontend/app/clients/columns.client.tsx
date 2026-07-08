@@ -1,7 +1,8 @@
 "use client"
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { BarChart3, FolderOpen, MoreHorizontal, Pencil, Settings, Trash2, Workflow, FileText, Eye } from "lucide-react";
+import FolderIcon from "@mui/icons-material/Folder";
+import { BarChart3, MoreHorizontal, Pencil, Settings, Trash2, Workflow, FileText, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -156,7 +157,7 @@ export const columns: ColumnDef<Client>[] = [
       const client = row.original;
       const links = [
         { href: `/clients/${client.id}#dashboard`, label: "Dashboard", icon: BarChart3 },
-        { href: `/clients/${client.id}#files`, label: "Files", icon: FolderOpen },
+        { href: `/clients/${client.id}#files`, label: "Files", icon: FolderIcon },
         { href: `/clients/${client.id}#projects`, label: "Projects", icon: Workflow },
         { href: `/clients/${client.id}#reports`, label: "Reports", icon: FileText },
         { href: `/clients/${client.id}#settings`, label: "Settings", icon: Settings },

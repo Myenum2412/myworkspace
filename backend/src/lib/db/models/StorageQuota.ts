@@ -41,24 +41,24 @@ const planToStorageLimits: Record<string, PlanLimits> = {
     maxFileSizeBytes: 100 * 1024 * 1024,
     userStorageLimitBytes: 1024 * 1024 * 1024,
   },
-  starter: {
+  trial: {
     maxStorageBytes: 10 * 1024 * 1024 * 1024,
     maxFileSizeBytes: 100 * 1024 * 1024,
     userStorageLimitBytes: 1024 * 1024 * 1024,
   },
-  growth: {
-    maxStorageBytes: 200 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 500 * 1024 * 1024,
+  starter: {
+    maxStorageBytes: 100 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 10 * 1024 * 1024 * 1024,
     userStorageLimitBytes: 10 * 1024 * 1024 * 1024,
   },
-  pro: {
-    maxStorageBytes: 200 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 500 * 1024 * 1024,
-    userStorageLimitBytes: 10 * 1024 * 1024 * 1024,
+  professional: {
+    maxStorageBytes: 1024 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 10 * 1024 * 1024 * 1024,
+    userStorageLimitBytes: 50 * 1024 * 1024 * 1024,
   },
   enterprise: {
     maxStorageBytes: 9999 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 1024 * 1024 * 1024,
+    maxFileSizeBytes: 10 * 1024 * 1024 * 1024,
     userStorageLimitBytes: 100 * 1024 * 1024 * 1024,
   },
 };

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FileText, FolderOpen, Loader2 } from "lucide-react";
+import FolderIcon from "@mui/icons-material/Folder";
+import { ArrowLeft, FileText, Loader2 } from "lucide-react";
 
 type FileItem = {
   id: string;
@@ -73,7 +74,7 @@ export default function FileManagerInteractive() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-primary/10 p-2">
-                <FolderOpen className="size-5 text-primary" />
+                <FolderIcon className="size-5 text-primary" />
               </div>
               <CardTitle>File Manager</CardTitle>
             </div>

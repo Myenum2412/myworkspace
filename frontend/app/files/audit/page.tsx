@@ -5,7 +5,8 @@ import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
 import { ObjectId } from "mongodb";
 import { Badge } from "@/components/ui/badge";
-import { HistoryIcon, FileIcon, FolderIcon } from "lucide-react";
+import FolderIcon from "@mui/icons-material/Folder";
+import { HistoryIcon, FileIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "File Manager Audit Log" };

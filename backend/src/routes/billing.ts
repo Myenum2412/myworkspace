@@ -4,6 +4,7 @@ import { Organization } from "../lib/db/models/Organization.js";
 import { StorageQuota, getPlanLimits } from "../lib/db/models/StorageQuota.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { requireSubscription, getSubscriptionStatus } from "../middleware/subscription.js";
 import { stripe, getPriceId } from "../config/stripe.js";
 import { env } from "../config/env.js";
 
@@ -94,7 +95,7 @@ router.post("/webhook", async (req: AuthRequest, res: Response) => {
     case "checkout.session.completed": {
       const session = event.data.object as any;
       const orgId = session.metadata?.orgId;
-      const plan = session.metadata?.plan || "growth";
+      const plan = session.metadata?.plan || "starter";
       if (orgId) {
         const org = await resolveOrg(orgId);
         if (org) {
@@ -145,23 +146,12 @@ router.post("/webhook", async (req: AuthRequest, res: Response) => {
       const deletedSub = event.data.object as any;
       const deletedOrg = await Organization.findOne({ stripeSubscriptionId: deletedSub.id });
       if (deletedOrg) {
-        deletedOrg.plan = "free";
+        deletedOrg.plan = "trial";
         deletedOrg.subscriptionStatus = "canceled";
         deletedOrg.stripeSubscriptionId = undefined;
-        const limits = getPlanLimits("free");
-        await StorageQuota.updateOne(
-          { orgId: deletedOrg._id.toString() },
-          {
-            $set: {
-              maxStorageBytes: limits.maxStorageBytes,
-              maxFileSizeBytes: limits.maxFileSizeBytes,
-              userStorageLimitBytes: limits.userStorageLimitBytes,
-            },
-          },
-          { upsert: true }
-        );
+        deletedOrg.currentPeriodEnd = undefined;
         await deletedOrg.save();
-        console.log(`[STRIPE WEBHOOK] Org ${deletedOrg._id} downgraded to free`);
+        console.log(`[STRIPE WEBHOOK] Org ${deletedOrg._id} subscription cancelled`);
       }
       break;
     }
@@ -188,8 +178,8 @@ router.use(authenticate);
 // POST /api/billing/create-checkout-session
 router.post("/create-checkout-session", async (req: AuthRequest, res: Response) => {
   const { plan, orgId } = req.body as { plan?: string; orgId?: string };
-  if (!plan || !["growth", "enterprise"].includes(plan)) {
-    throw new AppError(400, "Valid plan (growth or enterprise) is required");
+  if (!plan || !["starter", "professional", "enterprise"].includes(plan)) {
+    throw new AppError(400, "Valid plan (starter, professional, or enterprise) is required");
   }
 
   const targetOrgId = parseOrgId(orgId || req.user!.orgId);
@@ -221,6 +211,7 @@ router.post("/create-checkout-session", async (req: AuthRequest, res: Response) 
     metadata: { orgId: targetOrgId, plan },
     subscription_data: {
       metadata: { orgId: targetOrgId, plan },
+      trial_period_days: 0,
     },
   });
 
@@ -313,6 +304,30 @@ router.get("/invoices", async (req: AuthRequest, res: Response) => {
   }));
 
   res.json({ success: true, data: { invoices } });
+});
+
+// GET /api/billing/subscription-status — lightweight check for frontend guards
+router.get("/subscription-status", async (req: AuthRequest, res: Response) => {
+  const orgId = (req.query.orgId as string) || req.user!.orgId;
+  if (!orgId) {
+    res.status(400).json({ success: false, error: "orgId is required" });
+    return;
+  }
+
+  const membership = await findOrgMembership(orgId, req.user!.userId);
+  if (!membership) {
+    res.status(403).json({ success: false, error: "Not a member of this organization" });
+    return;
+  }
+
+  const org = await resolveOrg(orgId);
+  if (!org) {
+    res.status(404).json({ success: false, error: "Organization not found" });
+    return;
+  }
+
+  const status = getSubscriptionStatus(org);
+  res.json({ success: true, data: status });
 });
 
 export default router;

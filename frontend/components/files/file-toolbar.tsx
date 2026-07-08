@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ViewMode } from "./types";
+import MuiFolderIcon from "@mui/icons-material/Folder";
 import {
   SearchIcon, ArrowUpIcon, PlusIcon, Building2Icon, UploadIcon,
-  Grid3X3Icon, ListIcon, FolderIcon, Loader2Icon, UserPlusIcon,
+  Grid3X3Icon, ListIcon, Loader2Icon, UserPlusIcon,
 } from "lucide-react";
 
 interface FileToolbarProps {
@@ -158,7 +159,7 @@ export function FileToolbar({
 
       {showNewFolder && (
         <div className="flex items-center gap-2 p-2 border rounded-md">
-          <FolderIcon className="size-5 text-muted-foreground" />
+          <MuiFolderIcon className="size-5 text-muted-foreground" />
           <Input
             placeholder="Folder name"
             value={newFolderName}

@@ -10,6 +10,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import MuiFolderIcon from "@mui/icons-material/Folder";
 import {
   Building2Icon,
   LayoutDashboardIcon,
@@ -18,7 +19,6 @@ import {
   ShieldIcon,
   ClipboardListIcon,
   BarChart3Icon,
-  FolderIcon,
 } from "lucide-react";
 
 export const defaultOrgNavData = [
@@ -83,7 +83,7 @@ export const defaultOrgNavData = [
   {
     title: "File Manager",
     url: "/orgmenu/files",
-    icon: <FolderIcon className="size-6" />,
+    icon: <MuiFolderIcon className="size-6" />,
     items: [
       { title: "All Files", url: "/orgmenu/files" },
     ],

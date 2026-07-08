@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LogOut, FolderOpen, Bell, ClipboardList, Building2, FileText, Loader2 } from "lucide-react";
+import FolderIcon from "@mui/icons-material/Folder";
+import { LogOut, Receipt, FileText, Loader2 } from "lucide-react";
 import BillingStatusBanner from "./billing-status-banner";
 
 type ClientUser = {
@@ -22,7 +23,6 @@ type ClientInfo = {
   name: string;
   company: string;
   status: string;
-  projects: number;
 };
 
 type WorkspaceStats = {
@@ -138,9 +138,8 @@ export default function DashboardInteractive() {
       <BillingStatusBanner token={typeof window !== "undefined" ? localStorage.getItem("client_token") || "" : ""} />
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-        <QuickActionCard icon={ClipboardList} title="Projects" description={`${client?.projects || 0} active`} href="/client/projects" />
-        <QuickActionCard icon={FolderOpen} title="File Manager" description={`${stats?.fileCount ?? 0} files`} href="/client/file-manager" />
-        <QuickActionCard icon={Bell} title="Notifications" description="View updates" href="/client/notifications" />
+        <QuickActionCard icon={FolderIcon} title="File Manager" description={`${stats?.fileCount ?? 0} files`} href="/client/file-manager" />
+        <QuickActionCard icon={Receipt} title="Bills" description="View invoices & billing" href="/client/bills" />
       </div>
 
       <Card>

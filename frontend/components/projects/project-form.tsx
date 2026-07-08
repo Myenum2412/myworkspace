@@ -27,6 +27,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import FolderIcon from "@mui/icons-material/Folder";
 import {
   PlusIcon,
   AlertCircleIcon,
@@ -34,7 +35,6 @@ import {
   XIcon,
   CalendarIcon,
   FlagIcon,
-  FolderOpenIcon,
   FileIcon,
   UploadIcon,
   UserIcon,
@@ -286,7 +286,7 @@ export function ProjectCreateForm({
         {/* Budget & Planning */}
         <div className="rounded-xl border bg-card p-4 space-y-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <FolderOpenIcon className="size-4 text-muted-foreground" />
+            <FolderIcon className="size-4 text-muted-foreground" />
             Budget & Planning
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -26,13 +26,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import FolderIcon from "@mui/icons-material/Folder";
 import {
   AlertCircleIcon,
   Building2Icon,
   ChevronRightIcon,
   FileIcon,
-  FolderIcon,
-  FolderOpenIcon,
   Loader2Icon,
   PlusIcon,
   SearchIcon,
@@ -244,7 +243,7 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
                     <div className="space-y-1">
                       {folders.slice(0, 4).map((f) => (
                         <div key={f.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <FolderOpenIcon className="size-3 shrink-0" />
+                          <FolderIcon className="size-3 shrink-0" />
                           <span className="truncate">{f.name}</span>
                         </div>
                       ))}

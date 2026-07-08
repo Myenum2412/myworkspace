@@ -10,13 +10,13 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import MuiFolderIcon from "@mui/icons-material/Folder";
 import {
   LayoutDashboardIcon,
   ListChecksIcon,
   UsersIcon,
   WorkflowIcon,
   ClockIcon,
-  FolderIcon,
   Settings2Icon,
   CheckCheckIcon,
   CreditCardIcon,
@@ -98,7 +98,7 @@ export const defaultNavData = {
     {
       title: "File Manager",
       url: "/files",
-      icon: <FolderIcon className="size-6" />,
+      icon: <MuiFolderIcon className="size-6" />,
       items: [
         { title: "All Files", url: "/files" },
         { title: "Upload", url: "/files?upload=true" },

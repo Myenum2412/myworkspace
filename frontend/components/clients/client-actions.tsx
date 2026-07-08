@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, AlertCircle, X, Trash2, FolderOpen, FileText } from "lucide-react";
+import FolderIcon from "@mui/icons-material/Folder";
+import { Loader2, AlertCircle, X, Trash2, FileText } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import {
   EditClientFormFields,
@@ -175,7 +176,7 @@ export function ClientDeleteDialog({ client, open, onOpenChange, onClientDeleted
             <div className="mt-6 space-y-3 rounded-xl border border-border bg-card/50 p-4 shadow-sm backdrop-blur-sm">
               <div className="flex items-center gap-3">
                 <div className="flex size-8 items-center justify-center rounded-md bg-primary/10">
-                  <FolderOpen className="size-4 text-primary" />
+                  <FolderIcon className="size-4 text-primary" />
                 </div>
                 <div className="text-sm font-medium">All associated projects</div>
               </div>

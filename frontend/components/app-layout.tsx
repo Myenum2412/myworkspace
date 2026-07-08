@@ -11,6 +11,8 @@ import { Header } from "@/components/header";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
+import { SubscriptionStatusBanner } from "@/components/subscription-status-banner";
+import { SubscriptionGuard } from "@/components/subscription-guard";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -56,7 +58,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   // By the time this component renders for app pages, the session is ready.
   // Public pages are rendered without the init provider's loader.
   if (!isApp) {
-    return <>{children}</>;
+    return <SubscriptionGuard>{children}</SubscriptionGuard>;
   }
 
   const renderSidebar = () => {
@@ -76,9 +78,10 @@ export function AppLayout({ children }: AppLayoutProps) {
     <SidebarProvider open={open} onOpenChange={setOpen}>
       {renderSidebar()}
       <SidebarInset>
+        <SubscriptionStatusBanner />
         <Header context={context} />
-        <main className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 lg:p-6 pb-16 sm:pb-3 md:pb-4 lg:pb-6 min-w-0 max-w-full">
-          {children}
+        <main className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 lg:p-6 pb-16 sm:pb-3 md:pb-4 lg:p-6 min-w-0 max-w-full">
+          <SubscriptionGuard>{children}</SubscriptionGuard>
         </main>
         <MobileBottomNav context={context} />
       </SidebarInset>

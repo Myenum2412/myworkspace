@@ -22,10 +22,11 @@ import {
 import {
   PencilIcon, AlignLeftIcon, UserIcon, CalendarIcon, HashIcon,
   ListTodoIcon, CheckCircleIcon, XCircleIcon, PaperclipIcon,
-  ActivityIcon, FolderIcon, AlertCircleIcon, ClockIcon, Loader2Icon,
+  ActivityIcon, AlertCircleIcon, ClockIcon, Loader2Icon,
   CircleIcon, CircleDashedIcon, FileTextIcon, UserCheckIcon,
   SaveIcon,
 } from "lucide-react";
+import FolderIcon from "@mui/icons-material/Folder";
 import { TaskChat } from "@/components/task-chat";
 import { toast } from "sonner";
 
@@ -195,7 +196,7 @@ export function TaskDetailedView({
         <div className="px-4 sm:px-8 pt-4 sm:pt-8 pb-4 sm:pb-6 bg-white border-b">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
             <div className="flex items-center gap-2 text-[11px] sm:text-sm font-medium text-muted-foreground bg-muted/50 px-2 sm:px-3 py-1 rounded-full w-fit">
-              <FolderIcon className="size-3 sm:size-4" />
+              <FolderIcon className="size-3 sm:size-4" sx={{ fontSize: "inherit" }} />
               <span>Project / {task.project || "General Workspace"}</span>
             </div>
 

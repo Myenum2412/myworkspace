@@ -15,7 +15,7 @@ export default async function SignupPage(props: { searchParams: Promise<Record<s
 
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-sm">
-            <SignupForm error={(await props.searchParams).error} />
+            <SignupForm error={(await props.searchParams).error} plan={(await props.searchParams).plan} />
           </div>
         </div>
 

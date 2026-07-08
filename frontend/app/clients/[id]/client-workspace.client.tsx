@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
+import FolderIcon from "@mui/icons-material/Folder";
 import {
   ArrowLeft,
   BarChart3,
   FileText,
-  FolderOpen,
   Settings,
   ShieldCheck,
   Workflow,
@@ -84,11 +84,11 @@ function formatBytes(bytes: number) {
   return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
-function QuickLink({ href, icon: Icon, label }: { href: string; icon: LucideIcon; label: string }) {
+function QuickLink({ href, icon: Icon, label }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string }) {
   return (
-    <Button asChild variant="outline" size="sm">
+    <Button variant="outline" size="sm" asChild>
       <Link href={href}>
-        <Icon className="mr-2 size-4" />
+        <Icon className="size-3.5" />
         {label}
       </Link>
     </Button>
@@ -173,7 +173,7 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
 
         <div className="flex flex-wrap gap-2">
           <QuickLink href="#dashboard" icon={BarChart3} label="Dashboard" />
-          <QuickLink href="#files" icon={FolderOpen} label="File Management" />
+          <QuickLink href="#files" icon={FolderIcon} label="File Management" />
           <QuickLink href="#projects" icon={Workflow} label="Projects" />
           <QuickLink href="#reports" icon={FileText} label="Reports" />
           <QuickLink href="#settings" icon={Settings} label="Settings" />
@@ -198,7 +198,7 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <FolderOpen className="size-4" />
+              <FolderIcon className="size-4" />
               File Management
             </CardTitle>
           </CardHeader>

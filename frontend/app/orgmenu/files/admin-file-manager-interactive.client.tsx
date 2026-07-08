@@ -22,9 +22,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import FolderIcon from "@mui/icons-material/Folder";
 import {
   FileIcon,
-  FolderIcon,
   ImageIcon,
   FileTextIcon,
   ArchiveIcon,
@@ -37,7 +37,6 @@ import {
   UserIcon,
   BarChart3Icon,
   FilesIcon,
-  FolderOpenIcon,
 } from "lucide-react";
 
 type FileCategory = "profile" | "report" | "general";
@@ -178,7 +177,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
             const count = cat === "all"
               ? fileList.length
               : fileList.filter((f) => f.category === cat).length;
-            const icon = cat === "all" ? <FolderOpenIcon className="size-3.5" />
+            const icon = cat === "all" ? <FolderIcon className="size-3.5" />
               : cat === "profile" ? <UserIcon className="size-3.5" />
               : cat === "report" ? <BarChart3Icon className="size-3.5" />
               : <FilesIcon className="size-3.5" />;
@@ -304,7 +303,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 flex-1">
           {(["all", "profile", "report", "general"] as const).map((cat) => {
-            const icon = cat === "all" ? <FolderOpenIcon className="size-3.5" />
+            const icon = cat === "all" ? <FolderIcon className="size-3.5" />
               : cat === "profile" ? <UserIcon className="size-3.5" />
               : cat === "report" ? <BarChart3Icon className="size-3.5" />
               : <FilesIcon className="size-3.5" />;

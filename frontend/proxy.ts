@@ -7,7 +7,7 @@ const ORIGIN_PREFIXES = ["/orgmenu"];
 const STAFF_PREFIXES = ["/staffs"];
 const PUBLIC_PATHS = new Set(["/login", "/login/verify-2fa", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/client/login", "/auth/not-found"]);
 const PUBLIC_PREFIXES = new Set(["/share"]);
-const CLIENT_PREFIXES = ["/client/dashboard", "/client/projects", "/client/file-manager", "/client/notifications"];
+const CLIENT_PREFIXES = ["/client"];
 const WORKSPACE_PREFIXES = [
   "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
   "/projects", "/teams", "/clients", "/approvals", "/reports",
@@ -115,6 +115,30 @@ export const proxy = auth((req) => {
     if (!isWorkspaceAdmin) {
       return NextResponse.redirect(new URL("/staffs", req.url));
     }
+
+    // Check subscription status for workspace routes
+    if (isLoggedIn && !isPublic) {
+      const subStatus = (req.auth?.user as Record<string, unknown>)?.subscriptionStatus as string;
+      const trialEnd = (req.auth?.user as Record<string, unknown>)?.trialEnd as string | null;
+      const plan = (req.auth?.user as Record<string, unknown>)?.plan as string;
+
+      if (plan !== "enterprise") {
+        // Trial expired check
+        if (subStatus === "trialing" && trialEnd) {
+          const now = Date.now();
+          const trialEndMs = new Date(trialEnd).getTime();
+          if (now > trialEndMs) {
+            return NextResponse.redirect(new URL("/pricing?expired=trial", req.url));
+          }
+        }
+
+        // Non-trialing, non-active = blocked
+        if (subStatus && !["active", "trialing"].includes(subStatus)) {
+          return NextResponse.redirect(new URL("/pricing?expired=subscription", req.url));
+        }
+      }
+    }
+
     return;
   }
 
@@ -139,6 +163,20 @@ export const proxy = auth((req) => {
     if (isOrgAdmin) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
     }
+
+    // Check subscription for staff routes
+    const subStatus = (req.auth?.user as Record<string, unknown>)?.subscriptionStatus as string;
+    const trialEnd = (req.auth?.user as Record<string, unknown>)?.trialEnd as string | null;
+    if (subStatus === "trialing" && trialEnd) {
+      const now = Date.now();
+      if (now > new Date(trialEnd).getTime()) {
+        return NextResponse.redirect(new URL("/pricing?expired=trial", req.url));
+      }
+    }
+    if (subStatus && !["active", "trialing"].includes(subStatus)) {
+      return NextResponse.redirect(new URL("/pricing?expired=subscription", req.url));
+    }
+
     // Allow all other users (workspace admins, custom roles, members, staff) to view the staff panel
     return;
   }

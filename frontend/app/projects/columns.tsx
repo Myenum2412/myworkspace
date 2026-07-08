@@ -7,7 +7,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FolderOpenIcon, PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon } from "lucide-react";
+import FolderIcon from "@mui/icons-material/Folder";
+import { PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
 
 export const columns: ColumnDef<Project>[] = [

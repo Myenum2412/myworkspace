@@ -8,9 +8,10 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
+import FolderIcon from "@mui/icons-material/Folder";
 import {
   AlertCircleIcon, CheckCircle2Icon, ClockIcon, TrendingUpIcon,
-  ArrowUpIcon, ArrowDownIcon, FolderOpenIcon, UsersIcon,
+  ArrowUpIcon, ArrowDownIcon, UsersIcon,
 } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
 
@@ -110,7 +111,7 @@ export default function ProjectsDashboard({ projects, onView }: DashboardProps) 
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <FolderOpenIcon className="size-3.5" /> Total Projects
+              <FolderIcon className="size-3.5" /> Total Projects
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -37,15 +37,21 @@ function LinkedInIcon() {
   );
 }
 
-export function SignupForm({ className, error, ...props }: React.ComponentProps<"div"> & { error?: string }) {
+export function SignupForm({ className, error, plan, ...props }: React.ComponentProps<"div"> & { error?: string; plan?: string }) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-2 text-center">
         <h1 className="text-2xl font-bold tracking-tight">Create an account</h1>
         <p className="text-sm text-muted-foreground">Join MyWorkSpace and start collaborating</p>
+        {plan && (
+          <p className="text-xs font-medium text-brand-600 capitalize">
+            Selected plan: {plan}
+          </p>
+        )}
       </div>
 
       <form action={signupAction} className="flex flex-col gap-4">
+        {plan && <input type="hidden" name="selectedPlan" value={plan} />}
         {error && (
           <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
         )}

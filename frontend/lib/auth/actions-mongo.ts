@@ -52,6 +52,7 @@ export async function signupActionMongo(formData: FormData) {
   };
   await db.collection("users").insertOne(userDoc as never);
 
+  const trialEnd = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
   const organizations = db.collection("organizations");
   const orgDoc: Record<string, unknown> = {
     _id: orgId,
@@ -59,7 +60,9 @@ export async function signupActionMongo(formData: FormData) {
     name: company || `${name}'s Organization`,
     slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${userId.slice(0, 8)}`,
     ownerId: userId,
-    plan: "free",
+    plan: "trial",
+    trialEnd,
+    subscriptionStatus: "trialing",
     onboardingCompleted: true,
     createdAt: new Date(),
     updatedAt: new Date(),

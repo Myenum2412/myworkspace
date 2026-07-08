@@ -2,7 +2,8 @@ import Stripe from "stripe";
 import { env } from "./env.js";
 
 export const STRIPE_PRICE_IDS: Record<string, string | undefined> = {
-  growth: env.STRIPE_GROWTH_PRICE_ID,
+  starter: env.STRIPE_STARTER_PRICE_ID,
+  professional: env.STRIPE_PROFESSIONAL_PRICE_ID,
   enterprise: env.STRIPE_ENTERPRISE_PRICE_ID,
 };
 

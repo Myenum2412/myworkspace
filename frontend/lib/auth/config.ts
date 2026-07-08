@@ -65,12 +65,20 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           if (orgId) {
             const org = await db.collection("organizations").findOne({ id: orgId });
             token.onboardingCompleted = org?.onboardingCompleted === true;
+            (token as any).plan = org?.plan || "trial";
+            (token as any).subscriptionStatus = org?.subscriptionStatus || "trialing";
+            (token as any).trialEnd = org?.trialEnd?.toISOString() || null;
+            (token as any).currentPeriodEnd = org?.currentPeriodEnd?.toISOString() || null;
           } else {
             const member = await db.collection("org_members").findOne({ userId: token.id });
             if (member) {
               token.orgId = member.orgId?.toString() || "";
               const org = await db.collection("organizations").findOne({ id: member.orgId });
               token.onboardingCompleted = org?.onboardingCompleted === true;
+              (token as any).plan = org?.plan || "trial";
+              (token as any).subscriptionStatus = org?.subscriptionStatus || "trialing";
+              (token as any).trialEnd = org?.trialEnd?.toISOString() || null;
+              (token as any).currentPeriodEnd = org?.currentPeriodEnd?.toISOString() || null;
             } else {
               token.onboardingCompleted = true;
             }
@@ -93,7 +101,10 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         session.user.permissions = token.permissions as string[];
         session.user.orgId = token.orgId as string;
         session.user.onboardingCompleted = token.onboardingCompleted as boolean;
-        console.log(`[AUTH session] session built: email=${session.user.email} role=${session.user.role} orgId=${session.user.orgId} onboarding=${session.user.onboardingCompleted}`);
+        (session.user as any).plan = (token as any).plan as string;
+        (session.user as any).subscriptionStatus = (token as any).subscriptionStatus as string;
+        (session.user as any).trialEnd = (token as any).trialEnd as string | null;
+        (session.user as any).currentPeriodEnd = (token as any).currentPeriodEnd as string | null;
       }
       return session;
     },
@@ -159,11 +170,14 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             slug = `${slug}-${userId}`;
           }
 
+          const trialEnd = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
           await db.collection("organizations").insertOne({
             id: newOrgId,
             name: `${userName}'s Organization`,
             slug,
-            plan: "free",
+            plan: "trial",
+            trialEnd,
+            subscriptionStatus: "trialing",
             ownerId: userId,
             onboardingCompleted: true,
             createdAt: now,

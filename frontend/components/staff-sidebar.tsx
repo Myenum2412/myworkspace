@@ -11,10 +11,10 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import FolderIcon from "@mui/icons-material/Folder";
 import {
   LayoutDashboardIcon,
   ListTodoIcon,
-  FolderOpenIcon,
   ClockIcon,
   CalendarDaysIcon,
   ActivityIcon,
@@ -52,7 +52,7 @@ function buildStaffNavData(orgId: string) {
     {
       title: "File Management",
       url: `/staffs/files${orgId ? `?orgId=${orgId}` : ""}`,
-      icon: <FolderOpenIcon className="size-6" />,
+      icon: <FolderIcon className="size-6" />,
     },
     {
       title: "Activity",

@@ -21,12 +21,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import FolderIcon from "@mui/icons-material/Folder";
 import {
   Building2Icon,
   ChevronRightIcon,
   FileIcon,
-  FolderIcon,
-  FolderOpenIcon,
   HardDriveIcon,
   PlusIcon,
   SearchIcon,
@@ -260,7 +259,7 @@ export default function FilesInteractive({
                     <div className="space-y-1">
                       {folders.slice(0, 4).map((f) => (
                         <div key={f.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <FolderOpenIcon className="size-3 shrink-0" />
+                          <FolderIcon className="size-3 shrink-0" />
                           <span className="truncate">{f.name}</span>
                         </div>
                       ))}

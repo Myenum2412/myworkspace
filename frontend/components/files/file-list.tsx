@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import MuiFolderIcon from "@mui/icons-material/Folder";
 import {
-  FolderIcon, Loader2Icon, LockIcon, MoreHorizontalIcon,
+  Loader2Icon, LockIcon, MoreHorizontalIcon,
   Trash2Icon,
 } from "lucide-react";
 import { FileItem, FolderItem, ViewMode, formatSize } from "./types";
@@ -92,7 +93,7 @@ export function FileList({
               <Card key={folder.id} className="group cursor-pointer hover:border-primary/50 transition-colors relative">
                 <CardContent className="p-3" onClick={() => onNavigateToFolder(folder.id, folder.name)}>
                   <div className="flex flex-col items-center gap-2 py-2">
-                    <FolderIcon className="size-10 text-muted-foreground" />
+                    <MuiFolderIcon className="size-10 text-muted-foreground" />
                     {inlineRenamingId === folder.id ? (
                       <Input
                         value={inlineRenameValue}
@@ -216,7 +217,7 @@ export function FileList({
             <tbody>
               {folders.map((folder) => (
                 <tr key={folder.id} className="border-b last:border-0 hover:bg-slate-50 bg-white cursor-pointer" onClick={() => { if (inlineRenamingId !== folder.id) onNavigateToFolder(folder.id, folder.name); }}>
-                  <td className="px-4 py-3"><FolderIcon className="size-4 text-muted-foreground" /></td>
+                  <td className="px-4 py-3"><MuiFolderIcon className="size-4 text-muted-foreground" /></td>
                   <td className="px-4 py-3 text-sm font-medium" onDoubleClick={() => onStartInlineRename(folder.id, folder.name)}>
                     {inlineRenamingId === folder.id ? (
                       <Input

@@ -11,13 +11,10 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import FolderIcon from "@mui/icons-material/Folder";
 import {
   LayoutDashboardIcon,
-  FolderOpenIcon,
-  BellIcon,
-  UserIcon,
-  SettingsIcon,
-  BriefcaseIcon,
+  ReceiptIcon,
 } from "lucide-react";
 
 function buildClientNavData(orgId: string) {
@@ -29,21 +26,15 @@ function buildClientNavData(orgId: string) {
       isActive: true,
     },
     {
-      title: "Projects",
-      url: "/client/projects",
-      icon: <BriefcaseIcon className="size-6" />,
-    },
-    {
-      title: "File Manager",
+      title: "File Management",
       url: "/client/file-manager",
-      icon: <FolderOpenIcon className="size-6" />,
+      icon: <FolderIcon className="size-6" />,
     },
     {
-      title: "Notifications",
-      url: "/client/notifications",
-      icon: <BellIcon className="size-6" />,
+      title: "Bills",
+      url: "/client/bills",
+      icon: <ReceiptIcon className="size-6" />,
     },
-
   ];
 }
 

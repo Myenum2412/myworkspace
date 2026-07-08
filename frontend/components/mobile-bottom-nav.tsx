@@ -9,12 +9,11 @@ import {
   ClockIcon,
   FolderIcon,
   UsersIcon,
-  BriefcaseIcon,
   Building2Icon,
-  BellIcon,
   ListTodoIcon,
   ReceiptIcon,
   Settings2Icon,
+  BriefcaseIcon,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,9 +42,8 @@ const staffNav: NavItem[] = [
 
 const clientNav: NavItem[] = [
   { href: "/client/dashboard", label: "Home", icon: LayoutDashboardIcon },
-  { href: "/client/projects", label: "Projects", icon: BriefcaseIcon },
   { href: "/client/file-manager", label: "Files", icon: FolderIcon },
-  { href: "/client/notifications", label: "Alerts", icon: BellIcon },
+  { href: "/client/bills", label: "Bills", icon: ReceiptIcon },
 ];
 
 const orgNav: NavItem[] = [
