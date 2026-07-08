@@ -235,7 +235,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-hidden">
+    <div className="flex flex-1 flex-col gap-6 overflow-hidden [&_input]:border-black [&_select>button]:border-black [&_textarea]:border-black">
       {apiError && (
         <div className="mx-6 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
           {apiError}

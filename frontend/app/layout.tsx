@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/app-layout";
 import { OfflineBanner } from "@/components/offline-banner";
 import { OfflineSyncManager } from "@/components/offline-sync-manager";
 import { Toaster } from "sonner";
+import { NotificationInitializer } from "@/components/notification-initializer";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -59,6 +60,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <Providers>
+          <NotificationInitializer />
           <AppLayout>
             {children}
           </AppLayout>

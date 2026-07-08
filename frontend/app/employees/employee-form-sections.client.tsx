@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Camera, Eye, EyeOff } from "lucide-react"
+import { Camera, ChevronDown, ChevronRight, Eye, EyeOff } from "lucide-react"
 import { getDropdownOptions } from "@/lib/dropdown-options"
 
 export interface FirstSlideEmployeeForm {
@@ -471,33 +471,45 @@ interface DynamicRowSectionProps {
 }
 
 export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: DynamicRowSectionProps) {
+  const [isOpen, setIsOpen] = React.useState(false)
   return (
     <FieldSet>
       <div className="flex items-center justify-between mb-6">
         <FieldLegend>{title}</FieldLegend>
-        <Button onClick={onAdd} variant="outline" size="sm" className="touch-target">
-          + Add {title}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={onAdd} variant="outline" size="sm" className="touch-target">
+            + Add {title}
+          </Button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {isOpen ? <ChevronDown className="size-5" /> : <ChevronRight className="size-5" />}
+          </button>
+        </div>
       </div>
-      <div className="space-y-6">
-        {rows.map((row) => (
-          <div key={row.id} className="relative border rounded-lg p-4">
-            <div className="pt-8 sm:pt-0">
-              {renderRow(row)}
+      {isOpen && (
+        <div className="space-y-6">
+          {rows.map((row) => (
+            <div key={row.id} className="relative border rounded-lg p-4">
+              <div className="pt-8 sm:pt-0">
+                {renderRow(row)}
+              </div>
+              {rows.length > 1 && (
+                <Button
+                  onClick={() => onRemove(row.id)}
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 text-destructive hover:text-destructive touch-target"
+                >
+                  Remove
+                </Button>
+              )}
             </div>
-            {rows.length > 1 && (
-              <Button
-                onClick={() => onRemove(row.id)}
-                variant="ghost"
-                size="sm"
-                className="absolute top-2 right-2 text-destructive hover:text-destructive touch-target"
-              >
-                Remove
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </FieldSet>
   )
 }

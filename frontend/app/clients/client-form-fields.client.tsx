@@ -151,7 +151,7 @@ export function EditClientFormFields(props: {
   const fc = (n: string) => fieldClass(errors, n);
   const fe = (n: string) => fieldError(errors, n);
   return (
-    <div className="space-y-8 py-2">
+    <div className="space-y-8 py-2 [&_input]:border-black [&_select>button]:border-black [&_textarea]:border-black">
       <FieldSet>
         <FieldLegend>Client Information</FieldLegend>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

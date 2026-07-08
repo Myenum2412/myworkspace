@@ -58,4 +58,8 @@ export const env = {
   TRIAL_DAYS: parseInt(process.env.TRIAL_DAYS || "15", 10),
 
   SENTRY_DSN: process.env.SENTRY_DSN || "",
+
+  VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || "",
+  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || "",
+  VAPID_SUBJECT: process.env.VAPID_SUBJECT || "mailto:admin@myenum.in",
 };
