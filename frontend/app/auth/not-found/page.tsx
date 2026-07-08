@@ -69,7 +69,7 @@ export default function AuthNotFoundPage({
         <div className="absolute inset-0 flex flex-col items-start justify-end p-12">
           <blockquote className="space-y-3">
             <p className="text-xl font-medium text-black leading-relaxed max-w-xs">
-              &ldquo;The platform that transformed how our team collaborates and ships.&rdquo;
+              "The platform that transformed how our team collaborates and ships."
             </p>
             <footer className="text-sm text-black/70 font-medium">
               Team MyWorkSpace

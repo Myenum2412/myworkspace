@@ -1,14 +1,12 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
+import { getSignupMetadata } from "@/lib/seo/seo-config";
 
-export const metadata: Metadata = {
-  title: "Sign Up",
-  description: "Create your free MyWorkSpace account.",
-}
+export const metadata: Metadata = getSignupMetadata();
 
 export default function SignupLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  return <>{children}</>
+  return <>{children}</>;
 }
