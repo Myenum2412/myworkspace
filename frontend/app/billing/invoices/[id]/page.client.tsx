@@ -495,12 +495,12 @@ export default function InvoiceFormPage() {
           {/* Add Row Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <div className="flex items-center rounded overflow-hidden bg-gray-50 border border-gray-200">
-              <Button variant="ghost" size="sm" onClick={addNewRow} className="text-blue-600 gap-1.5 px-3 rounded-none hover:bg-gray-100 font-medium text-sm touch-target">
+              <Button variant="ghost" size="sm" onClick={addNewRow} className="text-blue-600 gap-1.5 px-3 hover:bg-gray-100 font-medium text-sm touch-target">
                 <PlusCircle className="size-4" />
                 Add New Row
               </Button>
               <div className="w-px h-5 bg-gray-300" />
-              <Button variant="ghost" size="icon" className="rounded-none text-gray-500 hover:bg-gray-100">
+              <Button variant="ghost" size="icon" className="text-gray-500 hover:bg-gray-100">
                 <ChevronDown className="size-4" />
               </Button>
             </div>
@@ -617,11 +617,11 @@ export default function InvoiceFormPage() {
             <div className="w-full sm:w-auto">
               <Label className="text-gray-700 font-medium mb-3 block text-sm">Attach File(s) to Invoice</Label>
               <div className="inline-flex items-center rounded overflow-hidden border border-gray-200 bg-white w-full sm:w-auto">
-                <Button variant="ghost" size="sm" className="gap-2 bg-white hover:bg-gray-50 font-medium border-r border-gray-200 rounded-none px-3 sm:px-4 text-gray-700 flex-1 sm:flex-initial touch-target">
+                <Button variant="ghost" size="sm" className="gap-2 bg-white hover:bg-gray-50 font-medium border-r border-gray-200 px-3 sm:px-4 text-gray-700 flex-1 sm:flex-initial touch-target">
                   <Upload className="size-3.5" />
                   Upload File
                 </Button>
-                <Button variant="ghost" size="sm" className="px-2 bg-white hover:bg-gray-50 rounded-none text-gray-500">
+                <Button variant="ghost" size="sm" className="px-2 bg-white hover:bg-gray-50 text-gray-500">
                   <ChevronDown className="size-4" />
                 </Button>
               </div>

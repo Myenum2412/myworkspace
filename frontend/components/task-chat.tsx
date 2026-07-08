@@ -279,7 +279,7 @@ export function TaskChat({
         </div>
         <div className="flex items-center gap-1 shrink-0 ml-2">
           {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose} className="size-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
+            <Button variant="ghost" size="icon" onClick={onClose} className="size-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
               <XIcon className="size-5" />
             </Button>
           )}

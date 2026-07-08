@@ -35,10 +35,10 @@ export default async function SignupPage(props: { searchParams: Promise<Record<s
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900/60 via-transparent to-gray-800/60" />
         <div className="absolute inset-0 flex flex-col items-start justify-end p-12">
           <blockquote className="space-y-3">
-            <p className="text-xl font-medium text-white/90 leading-relaxed max-w-xs">
+            <p className="text-xl font-medium text-black leading-relaxed max-w-xs">
               &ldquo;The platform that transformed how our team collaborates and ships.&rdquo;
             </p>
-            <footer className="text-sm text-white/60 font-medium">
+            <footer className="text-sm text-black/70 font-medium">
               Team MyWorkSpace
             </footer>
           </blockquote>
