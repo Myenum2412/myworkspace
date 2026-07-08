@@ -4,6 +4,7 @@ import { useState } from "react";
 import { SessionProvider } from "next-auth/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AppInitProvider } from "@/components/app-init-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Caching defaults: with realtime socket events patching the cache, list
@@ -29,7 +30,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          {children}
+          <AppInitProvider>
+            {children}
+          </AppInitProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </SessionProvider>

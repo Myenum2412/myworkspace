@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { OrgSidebar } from "@/components/org-sidebar";
 import { StaffSidebar } from "@/components/staff-sidebar";
@@ -53,16 +52,9 @@ export function AppLayout({ children }: AppLayoutProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Wait for session to load before rendering content
-  // Prevents flash of wrong sidebar before role-based redirect fires
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
+  // Session loading is handled by AppInitProvider at the root level.
+  // By the time this component renders for app pages, the session is ready.
+  // Public pages are rendered without the init provider's loader.
   if (!isApp) {
     return <>{children}</>;
   }
