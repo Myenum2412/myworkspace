@@ -5,7 +5,7 @@ import { getWsClient } from "@/lib/ws/client";
 import { WsEventPayload } from "@/lib/ws/events";
 
 export function useUserStatus(userId?: string) {
-  const [status, setStatus] = useState<"online" | "offline" | "break">("offline");
+  const [status, setStatus] = useState<"online" | "offline" | "break" | string>("offline");
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export function useUserStatus(userId?: string) {
     return () => { unsub(); };
   }, [userId]);
 
-  const updateStatus = useCallback(async (newStatus: "online" | "offline" | "break") => {
+  const updateStatus = useCallback(async (newStatus: string) => {
     const client = getWsClient();
     client.send({
       type: "status_update",
@@ -43,7 +43,7 @@ export function useUserStatus(userId?: string) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ userId, status: newStatus }),
+      body: JSON.stringify({ status: newStatus }),
     });
   }, [userId]);
 

@@ -40,12 +40,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { userId, status, statusNote, customStatus } = await request.json();
-    const targetUserId = userId || session.user.id;
-
-    if (targetUserId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { status, statusNote, customStatus } = await request.json();
+    const targetUserId = session.user.id;
 
     let normalizedStatus = status || "available";
     if (VALID_STATUSES.includes(normalizedStatus)) {

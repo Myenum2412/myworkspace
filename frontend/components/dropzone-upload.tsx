@@ -111,7 +111,7 @@ export function DropZoneUpload({
       if (targetFolderId) formData.append("folderId", targetFolderId);
       if (clientId) formData.append("clientId", clientId);
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/files/upload`;
+      const url = `/api/files/upload`;
 
       return new Promise<void>((resolve) => {
         xhr.open("POST", url);

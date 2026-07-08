@@ -78,7 +78,7 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
       setError("Network error");
     });
 
-    xhr.open("POST", "/api/files");
+    xhr.open("POST", "/api/files/upload");
     xhr.send(formData);
   };
 

@@ -78,12 +78,8 @@ export function Header({ context }: { context?: AppContextType }) {
   };
 
   function handleStatusUpdateFromForm(newStatus: string) {
-    const wsStatus = newStatus === "available" ? "online" : newStatus === "remote" || newStatus === "busy" || newStatus === "meeting" ? "online" : newStatus;
-    if (["online", "offline", "break"].includes(wsStatus)) {
-      updateStatus(wsStatus as "online" | "offline" | "break");
-    } else {
-      updateStatus("online");
-    }
+    const wsStatus = newStatus === "available" ? "online" : newStatus;
+    updateStatus(wsStatus);
   }
 
   const { toggleSidebar } = useSidebar();

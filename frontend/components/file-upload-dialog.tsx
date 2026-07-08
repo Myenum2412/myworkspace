@@ -93,7 +93,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
     setFiles(prev => prev.map(f => ({ ...f, status: "uploading" as const })));
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/files/upload`, {
+      const res = await fetch(`/api/files/upload`, {
         method: "POST",
         credentials: "include",
         body: formData,

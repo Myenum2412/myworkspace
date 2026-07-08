@@ -242,25 +242,6 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                   <h2 className="text-lg font-semibold">General Settings</h2>
                   <p className="text-sm text-muted-foreground">Manage workspace-wide configurations</p>
                 </div>
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Project Target</CardTitle>
-                    <CardDescription>Set your target goals for monthly project creation</CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-4">
-                    <div className="grid gap-2 max-w-xs">
-                      <Label htmlFor="monthlyProjectLimit">Monthly Project Target</Label>
-                      <Input
-                        id="monthlyProjectLimit"
-                        type="number"
-                        min={1}
-                        value={formData.general.monthlyProjectLimit ?? 10}
-                        onChange={(e) => setFormData({ ...formData, general: { ...formData.general, monthlyProjectLimit: parseInt(e.target.value) || 1 } })}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-                <Separator />
                 <div>
                   <h2 className="text-lg font-semibold">Section Cards</h2>
                   <p className="text-sm text-muted-foreground">Manage dropdown options and set maximum item limits for each section.</p>
