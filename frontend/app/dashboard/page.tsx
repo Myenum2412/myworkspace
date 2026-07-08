@@ -14,17 +14,11 @@ import {
   MessageSquareReply,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { ProfitLossRow } from "@/components/dashboard/profit-loss-chart";
-
-const ProfitLossChart = dynamic(() => import("@/components/dashboard/profit-loss-chart").then(m => ({ default: m.ProfitLossChart })), {
-  loading: () => <Skeleton className="h-[250px] sm:h-[350px] lg:h-[400px] w-full rounded-lg" />,
-});
 const PriorityBreakdownChart = dynamic(() => import("@/components/dashboard/priority-breakdown-chart").then(m => ({ default: m.PriorityBreakdownChart })), {
   loading: () => <Skeleton className="h-[250px] sm:h-[350px] lg:h-[400px] w-full rounded-lg" />,
 });
 
 export const revalidate = 30;
-
 const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
 const statusStyles: Record<string, string> = {
@@ -305,18 +299,6 @@ export default async function DashboardPage() {
     recentComments = [],
   } = dashboardData || {};
 
-  let profitLossData: ProfitLossRow[] = [];
-  try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
-    const plRes = await fetch(`${backendUrl}/api/dashboard/profit-loss?orgId=${orgId}`, {
-      cache: "no-store",
-    });
-    if (plRes.ok) {
-      const plJson = await plRes.json();
-      profitLossData = plJson.data || [];
-    }
-  } catch {} // non-critical; chart renders empty state
-
   const metricCards = [
     { title: "Total Tasks", value: totalTasks, icon: ListTodo, color: "text-muted-foreground" },
     { title: "Completed", value: completedTasks, icon: CheckCircle2, color: "text-green-600" },
@@ -346,8 +328,8 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-2 sm:gap-3 md:gap-4 lg:grid-cols-2">
-        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px]">
+      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 lg:grid-cols-6">
+        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
               <FolderKanbanIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Active Projects</span>
@@ -413,10 +395,8 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      <div className="grid gap-2 sm:gap-3 md:gap-4 lg:grid-cols-2">
-        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px]">
+        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
               <Users className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Team Members</span>
@@ -485,7 +465,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px]">
+        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
               <Building2Icon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Recent Clients</span>
@@ -534,15 +514,17 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      <div className="grid gap-2 sm:gap-3 md:gap-4 lg:grid-cols-2">
-        <div className="min-h-[250px] sm:min-h-[350px]">
-          <ProfitLossChart data={profitLossData} className="h-[250px] sm:h-[350px] lg:h-[400px]" />
-        </div>
-        <div className="min-h-[250px] sm:min-h-[350px]">
-          <PriorityBreakdownChart data={priorityBreakdown} className="h-[250px] sm:h-[350px] lg:h-[400px]" />
-        </div>
+        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <AlertCircle className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Priority Breakdown</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 p-0">
+            <PriorityBreakdownChart data={priorityBreakdown} className="h-[250px] sm:h-[300px] lg:h-[320px] w-full" />
+          </CardContent>
+        </Card>
       </div>
 
     </div>
