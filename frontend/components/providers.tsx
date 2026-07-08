@@ -4,14 +4,14 @@ import { useState } from "react";
 import { SessionProvider } from "next-auth/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { AppInitProvider } from "@/components/app-init-provider";
+import { createIndexedDbPersister } from "@/lib/offline/query-persister";
+import { onlineManager } from "@tanstack/react-query";
+
+const persister = createIndexedDbPersister();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  // Caching defaults: with realtime socket events patching the cache, list
-  // queries don't need to refetch on every mount. staleTime keeps a fresh-enough
-  // cache for 30s; gcTime holds it for 5m. Any mutation still invalidates as
-  // before. This is the difference between a refetch-per-navigation and an
-  // instant-from-cache paint.
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -21,7 +21,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
             gcTime: 5 * 60_000,
             refetchInterval: 30_000,
             refetchOnWindowFocus: true,
+            refetchOnReconnect: true,
             retry: 1,
+            networkMode: "offlineFirst",
           },
         },
       }),
@@ -29,13 +31,23 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionProvider>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister,
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+          buster: "v1",
+        }}
+        onSuccess={() => {
+          queryClient.resumePausedMutations();
+        }}
+      >
         <TooltipProvider>
           <AppInitProvider>
             {children}
           </AppInitProvider>
         </TooltipProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </SessionProvider>
   );
 }

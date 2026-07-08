@@ -96,7 +96,7 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
     deletedAt: { type: Date, default: null },
     deletedBy: { type: String, default: null },
   },
-  { timestamps: true },
+  { timestamps: true, collection: 'file_attachments' },
 );
 
 fileAttachmentSchema.index({ orgId: 1, folderId: 1, deletedAt: 1 });

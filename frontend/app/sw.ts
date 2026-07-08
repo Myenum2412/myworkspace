@@ -10,12 +10,16 @@ declare global {
 
 declare const self: any;
 
-const serwist = new Serwist({
+new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: defaultCache,
-});
+}).addEventListeners();
 
-serwist.addEventListeners();
+self.addEventListener("message", (event: any) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});

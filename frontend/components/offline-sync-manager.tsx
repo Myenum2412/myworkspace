@@ -3,27 +3,63 @@
 import { useEffect } from "react";
 import { syncOfflineRequests } from "@/lib/offline-sync";
 import { toast } from "sonner";
+import { onlineManager } from "@tanstack/react-query";
 
 export function OfflineSyncManager() {
   useEffect(() => {
-    // Register Service Worker
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("/sw.js").then(
-          function (registration) {
-            console.log("Service Worker registration successful with scope: ", registration.scope);
-          },
-          function (err) {
-            console.log("Service Worker registration failed: ", err);
-          }
-        );
-      });
+      const registerSW = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register("/sw.js");
+          console.log("Service Worker registered with scope:", registration.scope);
+
+          registration.addEventListener("updatefound", () => {
+            const newWorker = registration.installing;
+            if (!newWorker) return;
+
+            newWorker.addEventListener("statechange", () => {
+              if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                toast.info("A new version is available. Refresh to update.", {
+                  id: "sw-update",
+                  duration: 8000,
+                  action: {
+                    label: "Refresh",
+                    onClick: () => {
+                      newWorker.postMessage({ type: "SKIP_WAITING" });
+                      window.location.reload();
+                    },
+                  },
+                });
+              }
+            });
+          });
+        } catch (err) {
+          console.error("Service Worker registration failed:", err);
+        }
+      };
+
+      if (document.readyState === "complete") {
+        registerSW();
+      } else {
+        window.addEventListener("load", () => registerSW());
+      }
     }
+
+    onlineManager.setEventListener((setOnline) => {
+      const handleOnline = () => setOnline(true);
+      const handleOffline = () => setOnline(false);
+      window.addEventListener("online", handleOnline);
+      window.addEventListener("offline", handleOffline);
+      return () => {
+        window.removeEventListener("online", handleOnline);
+        window.removeEventListener("offline", handleOffline);
+      };
+    });
 
     const handleOnline = async () => {
       try {
         await syncOfflineRequests();
-        toast.success("Offline data synchronized with the server.", {
+        toast.success("All offline data synchronized.", {
           id: "offline-sync",
         });
       } catch (err) {
@@ -33,7 +69,6 @@ export function OfflineSyncManager() {
 
     window.addEventListener("online", handleOnline);
 
-    // Also try syncing on mount if online
     if (navigator.onLine) {
       syncOfflineRequests();
     }

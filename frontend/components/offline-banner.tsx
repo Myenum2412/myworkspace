@@ -54,7 +54,6 @@ export function OfflineBanner() {
     return unsub;
   }, []);
 
-  // Periodically refresh queue length while syncing
   React.useEffect(() => {
     if (!isCurrentlySyncing()) return;
     const id = setInterval(() => {
@@ -72,9 +71,9 @@ export function OfflineBanner() {
     "fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-lg transition-colors";
 
   const variants: Record<BannerState["kind"], string> = {
-    online: "bg-red-900 text-red-700 border border-border",
-    offline: "bg-gray-700 text-gray-700 border border-border",
-    syncing: "bg-gray-700 text-gray-700 border border-border",
+    online: "bg-green-100 text-green-800 border border-green-200",
+    offline: "bg-yellow-100 text-yellow-800 border border-yellow-200",
+    syncing: "bg-blue-100 text-blue-800 border border-blue-200",
     failed: "bg-red-100 text-red-800 border border-red-200",
   };
 
@@ -83,7 +82,7 @@ export function OfflineBanner() {
       case "online":
         return "Online — All saved";
       case "offline":
-        return "Offline — Saving locally";
+        return "Offline — Showing cached data";
       case "syncing":
         return `Syncing — ${state.remaining} pending`;
       case "failed":
@@ -96,7 +95,7 @@ export function OfflineBanner() {
       case "online":
         return "Online, all changes saved.";
       case "offline":
-        return "Offline, saving changes locally.";
+        return "Offline, showing cached data.";
       case "syncing":
         return `Syncing, ${state.remaining} items pending.`;
       case "failed":
@@ -115,7 +114,7 @@ export function OfflineBanner() {
       className={`${baseClasses} ${variants[state.kind]} motion-reduce:transition-none`}
     >
       <span aria-hidden="true">
-        {state.kind === "offline" && "🟡"}
+        {state.kind === "offline" && "🔴"}
         {state.kind === "syncing" && "🔵"}
         {state.kind === "failed" && "🔴"}
       </span>
