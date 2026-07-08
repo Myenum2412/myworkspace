@@ -70,7 +70,7 @@ export function MobileBottomNav({ context }: { context?: string }) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background safe-bottom md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-[rgba(255,255,255,0.08)] bg-[#0D2A54] safe-bottom md:hidden"
       aria-label="Mobile navigation"
     >
       <div className="flex items-center justify-around h-14 px-2">
@@ -85,8 +85,8 @@ export function MobileBottomNav({ context }: { context?: string }) {
                 "flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 h-full rounded-md transition-colors",
                 "touch-target",
                 isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-white font-semibold"
+                  : "text-[#C7D4E5] hover:text-white hover:bg-[#163A6B]"
               )}
               aria-current={isActive ? "page" : undefined}
             >
