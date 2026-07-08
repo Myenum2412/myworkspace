@@ -35,6 +35,7 @@ import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
 import fileApprovalRoutes from "./routes/file-approval.js";
 import billingRoutes from "./routes/billing.js";
+import receiptRoutes from "./routes/receipts.js";
 import twoFactorRoutes from "./routes/two-factor.js";
 
 

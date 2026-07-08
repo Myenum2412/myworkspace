@@ -532,7 +532,7 @@ export default function InvoiceFormPage() {
 
             {/* Summary */}
             <div className="w-full lg:max-w-[450px] bg-[#f9fafb] p-4 sm:p-6 rounded-lg border border-gray-200">
-              <div className="flex justify-between items-center mb-4 sm:mb-5 text-sm">
+              <div className="flex justify-end items-center mb-4 sm:mb-5 text-sm gap-3">
                 <span className="text-gray-700 font-semibold">Sub Total</span>
                 <span className="font-semibold text-gray-900">{subTotal.toFixed(2)}</span>
               </div>
