@@ -3,6 +3,7 @@ import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { User } from "../lib/db/models/User.js";
 import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 const router = Router();
 router.use(authenticate);
 async function enrichLogs(logs) {
@@ -17,7 +18,7 @@ async function enrichLogs(logs) {
         userAvatar: userMap.get(log.userId)?.avatar || null,
     }));
 }
-router.get("/", async (req, res) => {
+router.get("/", cacheEnhanced({ ttl: 20, varyByUser: true, varyByQuery: true, tags: ["activity"] }), async (req, res) => {
     const orgId = req.query.orgId || req.orgId || "";
     if (!orgId) {
         throw new AppError(400, "orgId is required");

@@ -69,28 +69,47 @@ router.post("/invite", async (req, res) => {
     }
     const org = await Organization.findById(targetOrgId).lean();
     const orgName = org?.name || "Organization";
-    const validEmails = emails.filter((e) => e && e.includes("@"));
+    const normalizedEmails = emails
+        .filter((e) => e && e.includes("@"))
+        .map((e) => e.toLowerCase().trim());
+    if (normalizedEmails.length === 0) {
+        throw new AppError(400, "No valid email addresses provided");
+    }
+    const existingUsers = await User.find({ email: { $in: normalizedEmails } })
+        .select("_id name email")
+        .lean();
+    const userByEmail = new Map(existingUsers.map(u => [u.email, u]));
+    const existingMemberships = await OrgMember.find({
+        orgId: targetOrgId,
+        userId: { $in: existingUsers.map(u => u._id.toString()) },
+    })
+        .select("userId")
+        .lean();
+    const existingMemberIds = new Set(existingMemberships.map(m => m.userId.toString()));
+    const toCreate = [];
     const results = [];
-    for (const email of validEmails) {
-        const user = await User.findOne({ email: email.toLowerCase().trim() }).lean();
+    for (const email of normalizedEmails) {
+        const user = userByEmail.get(email);
         if (!user) {
             results.push({ email, status: "not_found" });
             continue;
         }
-        const existingMember = await OrgMember.findOne({ orgId: targetOrgId, userId: user._id }).lean();
-        if (existingMember) {
+        const userId = user._id.toString();
+        if (existingMemberIds.has(userId)) {
             results.push({ email, status: "already_member" });
             continue;
         }
-        await OrgMember.create({
-            orgId: targetOrgId,
-            userId: user._id,
-            role: "member",
-        });
-        await sendOrganizationInviteEmail(email, user.name || email, orgName, `${env.APP_URL}/orgmenu`);
-        results.push({ email, status: "invited", userId: user._id.toString() });
+        toCreate.push({ orgId: targetOrgId, userId, role: "member" });
+        results.push({ email, status: "invited", userId });
     }
-    console.log(`[INVITE] ${req.user.email} invited ${validEmails.length} users to org ${targetOrgId}:`, results);
+    if (toCreate.length > 0) {
+        await OrgMember.insertMany(toCreate);
+        await Promise.all(toCreate.map(m => {
+            const user = userByEmail.get(m.userId);
+            return sendOrganizationInviteEmail(user?.email || m.userId, user?.name || m.userId, orgName, `${env.APP_URL}/orgmenu`);
+        }));
+    }
+    console.log(`[INVITE] ${req.user.email} invited ${normalizedEmails.length} users to org ${targetOrgId}:`, results);
     res.status(201).json({ success: true, data: { results } });
 });
 // GET /api/organizations/:id -- get single org (with tenant isolation)

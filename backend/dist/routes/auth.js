@@ -367,7 +367,9 @@ router.post("/reset-password", async (req, res) => {
     res.json({ success: true, message: "Password has been reset successfully." });
 });
 router.get("/me", authenticate, async (req, res) => {
-    const user = await User.findOne({ id: req.user.userId });
+    const user = await User.findOne({ id: req.user.userId })
+        .select("id userNumber name email image role permissions status isActive emailVerified twoFactorEnabled createdAt orgId")
+        .lean();
     if (!user)
         throw new AppError(404, "User not found");
     const orgId = user.orgId || req.user.orgId;

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { createNotification, listNotifications, getUnreadCount, markAllRead, markRead, } from "../services/notification.service.js";
 const router = Router();
 router.use(authenticate);
@@ -25,11 +26,11 @@ router.post("/", async (req, res) => {
     });
     res.status(201).json({ success: true, data: payload });
 });
-router.get("/", async (req, res) => {
+router.get("/", cacheEnhanced({ ttl: 15, varyByUser: true, tags: ["notifications"] }), async (req, res) => {
     const notifications = await listNotifications(req.user.userId);
     res.json({ success: true, data: notifications });
 });
-router.get("/unread-count", async (req, res) => {
+router.get("/unread-count", cacheEnhanced({ ttl: 15, varyByUser: true, tags: ["notifications"] }), async (req, res) => {
     const count = await getUnreadCount(req.user.userId);
     res.json({ success: true, data: { count } });
 });
