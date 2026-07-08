@@ -368,18 +368,18 @@
     color: #DC2626;
   }
 
-  .table-premium {
+  .table {
     width: 100%;
     border-collapse: collapse;
     background: #FFFFFF;
     border: 1px solid #000000;
   }
 
-  .table-premium thead {
+  .table thead {
     background: #0D2A54;
   }
 
-  .table-premium thead th {
+  .table thead th {
     color: #FFFFFF;
     font-weight: 600;
     padding: 14px 16px;
@@ -387,20 +387,20 @@
     border: 1px solid #000000;
   }
 
-  .table-premium tbody tr {
+  .table tbody tr {
     background: #FFFFFF;
   }
 
-  .table-premium tbody tr:nth-child(even) {
+  .table tbody tr:nth-child(even) {
     background: #F4F8FC;
   }
 
-  .table-premium tbody tr:hover {
+  .table tbody tr:hover {
     background: #DCEAF8;
     transition: 0.2s;
   }
 
-  .table-premium td {
+  .table td {
     color: #111827;
     padding: 14px 16px;
     border: 1px solid #000000;

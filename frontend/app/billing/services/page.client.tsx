@@ -81,7 +81,7 @@ export default function BillingServicesPage() {
 
       <div className="border border-gray-200 bg-white overflow-hidden flex flex-col rounded-lg">
         <div className="overflow-x-auto overflow-y-auto flex-1">
-          <table className="w-full text-sm text-left border-collapse" style={{ minWidth: 800 }}>
+          <table className="table w-full text-sm text-left" style={{ minWidth: 800 }}>
             <thead className="sticky top-0 z-10">
               <tr className="bg-[#f3f4f6] text-gray-900">
                 <th className="w-10 px-2">

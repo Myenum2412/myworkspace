@@ -199,7 +199,7 @@ export function FileList({
         </div>
       ) : (
         <div className="border border-gray-200 bg-white shadow-sm overflow-x-auto rounded-md">
-          <table className="w-full text-sm text-left border-collapse">
+          <table className="table w-full text-sm text-left">
             <thead className="bg-[#f3f4f6]">
               <tr className="border-b text-left text-sm text-gray-900 font-semibold">
                 <th className="px-4 py-3.5 text-left w-8 font-semibold">

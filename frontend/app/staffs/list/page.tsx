@@ -64,7 +64,7 @@ export default async function StaffListPage() {
         <CardContent>
           <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
+              <table className="table w-full text-sm text-left">
                 <thead>
                   <tr className="border-b bg-[#f3f4f6] text-gray-900 font-semibold">
                     <th className="px-4 py-3.5 font-semibold">Name</th>

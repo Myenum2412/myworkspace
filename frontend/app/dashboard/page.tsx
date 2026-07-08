@@ -359,7 +359,7 @@ export default async function DashboardPage() {
                     </div>
                   ))}
                 </div>
-                <table className="hidden sm:table w-full text-sm text-left border-collapse">
+                <table className="table hidden sm:table w-full text-sm text-left">
                   <thead className="bg-[#f3f4f6]">
                     <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
                       <th className="px-4 py-3.5 font-semibold">Project</th>
@@ -427,7 +427,7 @@ export default async function DashboardPage() {
                     </div>
                   ))}
                 </div>
-                <table className="hidden sm:table w-full text-sm text-left border-collapse">
+                <table className="table hidden sm:table w-full text-sm text-left">
                   <thead className="bg-[#f3f4f6]">
                     <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
                       <th className="px-4 py-3.5 font-semibold">Name</th>
@@ -488,7 +488,7 @@ export default async function DashboardPage() {
                     </div>
                   ))}
                 </div>
-                <table className="hidden sm:table w-full text-sm text-left border-collapse">
+                <table className="table hidden sm:table w-full text-sm text-left">
                   <thead className="bg-[#f3f4f6]">
                     <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
                       <th className="px-4 py-3.5 font-semibold">Name</th>

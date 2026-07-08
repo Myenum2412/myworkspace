@@ -240,7 +240,7 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
           ) : (
             <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
               {/* Desktop table */}
-              <table className="hidden sm:table w-full text-sm text-left">
+              <table className="table hidden sm:table w-full text-sm text-left">
                 <thead>
                   <tr className="bg-[#f3f4f6]">
                     <th className="px-4 py-3 font-semibold whitespace-nowrap">Description</th>
