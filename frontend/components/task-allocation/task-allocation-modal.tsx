@@ -1,36 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Loader2,
-  ListTodoIcon,
   CalendarIcon,
   AlertCircleIcon,
-  BookmarkIcon,
   XIcon,
   UserIcon,
   Building2Icon,
   FolderKanbanIcon,
   FlagIcon,
-  RepeatIcon,
   CheckSquareIcon,
   UploadCloudIcon,
   UsersIcon,
-  ClockIcon,
   AlignLeftIcon,
   SaveIcon,
   PlusIcon,
   FileTextIcon,
-  ChevronDownIcon,
 } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Switch } from "@/components/ui/switch";
 import { BlogEditor } from "@/components/ui/blog-editor";
 
@@ -41,7 +36,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
 import {
@@ -76,7 +70,6 @@ interface TaskAllocationModalProps {
   open: boolean;
   onClose: () => void;
   taskDefinitions?: TaskDefinition[];
-  onSaveTemplate?: (data: { name: string; description: string; isActive: boolean }) => Promise<{ success: boolean; error?: string }>;
 }
 
 const priorities = [
@@ -107,8 +100,7 @@ function FormField({ label, icon, required, children }: { label: string; icon?: 
   );
 }
 
-export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSaveTemplate }: TaskAllocationModalProps) {
-  const router = useRouter();
+export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: TaskAllocationModalProps) {
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
