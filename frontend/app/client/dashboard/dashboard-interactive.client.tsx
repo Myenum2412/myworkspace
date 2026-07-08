@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogOut, FolderOpen, Bell, ClipboardList, Building2, FileText, Loader2 } from "lucide-react";
+import BillingStatusBanner from "./billing-status-banner";
 
 type ClientUser = {
   id: string;
@@ -133,6 +134,8 @@ export default function DashboardInteractive() {
           <LogOut className="size-4 mr-1" /> Logout
         </Button>
       </div>
+
+      <BillingStatusBanner token={typeof window !== "undefined" ? localStorage.getItem("client_token") || "" : ""} />
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         <QuickActionCard icon={ClipboardList} title="Projects" description={`${client?.projects || 0} active`} href="/client/projects" />

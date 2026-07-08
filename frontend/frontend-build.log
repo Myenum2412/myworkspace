@@ -1,20 +1,8 @@
-(node:524501) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:27360) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
 > my-app@0.1.0 build
-> next build
-
-[@serwist/next] WARNING: You are using '@serwist/next' with `next dev --turbopack`, but it doesn't support Turbopack. Do one of the following:
-
-- Set `disable` to `process.env.NODE_ENV !== "production"`.
-
-- Use webpack by running `next dev --webpack` instead of `next dev --turbopack`.
-
-- Migrate to '@serwist/turbopack' which has experimental support for Turbopack. See https://serwist.pages.dev/docs/next/turbo for more information.
-
-- Migrate to configurator mode which has support for Turbopack. See https://serwist.pages.dev/docs/next/config for more information. 
-
-Follow https://github.com/serwist/serwist/issues/54 for progress on Serwist + Turbopack. You can also suppress this warning by setting SERWIST_SUPPRESS_TURBOPACK_WARNING=1.
+> SERWIST_SUPPRESS_TURBOPACK_WARNING=1 next build
 
 ▲ Next.js 16.2.10 (Turbopack)
 - Environments: .env
@@ -22,15 +10,15 @@ Follow https://github.com/serwist/serwist/issues/54 for progress on Serwist + Tu
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 14.0s
+✓ Compiled successfully in 12.7s
   Running TypeScript ...
-  Finished TypeScript in 18.9s ...
+  Finished TypeScript in 17.3s ...
   Collecting page data using 11 workers ...
   Generating static pages using 11 workers (0/64) ...
   Generating static pages using 11 workers (16/64) 
   Generating static pages using 11 workers (32/64) 
   Generating static pages using 11 workers (48/64) 
-✓ Generating static pages using 11 workers (64/64) in 850ms
+✓ Generating static pages using 11 workers (64/64) in 545ms
   Finalizing page optimization ...
 
 Route (app)
