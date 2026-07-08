@@ -219,7 +219,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [], onSav
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !isSubmitting) onClose(); }}>
-      <DialogContent className="p-0 flex flex-col w-auto h-auto max-w-[90vw] max-h-[90vh]">
+      <DialogContent className="p-0 flex flex-col w-auto h-auto max-w-[95vw] max-h-[95vh]">
         <DialogHeader className="px-6 pt-6 pb-2 shrink-0 pr-14">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
