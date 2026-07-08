@@ -36,23 +36,13 @@ export function AppLayout({ children }: AppLayoutProps) {
     );
   }
 
-  // Redirect staff/member users away from non-staff pages
+  // Redirect client users to their portal
   useEffect(() => {
     const role = session?.user?.role?.toLowerCase() || "";
-    const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(role);
-
-    if (session?.user && !isWorkspaceAdmin) {
-      if (role === "client") {
-        if (!pathname.startsWith("/client") && !pathname.startsWith("/login")) {
-          router.replace("/client/dashboard");
-        }
-      } else {
-        if (!pathname.startsWith("/staffs") && !pathname.startsWith("/login")) {
-          router.replace("/staffs");
-        }
-      }
+    if (role === "client" && !pathname.startsWith("/client") && !pathname.startsWith("/login")) {
+      router.replace("/client/dashboard");
     }
-  }, [session?.user, session?.user?.role, pathname, router]);
+  }, [session?.user?.role, pathname, router]);
 
   const user = useMemo(() => ({
     name: session?.user?.name || "User",
