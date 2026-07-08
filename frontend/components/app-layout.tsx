@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { OrgSidebar } from "@/components/org-sidebar";
 import { StaffSidebar } from "@/components/staff-sidebar";
@@ -12,14 +13,12 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
 
-
-
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(true);
@@ -27,11 +26,21 @@ export function AppLayout({ children }: AppLayoutProps) {
   const context: AppContextType = getAppContext(pathname);
   const isApp = isAppPage(pathname);
 
+  // Wait for session to load before rendering content
+  // Prevents flash of wrong sidebar before role-based redirect fires
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   // Redirect staff/member users away from non-staff pages
   useEffect(() => {
     const role = session?.user?.role?.toLowerCase() || "";
     const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(role);
-    
+
     if (session?.user && !isWorkspaceAdmin) {
       if (role === "client") {
         if (!pathname.startsWith("/client") && !pathname.startsWith("/login")) {
