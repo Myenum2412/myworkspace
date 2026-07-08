@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { XIcon } from "lucide-react";
 import { addEmployeeAction } from "@/actions/employees";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [error, setError] = useState("");
@@ -41,21 +44,21 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Full Name</label>
-                <input name="name" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="e.g. Jane Doe" />
+              <div className="space-y-1.5">
+                <Label>Full Name</Label>
+                <Input name="name" required placeholder="e.g. Jane Doe" />
               </div>
-              <div>
-                <label className="text-sm font-medium">Email</label>
-                <input name="email" type="email" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="jane@myworkspace.io" />
+              <div className="space-y-1.5">
+                <Label>Email</Label>
+                <Input name="email" type="email" required placeholder="jane@myworkspace.io" />
               </div>
-              <div>
-                <label className="text-sm font-medium">Role</label>
-                <input name="role" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="e.g. Frontend Developer" />
+              <div className="space-y-1.5">
+                <Label>Role</Label>
+                <Input name="role" required placeholder="e.g. Frontend Developer" />
               </div>
-              <div>
-                <label className="text-sm font-medium">Department</label>
-                <select name="department" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <div className="space-y-1.5">
+                <Label>Department</Label>
+                <select name="department" required className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm">
                   <option value="">Select department</option>
                   <option value="Engineering">Engineering</option>
                   <option value="Creative">Creative</option>
@@ -64,9 +67,9 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
                   <option value="Sales">Sales</option>
                 </select>
               </div>
-              <div>
-                <label className="text-sm font-medium">Status</label>
-                <select name="status" required className="mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <div className="space-y-1.5">
+                <Label>Status</Label>
+                <select name="status" required className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm">
                   <option value="Active">Active</option>
                   <option value="On Leave">On Leave</option>
                   <option value="Terminated">Terminated</option>
@@ -74,10 +77,10 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => onOpenChange(false)} className="inline-flex h-10 items-center justify-center rounded-md border bg-background px-4 py-2 text-sm font-medium hover:bg-muted">Cancel</button>
-                <button type="submit" disabled={pending} className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                <Button type="submit" disabled={pending}>
                   {pending ? "Adding..." : "Add Employee"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

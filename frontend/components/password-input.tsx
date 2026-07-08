@@ -9,7 +9,7 @@ export function PasswordInput(props: React.ComponentProps<typeof Input>) {
 
   return (
     <div className="relative">
-      <Input {...props} type={show ? "text" : "password"} className="h-10 pr-10" />
+      <Input {...props} type={show ? "text" : "password"} className="pr-10" />
       <button
         type="button"
         onClick={() => setShow((v) => !v)}

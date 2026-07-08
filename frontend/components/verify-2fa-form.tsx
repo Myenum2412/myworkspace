@@ -85,7 +85,7 @@ export default function Verify2FAForm({ email }: { email: string }) {
                 maxLength={6}
               />
             </div>
-            <Button type="submit" className="w-full h-11" disabled={loading || token.length !== 6}>
+            <Button type="submit" className="w-full" disabled={loading || token.length !== 6}>
               {loading ? <><Loader2 className="mr-2 size-4 animate-spin" /> Verifying...</> : "Verify & Sign In"}
             </Button>
           </form>

@@ -43,7 +43,7 @@ export default function NewServicePage() {
               <Label className="text-red-500 font-medium">Service Name*</Label>
             </div>
             <div>
-              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full h-9" placeholder="Enter service name" />
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" placeholder="Enter service name" />
             </div>
 
             <div className="pt-2">
@@ -57,7 +57,7 @@ export default function NewServicePage() {
               <Label className="text-gray-700 font-medium">Rate*</Label>
             </div>
             <div>
-              <Input type="number" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} className="w-full h-9" placeholder="0.00" />
+              <Input type="number" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} className="w-full" placeholder="0.00" />
             </div>
 
             <div className="pt-2">
@@ -65,7 +65,7 @@ export default function NewServicePage() {
             </div>
             <div>
               <Select value={unit} onValueChange={setUnit}>
-                <SelectTrigger className="w-full h-9">
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -81,8 +81,8 @@ export default function NewServicePage() {
           </div>
 
           <div className="flex items-center gap-3 mt-10">
-            <Button onClick={handleSave} className="h-9 px-6">Save Service</Button>
-            <Button variant="outline" className="h-9 px-6" asChild>
+            <Button onClick={handleSave} className="px-6">Save Service</Button>
+            <Button variant="outline" className="px-6" asChild>
               <Link href="/billing/services">Cancel</Link>
             </Button>
           </div>

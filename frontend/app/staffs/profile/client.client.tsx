@@ -800,7 +800,7 @@ export default function ProfileClient({ data }: Props) {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Street</p>
                       {editing ? (
-                        <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="h-8 text-sm" />
+                        <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="text-sm" />
                       ) : (
                         <p className="text-sm font-medium">{dbUser?.address || "—"}</p>
                       )}
@@ -808,7 +808,7 @@ export default function ProfileClient({ data }: Props) {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">City</p>
                       {editing ? (
-                        <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="h-8 text-sm" />
+                        <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="text-sm" />
                       ) : (
                         <p className="text-sm font-medium">{dbUser?.city || "—"}</p>
                       )}
@@ -816,7 +816,7 @@ export default function ProfileClient({ data }: Props) {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">State</p>
                       {editing ? (
-                        <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="h-8 text-sm" />
+                        <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="text-sm" />
                       ) : (
                         <p className="text-sm font-medium">{dbUser?.state || "—"}</p>
                       )}
@@ -824,7 +824,7 @@ export default function ProfileClient({ data }: Props) {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Country</p>
                       {editing ? (
-                        <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="h-8 text-sm" />
+                        <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="text-sm" />
                       ) : (
                         <p className="text-sm font-medium">{dbUser?.country || "—"}</p>
                       )}
@@ -832,7 +832,7 @@ export default function ProfileClient({ data }: Props) {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Zip / Postal Code</p>
                       {editing ? (
-                        <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="h-8 text-sm" />
+                        <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="text-sm" />
                       ) : (
                         <p className="text-sm font-medium">{dbUser?.zipCode || "—"}</p>
                       )}
@@ -852,7 +852,7 @@ export default function ProfileClient({ data }: Props) {
                           value={editLinkedin}
                           onChange={(e) => setEditLinkedin(e.target.value)}
                           placeholder="https://linkedin.com/in/username"
-                          className="h-8 text-sm"
+                          className="text-sm"
                         />
                       ) : (
                         <p className="text-sm font-medium truncate">{dbUser?.linkedin || "—"}</p>
@@ -865,7 +865,7 @@ export default function ProfileClient({ data }: Props) {
                           value={editGithub}
                           onChange={(e) => setEditGithub(e.target.value)}
                           placeholder="https://github.com/username"
-                          className="h-8 text-sm"
+                          className="text-sm"
                         />
                       ) : (
                         <p className="text-sm font-medium truncate">{dbUser?.github || "—"}</p>
@@ -878,7 +878,7 @@ export default function ProfileClient({ data }: Props) {
                           value={editTwitter}
                           onChange={(e) => setEditTwitter(e.target.value)}
                           placeholder="https://twitter.com/username"
-                          className="h-8 text-sm"
+                          className="text-sm"
                         />
                       ) : (
                         <p className="text-sm font-medium truncate">{dbUser?.twitter || "—"}</p>
@@ -891,7 +891,7 @@ export default function ProfileClient({ data }: Props) {
                           value={editWebsite}
                           onChange={(e) => setEditWebsite(e.target.value)}
                           placeholder="https://example.com"
-                          className="h-8 text-sm"
+                          className="text-sm"
                         />
                       ) : (
                         <p className="text-sm font-medium truncate">{dbUser?.website || "—"}</p>
@@ -916,12 +916,12 @@ export default function ProfileClient({ data }: Props) {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Company Name <span className="text-destructive">*</span></Label>
-                        <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="h-9 text-sm" placeholder="Acme Corp" />
+                        <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="text-sm" placeholder="Acme Corp" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Business Type <span className="text-destructive">*</span></Label>
                         <Select value={editBusinessType} onValueChange={setEditBusinessType}>
-                          <SelectTrigger className="h-9 text-sm">
+                          <SelectTrigger className="text-sm">
                             <SelectValue placeholder="Select business type" />
                           </SelectTrigger>
                           <SelectContent>
@@ -947,15 +947,15 @@ export default function ProfileClient({ data }: Props) {
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">GST Number</Label>
-                        <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="22AAAAA0000A1Z5" className="h-9 text-sm" />
+                        <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="22AAAAA0000A1Z5" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">PAN Number</Label>
-                        <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="ABCDE1234F" className="h-9 text-sm" />
+                        <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="ABCDE1234F" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">CIN Number</Label>
-                        <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="L12345MH2020PLC123456" className="h-9 text-sm" />
+                        <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="L12345MH2020PLC123456" className="text-sm" />
                       </div>
                     </div>
 
@@ -964,19 +964,19 @@ export default function ProfileClient({ data }: Props) {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Company Email <span className="text-destructive">*</span></Label>
-                        <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="company@example.com" className="h-9 text-sm" />
+                        <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="company@example.com" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Mobile Number <span className="text-destructive">*</span></Label>
-                        <Input value={editMobileNumber} onChange={(e) => setEditMobileNumber(e.target.value)} placeholder="+91 9876543210" className="h-9 text-sm" />
+                        <Input value={editMobileNumber} onChange={(e) => setEditMobileNumber(e.target.value)} placeholder="+91 9876543210" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Alternate Mobile Number</Label>
-                        <Input value={editAltMobile} onChange={(e) => setEditAltMobile(e.target.value)} placeholder="+91 9876543211" className="h-9 text-sm" />
+                        <Input value={editAltMobile} onChange={(e) => setEditAltMobile(e.target.value)} placeholder="+91 9876543211" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Website</Label>
-                        <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="https://company.com" className="h-9 text-sm" />
+                        <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="https://company.com" className="text-sm" />
                       </div>
                     </div>
 
@@ -985,27 +985,27 @@ export default function ProfileClient({ data }: Props) {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="sm:col-span-2 space-y-1.5">
                         <Label className="text-xs font-medium">Address Line 1 <span className="text-destructive">*</span></Label>
-                        <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="123 Main Street" className="h-9 text-sm" />
+                        <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="123 Main Street" className="text-sm" />
                       </div>
                       <div className="sm:col-span-2 space-y-1.5">
                         <Label className="text-xs font-medium">Address Line 2</Label>
-                        <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="Suite 100" className="h-9 text-sm" />
+                        <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="Suite 100" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">City <span className="text-destructive">*</span></Label>
-                        <Input value={editOrgCity} onChange={(e) => setEditOrgCity(e.target.value)} placeholder="Mumbai" className="h-9 text-sm" />
+                        <Input value={editOrgCity} onChange={(e) => setEditOrgCity(e.target.value)} placeholder="Mumbai" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">State <span className="text-destructive">*</span></Label>
-                        <Input value={editOrgState} onChange={(e) => setEditOrgState(e.target.value)} placeholder="Maharashtra" className="h-9 text-sm" />
+                        <Input value={editOrgState} onChange={(e) => setEditOrgState(e.target.value)} placeholder="Maharashtra" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Pincode <span className="text-destructive">*</span></Label>
-                        <Input value={editPincode} onChange={(e) => setEditPincode(e.target.value)} placeholder="400001" className="h-9 text-sm" />
+                        <Input value={editPincode} onChange={(e) => setEditPincode(e.target.value)} placeholder="400001" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Country</Label>
-                        <Input value={editOrgCountry} onChange={(e) => setEditOrgCountry(e.target.value)} placeholder="India" className="h-9 text-sm" />
+                        <Input value={editOrgCountry} onChange={(e) => setEditOrgCountry(e.target.value)} placeholder="India" className="text-sm" />
                       </div>
                     </div>
 
@@ -1014,19 +1014,19 @@ export default function ProfileClient({ data }: Props) {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Authorized Person Name <span className="text-destructive">*</span></Label>
-                        <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="John Doe" className="h-9 text-sm" />
+                        <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="John Doe" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Designation <span className="text-destructive">*</span></Label>
-                        <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="CEO" className="h-9 text-sm" />
+                        <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="CEO" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Authorized Person Email <span className="text-destructive">*</span></Label>
-                        <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="john@company.com" className="h-9 text-sm" />
+                        <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="john@company.com" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Authorized Person Mobile <span className="text-destructive">*</span></Label>
-                        <Input value={editAuthorizedMobile} onChange={(e) => setEditAuthorizedMobile(e.target.value)} placeholder="+91 9876543210" className="h-9 text-sm" />
+                        <Input value={editAuthorizedMobile} onChange={(e) => setEditAuthorizedMobile(e.target.value)} placeholder="+91 9876543210" className="text-sm" />
                       </div>
                     </div>
 
@@ -1035,7 +1035,7 @@ export default function ProfileClient({ data }: Props) {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Number of Employees</Label>
-                        <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="50" className="h-9 text-sm" />
+                        <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="50" className="text-sm" />
                       </div>
                     </div>
                     <div className="space-y-1.5">
@@ -1150,43 +1150,43 @@ export default function ProfileClient({ data }: Props) {
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Employee ID</Label>
-                          <Input value={editDisplayId} onChange={(e) => setEditDisplayId(e.target.value)} className="h-9 text-sm" placeholder="EMP-001" />
+                          <Input value={editDisplayId} onChange={(e) => setEditDisplayId(e.target.value)} className="text-sm" placeholder="EMP-001" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Designation</Label>
-                          <Input value={editEmpDesignation} onChange={(e) => setEditEmpDesignation(e.target.value)} className="h-9 text-sm" placeholder="Senior Developer" />
+                          <Input value={editEmpDesignation} onChange={(e) => setEditEmpDesignation(e.target.value)} className="text-sm" placeholder="Senior Developer" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Employment Type</Label>
-                          <Input value={editEmploymentType} onChange={(e) => setEditEmploymentType(e.target.value)} className="h-9 text-sm" placeholder="Full-time" />
+                          <Input value={editEmploymentType} onChange={(e) => setEditEmploymentType(e.target.value)} className="text-sm" placeholder="Full-time" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Branch</Label>
-                          <Input value={editBranchName} onChange={(e) => setEditBranchName(e.target.value)} className="h-9 text-sm" placeholder="Main Branch" />
+                          <Input value={editBranchName} onChange={(e) => setEditBranchName(e.target.value)} className="text-sm" placeholder="Main Branch" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Location</Label>
-                          <Input value={editUserLocation} onChange={(e) => setEditUserLocation(e.target.value)} className="h-9 text-sm" placeholder="New York" />
+                          <Input value={editUserLocation} onChange={(e) => setEditUserLocation(e.target.value)} className="text-sm" placeholder="New York" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Shift</Label>
-                          <Input value={editShift} onChange={(e) => setEditShift(e.target.value)} className="h-9 text-sm" placeholder="Day" />
+                          <Input value={editShift} onChange={(e) => setEditShift(e.target.value)} className="text-sm" placeholder="Day" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Source of Hire</Label>
-                          <Input value={editSourceOfHire} onChange={(e) => setEditSourceOfHire(e.target.value)} className="h-9 text-sm" placeholder="Referral" />
+                          <Input value={editSourceOfHire} onChange={(e) => setEditSourceOfHire(e.target.value)} className="text-sm" placeholder="Referral" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Joining Date</Label>
-                          <Input type="date" value={editJoiningDate} onChange={(e) => setEditJoiningDate(e.target.value)} className="h-9 text-sm" />
+                          <Input type="date" value={editJoiningDate} onChange={(e) => setEditJoiningDate(e.target.value)} className="text-sm" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Current Experience</Label>
-                          <Input value={editCurrentExperience} onChange={(e) => setEditCurrentExperience(e.target.value)} className="h-9 text-sm" placeholder="3 years" />
+                          <Input value={editCurrentExperience} onChange={(e) => setEditCurrentExperience(e.target.value)} className="text-sm" placeholder="3 years" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Total Experience</Label>
-                          <Input value={editTotalExperience} onChange={(e) => setEditTotalExperience(e.target.value)} className="h-9 text-sm" placeholder="5 years" />
+                          <Input value={editTotalExperience} onChange={(e) => setEditTotalExperience(e.target.value)} className="text-sm" placeholder="5 years" />
                         </div>
                       </div>
                     </div>
@@ -1202,15 +1202,15 @@ export default function ProfileClient({ data }: Props) {
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">First Name</Label>
-                          <Input value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="h-9 text-sm" placeholder="John" />
+                          <Input value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="text-sm" placeholder="John" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Last Name</Label>
-                          <Input value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="h-9 text-sm" placeholder="Doe" />
+                          <Input value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="text-sm" placeholder="Doe" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Nickname</Label>
-                          <Input value={editNickname} onChange={(e) => setEditNickname(e.target.value)} className="h-9 text-sm" placeholder="Johnny" />
+                          <Input value={editNickname} onChange={(e) => setEditNickname(e.target.value)} className="text-sm" placeholder="Johnny" />
                         </div>
                       </div>
                     </div>
@@ -1226,7 +1226,7 @@ export default function ProfileClient({ data }: Props) {
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Alternate Phone</Label>
-                          <Input value={editSecondaryPhone} onChange={(e) => setEditSecondaryPhone(e.target.value)} className="h-9 text-sm" placeholder="+1 555-987-6543" />
+                          <Input value={editSecondaryPhone} onChange={(e) => setEditSecondaryPhone(e.target.value)} className="text-sm" placeholder="+1 555-987-6543" />
                         </div>
                       </div>
                     </div>
@@ -1245,23 +1245,23 @@ export default function ProfileClient({ data }: Props) {
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Company name</Label>
-                                <Input value={row.company || ""} onChange={(e) => updateWorkRow(row.id!, "company", e.target.value)} className="h-9 text-sm" placeholder="Company name" />
+                                <Input value={row.company || ""} onChange={(e) => updateWorkRow(row.id!, "company", e.target.value)} className="text-sm" placeholder="Company name" />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Job Title</Label>
-                                <Input value={row.title || ""} onChange={(e) => updateWorkRow(row.id!, "title", e.target.value)} className="h-9 text-sm" placeholder="Job Title" />
+                                <Input value={row.title || ""} onChange={(e) => updateWorkRow(row.id!, "title", e.target.value)} className="text-sm" placeholder="Job Title" />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Roles</Label>
-                                <Input value={row.roles || ""} onChange={(e) => updateWorkRow(row.id!, "roles", e.target.value)} className="h-9 text-sm" placeholder="e.g. Developer, Team Lead" />
+                                <Input value={row.roles || ""} onChange={(e) => updateWorkRow(row.id!, "roles", e.target.value)} className="text-sm" placeholder="e.g. Developer, Team Lead" />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">From Date</Label>
-                                <Input type="date" value={row.from || ""} onChange={(e) => updateWorkRow(row.id!, "from", e.target.value)} className="h-9 text-sm" />
+                                <Input type="date" value={row.from || ""} onChange={(e) => updateWorkRow(row.id!, "from", e.target.value)} className="text-sm" />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">To Date</Label>
-                                <Input type="date" value={row.to || ""} onChange={(e) => updateWorkRow(row.id!, "to", e.target.value)} className="h-9 text-sm" />
+                                <Input type="date" value={row.to || ""} onChange={(e) => updateWorkRow(row.id!, "to", e.target.value)} className="text-sm" />
                               </div>
                               <div className="flex items-center gap-2">
                                 <Checkbox id={`work-relevant-${row.id}`} checked={!!row.relevant} onCheckedChange={(c) => updateWorkRow(row.id!, "relevant", !!c)} />
@@ -1297,19 +1297,19 @@ export default function ProfileClient({ data }: Props) {
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Institute Name</Label>
-                                <Input value={row.institute || ""} onChange={(e) => updateEduRow(row.id!, "institute", e.target.value)} className="h-9 text-sm" placeholder="Institute Name" />
+                                <Input value={row.institute || ""} onChange={(e) => updateEduRow(row.id!, "institute", e.target.value)} className="text-sm" placeholder="Institute Name" />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Degree/Diploma</Label>
-                                <Input value={row.degree || ""} onChange={(e) => updateEduRow(row.id!, "degree", e.target.value)} className="h-9 text-sm" placeholder="Degree/Diploma" />
+                                <Input value={row.degree || ""} onChange={(e) => updateEduRow(row.id!, "degree", e.target.value)} className="text-sm" placeholder="Degree/Diploma" />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Specialization</Label>
-                                <Input value={row.specialization || ""} onChange={(e) => updateEduRow(row.id!, "specialization", e.target.value)} className="h-9 text-sm" placeholder="Specialization" />
+                                <Input value={row.specialization || ""} onChange={(e) => updateEduRow(row.id!, "specialization", e.target.value)} className="text-sm" placeholder="Specialization" />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Date of Completion</Label>
-                                <Input type="date" value={row.completionDate || ""} onChange={(e) => updateEduRow(row.id!, "completionDate", e.target.value)} className="h-9 text-sm" />
+                                <Input type="date" value={row.completionDate || ""} onChange={(e) => updateEduRow(row.id!, "completionDate", e.target.value)} className="text-sm" />
                               </div>
                             </div>
                             <Button type="button" variant="ghost" size="sm" className="mt-2 text-destructive" onClick={() => removeRow("education", row.id!)}>
@@ -1337,15 +1337,15 @@ export default function ProfileClient({ data }: Props) {
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Name</Label>
-                                <Input value={row.name || ""} onChange={(e) => updateDepRow(row.id!, "name", e.target.value)} className="h-9 text-sm" placeholder="Name" />
+                                <Input value={row.name || ""} onChange={(e) => updateDepRow(row.id!, "name", e.target.value)} className="text-sm" placeholder="Name" />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Relationship</Label>
-                                <Input value={row.relationship || ""} onChange={(e) => updateDepRow(row.id!, "relationship", e.target.value)} className="h-9 text-sm" placeholder="Spouse, Child, Parent" />
+                                <Input value={row.relationship || ""} onChange={(e) => updateDepRow(row.id!, "relationship", e.target.value)} className="text-sm" placeholder="Spouse, Child, Parent" />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-medium">Date of Birth</Label>
-                                <Input type="date" value={row.dob || ""} onChange={(e) => updateDepRow(row.id!, "dob", e.target.value)} className="h-9 text-sm" />
+                                <Input type="date" value={row.dob || ""} onChange={(e) => updateDepRow(row.id!, "dob", e.target.value)} className="text-sm" />
                               </div>
                             </div>
                             <Button type="button" variant="ghost" size="sm" className="mt-2 text-destructive" onClick={() => removeRow("dependent", row.id!)}>

@@ -449,7 +449,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                     <div className="mt-2">
                       <Popover open={repeatStartDateOpen} onOpenChange={setRepeatStartDateOpen}>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="h-10 w-full justify-between rounded-xl border-[#E5E7EB] bg-white px-3 text-xs text-[#0F172A]">
+                          <Button variant="outline" className="w-full justify-between rounded-xl border-[#E5E7EB] bg-white px-3 text-xs text-[#0F172A]">
                             {repeatStartDate ? (
                               <span>{repeatStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                             ) : (

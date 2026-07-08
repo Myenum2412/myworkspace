@@ -51,15 +51,15 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
         )}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="mongo-name">Full name</Label>
-          <Input id="mongo-name" name="name" type="text" placeholder="Jane Smith" required autoComplete="name" className="h-10" />
+          <Input id="mongo-name" name="name" type="text" placeholder="Jane Smith" required autoComplete="name" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="mongo-company">Company name</Label>
-          <Input id="mongo-company" name="company" type="text" placeholder="Acme Corp" autoComplete="organization" className="h-10" />
+          <Input id="mongo-company" name="company" type="text" placeholder="Acme Corp" autoComplete="organization" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="mongo-email">Email address</Label>
-          <Input id="mongo-email" name="email" type="email" required autoComplete="email" className="h-10" />
+          <Input id="mongo-email" name="email" type="email" required autoComplete="email" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="mongo-password">Password</Label>
@@ -69,7 +69,7 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
           <Label htmlFor="mongo-confirm">Confirm password</Label>
           <PasswordInput id="mongo-confirm" name="confirm" placeholder="Re-enter your password" required autoComplete="new-password" />
         </div>
-        <Button type="submit" className="w-full mt-1 font-semibold h-11">
+        <Button type="submit" className="w-full mt-1 font-semibold">
           Create account
         </Button>
       </form>
@@ -81,9 +81,9 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:h-20 sm:flex-col sm:gap-1.5 text-sm font-medium mx-auto sm:mx-0" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span className="hidden sm:inline">Google</span></Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:h-20 sm:flex-col sm:gap-1.5 text-sm font-medium mx-auto sm:mx-0" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}><GitHubIcon /><span className="hidden sm:inline">GitHub</span></Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:h-20 sm:flex-col sm:gap-1.5 text-sm font-medium mx-auto sm:mx-0" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}><LinkedInIcon /><span className="hidden sm:inline">LinkedIn</span></Button>
+        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:flex-col sm:gap-1.5 text-sm font-medium mx-auto sm:mx-0" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span className="hidden sm:inline">Google</span></Button>
+        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:flex-col sm:gap-1.5 text-sm font-medium mx-auto sm:mx-0" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}><GitHubIcon /><span className="hidden sm:inline">GitHub</span></Button>
+        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:flex-col sm:gap-1.5 text-sm font-medium mx-auto sm:mx-0" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}><LinkedInIcon /><span className="hidden sm:inline">LinkedIn</span></Button>
       </div>
 
       <p className="text-center text-sm text-muted-foreground">

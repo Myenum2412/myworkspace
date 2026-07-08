@@ -182,7 +182,7 @@ export function ProjectCreateForm({
             <Label className="text-sm font-medium">Team Members</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start font-normal h-9" disabled={submitting}>
+                <Button variant="outline" className="w-full justify-start font-normal" disabled={submitting}>
                   <UsersIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
                   {projectMembers.length === 0
                     ? "Select team members"

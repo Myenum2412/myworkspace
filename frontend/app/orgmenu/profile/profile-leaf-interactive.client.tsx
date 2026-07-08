@@ -453,7 +453,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div className="sm:col-span-2">
                   <p className="text-xs text-muted-foreground mb-1">Street</p>
                   {editing ? (
-                    <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="h-8 text-sm" />
+                    <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.address || "—"}</p>
                   )}
@@ -461,7 +461,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">City</p>
                   {editing ? (
-                    <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="h-8 text-sm" />
+                    <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.city || "—"}</p>
                   )}
@@ -469,7 +469,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">State</p>
                   {editing ? (
-                    <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="h-8 text-sm" />
+                    <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.state || "—"}</p>
                   )}
@@ -477,7 +477,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Country</p>
                   {editing ? (
-                    <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="h-8 text-sm" />
+                    <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.country || "—"}</p>
                   )}
@@ -485,7 +485,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Zip Code</p>
                   {editing ? (
-                    <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="h-8 text-sm" />
+                    <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.zipCode || "—"}</p>
                   )}
@@ -505,7 +505,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                       value={editLinkedin}
                       onChange={(e) => setEditLinkedin(e.target.value)}
                       placeholder="https://linkedin.com/in/username"
-                      className="h-8 text-sm"
+                      className="text-sm"
                     />
                   ) : (
                     <p className="text-sm font-medium truncate">{dbUser?.linkedin || "—"}</p>
@@ -520,7 +520,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                       value={editGithub}
                       onChange={(e) => setEditGithub(e.target.value)}
                       placeholder="https://github.com/username"
-                      className="h-8 text-sm"
+                      className="text-sm"
                     />
                   ) : (
                     <p className="text-sm font-medium truncate">{dbUser?.github || "—"}</p>
@@ -535,7 +535,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                       value={editTwitter}
                       onChange={(e) => setEditTwitter(e.target.value)}
                       placeholder="https://twitter.com/username"
-                      className="h-8 text-sm"
+                      className="text-sm"
                     />
                   ) : (
                     <p className="text-sm font-medium truncate">{dbUser?.twitter || "—"}</p>
@@ -550,7 +550,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                       value={editWebsite}
                       onChange={(e) => setEditWebsite(e.target.value)}
                       placeholder="https://example.com"
-                      className="h-8 text-sm"
+                      className="text-sm"
                     />
                   ) : (
                     <p className="text-sm font-medium truncate">{dbUser?.website || "—"}</p>

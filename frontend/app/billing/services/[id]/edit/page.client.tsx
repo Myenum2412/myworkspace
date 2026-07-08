@@ -45,7 +45,7 @@ export default function EditServicePage() {
               <Label className="text-red-500 font-medium">Service Name*</Label>
             </div>
             <div>
-              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full h-9" placeholder="Enter service name" />
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" placeholder="Enter service name" />
             </div>
 
             <div className="pt-2">
@@ -59,14 +59,14 @@ export default function EditServicePage() {
               <Label className="text-gray-700 font-medium">Category</Label>
             </div>
             <div>
-              <Input value={category} onChange={(e) => setCategory(e.target.value)} className="w-full h-9" placeholder="e.g. Development, Design, Consulting" />
+              <Input value={category} onChange={(e) => setCategory(e.target.value)} className="w-full" placeholder="e.g. Development, Design, Consulting" />
             </div>
 
             <div className="pt-2">
               <Label className="text-gray-700 font-medium">Rate*</Label>
             </div>
             <div>
-              <Input type="number" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} className="w-full h-9" />
+              <Input type="number" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} className="w-full" />
             </div>
 
             <div className="pt-2">
@@ -74,7 +74,7 @@ export default function EditServicePage() {
             </div>
             <div>
               <Select value={unit} onValueChange={setUnit}>
-                <SelectTrigger className="w-full h-9">
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -92,7 +92,7 @@ export default function EditServicePage() {
             </div>
             <div>
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="w-full h-9">
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -105,8 +105,8 @@ export default function EditServicePage() {
           </div>
 
           <div className="flex items-center gap-3 mt-10">
-            <Button onClick={handleSave} className="h-9 px-6">Save Changes</Button>
-            <Button variant="outline" className="h-9 px-6" asChild>
+            <Button onClick={handleSave} className="px-6">Save Changes</Button>
+            <Button variant="outline" className="px-6" asChild>
               <Link href="/billing/services">Cancel</Link>
             </Button>
           </div>

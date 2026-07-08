@@ -103,10 +103,10 @@ export default function ApprovalsInteractive({ initialTasks }: ApprovalsInteract
         const task = row.original;
         return (
           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            <Button size="sm" className="h-8 sm:h-7 text-xs bg-green-500 hover:bg-green-700 touch-target" onClick={() => openAction(task, "approve")}>
+            <Button size="sm" className="text-xs bg-green-500 hover:bg-green-700 touch-target" onClick={() => openAction(task, "approve")}>
               <CheckCircleIcon className="size-3 mr-1" />Approve
             </Button>
-            <Button size="sm" variant="outline" className="h-8 sm:h-7 text-xs text-black border-blue-200 hover:bg-blue-100 touch-target" onClick={() => openAction(task, "reject")}>
+            <Button size="sm" variant="outline" className="text-xs text-black border-blue-200 hover:bg-blue-100 touch-target" onClick={() => openAction(task, "reject")}>
               <XCircleIcon className="size-3 mr-1" />Reject
             </Button>
           </div>

@@ -50,7 +50,7 @@ export default function BillingServicesPage() {
         <h1 className="text-2xl font-bold">Services</h1>
         <div className="flex items-center gap-3">
           {selectedItems.size > 0 && (
-            <Button variant="destructive" size="sm" onClick={deleteSelected} className="h-9">
+            <Button variant="destructive" size="sm" onClick={deleteSelected}>
               <Trash2 className="size-4 mr-1.5" />
               Delete ({selectedItems.size})
             </Button>

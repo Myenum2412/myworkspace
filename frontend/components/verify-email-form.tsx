@@ -67,7 +67,7 @@ export function VerifyEmailForm({ className, searchParams, ...props }: React.Com
       <form action={verifyEmailAction} className="flex flex-col gap-4">
         <input type="hidden" name="token" value={token} />
         <input type="hidden" name="email" value={email} />
-        <Button type="submit" className="w-full font-semibold h-11">
+        <Button type="submit" className="w-full font-semibold">
           Verify email address
         </Button>
       </form>

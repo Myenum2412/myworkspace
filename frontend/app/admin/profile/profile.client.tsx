@@ -174,7 +174,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Name {editing && <span className="text-destructive">*</span>}</p>
                   {editing ? (
-                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Full name" className="h-8 text-sm mt-1" required />
+                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Full name" className="text-sm mt-1" required />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.name || "\u2014"}</p>
                   )}
@@ -187,7 +187,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Phone</p>
                   {editing ? (
-                    <Input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="+1 555-123-4567" className="h-8 text-sm mt-1" />
+                    <Input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="+1 555-123-4567" className="text-sm mt-1" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.phone || "\u2014"}</p>
                   )}
@@ -200,7 +200,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Department</p>
                   {editing ? (
-                    <Input value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} placeholder="Engineering" className="h-8 text-sm mt-1" />
+                    <Input value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} placeholder="Engineering" className="text-sm mt-1" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.department || "\u2014"}</p>
                   )}
@@ -213,7 +213,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Company</p>
                   {editing ? (
-                    <Input value={editCompany} onChange={(e) => setEditCompany(e.target.value)} placeholder="Company name" className="h-8 text-sm mt-1" />
+                    <Input value={editCompany} onChange={(e) => setEditCompany(e.target.value)} placeholder="Company name" className="text-sm mt-1" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.company || "\u2014"}</p>
                   )}
@@ -256,7 +256,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Street</p>
                     {editing ? (
-                      <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="h-8 text-sm" />
+                      <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.address || "\u2014"}</p>
                     )}
@@ -264,7 +264,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">City</p>
                     {editing ? (
-                      <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="h-8 text-sm" />
+                      <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.city || "\u2014"}</p>
                     )}
@@ -272,7 +272,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">State</p>
                     {editing ? (
-                      <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="h-8 text-sm" />
+                      <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.state || "\u2014"}</p>
                     )}
@@ -280,7 +280,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Country</p>
                     {editing ? (
-                      <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="h-8 text-sm" />
+                      <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.country || "\u2014"}</p>
                     )}
@@ -288,7 +288,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Zip / Postal Code</p>
                     {editing ? (
-                      <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="h-8 text-sm" />
+                      <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.zipCode || "\u2014"}</p>
                     )}
@@ -303,7 +303,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">LinkedIn</p>
                     {editing ? (
-                      <Input value={editLinkedin} onChange={(e) => setEditLinkedin(e.target.value)} placeholder="https://linkedin.com/in/username" className="h-8 text-sm" />
+                      <Input value={editLinkedin} onChange={(e) => setEditLinkedin(e.target.value)} placeholder="https://linkedin.com/in/username" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium truncate">{dbUser?.linkedin || "\u2014"}</p>
                     )}
@@ -311,7 +311,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">GitHub</p>
                     {editing ? (
-                      <Input value={editGithub} onChange={(e) => setEditGithub(e.target.value)} placeholder="https://github.com/username" className="h-8 text-sm" />
+                      <Input value={editGithub} onChange={(e) => setEditGithub(e.target.value)} placeholder="https://github.com/username" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium truncate">{dbUser?.github || "\u2014"}</p>
                     )}
@@ -319,7 +319,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Twitter</p>
                     {editing ? (
-                      <Input value={editTwitter} onChange={(e) => setEditTwitter(e.target.value)} placeholder="https://twitter.com/username" className="h-8 text-sm" />
+                      <Input value={editTwitter} onChange={(e) => setEditTwitter(e.target.value)} placeholder="https://twitter.com/username" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium truncate">{dbUser?.twitter || "\u2014"}</p>
                     )}
@@ -327,7 +327,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Website</p>
                     {editing ? (
-                      <Input value={editWebsite} onChange={(e) => setEditWebsite(e.target.value)} placeholder="https://example.com" className="h-8 text-sm" />
+                      <Input value={editWebsite} onChange={(e) => setEditWebsite(e.target.value)} placeholder="https://example.com" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium truncate">{dbUser?.website || "\u2014"}</p>
                     )}
@@ -350,12 +350,12 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Company Name <span className="text-destructive">*</span></Label>
-                      <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="h-9 text-sm" placeholder="Acme Corp" />
+                      <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="text-sm" placeholder="Acme Corp" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Business Type <span className="text-destructive">*</span></Label>
                       <Select value={editBusinessType} onValueChange={setEditBusinessType}>
-                        <SelectTrigger className="h-9 text-sm">
+                        <SelectTrigger className="text-sm">
                           <SelectValue placeholder="Select business type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -381,15 +381,15 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">GST Number</Label>
-                      <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="22AAAAA0000A1Z5" className="h-9 text-sm" />
+                      <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="22AAAAA0000A1Z5" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">PAN Number</Label>
-                      <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="ABCDE1234F" className="h-9 text-sm" />
+                      <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="ABCDE1234F" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">CIN Number</Label>
-                      <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="L12345MH2020PLC123456" className="h-9 text-sm" />
+                      <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="L12345MH2020PLC123456" className="text-sm" />
                     </div>
                   </div>
 
@@ -398,19 +398,19 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Company Email <span className="text-destructive">*</span></Label>
-                      <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="company@example.com" className="h-9 text-sm" />
+                      <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="company@example.com" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Mobile Number <span className="text-destructive">*</span></Label>
-                      <Input value={editMobileNumber} onChange={(e) => setEditMobileNumber(e.target.value)} placeholder="+91 9876543210" className="h-9 text-sm" />
+                      <Input value={editMobileNumber} onChange={(e) => setEditMobileNumber(e.target.value)} placeholder="+91 9876543210" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Alternate Mobile Number</Label>
-                      <Input value={editAltMobile} onChange={(e) => setEditAltMobile(e.target.value)} placeholder="+91 9876543211" className="h-9 text-sm" />
+                      <Input value={editAltMobile} onChange={(e) => setEditAltMobile(e.target.value)} placeholder="+91 9876543211" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Website</Label>
-                      <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="https://company.com" className="h-9 text-sm" />
+                      <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="https://company.com" className="text-sm" />
                     </div>
                   </div>
 
@@ -419,27 +419,27 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="sm:col-span-2 space-y-1.5">
                       <Label className="text-xs font-medium">Address Line 1 <span className="text-destructive">*</span></Label>
-                      <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="123 Main Street" className="h-9 text-sm" />
+                      <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="123 Main Street" className="text-sm" />
                     </div>
                     <div className="sm:col-span-2 space-y-1.5">
                       <Label className="text-xs font-medium">Address Line 2</Label>
-                      <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="Suite 100" className="h-9 text-sm" />
+                      <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="Suite 100" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">City <span className="text-destructive">*</span></Label>
-                      <Input value={editOrgCity} onChange={(e) => setEditOrgCity(e.target.value)} placeholder="Mumbai" className="h-9 text-sm" />
+                      <Input value={editOrgCity} onChange={(e) => setEditOrgCity(e.target.value)} placeholder="Mumbai" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">State <span className="text-destructive">*</span></Label>
-                      <Input value={editOrgState} onChange={(e) => setEditOrgState(e.target.value)} placeholder="Maharashtra" className="h-9 text-sm" />
+                      <Input value={editOrgState} onChange={(e) => setEditOrgState(e.target.value)} placeholder="Maharashtra" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Pincode <span className="text-destructive">*</span></Label>
-                      <Input value={editPincode} onChange={(e) => setEditPincode(e.target.value)} placeholder="400001" className="h-9 text-sm" />
+                      <Input value={editPincode} onChange={(e) => setEditPincode(e.target.value)} placeholder="400001" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Country</Label>
-                      <Input value={editOrgCountry} onChange={(e) => setEditOrgCountry(e.target.value)} placeholder="India" className="h-9 text-sm" />
+                      <Input value={editOrgCountry} onChange={(e) => setEditOrgCountry(e.target.value)} placeholder="India" className="text-sm" />
                     </div>
                   </div>
 
@@ -448,19 +448,19 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Authorized Person Name <span className="text-destructive">*</span></Label>
-                      <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="John Doe" className="h-9 text-sm" />
+                      <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="John Doe" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Designation <span className="text-destructive">*</span></Label>
-                      <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="CEO" className="h-9 text-sm" />
+                      <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="CEO" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Authorized Person Email <span className="text-destructive">*</span></Label>
-                      <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="john@company.com" className="h-9 text-sm" />
+                      <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="john@company.com" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Authorized Person Mobile <span className="text-destructive">*</span></Label>
-                      <Input value={editAuthorizedMobile} onChange={(e) => setEditAuthorizedMobile(e.target.value)} placeholder="+91 9876543210" className="h-9 text-sm" />
+                      <Input value={editAuthorizedMobile} onChange={(e) => setEditAuthorizedMobile(e.target.value)} placeholder="+91 9876543210" className="text-sm" />
                     </div>
                   </div>
 
@@ -469,7 +469,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Number of Employees</Label>
-                      <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="50" className="h-9 text-sm" />
+                      <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="50" className="text-sm" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
@@ -578,8 +578,8 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
 
             <div className="space-y-3">
               <div className="flex gap-2">
-                <Input placeholder="Paste image URL" value={urlInput} onChange={(e) => setUrlInput(e.target.value)} className="h-8 text-xs" />
-                <Button size="sm" className="h-8 text-xs shrink-0" disabled={!urlInput} onClick={() => updateBanner(urlInput)}>
+                <Input placeholder="Paste image URL" value={urlInput} onChange={(e) => setUrlInput(e.target.value)} className="text-xs" />
+                <Button size="sm" className="text-xs shrink-0" disabled={!urlInput} onClick={() => updateBanner(urlInput)}>
                   Set
                 </Button>
               </div>

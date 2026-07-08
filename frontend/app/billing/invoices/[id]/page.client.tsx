@@ -288,23 +288,23 @@ export default function InvoiceFormPage() {
           {/* Invoice# */}
           <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-y-1.5 sm:gap-y-6 sm:gap-x-4 items-start">
             <Label className="text-red-500 font-medium text-xs sm:text-sm pt-2">Invoice#*</Label>
-            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className="w-full sm:max-w-xs h-10 sm:h-9" />
+            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className="w-full sm:max-w-xs" />
 
             {/* Order Number */}
             {!isSimplifiedView && (
               <>
                 <Label className="text-gray-700 font-medium text-xs sm:text-sm pt-2">Order Number</Label>
-                <Input className="w-full sm:max-w-xs h-10 sm:h-9" />
+                <Input className="w-full sm:max-w-xs" />
               </>
             )}
 
             {/* Invoice Date & Due Date */}
             <Label className="text-red-500 font-medium text-xs sm:text-sm pt-2">Invoice Date*</Label>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-8">
-              <Input type="date" value={currentDate} onChange={(e) => setCurrentDate(e.target.value)} className="w-full sm:w-[200px] h-10 sm:h-9 text-gray-700" />
+              <Input type="date" value={currentDate} onChange={(e) => setCurrentDate(e.target.value)} className="w-full sm:w-[200px] text-gray-700" />
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <Label className="text-gray-700 font-medium text-xs sm:text-sm whitespace-nowrap">Due Date</Label>
-                <Input type="date" value={currentDate} className="flex-1 sm:w-[160px] h-10 sm:h-9 border-dashed border-gray-300 text-gray-500" readOnly />
+                <Input type="date" value={currentDate} className="flex-1 sm:w-[160px] border-dashed border-gray-300 text-gray-500" readOnly />
               </div>
             </div>
 
@@ -369,15 +369,15 @@ export default function InvoiceFormPage() {
                     <div className="grid grid-cols-3 gap-2">
                       <div>
                         <Label className="text-[10px] text-muted-foreground">Qty</Label>
-                        <Input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="h-9 text-sm" />
+                        <Input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="text-sm" />
                       </div>
                       <div>
                         <Label className="text-[10px] text-muted-foreground">Rate</Label>
-                        <Input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} className="h-9 text-sm" />
+                        <Input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} className="text-sm" />
                       </div>
                       <div>
                         <Label className="text-[10px] text-muted-foreground">Tax %</Label>
-                        <Input type="number" value={item.tax} onChange={(e) => updateItem(item.id, 'tax', e.target.value)} className="h-9 text-sm" placeholder="0" />
+                        <Input type="number" value={item.tax} onChange={(e) => updateItem(item.id, 'tax', e.target.value)} className="text-sm" placeholder="0" />
                       </div>
                     </div>
                     <div className="flex items-center justify-between pt-1 border-t border-gray-100">
@@ -495,16 +495,16 @@ export default function InvoiceFormPage() {
           {/* Add Row Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <div className="flex items-center rounded overflow-hidden bg-gray-50 border border-gray-200">
-              <Button variant="ghost" size="sm" onClick={addNewRow} className="h-10 sm:h-8 text-blue-600 gap-1.5 px-3 rounded-none hover:bg-gray-100 font-medium text-sm touch-target">
+              <Button variant="ghost" size="sm" onClick={addNewRow} className="text-blue-600 gap-1.5 px-3 rounded-none hover:bg-gray-100 font-medium text-sm touch-target">
                 <PlusCircle className="size-4" />
                 Add New Row
               </Button>
               <div className="w-px h-5 bg-gray-300" />
-              <Button variant="ghost" size="icon" className="h-10 sm:h-8 w-8 rounded-none text-gray-500 hover:bg-gray-100">
+              <Button variant="ghost" size="icon" className="rounded-none text-gray-500 hover:bg-gray-100">
                 <ChevronDown className="size-4" />
               </Button>
             </div>
-            <Button variant="secondary" size="sm" onClick={addBulkRows} className="h-10 sm:h-8 bg-gray-50 border border-gray-200 text-blue-600 gap-1.5 font-medium hover:bg-gray-100 touch-target">
+            <Button variant="secondary" size="sm" onClick={addBulkRows} className="bg-gray-50 border border-gray-200 text-blue-600 gap-1.5 font-medium hover:bg-gray-100 touch-target">
               <PlusCircle className="size-4" />
               Add Items in Bulk
             </Button>
@@ -583,7 +583,7 @@ export default function InvoiceFormPage() {
 
                   <div className="flex justify-between items-center mb-6 text-sm">
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                      <Input defaultValue="Adjustment" className="w-20 sm:w-24 h-8 bg-white text-gray-600 border border-dashed border-gray-300 text-xs text-center" />
+                      <Input defaultValue="Adjustment" className="w-20 sm:w-24 bg-white text-gray-600 border border-dashed border-gray-300 text-xs text-center" />
                       <Input
                         type="number"
                         value={adjustmentValue}
@@ -617,11 +617,11 @@ export default function InvoiceFormPage() {
             <div className="w-full sm:w-auto">
               <Label className="text-gray-700 font-medium mb-3 block text-sm">Attach File(s) to Invoice</Label>
               <div className="inline-flex items-center rounded overflow-hidden border border-gray-200 bg-white w-full sm:w-auto">
-                <Button variant="ghost" size="sm" className="h-10 sm:h-8 gap-2 bg-white hover:bg-gray-50 font-medium border-r border-gray-200 rounded-none px-3 sm:px-4 text-gray-700 flex-1 sm:flex-initial touch-target">
+                <Button variant="ghost" size="sm" className="gap-2 bg-white hover:bg-gray-50 font-medium border-r border-gray-200 rounded-none px-3 sm:px-4 text-gray-700 flex-1 sm:flex-initial touch-target">
                   <Upload className="size-3.5" />
                   Upload File
                 </Button>
-                <Button variant="ghost" size="sm" className="h-10 sm:h-8 px-2 bg-white hover:bg-gray-50 rounded-none text-gray-500">
+                <Button variant="ghost" size="sm" className="px-2 bg-white hover:bg-gray-50 rounded-none text-gray-500">
                   <ChevronDown className="size-4" />
                 </Button>
               </div>

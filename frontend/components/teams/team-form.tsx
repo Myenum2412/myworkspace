@@ -117,7 +117,7 @@ export function TeamForm({
                 {selectedMemberIds.length > 0 && <span className="ml-1 text-[10px] font-normal text-primary bg-primary/10 rounded-full px-1.5 py-0.5">{selectedMemberIds.length}</span>}
               </h3>
               <div className="flex items-center gap-2">
-                <Input placeholder="Search..." value={memberSearch} onChange={(e) => onMemberSearchChange(e.target.value)} className="max-w-[150px] h-7 text-xs" />
+                <Input placeholder="Search..." value={memberSearch} onChange={(e) => onMemberSearchChange(e.target.value)} className="max-w-[150px] text-xs" />
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="h-7 text-xs">

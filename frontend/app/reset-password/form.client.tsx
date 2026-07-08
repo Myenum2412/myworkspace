@@ -20,7 +20,7 @@ export function ResetPasswordForm({ token, email }: { token?: string; email?: st
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-sm text-center">
           <p className="text-sm text-muted-foreground mb-4">Invalid or missing reset link. Please request a new one.</p>
-          <Button asChild className="h-11"><Link href="/forgot-password">Request reset link</Link></Button>
+          <Button asChild><Link href="/forgot-password">Request reset link</Link></Button>
         </div>
       </div>
     );
@@ -35,7 +35,7 @@ export function ResetPasswordForm({ token, email }: { token?: string; email?: st
           </div>
           <h1 className="text-2xl font-bold tracking-tight mb-2">Password reset!</h1>
           <p className="text-sm text-muted-foreground mb-6">Your password has been updated successfully.</p>
-          <Button asChild className="h-11"><Link href="/login">Sign in</Link></Button>
+          <Button asChild><Link href="/login">Sign in</Link></Button>
         </div>
       </div>
     );
@@ -113,7 +113,7 @@ export function ResetPasswordForm({ token, email }: { token?: string; email?: st
               className="h-10"
             />
           </div>
-          <Button type="submit" className="w-full font-semibold h-11" disabled={loading}>
+          <Button type="submit" className="w-full font-semibold" disabled={loading}>
             {loading ? <Loader2Icon className="size-4 mr-1.5 animate-spin" /> : <LockIcon className="size-4 mr-1.5" />}
             Reset password
           </Button>

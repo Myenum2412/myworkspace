@@ -94,8 +94,8 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
             <h1 className="text-xl sm:text-2xl font-bold">Team Tasks</h1>
             <Badge variant="secondary" className="text-[10px] sm:text-xs whitespace-nowrap">{localTasks.length} tasks · {assignees.length} members</Badge>
             <div className="flex gap-1">
-              <Button variant={view === "cards" ? "default" : "outline"} size="sm" className="h-7 sm:h-8 text-xs px-2" onClick={() => setView("cards")}>Cards</Button>
-              <Button variant={view === "table" ? "default" : "outline"} size="sm" className="h-7 sm:h-8 text-xs px-2" onClick={() => setView("table")}>Table</Button>
+              <Button variant={view === "cards" ? "default" : "outline"} size="sm" className="text-xs px-2" onClick={() => setView("cards")}>Cards</Button>
+              <Button variant={view === "table" ? "default" : "outline"} size="sm" className="text-xs px-2" onClick={() => setView("table")}>Table</Button>
             </div>
           </div>
           <Button onClick={() => setShowTaskModal(true)} className="w-full sm:w-auto touch-target">

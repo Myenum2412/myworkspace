@@ -29,13 +29,13 @@ export function Hero() {
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 md:justify-start">
-              <Button size="lg" asChild className="w-full sm:w-auto h-12 px-8 text-base font-medium shadow-md hover:shadow-lg transition-all duration-200 touch-target">
+              <Button size="lg" asChild className="w-full sm:w-auto px-8 text-base font-medium shadow-md hover:shadow-lg transition-all duration-200 touch-target">
                 <Link href="/signup">
                   Start Free Trial
                   <ArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="w-full sm:w-auto h-12 px-8 text-base font-medium touch-target">
+              <Button size="lg" variant="outline" asChild className="w-full sm:w-auto px-8 text-base font-medium touch-target">
                 <a href="#features">Learn More</a>
               </Button>
             </div>
