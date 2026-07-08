@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -21,28 +21,20 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
   const [open, setOpen] = useState(true);
 
   const context: AppContextType = getAppContext(pathname);
   const isApp = isAppPage(pathname);
 
-  // Wait for session to load before rendering content
-  // Prevents flash of wrong sidebar before role-based redirect fires
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   // Redirect client users to their portal
   useEffect(() => {
     const role = session?.user?.role?.toLowerCase() || "";
     if (role === "client" && !pathname.startsWith("/client") && !pathname.startsWith("/login")) {
-      router.replace("/client/dashboard");
+      routerRef.current.replace("/client/dashboard");
     }
-  }, [session?.user?.role, pathname, router]);
+  }, [session?.user?.role, pathname]);
 
   const user = useMemo(() => ({
     name: session?.user?.name || "User",
@@ -60,6 +52,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Wait for session to load before rendering content
+  // Prevents flash of wrong sidebar before role-based redirect fires
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!isApp) {
     return <>{children}</>;

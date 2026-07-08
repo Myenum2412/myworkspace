@@ -41,7 +41,7 @@ myworkspace.myenum.in {
     }
 
     # Gzip/Brotli compression
-    encode zstd brotli gzip
+    encode zstd gzip
 
     # Logs
     log {

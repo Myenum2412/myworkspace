@@ -10,7 +10,7 @@ services:
       dockerfile: frontend/Dockerfile
     container_name: myworkspace-frontend
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
     environment:
       NODE_ENV: production
       API_URL: http://backend:4000

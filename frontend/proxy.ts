@@ -27,6 +27,11 @@ const STAFF_SET = new Set(STAFF_PREFIXES);
 
 function getHomePath(role?: string): string {
   const roleLower = role?.toLowerCase() || "";
+  
+  if (roleLower === "client") {
+    return "/client/dashboard";
+  }
+  
   const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(roleLower);
   
   if (isWorkspaceAdmin) {
@@ -144,5 +149,5 @@ export const proxy = auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api/auth|_next/static|_next/image|favicon\\.ico|.*\\.(?:png|jpg|jpeg|svg|ico|webmanifest)).*)"],
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon\\.ico|_vercel|.*\\.(?:js|json|css|png|jpg|jpeg|svg|ico|webmanifest)).*)"],
 };

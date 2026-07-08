@@ -1,3 +1,5 @@
+(node:524501) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
 
 > my-app@0.1.0 build
 > next build
@@ -20,15 +22,15 @@ Follow https://github.com/serwist/serwist/issues/54 for progress on Serwist + Tu
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 20.5s
+✓ Compiled successfully in 14.0s
   Running TypeScript ...
-  Finished TypeScript in 25.1s ...
+  Finished TypeScript in 18.9s ...
   Collecting page data using 11 workers ...
   Generating static pages using 11 workers (0/64) ...
   Generating static pages using 11 workers (16/64) 
   Generating static pages using 11 workers (32/64) 
   Generating static pages using 11 workers (48/64) 
-✓ Generating static pages using 11 workers (64/64) in 1398ms
+✓ Generating static pages using 11 workers (64/64) in 850ms
   Finalizing page optimization ...
 
 Route (app)
