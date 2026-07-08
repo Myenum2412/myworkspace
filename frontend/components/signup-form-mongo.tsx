@@ -80,10 +80,10 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
         <Separator className="flex-1" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 sm:flex-col sm:gap-1.5 sm:h-20 text-sm font-medium" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /> Google</Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 sm:flex-col sm:gap-1.5 sm:h-20 text-sm font-medium" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}><GitHubIcon /> GitHub</Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center gap-2 h-11 sm:flex-col sm:gap-1.5 sm:h-20 text-sm font-medium" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}><LinkedInIcon /> LinkedIn</Button>
+      <div className="grid grid-cols-3 gap-3">
+        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:h-20 sm:flex-col sm:gap-1.5 text-sm font-medium mx-auto sm:mx-0" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span className="hidden sm:inline">Google</span></Button>
+        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:h-20 sm:flex-col sm:gap-1.5 text-sm font-medium mx-auto sm:mx-0" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}><GitHubIcon /><span className="hidden sm:inline">GitHub</span></Button>
+        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:h-20 sm:flex-col sm:gap-1.5 text-sm font-medium mx-auto sm:mx-0" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}><LinkedInIcon /><span className="hidden sm:inline">LinkedIn</span></Button>
       </div>
 
       <p className="text-center text-sm text-muted-foreground">
