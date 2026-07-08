@@ -16,6 +16,7 @@ import {
   LayoutDashboardIcon,
   ListTodoIcon,
   ClockIcon,
+  CalendarClockIcon,
   ActivityIcon,
   SettingsIcon,
   BriefcaseIcon,
@@ -40,8 +41,11 @@ function buildStaffNavData(orgId: string) {
       url: "/staffs/timesheet",
       icon: <ClockIcon className="size-6" />,
     },
-
-
+    {
+      title: "Upcoming Tasks",
+      url: "/staffs/upcoming-tasks",
+      icon: <CalendarClockIcon className="size-6" />,
+    },
     {
       title: "File Management",
       url: `/staffs/files${orgId ? `?orgId=${orgId}` : ""}`,
