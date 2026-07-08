@@ -81,7 +81,7 @@ const priorities = [
 
 function FieldCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-[#E5E7EB] bg-white p-6 sm:p-8 shadow-sm ${className}`}>
+    <div className={`pb-2 ${className}`}>
       {children}
     </div>
   );
@@ -253,7 +253,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !isSubmitting) onClose(); }}>
       <DialogContent
-        className="flex flex-col w-auto h-auto max-w-[900px] max-h-[90vh] p-0 gap-0 bg-white rounded-[20px] border border-[#E5E7EB] shadow-2xl"
+        className="flex flex-col w-auto h-auto max-w-[1100px] max-h-[95vh] p-0 gap-0 bg-white rounded-[20px] border border-[#E5E7EB] shadow-2xl"
         style={{ boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)" }}
       >
         {/* ─── Premium Header ─── */}
