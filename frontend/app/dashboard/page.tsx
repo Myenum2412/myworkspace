@@ -17,11 +17,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { ProfitLossRow } from "@/components/dashboard/profit-loss-chart";
 
 const ProfitLossChart = dynamic(() => import("@/components/dashboard/profit-loss-chart").then(m => ({ default: m.ProfitLossChart })), {
-  ssr: false,
   loading: () => <Skeleton className="h-[250px] sm:h-[350px] lg:h-[400px] w-full rounded-lg" />,
 });
 const PriorityBreakdownChart = dynamic(() => import("@/components/dashboard/priority-breakdown-chart").then(m => ({ default: m.PriorityBreakdownChart })), {
-  ssr: false,
   loading: () => <Skeleton className="h-[250px] sm:h-[350px] lg:h-[400px] w-full rounded-lg" />,
 });
 
