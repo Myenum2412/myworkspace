@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Eye, EyeOff, Building2, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
 
 export default function LoginInteractive() {
   const router = useRouter();
@@ -71,71 +72,88 @@ export default function LoginInteractive() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center pb-2">
-          <div className="flex justify-center mb-4">
-            <div className="rounded-full bg-primary/10 p-3">
-              <Building2 className="size-8 text-primary" />
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Left side - Login Form */}
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center pb-2">
+            <div className="flex justify-center mb-4">
+              <div className="rounded-full bg-primary/10 p-3">
+                <Building2 className="size-8 text-primary" />
+              </div>
             </div>
-          </div>
-          <CardTitle className="text-2xl">Client Portal</CardTitle>
-          <CardDescription>Sign in to access your client dashboard</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {newClient && (
-            <div className="rounded-lg bg-green-50 border border-green-300 p-3 flex items-start gap-2">
+            <CardTitle className="text-2xl">Client Portal</CardTitle>
+            <CardDescription>Sign in to access your client dashboard</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {newClient && (
+              <div className="rounded-lg bg-green-50 border border-green-300 p-3 flex items-start gap-2">
                 <CheckCircle2 className="size-5 text-success shrink-0 mt-0.5" />
                 <p className="text-sm text-gray-700">
-                Your client workspace has been created. Use the credentials sent to your email to sign in.
-              </p>
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
-                {error}
+                  Your client workspace has been created. Use the credentials sent to your email to sign in.
+                </p>
               </div>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
                 <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 size-8"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </Button>
               </div>
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <><Loader2 className="mr-2 size-4 animate-spin" /> Signing in...</> : "Sign In"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 size-8"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </Button>
+                </div>
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? <><Loader2 className="mr-2 size-4 animate-spin" /> Signing in...</> : "Sign In"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Right side - Illustration */}
+      <div className="hidden lg:flex flex-1 items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100 p-8">
+        <div className="relative w-full max-w-lg">
+          <Image
+            src="/logbg.png"
+            alt="My Workspace Illustration"
+            width={800}
+            height={600}
+            className="w-full h-auto drop-shadow-lg rounded-2xl"
+            priority
+          />
+        </div>
+      </div>
     </div>
   );
 }

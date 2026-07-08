@@ -133,11 +133,11 @@ export function TeamMembers({
                       <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-2">
                           {m.role !== "lead" && (
-                            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onSetLead(m.userId)}>
+                            <Button variant="outline" size="sm" className="text-xs" onClick={() => onSetLead(m.userId)}>
                               <CrownIcon className="size-3 mr-1" /> Set Lead
                             </Button>
                           )}
-                          <Button variant="destructive" size="sm" className="h-7 text-xs bg-red-500 hover:bg-red-600 text-white" onClick={() => onRemoveMember(m.userId)}>
+                          <Button variant="destructive" size="sm" className="text-xs bg-red-500 hover:bg-red-600 text-white" onClick={() => onRemoveMember(m.userId)}>
                             <Trash2Icon className="size-3 mr-1" /> Remove
                           </Button>
                         </div>
@@ -216,9 +216,9 @@ export function TeamMembers({
                     </div>
                     <div className="flex items-center gap-1">
                       {m.role !== "lead" && (
-                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); onSetLead(m.userId); }}><CrownIcon className="size-3 mr-1" />Set Lead</Button>
+                        <Button variant="ghost" size="sm" className="text-xs" onClick={(e) => { e.stopPropagation(); onSetLead(m.userId); }}><CrownIcon className="size-3 mr-1" />Set Lead</Button>
                       )}
-                      <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); onRemoveMember(m.userId); }}><Trash2Icon className="size-3" /></Button>
+                      <Button variant="ghost" size="sm" className="text-xs text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); onRemoveMember(m.userId); }}><Trash2Icon className="size-3" /></Button>
                     </div>
                   </div>
                 ))}

@@ -347,15 +347,15 @@ export function TaskChat({
 
                     {/* Hover Actions */}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200 shadow-sm rounded-lg p-0.5">
-                      <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900 h-6 w-6">
+                      <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900">
                         <ReplyIcon className="size-3.5" />
                       </Button>
                       {isMe && (
                         <>
-                          <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900 h-6 w-6" onClick={() => { setEditingId(c.id); setInput(c.content); }}>
+                          <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900" onClick={() => { setEditingId(c.id); setInput(c.content); }}>
                             <PencilIcon className="size-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="size-6 text-red-500 hover:text-red-600 hover:bg-red-50 h-6 w-6" onClick={() => deleteComment(c.id)}>
+                          <Button variant="ghost" size="icon" className="size-6 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => deleteComment(c.id)}>
                             <Trash2Icon className="size-3.5" />
                           </Button>
                         </>

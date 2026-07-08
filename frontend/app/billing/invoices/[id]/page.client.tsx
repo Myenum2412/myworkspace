@@ -604,7 +604,7 @@ export default function InvoiceFormPage() {
               
               {isSimplifiedView && (
                 <div className="flex justify-end mt-2">
-                  <Button variant="ghost" size="sm" className="h-6 text-blue-600 font-normal px-0 hover:bg-transparent" onClick={() => setIsSimplifiedView(false)}>
+                  <Button variant="ghost" size="sm" className="text-blue-600 font-normal px-0 hover:bg-transparent" onClick={() => setIsSimplifiedView(false)}>
                     Show Total Summary <ChevronDown className="size-3.5 ml-1" />
                   </Button>
                 </div>

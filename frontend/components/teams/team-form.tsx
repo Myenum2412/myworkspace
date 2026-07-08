@@ -120,7 +120,7 @@ export function TeamForm({
                 <Input placeholder="Search..." value={memberSearch} onChange={(e) => onMemberSearchChange(e.target.value)} className="max-w-[150px] text-xs" />
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-7 text-xs">
+                    <Button variant="outline" size="sm" className="text-xs">
                       {selectedMemberIds.length > 0 ? `${selectedMemberIds.length} selected` : "Select members"}<UsersIcon className="ml-1.5 size-3" />
                     </Button>
                   </PopoverTrigger>

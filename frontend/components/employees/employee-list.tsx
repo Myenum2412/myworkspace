@@ -94,7 +94,7 @@ function MobileEmployeeCard({ employee: emp, onView, onEdit, onTerminate }: {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-9 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <Button variant="ghost" size="icon" className="shrink-0" onClick={(e) => e.stopPropagation()}>
               <MoreHorizontalIcon className="size-5" />
             </Button>
           </DropdownMenuTrigger>

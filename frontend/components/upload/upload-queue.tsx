@@ -37,11 +37,11 @@ export function UploadQueue({
         </p>
         <div className="flex items-center gap-1.5">
           {items.some((i) => i.status === "uploading") && (
-            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onCancelAll}>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={onCancelAll}>
               Cancel All
             </Button>
           )}
-          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onClearAll}>
+          <Button variant="ghost" size="sm" className="text-xs" onClick={onClearAll}>
             Clear All
           </Button>
         </div>

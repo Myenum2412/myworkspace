@@ -73,7 +73,7 @@ export function DepartmentsClient({ departments, totalMembers, totalOpen }: Depa
                     </Avatar>
                     <span className="text-muted-foreground">Head: <span className="font-medium text-foreground">{dept.head}</span></span>
                   </div>
-                  <Button variant="ghost" size="icon" className="size-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setViewDept(dept)} title="View">
+                  <Button variant="ghost" size="icon-sm" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setViewDept(dept)} title="View">
                     <EyeIcon className="size-4" />
                   </Button>
                 </div>

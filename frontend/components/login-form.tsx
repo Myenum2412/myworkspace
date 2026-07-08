@@ -99,13 +99,13 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:w-full text-sm font-medium mx-auto sm:mx-0 gap-3" aria-label="Sign in with Google" onClick={() => signIn("google", { callbackUrl: "/" })}>
+        <Button variant="outline" type="button" className="flex items-center justify-center rounded-full sm:rounded-xl sm:w-full text-sm font-medium mx-auto sm:mx-0 gap-3" aria-label="Sign in with Google" onClick={() => signIn("google", { callbackUrl: "/" })}>
           <GoogleIcon /><span className="hidden sm:inline">Continue with Google</span>
         </Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:w-full text-sm font-medium mx-auto sm:mx-0 gap-3" aria-label="Sign in with GitHub" onClick={() => signIn("github", { callbackUrl: "/" })}>
+        <Button variant="outline" type="button" className="flex items-center justify-center rounded-full sm:rounded-xl sm:w-full text-sm font-medium mx-auto sm:mx-0 gap-3" aria-label="Sign in with GitHub" onClick={() => signIn("github", { callbackUrl: "/" })}>
           <GitHubIcon /><span className="hidden sm:inline">Continue with GitHub</span>
         </Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center size-12 rounded-full sm:rounded-xl sm:size-auto sm:w-full text-sm font-medium mx-auto sm:mx-0 gap-3" aria-label="Sign in with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/" })}>
+        <Button variant="outline" type="button" className="flex items-center justify-center rounded-full sm:rounded-xl sm:w-full text-sm font-medium mx-auto sm:mx-0 gap-3" aria-label="Sign in with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/" })}>
           <LinkedInIcon /><span className="hidden sm:inline">Continue with LinkedIn</span>
         </Button>
       </div>
