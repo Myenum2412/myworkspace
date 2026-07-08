@@ -23,6 +23,7 @@ import {
   UsersIcon,
   CreditCardIcon,
   BellIcon,
+  PlugIcon,
   SaveIcon,
   Loader2Icon,
   CheckCircle2Icon,
@@ -222,6 +223,13 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               <BellIcon className="size-4 shrink-0" />
               <span className="hidden sm:inline">Notifications</span>
               <span className="sm:hidden">Notif</span>
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="gap-2" asChild>
+              <a href="/settings/integrations" className="flex items-center gap-2">
+                <PlugIcon className="size-4 shrink-0" />
+                <span className="hidden sm:inline">Integrations</span>
+                <span className="sm:hidden">Integ</span>
+              </a>
             </TabsTrigger>
           </TabsList>
         </div>

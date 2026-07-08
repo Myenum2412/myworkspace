@@ -30,4 +30,5 @@ export const collections = {
   clientAuditLogs: "client_audit_logs",
   counters: "counters",
   taskComments: "task_comments",
+  calendarConnections: "calendar_connections",
 } as const;

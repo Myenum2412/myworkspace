@@ -27,11 +27,20 @@ import {
   ChevronRightIcon,
   FileIcon,
   HardDriveIcon,
+  MoreHorizontalIcon,
   PlusIcon,
   SearchIcon,
   Trash2Icon,
   UploadIcon,
+  DownloadIcon,
+  EyeIcon,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FileExplorer } from "@/components/file-explorer";
 import { DropZoneUpload } from "@/components/dropzone-upload";
 
@@ -70,12 +79,26 @@ export type FileStats = {
   mimeTypeBreakdown?: Array<{ _id: string; count: number; size: number }>;
 };
 
+export type FileRecord = {
+  id: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  uploaderName: string;
+  uploaderId: string;
+  clientId: string;
+  createdAt: string;
+  updatedAt: string;
+  category: string;
+};
+
 export type FilesInteractiveProps = {
   orgInfo: OrgInfo | null;
   clients: ClientRecord[];
   foldersByClient: Record<string, ClientFolder[]>;
   statsByClient: Record<string, { files: number; size: number }>;
   stats: FileStats | null;
+  allFiles?: FileRecord[];
 };
 
 function formatBytes(bytes: number) {
@@ -89,12 +112,20 @@ function formatSizeMB(bytes: number) {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
 
+function formatBytesLocal(bytes: number) {
+  if (!bytes) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
 export default function FilesInteractive({
   orgInfo,
   clients,
   foldersByClient,
   statsByClient,
   stats,
+  allFiles = [],
 }: FilesInteractiveProps) {
   const { data: session } = useSession();
   const router = useRouter();
@@ -284,6 +315,72 @@ export default function FilesInteractive({
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* All Files Table */}
+      {allFiles.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">All Files</h2>
+            <Badge variant="secondary">{allFiles.length} files</Badge>
+          </div>
+          <div className="border rounded-lg overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr className="border-b text-left text-xs font-medium text-muted-foreground">
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3 hidden md:table-cell">Owner</th>
+                  <th className="px-4 py-3 text-right">Size</th>
+                  <th className="px-4 py-3 text-right hidden lg:table-cell">Modified</th>
+                  <th className="px-4 py-3 text-right w-16">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allFiles.map((file) => (
+                  <tr key={file.id} className="border-b last:border-0 hover:bg-muted/30">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <FileIcon className="size-4 text-muted-foreground shrink-0" />
+                        <span className="truncate max-w-[250px]">{file.originalName}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">
+                      {file.uploaderName || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground text-right">
+                      {formatBytesLocal(file.size)}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground text-right hidden lg:table-cell">
+                      {file.updatedAt ? new Date(file.updatedAt).toLocaleDateString() : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="size-6">
+                            <MoreHorizontalIcon className="size-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => window.open(`/api/files/${file.id}`, "_blank")}>
+                            <EyeIcon className="mr-2 size-4" /> View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            const a = document.createElement("a");
+                            a.href = `/api/files/${file.id}`;
+                            a.download = file.originalName;
+                            a.click();
+                          }}>
+                            <DownloadIcon className="mr-2 size-4" /> Download
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

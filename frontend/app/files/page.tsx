@@ -43,6 +43,19 @@ type FileStats = {
   maxStorage?: number;
 };
 
+type FileRecord = {
+  id: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  uploaderName: string;
+  uploaderId: string;
+  clientId: string;
+  createdAt: string;
+  updatedAt: string;
+  category: string;
+};
+
 export default async function FilesPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
@@ -82,8 +95,8 @@ export default async function FilesPage() {
       }
     : null;
 
-  // Fetch clients, folders, and stats in parallel
-  const [clientDocs, folderDocs, totalFilesAgg, totalFilesCount, deletedFilesCount] = await Promise.all([
+  // Fetch clients, folders, stats, and all files in parallel
+  const [clientDocs, folderDocs, totalFilesAgg, totalFilesCount, deletedFilesCount, fileDocs] = await Promise.all([
     db.collection(collections.clients).find({ orgId }).sort({ createdAt: -1 }).toArray() as Promise<Record<string, unknown>[]>,
     db.collection(collections.folders).find({ orgId, deletedAt: null, parentId: null }).sort({ name: 1 }).toArray() as Promise<Record<string, unknown>[]>,
     db.collection(collections.fileAttachments).aggregate([
@@ -92,6 +105,11 @@ export default async function FilesPage() {
     ]).toArray() as Promise<Array<{ _id: null; total: number }>>,
     db.collection(collections.fileAttachments).countDocuments({ orgId, deletedAt: null }),
     db.collection(collections.fileAttachments).countDocuments({ orgId, deletedAt: { $ne: null } }),
+    db.collection(collections.fileAttachments)
+      .find({ orgId, deletedAt: null })
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .toArray() as Promise<Record<string, unknown>[]>,
   ]);
 
   const clients: ClientRecord[] = clientDocs.map((c) => ({
@@ -137,6 +155,19 @@ export default async function FilesPage() {
     deletedFiles: deletedFilesCount,
   };
 
+  const allFiles: FileRecord[] = fileDocs.map((f) => ({
+    id: (f.id as string) || String(f._id || ""),
+    originalName: (f.originalName as string) || (f.name as string) || "",
+    mimeType: (f.mimeType as string) || "application/octet-stream",
+    size: (f.size as number) || 0,
+    uploaderName: (f.uploaderName as string) || "",
+    uploaderId: (f.uploaderId as string) || "",
+    clientId: (f.clientId as string) || "",
+    createdAt: f.createdAt ? new Date(f.createdAt as string).toISOString() : "",
+    updatedAt: f.updatedAt ? new Date(f.updatedAt as string).toISOString() : "",
+    category: (f.category as string) || "general",
+  }));
+
   return (
     <Suspense fallback={<div className="flex items-center justify-center py-12">Loading...</div>}>
       <FilesInteractive
@@ -145,6 +176,7 @@ export default async function FilesPage() {
         foldersByClient={foldersByClient}
         statsByClient={statsByClient}
         stats={stats}
+        allFiles={allFiles}
       />
     </Suspense>
   );

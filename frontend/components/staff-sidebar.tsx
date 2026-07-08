@@ -21,9 +21,10 @@ import {
   SettingsIcon,
   BriefcaseIcon,
   StarIcon,
+  PlugIcon,
 } from "lucide-react";
 
-function buildStaffNavData(orgId: string) {
+function buildStaffNavData() {
   return [
     {
       title: "Dashboard",
@@ -48,13 +49,18 @@ function buildStaffNavData(orgId: string) {
     },
     {
       title: "File Management",
-      url: `/staffs/files${orgId ? `?orgId=${orgId}` : ""}`,
+      url: "/staffs/files",
       icon: <FolderIcon className="size-6" />,
     },
     {
       title: "Activity",
       url: "/staffs/activity",
       icon: <ActivityIcon className="size-6" />,
+    },
+    {
+      title: "Integrations",
+      url: "/staffs/settings/integrations",
+      icon: <PlugIcon className="size-6" />,
     },
 
   ];
@@ -73,8 +79,7 @@ export function StaffSidebar({
   user: NavUserData;
 }) {
   const { data: session } = useSession();
-  const orgId = (session?.user as Record<string, unknown>)?.orgId as string || "";
-  const navItems = buildStaffNavData(orgId);
+  const navItems = buildStaffNavData();
 
   return (
     <Sidebar collapsible="icon" {...props}>

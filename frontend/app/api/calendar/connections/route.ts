@@ -1,0 +1,55 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const docs = await db
+    .collection(collections.calendarConnections)
+    .find({ userId: session.user.id })
+    .project({ accessToken: 0, refreshToken: 0 })
+    .toArray();
+
+  return NextResponse.json({
+    data: docs.map((doc) => ({
+      id: doc.id || doc._id?.toString(),
+      provider: doc.provider,
+      calendarEmail: doc.calendarEmail,
+      calendarName: doc.calendarName,
+      syncEnabled: doc.syncEnabled,
+      lastSyncAt: doc.lastSyncAt,
+      createdAt: doc.createdAt,
+    })),
+  });
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const connectionId = searchParams.get("id");
+  const provider = searchParams.get("provider");
+
+  if (!connectionId && !provider) {
+    return NextResponse.json({ error: "Missing id or provider" }, { status: 400 });
+  }
+
+  const query: Record<string, unknown> = { userId: session.user.id };
+  if (connectionId) {
+    query.id = connectionId;
+  } else if (provider) {
+    query.provider = provider;
+  }
+
+  await db.collection(collections.calendarConnections).deleteMany(query);
+
+  return NextResponse.json({ success: true });
+}

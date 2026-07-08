@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   CalendarIcon,
   PlusIcon,
@@ -37,6 +37,16 @@ export type CalendarTask = {
   createdAt: string;
 };
 
+type ExternalEvent = {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  allDay: boolean;
+  provider: "google" | "microsoft";
+  calendarEmail: string;
+};
+
 const PRIORITY_COLORS: Record<string, string> = {
   urgent: "bg-red-500",
   high: "bg-orange-500",
@@ -50,6 +60,11 @@ const STATUS_COLORS: Record<string, string> = {
   review: "bg-purple-100 text-purple-700",
   done: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
+};
+
+const PROVIDER_COLORS: Record<string, string> = {
+  google: "bg-emerald-500",
+  microsoft: "bg-violet-500",
 };
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -80,6 +95,7 @@ function isToday(date: Date) {
 
 export default function UpcomingTasksClient({ initialTasks }: { initialTasks: CalendarTask[] }) {
   const [tasks] = useState<CalendarTask[]>(initialTasks);
+  const [externalEvents, setExternalEvents] = useState<ExternalEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -90,6 +106,22 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
   const month = currentDate.getMonth();
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
+
+  // Fetch external calendar events
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const timeMin = new Date(year, month, 1).toISOString();
+      const timeMax = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+      try {
+        const res = await fetch(`/api/calendar/events?timeMin=${timeMin}&timeMax=${timeMax}`);
+        const data = await res.json();
+        setExternalEvents(data.data || []);
+      } catch {
+        // Silently fail - calendar events are optional
+      }
+    };
+    fetchEvents();
+  }, [year, month]);
 
   const tasksByDate = useMemo(() => {
     const map = new Map<string, CalendarTask[]>();
@@ -102,11 +134,28 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
     return map;
   }, [tasks]);
 
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, ExternalEvent[]>();
+    for (const event of externalEvents) {
+      if (!event.start) continue;
+      const key = new Date(event.start).toDateString();
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(event);
+    }
+    return map;
+  }, [externalEvents]);
+
   const selectedDateTasks = useMemo(() => {
     if (!selectedDate) return [];
     const key = selectedDate.toDateString();
     return tasksByDate.get(key) || [];
   }, [selectedDate, tasksByDate]);
+
+  const selectedDateEvents = useMemo(() => {
+    if (!selectedDate) return [];
+    const key = selectedDate.toDateString();
+    return eventsByDate.get(key) || [];
+  }, [selectedDate, eventsByDate]);
 
   const prevMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1));
@@ -139,6 +188,11 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
           <CalendarIcon className="size-5 text-primary" />
           <h1 className="text-xl font-bold">Upcoming Tasks</h1>
           <Badge variant="secondary">{totalTasks} tasks</Badge>
+          {externalEvents.length > 0 && (
+            <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+              {externalEvents.length} calendar events
+            </Badge>
+          )}
         </div>
         <Button onClick={() => setShowTaskModal(true)}>
           <PlusIcon className="mr-2 size-4" />
@@ -192,6 +246,19 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
             </Button>
           </div>
 
+          {/* Legend */}
+          <div className="flex items-center gap-4 mb-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-blue-500" /> Tasks
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-emerald-500" /> Google
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-violet-500" /> Outlook
+            </span>
+          </div>
+
           {/* Weekday Headers */}
           <div className="grid grid-cols-7 gap-1 mb-1">
             {WEEKDAYS.map((day) => (
@@ -214,8 +281,10 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
               const date = new Date(year, month, day);
               const dateKey = date.toDateString();
               const dayTasks = tasksByDate.get(dateKey) || [];
+              const dayEvents = eventsByDate.get(dateKey) || [];
               const isSelected = selectedDate ? isSameDay(date, selectedDate) : false;
               const today = isToday(date);
+              const totalItems = dayTasks.length + dayEvents.length;
 
               return (
                 <button
@@ -239,14 +308,15 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                     >
                       {day}
                     </span>
-                    {dayTasks.length > 0 && (
+                    {totalItems > 0 && (
                       <span className="text-[10px] text-muted-foreground">
-                        {dayTasks.length}
+                        {totalItems}
                       </span>
                     )}
                   </div>
                   <div className="space-y-0.5">
-                    {dayTasks.slice(0, 3).map((task) => (
+                    {/* Task items (blue/priority colored) */}
+                    {dayTasks.slice(0, 2).map((task) => (
                       <div
                         key={task._id}
                         onClick={(e) => {
@@ -262,9 +332,21 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                         {task.title}
                       </div>
                     ))}
-                    {dayTasks.length > 3 && (
+                    {/* External events (green for Google, purple for Outlook) */}
+                    {dayEvents.slice(0, 2).map((event) => (
+                      <div
+                        key={event.id}
+                        className={`text-[10px] leading-tight px-1 py-0.5 rounded truncate ${
+                          PROVIDER_COLORS[event.provider] || "bg-gray-400"
+                        } text-white`}
+                        title={`${event.title} (${event.provider})`}
+                      >
+                        {event.title}
+                      </div>
+                    ))}
+                    {totalItems > 4 && (
                       <div className="text-[10px] text-muted-foreground px-1">
-                        +{dayTasks.length - 3} more
+                        +{totalItems - 4} more
                       </div>
                     )}
                   </div>
@@ -296,14 +378,71 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {selectedDateTasks.length} task{selectedDateTasks.length !== 1 ? "s" : ""} scheduled
+                {selectedDateTasks.length} task{selectedDateTasks.length !== 1 ? "s" : ""}
+                {selectedDateEvents.length > 0 && `, ${selectedDateEvents.length} event${selectedDateEvents.length !== 1 ? "s" : ""}`}
               </p>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {selectedDateTasks.length === 0 ? (
+              {/* Tasks */}
+              {selectedDateTasks.map((task) => (
+                <div
+                  key={task._id}
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setTaskDetailOpen(true);
+                  }}
+                  className="rounded-lg border p-3 hover:bg-accent/50 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h4 className="text-sm font-medium line-clamp-1">{task.title}</h4>
+                    <div className={`size-2 rounded-full shrink-0 mt-1.5 ${PRIORITY_COLORS[task.priority] || "bg-gray-400"}`} />
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
+                    {task.description || "No description"}
+                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[task.status] || ""}`}>
+                      {task.status.replace(/_/g, " ")}
+                    </span>
+                    {task.assigneeName && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {task.assigneeName}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* External Events */}
+              {selectedDateEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="rounded-lg border p-3 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h4 className="text-sm font-medium line-clamp-1">{event.title}</h4>
+                    <div className={`size-2 rounded-full shrink-0 mt-1.5 ${PROVIDER_COLORS[event.provider] || "bg-gray-400"}`} />
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                      event.provider === "google" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700"
+                    }`}>
+                      {event.provider === "google" ? "Google" : "Outlook"}
+                    </span>
+                    {event.start && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(event.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Empty state */}
+              {selectedDateTasks.length === 0 && selectedDateEvents.length === 0 && (
                 <div className="text-center py-8">
                   <CalendarIcon className="size-8 mx-auto text-muted-foreground/30 mb-2" />
-                  <p className="text-sm text-muted-foreground">No tasks for this date</p>
+                  <p className="text-sm text-muted-foreground">No items for this date</p>
                   <Button
                     variant="outline"
                     size="sm"
@@ -314,35 +453,6 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                     Allocate Task
                   </Button>
                 </div>
-              ) : (
-                selectedDateTasks.map((task) => (
-                  <div
-                    key={task._id}
-                    onClick={() => {
-                      setSelectedTask(task);
-                      setTaskDetailOpen(true);
-                    }}
-                    className="rounded-lg border p-3 hover:bg-accent/50 cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h4 className="text-sm font-medium line-clamp-1">{task.title}</h4>
-                      <div className={`size-2 rounded-full shrink-0 mt-1.5 ${PRIORITY_COLORS[task.priority] || "bg-gray-400"}`} />
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
-                      {task.description || "No description"}
-                    </p>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[task.status] || ""}`}>
-                        {task.status.replace(/_/g, " ")}
-                      </span>
-                      {task.assigneeName && (
-                        <span className="text-[10px] text-muted-foreground">
-                          {task.assigneeName}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))
               )}
             </div>
           </div>
