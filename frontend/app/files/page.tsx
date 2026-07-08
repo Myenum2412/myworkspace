@@ -155,12 +155,22 @@ export default async function FilesPage() {
     deletedFiles: deletedFilesCount,
   };
 
+  // Resolve uploader names from users collection
+  const uploaderIds = [...new Set(fileDocs.map((f) => f.uploaderId as string).filter(Boolean))];
+  const uploaderDocs = uploaderIds.length > 0
+    ? await db.collection(collections.users)
+        .find({ id: { $in: uploaderIds } })
+        .project({ id: 1, name: 1 })
+        .toArray()
+    : [];
+  const uploaderMap = new Map(uploaderDocs.map((u) => [u.id as string, (u.name as string) || ""]));
+
   const allFiles: FileRecord[] = fileDocs.map((f) => ({
     id: (f.id as string) || String(f._id || ""),
     originalName: (f.originalName as string) || (f.name as string) || "",
     mimeType: (f.mimeType as string) || "application/octet-stream",
     size: (f.size as number) || 0,
-    uploaderName: (f.uploaderName as string) || "",
+    uploaderName: uploaderMap.get(f.uploaderId as string) || (f.uploaderName as string) || "Unknown",
     uploaderId: (f.uploaderId as string) || "",
     clientId: (f.clientId as string) || "",
     createdAt: f.createdAt ? new Date(f.createdAt as string).toISOString() : "",
