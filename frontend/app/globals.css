@@ -405,8 +405,6 @@
 
   .table-premium tbody tr:hover {
     background: #EAF3FF;
-    transform: scale(1.003);
-    box-shadow: inset 4px 0 0 #5077A5;
     cursor: pointer;
   }
 

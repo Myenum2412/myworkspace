@@ -7,16 +7,11 @@ import { unstable_cache } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import dynamic from "next/dynamic";
 import {
   ListTodo, CheckCircle2, Clock, AlertCircle, Users,
   FolderKanbanIcon, BriefcaseIcon, Building2Icon, HardDriveIcon,
   MessageSquareReply,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-const PriorityBreakdownChart = dynamic(() => import("@/components/dashboard/priority-breakdown-chart").then(m => ({ default: m.PriorityBreakdownChart })), {
-  loading: () => <Skeleton className="h-[250px] sm:h-[350px] lg:h-[400px] w-full rounded-lg" />,
-});
 
 export const revalidate = 30;
 const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -360,12 +355,12 @@ export default async function DashboardPage() {
                   ))}
                 </div>
                 <table className="table-premium hidden sm:table w-full text-sm text-left">
-                  <thead className="bg-[#f3f4f6]">
-                    <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
-                      <th className="px-4 py-3.5 font-semibold">Project</th>
-                      <th className="px-4 py-3.5 font-semibold">Client</th>
-                      <th className="px-4 py-3.5 font-semibold">Progress</th>
-                      <th className="px-4 py-3.5 font-semibold">Deadline</th>
+                  <thead>
+                    <tr>
+                      <th>Project</th>
+                      <th>Client</th>
+                      <th>Progress</th>
+                      <th>Deadline</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -428,11 +423,11 @@ export default async function DashboardPage() {
                   ))}
                 </div>
                 <table className="table-premium hidden sm:table w-full text-sm text-left">
-                  <thead className="bg-[#f3f4f6]">
-                    <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
-                      <th className="px-4 py-3.5 font-semibold">Name</th>
-                      <th className="px-4 py-3.5 font-semibold">Role</th>
-                      <th className="px-4 py-3.5 font-semibold">Status</th>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Role</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -489,12 +484,12 @@ export default async function DashboardPage() {
                   ))}
                 </div>
                 <table className="table-premium hidden sm:table w-full text-sm text-left">
-                  <thead className="bg-[#f3f4f6]">
-                    <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
-                      <th className="px-4 py-3.5 font-semibold">Name</th>
-                      <th className="px-4 py-3.5 font-semibold">Company</th>
-                      <th className="px-4 py-3.5 font-semibold">Email</th>
-                      <th className="px-4 py-3.5 font-semibold">Status</th>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Company</th>
+                      <th>Email</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -515,16 +510,6 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
-          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
-            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <AlertCircle className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Priority Breakdown</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 p-0">
-            <PriorityBreakdownChart data={priorityBreakdown} className="h-[250px] sm:h-[300px] lg:h-[320px] w-full" />
-          </CardContent>
-        </Card>
       </div>
 
     </div>
