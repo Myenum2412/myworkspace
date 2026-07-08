@@ -124,7 +124,7 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
               </div>
             ) : (
               <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-                <table className="table w-full text-sm text-left">
+                <table className="table-premium w-full text-sm text-left">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-[#f3f4f6] text-gray-900 border-b">
                       <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"><Checkbox /></th>

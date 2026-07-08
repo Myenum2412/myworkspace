@@ -188,7 +188,7 @@ export function DataTable<TData, TValue>({
       ) : (
         <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
           <div className="overflow-x-auto" ref={scrollRef}>
-            <table className="table w-full text-sm text-left">
+            <table className="table-premium w-full text-sm text-left">
               <thead className="sticky top-0 z-10">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id} className="bg-muted/50 text-foreground border-b">

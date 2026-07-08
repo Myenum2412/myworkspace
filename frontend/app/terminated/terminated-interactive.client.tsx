@@ -109,7 +109,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
         ) : (
           <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
             <div className="overflow-x-auto overflow-y-auto flex-1">
-              <table className="table w-full text-sm text-left" style={{ minWidth: 900 }}>
+              <table className="table-premium w-full text-sm text-left" style={{ minWidth: 900 }}>
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-[#f3f4f6] text-gray-900">
                     <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Employee</th>

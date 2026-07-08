@@ -246,7 +246,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
             ) : (
               <>
                 <div className="hidden sm:block border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-                  <table className="table w-full text-sm text-left">
+                  <table className="table-premium w-full text-sm text-left">
                     <thead>
                       <tr className="bg-[#f3f4f6]">
                         <th className="px-3 py-2.5 font-semibold whitespace-nowrap">User</th>
