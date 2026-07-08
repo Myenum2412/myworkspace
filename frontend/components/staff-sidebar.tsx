@@ -22,6 +22,7 @@ import {
   BriefcaseIcon,
   StarIcon,
   PlugIcon,
+  VideoIcon,
 } from "lucide-react";
 
 function buildStaffNavData() {
@@ -61,6 +62,11 @@ function buildStaffNavData() {
       title: "Integrations",
       url: "/staffs/settings/integrations",
       icon: <PlugIcon className="size-6" />,
+    },
+    {
+      title: "Chat",
+      url: "/chat",
+      icon: <VideoIcon className="size-6" />,
     },
 
   ];

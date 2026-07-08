@@ -21,6 +21,7 @@ import {
   CheckCheckIcon,
   CreditCardIcon,
   BriefcaseIcon,
+  VideoIcon,
 } from "lucide-react";
 
 export const defaultNavData = {
@@ -116,6 +117,11 @@ export const defaultNavData = {
         { title: "Invoices", url: "/billing/invoices" },
         { title: "Receipt", url: "/billing/receipts" },
       ],
+    },
+    {
+      title: "Chat",
+      url: "/chat",
+      icon: <VideoIcon className="size-6" />,
     },
     {
       title: "Settings",
