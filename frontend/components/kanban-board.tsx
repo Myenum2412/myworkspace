@@ -7,6 +7,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
   type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
@@ -102,8 +103,9 @@ function SortableCard({ task, onClick }: { task: Task; onClick: () => void }) {
   );
 }
 
-function Column({ status, tasks }: { status: string; tasks: Task[] }) {
+function Column({ status, tasks, onCardClick }: { status: string; tasks: Task[]; onCardClick: (task: Task) => void }) {
   const ids = useMemo(() => tasks.map((t) => t._id), [tasks]);
+  const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
     <div className="flex flex-col gap-3">
@@ -111,13 +113,16 @@ function Column({ status, tasks }: { status: string; tasks: Task[] }) {
         <h3 className="text-sm font-semibold capitalize">{status.replace(/_/g, " ")}</h3>
         <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{tasks.length}</span>
       </div>
-      <div className="flex flex-col gap-2 min-h-[120px] rounded-lg bg-muted/30 p-2">
+      <div
+        ref={setNodeRef}
+        className={`flex flex-col gap-2 min-h-[120px] rounded-lg p-2 transition-colors ${isOver ? "bg-primary/10 ring-2 ring-primary/40" : "bg-muted/30"}`}
+      >
         {tasks.length === 0 ? (
           <p className="text-xs text-muted-foreground italic px-1">No tasks</p>
         ) : (
           <SortableContext items={ids} strategy={verticalListSortingStrategy}>
             {tasks.map((t) => (
-              <SortableCard key={t._id} task={t} onClick={() => {}} />
+              <SortableCard key={t._id} task={t} onClick={() => onCardClick(t)} />
             ))}
           </SortableContext>
         )}
@@ -153,7 +158,11 @@ export function KanbanBoard({ tasks, onStatusChange, onCardClick }: KanbanBoardP
     if (!task) return;
 
     const overTask = tasks.find((t) => t._id === over.id);
-    const targetStatus = overTask ? overTask.status : (over.id as string);
+    const targetStatus = overTask
+      ? overTask.status
+      : statusGroups.includes(over.id as string)
+        ? (over.id as string)
+        : null;
 
     if (targetStatus && targetStatus !== task.status) {
       onStatusChange(taskId, targetStatus);
@@ -171,20 +180,8 @@ export function KanbanBoard({ tasks, onStatusChange, onCardClick }: KanbanBoardP
         {statusGroups.map((s) => {
           const items = tasks.filter((t) => t.status === s);
           return (
-            <div
-              key={s}
-              id={s}
-              className="flex flex-col gap-3"
-              onDragOver={(e) => {
-                const taskId = activeId;
-                if (!taskId) return;
-                const task = tasks.find((t) => t._id === taskId);
-                if (task && task.status !== s) {
-                  e.preventDefault();
-                }
-              }}
-            >
-              <Column status={s} tasks={items} />
+            <div key={s} className="flex flex-col gap-3">
+              <Column status={s} tasks={items} onCardClick={onCardClick} />
             </div>
           );
         })}

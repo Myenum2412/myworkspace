@@ -325,6 +325,20 @@
     color: #fff;
   }
 
+  [data-slot="sidebar-mobile"] {
+    background: #0D2A54;
+    color: #FFFFFF;
+  }
+
+  [data-slot="sidebar-mobile"] [data-sidebar="menu-button"]:hover {
+    background: #163A6B;
+  }
+
+  [data-slot="sidebar-mobile"] [data-sidebar="menu-button"][data-active="true"] {
+    background: #5077A5;
+    box-shadow: inset 3px 0 0 #fff;
+  }
+
   [data-slot="sidebar-menu-button"][data-active="true"] {
     background: #5077A5 !important;
     color: #fff !important;

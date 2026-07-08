@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
@@ -15,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ViewToggle } from "@/components/view-toggle";
+import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
 import { Task, useRealtimeTasks } from "@/hooks/use-realtime-tasks";
 import { getSocketIO } from "@/lib/socketio-client";
@@ -22,8 +22,6 @@ import { toast } from "sonner";
 import { perfLog, perfNow } from "@/lib/perf";
 
 
-
-const statusGroups = ["todo", "assigned", "in_progress", "review", "done", "cancelled"];
 
 // Local UI shape for the detailed view. We keep the hook's Task as the source
 // of truth for the list and coerce at the small boundary where these are rendered.
@@ -34,13 +32,6 @@ export type AllTasksProps = {
   initialTasks: Task[];
   /** The resolved org id for the active user. */
   orgId: string;
-};
-
-const priorityStyles: Record<string, string> = {
-  low: "bg-gray-100 text-gray-600",
-  medium: "bg-gray-200 text-gray-800",
-  high: "bg-orange-100 text-orange-700",
-  urgent: "bg-red-100 text-red-700",
 };
 
 export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksProps) {
@@ -87,6 +78,20 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
     perfLog("tasks.summary", perfNow() - t0, { n: tasks.length });
     return counts;
   }, [tasks]);
+
+  const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
+    setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch {
+      setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: tasks.find((x) => x._id === taskId)?.status || t.status } : t));
+    }
+  }, [setTasks, tasks]);
 
   const handleDelete = useCallback(async (t: Task) => {
     if (!confirm("Are you sure you want to delete this task?")) return;
@@ -203,51 +208,11 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </CardContent>
         </Card>
         ) : (
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-6">
-            {statusGroups.map((s) => {
-              const items = tasks.filter((t) => t.status === s);
-              return (
-                <div key={s} className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold capitalize">{s.replace(/_/g, " ")}</h3>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{items.length}</span>
-                  </div>
-                  <div className="flex flex-col gap-2 min-h-[120px]">
-                    {items.length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic px-1">No tasks</p>
-                    ) : (
-                      items.map((t) => (
-                        <div key={t._id} className="rounded-lg border bg-card p-3 space-y-2 shadow-sm">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm font-medium leading-tight">{t.title}</p>
-                            <Badge className={(priorityStyles[t.priority] || "") + " shrink-0"}>{t.priority}</Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                              <div className="size-5 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                                {t.assigneeAvatar ? (
-                                  <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
-                                ) : (
-                                  <span className="text-[8px] font-medium text-muted-foreground">
-                                    {(t.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-[11px] text-muted-foreground">{t.assigneeName}</span>
-                            </div>
-                            {t.dueDate && (
-                              <span className="text-[10px] text-muted-foreground">{new Date(t.dueDate).toLocaleDateString()}</span>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <KanbanBoard
+            tasks={tasks}
+            onStatusChange={handleStatusChange}
+            onCardClick={(task) => { setSelectedTask(task as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
+          />
         )}
 
       <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>

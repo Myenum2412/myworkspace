@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { PlusIcon, BookmarkIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ViewToggle } from "@/components/view-toggle";
+import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
 
 export type SavedTask = {
@@ -31,15 +32,6 @@ export type SavedTask = {
   createdAt: string;
 };
 
-const priorityStyles: Record<string, string> = {
-  low: "bg-gray-100 text-gray-600",
-  medium: "bg-gray-700 text-gray-700",
-  high: "bg-orange-100 text-orange-600",
-  urgent: "bg-red-100 text-red-600",
-};
-
-const statusGroups = ["todo", "in_progress", "review", "done", "postponed", "cancelled"];
-
 export default function SavedTasksInteractive({ initialTasks }: { initialTasks: SavedTask[] }) {
   const [tasks, setTasks] = useState<SavedTask[]>(initialTasks);
   const [view, setView] = useState<"kanban" | "table">("kanban");
@@ -48,13 +40,17 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<SavedTask | null>(null);
 
-  const grouped = useMemo(
-    () => statusGroups.map((s) => ({
-      status: s,
-      items: tasks.filter((t) => t.status === s),
-    })),
-    [tasks],
-  );
+  const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
+    setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch {}
+  }, [setTasks]);
 
   return (
     <>
@@ -154,48 +150,11 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
           </Card>
           </>
         ) : (
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
-            {grouped.map((g) => (
-              <div key={g.status} className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold capitalize">{g.status.replace(/_/g, " ")}</h3>
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{g.items.length}</span>
-                </div>
-                <div className="flex flex-col gap-2 min-h-[120px]">
-                  {g.items.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic px-1">No tasks</p>
-                  ) : (
-                    g.items.map((t) => (
-                      <div key={t._id} className="rounded-lg border bg-card p-3 space-y-2 shadow-sm">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium leading-tight">{t.title}</p>
-                          <Badge className={(priorityStyles[t.priority] || "") + " shrink-0"}>{t.priority}</Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <div className="size-5 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                              {t.assigneeAvatar ? (
-                                <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
-                              ) : (
-                                <span className="text-[8px] font-medium text-muted-foreground">
-                                  {(t.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[11px] text-muted-foreground">{t.assigneeName}</span>
-                          </div>
-                          {t.dueDate && (
-                            <span className="text-[10px] text-muted-foreground">{new Date(t.dueDate).toLocaleDateString()}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <KanbanBoard
+            tasks={tasks}
+            onStatusChange={handleStatusChange}
+            onCardClick={(task) => { setSelectedTask(task as unknown as SavedTask); setViewOpen(true); setEditMode(false); }}
+          />
         )}
       </main>
 
