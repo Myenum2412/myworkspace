@@ -12,7 +12,6 @@ import {
   BriefcaseIcon,
   UserCheckIcon,
   UserXIcon,
-  ChartNoAxesCombinedIcon,
   CalendarIcon,
   HourglassIcon,
 } from "lucide-react";
@@ -41,28 +40,6 @@ type Task = {
   assigneeName: string;
   createdAt: string;
   dueDate: string | null;
-};
-
-const priorityStyles: Record<string, string> = {
-  low: "bg-gray-100 text-gray-600",
-  medium: "bg-gray-200 text-gray-800",
-  high: "bg-orange-100 text-orange-600",
-  urgent: "bg-red-100 text-red-600",
-};
-
-const statusStyles: Record<string, string> = {
-  todo: "bg-gray-100 text-gray-700",
-  in_progress: "bg-blue-100 text-blue-700",
-  review: "bg-purple-100 text-purple-700",
-  done: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
-};
-
-const priorityColors: Record<string, string> = {
-  low: "bg-gray-100",
-  medium: "bg-gray-200",
-  high: "bg-orange-100",
-  urgent: "bg-red-100",
 };
 
 export default async function StaffsPage() {
@@ -150,17 +127,6 @@ export default async function StaffsPage() {
   const recentTasks = [...tasks]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
-
-  const statusDist = ["todo", "in_progress", "review", "done", "cancelled"].map((s) => ({
-    status: s,
-    count: tasks.filter((t) => t.status === s).length,
-  }));
-
-  const priorityDist = ["urgent", "high", "medium", "low"].map((p) => ({
-    priority: p,
-    count: tasks.filter((t) => t.priority === p).length,
-    color: priorityColors[p],
-  }));
 
   const absentCount = onLeave + (totalStaff - activeStaff - onLeave);
   const staffByStatus = [
@@ -250,88 +216,7 @@ export default async function StaffsPage() {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <ChartNoAxesCombinedIcon className="size-4" />
-              Task Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {statusDist.map((s) => (
-                <div key={s.status} className="flex items-center gap-3">
-                  <span className={`size-3 rounded-full ${(statusStyles[s.status] || "").split(" ")[0]}`} />
-                  <span className="text-sm capitalize w-24">{s.status.replace(/_/g, " ")}</span>
-                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${(statusStyles[s.status] || "").split(" ")[0]} rounded-full`}
-                      style={{ width: `${totalTasks > 0 ? (s.count / totalTasks) * 100 : 0}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium w-8 text-right">{s.count}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <ChartNoAxesCombinedIcon className="size-4" />
-              Priority Breakdown
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {priorityDist.map((p) => (
-                <div key={p.priority} className="flex items-center gap-3">
-                  <div className={`size-3 rounded-full ${p.color}`} />
-                  <span className="text-sm capitalize w-16">{p.priority}</span>
-                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${p.color} rounded-full`}
-                      style={{ width: `${totalTasks > 0 ? (p.count / totalTasks) * 100 : 0}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium w-8 text-right">{p.count}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <CheckCircle2Icon className="size-4" />
-            Performance Report
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            <div className="rounded-lg border p-4 text-center">
-              <p className="text-2xl font-bold text-green-600">{completedTasks}</p>
-              <p className="text-xs text-muted-foreground mt-1">Tasks Completed</p>
-            </div>
-            <div className="rounded-lg border p-4 text-center">
-              <p className="text-2xl font-bold text-blue-600">{tasks.filter((t) => t.status === "in_progress").length}</p>
-              <p className="text-xs text-muted-foreground mt-1">In Progress</p>
-            </div>
-            <div className="rounded-lg border p-4 text-center">
-              <p className="text-2xl font-bold text-orange-600">{tasks.filter((t) => t.priority === "urgent" || t.priority === "high").length}</p>
-              <p className="text-xs text-muted-foreground mt-1">High Priority</p>
-            </div>
-            <div className="rounded-lg border p-4 text-center">
-              <p className="text-2xl font-bold text-purple-600">{activeStaff}</p>
-              <p className="text-xs text-muted-foreground mt-1">Active Staff</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
