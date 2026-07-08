@@ -7,14 +7,23 @@ import { unstable_cache } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import dynamic from "next/dynamic";
 import {
   ListTodo, CheckCircle2, Clock, AlertCircle, Users,
   FolderKanbanIcon, BriefcaseIcon, Building2Icon, HardDriveIcon,
   MessageSquareReply,
 } from "lucide-react";
-import { ProfitLossChart } from "@/components/dashboard/profit-loss-chart";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { ProfitLossRow } from "@/components/dashboard/profit-loss-chart";
-import { PriorityBreakdownChart } from "@/components/dashboard/priority-breakdown-chart";
+
+const ProfitLossChart = dynamic(() => import("@/components/dashboard/profit-loss-chart").then(m => ({ default: m.ProfitLossChart })), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[250px] sm:h-[350px] lg:h-[400px] w-full rounded-lg" />,
+});
+const PriorityBreakdownChart = dynamic(() => import("@/components/dashboard/priority-breakdown-chart").then(m => ({ default: m.PriorityBreakdownChart })), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[250px] sm:h-[350px] lg:h-[400px] w-full rounded-lg" />,
+});
 
 export const revalidate = 30;
 

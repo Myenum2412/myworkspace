@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -10,7 +10,7 @@ import {
 import { DropZoneUpload } from "@/components/dropzone-upload";
 import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import { FileShareDialog } from "@/components/file-share-dialog";
-import { getSocketIO } from "@/lib/socketio-client";
+import { useFiles, useFileMutations } from "@/hooks/use-files";
 import { FileItem, FolderItem, ViewMode, formatSize } from "./files/types";
 import { FileBreadcrumb } from "./files/file-breadcrumb";
 import { FileToolbar } from "./files/file-toolbar";
@@ -23,13 +23,14 @@ interface FileExplorerProps {
 }
 
 export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerProps) {
-  const [files, setFiles] = useState<FileItem[]>([]);
-  const [folders, setFolders] = useState<FolderItem[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([{ id: null, name: "Files" }]);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<string>("-createdAt");
+
+  const { files, folders, loading } = useFiles({ orgId, folderId: currentFolderId, clientId, search, sort: sortBy });
+  const fileMutations = useFileMutations(orgId);
 
   const [showUpload, setShowUpload] = useState(false);
 
@@ -58,91 +59,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
   } | null>(null);
   const [propertiesLoading, setPropertiesLoading] = useState(false);
 
-  const [sortBy, setSortBy] = useState<string>("-createdAt");
-
-  useEffect(() => {
-    if (toastMessage) {
-      const t = setTimeout(() => setToastMessage(null), 3000);
-      return () => clearTimeout(t);
-    }
-  }, [toastMessage]);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ orgId });
-      if (currentFolderId) params.set("folderId", currentFolderId);
-      if (search) params.set("search", search);
-      params.set("sort", sortBy);
-      if (clientId) params.set("clientId", clientId);
-
-      const foldersParams = new URLSearchParams({ orgId });
-      if (currentFolderId) foldersParams.set("parentId", currentFolderId);
-      else foldersParams.set("parentId", "");
-      if (clientId) foldersParams.set("clientId", clientId);
-
-      const [filesRes, foldersRes] = await Promise.all([
-        fetch(`/api/files?${params}`, { credentials: "include" }),
-        fetch(`/api/folders?${foldersParams}`, { credentials: "include" }),
-      ]);
-
-      const filesData = await filesRes.json();
-      const foldersData = await foldersRes.json();
-
-      setFiles(filesData.data || []);
-      const fetchedFolders: FolderItem[] = foldersData.data || [];
-      setFolders(fetchedFolders);
-
-      const clientIds = [...new Set(foldersData.data?.map((f: FolderItem) => f.clientId).filter(Boolean) || [])] as string[];
-      if (clientIds.length > 0) {
-        fetch(`/api/clients?ids=${encodeURIComponent(clientIds.join(","))}`, { credentials: "include" })
-          .then((r) => r.json())
-          .then((d) => {
-            const list: Record<string, unknown>[] = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
-            const names: Record<string, string> = {};
-            for (const c of list) names[String(c.id)] = String(c.name || c.id);
-            setClientNames(names);
-          })
-          .catch(() => {});
-      }
-    } catch (err) {
-      toast.error("Failed to load files");
-    } finally {
-      setLoading(false);
-    }
-  }, [orgId, currentFolderId, search, sortBy, clientId]);
-
   const [clientNames, setClientNames] = useState<Record<string, string>>({});
-
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const refresh = () => { if (!cancelled) fetchData(); };
-    let sock: ReturnType<typeof getSocketIO> | null = null;
-    try {
-      sock = getSocketIO();
-      sock.on("folder:created", refresh);
-      sock.on("folder:updated", refresh);
-      sock.on("folder:deleted", refresh);
-      sock.on("file:uploaded", refresh);
-      sock.on("file:updated", refresh);
-      sock.on("file:deleted", refresh);
-      sock.on("client:created", refresh);
-    } catch {}
-    return () => {
-      cancelled = true;
-      if (sock) {
-        sock.off("folder:created", refresh);
-        sock.off("folder:updated", refresh);
-        sock.off("folder:deleted", refresh);
-        sock.off("file:uploaded", refresh);
-        sock.off("file:updated", refresh);
-        sock.off("file:deleted", refresh);
-        sock.off("client:created", refresh);
-      }
-    };
-  }, [fetchData]);
 
   const navigateToFolder = useCallback(async (folderId: string | null, folderName?: string) => {
     setCurrentFolderId(folderId);
@@ -161,57 +78,31 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
     setSelectedIds(new Set());
   }, [breadcrumbs]);
 
-  const createFolder = async () => {
+  const handleCreateFolder = async () => {
     if (!newFolderName.trim()) return;
     try {
-      const res = await fetch("/api/folders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ orgId, parentId: currentFolderId, name: newFolderName.trim() }),
-      });
-      if (res.ok) {
-        setNewFolderName("");
-        setShowNewFolder(false);
-        fetchData();
-      }
+      await fileMutations.createFolder.mutateAsync({ name: newFolderName.trim(), parentId: currentFolderId });
+      setNewFolderName("");
+      setShowNewFolder(false);
     } catch {}
   };
 
-  const renameItem = async (id: string, type: "file" | "folder") => {
+  const handleRename = async (id: string, type: "file" | "folder") => {
     if (!renameValue.trim()) return;
     try {
-      const endpoint = type === "file"
-        ? `/api/files/${id}`
-        : `/api/folders/${id}`;
-      const res = await fetch(endpoint, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ name: renameValue.trim() }),
-      });
-      if (res.ok) {
-        setRenamingId(null);
-        setRenameValue("");
-        setInlineRenamingId(null);
-        setInlineRenameValue("");
-        fetchData();
-      }
+      await fileMutations.renameItem.mutateAsync({ id, name: renameValue.trim(), type });
+      setRenamingId(null);
+      setRenameValue("");
+      setInlineRenamingId(null);
+      setInlineRenameValue("");
     } catch {}
   };
 
-  const deleteItem = async (id: string, type: "file" | "folder") => {
+  const handleDelete = async (id: string, type: "file" | "folder") => {
     try {
-      const endpoint = type === "file" ? `/api/files/${id}` : `/api/folders/${id}`;
-      const res = await fetch(endpoint, { method: "DELETE", credentials: "include" });
+      await fileMutations.deleteItem.mutateAsync({ id, type });
       setConfirmDelete(null);
-      if (res.ok) {
-        setToastMessage(type === "file" ? "File moved to trash" : "Folder moved to trash");
-        fetchData();
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setToastMessage(data.error || `Delete failed (${res.status})`);
-      }
+      setToastMessage(type === "file" ? "File moved to trash" : "Folder moved to trash");
     } catch {
       setConfirmDelete(null);
       setToastMessage("Network error — delete failed");
@@ -255,7 +146,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
       await fetch(`/api/files/${fileId}/duplicate`, {
         method: "POST", credentials: "include",
       });
-      fetchData();
+      fileMutations.invalidateFiles();
     } catch {}
   };
 
@@ -265,7 +156,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
       await fetch(`/api/files/${fileId}/${action}`, {
         method: "POST", credentials: "include",
       });
-      fetchData();
+      fileMutations.invalidateFiles();
     } catch {}
   };
 
@@ -280,7 +171,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
 
   const selectAll = () => {
     if (selectedIds.size === files.length) setSelectedIds(new Set());
-    else setSelectedIds(new Set(files.map(f => f.id)));
+    else setSelectedIds(new Set(files.map((f: FileItem) => f.id)));
   };
 
   const doBulkDelete = async () => {
@@ -291,7 +182,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         body: JSON.stringify({ fileIds: Array.from(selectedIds) }),
       });
       setSelectedIds(new Set());
-      fetchData();
+      fileMutations.invalidateFiles();
     } catch {}
   };
 
@@ -311,8 +202,8 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
 
   const submitInlineRename = (id: string) => {
     if (!inlineRenameValue.trim()) return;
-    const type = files.find(f => f.id === id) ? "file" : "folder";
-    renameItem(id, type);
+    const type = files.find((f: FileItem) => f.id === id) ? "file" : "folder";
+    handleRename(id, type);
     setInlineRenamingId(null);
     setInlineRenameValue("");
   };
@@ -324,7 +215,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
           orgId={orgId}
           folderId={currentFolderId}
           clientId={clientId}
-          onUploadComplete={fetchData}
+          onUploadComplete={fileMutations.invalidateFiles}
           maxConcurrency={3}
         />
       </div>
@@ -345,9 +236,9 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         newFolderName={newFolderName}
         onNewFolderNameChange={setNewFolderName}
         onToggleNewFolder={() => setShowNewFolder(!showNewFolder)}
-        onCreateFolder={createFolder}
+        onCreateFolder={handleCreateFolder}
         onCancelNewFolder={() => { setShowNewFolder(false); setNewFolderName(""); }}
-        onRefresh={fetchData}
+        onRefresh={fileMutations.invalidateFiles}
       />
 
       <FileBreadcrumb breadcrumbs={breadcrumbs} onNavigate={navigateToBreadcrumb} />
@@ -384,12 +275,12 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
           <div className="bg-background rounded-lg p-4 w-80" onClick={e => e.stopPropagation()}>
             <h3 className="text-sm font-medium mb-2">Rename</h3>
             <Input value={renameValue} onChange={e => setRenameValue(e.target.value)} onKeyDown={e => {
-              if (e.key === "Enter") renameItem(renamingId, files.find(f => f.id === renamingId) ? "file" : "folder");
+              if (e.key === "Enter") handleRename(renamingId, files.find((f: FileItem) => f.id === renamingId) ? "file" : "folder");
               if (e.key === "Escape") setRenamingId(null);
             }} autoFocus />
             <div className="flex justify-end gap-2 mt-3">
               <Button variant="outline" size="sm" onClick={() => setRenamingId(null)}>Cancel</Button>
-              <Button size="sm" onClick={() => renameItem(renamingId, files.find(f => f.id === renamingId) ? "file" : "folder")}>Save</Button>
+              <Button size="sm" onClick={() => handleRename(renamingId, files.find((f: FileItem) => f.id === renamingId) ? "file" : "folder")}>Save</Button>
             </div>
           </div>
         </div>
@@ -409,7 +300,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
             </p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="sm" onClick={() => setConfirmDelete(null)}>Cancel</Button>
-              <Button size="sm" variant="destructive" onClick={() => deleteItem(confirmDelete.id, confirmDelete.type)}>
+              <Button size="sm" variant="destructive" onClick={() => handleDelete(confirmDelete.id, confirmDelete.type)}>
                 <Trash2Icon className="mr-1 size-4" /> Delete
               </Button>
             </div>
@@ -429,7 +320,7 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
         open={previewOpen}
         onOpenChange={setPreviewOpen}
         orgId={orgId}
-        onDelete={(id) => { setPreviewOpen(false); const f = files.find(fi => fi.id === id); confirmDeleteItem(id, "file", f?.originalName || id); }}
+        onDelete={(id: string) => { setPreviewOpen(false); const f = files.find((fi: FileItem) => fi.id === id); confirmDeleteItem(id, "file", f?.originalName || id); }}
         onDuplicate={(id) => { setPreviewOpen(false); duplicateFile(id); }}
         onLockToggle={(id, locked) => toggleLock(id, locked)}
         onShare={(file) => { setPreviewOpen(false); setShareFile(file); setShareOpen(true); }}

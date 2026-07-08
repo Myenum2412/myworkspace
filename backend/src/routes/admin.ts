@@ -36,20 +36,26 @@ router.get("/stats", async (_req: AuthRequest, res: Response) => {
   });
 });
 
-router.get("/users", authorizePermission("MANAGE_USERS"), async (_req: AuthRequest, res: Response) => {
-  const users = await User.find().sort({ createdAt: -1 }).lean();
-  const data = users.map((u) => ({
-    id: u._id,
-    name: u.name,
-    email: u.email,
-    role: u.role,
-    permissions: u.permissions,
-    isActive: u.isActive,
-    status: u.status,
-    lastLogin: u.lastLogin,
-    createdAt: u.createdAt,
-  }));
-  res.json({ success: true, data });
+router.get("/users", authorizePermission("MANAGE_USERS"), async (req: AuthRequest, res: Response) => {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(Math.max(1, parseInt(req.query.limit as string) || 50), 200);
+  const skip = (page - 1) * limit;
+
+  const [users, total] = await Promise.all([
+    User.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select("name email role permissions isActive status lastLogin createdAt")
+      .lean(),
+    User.countDocuments(),
+  ]);
+
+  res.json({
+    success: true,
+    data: users,
+    pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+  });
 });
 
 router.get("/users/:id", authorizePermission("MANAGE_USERS"), async (req: AuthRequest, res: Response) => {
@@ -81,15 +87,42 @@ router.patch("/users/:id/toggle-status", authorizePermission("MANAGE_USERS"), au
   res.json({ success: true, data: { isActive: user.isActive } });
 });
 
-router.get("/organizations", authorizePermission("MANAGE_WORKSPACES"), async (_req: AuthRequest, res: Response) => {
-  const organizations = await Organization.find().sort({ createdAt: -1 }).lean();
-  const data = await Promise.all(
-    organizations.map(async (org) => {
-      const memberCount = await OrgMember.countDocuments({ orgId: org._id });
-      return { id: org._id, name: org.name, slug: org.slug, plan: org.plan, memberCount, createdAt: org.createdAt };
-    })
-  );
-  res.json({ success: true, data });
+router.get("/organizations", authorizePermission("MANAGE_WORKSPACES"), async (req: AuthRequest, res: Response) => {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(Math.max(1, parseInt(req.query.limit as string) || 50), 200);
+  const skip = (page - 1) * limit;
+
+  const [organizations, total] = await Promise.all([
+    Organization.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select("name slug plan createdAt")
+      .lean(),
+    Organization.countDocuments(),
+  ]);
+
+  const orgIds = organizations.map(o => o._id);
+  const memberCounts = await OrgMember.aggregate([
+    { $match: { orgId: { $in: orgIds.map(id => id.toString()) } } },
+    { $group: { _id: "$orgId", count: { $sum: 1 } } },
+  ]);
+  const memberCountMap = new Map(memberCounts.map(m => [m._id, m.count]));
+
+  const data = organizations.map(org => ({
+    id: org._id,
+    name: org.name,
+    slug: org.slug,
+    plan: org.plan,
+    memberCount: memberCountMap.get(org._id.toString()) || 0,
+    createdAt: org.createdAt,
+  }));
+
+  res.json({
+    success: true,
+    data,
+    pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+  });
 });
 
 router.get("/logs", authorizePermission("VIEW_SYSTEM_LOGS"), async (req: AuthRequest, res: Response) => {

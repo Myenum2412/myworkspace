@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import {
   createNotification,
   listNotifications,
@@ -37,12 +38,12 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   res.status(201).json({ success: true, data: payload });
 });
 
-router.get("/", async (req: AuthRequest, res: Response) => {
+router.get("/", cacheEnhanced({ ttl: 15, varyByUser: true, tags: ["notifications"] }), async (req: AuthRequest, res: Response) => {
   const notifications = await listNotifications(req.user!.userId);
   res.json({ success: true, data: notifications });
 });
 
-router.get("/unread-count", async (req: AuthRequest, res: Response) => {
+router.get("/unread-count", cacheEnhanced({ ttl: 15, varyByUser: true, tags: ["notifications"] }), async (req: AuthRequest, res: Response) => {
   const count = await getUnreadCount(req.user!.userId);
   res.json({ success: true, data: { count } });
 });

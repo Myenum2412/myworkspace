@@ -10,6 +10,7 @@ import { recordAuditLog } from "../services/audit.service.js";
 import { uploadFile } from "../services/file.service.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 import { cacheManager } from "../lib/cache.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, optionalString, requireEnum, optionalArray, PROJECT_STATUSES, PROJECT_ACCESS } from "../lib/validate.js";
 
 const router = Router();
@@ -17,7 +18,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100
 
 router.use(authenticate);
 
-router.get("/", async (req: AuthRequest, res: Response) => {
+router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["projects"] }), async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
   const projects = await Project.find({ orgId }).sort({ createdAt: -1 }).lean();
   res.json({ success: true, data: projects.map(normalize) });

@@ -3,6 +3,7 @@ import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 
 const router = Router();
 
@@ -22,7 +23,7 @@ async function enrichLogs(logs: Record<string, unknown>[]) {
   }));
 }
 
-router.get("/", async (req: AuthRequest, res: Response) => {
+router.get("/", cacheEnhanced({ ttl: 20, varyByUser: true, varyByQuery: true, tags: ["activity"] }), async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || req.orgId || "";
 
   if (!orgId) {

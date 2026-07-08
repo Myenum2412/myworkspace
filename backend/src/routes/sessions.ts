@@ -234,7 +234,10 @@ router.patch("/:id/close", authenticate, async (req: AuthRequest, res: Response)
 // Get current active session
 router.get("/active", authenticate, async (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
-  const session = await Session.findOne({ userId, logoutTime: { $exists: false } }).sort({ loginTime: -1 });
+  const session = await Session.findOne({ userId, logoutTime: { $exists: false } })
+    .sort({ loginTime: -1 })
+    .select("_id loginTime currentStatus totalBreakDuration statusTransitions duration")
+    .lean();
 
   if (!session) {
     res.json({ success: true, data: null });
@@ -243,14 +246,7 @@ router.get("/active", authenticate, async (req: AuthRequest, res: Response) => {
 
   res.json({
     success: true,
-    data: {
-      sessionId: session._id,
-      loginTime: session.loginTime,
-      currentStatus: session.currentStatus,
-      totalBreakDuration: session.totalBreakDuration,
-      statusTransitions: session.statusTransitions,
-      duration: session.duration,
-    },
+    data: session,
   });
 });
 

@@ -10,6 +10,7 @@ import { verifyOrgAccess } from "../lib/org-utils.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { cacheManager, CacheKeys } from "../lib/cache.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import {
   uploadFile, softDeleteFile, restoreFile, permanentDeleteFile,
   createFileVersion, toggleFileLock, getFileStream, duplicateFile,
@@ -30,7 +31,7 @@ function invalidateFileCaches(orgId: string): void {
   cacheManager.invalidatePattern(CacheKeys.dashboardMetrics(orgId));
 }
 
-router.get("/", async (req: AuthRequest, res: Response) => {
+router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tags: ["files"] }), async (req: AuthRequest, res: Response) => {
   const orgId = req.query.orgId as string;
   const folderId = req.query.folderId as string | undefined;
   const clientId = req.query.clientId as string | undefined;
@@ -84,7 +85,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   res.json({ success: true, data: result, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
 });
 
-router.get("/shared", async (req: AuthRequest, res: Response) => {
+router.get("/shared", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["file-shares"] }), async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || "";
   if (!orgId) { res.json({ success: true, data: [] }); return; }
   await verifyAccess(req.user!.userId, orgId);
@@ -111,7 +112,7 @@ router.get("/shared", async (req: AuthRequest, res: Response) => {
   res.json({ success: true, data: result });
 });
 
-router.get("/recycle-bin", async (req: AuthRequest, res: Response) => {
+router.get("/recycle-bin", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["files"] }), async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || "";
   if (!orgId) { res.json({ success: true, data: [] }); return; }
   await verifyAccess(req.user!.userId, orgId);

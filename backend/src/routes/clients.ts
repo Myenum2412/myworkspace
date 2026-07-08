@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, requireEmail } from "../lib/validate.js";
 import {
   resolveOrgId,
@@ -16,7 +17,7 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get("/", async (req: AuthRequest, res: Response) => {
+router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["clients"] }), async (req: AuthRequest, res: Response) => {
   const orgId = await resolveOrgId(req.user!.userId, req.user!.email, req.user!.orgId);
   const data = await listClients(orgId);
   res.json({ success: true, data, total: data.length });

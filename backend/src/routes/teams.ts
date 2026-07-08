@@ -7,6 +7,7 @@ import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
 import { socketIOManager } from "../lib/socketio/index.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, optionalString } from "../lib/validate.js";
 
 const router = Router();
@@ -14,7 +15,7 @@ const router = Router();
 router.use(authenticate);
 
 // List all teams in the user's org with member counts, pagination, filtering, and sorting
-router.get("/", async (req: AuthRequest, res: Response) => {
+router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tags: ["teams"] }), async (req: AuthRequest, res: Response) => {
   const orgId = await requireOrgMembershipFromRequest(req);
 
   // Pagination params
