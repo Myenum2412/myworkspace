@@ -312,8 +312,90 @@ app.get("/api/conversations/:id/messages", async (req, res) => {
 app.get("/api/contacts", async (req, res) => {
   const userId = req.query.userId as string;
   if (!userId) { res.status(400).json({ error: "userId required" }); return; }
-  const presences = await UserPresence.find({});
-  res.json({ data: presences });
+
+  const db = mongoose.connection.db;
+  if (!db) { res.status(500).json({ error: "DB not connected" }); return; }
+
+  try {
+    // Find user's org membership
+    const membership = await db.collection("org_members").findOne({ userId });
+    const orgId = membership?.orgId?.toString() || "";
+
+    // Get all org members (employees)
+    const orgMembers = orgId
+      ? await db.collection("org_members").find({ orgId }).toArray()
+      : [];
+    const memberUserIds = orgMembers.map((m: any) => m.userId).filter(Boolean);
+
+    // Get user details for all members
+    const memberUsers = memberUserIds.length > 0
+      ? await db.collection("users").find({ id: { $in: memberUserIds } }, { projection: { id: 1, name: 1, email: 1, image: 1, role: 1, department: 1, status: 1 } }).toArray()
+      : [];
+
+    // Get clients for this org
+    const clientDocs = orgId
+      ? await db.collection("clients").find({ orgId }).toArray()
+      : [];
+
+    // Get team members
+    const teamMembers = orgId
+      ? await db.collection("team_members").find({ orgId }).toArray()
+      : [];
+    const teamUserIds = teamMembers.map((t: any) => t.userId).filter(Boolean);
+    const allUserIds = [...new Set([...memberUserIds, ...teamUserIds])];
+
+    // Get all relevant user details
+    const allUsers = allUserIds.length > 0
+      ? await db.collection("users").find({ id: { $in: allUserIds } }, { projection: { id: 1, name: 1, email: 1, image: 1, role: 1, department: 1, status: 1, phone: 1, company: 1 } }).toArray()
+      : [];
+
+    // Get presence data
+    const allUserIdsForPresence = [...new Set([...memberUserIds, ...teamUserIds])];
+    const presences = allUserIdsForPresence.length > 0
+      ? await UserPresence.find({ userId: { $in: allUserIdsForPresence } })
+      : [];
+    const presenceMap = new Map(presences.map((p: any) => [p.userId, { status: p.status, lastSeen: p.lastSeen }]));
+
+    // Get org member roles
+    const orgRoleMap = new Map(orgMembers.map((m: any) => [m.userId, m.role]));
+
+    // Build contacts list (exclude self)
+    const contacts = allUsers
+      .filter((u: any) => u.id !== userId)
+      .map((u: any) => ({
+        id: u.id,
+        name: u.name || "Unknown",
+        email: u.email || "",
+        avatar: u.image || "",
+        role: orgRoleMap.get(u.id) || u.role || "member",
+        department: u.department || "",
+        company: u.company || "",
+        phone: u.phone || "",
+        status: u.status || "offline",
+        presence: presenceMap.get(u.id) || { status: "offline", lastSeen: null },
+        type: "employee" as const,
+      }));
+
+    // Add clients as contacts
+    const clientContacts = clientDocs.map((c: any) => ({
+      id: c.id || c._id?.toString(),
+      name: c.name || "Unknown",
+      email: c.email || "",
+      avatar: "",
+      role: "client",
+      department: "",
+      company: c.company || "",
+      phone: c.phone || "",
+      status: c.status || "active",
+      presence: { status: "offline" as const, lastSeen: null },
+      type: "client" as const,
+    }));
+
+    res.json({ data: [...contacts, ...clientContacts] });
+  } catch (err) {
+    console.error("[API] contacts error:", err);
+    res.json({ data: [] });
+  }
 });
 
 app.get("/api/notifications/:userId", async (req, res) => {

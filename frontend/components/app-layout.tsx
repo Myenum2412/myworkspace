@@ -46,13 +46,18 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) setOpen(false);
-      else setOpen(true);
+      if (pathname === "/chat") {
+        setOpen(false);
+      } else if (window.innerWidth < 768) {
+        setOpen(false);
+      } else {
+        setOpen(true);
+      }
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [pathname]);
 
   // Session loading is handled by AppInitProvider at the root level.
   // By the time this component renders for app pages, the session is ready.

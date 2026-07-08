@@ -60,6 +60,30 @@ export const signupKeywords = [
   "new account",
 ] as const;
 
+export const chatKeywords = [
+  ...sharedKeywords,
+  "video conferencing",
+  "video calls",
+  "audio calls",
+  "screen sharing",
+  "real-time messaging",
+  "team chat",
+  "instant messaging",
+  "online meetings",
+  "video meetings",
+  "web conferencing",
+  "remote collaboration",
+  "virtual meetings",
+  "chat application",
+  "communication platform",
+  "group chat",
+  "direct messages",
+  "file sharing",
+  "voice calls",
+  "HD video",
+  "enterprise communication",
+] as const;
+
 // ── Common robots config ──────────────────────────────────────────────
 const robots: Metadata["robots"] = {
   index: true,
@@ -224,6 +248,55 @@ export function getSignupMetadata(): Metadata {
   };
 }
 
+// ── Chat page metadata ────────────────────────────────────────────────
+export function getChatMetadata(): Metadata {
+  return {
+    title: {
+      absolute: "Chat & Video Calls — MyWorkSpace | Real-Time Communication",
+    },
+    description:
+      "Connect with your team through real-time messaging, HD video calls, audio calls, and screen sharing. MyWorkSpace communication platform supports group chats, online meetings, and enterprise collaboration.",
+    keywords: [...chatKeywords],
+    authors: [{ name: ORG_NAME, url: SITE_URL }],
+    creator: ORG_NAME,
+    publisher: ORG_NAME,
+    robots,
+    alternates: {
+      canonical: `${SITE_URL}/chat`,
+    },
+    openGraph: {
+      title: "Chat & Video Calls — MyWorkSpace | Real-Time Communication",
+      description:
+        "Connect with your team through real-time messaging, HD video calls, audio calls, and screen sharing. Enterprise-grade communication platform.",
+      url: `${SITE_URL}/chat`,
+      siteName: SITE_NAME,
+      images: [
+        {
+          url: OG_IMAGE,
+          width: siteConfig.ogImageWidth,
+          height: siteConfig.ogImageHeight,
+          alt: OG_IMAGE_ALT,
+        },
+      ],
+      locale: siteConfig.locale,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Chat & Video Calls — MyWorkSpace | Real-Time Communication",
+      description:
+        "Connect with your team through real-time messaging, HD video calls, audio calls, and screen sharing.",
+      images: [OG_IMAGE],
+      site: siteConfig.twitterHandle,
+      creator: siteConfig.twitterHandle,
+    },
+    other: {
+      "application-name": SITE_NAME,
+      "msapplication-TileColor": "#000000",
+    },
+  };
+}
+
 // ── Login page JSON-LD ────────────────────────────────────────────────
 export function loginPageJsonLd() {
   return [
@@ -291,6 +364,98 @@ export function loginPageJsonLd() {
           acceptedAnswer: {
             "@type": "Answer",
             text: "Yes. MyWorkSpace uses enterprise-grade security including encrypted data transmission, secure password hashing, and optional two-factor authentication to protect your account and workspace data.",
+          },
+        },
+      ],
+    },
+  ];
+}
+
+// ── Chat page JSON-LD ─────────────────────────────────────────────────
+export function chatPageJsonLd() {
+  return [
+    organizationJsonLd(),
+    webSiteJsonLd(),
+    softwareApplicationJsonLd(),
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Chat & Video Calls — MyWorkSpace",
+      description:
+        "Real-time messaging, HD video calls, audio calls, and screen sharing for team collaboration.",
+      url: `${SITE_URL}/chat`,
+      isPartOf: {
+        "@type": "WebSite",
+        name: SITE_NAME,
+        url: SITE_URL,
+      },
+      about: {
+        "@type": "Organization",
+        name: ORG_NAME,
+        url: SITE_URL,
+      },
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "Chat", item: `${SITE_URL}/chat` },
+        ],
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: `${SITE_NAME} Chat`,
+      applicationCategory: "CommunicationApplication",
+      operatingSystem: "Web",
+      description:
+        "Real-time messaging, video conferencing, audio calls, screen sharing, and team collaboration platform.",
+      featureList: [
+        "HD Video Calls",
+        "Audio Calls",
+        "Screen Sharing",
+        "Real-time Messaging",
+        "Group Chat",
+        "Direct Messages",
+        "Online Meetings",
+        "File Sharing",
+        "Message Reactions",
+        "Read Receipts",
+        "Typing Indicators",
+        "Presence Status",
+      ],
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "How do I start a video call on MyWorkSpace?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Navigate to the Chat page, click the 'Calls' tab, and select 'New Video Call'. You can also start a call directly from any conversation by clicking the video icon in the chat header.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can I share my screen during a meeting?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. During any video or audio call, click the screen share button in the meeting controls to share your screen with all participants. System audio is also supported.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is MyWorkSpace chat encrypted?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. All communication on MyWorkSpace is secured with enterprise-grade encryption including DTLS-SRTP for media streams and encrypted WebSocket connections for messaging.",
           },
         },
       ],

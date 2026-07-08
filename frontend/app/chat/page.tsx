@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
+import { chatPageJsonLd } from "@/lib/seo/seo-config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,14 +17,14 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  MessageSquareIcon, PhoneIcon, VideoIcon, UsersIcon, BellIcon, SettingsIcon,
+  MessageSquareIcon, PhoneIcon, VideoIcon, UsersIcon, BellIcon,
   SearchIcon, SendIcon, PlusIcon, MoreVerticalIcon, PinIcon, ArchiveIcon,
-  Trash2Icon, EditIcon, ReplyIcon, SmileIcon, PaperclipIcon, ImageIcon,
+  Trash2Icon, ReplyIcon, SmileIcon, PaperclipIcon, ImageIcon,
   MicIcon, MicOffIcon, VideoOffIcon, ScreenShareIcon, ScreenShareOffIcon,
-  HandIcon, PhoneOffIcon, LogInIcon, ClockIcon, CheckCheckIcon, CheckIcon,
-  CircleIcon, XCircleIcon, LockIcon, UnlockIcon, UserPlusIcon, Search,
-  ChevronLeftIcon, StarIcon, EyeIcon, CopyIcon, ForwardIcon, AtSignIcon,
-  FileTextIcon, DownloadIcon, CalendarIcon, Copy,
+  HandIcon, PhoneOffIcon, LogInIcon, CheckCheckIcon, CheckIcon,
+  XCircleIcon, ChevronLeftIcon, StarIcon, CopyIcon, ForwardIcon,
+  DownloadIcon, UserIcon, Building2Icon, ClockIcon, MailIcon,
+  PhoneCallIcon, InfoIcon,
 } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_CHAT_SERVER_URL || "http://localhost:4001";
@@ -32,6 +32,20 @@ const API = process.env.NEXT_PUBLIC_CHAT_SERVER_URL || "http://localhost:4001";
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════
+interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  role: string;
+  department: string;
+  company: string;
+  phone: string;
+  status: string;
+  presence: { status: string; lastSeen: string | null };
+  type: "employee" | "client";
+}
+
 interface Conversation {
   _id: string;
   id: string;
@@ -42,9 +56,7 @@ interface Conversation {
   lastMessage: { text: string; senderId: string; senderName: string; timestamp: string } | null;
   pinnedBy: string[];
   archivedBy: string[];
-  mutedBy: string[];
   unreadCount: Record<string, number>;
-  isLocked: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,14 +85,8 @@ interface Meeting {
   id: string;
   roomId: string;
   title: string;
-  conversationId: string | null;
-  createdBy: string;
-  hostId: string;
-  participants: string[];
   isActive: boolean;
-  startedAt: string;
-  endedAt: string | null;
-  duration: number;
+  participants: string[];
   createdAt: string;
 }
 
@@ -95,21 +101,48 @@ interface Participant {
   isHandRaised: boolean;
 }
 
-interface Presence {
-  userId: string;
-  status: "online" | "offline" | "busy" | "away";
-  lastSeen: string;
-}
-
 interface Notification {
   _id: string;
   id: string;
-  userId: string;
   type: string;
   title: string;
   body: string;
   read: boolean;
   createdAt: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════
+function getInitials(name: string) {
+  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+}
+
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "now";
+  if (diffMin < 60) return `${diffMin}m`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 7) return `${diffDay}d`;
+  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+function formatLastSeen(dateStr: string | null) {
+  if (!dateStr) return "Offline";
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "Active now";
+  if (diffMin < 60) return `${diffMin} min ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -121,36 +154,38 @@ export default function ChatPage() {
   const userName = session?.user?.name || "User";
   const userAvatar = session?.user?.image || "";
 
-  // ── Socket State ─────────────────────────────────────────────
+  // ── Socket ───────────────────────────────────────────────────
   const socketRef = useRef<any>(null);
   const [socketConnected, setSocketConnected] = useState(false);
 
   // ── Navigation ───────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<"chats" | "calls" | "meetings" | "contacts" | "notifications">("chats");
+  const [activeTab, setActiveTab] = useState<"chats" | "contacts" | "calls" | "notifications">("chats");
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [showMobileChat, setShowMobileChat] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   // ── Data ─────────────────────────────────────────────────────
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [presences, setPresences] = useState<Record<string, string>>({});
   const [typingUsers, setTypingUsers] = useState<Record<string, string[]>>({});
+  const [loading, setLoading] = useState(true);
 
   // ── Chat State ───────────────────────────────────────────────
   const [chatInput, setChatInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [replyTo, setReplyTo] = useState<Message | null>(null);
-  const [editingMsg, setEditingMsg] = useState<Message | null>(null);
-  const [editText, setEditText] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
   const [msgSearch, setMsgSearch] = useState("");
+  const [showMsgSearch, setShowMsgSearch] = useState(false);
 
   // ── Modals ───────────────────────────────────────────────────
   const [createConvOpen, setCreateConvOpen] = useState(false);
   const [newConvName, setNewConvName] = useState("");
-  const [newConvParticipants, setNewConvParticipants] = useState("");
+  const [newConvParticipant, setNewConvParticipant] = useState("");
 
   // ── Call State ───────────────────────────────────────────────
   const [inCall, setInCall] = useState(false);
@@ -163,12 +198,6 @@ export default function ChatPage() {
   const [showCallChat, setShowCallChat] = useState(false);
   const [callChatMessages, setCallChatMessages] = useState<any[]>([]);
   const [callChatInput, setCallChatInput] = useState("");
-  const [callType, setCallType] = useState<"audio" | "video">("video");
-
-  // ── Meeting State ────────────────────────────────────────────
-  const [createMeetingOpen, setCreateMeetingOpen] = useState(false);
-  const [meetingTitle, setMeetingTitle] = useState("");
-  const [meetingPassword, setMeetingPassword] = useState("");
 
   // ── Refs ─────────────────────────────────────────────────────
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -180,25 +209,21 @@ export default function ChatPage() {
   // ═══════════════════════════════════════════════════════════════════════
   useEffect(() => {
     if (!userId) return;
-
     import("socket.io-client").then(({ io }) => {
       const socket = io(API, {
         transports: ["websocket", "polling"],
         auth: { userId, userName, userAvatar },
       });
-
       socket.on("connect", () => setSocketConnected(true));
       socket.on("disconnect", () => setSocketConnected(false));
 
       socket.on("new-message", (msg: Message) => {
         setMessages((prev) => [...prev, msg]);
-        if (msg.conversationId !== selectedConvId) {
-          setConversations((prev) => prev.map((c) =>
-            c.id === msg.conversationId
-              ? { ...c, lastMessage: { text: msg.text, senderId: msg.senderId, senderName: msg.senderName, timestamp: msg.createdAt } }
-              : c
-          ));
-        }
+        setConversations((prev) => prev.map((c) =>
+          c.id === msg.conversationId
+            ? { ...c, lastMessage: { text: msg.text, senderId: msg.senderId, senderName: msg.senderName, timestamp: msg.createdAt }, updatedAt: msg.createdAt }
+            : c
+        ));
       });
 
       socket.on("message-edited", (data: any) => {
@@ -217,11 +242,9 @@ export default function ChatPage() {
         setTypingUsers((prev) => {
           const conv = prev[data.conversationId] || [];
           if (data.isTyping) {
-            if (!conv.includes(data.userName)) return { ...prev, [data.conversationId]: [...conv, data.userName] };
-          } else {
-            return { ...prev, [data.conversationId]: conv.filter((n) => n !== data.userName) };
+            return conv.includes(data.userName) ? prev : { ...prev, [data.conversationId]: [...conv, data.userName] };
           }
-          return prev;
+          return { ...prev, [data.conversationId]: conv.filter((n) => n !== data.userName) };
         });
       });
 
@@ -237,7 +260,6 @@ export default function ChatPage() {
         setNotifications((prev) => [notif, ...prev]);
       });
 
-      // ── Meeting Events ───────────────────────────────────────
       socket.on("participant-joined", (data: any) => {
         setCallParticipants((prev) => [...prev.filter((p) => p.socketId !== data.socketId), { ...data, isMuted: false, isCameraOff: false, isScreenSharing: false, isHandRaised: false }]);
       });
@@ -263,41 +285,59 @@ export default function ChatPage() {
 
       socketRef.current = socket;
     });
-
     return () => { socketRef.current?.disconnect(); };
   }, [userId, userName, userAvatar]);
 
   // ═══════════════════════════════════════════════════════════════════════
   // FETCH DATA
   // ═══════════════════════════════════════════════════════════════════════
+  const fetchContacts = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/api/contacts?userId=${userId}`);
+      const data = await res.json();
+      setContacts(data.data || []);
+    } catch { setContacts([]); }
+    setLoading(false);
+  }, [userId]);
+
   const fetchConversations = useCallback(async () => {
     if (!userId) return;
-    const res = await fetch(`${API}/api/conversations?userId=${userId}`);
-    const data = await res.json();
-    setConversations(data.data || []);
+    try {
+      const res = await fetch(`${API}/api/conversations?userId=${userId}`);
+      const data = await res.json();
+      setConversations(data.data || []);
+    } catch {}
   }, [userId]);
 
   const fetchMessages = useCallback(async (convId: string) => {
-    const res = await fetch(`${API}/api/conversations/${convId}/messages`);
-    const data = await res.json();
-    setMessages(data.data || []);
+    try {
+      const res = await fetch(`${API}/api/conversations/${convId}/messages`);
+      const data = await res.json();
+      setMessages(data.data || []);
+    } catch {}
   }, []);
 
   const fetchMeetings = useCallback(async () => {
     if (!userId) return;
-    const res = await fetch(`${API}/api/meetings?userId=${userId}`);
-    const data = await res.json();
-    setMeetings(data.data || []);
+    try {
+      const res = await fetch(`${API}/api/meetings?userId=${userId}`);
+      const data = await res.json();
+      setMeetings(data.data || []);
+    } catch {}
   }, [userId]);
 
   const fetchNotifications = useCallback(async () => {
     if (!userId) return;
-    const res = await fetch(`${API}/api/notifications/${userId}`);
-    const data = await res.json();
-    setNotifications(data.data || []);
+    try {
+      const res = await fetch(`${API}/api/notifications/${userId}`);
+      const data = await res.json();
+      setNotifications(data.data || []);
+    } catch {}
   }, [userId]);
 
-  useEffect(() => { fetchConversations(); fetchMeetings(); fetchNotifications(); }, [fetchConversations, fetchMeetings, fetchNotifications]);
+  useEffect(() => { fetchContacts(); fetchConversations(); fetchMeetings(); fetchNotifications(); }, [fetchContacts, fetchConversations, fetchMeetings, fetchNotifications]);
 
   useEffect(() => {
     if (selectedConvId) {
@@ -307,12 +347,10 @@ export default function ChatPage() {
     }
   }, [selectedConvId, fetchMessages]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   // ═══════════════════════════════════════════════════════════════════════
-  // MEDIA HELPERS
+  // MEDIA
   // ═══════════════════════════════════════════════════════════════════════
   const startMedia = useCallback(async () => {
     try {
@@ -347,46 +385,30 @@ export default function ChatPage() {
   }, [callChatInput, callRoomId]);
 
   const startCall = useCallback(async (type: "audio" | "video") => {
-    setCallType(type);
     socketRef.current?.emit("start-meeting", { title: `${userName}'s ${type} call` }, (res: any) => {
-      if (res.success) {
-        setInCall(true);
-        setCallRoomId(res.roomId);
-        startMedia();
-      }
+      if (res.success) { setInCall(true); setCallRoomId(res.roomId); startMedia(); }
     });
   }, [userName, startMedia]);
 
-  const joinCall = useCallback(async (roomId: string, type: "audio" | "video") => {
-    setCallType(type);
+  const joinCall = useCallback(async (roomId: string) => {
     socketRef.current?.emit("join-meeting", { roomId }, (res: any) => {
-      if (res.success) {
-        setInCall(true);
-        setCallRoomId(roomId);
-        setCallParticipants(res.participants || []);
-        startMedia();
-      }
+      if (res.success) { setInCall(true); setCallRoomId(roomId); setCallParticipants(res.participants || []); startMedia(); }
     });
   }, [startMedia]);
 
   const leaveCall = useCallback(() => {
     socketRef.current?.emit("leave-meeting");
-    setInCall(false);
-    setCallRoomId(null);
-    setCallParticipants([]);
-    stopMedia();
+    setInCall(false); setCallRoomId(null); setCallParticipants([]); stopMedia();
   }, [stopMedia]);
 
   const toggleMute = useCallback(() => {
-    const next = !isMuted;
-    setIsMuted(next);
+    const next = !isMuted; setIsMuted(next);
     socketRef.current?.emit("toggle-mute", { muted: next });
     localStreamRef.current?.getAudioTracks().forEach((t) => { t.enabled = !next; });
   }, [isMuted]);
 
   const toggleCamera = useCallback(() => {
-    const next = !isCameraOff;
-    setIsCameraOff(next);
+    const next = !isCameraOff; setIsCameraOff(next);
     socketRef.current?.emit("toggle-camera", { off: next });
     localStreamRef.current?.getVideoTracks().forEach((t) => { t.enabled = !next; });
   }, [isCameraOff]);
@@ -395,58 +417,64 @@ export default function ChatPage() {
     if (!isScreenSharing) {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
       stream.getVideoTracks()[0].onended = () => { setIsScreenSharing(false); socketRef.current?.emit("toggle-screen-share", { sharing: false }); };
-      setIsScreenSharing(true);
-      socketRef.current?.emit("toggle-screen-share", { sharing: true });
-    } else {
-      setIsScreenSharing(false);
-      socketRef.current?.emit("toggle-screen-share", { sharing: false });
-    }
+      setIsScreenSharing(true); socketRef.current?.emit("toggle-screen-share", { sharing: true });
+    } else { setIsScreenSharing(false); socketRef.current?.emit("toggle-screen-share", { sharing: false }); }
   }, [isScreenSharing]);
 
   const toggleHand = useCallback(() => {
-    const next = !isHandRaised;
-    setIsHandRaised(next);
+    const next = !isHandRaised; setIsHandRaised(next);
     socketRef.current?.emit("toggle-hand-raise", { raised: next });
   }, [isHandRaised]);
 
-  const createConversation = useCallback(() => {
-    const participants = newConvParticipants.split(",").map((s) => s.trim()).filter(Boolean);
+  const createConversation = useCallback((contact: Contact) => {
     socketRef.current?.emit("create-conversation", {
-      type: participants.length > 1 ? "group" : "direct",
-      name: newConvName || (participants.length > 1 ? newConvName : ""),
-      participants: [...new Set([userId, ...participants])],
+      type: "direct",
+      name: contact.name,
+      participants: [userId, contact.id],
     }, (res: any) => {
       if (res.success) {
-        setCreateConvOpen(false);
-        setNewConvName("");
-        setNewConvParticipants("");
         setSelectedConvId(res.conversation.id);
+        setActiveTab("chats");
+        setCreateConvOpen(false);
         fetchConversations();
       }
     });
-  }, [newConvName, newConvParticipants, userId, fetchConversations]);
+  }, [userId, fetchConversations]);
 
-  const createMeeting = useCallback(() => {
-    socketRef.current?.emit("start-meeting", { title: meetingTitle || "Meeting", password: meetingPassword || undefined }, (res: any) => {
-      if (res.success) {
-        setCreateMeetingOpen(false);
-        setMeetingTitle("");
-        setMeetingPassword("");
-        setInCall(true);
-        setCallRoomId(res.roomId);
-        startMedia();
-        fetchMeetings();
-      }
+  const createGroupConversation = useCallback(() => {
+    const participantIds = newConvParticipant.split(",").map((s) => s.trim()).filter(Boolean);
+    socketRef.current?.emit("create-conversation", {
+      type: "group",
+      name: newConvName || "Group Chat",
+      participants: [...new Set([userId, ...participantIds])],
+    }, (res: any) => {
+      if (res.success) { setCreateConvOpen(false); setNewConvName(""); setNewConvParticipant(""); fetchConversations(); }
     });
-  }, [meetingTitle, meetingPassword, startMedia, fetchMeetings]);
+  }, [newConvName, newConvParticipant, userId, fetchConversations]);
 
   const sendTyping = useCallback((isTyping: boolean) => {
     if (selectedConvId) socketRef.current?.emit("typing", { conversationId: selectedConvId, isTyping });
   }, [selectedConvId]);
 
+  const openContactChat = useCallback((contact: Contact) => {
+    const existing = conversations.find((c) => c.type === "direct" && c.participants.includes(contact.id) && c.participants.includes(userId));
+    if (existing) {
+      setSelectedConvId(existing.id);
+    } else {
+      createConversation(contact);
+    }
+    setShowMobileChat(true);
+  }, [conversations, userId, createConversation]);
+
   // ═══════════════════════════════════════════════════════════════════════
   // FILTERED DATA
   // ═══════════════════════════════════════════════════════════════════════
+  const filteredContacts = useMemo(() => {
+    if (!searchQuery) return contacts;
+    const q = searchQuery.toLowerCase();
+    return contacts.filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.role.toLowerCase().includes(q) || c.department.toLowerCase().includes(q));
+  }, [contacts, searchQuery]);
+
   const filteredConversations = useMemo(() => {
     let list = conversations.filter((c) => !c.archivedBy?.includes(userId));
     if (searchQuery) {
@@ -456,7 +484,7 @@ export default function ChatPage() {
     return list.sort((a, b) => {
       if (a.pinnedBy?.includes(userId) && !b.pinnedBy?.includes(userId)) return -1;
       if (!a.pinnedBy?.includes(userId) && b.pinnedBy?.includes(userId)) return 1;
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      return new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime();
     });
   }, [conversations, searchQuery, userId]);
 
@@ -470,8 +498,13 @@ export default function ChatPage() {
   }, [messages, msgSearch]);
 
   const selectedConv = conversations.find((c) => c.id === selectedConvId);
-  const unreadCount = notifications.filter((n) => !n.read).length;
   const typingInConv = typingUsers[selectedConvId || ""] || [];
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const getContactForUser = useCallback((conv: Conversation) => {
+    const otherId = conv.participants.find((p) => p !== userId);
+    return contacts.find((c) => c.id === otherId) || null;
+  }, [contacts, userId]);
 
   // ═══════════════════════════════════════════════════════════════════════
   // IN-CALL VIEW
@@ -479,27 +512,20 @@ export default function ChatPage() {
   if (inCall) {
     return (
       <div className="flex flex-1 flex-col h-full bg-gray-950 text-white">
-        {/* Call Header */}
         <div className="flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-gray-800">
           <div className="flex items-center gap-3">
             <div className="size-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-sm font-medium">Meeting Active</span>
-            <Badge variant="outline" className="text-xs border-gray-700">{callParticipants.length + 1} participants</Badge>
+            <Badge variant="outline" className="text-xs border-gray-700">{callParticipants.length + 1}</Badge>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white" onClick={() => setShowCallChat(!showCallChat)}>
+            <Button variant="ghost" size="sm" className="text-gray-300" onClick={() => setShowCallChat(!showCallChat)}>
               <MessageSquareIcon className="size-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white" onClick={() => setShowCallChat(!showCallChat)}>
-              <UsersIcon className="size-4" />
             </Button>
           </div>
         </div>
-
-        {/* Video Grid */}
         <div className="flex-1 overflow-auto p-4">
           <div className="grid gap-3 h-full" style={{ gridTemplateColumns: `repeat(${Math.min(callParticipants.length + 1, 4)}, 1fr)` }}>
-            {/* Local Video */}
             <div className="relative rounded-xl overflow-hidden bg-gray-800 aspect-video min-h-[200px]">
               <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
               <div className="absolute bottom-3 left-3 flex items-center gap-2">
@@ -508,28 +534,19 @@ export default function ChatPage() {
                 {isHandRaised && <HandIcon className="size-3 text-yellow-400" />}
               </div>
             </div>
-
-            {/* Remote Videos */}
             {callParticipants.map((p) => (
               <div key={p.socketId} className="relative rounded-xl overflow-hidden bg-gray-800 aspect-video min-h-[200px]">
                 <div className="w-full h-full flex items-center justify-center">
-                  {p.isCameraOff ? (
-                    <div className="size-16 rounded-full bg-gray-700 flex items-center justify-center text-xl font-bold">{p.name.charAt(0)}</div>
-                  ) : (
-                    <video autoPlay playsInline className="w-full h-full object-cover" />
-                  )}
+                  {p.isCameraOff ? <div className="size-16 rounded-full bg-gray-700 flex items-center justify-center text-xl font-bold">{p.name.charAt(0)}</div> : <video autoPlay playsInline className="w-full h-full object-cover" />}
                 </div>
                 <div className="absolute bottom-3 left-3 flex items-center gap-2">
                   <Badge className="bg-black/60 text-white border-0 text-xs">{p.name}</Badge>
                   {p.isMuted && <MicOffIcon className="size-3 text-red-400" />}
-                  {p.isHandRaised && <HandIcon className="size-3 text-yellow-400" />}
                 </div>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Controls */}
         <div className="flex items-center justify-center gap-4 px-4 py-4 bg-gray-900 border-t border-gray-800">
           <Button variant={isMuted ? "destructive" : "secondary"} size="lg" onClick={toggleMute} className="rounded-full size-12 p-0">
             {isMuted ? <MicOffIcon className="size-5" /> : <MicIcon className="size-5" />}
@@ -537,18 +554,16 @@ export default function ChatPage() {
           <Button variant={isCameraOff ? "destructive" : "secondary"} size="lg" onClick={toggleCamera} className="rounded-full size-12 p-0">
             {isCameraOff ? <VideoOffIcon className="size-5" /> : <VideoIcon className="size-5" />}
           </Button>
-          <Button variant={isScreenSharing ? "secondary" : "outline"} size="lg" onClick={toggleScreen} className="rounded-full size-12 p-0 border-gray-700">
+          <Button variant="secondary" size="lg" onClick={toggleScreen} className="rounded-full size-12 p-0">
             {isScreenSharing ? <ScreenShareOffIcon className="size-5" /> : <ScreenShareIcon className="size-5" />}
           </Button>
-          <Button variant={isHandRaised ? "secondary" : "outline"} size="lg" onClick={toggleHand} className="rounded-full size-12 p-0 border-gray-700">
+          <Button variant="secondary" size="lg" onClick={toggleHand} className="rounded-full size-12 p-0">
             <HandIcon className="size-5" />
           </Button>
           <Button variant="destructive" size="lg" onClick={leaveCall} className="rounded-full size-12 p-0">
             <PhoneOffIcon className="size-5" />
           </Button>
         </div>
-
-        {/* Call Chat Sidebar */}
         {showCallChat && (
           <div className="fixed right-0 top-0 bottom-0 w-80 bg-gray-900 border-l border-gray-800 z-50 flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
@@ -576,429 +591,355 @@ export default function ChatPage() {
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // MAIN CHAT VIEW
+  // MAIN VIEW
   // ═══════════════════════════════════════════════════════════════════════
   return (
-    <div className="flex flex-1 h-full overflow-hidden">
-      {/* ── Left Sidebar ──────────────────────────────────────── */}
-      <div className={`w-80 border-r flex flex-col bg-background ${showMobileChat ? "hidden md:flex" : "flex"}`}>
-        {/* Header */}
-        <div className="px-4 py-3 border-b">
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="text-lg font-bold">Chat</h1>
-            <div className="flex items-center gap-1">
-              <Badge variant={socketConnected ? "default" : "destructive"} className="text-[10px]">
-                {socketConnected ? "Online" : "Offline"}
-              </Badge>
-              <Button variant="ghost" size="icon" className="size-8" onClick={() => setCreateConvOpen(true)}>
-                <PlusIcon className="size-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="relative">
-            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input placeholder="Search conversations..." className="pl-9 h-9" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col overflow-hidden">
-          <div className="border-b px-2">
-            <TabsList className="h-9 w-full">
-              <TabsTrigger value="chats" className="text-xs flex-1">
-                <MessageSquareIcon className="size-3.5 mr-1" /> Chats
-              </TabsTrigger>
-              <TabsTrigger value="calls" className="text-xs flex-1">
-                <PhoneIcon className="size-3.5 mr-1" /> Calls
-              </TabsTrigger>
-              <TabsTrigger value="meetings" className="text-xs flex-1">
-                <VideoIcon className="size-3.5 mr-1" /> Meetings
-              </TabsTrigger>
-              <TabsTrigger value="contacts" className="text-xs flex-1">
-                <UsersIcon className="size-3.5 mr-1" /> Contacts
-              </TabsTrigger>
-              <TabsTrigger value="notifications" className="text-xs flex-1 relative">
-                <BellIcon className="size-3.5 mr-1" /> Notif
-                {unreadCount > 0 && <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{unreadCount}</span>}
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          {/* Conversations List */}
-          <TabsContent value="chats" className="flex-1 overflow-auto m-0 p-0">
-            {filteredConversations.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <MessageSquareIcon className="size-10 mb-3 opacity-30" />
-                <p className="text-sm">No conversations yet</p>
-                <Button variant="outline" size="sm" className="mt-2" onClick={() => setCreateConvOpen(true)}>
-                  <PlusIcon className="size-3 mr-1" /> Start Chat
-                </Button>
-              </div>
-            ) : (
-              filteredConversations.map((conv) => (
-                <div
-                  key={conv.id}
-                  onClick={() => { setSelectedConvId(conv.id); setShowMobileChat(true); }}
-                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors ${selectedConvId === conv.id ? "bg-muted" : ""}`}
-                >
-                  <div className="relative">
-                    <Avatar className="size-10">
-                      <AvatarImage src={conv.avatar} />
-                      <AvatarFallback className="text-xs">{conv.name?.charAt(0) || "?"}</AvatarFallback>
-                    </Avatar>
-                    {presences[conv.participants.find((p) => p !== userId) || ""] === "online" && (
-                      <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 rounded-full border-2 border-background" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium truncate">{conv.name || "Direct Chat"}</span>
-                      {conv.lastMessage && (
-                        <span className="text-[10px] text-muted-foreground shrink-0">
-                          {new Date(conv.lastMessage.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {conv.pinnedBy?.includes(userId) && <PinIcon className="size-3 text-muted-foreground shrink-0" />}
-                      <p className="text-xs text-muted-foreground truncate">{conv.lastMessage?.text || "No messages yet"}</p>
-                    </div>
-                  </div>
-                  {(conv.unreadCount?.[userId] || 0) > 0 && (
-                    <Badge className="size-5 rounded-full p-0 flex items-center justify-center text-[10px]">{conv.unreadCount[userId]}</Badge>
-                  )}
-                </div>
-              ))
-            )}
-          </TabsContent>
-
-          {/* Calls Tab */}
-          <TabsContent value="calls" className="flex-1 overflow-auto m-0 p-3 space-y-2">
-            <Button className="w-full" onClick={() => startCall("video")}>
-              <VideoIcon className="size-4 mr-2" /> New Video Call
-            </Button>
-            <Button variant="outline" className="w-full" onClick={() => startCall("audio")}>
-              <PhoneIcon className="size-4 mr-2" /> New Audio Call
-            </Button>
-            <Separator className="my-3" />
-            <p className="text-xs text-muted-foreground font-medium">Recent Calls</p>
-            {meetings.filter((m) => m.endedAt).slice(0, 10).map((m) => (
-              <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
-                <div className="size-8 rounded-full bg-muted flex items-center justify-center">
-                  <PhoneIcon className="size-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{m.title}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(m.createdAt).toLocaleDateString()}</p>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => joinCall(m.roomId, "video")}>
-                  <VideoIcon className="size-4" />
-                </Button>
-              </div>
-            ))}
-          </TabsContent>
-
-          {/* Meetings Tab */}
-          <TabsContent value="meetings" className="flex-1 overflow-auto m-0 p-3 space-y-2">
-            <Button className="w-full" onClick={() => setCreateMeetingOpen(true)}>
-              <PlusIcon className="size-4 mr-2" /> Schedule Meeting
-            </Button>
-            <Separator className="my-3" />
-            <p className="text-xs text-muted-foreground font-medium">Active Meetings</p>
-            {meetings.filter((m) => m.isActive).length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-4">No active meetings</p>
-            ) : (
-              meetings.filter((m) => m.isActive).map((m) => (
-                <Card key={m.id}>
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium">{m.title}</p>
-                        <p className="text-xs text-muted-foreground">{m.participants.length} participants</p>
-                      </div>
-                      <Button size="sm" onClick={() => joinCall(m.roomId, "video")}>
-                        <LogInIcon className="size-3 mr-1" /> Join
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </TabsContent>
-
-          {/* Contacts Tab */}
-          <TabsContent value="contacts" className="flex-1 overflow-auto m-0 p-3">
-            <p className="text-xs text-muted-foreground font-medium mb-2">Staff Members</p>
-            {["Admin User", "Staff Member 1", "Staff Member 2"].map((name) => (
-              <div key={name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer">
-                <Avatar className="size-8">
-                  <AvatarFallback className="text-xs">{name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{name}</p>
-                  <p className="text-xs text-muted-foreground">Staff</p>
-                </div>
-                <Button variant="ghost" size="icon" className="size-7" onClick={() => startCall("video")}>
-                  <VideoIcon className="size-3.5" />
-                </Button>
-              </div>
-            ))}
-            <Separator className="my-3" />
-            <p className="text-xs text-muted-foreground font-medium mb-2">Clients</p>
-            {["Client A", "Client B"].map((name) => (
-              <div key={name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer">
-                <Avatar className="size-8">
-                  <AvatarFallback className="text-xs">{name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{name}</p>
-                  <p className="text-xs text-muted-foreground">Client</p>
-                </div>
-                <Button variant="ghost" size="icon" className="size-7" onClick={() => startCall("video")}>
-                  <VideoIcon className="size-3.5" />
-                </Button>
-              </div>
-            ))}
-          </TabsContent>
-
-          {/* Notifications Tab */}
-          <TabsContent value="notifications" className="flex-1 overflow-auto m-0 p-3">
-            {notifications.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <BellIcon className="size-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No notifications</p>
-              </div>
-            ) : (
-              notifications.map((n) => (
-                <div key={n.id} className={`flex items-start gap-3 p-2 rounded-lg mb-1 ${n.read ? "" : "bg-muted/50"}`}>
-                  <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <BellIcon className="size-4 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{n.title}</p>
-                    <p className="text-xs text-muted-foreground">{n.body}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(n.createdAt).toLocaleString()}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* ── Right: Chat Area ──────────────────────────────────── */}
-      <div className={`flex-1 flex flex-col min-w-0 ${!showMobileChat ? "hidden md:flex" : "flex"}`}>
-        {selectedConvId && selectedConv ? (
-          <>
-            {/* Chat Header */}
-            <div className="flex items-center gap-3 px-4 py-2 border-b">
-              <Button variant="ghost" size="icon" className="size-8 md:hidden" onClick={() => setShowMobileChat(false)}>
-                <ChevronLeftIcon className="size-4" />
-              </Button>
-              <Avatar className="size-9">
-                <AvatarImage src={selectedConv.avatar} />
-                <AvatarFallback className="text-xs">{selectedConv.name?.charAt(0) || "?"}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-sm font-semibold truncate">{selectedConv.name || "Direct Chat"}</h2>
-                {typingInConv.length > 0 && (
-                  <p className="text-xs text-muted-foreground animate-pulse">{typingInConv.join(", ")} typing...</p>
-                )}
-              </div>
+    <>
+      {chatPageJsonLd().map((item, i) => (
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(item).replace(/</g, "\\u003c") }} />
+      ))}
+      <div className="flex flex-1 h-full overflow-hidden -m-2 sm:-m-3 md:-m-4 lg:-m-6 -mt-2 sm:-mt-3 md:-mt-4 lg:-mt-6 pb-16 sm:pb-0">
+        {/* ── LEFT PANEL ──────────────────────────────────────── */}
+        <div className={`w-full md:w-80 lg:w-96 border-r flex flex-col bg-background ${showMobileChat ? "hidden md:flex" : "flex"}`}>
+          {/* Header */}
+          <div className="px-4 py-3 border-b shrink-0">
+            <div className="flex items-center justify-between mb-3">
+              <h1 className="text-lg font-bold">Chat</h1>
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="size-8" onClick={() => startCall("audio")}>
-                  <PhoneIcon className="size-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="size-8" onClick={() => startCall("video")}>
-                  <VideoIcon className="size-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="size-8" onClick={() => setShowSearch(!showSearch)}>
-                  <SearchIcon className="size-4" />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-8">
-                      <MoreVerticalIcon className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem><PinIcon className="size-4 mr-2" /> Pin</DropdownMenuItem>
-                    <DropdownMenuItem><ArchiveIcon className="size-4 mr-2" /> Archive</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive"><Trash2Icon className="size-4 mr-2" /> Delete</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Badge variant={socketConnected ? "default" : "destructive"} className="text-[10px]">{socketConnected ? "Online" : "Offline"}</Badge>
+                <Button variant="ghost" size="icon" className="size-8" onClick={() => setCreateConvOpen(true)}><PlusIcon className="size-4" /></Button>
               </div>
             </div>
+            <div className="relative">
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input placeholder="Search..." className="pl-9 h-9" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            </div>
+          </div>
 
-            {/* Search Bar */}
-            {showSearch && (
-              <div className="px-4 py-2 border-b">
-                <Input placeholder="Search messages..." value={msgSearch} onChange={(e) => setMsgSearch(e.target.value)} className="h-8" />
-              </div>
-            )}
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col overflow-hidden">
+            <div className="border-b px-2 shrink-0">
+              <TabsList className="h-9 w-full">
+                <TabsTrigger value="chats" className="text-xs flex-1"><MessageSquareIcon className="size-3.5 mr-1" /> Chats</TabsTrigger>
+                <TabsTrigger value="contacts" className="text-xs flex-1"><UsersIcon className="size-3.5 mr-1" /> Contacts</TabsTrigger>
+                <TabsTrigger value="calls" className="text-xs flex-1"><PhoneIcon className="size-3.5 mr-1" /> Calls</TabsTrigger>
+                <TabsTrigger value="notifications" className="text-xs flex-1 relative">
+                  <BellIcon className="size-3.5 mr-1" /> Notif
+                  {unreadCount > 0 && <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{unreadCount}</span>}
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            {/* Messages */}
-            <ScrollArea className="flex-1 px-4 py-3">
-              <div className="space-y-3">
-                {filteredMessages.map((msg) => {
-                  const isOwn = msg.senderId === userId;
-                  const replyMsg = msg.replyTo ? messages.find((m) => m.id === msg.replyTo) : null;
+            {/* Chats Tab */}
+            <TabsContent value="chats" className="flex-1 overflow-auto m-0 p-0">
+              {filteredConversations.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <MessageSquareIcon className="size-10 mb-3 opacity-30" />
+                  <p className="text-sm">No conversations yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">Start chatting from Contacts</p>
+                </div>
+              ) : (
+                filteredConversations.map((conv) => {
+                  const contact = getContactForUser(conv);
+                  const status = contact?.presence?.status || "offline";
                   return (
-                    <div key={msg.id} className={`flex gap-2 ${isOwn ? "justify-end" : "justify-start"}`}>
-                      {!isOwn && (
-                        <Avatar className="size-8 shrink-0">
-                          <AvatarImage src={msg.senderAvatar} />
-                          <AvatarFallback className="text-xs">{msg.senderName?.charAt(0) || "?"}</AvatarFallback>
+                    <div key={conv.id} onClick={() => { setSelectedConvId(conv.id); setShowMobileChat(true); }}
+                      className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors border-b ${selectedConvId === conv.id ? "bg-muted" : ""}`}>
+                      <div className="relative shrink-0">
+                        <Avatar className="size-10">
+                          <AvatarImage src={contact?.avatar || conv.avatar} />
+                          <AvatarFallback className="text-xs">{getInitials(contact?.name || conv.name || "?")}</AvatarFallback>
                         </Avatar>
-                      )}
-                      <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"}`}>
-                        {!isOwn && <p className="text-xs font-medium text-muted-foreground mb-0.5">{msg.senderName}</p>}
-
-                        {replyMsg && (
-                          <div className="text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1 mb-1 border-l-2 border-primary">
-                            <span className="font-medium">{replyMsg.senderName}</span>: {replyMsg.text.substring(0, 50)}
-                          </div>
-                        )}
-
-                        <div className={`rounded-xl px-3 py-2 text-sm ${isOwn ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-                          {msg.type === "system" ? (
-                            <p className="text-xs text-muted-foreground italic text-center">{msg.text}</p>
-                          ) : msg.deleted ? (
-                            <p className="text-xs italic opacity-50">Message deleted</p>
-                          ) : (
-                            <p>{msg.text}</p>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <span className="text-[10px] text-muted-foreground">
-                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                          {msg.edited && <span className="text-[10px] text-muted-foreground">(edited)</span>}
-                          {isOwn && (
-                            msg.readBy.length > 1
-                              ? <CheckCheckIcon className="size-3 text-blue-500" />
-                              : <CheckIcon className="size-3 text-muted-foreground" />
-                          )}
-                        </div>
-
-                        {/* Reactions */}
-                        {msg.reactions.length > 0 && (
-                          <div className="flex gap-1 mt-1 flex-wrap">
-                            {[...new Set(msg.reactions.map((r) => r.emoji))].map((emoji) => (
-                              <button key={emoji} className="text-xs bg-muted rounded-full px-1.5 py-0.5 hover:bg-muted/80">
-                                {emoji} {msg.reactions.filter((r) => r.emoji === emoji).length}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        <div className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-background ${status === "online" ? "bg-green-500" : status === "busy" ? "bg-red-500" : status === "away" ? "bg-yellow-500" : "bg-gray-400"}`} />
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium truncate">{contact?.name || conv.name}</span>
+                          {conv.lastMessage && <span className="text-[10px] text-muted-foreground shrink-0">{formatTime(conv.lastMessage.timestamp)}</span>}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {conv.pinnedBy?.includes(userId) && <PinIcon className="size-3 text-muted-foreground shrink-0" />}
+                          {typingInConv.length > 0 && selectedConvId === conv.id ? (
+                            <span className="text-xs text-primary animate-pulse">typing...</span>
+                          ) : (
+                            <p className="text-xs text-muted-foreground truncate">{conv.lastMessage?.senderId === userId ? `You: ${conv.lastMessage?.text}` : conv.lastMessage?.text || "No messages yet"}</p>
+                          )}
+                        </div>
+                      </div>
+                      {(conv.unreadCount?.[userId] || 0) > 0 && (
+                        <Badge className="size-5 rounded-full p-0 flex items-center justify-center text-[10px] shrink-0">{conv.unreadCount[userId]}</Badge>
+                      )}
                     </div>
                   );
-                })}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
+                })
+              )}
+            </TabsContent>
 
-            {/* Reply Preview */}
-            {replyTo && (
-              <div className="px-4 py-2 border-t bg-muted/30 flex items-center gap-2">
-                <ReplyIcon className="size-4 text-muted-foreground" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium">{replyTo.senderName}</p>
-                  <p className="text-xs text-muted-foreground truncate">{replyTo.text}</p>
+            {/* Contacts Tab */}
+            <TabsContent value="contacts" className="flex-1 overflow-auto m-0 p-0">
+              {loading ? (
+                <div className="flex items-center justify-center py-12"><div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+              ) : filteredContacts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <UsersIcon className="size-10 mb-3 opacity-30" />
+                  <p className="text-sm">No contacts found</p>
                 </div>
-                <Button variant="ghost" size="icon" className="size-6" onClick={() => setReplyTo(null)}>
-                  <XCircleIcon className="size-3" />
-                </Button>
-              </div>
-            )}
+              ) : (
+                <>
+                  <div className="px-4 py-2"><p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Staff ({filteredContacts.filter((c) => c.type === "employee").length})</p></div>
+                  {filteredContacts.filter((c) => c.type === "employee").map((contact) => {
+                    const status = presences[contact.id] || contact.presence?.status || "offline";
+                    return (
+                      <div key={contact.id} onClick={() => openContactChat(contact)}
+                        className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors border-b">
+                        <div className="relative shrink-0">
+                          <Avatar className="size-9">
+                            <AvatarImage src={contact.avatar} />
+                            <AvatarFallback className="text-xs">{getInitials(contact.name)}</AvatarFallback>
+                          </Avatar>
+                          <div className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background ${status === "online" ? "bg-green-500" : status === "busy" ? "bg-red-500" : "bg-gray-400"}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{contact.name}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">{contact.role} {contact.department ? `· ${contact.department}` : ""}</p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button variant="ghost" size="icon" className="size-7" onClick={(e) => { e.stopPropagation(); startCall("video"); }}>
+                            <VideoIcon className="size-3.5 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="size-7" onClick={(e) => { e.stopPropagation(); setShowProfile(true); setSelectedContact(contact); }}>
+                            <InfoIcon className="size-3.5 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {filteredContacts.filter((c) => c.type === "client").length > 0 && (
+                    <>
+                      <div className="px-4 py-2"><p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Clients ({filteredContacts.filter((c) => c.type === "client").length})</p></div>
+                      {filteredContacts.filter((c) => c.type === "client").map((contact) => (
+                        <div key={contact.id} onClick={() => openContactChat(contact)}
+                          className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors border-b">
+                          <Avatar className="size-9">
+                            <AvatarFallback className="text-xs bg-primary/10">{getInitials(contact.name)}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{contact.name}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">{contact.company || contact.email}</p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button variant="ghost" size="icon" className="size-7" onClick={(e) => { e.stopPropagation(); startCall("video"); }}>
+                              <VideoIcon className="size-3.5 text-muted-foreground" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </>
+              )}
+            </TabsContent>
 
-            {/* Message Input */}
-            <div className="px-4 py-3 border-t">
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="size-9 shrink-0">
-                  <PaperclipIcon className="size-4" />
+            {/* Calls Tab */}
+            <TabsContent value="calls" className="flex-1 overflow-auto m-0 p-3 space-y-2">
+              <Button className="w-full" onClick={() => startCall("video")}><VideoIcon className="size-4 mr-2" /> New Video Call</Button>
+              <Button variant="outline" className="w-full" onClick={() => startCall("audio")}><PhoneIcon className="size-4 mr-2" /> New Audio Call</Button>
+              <Separator className="my-3" />
+              <p className="text-xs text-muted-foreground font-medium">Recent Calls</p>
+              {meetings.filter((m) => m.isActive).map((m) => (
+                <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
+                  <div className="size-8 rounded-full bg-muted flex items-center justify-center"><PhoneIcon className="size-4 text-muted-foreground" /></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{m.title}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(m.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => joinCall(m.roomId)}><VideoIcon className="size-4" /></Button>
+                </div>
+              ))}
+            </TabsContent>
+
+            {/* Notifications Tab */}
+            <TabsContent value="notifications" className="flex-1 overflow-auto m-0 p-3">
+              {notifications.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground"><BellIcon className="size-8 mx-auto mb-2 opacity-30" /><p className="text-sm">No notifications</p></div>
+              ) : (
+                notifications.map((n) => (
+                  <div key={n.id} className={`flex items-start gap-3 p-2 rounded-lg mb-1 ${n.read ? "" : "bg-muted/50"}`}>
+                    <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5"><BellIcon className="size-4 text-primary" /></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{n.title}</p>
+                      <p className="text-xs text-muted-foreground">{n.body}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(n.createdAt).toLocaleString()}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* ── RIGHT PANEL: Chat / Empty ───────────────────────── */}
+        <div className={`flex-1 flex flex-col min-w-0 ${!showMobileChat ? "hidden md:flex" : "flex"}`}>
+          {selectedConvId && selectedConv ? (
+            <>
+              {/* Chat Header */}
+              <div className="flex items-center gap-3 px-4 py-2 border-b shrink-0">
+                <Button variant="ghost" size="icon" className="size-8 md:hidden" onClick={() => setShowMobileChat(false)}><ChevronLeftIcon className="size-4" /></Button>
+                {(() => { const contact = getContactForUser(selectedConv); return (
+                  <>
+                    <Avatar className="size-9">
+                      <AvatarImage src={contact?.avatar} />
+                      <AvatarFallback className="text-xs">{getInitials(contact?.name || selectedConv.name || "?")}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-sm font-semibold truncate">{contact?.name || selectedConv.name}</h2>
+                      {typingInConv.length > 0 ? <p className="text-xs text-primary animate-pulse">{typingInConv.join(", ")} typing...</p> : contact && <p className="text-xs text-muted-foreground">{contact.role}{contact.department ? ` · ${contact.department}` : ""}</p>}
+                    </div>
+                  </>
+                ); })()}
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button variant="ghost" size="icon" className="size-8" onClick={() => startCall("audio")}><PhoneIcon className="size-4" /></Button>
+                  <Button variant="ghost" size="icon" className="size-8" onClick={() => startCall("video")}><VideoIcon className="size-4" /></Button>
+                  <Button variant="ghost" size="icon" className="size-8" onClick={() => setShowMsgSearch(!showMsgSearch)}><SearchIcon className="size-4" /></Button>
+                  <Button variant="ghost" size="icon" className="size-8" onClick={() => { const c = getContactForUser(selectedConv); if (c) { setSelectedContact(c); setShowProfile(true); } }}><InfoIcon className="size-4" /></Button>
+                </div>
+              </div>
+
+              {showMsgSearch && (
+                <div className="px-4 py-2 border-b shrink-0">
+                  <Input placeholder="Search messages..." value={msgSearch} onChange={(e) => setMsgSearch(e.target.value)} className="h-8" />
+                </div>
+              )}
+
+              {/* Messages */}
+              <ScrollArea className="flex-1 px-4 py-3">
+                <div className="space-y-3">
+                  {filteredMessages.map((msg) => {
+                    const isOwn = msg.senderId === userId;
+                    const replyMsg = msg.replyTo ? messages.find((m) => m.id === msg.replyTo) : null;
+                    return (
+                      <div key={msg.id} className={`flex gap-2 ${isOwn ? "justify-end" : "justify-start"}`}>
+                        {!isOwn && <Avatar className="size-8 shrink-0"><AvatarImage src={msg.senderAvatar} /><AvatarFallback className="text-xs">{msg.senderName?.charAt(0)}</AvatarFallback></Avatar>}
+                        <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
+                          {!isOwn && <p className="text-xs font-medium text-muted-foreground mb-0.5">{msg.senderName}</p>}
+                          {replyMsg && <div className="text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1 mb-1 border-l-2 border-primary"><span className="font-medium">{replyMsg.senderName}</span>: {replyMsg.text.substring(0, 50)}</div>}
+                          <div className={`rounded-xl px-3 py-2 text-sm ${isOwn ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                            {msg.type === "system" ? <p className="text-xs text-muted-foreground italic text-center">{msg.text}</p> : msg.deleted ? <p className="text-xs italic opacity-50">Message deleted</p> : <p className="whitespace-pre-wrap break-words">{msg.text}</p>}
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="text-[10px] text-muted-foreground">{new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                            {msg.edited && <span className="text-[10px] text-muted-foreground">(edited)</span>}
+                            {isOwn && (msg.readBy.length > 1 ? <CheckCheckIcon className="size-3 text-blue-500" /> : <CheckIcon className="size-3 text-muted-foreground" />)}
+                          </div>
+                          {msg.reactions.length > 0 && (
+                            <div className="flex gap-1 mt-1 flex-wrap">
+                              {[...new Set(msg.reactions.map((r) => r.emoji))].map((emoji) => (
+                                <button key={emoji} className="text-xs bg-muted rounded-full px-1.5 py-0.5 hover:bg-muted/80">{emoji} {msg.reactions.filter((r) => r.emoji === emoji).length}</button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
+
+              {/* Reply Preview */}
+              {replyTo && (
+                <div className="px-4 py-2 border-t bg-muted/30 flex items-center gap-2 shrink-0">
+                  <ReplyIcon className="size-4 text-muted-foreground" />
+                  <div className="flex-1 min-w-0"><p className="text-xs font-medium">{replyTo.senderName}</p><p className="text-xs text-muted-foreground truncate">{replyTo.text}</p></div>
+                  <Button variant="ghost" size="icon" className="size-6" onClick={() => setReplyTo(null)}><XCircleIcon className="size-3" /></Button>
+                </div>
+              )}
+
+              {/* Input */}
+              <div className="px-4 py-3 border-t shrink-0">
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="size-9 shrink-0"><PaperclipIcon className="size-4" /></Button>
+                  <Button variant="ghost" size="icon" className="size-9 shrink-0"><ImageIcon className="size-4" /></Button>
+                  <Input placeholder="Type a message..." value={chatInput}
+                    onChange={(e) => { setChatInput(e.target.value); sendTyping(true); }}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+                    onBlur={() => sendTyping(false)} className="flex-1" />
+                  <Button variant="ghost" size="icon" className="size-9 shrink-0"><SmileIcon className="size-4" /></Button>
+                  <Button size="icon" className="size-9 shrink-0" onClick={sendMessage} disabled={!chatInput.trim()}><SendIcon className="size-4" /></Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+              <MessageSquareIcon className="size-16 mb-4 opacity-20" />
+              <h2 className="text-xl font-semibold mb-1">Welcome to Chat</h2>
+              <p className="text-sm mb-4">Select a contact to start messaging</p>
+              <Button onClick={() => setActiveTab("contacts")}><UsersIcon className="size-4 mr-2" /> View Contacts</Button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Profile Panel ───────────────────────────────────── */}
+        {showProfile && selectedContact && (
+          <div className="fixed right-0 top-0 bottom-0 w-80 border-l bg-background z-50 flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h3 className="font-semibold text-sm">Profile</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowProfile(false)}>✕</Button>
+            </div>
+            <div className="flex-1 overflow-auto p-4 text-center">
+              <Avatar className="size-20 mx-auto mb-3">
+                <AvatarImage src={selectedContact.avatar} />
+                <AvatarFallback className="text-xl">{getInitials(selectedContact.name)}</AvatarFallback>
+              </Avatar>
+              <h3 className="font-semibold">{selectedContact.name}</h3>
+              <p className="text-sm text-muted-foreground">{selectedContact.role}</p>
+              <div className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs ${(presences[selectedContact.id] || selectedContact.presence?.status) === "online" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                <div className={`size-1.5 rounded-full ${(presences[selectedContact.id] || selectedContact.presence?.status) === "online" ? "bg-green-500" : "bg-gray-400"}`} />
+                {(presences[selectedContact.id] || selectedContact.presence?.status) === "online" ? "Online" : "Offline"}
+              </div>
+              <Separator className="my-4" />
+              <div className="space-y-3 text-left">
+                {selectedContact.email && <div className="flex items-center gap-2 text-sm"><MailIcon className="size-4 text-muted-foreground" /><span>{selectedContact.email}</span></div>}
+                {selectedContact.phone && <div className="flex items-center gap-2 text-sm"><PhoneCallIcon className="size-4 text-muted-foreground" /><span>{selectedContact.phone}</span></div>}
+                {selectedContact.department && <div className="flex items-center gap-2 text-sm"><Building2Icon className="size-4 text-muted-foreground" /><span>{selectedContact.department}</span></div>}
+                {selectedContact.company && <div className="flex items-center gap-2 text-sm"><Building2Icon className="size-4 text-muted-foreground" /><span>{selectedContact.company}</span></div>}
+                <div className="flex items-center gap-2 text-sm"><UserIcon className="size-4 text-muted-foreground" /><span className="capitalize">{selectedContact.type}</span></div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Button className="flex-1" onClick={() => { openContactChat(selectedChatContact(selectedContact)); setShowProfile(false); }}>
+                  <MessageSquareIcon className="size-4 mr-1" /> Message
                 </Button>
-                <Button variant="ghost" size="icon" className="size-9 shrink-0">
-                  <ImageIcon className="size-4" />
-                </Button>
-                <Input
-                  placeholder="Type a message..."
-                  value={chatInput}
-                  onChange={(e) => { setChatInput(e.target.value); sendTyping(true); }}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-                  onBlur={() => sendTyping(false)}
-                  className="flex-1"
-                />
-                <Button variant="ghost" size="icon" className="size-9 shrink-0">
-                  <SmileIcon className="size-4" />
-                </Button>
-                <Button size="icon" className="size-9 shrink-0" onClick={sendMessage} disabled={!chatInput.trim()}>
-                  <SendIcon className="size-4" />
+                <Button variant="outline" className="flex-1" onClick={() => { startCall("video"); setShowProfile(false); }}>
+                  <VideoIcon className="size-4 mr-1" /> Call
                 </Button>
               </div>
             </div>
-          </>
-        ) : (
-          /* Empty State */
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
-            <MessageSquareIcon className="size-16 mb-4 opacity-20" />
-            <h2 className="text-xl font-semibold mb-1">Welcome to Chat</h2>
-            <p className="text-sm mb-4">Select a conversation or start a new one</p>
-            <Button onClick={() => setCreateConvOpen(true)}>
-              <PlusIcon className="size-4 mr-2" /> New Conversation
-            </Button>
           </div>
         )}
+
+        {/* ── Create Conversation Modal ──────────────────────── */}
+        <Dialog open={createConvOpen} onOpenChange={setCreateConvOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>New Conversation</DialogTitle>
+              <DialogDescription>Start a chat with a team member</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 mt-4">
+              <div>
+                <label className="text-sm font-medium">Group Name (optional)</label>
+                <Input placeholder="e.g. Project Team" value={newConvName} onChange={(e) => setNewConvName(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Participant IDs (comma-separated)</label>
+                <Input placeholder="user-id-1, user-id-2" value={newConvParticipant} onChange={(e) => setNewConvParticipant(e.target.value)} className="mt-1" />
+              </div>
+              <Button onClick={createGroupConversation} className="w-full">Create</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* ── Create Conversation Modal ─────────────────────────── */}
-      <Dialog open={createConvOpen} onOpenChange={setCreateConvOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>New Conversation</DialogTitle>
-            <DialogDescription>Start a chat with staff or clients</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div>
-              <label className="text-sm font-medium">Conversation Name (for groups)</label>
-              <Input placeholder="e.g. Project Team" value={newConvName} onChange={(e) => setNewConvName(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Participants (comma-separated user IDs)</label>
-              <Input placeholder="user-id-1, user-id-2" value={newConvParticipants} onChange={(e) => setNewConvParticipants(e.target.value)} className="mt-1" />
-            </div>
-            <Button onClick={createConversation} className="w-full">Create</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Create Meeting Modal ──────────────────────────────── */}
-      <Dialog open={createMeetingOpen} onOpenChange={setCreateMeetingOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Schedule Meeting</DialogTitle>
-            <DialogDescription>Create a new video meeting</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div>
-              <label className="text-sm font-medium">Meeting Title</label>
-              <Input placeholder="e.g. Team Standup" value={meetingTitle} onChange={(e) => setMeetingTitle(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Password (optional)</label>
-              <Input type="password" placeholder="Leave empty for no password" value={meetingPassword} onChange={(e) => setMeetingPassword(e.target.value)} className="mt-1" />
-            </div>
-            <Button onClick={createMeeting} className="w-full">
-              <VideoIcon className="size-4 mr-2" /> Start Meeting
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </>
   );
+
+  function selectedChatContact(contact: Contact): Contact { return contact; }
 }
