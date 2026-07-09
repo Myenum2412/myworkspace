@@ -188,8 +188,8 @@ export default async function DashboardPage() {
     <div className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 min-w-0 max-w-full">
       <h1 className="text-xl sm:text-2xl font-bold px-0.5">Dashboard Overview</h1>
 
-      {/* Stat Cards - 1 row, 6 columns */}
-      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-6">
+      {/* Stat Cards - 1 row, 6 columns (3 on mobile) */}
+      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-3 sm:grid-cols-6">
         {metricCards.map((c) => (
           <Card key={c.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 px-3 sm:px-4 pt-3 sm:pt-4">
