@@ -110,7 +110,7 @@ export default async function ProfilePage() {
     if (org) {
       memberCount = await db.collection(collections.orgMembers).countDocuments({ orgId });
       orgData = {
-        id: (org.id as string) || String(org._id || ""),
+        id: (org.id as string) || String(org._id || member?.orgId || ""),
         name: (org.name as string) || "",
         domain: (org.domain as string) || "",
         businessType: (org.businessType as string) || "",

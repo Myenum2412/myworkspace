@@ -46,7 +46,10 @@ export function useStorageStats(orgId?: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchStats = useCallback(async () => {
-    if (!orgId) return;
+    if (!orgId) {
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch(`/api/files/storage-stats?orgId=${orgId}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch storage stats");

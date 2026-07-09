@@ -3,7 +3,6 @@
 import { useStorageStats, type StorageStats } from "@/hooks/use-storage-stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import {
   HardDrive, FileText, Image, Video, Music, Archive, Files,
@@ -67,6 +66,15 @@ const categoryColors: Record<string, string> = {
 
 export function StorageDashboard({ orgId }: { orgId: string }) {
   const { stats, loading, error } = useStorageStats(orgId);
+
+  if (!orgId) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <HardDrive className="size-10 mx-auto mb-3 opacity-30" />
+        <p className="text-sm">No organization found. Storage is not available.</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
