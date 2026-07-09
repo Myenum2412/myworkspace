@@ -83,7 +83,7 @@ export default function BillingServicesPage() {
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="table-premium w-full text-sm text-left" style={{ minWidth: 800 }}>
             <thead className="sticky top-0 z-10">
-              <tr className="bg-[#f3f4f6] text-gray-900">
+              <tr>
                 <th className="w-10 px-2">
                   <input type="checkbox" checked={selectedItems.size === filtered.length && filtered.length > 0} onChange={toggleSelectAll} className="size-4 accent-blue-600" />
                 </th>

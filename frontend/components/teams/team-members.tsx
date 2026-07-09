@@ -86,7 +86,7 @@ export function TeamMembers({
           <div className="overflow-x-auto overflow-y-auto flex-1">
             <table className="table-premium w-full text-sm text-left" style={{ minWidth: 900 }}>
               <thead className="sticky top-0 z-10">
-                <tr className="bg-[#f3f4f6] text-gray-900 border-b">
+                <tr>
                   <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Member</th>
                   <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Role</th>
                   <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Department</th>

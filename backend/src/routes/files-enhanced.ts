@@ -298,6 +298,7 @@ router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: 
       const result = await uploadFile({
         orgId,
         folderId: req.body.folderId as string | undefined,
+        taskId: req.body.taskId as string | undefined,
         clientId: req.body.clientId as string | undefined,
         uploaderId: req.user!.userId,
         name: file.originalname,

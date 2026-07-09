@@ -26,6 +26,7 @@ import {
   DownloadIcon, UserIcon, Building2Icon, ClockIcon, MailIcon,
   PhoneCallIcon, InfoIcon,
 } from "lucide-react";
+import ChatIcon from '@mui/icons-material/Chat';
 
 const API = process.env.NEXT_PUBLIC_CHAT_SERVER_URL || "http://localhost:4001";
 
@@ -620,7 +621,7 @@ export default function ChatPage() {
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col overflow-hidden">
             <div className="border-b px-2 shrink-0">
               <TabsList className="h-9 w-full">
-                <TabsTrigger value="chats" className="text-xs flex-1"><MessageSquareIcon className="size-3.5 mr-1" /> Chats</TabsTrigger>
+                <TabsTrigger value="chats" className="text-xs flex-1"><ChatIcon className="size-3.5 mr-1" /> Chats</TabsTrigger>
                 <TabsTrigger value="contacts" className="text-xs flex-1"><UsersIcon className="size-3.5 mr-1" /> Contacts</TabsTrigger>
                 <TabsTrigger value="calls" className="text-xs flex-1"><PhoneIcon className="size-3.5 mr-1" /> Calls</TabsTrigger>
                 <TabsTrigger value="notifications" className="text-xs flex-1 relative">

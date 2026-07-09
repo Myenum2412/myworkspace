@@ -16,6 +16,7 @@ import { logger } from "../lib/logger/index.js";
 export interface FileUploadInput {
   orgId: string;
   folderId?: string | null;
+  taskId?: string | null;
   clientId?: string | null;
   projectId?: string | null;
   uploaderId: string;
@@ -45,7 +46,7 @@ function invalidateFileCaches(orgId: string): void {
 
 export async function uploadFile(input: FileUploadInput): Promise<FileUploadResult> {
   const {
-    orgId, clientId, folderId, projectId, uploaderId,
+    orgId, clientId, folderId, taskId, projectId, uploaderId,
     name, originalName, mimeType, size, buffer, checksum,
     description, tags, skipDuplicates = true, category,
   } = input;
@@ -87,7 +88,7 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
   const fileCategory = category || categorizeMime(actualMimeType);
 
   await FileAttachment.create({
-    id: fileId, orgId, folderId: folderId || null, clientId: clientId || null, projectId: projectId || null,
+    id: fileId, orgId, folderId: folderId || null, taskId: taskId || null, clientId: clientId || null, projectId: projectId || null,
     uploaderId, createdBy: uploaderId, name, originalName,
     mimeType: actualMimeType, size, storagePath,
     storageProvider: env.S3_ENDPOINT ? "s3" : "local",

@@ -191,7 +191,7 @@ export function DataTable<TData, TValue>({
             <table className="table-premium w-full text-sm text-left">
               <thead className="sticky top-0 z-10">
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id} className="bg-muted/50 text-foreground border-b">
+                  <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
                       const canSort = header.column.getCanSort();
                       return (

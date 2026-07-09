@@ -23,14 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
@@ -228,39 +220,39 @@ export default function ReceiptsPageClient() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-[#F8FAFC]">
-                    <TableHead className="text-xs font-semibold text-[#64748B] uppercase">Receipt #</TableHead>
-                    <TableHead className="text-xs font-semibold text-[#64748B] uppercase">Customer</TableHead>
-                    <TableHead className="text-xs font-semibold text-[#64748B] uppercase">Invoice</TableHead>
-                    <TableHead className="text-xs font-semibold text-[#64748B] uppercase text-right">Amount</TableHead>
-                    <TableHead className="text-xs font-semibold text-[#64748B] uppercase">Payment Method</TableHead>
-                    <TableHead className="text-xs font-semibold text-[#64748B] uppercase">Date</TableHead>
-                    <TableHead className="text-xs font-semibold text-[#64748B] uppercase">Status</TableHead>
-                    <TableHead className="text-xs font-semibold text-[#64748B] uppercase text-right w-48">Change Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <table className="table-premium w-full text-sm text-left">
+                <thead>
+                  <tr>
+                    <TableHead>Receipt #</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Invoice</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Payment Method</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right w-48">Change Status</TableHead>
+                  </tr>
+                </thead>
+                <tbody>
                   {filtered.map((receipt) => (
-                    <TableRow key={receipt.id} className="hover:bg-[#FAFBFC]">
-                      <TableCell>
+                    <tr key={receipt.id} className="hover:bg-[#FAFBFC]">
+                      <td>
                         <span className="font-medium text-sm text-[#0F172A]">{receipt.receiptNumber}</span>
-                      </TableCell>
-                      <TableCell>
+                      </td>
+                      <td>
                         <div className="text-sm text-[#0F172A]">{receipt.customerName}</div>
                         {receipt.customerEmail && (
                           <div className="text-xs text-[#94A3B8]">{receipt.customerEmail}</div>
                         )}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#64748B]">
+                      </td>
+                      <td className="text-sm text-[#64748B]">
                         {receipt.invoiceNumber || "\u2014"}
-                      </TableCell>
-                      <TableCell className="text-right text-sm font-semibold text-[#0F172A]">
+                      </td>
+                      <td className="text-right text-sm font-semibold text-[#0F172A]">
                         {formatCurrency(receipt.amount, receipt.currency)}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#64748B]">{receipt.paymentMethod}</TableCell>
-                      <TableCell className="text-sm text-[#64748B] whitespace-nowrap">
+                      </td>
+                      <td className="text-sm text-[#64748B]">{receipt.paymentMethod}</td>
+                      <td className="text-sm text-[#64748B] whitespace-nowrap">
                         {receipt.createdAt
                           ? new Date(receipt.createdAt).toLocaleDateString("en-US", {
                               month: "short",
@@ -268,11 +260,11 @@ export default function ReceiptsPageClient() {
                               year: "numeric",
                             })
                           : "\u2014"}
-                      </TableCell>
-                      <TableCell>
+                      </td>
+                      <td>
                         <ReceiptStatusBadge status={receipt.status} />
-                      </TableCell>
-                      <TableCell className="text-right">
+                      </td>
+                      <td className="text-right">
                         <Select
                           value={receipt.status}
                           onValueChange={(val) => handleStatusChange(receipt.id, val as ReceiptStatus)}
@@ -292,11 +284,11 @@ export default function ReceiptsPageClient() {
                             ))}
                           </SelectContent>
                         </Select>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>

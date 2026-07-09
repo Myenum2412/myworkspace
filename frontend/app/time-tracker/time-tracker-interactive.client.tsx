@@ -456,7 +456,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
               {/* Desktop table */}
               <table className="table-premium hidden sm:table w-full text-sm text-left">
                 <thead>
-                  <tr className="bg-[#f3f4f6]">
+                  <tr>
                     <th className="px-4 py-3.5 w-10">
                       <input
                         type="checkbox"

@@ -242,7 +242,7 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
               {/* Desktop table */}
               <table className="table-premium hidden sm:table w-full text-sm text-left">
                 <thead>
-                  <tr className="bg-[#f3f4f6]">
+                  <tr>
                     <th className="px-4 py-3 font-semibold whitespace-nowrap">Description</th>
                     <th className="px-4 py-3 font-semibold whitespace-nowrap">Project</th>
                     <th className="px-4 py-3 font-semibold whitespace-nowrap">Date</th>

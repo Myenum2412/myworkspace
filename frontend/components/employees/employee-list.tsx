@@ -220,7 +220,7 @@ export function EmployeeList({
           <div className="hidden sm:block overflow-x-auto overflow-y-auto flex-1">
             <table className="table-premium w-full text-sm text-left" style={{ minWidth: 900 }}>
               <thead className="sticky top-0 z-10">
-                <tr className="bg-[#f3f4f6] text-gray-900">
+                <tr>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
                     <button onClick={() => onSort("name")} className="inline-flex items-center gap-1.5 text-gray-800 hover:text-black transition-colors">
                       Employee {getSortIcon("name", sortField, sortDir)}

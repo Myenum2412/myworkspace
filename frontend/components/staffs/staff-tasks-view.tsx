@@ -87,8 +87,8 @@ export function StaffTasksView({ tasks }: { tasks: Task[] }) {
       <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
         <div className="overflow-x-auto">
           <table className="table-premium w-full text-sm text-left">
-            <thead className="bg-[#f3f4f6]">
-              <tr className="border-b bg-[#f3f4f6] text-left text-sm text-gray-900 font-semibold">
+            <thead>
+              <tr>
                 <th className="px-4 py-3.5 font-semibold text-left">Task</th>
                 <th className="px-4 py-3.5 font-semibold text-left">Assignee</th>
                 <th className="px-4 py-3.5 font-semibold text-left">Priority</th>

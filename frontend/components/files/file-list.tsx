@@ -201,8 +201,8 @@ export function FileList({
       ) : (
         <div className="border border-gray-200 bg-white shadow-sm overflow-x-auto rounded-md">
           <table className="table-premium w-full text-sm text-left">
-            <thead className="bg-[#f3f4f6]">
-              <tr className="border-b text-left text-sm text-gray-900 font-semibold">
+            <thead>
+              <tr className="border-b text-left text-sm font-semibold">
                 <th className="px-4 py-3.5 text-left w-8 font-semibold">
                   <input type="checkbox" checked={selectedIds.size === files.length && files.length > 0} onChange={onSelectAll} className="size-4" />
                 </th>

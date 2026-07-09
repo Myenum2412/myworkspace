@@ -102,7 +102,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
             <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
               <table className="table-premium w-full text-sm text-left">
                 <thead>
-                  <tr className="bg-[#f3f4f6]">
+                  <tr>
                     <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Description</th>
                     <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Time</th>
                     <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Duration</th>

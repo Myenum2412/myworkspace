@@ -28,7 +28,7 @@ export default function StaffRolesPage() {
             <div className="overflow-x-auto">
               <table className="table-premium w-full text-sm text-left">
                 <thead>
-                  <tr className="border-b bg-[#f3f4f6] text-gray-900 font-semibold">
+                  <tr>
                     <th className="px-4 py-3.5 font-semibold">Role</th>
                     <th className="px-4 py-3.5 font-semibold">Members</th>
                     <th className="px-4 py-3.5 font-semibold">Permissions</th>

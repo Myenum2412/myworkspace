@@ -74,7 +74,7 @@ export default async function StaffGoalsPage() {
             <div className="overflow-x-auto">
               <table className="table-premium w-full text-sm text-left">
                 <thead>
-                  <tr className="border-b bg-[#f3f4f6] text-gray-900 font-semibold">
+                  <tr>
                     <th className="px-4 py-3.5 font-semibold">Goal</th>
                     <th className="px-4 py-3.5 font-semibold">Assignee</th>
                     <th className="px-4 py-3.5 font-semibold">Target Date</th>

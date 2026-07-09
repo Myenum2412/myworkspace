@@ -392,7 +392,7 @@ export default function InvoiceFormPage() {
             <div className="hidden sm:block overflow-x-auto">
               <table className="table-premium w-full text-sm text-left">
                 <thead className="sticky top-0 z-10">
-                  <tr className="bg-[#f3f4f6] text-gray-900">
+                  <tr>
                     <th className="w-8 px-2"></th>
                     <th className="w-10 px-2">
                       <input type="checkbox" checked={selectedItems.size === items.length && items.length > 0} onChange={toggleSelectAll} className="size-4 accent-blue-600" />

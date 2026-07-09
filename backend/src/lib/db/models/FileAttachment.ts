@@ -6,6 +6,7 @@ export interface IFileAttachment extends Document {
   id: string;
   orgId: string;
   workspaceId: string | null;
+  taskId: string | null;
   projectId: string | null;
   clientId: string | null;
   staffId: string | null;
@@ -47,6 +48,7 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
     id: { type: String, required: true, unique: true },
     orgId: { type: String, required: true, index: true },
     workspaceId: { type: String, default: null, index: true },
+    taskId: { type: String, default: null, index: true },
     projectId: { type: String, default: null, index: true },
     clientId: { type: String, default: null, index: true },
     staffId: { type: String, default: null, index: true },
