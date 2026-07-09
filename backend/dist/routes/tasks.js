@@ -46,7 +46,6 @@ router.post("/", async (req, res) => {
             dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
             isSaved: req.body.isSaved,
             isActive: req.body.isActive,
-            fileIds: req.body.fileIds,
         });
         res.status(201).json({ success: true, data: { taskId: result.taskId } });
     }

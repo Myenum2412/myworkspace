@@ -12,7 +12,7 @@ import { signToken } from "../config/auth.js";
 import { env } from "../config/env.js";
 import { authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, sendOrganizationInviteEmail, sendClientWelcomeEmail } from "../lib/mail/index.js";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, sendOrganizationInviteEmail, sendClientWelcomeEmail, sendEmployeeOnboarded } from "../lib/mail/index.js";
 import { mongoose } from "../lib/db/index.js";
 import jwt from "jsonwebtoken";
 import { socketIOManager } from "../lib/socketio/index.js";
@@ -453,6 +453,20 @@ router.post("/send-client-welcome-email", async (req, res) => {
     catch (err) {
         console.error("[auth] send-client-welcome-email error:", err);
         res.status(500).json({ success: false, message: "Failed to send client welcome email" });
+    }
+});
+router.post("/send-employee-onboarded-email", async (req, res) => {
+    try {
+        const { email, firstName, userEmail, workspaceName, loginUrl, tempPassword } = req.body;
+        if (!email || !firstName || !userEmail || !workspaceName || !loginUrl || !tempPassword) {
+            return res.status(400).json({ success: false, message: "Missing required fields" });
+        }
+        await sendEmployeeOnboarded(email, firstName, userEmail, workspaceName, loginUrl, tempPassword);
+        res.json({ success: true, message: "Employee onboarded email sent" });
+    }
+    catch (err) {
+        console.error("[auth] send-employee-onboarded-email error:", err);
+        res.status(500).json({ success: false, message: "Failed to send employee onboarded email" });
     }
 });
 // Send password reset email endpoint

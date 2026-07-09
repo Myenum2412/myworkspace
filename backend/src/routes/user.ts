@@ -133,9 +133,9 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   }
 
   // Update org fields
-  const member = await OrgMember.findOne({ userId: user.id }).populate("orgId").lean();
-  const org = member?.orgId as any;
-  if (org) {
+  const member = await OrgMember.findOne({ userId: user.id }).lean();
+  const orgId = member?.orgId as string | undefined;
+  if (orgId) {
     const orgUpdates: Record<string, unknown> = {};
     const orgFieldMap: Record<string, unknown> = {
       name: companyName,
@@ -155,13 +155,83 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
     }
     if (Object.keys(orgUpdates).length > 0) {
       orgUpdates.updatedAt = new Date();
-      await Organization.findByIdAndUpdate(org._id, { $set: orgUpdates });
+      await Organization.findOneAndUpdate({ id: orgId }, { $set: orgUpdates });
     }
   }
 
   cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
 
-  res.json({ success: true, message: "Profile updated successfully" });
+  // Fetch updated data and return it
+  const updatedUser = await User.findOne({ id: req.user!.userId }).lean();
+  const updatedMember = await OrgMember.findOne({ userId: user.id }).lean();
+  let updatedOrg = null;
+  let updatedMemberCount = 0;
+  if (updatedMember?.orgId) {
+    updatedOrg = await Organization.findOne({ id: updatedMember.orgId as string }).lean();
+    updatedMemberCount = await OrgMember.countDocuments({ orgId: updatedMember.orgId });
+  }
+
+  res.json({
+    success: true,
+    message: "Profile updated successfully",
+    user: updatedUser
+      ? {
+          id: updatedUser._id.toString(),
+          name: updatedUser.name || "",
+          email: updatedUser.email || "",
+          phone: updatedUser.phone || "",
+          department: updatedUser.department || "",
+          company: updatedUser.company || "",
+          address: updatedUser.address || "",
+          city: updatedUser.city || "",
+          state: updatedUser.state || "",
+          country: updatedUser.country || "",
+          zipCode: updatedUser.zipCode || "",
+          linkedin: (updatedUser as any).linkedin || "",
+          github: (updatedUser as any).github || "",
+          twitter: (updatedUser as any).twitter || "",
+          website: (updatedUser as any).website || "",
+          status: updatedUser.status || "offline",
+          role: updatedUser.role || "member",
+          image: updatedUser.image || "",
+          bannerUrl: updatedUser.bannerUrl || "",
+          createdAt: updatedUser.createdAt || new Date().toISOString(),
+        }
+      : null,
+    org: updatedOrg
+      ? {
+          id: updatedOrg._id.toString(),
+          name: updatedOrg.name || "",
+          slug: updatedOrg.slug || "",
+          domain: updatedOrg.domain || "",
+          businessType: updatedOrg.businessType || "",
+          industry: updatedOrg.industry || "",
+          gstNumber: updatedOrg.gstNumber || "",
+          panNumber: updatedOrg.panNumber || "",
+          cinNumber: updatedOrg.cinNumber || "",
+          companyEmail: updatedOrg.companyEmail || "",
+          mobileNumber: updatedOrg.mobileNumber || "",
+          alternateMobileNumber: updatedOrg.alternateMobileNumber || "",
+          website: updatedOrg.website || "",
+          addressLine1: updatedOrg.addressLine1 || "",
+          addressLine2: updatedOrg.addressLine2 || "",
+          city: updatedOrg.city || "",
+          state: updatedOrg.state || "",
+          pincode: updatedOrg.pincode || "",
+          country: updatedOrg.country || "India",
+          logoUrl: updatedOrg.logo || "",
+          authorizedPersonName: updatedOrg.authorizedPersonName || "",
+          designation: updatedOrg.designation || "",
+          authorizedPersonEmail: updatedOrg.authorizedPersonEmail || "",
+          authorizedPersonMobile: updatedOrg.authorizedPersonMobile || "",
+          numberOfEmployees: updatedOrg.numberOfEmployees || 0,
+          companyDescription: updatedOrg.companyDescription || "",
+          plan: updatedOrg.plan || "free",
+          createdAt: updatedOrg.createdAt || new Date().toISOString(),
+        }
+      : null,
+    memberCount: updatedMemberCount,
+  });
 });
 
 router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {

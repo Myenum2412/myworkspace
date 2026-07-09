@@ -141,6 +141,32 @@ export async function notifyProjectUpdate(
   });
 }
 
+export async function notifyTaskDueSoon(
+  task: { id: string; title: string; dueDate: Date },
+  assigneeId: string,
+  orgId: string,
+  daysRemaining: number
+) {
+  const message = daysRemaining <= 0
+    ? `"${task.title}" is overdue (was due ${task.dueDate.toLocaleDateString()})`
+    : `"${task.title}" is due in ${daysRemaining} day${daysRemaining > 1 ? "s" : ""} (${task.dueDate.toLocaleDateString()})`;
+  return createNotification({
+    userId: assigneeId,
+    orgId,
+    createdBy: assigneeId,
+    type: "task_due_soon",
+    category: "tasks",
+    priority: "high",
+    title: daysRemaining <= 0 ? "Task Overdue" : "Task Due Soon",
+    message,
+    link: `/alltasks?id=${task.id}`,
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}` },
+    ],
+    metadata: { taskId: task.id, dueDate: task.dueDate.toISOString(), daysRemaining },
+  });
+}
+
 export async function notifyBillingReminder(
   userId: string,
   orgId: string,

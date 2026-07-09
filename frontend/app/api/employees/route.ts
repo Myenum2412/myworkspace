@@ -199,9 +199,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const { sendWelcomeEmail } = await import("@/lib/mail");
-    sendWelcomeEmail(email, name).catch((err) => {
-      console.error("[employees] Welcome email failed:", err?.message || err);
+    const { sendEmployeeOnboarded } = await import("@/lib/mail");
+    const workspaceName = "MyWorkspace";
+    const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
+    sendEmployeeOnboarded(email, firstName || name, email, workspaceName, loginUrl, defaultPassword).catch((err) => {
+      console.error("[employees] Onboarded email failed:", err?.message || err);
     });
 
     const notificationsCol = db.collection(collections.notifications);

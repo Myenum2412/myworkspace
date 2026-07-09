@@ -78,6 +78,45 @@ export async function addEmployeeAction(formData: FormData) {
     role: role?.toLowerCase() || "member",
   });
 
+  const { sendEmployeeOnboarded } = await import("@/lib/mail");
+  const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
+  sendEmployeeOnboarded(email, name, email, "MyWorkspace", loginUrl, plainPassword).catch((err) => {
+    console.error("[addEmployeeAction] Onboarded email failed:", err?.message || err);
+  });
+
+  const notificationsCol = db.collection(collections.notifications);
+  const now = new Date();
+  await notificationsCol.insertOne({
+    id: uuid(),
+    userId,
+    orgId: refreshedMember.orgId,
+    createdBy: session.user.id,
+    type: "system",
+    title: "Welcome to MyWorkspace!",
+    message: "Your account has been created. You're now part of the organization.",
+    link: "/employees",
+    read: false,
+    createdAt: now,
+  });
+
+  const adminMembers = await (await db.collection(collections.orgMembers).find({ orgId: refreshedMember.orgId, role: { $in: ["admin", "manager"] } })).toArray();
+  const adminIds = [...new Set(adminMembers.map((m: any) => m.userId))].filter((id: string) => id !== userId);
+  if (adminIds.length > 0) {
+    const adminNotifs = adminIds.map((adminId: string) => ({
+      id: uuid(),
+      userId: adminId,
+      orgId: refreshedMember.orgId,
+      createdBy: session.user.id,
+      type: "system",
+      title: "New Employee Added",
+      message: `${name} (${email}) has been added.`,
+      link: "/employees",
+      read: false,
+      createdAt: now,
+    }));
+    await notificationsCol.insertMany(adminNotifs);
+  }
+
   revalidatePath("/employees");
   revalidateTag('dashboard', 'max');
   return { success: true, password: plainPassword };

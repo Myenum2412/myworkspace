@@ -61,3 +61,14 @@ export async function sendPasswordResetEmail(
 ): Promise<void> {
   await callBackendEmailEndpoint("/send-password-reset-email", { email: to, name, resetLink });
 }
+
+export async function sendEmployeeOnboarded(
+  to: string,
+  firstName: string,
+  email: string,
+  workspaceName: string,
+  loginUrl: string,
+  tempPassword: string
+): Promise<void> {
+  await callBackendEmailEndpoint("/send-employee-onboarded-email", { email: to, firstName, userEmail: email, workspaceName, loginUrl, tempPassword });
+}

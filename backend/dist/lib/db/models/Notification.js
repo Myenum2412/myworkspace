@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 export const NOTIFICATION_TYPES = [
     "task_assigned",
     "task_updated",
+    "task_due_soon",
     "mention",
     "invite",
     "system",
