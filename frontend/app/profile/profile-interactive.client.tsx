@@ -635,7 +635,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <p className="text-xs text-muted-foreground">Employees</p>
-                      <p className="text-sm font-medium">{org?.numberOfEmployees || "\u2014"}</p>
+                      <p className="text-sm font-medium">{org?.numberOfEmployees !== undefined && org?.numberOfEmployees !== null ? org.numberOfEmployees : "\u2014"}</p>
                     </div>
                   </div>
                   {org?.companyDescription && (

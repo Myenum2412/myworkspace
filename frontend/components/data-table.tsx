@@ -189,7 +189,7 @@ export function DataTable<TData, TValue>({
         <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
           <div className="overflow-x-auto" ref={scrollRef}>
             <table className="table-premium w-full text-sm text-left">
-              <thead className="sticky top-0 z-10">
+              <thead className="sticky top-0 z-10 bg-primary text-white">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {

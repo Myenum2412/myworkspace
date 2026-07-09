@@ -260,8 +260,14 @@ export async function PATCH(req: NextRequest) {
       if (dbOrg) {
         orgDocId = (dbOrg as Record<string, unknown>)._id as string;
       } else {
-        dbOrg = await db.collection(collections.organizations).findOne({ _id: orgId } as never);
-        if (dbOrg) orgDocId = orgId;
+        try {
+          if (ObjectId.isValid(orgId)) {
+            dbOrg = await db.collection(collections.organizations).findOne({ _id: new ObjectId(orgId) } as never);
+          } else {
+            dbOrg = await db.collection(collections.organizations).findOne({ _id: orgId } as never);
+          }
+        } catch {}
+        if (dbOrg) orgDocId = (dbOrg as Record<string, unknown>)._id as string;
       }
 
       if (dbOrg && orgDocId) {

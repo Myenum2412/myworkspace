@@ -15,7 +15,6 @@ import { AppError } from "../middleware/error.js";
 import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, sendOrganizationInviteEmail, sendClientWelcomeEmail, sendEmployeeOnboarded } from "../lib/mail/index.js";
 import { mongoose } from "../lib/db/index.js";
 import jwt from "jsonwebtoken";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { requireString, optionalString } from "../lib/validate.js";
 import { validatePasswordStrength } from "../services/validation.service.js";
 import { recordAuditLog } from "../services/audit.service.js";
@@ -114,15 +113,6 @@ router.post("/login", async (req, res) => {
         entityType: "session",
         entityId: session._id.toString(),
         description: `Session started for ${user.name}`,
-    });
-    socketIOManager.emitToUser(user.id, "session:started", {
-        sessionId: session._id.toString(),
-        loginTime: session.loginTime,
-    });
-    socketIOManager.emitToOrg(resolvedOrgId, "user:status:changed", {
-        userId: user.id,
-        status: "online",
-        timestamp: new Date().toISOString(),
     });
     const token = signToken({
         userId: user.id,
@@ -322,20 +312,8 @@ router.post("/logout", authenticate, async (req, res) => {
             entityId: activeSession._id.toString(),
             description: `Session ended via logout. Active: ${Math.round((activeSession.duration || 0) / 60000)} min`,
         });
-        socketIOManager.emitToUser(userId, "session:ended", {
-            sessionId: activeSession._id.toString(),
-            logoutTime: activeSession.logoutTime,
-            duration: activeSession.duration,
-        });
     }
     await User.findOneAndUpdate({ id: userId }, { status: "offline" });
-    if (orgId) {
-        socketIOManager.emitToOrg(orgId, "user:status:changed", {
-            userId,
-            status: "offline",
-            timestamp: new Date().toISOString(),
-        });
-    }
     res.json({ success: true });
 });
 router.post("/forgot-password", async (req, res) => {
@@ -462,11 +440,11 @@ router.post("/send-employee-onboarded-email", async (req, res) => {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
         await sendEmployeeOnboarded(email, firstName, userEmail, workspaceName, loginUrl, tempPassword);
-        res.json({ success: true, message: "Employee onboarded email sent" });
+        res.json({ success: true, message: "Employee onboarded email sent", emailStatus: "sent" });
     }
     catch (err) {
         console.error("[auth] send-employee-onboarded-email error:", err);
-        res.status(500).json({ success: false, message: "Failed to send employee onboarded email" });
+        res.status(500).json({ success: false, message: "Failed to send employee onboarded email", emailStatus: "failed", error: err?.message || "Unknown error" });
     }
 });
 // Send password reset email endpoint
