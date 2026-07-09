@@ -151,35 +151,33 @@ class CacheService extends EventEmitter {
       }
     }
 
-    // Deduplicate concurrent fetches
+    // Deduplicate concurrent fetches — register BEFORE any async operation
     const pending = this.refreshQueues.get(key);
     if (pending) return pending as T;
 
-    // L2: Redis
-    const l2 = await this.getFromL2<T>(key);
-    if (l2 !== null) {
-      this.local.set(key, l2, options?.ttl || 600);
-      return l2;
-    }
+    const promise = (async () => {
+      try {
+        // L2: Redis
+        const l2 = await this.getFromL2<T>(key);
+        if (l2 !== null) {
+          this.local.set(key, l2, options?.ttl || 600);
+          return l2;
+        }
 
-    // Miss: fetch from source
-    const promise = fetcher()
-      .then((value) => {
+        const value = await fetcher();
         this.set(key, value, options);
-        this.refreshQueues.delete(key);
         return value;
-      })
-      .catch((err) => {
-        this.refreshQueues.delete(key);
-
+      } catch (err) {
         // L1 stale on error
         if (options?.staleIfError) {
           const stale = this.staleLocal.get<T>(`stale:${key}`);
           if (stale !== undefined) return stale;
         }
         throw err;
-      });
-
+      } finally {
+        this.refreshQueues.delete(key);
+      }
+    })();
     this.refreshQueues.set(key, promise);
     return promise;
   }
@@ -297,6 +295,7 @@ class CacheService extends EventEmitter {
       misses: this.stats.misses.l1 + this.stats.misses.l2,
       hitRate: total > 0 ? (this.stats.hits.l1 + this.stats.hits.l2) / total : 0,
       memUsage: nodeStats.vsize,
+      version: this.version,
       layers: {
         l1: { keys: keys.length, hits: this.stats.hits.l1, misses: this.stats.misses.l1 },
         l2: { hits: this.stats.hits.l2, misses: this.stats.misses.l2, connected: isRedisConnected() },

@@ -43,7 +43,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/unit" --coverage --coverageDirectory=coverage/unit
+      - run: npm run test -- --testPathPatterns="tests/backend/unit" --coverage --coverageDirectory=coverage/unit
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -66,7 +66,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/integration" --runInBand --coverage --coverageDirectory=coverage/integration
+      - run: npm run test -- --testPathPatterns="tests/backend/integration" --runInBand --coverage --coverageDirectory=coverage/integration
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -89,7 +89,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/security" --runInBand --coverage --coverageDirectory=coverage/security
+      - run: npm run test -- --testPathPatterns="tests/backend/security" --runInBand --coverage --coverageDirectory=coverage/security
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -107,7 +107,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/socket" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/socket" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -125,7 +125,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/queue" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/queue" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -143,7 +143,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/data-integrity" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/data-integrity" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -161,7 +161,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/concurrency" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/concurrency" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -177,7 +177,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/build-deploy" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/build-deploy" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -195,7 +195,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/payment" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/payment" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -215,7 +215,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/cache" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/cache" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -233,7 +233,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/resilience" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/resilience" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -251,7 +251,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/(search|streaming)" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/(search|streaming)" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
@@ -269,7 +269,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPattern="tests/backend/(ttl-cleanup|multi-instance)" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/(ttl-cleanup|multi-instance)" --runInBand
         working-directory: backend
         env:
           JWT_SECRET: test-secret
