@@ -10,6 +10,8 @@ import type { TaskStatus, TaskPriority } from "../lib/validate.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { logger } from "../lib/logger/index.js";
 import { notifyTaskAssigned, notifyTaskUpdated } from "../lib/notifications/index.js";
+import { sendTaskAssigned, sendTaskUpdated, sendTaskStatusChanged } from "../lib/mail/index.js";
+import { env } from "../config/env.js";
 
 export interface TaskListOptions {
   orgId: string;
@@ -242,6 +244,19 @@ export async function createTask(data: {
       creatorUser?.name || "A user",
       orgId,
     ).catch((err) => logger.error({ err }, "Failed to send task assigned notification"));
+
+    if (assigneeUser?.email) {
+      sendTaskAssigned(
+        assigneeUser.email,
+        assigneeUser.name || assigneeUser.email,
+        title,
+        task.project || "",
+        creatorUser?.name || "A user",
+        task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "No due date",
+        task.priority,
+        `${env.APP_URL}/alltasks?id=${task._id}`,
+      ).catch((err) => logger.error({ err }, "Failed to send task assigned email"));
+    }
   }
 
   return { taskId: task._id };
@@ -301,8 +316,9 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
   const assigneeChanged = assigneeId !== undefined && assigneeId !== existing.assigneeId?.toString();
 
   if (assigneeChanged && newAssigneeId && newAssigneeId !== userId) {
-    const [updaterUser] = await Promise.all([
+    const [updaterUser, newAssigneeUser] = await Promise.all([
       User.findOne({ id: userId }).lean(),
+      User.findOne({ id: newAssigneeId }).lean(),
     ]);
     notifyTaskAssigned(
       { id, title: updated?.title || existing.title || "" },
@@ -310,9 +326,25 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
       updaterUser?.name || "A user",
       existing.orgId.toString(),
     ).catch((err) => logger.error({ err }, "Failed to send task reassigned notification"));
+
+    if (newAssigneeUser?.email) {
+      const dueDateVal: Date | undefined = updated?.dueDate || existing.dueDate;
+      const dueDateStr = dueDateVal ? new Date(dueDateVal).toISOString().split("T")[0] : "No due date";
+      sendTaskAssigned(
+        newAssigneeUser.email,
+        newAssigneeUser.name || newAssigneeUser.email,
+        updated?.title || existing.title || "",
+        updated?.project || existing.project || "",
+        updaterUser?.name || "A user",
+        dueDateStr,
+        updated?.priority || existing.priority || "medium",
+        `${env.APP_URL}/alltasks?id=${id}`,
+      ).catch((err) => logger.error({ err }, "Failed to send task reassigned email"));
+    }
   } else if (updated?.assigneeId?.toString() && updated.assigneeId.toString() !== userId && !assigneeChanged) {
-    const [updaterUser] = await Promise.all([
+    const [updaterUser, assigneeUser] = await Promise.all([
       User.findOne({ id: userId }).lean(),
+      User.findOne({ id: updated.assigneeId.toString() }).lean(),
     ]);
     const changes = [status ? `status changed to ${status}` : ""].filter(Boolean).join(", ");
     notifyTaskUpdated(
@@ -322,6 +354,18 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
       existing.orgId.toString(),
       changes || undefined,
     ).catch((err) => logger.error({ err }, "Failed to send task updated notification"));
+
+    if (assigneeUser?.email) {
+      sendTaskUpdated(
+        assigneeUser.email,
+        assigneeUser.name || assigneeUser.email,
+        updated?.title || existing.title || "",
+        updated?.project || existing.project || "",
+        updaterUser?.name || "A user",
+        changes || "task updated",
+        `${env.APP_URL}/alltasks?id=${id}`,
+      ).catch((err) => logger.error({ err }, "Failed to send task updated email"));
+    }
   }
 }
 
@@ -407,8 +451,9 @@ export async function updateTaskStatus(id: string, status: TaskStatus, userId: s
   });
 
   if (existing.assigneeId?.toString() && existing.assigneeId.toString() !== userId) {
-    const [updater] = await Promise.all([
+    const [updater, assigneeUser] = await Promise.all([
       User.findOne({ id: userId }).lean(),
+      User.findOne({ id: existing.assigneeId.toString() }).lean(),
     ]);
     notifyTaskUpdated(
       { id, title: existing.title || "" },
@@ -417,5 +462,18 @@ export async function updateTaskStatus(id: string, status: TaskStatus, userId: s
       userOrgId,
       `status changed to ${status}`,
     ).catch((err) => logger.error({ err }, "Failed to send task status notification"));
+
+    if (assigneeUser?.email) {
+      sendTaskStatusChanged(
+        assigneeUser.email,
+        assigneeUser.name || assigneeUser.email,
+        existing.title || "",
+        existing.project || "",
+        updater?.name || "A user",
+        existing.status || "",
+        status,
+        `${env.APP_URL}/alltasks?id=${id}`,
+      ).catch((err) => logger.error({ err }, "Failed to send task status email"));
+    }
   }
 }

@@ -180,7 +180,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
         )}
 
         <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
-          <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
+          <DialogContent className="p-0 flex flex-col sm:max-w-4xl" showCloseButton={false}>
             {selectedTask && (
               <TaskDetailedView
                 task={selectedTask}

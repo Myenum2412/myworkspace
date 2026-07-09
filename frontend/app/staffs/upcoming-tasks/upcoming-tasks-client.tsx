@@ -467,7 +467,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
 
       {/* Task Detail Dialog */}
       <Dialog open={taskDetailOpen} onOpenChange={(open) => { if (!open) { setTaskDetailOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
+        <DialogContent className="p-0 flex flex-col sm:max-w-4xl" showCloseButton={false}>
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
