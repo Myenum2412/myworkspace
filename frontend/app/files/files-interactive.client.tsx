@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -129,6 +130,7 @@ export default function FilesInteractive({
 }: FilesInteractiveProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
 
@@ -138,7 +140,6 @@ export default function FilesInteractive({
 
   // Upload
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [fileExplorerKey, setFileExplorerKey] = useState(0);
 
   const orgId = orgInfo?.id || "";
   const userId = session?.user?.id || "";
@@ -204,12 +205,17 @@ export default function FilesInteractive({
           <DropZoneUpload
             orgId={orgId}
             clientId={activeClientId}
-            onUploadComplete={() => { setUploadOpen(false); setFileExplorerKey((k) => k + 1); }}
+            onUploadComplete={() => {
+              setUploadOpen(false);
+              queryClient.invalidateQueries({ queryKey: ["files", orgId] });
+              queryClient.invalidateQueries({ queryKey: ["folders"] });
+              router.refresh();
+            }}
             maxConcurrency={3}
           />
         )}
 
-        <FileExplorer key={fileExplorerKey} orgId={orgId} userId={userId} clientId={activeClientId} />
+        <FileExplorer orgId={orgId} userId={userId} clientId={activeClientId} />
       </div>
     );
   }

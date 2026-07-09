@@ -25,6 +25,7 @@ export async function GET(request: Request) {
   const projectId = searchParams.get("projectId");
   const category = searchParams.get("category");
   const clientId = searchParams.get("clientId");
+  const folderId = searchParams.get("folderId");
 
   try {
     const filter: Record<string, unknown> = { orgId, deletedAt: null };
@@ -36,6 +37,11 @@ export async function GET(request: Request) {
     }
     if (clientId) {
       filter.clientId = clientId;
+    }
+    if (folderId) {
+      filter.folderId = folderId;
+    } else if (folderId === "") {
+      filter.folderId = null;
     }
 
     const files = await db.collection(collections.fileAttachments)
