@@ -382,62 +382,6 @@
     color: #DC2626;
   }
 
-  .table-premium {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    background: #FFFFFF;
-    border: 1px solid #E5E7EB;
-  }
-
-  .table-premium thead {
-    background: linear-gradient(90deg, #0D2A54 0%, #163A6B 100%);
-  }
-
-  .table-premium thead tr {
-    background: transparent;
-  }
-
-  .table-premium thead th {
-    color: #FFFFFF;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: .5px;
-    text-transform: uppercase;
-    padding: 16px 20px;
-    border: none;
-  }
-
-  .table-premium tbody tr {
-    background: #FFFFFF;
-    transition: all .25s ease;
-  }
-
-  .table-premium tbody tr:nth-child(even) {
-    background: #F8FAFC;
-  }
-
-  .table-premium tbody tr:hover {
-    background: #EAF3FF;
-    cursor: pointer;
-  }
-
-  .table-premium tbody tr.selected {
-    background: #DCEBFF;
-    border-left: 4px solid #0D2A54;
-  }
-
-  .table-premium td {
-    color: #334155;
-    padding: 16px 20px;
-    border-bottom: 1px solid #EEF2F7;
-    font-size: 14px;
-  }
-
-  .table-premium tbody tr:last-child td {
-    border-bottom: none;
-  }
-
   .ai-chat-markdown pre {
     @apply rounded-md overflow-x-auto text-xs;
   }
@@ -467,4 +411,60 @@
   .ai-chat-markdown blockquote {
     @apply border-l-2 border-primary pl-2 italic text-muted-foreground;
   }
+}
+
+.table-premium {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+}
+
+.table-premium thead {
+  background: linear-gradient(90deg, #0D2A54 0%, #163A6B 100%);
+}
+
+.table-premium thead tr {
+  background: transparent;
+}
+
+.table-premium thead th {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 16px 20px;
+  border: none;
+}
+
+.table-premium tbody tr {
+  background: #FFFFFF;
+  transition: all .25s ease;
+}
+
+.table-premium tbody tr:nth-child(even) {
+  background: #F8FAFC;
+}
+
+.table-premium tbody tr:hover {
+  background: #EAF3FF;
+  cursor: pointer;
+}
+
+.table-premium tbody tr.selected {
+  background: #DCEBFF;
+  border-left: 4px solid #0D2A54;
+}
+
+.table-premium td {
+  color: #334155;
+  padding: 16px 20px;
+  border-bottom: 1px solid #EEF2F7;
+  font-size: 14px;
+}
+
+.table-premium tbody tr:last-child td {
+  border-bottom: none;
 }
