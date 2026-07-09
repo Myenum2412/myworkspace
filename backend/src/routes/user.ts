@@ -8,7 +8,6 @@ import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { cacheManager } from "../lib/cache.js";
 
 const router = Router();
@@ -280,12 +279,6 @@ router.post("/status", authenticate, async (req: AuthRequest, res: Response) => 
       activeSession.currentStatus = status;
       await activeSession.save();
 
-      socketIOManager.emitToUser(targetUserId, "session:status:updated", {
-        sessionId: activeSession._id.toString(),
-        status,
-        previousStatus,
-        timestamp: new Date().toISOString(),
-      });
     }
   }
 

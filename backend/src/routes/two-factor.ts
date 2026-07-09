@@ -7,7 +7,6 @@ import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireString } from "../lib/validate.js";
 import { env } from "../config/env.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { recordAuditLog } from "../services/audit.service.js";
 
 const router = Router();
@@ -198,17 +197,6 @@ router.post("/login", async (req, res: Response) => {
     entityType: "session",
     entityId: session._id.toString(),
     description: `Session started for ${user.name} via 2FA`,
-  });
-
-  socketIOManager.emitToUser(user.id, "session:started", {
-    sessionId: session._id.toString(),
-    loginTime: session.loginTime,
-  });
-
-  socketIOManager.emitToOrg(resolvedOrgId, "user:status:changed", {
-    userId: user.id,
-    status: "online",
-    timestamp: new Date().toISOString(),
   });
 
   const jwtToken = signToken({

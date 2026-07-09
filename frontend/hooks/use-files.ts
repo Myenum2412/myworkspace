@@ -1,8 +1,6 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getSocketIO } from "@/lib/socketio-client";
-import { useEffect } from "react";
 
 interface FileQueryParams {
   orgId: string;
@@ -48,35 +46,6 @@ export function useFiles(params: FileQueryParams) {
     staleTime: 30_000,
     gcTime: 5 * 60_000,
   });
-
-  useEffect(() => {
-    const refresh = () => {
-      queryClient.invalidateQueries({ queryKey });
-      queryClient.invalidateQueries({ queryKey: ["folders"] });
-    };
-    let sock: ReturnType<typeof getSocketIO> | null = null;
-    try {
-      sock = getSocketIO();
-      sock.on("folder:created", refresh);
-      sock.on("folder:updated", refresh);
-      sock.on("folder:deleted", refresh);
-      sock.on("file:uploaded", refresh);
-      sock.on("file:updated", refresh);
-      sock.on("file:deleted", refresh);
-      sock.on("client:created", refresh);
-    } catch {}
-    return () => {
-      if (sock) {
-        sock.off("folder:created", refresh);
-        sock.off("folder:updated", refresh);
-        sock.off("folder:deleted", refresh);
-        sock.off("file:uploaded", refresh);
-        sock.off("file:updated", refresh);
-        sock.off("file:deleted", refresh);
-        sock.off("client:created", refresh);
-      }
-    };
-  }, [queryClient, queryKey]);
 
   return {
     files: filesQuery.data ?? [],

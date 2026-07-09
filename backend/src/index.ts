@@ -10,7 +10,6 @@ import { startWorkers } from "./lib/queue/worker.js";
 import { getChannel, isRabbitMQConfigured } from "./lib/queue/connection.js";
 import { promoteRateLimitersToRedis } from "./middleware/rate-limit.js";
 import { initSentry } from "./lib/sentry.js";
-import { startChatServer } from "./chat-server.js";
 import { metricsRegistry } from "./lib/monitoring/index.js";
 
 async function start() {
@@ -21,10 +20,6 @@ async function start() {
   const server = createServer(app);
 
   socketIOManager.initialize(server);
-
-  startChatServer().catch((err) => {
-    logger.error({ err }, "Chat server startup failed");
-  });
 
   server.listen(env.PORT, () => {
     const elapsed = Date.now() - startTime;

@@ -4,7 +4,6 @@ import { User } from "../lib/db/models/User.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { cacheManager } from "../lib/cache.js";
 
 const router = Router();
@@ -52,19 +51,6 @@ router.post("/start", authenticate, async (req: AuthRequest, res: Response) => {
     entityId: session._id.toString(),
     description: `Session started`,
   });
-
-  socketIOManager.emitToUser(userId, "session:started", {
-    sessionId: session._id.toString(),
-    loginTime: session.loginTime,
-  });
-
-  if (orgId) {
-    socketIOManager.emitToOrg(orgId, "user:status:changed", {
-      userId,
-      status: "online",
-      timestamp: new Date().toISOString(),
-    });
-  }
 
   cacheManager.invalidatePattern(`sessions:${userId}`);
   cacheManager.invalidatePattern(`users:${orgId || userId}:sessions`);
@@ -121,32 +107,6 @@ router.patch("/:id/status", authenticate, async (req: AuthRequest, res: Response
     metadata: JSON.stringify({ previousStatus, newStatus: status }),
   });
 
-  socketIOManager.emitToUser(userId, "session:status:updated", {
-    sessionId: id,
-    status,
-    previousStatus,
-    timestamp: new Date().toISOString(),
-  });
-
-  if (req.user!.orgId) {
-    if (status === "break") {
-      socketIOManager.emitToOrg(req.user!.orgId, "user:break:started", {
-        userId,
-        timestamp: new Date().toISOString(),
-      });
-    } else if (previousStatus === "break") {
-      socketIOManager.emitToOrg(req.user!.orgId, "user:break:ended", {
-        userId,
-        timestamp: new Date().toISOString(),
-      });
-    }
-    socketIOManager.emitToOrg(req.user!.orgId, "user:status:changed", {
-      userId,
-      status,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
   cacheManager.invalidatePattern(`sessions:${userId}`);
 
   res.json({
@@ -201,21 +161,6 @@ router.patch("/:id/close", authenticate, async (req: AuthRequest, res: Response)
       totalBreakDuration: session.totalBreakDuration,
     }),
   });
-
-  socketIOManager.emitToUser(userId, "session:ended", {
-    sessionId: id,
-    logoutTime: session.logoutTime,
-    duration: session.duration,
-    totalBreakDuration: session.totalBreakDuration,
-  });
-
-  if (req.user!.orgId) {
-    socketIOManager.emitToOrg(req.user!.orgId, "user:status:changed", {
-      userId,
-      status: "offline",
-      timestamp: new Date().toISOString(),
-    });
-  }
 
   cacheManager.invalidatePattern(`sessions:${userId}`);
 

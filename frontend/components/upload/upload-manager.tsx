@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
-import { Upload, Network, Wifi, WifiOff, RefreshCw, Trash2, Download, BarChart3 } from "lucide-react";
+import { useCallback } from "react";
+import { Upload, Wifi, WifiOff, RefreshCw, Trash2, Download, BarChart3 } from "lucide-react";
 import { useUpload } from "../../lib/upload/use-upload";
 import { UploadDropzone } from "./upload-dropzone";
 import { UploadProgress } from "./upload-progress";
-import { socketIOManager } from "../../lib/ws/client";
 import type { UploadOptions } from "../../lib/upload/types";
 
 interface UploadManagerProps {
@@ -44,15 +43,6 @@ export function UploadManager({ options, maxSize }: UploadManagerProps) {
     clearCompleted,
     handleSocketEvent,
   } = useUpload(options);
-
-  useEffect(() => {
-    const unsub = socketIOManager.onEvent((event, data) => {
-      if (event.startsWith("upload:") || event.startsWith("file:")) {
-        handleSocketEvent(event, data as any);
-      }
-    });
-    return unsub;
-  }, [handleSocketEvent]);
 
   const handleFilesSelected = useCallback((files: FileList | File[]) => {
     uploadFiles(files);

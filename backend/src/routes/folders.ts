@@ -5,7 +5,6 @@ import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { cacheManager } from "../lib/cache.js";
 import { verifyOrgAccess } from "../lib/org-utils.js";
 
@@ -69,8 +68,6 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     description: `Folder "${name}" created`,
   });
 
-  socketIOManager.emitToOrg(orgId, "folder:created", { folderId: id, orgId, clientId: clientId || null });
-
   cacheManager.invalidatePattern(`folders:${orgId}`);
 
   res.status(201).json({ success: true, folderId: id });
@@ -102,8 +99,6 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
     const childNewPath = child.path.replace(oldPrefix, newPrefix);
     await Folder.updateOne({ id: child.id }, { path: childNewPath });
   }
-
-  socketIOManager.emitToOrg(folder.orgId, "folder:updated", { folderId: folder.id, name, oldPath, newPath });
 
   await recordAuditLog({
     orgId: folder.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "folder.renamed",
@@ -143,8 +138,6 @@ router.post("/:id/move", async (req: AuthRequest, res: Response) => {
   }
 
   await FileAttachment.updateMany({ orgId: folder.orgId, folderId: folder.id }, { folderId: targetParentId || null });
-
-  socketIOManager.emitToOrg(folder.orgId, "folder:updated", { folderId: folder.id, action: "moved", from: oldPath, to: newPath });
 
   cacheManager.invalidatePattern(`folders:${folder.orgId}`);
 
@@ -194,8 +187,6 @@ router.post("/:id/copy", async (req: AuthRequest, res: Response) => {
     });
   }
 
-  socketIOManager.emitToOrg(folder.orgId, "folder:created", { folderId: folderIdMap.get(folder.id), orgId: folder.orgId });
-
   res.status(201).json({ success: true, folderId: folderIdMap.get(folder.id) });
 });
 
@@ -230,8 +221,6 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
     entityType: "folder", entityId: folder.id,
     description: `Folder "${folder.name}" and ${allChildFolders.length} sub-folders deleted`,
   });
-
-  socketIOManager.emitToOrg(folder.orgId, "folder:deleted", { folderId: folder.id, childFolderIds: allFolderIds });
 
   cacheManager.invalidatePattern(`folders:${folder.orgId}`);
 

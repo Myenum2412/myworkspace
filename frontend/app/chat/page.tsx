@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import ChatIcon from '@mui/icons-material/Chat';
 
-const API = process.env.NEXT_PUBLIC_CHAT_SERVER_URL || "http://localhost:4001";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -155,12 +155,8 @@ export default function ChatPage() {
   const userName = session?.user?.name || "User";
   const userAvatar = session?.user?.image || "";
 
-  // ── Socket ───────────────────────────────────────────────────
-  const socketRef = useRef<any>(null);
-  const [socketConnected, setSocketConnected] = useState(false);
-
   // ── Navigation ───────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<"chats" | "contacts" | "calls" | "notifications">("chats");
+  const [activeTab, setActiveTab] = useState<"chats" | "contacts" | "notifications">("chats");
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [showMobileChat, setShowMobileChat] = useState(false);
@@ -170,10 +166,7 @@ export default function ChatPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [presences, setPresences] = useState<Record<string, string>>({});
-  const [typingUsers, setTypingUsers] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
 
   // ── Chat State ───────────────────────────────────────────────
@@ -188,109 +181,11 @@ export default function ChatPage() {
   const [newConvName, setNewConvName] = useState("");
   const [newConvParticipant, setNewConvParticipant] = useState("");
 
-  // ── Call State ───────────────────────────────────────────────
-  const [inCall, setInCall] = useState(false);
-  const [callRoomId, setCallRoomId] = useState<string | null>(null);
-  const [callParticipants, setCallParticipants] = useState<Participant[]>([]);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isCameraOff, setIsCameraOff] = useState(false);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [isHandRaised, setIsHandRaised] = useState(false);
-  const [showCallChat, setShowCallChat] = useState(false);
-  const [callChatMessages, setCallChatMessages] = useState<any[]>([]);
-  const [callChatInput, setCallChatInput] = useState("");
-
   // ── Refs ─────────────────────────────────────────────────────
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const localStreamRef = useRef<MediaStream | null>(null);
 
   // ═══════════════════════════════════════════════════════════════════════
-  // SOCKET CONNECTION
-  // ═══════════════════════════════════════════════════════════════════════
-  useEffect(() => {
-    if (!userId) return;
-    import("socket.io-client").then(({ io }) => {
-      const socket = io(API, {
-        transports: ["websocket", "polling"],
-        auth: { userId, userName, userAvatar },
-      });
-      socket.on("connect", () => setSocketConnected(true));
-      socket.on("disconnect", () => setSocketConnected(false));
-
-      socket.on("new-message", (msg: Message) => {
-        setMessages((prev) => [...prev, msg]);
-        setConversations((prev) => prev.map((c) =>
-          c.id === msg.conversationId
-            ? { ...c, lastMessage: { text: msg.text, senderId: msg.senderId, senderName: msg.senderName, timestamp: msg.createdAt }, updatedAt: msg.createdAt }
-            : c
-        ));
-      });
-
-      socket.on("message-edited", (data: any) => {
-        setMessages((prev) => prev.map((m) => m.id === data.messageId ? { ...m, text: data.text, edited: true } : m));
-      });
-
-      socket.on("message-deleted", (data: any) => {
-        setMessages((prev) => prev.map((m) => m.id === data.messageId ? { ...m, deleted: true } : m));
-      });
-
-      socket.on("message-reaction", (data: any) => {
-        setMessages((prev) => prev.map((m) => m.id === data.messageId ? { ...m, reactions: data.reactions } : m));
-      });
-
-      socket.on("typing", (data: any) => {
-        setTypingUsers((prev) => {
-          const conv = prev[data.conversationId] || [];
-          if (data.isTyping) {
-            return conv.includes(data.userName) ? prev : { ...prev, [data.conversationId]: [...conv, data.userName] };
-          }
-          return { ...prev, [data.conversationId]: conv.filter((n) => n !== data.userName) };
-        });
-      });
-
-      socket.on("presence-update", (data: any) => {
-        setPresences((prev) => ({ ...prev, [data.userId]: data.status }));
-      });
-
-      socket.on("conversation-created", (conv: Conversation) => {
-        setConversations((prev) => [conv, ...prev]);
-      });
-
-      socket.on("notification:" + userId, (notif: Notification) => {
-        setNotifications((prev) => [notif, ...prev]);
-      });
-
-      socket.on("participant-joined", (data: any) => {
-        setCallParticipants((prev) => [...prev.filter((p) => p.socketId !== data.socketId), { ...data, isMuted: false, isCameraOff: false, isScreenSharing: false, isHandRaised: false }]);
-      });
-
-      socket.on("participant-left", (data: any) => {
-        setCallParticipants((prev) => prev.filter((p) => p.socketId !== data.socketId));
-      });
-
-      socket.on("participant-updated", (data: any) => {
-        setCallParticipants((prev) => prev.map((p) => p.socketId === data.socketId ? { ...p, ...data } : p));
-      });
-
-      socket.on("meeting-ended", () => {
-        setInCall(false);
-        setCallRoomId(null);
-        setCallParticipants([]);
-        stopMedia();
-      });
-
-      socket.on("meeting-chat", (data: any) => {
-        setCallChatMessages((prev) => [...prev, data]);
-      });
-
-      socketRef.current = socket;
-    });
-    return () => { socketRef.current?.disconnect(); };
-  }, [userId, userName, userAvatar]);
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // FETCH DATA
+  // FETCH DATA (REST)
   // ═══════════════════════════════════════════════════════════════════════
   const fetchContacts = useCallback(async () => {
     if (!userId) return;
@@ -320,15 +215,6 @@ export default function ChatPage() {
     } catch {}
   }, []);
 
-  const fetchMeetings = useCallback(async () => {
-    if (!userId) return;
-    try {
-      const res = await fetch(`${API}/api/meetings?userId=${userId}`);
-      const data = await res.json();
-      setMeetings(data.data || []);
-    } catch {}
-  }, [userId]);
-
   const fetchNotifications = useCallback(async () => {
     if (!userId) return;
     try {
@@ -338,124 +224,76 @@ export default function ChatPage() {
     } catch {}
   }, [userId]);
 
-  useEffect(() => { fetchContacts(); fetchConversations(); fetchMeetings(); fetchNotifications(); }, [fetchContacts, fetchConversations, fetchMeetings, fetchNotifications]);
+  useEffect(() => { fetchContacts(); fetchConversations(); fetchNotifications(); }, [fetchContacts, fetchConversations, fetchNotifications]);
 
+  // Refresh messages when conversation selected
   useEffect(() => {
-    if (selectedConvId) {
-      fetchMessages(selectedConvId);
-      socketRef.current?.emit("join-conversation", selectedConvId);
-      socketRef.current?.emit("mark-read", { conversationId: selectedConvId });
-    }
+    if (selectedConvId) fetchMessages(selectedConvId);
   }, [selectedConvId, fetchMessages]);
+
+  // Auto-refresh messages every 10s when a conversation is open
+  useEffect(() => {
+    if (!selectedConvId) return;
+    const interval = setInterval(() => fetchMessages(selectedConvId), 10_000);
+    return () => clearInterval(interval);
+  }, [selectedConvId, fetchMessages]);
+
+  // Auto-refresh conversations every 30s
+  useEffect(() => {
+    const interval = setInterval(fetchConversations, 30_000);
+    return () => clearInterval(interval);
+  }, [fetchConversations]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   // ═══════════════════════════════════════════════════════════════════════
-  // MEDIA
-  // ═══════════════════════════════════════════════════════════════════════
-  const startMedia = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      localStreamRef.current = stream;
-      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-    } catch (err) { console.error("Media error:", err); }
-  }, []);
-
-  const stopMedia = useCallback(() => {
-    localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    localStreamRef.current = null;
-  }, []);
-
-  // ═══════════════════════════════════════════════════════════════════════
   // ACTIONS
   // ═══════════════════════════════════════════════════════════════════════
-  const sendMessage = useCallback(() => {
+  const sendMessage = useCallback(async () => {
     if (!chatInput.trim() || !selectedConvId) return;
-    socketRef.current?.emit("send-message", {
-      conversationId: selectedConvId, text: chatInput.trim(),
-      replyTo: replyTo?.id || null,
-    });
+    try {
+      await fetch(`${API}/api/conversations/${selectedConvId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: chatInput.trim(), senderId: userId, senderName: userName }),
+      });
+      fetchMessages(selectedConvId);
+    } catch {}
     setChatInput("");
     setReplyTo(null);
-  }, [chatInput, selectedConvId, replyTo]);
+  }, [chatInput, selectedConvId, replyTo, userId, userName, fetchMessages]);
 
-  const sendCallMessage = useCallback(() => {
-    if (!callChatInput.trim() || !callRoomId) return;
-    socketRef.current?.emit("meeting-chat", { text: callChatInput.trim() });
-    setCallChatInput("");
-  }, [callChatInput, callRoomId]);
-
-  const startCall = useCallback(async (type: "audio" | "video") => {
-    socketRef.current?.emit("start-meeting", { title: `${userName}'s ${type} call` }, (res: any) => {
-      if (res.success) { setInCall(true); setCallRoomId(res.roomId); startMedia(); }
-    });
-  }, [userName, startMedia]);
-
-  const joinCall = useCallback(async (roomId: string) => {
-    socketRef.current?.emit("join-meeting", { roomId }, (res: any) => {
-      if (res.success) { setInCall(true); setCallRoomId(roomId); setCallParticipants(res.participants || []); startMedia(); }
-    });
-  }, [startMedia]);
-
-  const leaveCall = useCallback(() => {
-    socketRef.current?.emit("leave-meeting");
-    setInCall(false); setCallRoomId(null); setCallParticipants([]); stopMedia();
-  }, [stopMedia]);
-
-  const toggleMute = useCallback(() => {
-    const next = !isMuted; setIsMuted(next);
-    socketRef.current?.emit("toggle-mute", { muted: next });
-    localStreamRef.current?.getAudioTracks().forEach((t) => { t.enabled = !next; });
-  }, [isMuted]);
-
-  const toggleCamera = useCallback(() => {
-    const next = !isCameraOff; setIsCameraOff(next);
-    socketRef.current?.emit("toggle-camera", { off: next });
-    localStreamRef.current?.getVideoTracks().forEach((t) => { t.enabled = !next; });
-  }, [isCameraOff]);
-
-  const toggleScreen = useCallback(async () => {
-    if (!isScreenSharing) {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      stream.getVideoTracks()[0].onended = () => { setIsScreenSharing(false); socketRef.current?.emit("toggle-screen-share", { sharing: false }); };
-      setIsScreenSharing(true); socketRef.current?.emit("toggle-screen-share", { sharing: true });
-    } else { setIsScreenSharing(false); socketRef.current?.emit("toggle-screen-share", { sharing: false }); }
-  }, [isScreenSharing]);
-
-  const toggleHand = useCallback(() => {
-    const next = !isHandRaised; setIsHandRaised(next);
-    socketRef.current?.emit("toggle-hand-raise", { raised: next });
-  }, [isHandRaised]);
-
-  const createConversation = useCallback((contact: Contact) => {
-    socketRef.current?.emit("create-conversation", {
-      type: "direct",
-      name: contact.name,
-      participants: [userId, contact.id],
-    }, (res: any) => {
-      if (res.success) {
-        setSelectedConvId(res.conversation.id);
+  const createConversation = useCallback(async (contact: Contact) => {
+    try {
+      const res = await fetch(`${API}/api/conversations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "direct", name: contact.name, participants: [userId, contact.id] }),
+      });
+      const data = await res.json();
+      if (data.data) {
+        setSelectedConvId(data.data.id);
         setActiveTab("chats");
         setCreateConvOpen(false);
         fetchConversations();
       }
-    });
+    } catch {}
   }, [userId, fetchConversations]);
 
-  const createGroupConversation = useCallback(() => {
+  const createGroupConversation = useCallback(async () => {
     const participantIds = newConvParticipant.split(",").map((s) => s.trim()).filter(Boolean);
-    socketRef.current?.emit("create-conversation", {
-      type: "group",
-      name: newConvName || "Group Chat",
-      participants: [...new Set([userId, ...participantIds])],
-    }, (res: any) => {
-      if (res.success) { setCreateConvOpen(false); setNewConvName(""); setNewConvParticipant(""); fetchConversations(); }
-    });
+    try {
+      await fetch(`${API}/api/conversations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "group", name: newConvName || "Group Chat", participants: [...new Set([userId, ...participantIds])] }),
+      });
+      setCreateConvOpen(false);
+      setNewConvName("");
+      setNewConvParticipant("");
+      fetchConversations();
+    } catch {}
   }, [newConvName, newConvParticipant, userId, fetchConversations]);
-
-  const sendTyping = useCallback((isTyping: boolean) => {
-    if (selectedConvId) socketRef.current?.emit("typing", { conversationId: selectedConvId, isTyping });
-  }, [selectedConvId]);
 
   const openContactChat = useCallback((contact: Contact) => {
     const existing = conversations.find((c) => c.type === "direct" && c.participants.includes(contact.id) && c.participants.includes(userId));
@@ -499,97 +337,12 @@ export default function ChatPage() {
   }, [messages, msgSearch]);
 
   const selectedConv = conversations.find((c) => c.id === selectedConvId);
-  const typingInConv = typingUsers[selectedConvId || ""] || [];
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const getContactForUser = useCallback((conv: Conversation) => {
     const otherId = conv.participants.find((p) => p !== userId);
     return contacts.find((c) => c.id === otherId) || null;
   }, [contacts, userId]);
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // IN-CALL VIEW
-  // ═══════════════════════════════════════════════════════════════════════
-  if (inCall) {
-    return (
-      <div className="flex flex-1 flex-col h-full bg-gray-950 text-white">
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="size-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-sm font-medium">Meeting Active</span>
-            <Badge variant="outline" className="text-xs border-gray-700">{callParticipants.length + 1}</Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-gray-300" onClick={() => setShowCallChat(!showCallChat)}>
-              <MessageSquareIcon className="size-4" />
-            </Button>
-          </div>
-        </div>
-        <div className="flex-1 overflow-auto p-4">
-          <div className="grid gap-3 h-full" style={{ gridTemplateColumns: `repeat(${Math.min(callParticipants.length + 1, 4)}, 1fr)` }}>
-            <div className="relative rounded-xl overflow-hidden bg-gray-800 aspect-video min-h-[200px]">
-              <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-              <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                <Badge className="bg-black/60 text-white border-0 text-xs">You</Badge>
-                {isMuted && <MicOffIcon className="size-3 text-red-400" />}
-                {isHandRaised && <HandIcon className="size-3 text-yellow-400" />}
-              </div>
-            </div>
-            {callParticipants.map((p) => (
-              <div key={p.socketId} className="relative rounded-xl overflow-hidden bg-gray-800 aspect-video min-h-[200px]">
-                <div className="w-full h-full flex items-center justify-center">
-                  {p.isCameraOff ? <div className="size-16 rounded-full bg-gray-700 flex items-center justify-center text-xl font-bold">{p.name.charAt(0)}</div> : <video autoPlay playsInline className="w-full h-full object-cover" />}
-                </div>
-                <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                  <Badge className="bg-black/60 text-white border-0 text-xs">{p.name}</Badge>
-                  {p.isMuted && <MicOffIcon className="size-3 text-red-400" />}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center justify-center gap-4 px-4 py-4 bg-gray-900 border-t border-gray-800">
-          <Button variant={isMuted ? "destructive" : "secondary"} size="lg" onClick={toggleMute} className="rounded-full size-12 p-0">
-            {isMuted ? <MicOffIcon className="size-5" /> : <MicIcon className="size-5" />}
-          </Button>
-          <Button variant={isCameraOff ? "destructive" : "secondary"} size="lg" onClick={toggleCamera} className="rounded-full size-12 p-0">
-            {isCameraOff ? <VideoOffIcon className="size-5" /> : <VideoIcon className="size-5" />}
-          </Button>
-          <Button variant="secondary" size="lg" onClick={toggleScreen} className="rounded-full size-12 p-0">
-            {isScreenSharing ? <ScreenShareOffIcon className="size-5" /> : <ScreenShareIcon className="size-5" />}
-          </Button>
-          <Button variant="secondary" size="lg" onClick={toggleHand} className="rounded-full size-12 p-0">
-            <HandIcon className="size-5" />
-          </Button>
-          <Button variant="destructive" size="lg" onClick={leaveCall} className="rounded-full size-12 p-0">
-            <PhoneOffIcon className="size-5" />
-          </Button>
-        </div>
-        {showCallChat && (
-          <div className="fixed right-0 top-0 bottom-0 w-80 bg-gray-900 border-l border-gray-800 z-50 flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
-              <h3 className="font-semibold text-sm">Meeting Chat</h3>
-              <Button variant="ghost" size="sm" className="text-gray-400" onClick={() => setShowCallChat(false)}>✕</Button>
-            </div>
-            <ScrollArea className="flex-1 p-3">
-              {callChatMessages.map((msg, i) => (
-                <div key={i} className="mb-3">
-                  <span className="text-xs font-medium text-blue-400">{msg.userName}</span>
-                  <p className="text-sm text-gray-200">{msg.text}</p>
-                </div>
-              ))}
-            </ScrollArea>
-            <div className="p-3 border-t border-gray-800">
-              <div className="flex gap-2">
-                <Input placeholder="Type..." value={callChatInput} onChange={(e) => setCallChatInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") sendCallMessage(); }} className="bg-gray-800 border-gray-700 text-white" />
-                <Button size="sm" onClick={sendCallMessage}><SendIcon className="size-4" /></Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
 
   // ═══════════════════════════════════════════════════════════════════════
   // MAIN VIEW
@@ -607,7 +360,6 @@ export default function ChatPage() {
             <div className="flex items-center justify-between mb-3">
               <h1 className="text-lg font-bold">Chat</h1>
               <div className="flex items-center gap-1">
-                <Badge variant={socketConnected ? "default" : "destructive"} className="text-[10px]">{socketConnected ? "Online" : "Offline"}</Badge>
                 <Button variant="ghost" size="icon" className="size-8" onClick={() => setCreateConvOpen(true)}><PlusIcon className="size-4" /></Button>
               </div>
             </div>
@@ -623,7 +375,6 @@ export default function ChatPage() {
               <TabsList className="h-9 w-full">
                 <TabsTrigger value="chats" className="text-xs flex-1"><ChatIcon className="size-3.5 mr-1" /> Chats</TabsTrigger>
                 <TabsTrigger value="contacts" className="text-xs flex-1"><UsersIcon className="size-3.5 mr-1" /> Contacts</TabsTrigger>
-                <TabsTrigger value="calls" className="text-xs flex-1"><PhoneIcon className="size-3.5 mr-1" /> Calls</TabsTrigger>
                 <TabsTrigger value="notifications" className="text-xs flex-1 relative">
                   <BellIcon className="size-3.5 mr-1" /> Notif
                   {unreadCount > 0 && <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{unreadCount}</span>}
@@ -660,11 +411,7 @@ export default function ChatPage() {
                         </div>
                         <div className="flex items-center gap-1">
                           {conv.pinnedBy?.includes(userId) && <PinIcon className="size-3 text-muted-foreground shrink-0" />}
-                          {typingInConv.length > 0 && selectedConvId === conv.id ? (
-                            <span className="text-xs text-primary animate-pulse">typing...</span>
-                          ) : (
-                            <p className="text-xs text-muted-foreground truncate">{conv.lastMessage?.senderId === userId ? `You: ${conv.lastMessage?.text}` : conv.lastMessage?.text || "No messages yet"}</p>
-                          )}
+                          <p className="text-xs text-muted-foreground truncate">{conv.lastMessage?.senderId === userId ? `You: ${conv.lastMessage?.text}` : conv.lastMessage?.text || "No messages yet"}</p>
                         </div>
                       </div>
                       {(conv.unreadCount?.[userId] || 0) > 0 && (
@@ -689,7 +436,7 @@ export default function ChatPage() {
                 <>
                   <div className="px-4 py-2"><p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Staff ({filteredContacts.filter((c) => c.type === "employee").length})</p></div>
                   {filteredContacts.filter((c) => c.type === "employee").map((contact) => {
-                    const status = presences[contact.id] || contact.presence?.status || "offline";
+                    const status = contact.presence?.status || "offline";
                     return (
                       <div key={contact.id} onClick={() => openContactChat(contact)}
                         className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors border-b">
@@ -705,9 +452,6 @@ export default function ChatPage() {
                           <p className="text-[11px] text-muted-foreground truncate">{contact.role} {contact.department ? `· ${contact.department}` : ""}</p>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <Button variant="ghost" size="icon" className="size-7" onClick={(e) => { e.stopPropagation(); startCall("video"); }}>
-                            <VideoIcon className="size-3.5 text-muted-foreground" />
-                          </Button>
                           <Button variant="ghost" size="icon" className="size-7" onClick={(e) => { e.stopPropagation(); setShowProfile(true); setSelectedContact(contact); }}>
                             <InfoIcon className="size-3.5 text-muted-foreground" />
                           </Button>
@@ -728,35 +472,12 @@ export default function ChatPage() {
                             <p className="text-sm font-medium truncate">{contact.name}</p>
                             <p className="text-[11px] text-muted-foreground truncate">{contact.company || contact.email}</p>
                           </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <Button variant="ghost" size="icon" className="size-7" onClick={(e) => { e.stopPropagation(); startCall("video"); }}>
-                              <VideoIcon className="size-3.5 text-muted-foreground" />
-                            </Button>
-                          </div>
                         </div>
                       ))}
                     </>
                   )}
                 </>
               )}
-            </TabsContent>
-
-            {/* Calls Tab */}
-            <TabsContent value="calls" className="flex-1 overflow-auto m-0 p-3 space-y-2">
-              <Button className="w-full" onClick={() => startCall("video")}><VideoIcon className="size-4 mr-2" /> New Video Call</Button>
-              <Button variant="outline" className="w-full" onClick={() => startCall("audio")}><PhoneIcon className="size-4 mr-2" /> New Audio Call</Button>
-              <Separator className="my-3" />
-              <p className="text-xs text-muted-foreground font-medium">Recent Calls</p>
-              {meetings.filter((m) => m.isActive).map((m) => (
-                <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
-                  <div className="size-8 rounded-full bg-muted flex items-center justify-center"><PhoneIcon className="size-4 text-muted-foreground" /></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{m.title}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(m.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => joinCall(m.roomId)}><VideoIcon className="size-4" /></Button>
-                </div>
-              ))}
             </TabsContent>
 
             {/* Notifications Tab */}
@@ -794,13 +515,11 @@ export default function ChatPage() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <h2 className="text-sm font-semibold truncate">{contact?.name || selectedConv.name}</h2>
-                      {typingInConv.length > 0 ? <p className="text-xs text-primary animate-pulse">{typingInConv.join(", ")} typing...</p> : contact && <p className="text-xs text-muted-foreground">{contact.role}{contact.department ? ` · ${contact.department}` : ""}</p>}
+                      {contact && <p className="text-xs text-muted-foreground">{contact.role}{contact.department ? ` · ${contact.department}` : ""}</p>}
                     </div>
                   </>
                 ); })()}
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" className="size-8" onClick={() => startCall("audio")}><PhoneIcon className="size-4" /></Button>
-                  <Button variant="ghost" size="icon" className="size-8" onClick={() => startCall("video")}><VideoIcon className="size-4" /></Button>
                   <Button variant="ghost" size="icon" className="size-8" onClick={() => setShowMsgSearch(!showMsgSearch)}><SearchIcon className="size-4" /></Button>
                   <Button variant="ghost" size="icon" className="size-8" onClick={() => { const c = getContactForUser(selectedConv); if (c) { setSelectedContact(c); setShowProfile(true); } }}><InfoIcon className="size-4" /></Button>
                 </div>
@@ -862,9 +581,9 @@ export default function ChatPage() {
                   <Button variant="ghost" size="icon" className="size-9 shrink-0"><PaperclipIcon className="size-4" /></Button>
                   <Button variant="ghost" size="icon" className="size-9 shrink-0"><ImageIcon className="size-4" /></Button>
                   <Input placeholder="Type a message..." value={chatInput}
-                    onChange={(e) => { setChatInput(e.target.value); sendTyping(true); }}
+                    onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-                    onBlur={() => sendTyping(false)} className="flex-1" />
+                    className="flex-1" />
                   <Button variant="ghost" size="icon" className="size-9 shrink-0"><SmileIcon className="size-4" /></Button>
                   <Button size="icon" className="size-9 shrink-0" onClick={sendMessage} disabled={!chatInput.trim()}><SendIcon className="size-4" /></Button>
                 </div>
@@ -894,9 +613,9 @@ export default function ChatPage() {
               </Avatar>
               <h3 className="font-semibold">{selectedContact.name}</h3>
               <p className="text-sm text-muted-foreground">{selectedContact.role}</p>
-              <div className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs ${(presences[selectedContact.id] || selectedContact.presence?.status) === "online" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"}`}>
-                <div className={`size-1.5 rounded-full ${(presences[selectedContact.id] || selectedContact.presence?.status) === "online" ? "bg-green-500" : "bg-gray-400"}`} />
-                {(presences[selectedContact.id] || selectedContact.presence?.status) === "online" ? "Online" : "Offline"}
+              <div className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs ${selectedContact.presence?.status === "online" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                <div className={`size-1.5 rounded-full ${selectedContact.presence?.status === "online" ? "bg-green-500" : "bg-gray-400"}`} />
+                {selectedContact.presence?.status === "online" ? "Online" : "Offline"}
               </div>
               <Separator className="my-4" />
               <div className="space-y-3 text-left">
@@ -909,9 +628,6 @@ export default function ChatPage() {
               <div className="flex gap-2 mt-4">
                 <Button className="flex-1" onClick={() => { openContactChat(selectedContact); setShowProfile(false); }}>
                   <MessageSquareIcon className="size-4 mr-1" /> Message
-                </Button>
-                <Button variant="outline" className="flex-1" onClick={() => { startCall("video"); setShowProfile(false); }}>
-                  <VideoIcon className="size-4 mr-1" /> Call
                 </Button>
               </div>
             </div>

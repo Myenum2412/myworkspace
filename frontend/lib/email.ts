@@ -1,43 +1,52 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resendApiKey = process.env.RESEND_API_KEY || "";
-const mailFrom = process.env.MAIL_FROM || "MyWorkspace <onboarding@resend.dev>";
-const RESEND_TEST_SENDER = "onboarding@resend.dev";
+const smtpHost = process.env.SMTP_HOST || "";
+const smtpPort = parseInt(process.env.SMTP_PORT || "465", 10);
+const smtpUser = process.env.SMTP_USER || "";
+const smtpPass = process.env.SMTP_PASS || "";
+const mailFrom = process.env.MAIL_FROM || "MyWorkspace <noreply@myenum.in>";
 
 export type EmailSendResult = { success: boolean; emailStatus: "sent" | "failed" | "skipped"; error?: string };
 
+let transporter: nodemailer.Transporter | null = null;
+
+function getTransporter(): nodemailer.Transporter | null {
+  if (transporter) return transporter;
+  if (!smtpHost) return null;
+  transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpPort === 465,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
+    },
+  });
+  return transporter;
+}
+
 export async function sendEmailDirect(to: string, subject: string, htmlBody: string): Promise<EmailSendResult> {
-  if (!resendApiKey) {
-    const msg = "CRITICAL: RESEND_API_KEY not configured — email delivery skipped";
+  const transport = getTransporter();
+  if (!transport) {
+    const msg = "CRITICAL: SMTP not configured (SMTP_HOST missing) — email delivery skipped";
     console.error(`[email] ${msg}`);
     return { success: false, emailStatus: "skipped", error: msg };
   }
 
-  const resend = new Resend(resendApiKey);
-
-  // Try configured from address first, fall back to Resend test sender
-  let lastError: any;
-  const fromAddresses = [mailFrom, RESEND_TEST_SENDER];
-
-  for (const from of fromAddresses) {
-    const { data, error } = await resend.emails.send({
-      from,
+  try {
+    const info = await transport.sendMail({
+      from: mailFrom,
       to,
       subject,
       html: htmlBody,
     });
-
-    if (!error) {
-      console.log(`[email] Email sent to ${to} via Resend (from: ${from}, id: ${data?.id})`);
-      return { success: true, emailStatus: "sent" };
-    }
-    lastError = error;
-    console.warn(`[email] Failed to send via Resend "${from}" to ${to}:`, error.message);
+    console.log(`[email] Email sent to ${to} via SMTP (messageId: ${info.messageId})`);
+    return { success: true, emailStatus: "sent" };
+  } catch (error: any) {
+    const errMsg = `Failed to send email to ${to}: ${error.message || "unknown error"}`;
+    console.error(`[email] ${errMsg}`);
+    return { success: false, emailStatus: "failed", error: errMsg };
   }
-
-  const errMsg = `Failed to send email to ${to}: ${lastError?.message || "unknown error"}`;
-  console.error(`[email] ${errMsg}`);
-  return { success: false, emailStatus: "failed", error: errMsg };
 }
 
 export function buildEmployeeOnboardedHtml(
@@ -58,7 +67,7 @@ export function buildEmployeeOnboardedHtml(
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
     <div style="background:#ffffff;border-radius:12px;padding:40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
       <div style="text-align:center;margin-bottom:32px;">
-        <div style="display:inline-block;background:#10b981;color:#fff;width:48px;height:48px;border-radius:50%;line-height:48px;font-size:24px;">✓</div>
+        <div style="display:inline-block;background:#10b981;color:#fff;width:48px;height:48px;border-radius:50%;line-height:48px;font-size:24px;">&#10003;</div>
       </div>
       <h1 style="color:#1a1a2e;font-size:24px;text-align:center;margin:0 0 8px;">Welcome to ${workspaceName}</h1>
       <p style="color:#6b7280;font-size:14px;text-align:center;margin:0 0 32px;">Your account has been created successfully</p>
@@ -92,7 +101,7 @@ export function buildEmployeeOnboardedHtml(
       </div>
 
       <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:16px;margin:24px 0;">
-        <p style="color:#92400e;font-size:13px;margin:0;"><strong>⚠ Security Notice:</strong> Please change your temporary password after your first login.</p>
+        <p style="color:#92400e;font-size:13px;margin:0;"><strong>&#9888; Security Notice:</strong> Please change your temporary password after your first login.</p>
       </div>
 
       <h3 style="color:#1a1a2e;font-size:15px;margin:24px 0 12px;">Quick Start</h3>

@@ -8,7 +8,6 @@ import { Project } from "../lib/db/models/Project.js";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { uploadFile } from "../services/file.service.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { cacheManager } from "../lib/cache.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, optionalString, requireEnum, optionalArray, PROJECT_STATUSES, PROJECT_ACCESS } from "../lib/validate.js";
@@ -99,14 +98,6 @@ router.post("/", upload.single("attachment"), async (req: AuthRequest, res: Resp
     description: `Project "${name}" created`,
   });
 
-  socketIOManager.emitToOrg(orgId, "project:created", {
-    id: project.id,
-    orgId,
-    name,
-    status: project.status,
-    color: project.color,
-  });
-
   cacheManager.invalidatePattern(`projects:${orgId}`);
 
   const data = normalize(project);
@@ -155,13 +146,6 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   ]);
   if (!result) throw new AppError(404, "Project not found");
 
-  socketIOManager.emitToOrg(existing.orgId, "project:updated", {
-    id: req.params.id,
-    orgId: existing.orgId,
-    ...updates,
-    updatedAt: result.updatedAt,
-  });
-
   cacheManager.invalidatePattern(`projects:${existing.orgId}`);
   cacheManager.invalidatePattern(`project:${req.params.id}`);
 
@@ -186,11 +170,6 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
       description: `Project "${existing.name}" deleted`,
     }),
   ]);
-
-  socketIOManager.emitToOrg(existing.orgId, "project:deleted", {
-    id: req.params.id,
-    orgId: existing.orgId,
-  });
 
   cacheManager.invalidatePattern(`projects:${existing.orgId}`);
   cacheManager.invalidatePattern(`project:${req.params.id}`);

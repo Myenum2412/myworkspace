@@ -6,7 +6,6 @@ import { Trash2Icon, LayoutDashboardIcon, Table2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/components/projects/project-types";
 import { PROJECT_COLORS } from "@/components/projects/project-types";
-import { getSocketIO } from "@/lib/socketio-client";
 import { ProjectDetailedView } from "./project-detailed-view";
 import ProjectList from "@/components/projects/project-list";
 import ProjectsDashboard from "./projects-dashboard";
@@ -95,34 +94,6 @@ export default function ProjectsInteractive({
       })
       .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (!orgId) return;
-    let alive = true;
-    const sock: any = getSocketIO();
-      sock.on("project:created", (d: any) => {
-        const p = d?.payload ?? d;
-        if (!orgId || p.orgId !== orgId) return;
-        setProjects((prev) => (prev.some((x) => x.id === p.id) ? prev : [p, ...prev]));
-      });
-      sock.on("project:updated", (d: any) => {
-        const p = d?.payload ?? d;
-        if (!orgId || p.orgId !== orgId) return;
-        setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, ...p } : x)));
-      });
-      sock.on("project:deleted", (d: any) => {
-        const { id } = d?.payload ?? d;
-        setProjects((prev) => prev.filter((x) => x.id !== id));
-      });
-    return () => {
-      alive = false;
-      if (sock) {
-        sock.off("project:created");
-        sock.off("project:updated");
-        sock.off("project:deleted");
-      }
-    };
-  }, [orgId]);
 
   async function handleSubmit() {
     if (!projectName || !selectedClient) return;

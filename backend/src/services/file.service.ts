@@ -7,7 +7,6 @@ import { StorageQuota } from "../lib/db/models/StorageQuota.js";
 import { getStorageProvider, computeChecksum } from "../lib/storage/providers.js";
 import { env } from "../config/env.js";
 import { AppError } from "../middleware/error.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { recordAuditLog } from "./audit.service.js";
 import { cacheManager, CacheKeys } from "../lib/cache.js";
 import { validateFileMagicBytes, validateFileExtension } from "./validation.service.js";
@@ -109,10 +108,6 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
     description: `File "${originalName}" uploaded (${(size / 1024).toFixed(1)} KB)`,
   });
 
-  socketIOManager.emitToOrg(orgId, "file:uploaded", {
-    fileId, orgId, folderId: folderId || null, clientId: clientId || null,
-  });
-
   invalidateFileCaches(orgId);
 
   return { kind: "created", fileId, isDuplicate: false };
@@ -146,7 +141,6 @@ export async function softDeleteFile(fileId: string, userId: string): Promise<vo
     description: `File "${file.originalName}" moved to trash`,
   });
 
-  socketIOManager.emitToOrg(file.orgId, "file:deleted", { fileId, action: "soft_delete" });
   invalidateFileCaches(file.orgId);
 }
 
@@ -166,7 +160,6 @@ export async function restoreFile(fileId: string, userId: string): Promise<void>
     description: `File "${file.originalName}" restored from trash`,
   });
 
-  socketIOManager.emitToOrg(file.orgId, "file:updated", { fileId, action: "restored" });
   invalidateFileCaches(file.orgId);
 }
 
@@ -200,7 +193,6 @@ export async function permanentDeleteFile(fileId: string, userId: string): Promi
     description: `File "${file.originalName}" permanently deleted`,
   });
 
-  socketIOManager.emitToOrg(file.orgId, "file:deleted", { fileId, action: "permanent_delete" });
   invalidateFileCaches(file.orgId);
 }
 
@@ -236,10 +228,6 @@ export async function createFileVersion(fileId: string, userId: string, buffer: 
     description: `Version ${versionNumber} uploaded for "${file.originalName}"`,
   });
 
-  socketIOManager.emitToOrg(file.orgId, "file:updated", {
-    fileId: file.id, action: "version_uploaded", versionNumber,
-  });
-
   invalidateFileCaches(file.orgId);
 
   return { versionId, versionNumber };
@@ -261,10 +249,6 @@ export async function toggleFileLock(fileId: string, userId: string, lock: boole
     { id: fileId },
     { isLocked: lock, lockedBy: lock ? userId : null },
   );
-
-  socketIOManager.emitToOrg(file.orgId, "file:updated", {
-    fileId, action: lock ? "locked" : "unlocked", lockedBy: lock ? userId : undefined,
-  });
 
   invalidateFileCaches(file.orgId);
   return lock;
@@ -311,10 +295,6 @@ export async function duplicateFile(fileId: string, userId: string): Promise<str
     storageProvider: file.storageProvider, category: file.category,
     description: file.description, tags: file.tags,
     checksum: file.checksum, currentVersion: 1,
-  });
-
-  socketIOManager.emitToOrg(file.orgId, "file:uploaded", {
-    fileId: newId, orgId: file.orgId, folderId: file.folderId,
   });
 
   invalidateFileCaches(file.orgId);

@@ -11,7 +11,6 @@ import { Organization } from "../lib/db/models/Organization.js";
 import { Project } from "../lib/db/models/Project.js";
 import { Task } from "../lib/db/models/Task.js";
 import { AppError } from "../middleware/error.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { cacheManager } from "../lib/cache.js";
 import { sendClientWelcomeEmail } from "../lib/mail/index.js";
 import { eventProducer } from "../lib/queue/producer.js";
@@ -244,11 +243,6 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
     session.endSession();
   }
 
-  socketIOManager.emitToOrg(orgId, "client:created", {
-    id: clientId,
-    orgId,
-    name,
-  });
   cacheManager.invalidatePattern(`clients:${orgId}`);
 
   // Send welcome email with queue-backed reliability
@@ -324,12 +318,6 @@ export async function updateClient(orgId: string, clientId: string, adminId: str
     description: `Client ${client.name} updated by ${adminEmail}`,
   });
 
-  socketIOManager.emitToOrg(orgId, "client:updated", {
-    id: clientId,
-    orgId,
-    name: client.name,
-    updatedAt: client.updatedAt ?? new Date(),
-  });
   cacheManager.invalidatePattern(`clients:${orgId}`);
   cacheManager.invalidatePattern(`client:${clientId}`);
 
@@ -367,10 +355,6 @@ export async function deleteClient(orgId: string, clientId: string, adminId: str
     description: `Client ${client.name} deleted (including ${projects.length} project(s) and associated tasks)`,
   });
 
-  socketIOManager.emitToOrg(orgId, "client:deleted", {
-    id: clientId,
-    orgId,
-  });
   cacheManager.invalidatePattern(`clients:${orgId}`);
   cacheManager.invalidatePattern(`client:${clientId}`);
 }

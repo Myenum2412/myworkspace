@@ -2,14 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { getSocketIO, disconnectSocketIO, type SessionStatus } from "@/lib/socketio-client";
 
 interface ActiveSession {
   sessionId: string;
   loginTime: string;
-  currentStatus: SessionStatus;
+  currentStatus: "online" | "break" | "offline";
   totalBreakDuration: number;
-  statusTransitions: Array<{ status: SessionStatus; timestamp: string }>;
+  statusTransitions: Array<{ status: string; timestamp: string }>;
 }
 
 interface TodaySummary {
@@ -80,51 +79,14 @@ export function useSessionTracker() {
     };
     init();
 
-    // Connect Socket.IO synchronously — attaching `.on` immediately is safe;
-    // the socket queues local events until the transport is open.
-    const sock = getSocketIO();
-
-    sock.on("session:started", (data: { sessionId: string; loginTime: string }) => {
-      setActiveSession({
-        sessionId: data.sessionId,
-        loginTime: data.loginTime,
-        currentStatus: "online",
-        totalBreakDuration: 0,
-        statusTransitions: [{ status: "online", timestamp: data.loginTime }],
-      });
-      setElapsed(0);
+    // Poll session status every 30 seconds
+    const pollInterval = setInterval(() => {
+      fetchActiveSession();
       fetchTodaySummary();
-    });
-
-    sock.on("session:status:updated", (data: any) => {
-      setActiveSession((prev) => {
-        if (!prev) return prev;
-        const newTransitions = [
-          ...prev.statusTransitions,
-          { status: data.status, timestamp: data.timestamp },
-        ];
-        if (data.status === "online" && data.previousStatus === "break") {
-          setBreakElapsed(0);
-        }
-        return {
-          ...prev,
-          currentStatus: data.status,
-          statusTransitions: newTransitions,
-        };
-      });
-    });
-
-    sock.on("session:ended", () => {
-      setActiveSession(null);
-      setElapsed(0);
-      setBreakElapsed(0);
-      fetchTodaySummary();
-    });
+    }, 30_000);
 
     return () => {
-      sock.off("session:started");
-      sock.off("session:status:updated");
-      sock.off("session:ended");
+      clearInterval(pollInterval);
     };
   }, [session?.user?.id, fetchActiveSession, fetchTodaySummary]);
 
@@ -160,40 +122,32 @@ export function useSessionTracker() {
   const startBreak = useCallback(async () => {
     if (!activeSession) return;
     try {
-      const res = await fetch(`/api/sessions/${activeSession.sessionId}/status`, {
+      await fetch(`/api/sessions/${activeSession.sessionId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "break" }),
         credentials: "include",
       });
-      const json = await res.json();
-      if (json.success) {
-        const sock = getSocketIO();
-        sock.emit("session:break:start", { sessionId: activeSession.sessionId });
-      }
+      await fetchActiveSession();
     } catch (err) {
       console.error("Failed to start break:", err);
     }
-  }, [activeSession]);
+  }, [activeSession, fetchActiveSession]);
 
   const endBreak = useCallback(async () => {
     if (!activeSession) return;
     try {
-      const res = await fetch(`/api/sessions/${activeSession.sessionId}/status`, {
+      await fetch(`/api/sessions/${activeSession.sessionId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "online" }),
         credentials: "include",
       });
-      const json = await res.json();
-      if (json.success) {
-        const sock = getSocketIO();
-        sock.emit("session:break:end", { sessionId: activeSession.sessionId });
-      }
+      await fetchActiveSession();
     } catch (err) {
       console.error("Failed to end break:", err);
     }
-  }, [activeSession]);
+  }, [activeSession, fetchActiveSession]);
 
   const formatDuration = (ms: number) => {
     const totalSec = Math.floor(ms / 1000);

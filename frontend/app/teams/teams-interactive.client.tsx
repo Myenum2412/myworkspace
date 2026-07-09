@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { type Team } from "./columns";
 import { type OrgMember, type TeamDetail } from "@/components/teams/team-types";
-import { getSocketIO } from "@/lib/socketio-client";
 import { TeamList } from "@/components/teams/team-list";
 import { TeamForm } from "@/components/teams/team-form";
 import { TeamMembers } from "@/components/teams/team-members";
@@ -39,26 +38,6 @@ export default function TeamsInteractive({ teams: initialTeams, members: initial
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to fetch teams");
     }
-  }, []);
-
-  useEffect(() => {
-    let alive = true;
-    const sock: any = getSocketIO();
-    sock.on("team:created", (d: any) => {
-      const t = d?.payload ?? d;
-      setTeams((prev) => (prev.some((x) => x.id === t.id) ? prev : [{ ...t, memberCount: t.memberCount ?? 0 }, ...prev]));
-    });
-    sock.on("team:deleted", (d: any) => {
-      const { id } = d?.payload ?? d;
-      setTeams((prev) => prev.filter((x) => x.id !== id));
-    });
-    return () => {
-      alive = false;
-      if (sock) {
-        sock.off("team:created");
-        sock.off("team:deleted");
-      }
-    };
   }, []);
 
   function openCreateForm() {

@@ -7,7 +7,6 @@ import { FileShare } from "../lib/db/models/FileShare.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { verifyOrgAccess } from "../lib/org-utils.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { cacheManager, CacheKeys } from "../lib/cache.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
@@ -239,7 +238,6 @@ router.post("/:id/rollback", async (req: AuthRequest, res: Response) => {
     description: `File rolled back to version ${version.versionNumber}`,
   });
 
-  socketIOManager.emitToOrg(file.orgId, "file:updated", { fileId: file.id, action: "rolled_back", versionNumber: version.versionNumber });
   invalidateFileCaches(file.orgId);
 
   res.json({ success: true });
@@ -356,7 +354,6 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
     description: `File "${file.originalName}" metadata updated`,
   });
 
-  socketIOManager.emitToOrg(file.orgId, "file:updated", { fileId: file.id, action: "metadata_updated", updates: Object.keys(update) });
   invalidateFileCaches(file.orgId);
 
   res.json({ success: true });
@@ -383,7 +380,6 @@ router.post("/bulk/delete", async (req: AuthRequest, res: Response) => {
     description: `${fileIds.length} files moved to trash`,
   });
 
-  socketIOManager.emitToOrg(orgIds[0], "file:deleted", { fileIds, action: "bulk_soft_delete" });
   invalidateFileCaches(orgIds[0]);
 
   res.json({ success: true, deleted: fileIds.length });
@@ -402,7 +398,6 @@ router.post("/bulk/restore", async (req: AuthRequest, res: Response) => {
     { deletedAt: null, deletedBy: null },
   );
 
-  socketIOManager.emitToOrg(files[0].orgId, "file:updated", { fileIds, action: "bulk_restored" });
   invalidateFileCaches(files[0].orgId);
 
   res.json({ success: true, restored: fileIds.length });
@@ -421,7 +416,6 @@ router.post("/bulk/move", async (req: AuthRequest, res: Response) => {
     { folderId: targetFolderId || null },
   );
 
-  socketIOManager.emitToOrg(files[0].orgId, "file:updated", { fileIds, action: "bulk_moved", targetFolderId });
   invalidateFileCaches(files[0].orgId);
 
   res.json({ success: true, moved: fileIds.length });
@@ -441,7 +435,6 @@ router.post("/bulk/tag", async (req: AuthRequest, res: Response) => {
     await FileAttachment.updateMany({ id: { $in: fileIds } }, { $addToSet: { tags: { $each: tags } } });
   }
 
-  socketIOManager.emitToOrg(files[0].orgId, "file:updated", { fileIds, action: "bulk_tagged" });
   invalidateFileCaches(files[0].orgId);
 
   res.json({ success: true });
@@ -481,7 +474,6 @@ router.post("/bulk/permanent", async (req: AuthRequest, res: Response) => {
     description: `${fileIds.length} files permanently deleted`,
   });
 
-  socketIOManager.emitToOrg(files[0].orgId, "file:deleted", { fileIds, action: "bulk_permanent_delete" });
   invalidateFileCaches(files[0].orgId);
 
   res.json({ success: true, deleted: fileIds.length });

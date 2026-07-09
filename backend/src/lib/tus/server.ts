@@ -6,7 +6,6 @@ import { env } from "../../config/env.js";
 import { UploadSession } from "../db/models/UploadSession.js";
 import { computeChecksum } from "../storage/providers.js";
 import { finalizeUpload } from "../uploads/upload-orchestrator.js";
-import { socketIOManager } from "../socketio/index.js";
 import { validateFileMagicBytes } from "../../services/validation.service.js";
 import { logger } from "../logger/index.js";
 
@@ -179,19 +178,12 @@ export function getTusServer(): TusServer {
           { tusId },
           { status: "finalized", fileId: result.fileId, completedAt: new Date() },
         );
-        socketIOManager.emitToOrg(session.orgId, "file:uploaded", {
-          fileId: result.fileId, orgId: session.orgId,
-          folderId: session.folderId, clientId: session.clientId,
-        });
         logger.info({ tusId, fileId: result.fileId }, "TUS upload finalized");
       } else {
         await UploadSession.updateOne(
           { tusId },
           { status: "duplicate", fileId: result.fileId, completedAt: new Date() },
         );
-        socketIOManager.emitToOrg(session.orgId, "file:uploaded", {
-          fileId: result.fileId, orgId: session.orgId, duplicate: true,
-        });
       }
 
       for (const p of [tempPath, infoPath]) {

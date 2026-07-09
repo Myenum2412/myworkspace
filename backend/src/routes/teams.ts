@@ -6,7 +6,6 @@ import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, optionalString } from "../lib/validate.js";
 
@@ -256,12 +255,6 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     createdBy: req.user!.userId,
   });
 
-  socketIOManager.emitToOrg(orgId, "team:created", {
-    id: team._id.toString(),
-    orgId,
-    name: team.name,
-  });
-
   res.status(201).json({ success: true, data: { id: team._id.toString(), name: team.name } });
 });
 
@@ -293,11 +286,6 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
     TeamMember.deleteMany({ teamId: team._id }),
     Team.findByIdAndDelete(req.params.id),
   ]);
-
-  socketIOManager.emitToOrg(team.orgId.toString(), "team:deleted", {
-    id: req.params.id,
-    orgId: team.orgId.toString(),
-  });
 
   res.json({ success: true });
 });

@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, Loader2, ChevronLeftIcon } from "lucide-react";
-import { getSocketIO } from "@/lib/socketio-client";
 import type { Client } from "@/app/clients/columns";
 import type { Credentials } from "@/components/clients/client-types";
 import { ClientList } from "@/components/clients/client-list";
@@ -51,31 +50,6 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
         })
         .catch(() => {}),
     ]).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    let alive = true;
-    const sock: any = getSocketIO();
-    sock.on("client:created", (d: any) => {
-      const c = d?.payload ?? d;
-      setClients((prev) => (prev.some((x) => x.id === c.id) ? prev : [c, ...prev]));
-    });
-    sock.on("client:updated", (d: any) => {
-      const c = d?.payload ?? d;
-      setClients((prev) => prev.map((x) => (x.id === c.id ? { ...x, ...c } : x)));
-    });
-    sock.on("client:deleted", (d: any) => {
-      const { id } = d?.payload ?? d;
-      setClients((prev) => prev.filter((x) => x.id !== id));
-    });
-    return () => {
-      alive = false;
-      if (sock) {
-        sock.off("client:created");
-        sock.off("client:updated");
-        sock.off("client:deleted");
-      }
-    };
   }, []);
 
   function handleClientCreated(_client: Client, creds?: Credentials) {

@@ -4,7 +4,6 @@ import { User } from "../lib/db/models/User.js";
 import mongoose from "mongoose";
 import { AppError } from "../middleware/error.js";
 import { recordAuditLog } from "./audit.service.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { requireString, optionalString, requireEnum, TASK_STATUSES, TASK_PRIORITIES } from "../lib/validate.js";
 import type { TaskStatus, TaskPriority } from "../lib/validate.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
@@ -231,22 +230,6 @@ export async function createTask(data: {
   }
   const creatorUser = await User.findOne({ id: userId }).lean().catch(() => null);
 
-  socketIOManager.emitToOrg(orgId, "task:created", {
-    id: task._id.toString(),
-    _id: task._id.toString(),
-    orgId,
-    title,
-    status: task.status,
-    priority: task.priority,
-    assigneeId: targetAssigneeId,
-    assigneeName: assigneeUser?.name || "",
-    assigneeAvatar: assigneeUser?.image || "",
-    creatorId: userId,
-    creatorName: creatorUser?.name || "",
-    dueDate: task.dueDate || null,
-    createdAt: task.createdAt,
-  });
-
   if (task.assigneeId && task.assigneeId !== userId) {
     notifyTaskAssigned(
       { id: task._id.toString(), title },
@@ -311,17 +294,6 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
     entityType: "task",
     entityId: id,
     description: `Task updated: ${status ? `status changed to ${status}` : title ? "title updated" : ""}`,
-  });
-
-  socketIOManager.emitToOrg(existing.orgId.toString(), "task:updated", {
-    id,
-    _id: id,
-    orgId: existing.orgId.toString(),
-    title: updated?.title,
-    status: updated?.status,
-    priority: updated?.priority,
-    assigneeId: updated?.assigneeId?.toString(),
-    updatedAt: updated?.updatedAt ?? new Date(),
   });
 
   const newAssigneeId = assigneeId !== undefined ? assigneeId : existing.assigneeId?.toString();
@@ -409,10 +381,6 @@ export async function deleteTask(id: string, userId: string, scope?: string): Pr
     description: `Task deleted`,
   });
 
-  socketIOManager.emitToOrg(existing.orgId.toString(), "task:deleted", {
-    id,
-    orgId: existing.orgId.toString(),
-  });
 }
 
 export async function batchUpdateStatus(taskIds: string[], status: TaskStatus, userId: string): Promise<{ matched: number; modified: number }> {
@@ -434,11 +402,6 @@ export async function batchUpdateStatus(taskIds: string[], status: TaskStatus, u
 
   const result = await Task.bulkWrite(bulkOps);
 
-  socketIOManager.emitToOrg(userOrgId, "task:batch-updated", {
-    ids: tasks.map((t) => t._id.toString()),
-    status,
-  });
-
   return {
     matched: result.matchedCount,
     modified: result.modifiedCount,
@@ -454,13 +417,6 @@ export async function updateTaskStatus(id: string, status: TaskStatus, userId: s
   if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to modify this task");
 
   await Task.findByIdAndUpdate(id, { status });
-
-  socketIOManager.emitToOrg(userOrgId, "task:updated", {
-    id,
-    orgId: userOrgId,
-    status,
-    updatedAt: new Date(),
-  });
 
   if (existing.assigneeId?.toString() && existing.assigneeId.toString() !== userId) {
     const [updater, assigneeUser] = await Promise.all([

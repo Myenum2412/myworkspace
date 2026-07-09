@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,21 +16,32 @@ import {
 import { ViewToggle } from "@/components/view-toggle";
 import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
-import { Task, useRealtimeTasks } from "@/hooks/use-realtime-tasks";
-import { getSocketIO } from "@/lib/socketio-client";
 import { toast } from "sonner";
 import { perfLog, perfNow } from "@/lib/perf";
 
 
 
-// Local UI shape for the detailed view. We keep the hook's Task as the source
-// of truth for the list and coerce at the small boundary where these are rendered.
-type UiTask = Task;
+type UiTask = {
+  _id: string;
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: string;
+  assigneeId?: string;
+  assigneeName?: string;
+  assigneeAvatar?: string;
+  creatorId?: string;
+  creatorName?: string;
+  orgId: string;
+  teamId?: string;
+  dueDate?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+};
 
 export type AllTasksProps = {
-  /** SSR-fetched org tasks (assignee/creator already resolved server-side). */
-  initialTasks: Task[];
-  /** The resolved org id for the active user. */
+  initialTasks: UiTask[];
   orgId: string;
 };
 
@@ -42,10 +53,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
 
-  // Seed React Query with the SSR payload. The realtime hook specs the key
-  // ["tasks", orgId]; pre-populating it means the hook's fetcher (which would
-  // hit /api/tasks) short-circuits on warm cache. useMemo keeps the key stable
-  // across re-renders so the seed effect runs exactly once.
+  // Seed React Query with the SSR payload.
   const queryKey = useMemo(() => ["tasks", orgId] as const, [orgId]);
   const seeded = useRef(false);
   useEffect(() => {
@@ -54,19 +62,44 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
     queryClient.setQueryData(queryKey, initialTasks);
   }, [queryClient, queryKey, orgId, initialTasks]);
 
-  // Connect the shared socket once. The realtime hook's per-event subscriptions
-  // deltas keep the list live across clients for the lifetime of the page.
-  useEffect(() => {
-    getSocketIO();
-  }, []);
+  const { data: tasks = [], refetch } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!orgId) return [];
+      try {
+        const res = await fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
+        if (!res.ok) return [];
+        const d = await res.json();
+        return d.data || [];
+      } catch { return []; }
+    },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    initialData: initialTasks,
+  });
 
-  const { data: tasks, set: setTasks } = useRealtimeTasks(orgId);
+  // Auto-refresh on window focus
+  useEffect(() => {
+    const handler = () => refetch();
+    window.addEventListener("focus", handler);
+    return () => window.removeEventListener("focus", handler);
+  }, [refetch]);
+
+  const setTasks = useCallback(
+    (updater: UiTask[] | ((prev: UiTask[]) => UiTask[])) => {
+      queryClient.setQueryData(queryKey, (prev: UiTask[] | undefined) => {
+        const current = prev ?? [];
+        return typeof updater === "function" ? updater(current) : updater;
+      });
+    },
+    [queryClient, queryKey],
+  );
 
   // Status-summary cards — single memoized pass over the list.
   const summary = useMemo(() => {
     const t0 = perfNow();
     const init = { todo: 0, assigned: 0, in_progress: 0, review: 0, done: 0, cancelled: 0 };
-    const counts = tasks.reduce((acc, t) => {
+    const counts = tasks.reduce((acc: typeof init, t: UiTask) => {
       if (t.status === "todo") acc.todo++;
       else if (t.status === "assigned") acc.assigned++;
       else if (t.status === "in_progress") acc.in_progress++;
@@ -89,11 +122,11 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
         body: JSON.stringify({ status: newStatus }),
       });
     } catch {
-      setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: tasks.find((x) => x._id === taskId)?.status || t.status } : t));
+      setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: tasks.find((x: UiTask) => x._id === taskId)?.status || t.status } : t));
     }
   }, [setTasks, tasks]);
 
-  const handleDelete = useCallback(async (t: Task) => {
+  const handleDelete = useCallback(async (t: UiTask) => {
     if (!confirm("Are you sure you want to delete this task?")) return;
     const t0 = perfNow();
     try {
@@ -200,7 +233,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
               data={tasks}
               onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
               onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(true); }}
-              onDelete={(t) => handleDelete(t as Task)}
+              onDelete={(t) => handleDelete(t as UiTask)}
               searchPlaceholder="Search all tasks..."
               emptyMessage="No tasks found."
               label="task"
@@ -222,7 +255,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
               task={selectedTask}
               editable
               onTaskUpdate={(updated) => {
-                setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as unknown as Task) : t));
+                setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
               }}
               onClose={() => { setViewOpen(false); setSelectedTask(null); }}
             />

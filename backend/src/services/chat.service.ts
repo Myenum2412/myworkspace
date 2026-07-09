@@ -1,5 +1,4 @@
 import { Message, IMessage } from "../lib/db/models/Message.js";
-import { socketIOManager } from "../lib/socketio/index.js";
 import { v4 as uuid } from "uuid";
 
 export interface SendMessageParams {
@@ -26,8 +25,6 @@ export async function sendMessage(params: SendMessageParams): Promise<IMessage> 
   });
 
   const populated = await Message.findById(message._id).lean();
-
-  socketIOManager.emitToOrg(params.orgId, "chat:message", populated);
 
   return message;
 }
@@ -78,11 +75,6 @@ export async function markConversationRead(params: MarkReadParams) {
     },
   );
 
-  socketIOManager.emitToOrg(params.orgId, "chat:read", {
-    conversationId: params.conversationId,
-    userId: params.userId,
-    readAt: now.toISOString(),
-  });
 }
 
 export async function getUnreadCount(orgId: string, userId: string) {

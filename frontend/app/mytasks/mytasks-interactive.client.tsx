@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, ListTodoIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,18 +16,30 @@ import {
 import { ViewToggle } from "@/components/view-toggle";
 import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
-import { Task, useRealtimeTasks } from "@/hooks/use-realtime-tasks";
 import { toast } from "sonner";
-import { getSocketIO } from "@/lib/socketio-client";
 
-type UiTask = Task;
+type UiTask = {
+  _id: string;
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: string;
+  assigneeId?: string;
+  assigneeName?: string;
+  assigneeAvatar?: string;
+  creatorId?: string;
+  creatorName?: string;
+  orgId: string;
+  teamId?: string;
+  dueDate?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+};
 
 export type MyTasksProps = {
-  /** SSR-fetched org tasks (assignee/creator already resolved server-side). */
-  initialTasks: Task[];
-  /** The resolved org id for the active user. */
+  initialTasks: UiTask[];
   orgId: string;
-  /** The resolved user id for the active user. */
   userId: string;
 };
 
@@ -39,8 +51,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
 
-  // Seed React Query with the SSR payload so the realtime hook's fetcher
-  // short-circuits on warm cache.
+  // Seed React Query with the SSR payload.
   const queryKey = useMemo(() => ["tasks", orgId] as const, [orgId]);
   const seeded = useRef(false);
   useEffect(() => {
@@ -49,33 +60,59 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
     queryClient.setQueryData(queryKey, initialTasks);
   }, [queryClient, queryKey, orgId, initialTasks]);
 
-  // Connect the shared socket once.
-  useEffect(() => {
-    getSocketIO();
-  }, []);
+  const { data: tasks = [], refetch } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!orgId) return [];
+      try {
+        const res = await fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
+        if (!res.ok) return [];
+        const d = await res.json();
+        return d.data || [];
+      } catch { return []; }
+    },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    initialData: initialTasks,
+  });
 
-  const { data: tasks, set: setTasks } = useRealtimeTasks(orgId);
+  // Auto-refresh on window focus
+  useEffect(() => {
+    const handler = () => refetch();
+    window.addEventListener("focus", handler);
+    return () => window.removeEventListener("focus", handler);
+  }, [refetch]);
+
+  const setTasks = useCallback(
+    (updater: UiTask[] | ((prev: UiTask[]) => UiTask[])) => {
+      queryClient.setQueryData(queryKey, (prev: UiTask[] | undefined) => {
+        const current = prev ?? [];
+        return typeof updater === "function" ? updater(current) : updater;
+      });
+    },
+    [queryClient, queryKey],
+  );
 
   // Filter to the current user's assigned tasks.
   const myTasks = useMemo(
-    () => (userId ? tasks.filter((t) => t.assigneeId === userId) : tasks),
+    () => (userId ? tasks.filter((t: UiTask) => t.assigneeId === userId) : tasks),
     [tasks, userId],
   );
 
   const summary = useMemo(() => {
     const init = { todo: 0, in_progress: 0, review: 0, done: 0, cancelled: 0 };
-    return myTasks.reduce((acc, t) => {
+    return myTasks.reduce((acc: typeof init, t: UiTask) => {
       if (t.status in init) acc[t.status as keyof typeof init]++;
       return acc;
     }, init);
   }, [myTasks]);
 
   const handleTaskUpdate = useCallback((updated: UiTask) => {
-    setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as unknown as Task) : t));
+    setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
   }, [setTasks]);
 
   const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
-    setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } as unknown as Task : t));
+    setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
     try {
       await fetch(`/api/tasks/${taskId}`, {
         method: "PATCH",
