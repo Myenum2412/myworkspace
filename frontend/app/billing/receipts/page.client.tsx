@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { TableHead } from "@/components/ui/table";
 import { toast } from "sonner";
 
 type ReceiptStatus = "paid" | "refunded" | "pending" | "failed" | "cancelled";
