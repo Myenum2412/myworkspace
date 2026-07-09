@@ -12,7 +12,6 @@ import {
   Building2Icon,
   FolderKanbanIcon,
   FlagIcon,
-  CheckSquareIcon,
   UploadCloudIcon,
   UsersIcon,
   AlignLeftIcon,
@@ -26,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { Switch } from "@/components/ui/switch";
 import { BlogEditor } from "@/components/ui/blog-editor";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -113,26 +111,20 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
   const [selectedAssigneeType, setSelectedAssigneeType] = useState<AssigneeType | null>(null);
-  const [isRepeatedTask, setIsRepeatedTask] = useState(false);
-  const [repeatFrequency, setRepeatFrequency] = useState<string | null>(null);
-  const [repeatStartDate, setRepeatStartDate] = useState<Date | undefined>(undefined);
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [localTaskDefs, setLocalTaskDefs] = useState<TaskDefinition[]>([]);
-  const [taskStatus, setTaskStatus] = useState("todo");
 
   const [employees, setEmployees] = useState<Array<{ id: string; name: string; role: string }>>([]);
   const [teams, setTeams] = useState<TeamOption[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
   const [dueDateOpen, setDueDateOpen] = useState(false);
-  const [repeatStartDateOpen, setRepeatStartDateOpen] = useState(false);
   const [userOrgId, setUserOrgId] = useState("");
-
-  const [showTeamAsAssignee, setShowTeamAsAssignee] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -170,9 +162,6 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
         const projectClientNames = [...new Set(mappedProjects.map((p: { client: string }) => p.client).filter(Boolean))];
         setClientList([...new Set([...clientNames, ...projectClientNames])]);
 
-        const settings = settingsRes?.data;
-        setShowTeamAsAssignee(!!settings?.team?.showTeamAsAssignee);
-
         const tasksArr = Array.isArray(tasksRes?.data) ? tasksRes.data : [];
         const savedDefs = tasksArr
           .filter((t: any) => t.isSaved)
@@ -198,14 +187,11 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
     setDueDate(undefined);
     setSelectedAssignee(null);
     setSelectedAssigneeType(null);
-    setIsRepeatedTask(false);
-    setRepeatFrequency(null);
-    setRepeatStartDate(undefined);
+    setSelectedTeam("");
     setUploadedFiles([]);
     setFormError("");
     setIsSaved(false);
     setIsActive(true);
-    setTaskStatus("todo");
   };
 
   const handleClose = () => {
@@ -230,12 +216,13 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
         dueDate: dueDate?.toISOString(),
         isSaved,
         isActive,
-        status: taskStatus,
+        status: "todo",
       };
-      if (selectedAssignee && selectedAssigneeType === "staff") {
+      if (selectedAssignee) {
         payload.assigneeId = selectedAssignee;
-      } else if (selectedAssignee && selectedAssigneeType === "team") {
-        payload.teamId = selectedAssignee;
+      }
+      if (selectedTeam) {
+        payload.teamId = selectedTeam;
       }
       await taskService.createTask(payload as unknown as Partial<Task>);
 
@@ -253,8 +240,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !isSubmitting) onClose(); }}>
       <DialogContent
-        className="flex flex-col w-auto h-auto max-w-[1100px] max-h-[95vh] p-0 gap-0 bg-white rounded-[20px] border border-[#E5E7EB] shadow-2xl"
-        style={{ boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)" }}
+        className="flex flex-col w-auto h-auto max-w-[1200px] max-h-[95vh] p-0 gap-0 bg-white rounded-lg border border-[#E5E7EB]"
       >
         {/* ─── Premium Header ─── */}
         <div className="shrink-0 flex items-start justify-between px-8 pt-8 pb-4">
@@ -340,8 +326,8 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                 />
               </FormField>
 
-              {/* Two-column grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+              {/* Row 2: Client, Project, Priority */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-5">
                 <FormField label="Client" icon={<Building2Icon className="size-3.5" />}>
                   <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
                     <SelectTrigger className="h-12 rounded-xl border-[#E5E7EB] bg-white px-4 text-sm text-[#0F172A]">
@@ -388,7 +374,10 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                     />
                   </div>
                 </FormField>
+              </div>
 
+              {/* Row 3: Due Date, Assign To, Team */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-5">
                 <FormField label="Due Date" icon={<CalendarIcon className="size-3.5" />}>
                   <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                     <PopoverTrigger asChild>
@@ -411,20 +400,15 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                 </FormField>
 
                 <FormField label="Assign To" icon={<UserIcon className="size-3.5" />}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-medium text-[#94A3B8]">Staff</span>
-                            <Switch id="showTeam" checked={showTeamAsAssignee} onCheckedChange={setShowTeamAsAssignee} />
-                    <Label htmlFor="showTeam" className="text-xs font-medium text-[#94A3B8] cursor-pointer">Team</Label>
-                  </div>
                   <AssigneeSelector
                     selectedAssignee={selectedAssignee}
                     selectedAssigneeType={selectedAssigneeType}
                     employees={employees}
-                    teams={teams}
-                    showTeamAsAssignee={showTeamAsAssignee}
-                    onSelect={(id: string, type: string) => {
+                    teams={[]}
+                    showTeamAsAssignee={false}
+                    onSelect={(id: string) => {
                       setSelectedAssignee(id);
-                      setSelectedAssigneeType(type as AssigneeType);
+                      setSelectedAssigneeType("staff");
                     }}
                     onRemove={() => {
                       setSelectedAssignee(null);
@@ -434,48 +418,18 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                 </FormField>
 
                 <FormField label="Team" icon={<UsersIcon className="size-3.5" />}>
-                  <Select value={isRepeatedTask ? repeatFrequency || "" : "no"} onValueChange={(v) => { setIsRepeatedTask(v !== "no"); setRepeatFrequency(v === "no" ? null : v); }}>
+                  <Select value={selectedTeam} onValueChange={setSelectedTeam}>
                     <SelectTrigger className="h-12 rounded-xl border-[#E5E7EB] bg-white px-4 text-sm text-[#0F172A]">
-                      <SelectValue placeholder="No Repeat" />
+                      <SelectValue placeholder="Select team" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="no">No Repeat</SelectItem>
-                      <SelectItem value="Daily">Daily</SelectItem>
-                      <SelectItem value="Weekly">Weekly</SelectItem>
-                      <SelectItem value="Monthly">Monthly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {isRepeatedTask && repeatFrequency !== "Daily" && (
-                    <div className="mt-2">
-                      <Popover open={repeatStartDateOpen} onOpenChange={setRepeatStartDateOpen}>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full justify-between border-[#E5E7EB] bg-white px-3 text-xs text-[#0F172A]">
-                            {repeatStartDate ? (
-                              <span>{repeatStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                            ) : (
-                              <span className="text-[#94A3B8]">Start date</span>
-                            )}
-                            <CalendarIcon className="size-3 text-[#94A3B8]" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 rounded-2xl border-[#E5E7EB] shadow-lg" align="start">
-                          <Calendar mode="single" selected={repeatStartDate} onSelect={(d) => { setRepeatStartDate(d); setRepeatStartDateOpen(false); }} />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  )}
-                </FormField>
-
-                <FormField label="Status" icon={<CheckSquareIcon className="size-3.5" />}>
-                  <Select value={taskStatus} onValueChange={setTaskStatus}>
-                    <SelectTrigger className="h-12 rounded-xl border-[#E5E7EB] bg-white px-4 text-sm text-[#0F172A]">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todo">To Do</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="review">In Review</SelectItem>
-                      <SelectItem value="done">Done</SelectItem>
+                      {teams.length === 0 ? (
+                        <div className="px-2 py-4 text-center text-sm text-[#94A3B8]">No teams available</div>
+                      ) : (
+                        teams.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </FormField>

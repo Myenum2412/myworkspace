@@ -29,7 +29,7 @@ export default function InvoiceFormPage() {
 
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
-  const [isSimplifiedView, setIsSimplifiedView] = useState(false);
+  const [isSimplifiedView, setIsSimplifiedView] = useState(true);
   const [items, setItems] = useState([
     { id: "1", details: "", description: "", quantity: 1, rate: 0, tax: "" }
   ]);

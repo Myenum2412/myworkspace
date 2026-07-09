@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileTextIcon, ExternalLinkIcon, Loader2Icon, ClockIcon, CheckCircleIcon, IndianRupee, ReceiptIcon, TrendingUpIcon } from "lucide-react";
+import { FileTextIcon, ExternalLinkIcon, Loader2Icon, ClockIcon, CheckCircleIcon, IndianRupee, ReceiptIcon, TrendingUpIcon, PlusIcon } from "lucide-react";
+import Link from "next/link";
 
 const BillingCharts = dynamic(() => import("./billing-charts"), {
   ssr: false,
@@ -105,7 +106,15 @@ export default function BillingPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-      <h1 className="text-xl sm:text-2xl font-bold">Billing</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl sm:text-2xl font-bold">Billing</h1>
+        <Button asChild className="shrink-0 touch-target">
+          <Link href="/billing/invoices/new">
+            <PlusIcon className="mr-2 size-4" />
+            New Invoice
+          </Link>
+        </Button>
+      </div>
 
       {error && (
         <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>
