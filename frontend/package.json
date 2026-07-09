@@ -66,6 +66,7 @@
     "react-dom": "19.2.4",
     "reactflow": "^11.11.4",
     "recharts": "^3.8.0",
+    "resend": "^6.17.2",
     "serwist": "^9.5.11",
     "shadcn": "^4.11.0",
     "socket.io-client": "^4.8.3",

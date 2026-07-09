@@ -379,14 +379,14 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       <div className="relative flex-1 overflow-hidden px-1">
         <ScrollArea className="h-full px-4 sm:px-5">
           <div className="space-y-8 sm:space-y-12 py-4 sm:py-6 max-w-4xl mx-auto">
-            
+
             {/* Step 1: Profile */}
             <div className="space-y-8">
               <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 items-center sm:items-start mb-6">
                 <div className="flex-shrink-0">
-                  <ProfileImageUpload 
-                    avatar={firstSlideData.avatar} 
-                    onAvatarChange={(url) => updateFirstSlideField("avatar", url)} 
+                  <ProfileImageUpload
+                    avatar={firstSlideData.avatar}
+                    onAvatarChange={(url) => updateFirstSlideField("avatar", url)}
                   />
                 </div>
                 <div className="flex-1 w-full">
@@ -396,13 +396,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
               <Separator />
             </div>
 
-            {/* Step 2: Work Info */}
-            <div className="space-y-8">
-              <WorkInfoSection formData={firstSlideData} onChange={updateFirstSlideField} options={dropdownOptions} />
-              <Separator />
-            </div>
-
-            {/* Step 3: Contact */}
+            {/* Step 2: Contact Details (moved to top) */}
             <div className="space-y-8">
               <ContactDetailsSection
                 phone={firstSlideData.phone}
@@ -422,59 +416,22 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                 options={dropdownOptions}
               />
               <Separator />
-              <FieldSet>
-                <FieldLegend>Separation Information</FieldLegend>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field>
-                    <FieldLabel>Date of Exit</FieldLabel>
-                    <Input type="date" placeholder="dd-MMM-yyyy" />
-                  </Field>
-                </div>
-              </FieldSet>
-              <Separator />
             </div>
 
-            {/* Step 4: Documents */}
+            {/* Step 3: Work Information (moved to second, with Work Experience dropdown) */}
             <div className="space-y-8">
-              <FieldSet>
-                <FieldLegend>Documents</FieldLegend>
-                <div className="space-y-4">
-                  <Field>
-                    <FieldLabel>Offer Letter</FieldLabel>
-                    {offerLetter ? (
-                      <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/20">
-                        <FileTextIcon className="size-5 text-muted-foreground shrink-0" />
-                        <span className="text-sm truncate flex-1">{offerLetter.name}</span>
-                        <button type="button" onClick={removeOfferLetter} className="text-destructive hover:text-destructive/80">
-                          <XIcon className="size-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex items-center gap-3 rounded-lg border border-dashed p-4 cursor-pointer hover:bg-muted/20 transition-colors">
-                        <UploadIcon className="size-5 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          {offerLetterUploading ? "Uploading..." : "Upload offer letter (PDF, max 10MB)"}
-                        </span>
-                        <input type="file" accept=".pdf,image/*" className="hidden" onChange={handleOfferLetterUpload} disabled={offerLetterUploading} />
-                      </label>
-                    )}
-                  </Field>
-                </div>
-              </FieldSet>
-              <Separator />
-            </div>
+              <WorkInfoSection formData={firstSlideData} onChange={updateFirstSlideField} options={dropdownOptions} />
 
-            {/* Step 5: History */}
-            <div className="space-y-8 pb-8">
+              {/* Work Experience collapsible dropdown inside Work Information */}
               <DynamicRowSection
-                title="Work experience"
+                title="Work Experience"
                 rows={workExperience}
                 onAdd={() => addRow(setWorkExperience, 'work_experience')}
                 onRemove={(id) => removeRow(setWorkExperience, id, 'work_experience')}
                 renderRow={(row) => (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field>
-                      <FieldLabel>Company name</FieldLabel>
+                      <FieldLabel>Company Name</FieldLabel>
                       <Input value={row.company || ""} onChange={(e) => updateWorkRow(row.id, "company", e.target.value)} placeholder="Company name" />
                     </Field>
                     <Field>
@@ -505,6 +462,54 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                 )}
               />
               <Separator />
+            </div>
+
+            {/* Step 4: Separation Information */}
+            <div className="space-y-8">
+              <FieldSet>
+                <FieldLegend>Separation Information</FieldLegend>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel>Date of Exit</FieldLabel>
+                    <Input type="date" placeholder="dd-MMM-yyyy" />
+                  </Field>
+                </div>
+              </FieldSet>
+              <Separator />
+            </div>
+
+            {/* Step 5: Documents */}
+            <div className="space-y-8">
+              <FieldSet>
+                <FieldLegend>Documents</FieldLegend>
+                <div className="space-y-4">
+                  <Field>
+                    <FieldLabel>Offer Letter</FieldLabel>
+                    {offerLetter ? (
+                      <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/20">
+                        <FileTextIcon className="size-5 text-muted-foreground shrink-0" />
+                        <span className="text-sm truncate flex-1">{offerLetter.name}</span>
+                        <button type="button" onClick={removeOfferLetter} className="text-destructive hover:text-destructive/80">
+                          <XIcon className="size-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center gap-3 rounded-lg border border-dashed p-4 cursor-pointer hover:bg-muted/20 transition-colors">
+                        <UploadIcon className="size-5 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {offerLetterUploading ? "Uploading..." : "Upload offer letter (PDF, max 10MB)"}
+                        </span>
+                        <input type="file" accept=".pdf,image/*" className="hidden" onChange={handleOfferLetterUpload} disabled={offerLetterUploading} />
+                      </label>
+                    )}
+                  </Field>
+                </div>
+              </FieldSet>
+              <Separator />
+            </div>
+
+            {/* Step 6: History */}
+            <div className="space-y-8 pb-8">
               <DynamicRowSection
                 title="Education Details"
                 rows={educationDetails}

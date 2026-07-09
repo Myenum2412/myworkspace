@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
 import { hash } from "bcryptjs";
+import { sendEmailDirect, buildEmployeeOnboardedHtml } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -42,15 +43,9 @@ export async function POST(request: Request) {
       { $set: { password: hashedPassword, updatedAt: new Date() } }
     );
 
-    const { sendEmployeeOnboarded } = await import("@/lib/mail");
-    const result = await sendEmployeeOnboarded(
-      employee.email as string,
-      firstName,
-      employee.email as string,
-      workspaceName,
-      loginUrl,
-      newTempPassword
-    );
+    const htmlBody = buildEmployeeOnboardedHtml(firstName, employee.email as string, workspaceName, loginUrl, newTempPassword);
+    const subject = `Welcome to ${workspaceName} - Your Account is Ready`;
+    const result = await sendEmailDirect(employee.email as string, subject, htmlBody);
 
     return NextResponse.json({
       success: result.success,

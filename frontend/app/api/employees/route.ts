@@ -6,6 +6,7 @@ import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { ensureUserOrg, validateOrgMembership } from "@/lib/org";
 import { getNextSequence, getNextEmployeeDisplayId } from "@/lib/db/counter";
+import { sendEmailDirect, buildEmployeeOnboardedHtml } from "@/lib/email";
 
 export async function GET() {
   try {
@@ -199,14 +200,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const { sendEmployeeOnboarded } = await import("@/lib/mail");
     const workspaceName = "MyWorkspace";
     const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
 
     let emailStatus: "sent" | "failed" | "skipped" = "skipped";
     let emailError: string | undefined;
     try {
-      const result = await sendEmployeeOnboarded(email, firstName || name, email, workspaceName, loginUrl, defaultPassword);
+      const htmlBody = buildEmployeeOnboardedHtml(firstName || name, email, workspaceName, loginUrl, defaultPassword);
+      const subject = `Welcome to ${workspaceName} - Your Account is Ready`;
+      const result = await sendEmailDirect(email, subject, htmlBody);
       emailStatus = result.emailStatus;
       emailError = result.error;
     } catch (err: any) {

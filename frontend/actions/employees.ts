@@ -78,12 +78,14 @@ export async function addEmployeeAction(formData: FormData) {
     role: role?.toLowerCase() || "member",
   });
 
-  const { sendEmployeeOnboarded } = await import("@/lib/mail");
+  const { sendEmailDirect, buildEmployeeOnboardedHtml } = await import("@/lib/email");
   const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
 
   let emailStatus: "sent" | "failed" | "skipped" = "skipped";
   try {
-    const emailResult = await sendEmployeeOnboarded(email, name, email, "MyWorkspace", loginUrl, plainPassword);
+    const htmlBody = buildEmployeeOnboardedHtml(name, email, "MyWorkspace", loginUrl, plainPassword);
+    const subject = `Welcome to MyWorkspace - Your Account is Ready`;
+    const emailResult = await sendEmailDirect(email, subject, htmlBody);
     emailStatus = emailResult.emailStatus;
   } catch (err: any) {
     console.error("[addEmployeeAction] Onboarded email failed:", err?.message || err);
