@@ -32,7 +32,7 @@ function convertNumberToWords(amount: number): string {
   return amount.toString(); // Fallback
 }
 
-export async function generateInvoicePDF(baseInvoice: Invoice) {
+export async function generateInvoicePDF(baseInvoice: Invoice, preview = false) {
   let invoice = baseInvoice as any;
   let org: any = {};
   let client: any = {};
@@ -63,7 +63,12 @@ export async function generateInvoicePDF(baseInvoice: Invoice) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.width; // 210
   const pageHeight = doc.internal.pageSize.height; // 297
-  
+
+  // A4 border line
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
+
   // Custom font loading is possible, but we'll stick to built-in 'helvetica' for precision.
   const mX = 10; // Left margin
   const mR = 200; // Right margin
@@ -428,5 +433,14 @@ export async function generateInvoicePDF(baseInvoice: Invoice) {
   doc.setFillColor(0, 160, 180);
   doc.rect(0, pageHeight - 4, pageWidth, 4, "F");
 
-  doc.save(`Invoice_${invoice.invoiceNumber || invoice.number || invoice.id.slice(0,8)}.pdf`);
+  const fileName = `Invoice_${invoice.invoiceNumber || invoice.number || invoice.id.slice(0,8)}.pdf`;
+  if (preview) {
+    window.open(doc.output('bloburl'), '_blank');
+  } else {
+    doc.save(fileName);
+  }
+}
+
+export function previewInvoicePDF(invoice: Invoice) {
+  return generateInvoicePDF(invoice, true);
 }

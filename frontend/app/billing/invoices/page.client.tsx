@@ -182,6 +182,12 @@ export default function BillingInvoicesPage() {
                           </div>
                         )}
                       </DropdownMenuItem>
+                      {!inv.pdfUrl && (
+                        <DropdownMenuItem onClick={() => generateInvoicePDF(inv, true)}>
+                          <FileTextIcon className="mr-2 size-4" />
+                          Preview PDF
+                        </DropdownMenuItem>
+                      )}
                       {inv.hostedUrl && (
                         <DropdownMenuItem onClick={() => window.open(inv.hostedUrl, "_blank")}>
                           <ExternalLinkIcon className="mr-2 size-4" />
