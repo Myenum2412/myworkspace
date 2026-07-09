@@ -1,24 +1,29 @@
-(node:27360) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:8165) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
 > my-app@0.1.0 build
 > SERWIST_SUPPRESS_TURBOPACK_WARNING=1 next build
 
+Warning: Custom Cache-Control headers detected for the following routes:
+  - /_next/static/:path*
+
+Setting a custom Cache-Control header can break Next.js development behavior.
 ▲ Next.js 16.2.10 (Turbopack)
 - Environments: .env
 - Experiments (use with caution):
+  · optimizePackageImports
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 12.7s
+✓ Compiled successfully in 23.2s
   Running TypeScript ...
-  Finished TypeScript in 17.3s ...
+  Finished TypeScript in 18.7s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/64) ...
-  Generating static pages using 11 workers (16/64) 
-  Generating static pages using 11 workers (32/64) 
-  Generating static pages using 11 workers (48/64) 
-✓ Generating static pages using 11 workers (64/64) in 545ms
+  Generating static pages using 11 workers (0/73) ...
+  Generating static pages using 11 workers (18/73) 
+  Generating static pages using 11 workers (36/73) 
+  Generating static pages using 11 workers (54/73) 
+✓ Generating static pages using 11 workers (73/73) in 557ms
   Finalizing page optimization ...
 
 Route (app)
@@ -33,6 +38,12 @@ Route (app)
 ├ ƒ /api/billing/invoices
 ├ ƒ /api/billing/invoices/[id]
 ├ ƒ /api/billing/portal-session
+├ ƒ /api/calendar/connections
+├ ƒ /api/calendar/events
+├ ƒ /api/calendar/google
+├ ƒ /api/calendar/google/callback
+├ ƒ /api/calendar/microsoft
+├ ƒ /api/calendar/microsoft/callback
 ├ ƒ /api/clients
 ├ ƒ /api/clients/[id]/workspace
 ├ ƒ /api/dashboard/profit-loss
@@ -80,16 +91,16 @@ Route (app)
 ├ ○ /billing
 ├ ○ /billing/invoices
 ├ ƒ /billing/invoices/[id]
-├ ○ /billing/plans
+├ ○ /billing/receipts
 ├ ○ /billing/services
 ├ ƒ /billing/services/[id]/edit
 ├ ○ /billing/services/new
 ├ ƒ /calendar
+├ ○ /chat
+├ ○ /client/bills
 ├ ƒ /client/dashboard
 ├ ƒ /client/file-manager
 ├ ƒ /client/login
-├ ○ /client/notifications
-├ ○ /client/projects
 ├ ƒ /clients
 ├ ƒ /clients/[id]
 ├ ƒ /dashboard
@@ -100,8 +111,10 @@ Route (app)
 ├ ƒ /forgot-password
 ├ ƒ /login
 ├ ƒ /login/verify-2fa
+├ ○ /manifest.json
 ├ ƒ /my-time
 ├ ƒ /mytasks
+├ ○ /notifications
 ├ ƒ /onboarding
 ├ ƒ /orgmenu
 ├ ƒ /orgmenu/analytics
@@ -111,9 +124,9 @@ Route (app)
 ├ ƒ /orgmenu/members
 ├ ƒ /orgmenu/members/invite
 ├ ƒ /orgmenu/members/roles
+├ ƒ /orgmenu/notifications
 ├ ƒ /orgmenu/org
 ├ ƒ /orgmenu/org/billing
-├ ƒ /orgmenu/org/plans
 ├ ƒ /orgmenu/profile
 ├ ƒ /orgmenu/reports
 ├ ƒ /orgmenu/reports/activity
@@ -124,18 +137,20 @@ Route (app)
 ├ ƒ /orgmenu/settings
 ├ ƒ /orgmenu/settings/notifications
 ├ ƒ /overview
-├ ○ /pricing
 ├ ƒ /profile
 ├ ƒ /projects
 ├ ƒ /recycle-bin
 ├ ƒ /reports
 ├ ƒ /reset-password
+├ ○ /robots.txt
 ├ ƒ /savedtasks
 ├ ƒ /settings
-├ ƒ /settings/plans
+├ ƒ /settings/integrations
+├ ○ /settings/notifications
 ├ ƒ /settings/security
 ├ ƒ /share/[token]
 ├ ƒ /signup
+├ ○ /sitemap.xml
 ├ ƒ /staffs
 ├ ƒ /staffs/activity
 ├ ƒ /staffs/add
@@ -144,12 +159,13 @@ Route (app)
 ├ ƒ /staffs/performance
 ├ ƒ /staffs/performance/goals
 ├ ƒ /staffs/profile
-├ ƒ /staffs/schedule
 ├ ƒ /staffs/settings
+├ ƒ /staffs/settings/integrations
 ├ ƒ /staffs/settings/roles
 ├ ƒ /staffs/tasks
 ├ ƒ /staffs/time-off
 ├ ƒ /staffs/timesheet
+├ ƒ /staffs/upcoming-tasks
 ├ ƒ /team-time
 ├ ƒ /teams
 ├ ƒ /teamtasks

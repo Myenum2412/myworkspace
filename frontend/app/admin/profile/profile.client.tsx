@@ -605,7 +605,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                       <span className="bg-background px-2 text-muted-foreground">or</span>
                     </span>
                   </div>
-                  <Button variant="ghost" className="w-full h-8 text-xs text-destructive hover:text-destructive" onClick={() => updateBanner("")}>
+                  <Button variant="ghost" className="w-full text-xs text-destructive hover:text-destructive" onClick={() => updateBanner("")}>
                     Remove banner
                   </Button>
                 </>
@@ -638,7 +638,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                       <span className="bg-background px-2 text-muted-foreground">or</span>
                     </span>
                   </div>
-                  <Button variant="ghost" className="w-full h-8 text-xs text-destructive hover:text-destructive" onClick={removeProfileImage}>
+                  <Button variant="ghost" className="w-full text-xs text-destructive hover:text-destructive" onClick={removeProfileImage}>
                     Remove photo
                   </Button>
                 </>

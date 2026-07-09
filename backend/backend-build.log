@@ -1,6 +1,15 @@
-(node:27080) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:7147) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
 > myworkspace-backend@1.0.0 build
 > tsc && cp src/config/*.conf src/config/*.csv dist/config/ 2>/dev/null; true
 
+src/routes/chat.ts(19,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/chat.ts(37,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/chat.ts(48,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/chat.ts(56,48): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/scripts/seed-receipts.ts(1,10): error TS2724: '"../lib/db/index.js"' has no exported member named 'connectDB'. Did you mean 'connectDb'?

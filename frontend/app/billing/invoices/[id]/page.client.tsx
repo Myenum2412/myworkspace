@@ -237,7 +237,7 @@ export default function InvoiceFormPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" asChild>
+          <Button variant="ghost" size="icon" className="text-gray-500" asChild>
             <Link href="/billing">
               <X className="size-4 sm:size-5" />
             </Link>

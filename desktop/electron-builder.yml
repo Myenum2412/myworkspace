@@ -21,8 +21,8 @@ win:
   artifactName: MyWorkspaceSetup.${ext}
   certificateFile: ""
   certificatePassword: ""
-  signAndEditExecutable: true
-  signDlls: true
+  signAndEditExecutable: false
+  signDlls: false
 
 nsis:
   oneClick: false
@@ -46,7 +46,6 @@ nsis:
   warningsAsErrors: false
   runAfterFinish: true
   menuCategory: true
-  menuGroup: MyWorkspace
 
 extraResources:
   - from: assets/

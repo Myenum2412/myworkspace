@@ -28,7 +28,7 @@ export default function NewServicePage() {
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-semibold text-gray-800">New Service</h1>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500" asChild>
+        <Button variant="ghost" size="icon" className="text-gray-500" asChild>
           <Link href="/billing/services">
             <X className="size-5" />
           </Link>

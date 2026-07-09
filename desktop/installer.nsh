@@ -27,7 +27,6 @@ Page custom WorkspaceDataPage WorkspaceDataPageLeave
 
 Function WorkspaceDataPage
   !insertmacro MUI_HEADER_TEXT "Workspace Data Folder" "Choose the location for workspace data files."
-  !insertmacro MUI_INSTALLOPTIONS_WRITE "ioSpecial.ini" "Settings" "NumFields" "6"
 
   nsDialogs::Create 1018
   Pop $Dialog
@@ -129,7 +128,7 @@ Function ValidateWorkspaceDataFolder
   ${NSD_SetText} $PermissionsLabel "✓ Write permissions confirmed"
 
   ; Check free space (using GetDiskFreeSpaceEx via System plugin)
-  System::Call "kernel32::GetDiskFreeSpaceExA(t '$R0', *l .r2, *l .r3, *l .r4) i.r5"
+  System::Call "kernel32::GetDiskFreeSpaceExW(w '$R0', *l .r2, *l .r3, *l .r4) i.r5"
   ${If} $5 != 0
     ; Convert bytes to GB for display
     System::Int64Op $2 / 1073741824
@@ -192,19 +191,25 @@ Section "MyWorkspace" SEC_MAIN
   CreateDirectory "$WorkspaceDataFolder\config"
 
   ; Save Workspace Data Folder path to config file
-  FileOpen $R1 "$INSTDIR\workspace-config.json" w
-  FileWrite $R1 '{$\r$\n'
-  FileWrite $R1 '  "workspaceDataPath": "'
-  ; Escape backslashes for JSON
-  StrCpy $R2 $WorkspaceDataFolder
+  ; Convert backslashes to forward slashes for valid JSON (Windows/Node.js accept both)
+  StrCpy $R0 $WorkspaceDataFolder
+  StrCpy $R2 ""
   ${Do}
-    ${StrStrAdv} $R3 $R2 "\" ">" 
+    StrCpy $R3 $R0 1
     ${If} $R3 == ""
       ${ExitDo}
     ${EndIf}
-    StrCpy $R2 "$R2" "" 2
+    ${If} $R3 == "\"
+      StrCpy $R2 "$R2/"
+    ${Else}
+      StrCpy $R2 "$R2$R3"
+    ${EndIf}
+    StrCpy $R0 $R0 "" 1
   ${Loop}
-  FileWrite $R1 $WorkspaceDataFolder
+  FileOpen $R1 "$INSTDIR\workspace-config.json" w
+  FileWrite $R1 '{$\r$\n'
+  FileWrite $R1 '  "workspaceDataPath": "'
+  FileWrite $R1 $R2
   FileWrite $R1 '",$\r$\n'
   FileWrite $R1 '  "version": "${PRODUCT_VERSION}",$\r$\n'
   FileWrite $R1 '  "firstInstall": true$\r$\n'
@@ -308,96 +313,3 @@ Function .onInstSuccess
   Exec '"$INSTDIR\MyWorkspace.exe"'
 FunctionEnd
 
-; ── StrStrAdv macro (helper for JSON escaping) ──
-!macro StrStrAdv ResultVar String SubString SearchDirection CaseSensitive SizePos
-  Push "${String}"
-  Push "${SubString}"
-  Push "${SearchDirection}"
-  Push "${CaseSensitive}"
-  Push "${SizePos}"
-  Call StrStrAdv
-  Pop "${ResultVar}"
-!macroend
-!define StrStrAdv "!insertmacro StrStrAdv"
-
-Function StrStrAdv
-  Exch $R5
-  Exch
-  Exch $R4
-  Exch
-  Exch
-  Exch $R3
-  Exch
-  Exch
-  Exch
-  Exch $R2
-  Exch
-  Exch
-  Exch
-  Exch
-  Exch $R1
-  Exch
-  Exch
-  Exch
-  Exch
-  Exch
-  Exch $R0
-  Push $R6
-  Push $R7
-  Push $R8
-  Push $R9
-
-  StrCpy $R6 0
-  StrCpy $R7 ""
-  StrCpy $R9 ""
-
-  ${If} $R3 == ">"
-    StrCpy $R8 ">"
-  ${Else}
-    StrCpy $R8 "<"
-  ${EndIf}
-
-  StrCpy $R0 $R0
-  StrCpy $R1 $R1
-
-  ${If} $R8 == ">"
-    StrCpy $R9 $R1
-    StrCpy $R1 $R0
-    StrCpy $R0 $R9
-  ${EndIf}
-
-  ${If} $R4 == "1"
-    StrCpy $R0 $R0
-    StrCpy $R1 $R1
-  ${Else}
-    StrCpy $R0 $R0
-    StrCpy $R1 $R1
-  ${EndIf}
-
-  StrCpy $R9 0
-  StrLen $R7 $R0
-  StrLen $R6 $R1
-
-  ${Do}
-    ${If} $R9 >= $R7
-      StrCpy $R0 ""
-      ${ExitDo}
-    ${EndIf}
-    StrCpy $R2 $R0 $R6 $R9
-    ${If} $R2 == $R1
-      StrCpy $R0 $R0 "" $R9
-      ${ExitDo}
-    ${EndIf}
-    IntOp $R9 $R9 + 1
-  ${Loop}
-
-  Pop $R9
-  Pop $R8
-  Pop $R7
-  Pop $R6
-  Pop $R5
-  Pop $R4
-  Pop $R3
-  Pop $R2
-  Pop $R1
-FunctionEnd

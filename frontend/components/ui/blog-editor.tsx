@@ -34,9 +34,9 @@ export function BlogEditor({ value, onChange, placeholder }: BlogEditorProps) {
   return (
     <div className="border border-input rounded-md overflow-hidden bg-background flex flex-col focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
       <div className="flex items-center gap-1 p-1 border-b bg-muted/50">
-        <Button type="button" variant="ghost" size="sm" className="h-8 w-8 px-0" onClick={() => executeCommand('bold')}><BoldIcon className="size-4" /></Button>
-        <Button type="button" variant="ghost" size="sm" className="h-8 w-8 px-0" onClick={() => executeCommand('italic')}><ItalicIcon className="size-4" /></Button>
-        <Button type="button" variant="ghost" size="sm" className="h-8 w-8 px-0" onClick={() => executeCommand('underline')}><UnderlineIcon className="size-4" /></Button>
+        <Button type="button" variant="ghost" size="icon" onClick={() => executeCommand('bold')}><BoldIcon className="size-4" /></Button>
+        <Button type="button" variant="ghost" size="icon" onClick={() => executeCommand('italic')}><ItalicIcon className="size-4" /></Button>
+        <Button type="button" variant="ghost" size="icon" onClick={() => executeCommand('underline')}><UnderlineIcon className="size-4" /></Button>
         <div className="w-px h-4 bg-border mx-1" />
         <label className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted cursor-pointer relative text-muted-foreground hover:text-foreground transition-colors" title="Highlight Color">
           <HighlighterIcon className="size-4" />
@@ -48,8 +48,8 @@ export function BlogEditor({ value, onChange, placeholder }: BlogEditorProps) {
           />
         </label>
         <div className="w-px h-4 bg-border mx-1" />
-        <Button type="button" variant="ghost" size="sm" className="h-8 w-8 px-0" onClick={() => executeCommand('insertUnorderedList')}><ListIcon className="size-4" /></Button>
-        <Button type="button" variant="ghost" size="sm" className="h-8 w-8 px-0" onClick={() => executeCommand('insertOrderedList')}><ListOrderedIcon className="size-4" /></Button>
+        <Button type="button" variant="ghost" size="icon" onClick={() => executeCommand('insertUnorderedList')}><ListIcon className="size-4" /></Button>
+        <Button type="button" variant="ghost" size="icon" onClick={() => executeCommand('insertOrderedList')}><ListOrderedIcon className="size-4" /></Button>
       </div>
       <div
         ref={editorRef}

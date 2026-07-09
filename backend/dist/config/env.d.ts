@@ -34,7 +34,12 @@ export declare const env: {
     REDIS_URL: string;
     STRIPE_SECRET_KEY: string;
     STRIPE_WEBHOOK_SECRET: string;
-    STRIPE_GROWTH_PRICE_ID: string;
+    STRIPE_STARTER_PRICE_ID: string;
+    STRIPE_PROFESSIONAL_PRICE_ID: string;
     STRIPE_ENTERPRISE_PRICE_ID: string;
+    TRIAL_DAYS: number;
     SENTRY_DSN: string;
+    VAPID_PUBLIC_KEY: string;
+    VAPID_PRIVATE_KEY: string;
+    VAPID_SUBJECT: string;
 };

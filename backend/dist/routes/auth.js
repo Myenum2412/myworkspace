@@ -191,11 +191,14 @@ router.post("/signup", async (req, res) => {
                     emailVerificationExpires: null,
                 }], { session });
             user = createdUser;
+            const trialEnd = new Date(Date.now() + env.TRIAL_DAYS * 24 * 60 * 60 * 1000);
             const [createdOrg] = await Organization.create([{
                     id: orgId,
                     name: orgName,
                     slug,
-                    plan: "free",
+                    plan: "trial",
+                    trialEnd,
+                    subscriptionStatus: "trialing",
                     ownerId: userId,
                 }], { session });
             org = createdOrg;

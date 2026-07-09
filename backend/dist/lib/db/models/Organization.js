@@ -27,7 +27,7 @@ const organizationSchema = new Schema({
     authorizedPersonMobile: String,
     numberOfEmployees: Number,
     companyDescription: String,
-    plan: { type: String, enum: ["free", "starter", "growth", "pro", "enterprise"], default: "free" },
+    plan: { type: String, enum: ["free", "trial", "starter", "professional", "enterprise"], default: "free" },
     ownerId: { type: String, required: true },
     stripeCustomerId: { type: String, sparse: true, unique: true },
     stripeSubscriptionId: { type: String, sparse: true, unique: true },
