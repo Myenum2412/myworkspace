@@ -17,6 +17,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import Link from "next/link";
 import {
   Settings2Icon,
@@ -31,6 +39,9 @@ import {
   Trash2Icon,
   ArrowUpRightIcon,
   MinusIcon,
+  CheckIcon,
+  XIcon,
+  Star,
 } from "lucide-react";
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
 
@@ -376,20 +387,158 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               <div className="p-3 sm:p-4 md:p-6 space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold">Billing</h2>
-                  <p className="text-sm text-muted-foreground">Manage your subscription and invoices</p>
+                  <p className="text-sm text-muted-foreground">Compare plans and manage your subscription</p>
                 </div>
                 <Card>
                   <CardHeader>
-                    <CardTitle>Subscription</CardTitle>
-                    <CardDescription>View and manage your current plan</CardDescription>
+                    <CardTitle>Plans</CardTitle>
+                    <CardDescription>Choose the plan that fits your needs</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <Button asChild variant="default">
-                      <Link href="/settings/plans">
-                        View Plans & Billing
-                        <ArrowUpRightIcon className="size-4 ml-1" />
-                      </Link>
-                    </Button>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[200px]">Feature</TableHead>
+                          <TableHead className="text-center">
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-base font-bold">Starter</span>
+                              <span className="text-xs text-muted-foreground">₹999/mo</span>
+                            </div>
+                          </TableHead>
+                          <TableHead className="text-center">
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="flex items-center gap-1">
+                                <span className="text-base font-bold">Professional</span>
+                                <Star className="size-3 fill-amber-500 text-amber-500" />
+                              </div>
+                              <span className="text-xs text-muted-foreground">₹3,999/mo</span>
+                            </div>
+                          </TableHead>
+                          <TableHead className="text-center">
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-base font-bold">Enterprise</span>
+                              <span className="text-xs text-muted-foreground">Custom</span>
+                            </div>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium">Users</TableCell>
+                          <TableCell className="text-center">Up to 10</TableCell>
+                          <TableCell className="text-center">Up to 50</TableCell>
+                          <TableCell className="text-center">Unlimited</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Storage</TableCell>
+                          <TableCell className="text-center">10 GB</TableCell>
+                          <TableCell className="text-center">1 TB</TableCell>
+                          <TableCell className="text-center">Unlimited</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Max File Upload</TableCell>
+                          <TableCell className="text-center">10 GB</TableCell>
+                          <TableCell className="text-center">Unlimited</TableCell>
+                          <TableCell className="text-center">Unlimited</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Projects</TableCell>
+                          <TableCell className="text-center">Limited</TableCell>
+                          <TableCell className="text-center">Unlimited</TableCell>
+                          <TableCell className="text-center">Unlimited</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Employee Management</TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Task Management</TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Time Tracking</TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Attendance</TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">File Management</TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Team Collaboration</TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Client Portal</TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Billing & Invoices</TableCell>
+                          <TableCell className="text-center"><XIcon className="size-4 mx-auto text-muted-foreground" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Workflow Automation</TableCell>
+                          <TableCell className="text-center"><XIcon className="size-4 mx-auto text-muted-foreground" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">RBAC</TableCell>
+                          <TableCell className="text-center"><XIcon className="size-4 mx-auto text-muted-foreground" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">API Access</TableCell>
+                          <TableCell className="text-center"><XIcon className="size-4 mx-auto text-muted-foreground" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Social Login</TableCell>
+                          <TableCell className="text-center"><XIcon className="size-4 mx-auto text-muted-foreground" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">SSO / 2FA</TableCell>
+                          <TableCell className="text-center"><XIcon className="size-4 mx-auto text-muted-foreground" /></TableCell>
+                          <TableCell className="text-center"><XIcon className="size-4 mx-auto text-muted-foreground" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Audit Logs</TableCell>
+                          <TableCell className="text-center"><XIcon className="size-4 mx-auto text-muted-foreground" /></TableCell>
+                          <TableCell className="text-center"><XIcon className="size-4 mx-auto text-muted-foreground" /></TableCell>
+                          <TableCell className="text-center"><CheckIcon className="size-4 mx-auto text-green-600" /></TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Dedicated Support</TableCell>
+                          <TableCell className="text-center">Email</TableCell>
+                          <TableCell className="text-center">Priority</TableCell>
+                          <TableCell className="text-center">24×7</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
                   </CardContent>
                 </Card>
               </div>

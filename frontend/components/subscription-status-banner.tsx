@@ -51,7 +51,7 @@ export function SubscriptionStatusBanner() {
           color: "text-red-600",
           bg: "bg-red-50 dark:bg-red-950/30",
           message: "Your free trial has ended. Subscribe to continue using all features.",
-          action: { label: "View Plans", href: "/pricing" },
+          action: { label: "View Plans", href: "/settings" },
         });
       } else if (daysRemaining <= 3) {
         setBanner({
@@ -61,7 +61,7 @@ export function SubscriptionStatusBanner() {
           color: "text-amber-600",
           bg: "bg-amber-50 dark:bg-amber-950/30",
           message: `Your free trial expires in ${daysRemaining} day${daysRemaining !== 1 ? "s" : ""}. Subscribe to keep access.`,
-          action: { label: "Subscribe Now", href: "/pricing" },
+          action: { label: "Subscribe Now", href: "/settings" },
         });
       } else {
         setBanner({
@@ -71,7 +71,7 @@ export function SubscriptionStatusBanner() {
           color: "text-blue-600",
           bg: "bg-blue-50 dark:bg-blue-950/30",
           message: `You have ${daysRemaining} days left in your free trial. No charges until it ends.`,
-          action: { label: "View Plans", href: "/pricing" },
+          action: { label: "View Plans", href: "/settings" },
         });
       }
       return;
@@ -117,7 +117,7 @@ export function SubscriptionStatusBanner() {
         color: "text-gray-600",
         bg: "bg-gray-50 dark:bg-gray-800/50",
         message: "Your subscription has been canceled. Subscribe again to regain access.",
-        action: { label: "View Plans", href: "/pricing" },
+        action: { label: "View Plans", href: "/settings" },
       });
       return;
     }

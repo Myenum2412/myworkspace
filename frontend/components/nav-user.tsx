@@ -109,15 +109,6 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/settings/plans" onClick={() => isMobile && setOpenMobile(false)}>
-                  <SparklesIcon />
-                  Plans & Billing
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
                 <Link href={profileHref} onClick={() => isMobile && setOpenMobile(false)}>
                   <BadgeCheckIcon />
                   Account

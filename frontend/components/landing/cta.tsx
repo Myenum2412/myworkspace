@@ -27,7 +27,7 @@ export function Cta() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="w-full sm:w-auto px-8 text-base font-medium border-brand-400 text-white hover:bg-white/10 touch-target">
-                <Link href="/pricing">View Pricing</Link>
+                <Link href="/settings">View Pricing</Link>
               </Button>
             </div>
           </div>

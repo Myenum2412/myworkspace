@@ -169,9 +169,10 @@ This document maps each test category to specific codebase modules, providing a 
   Concurrency                 5        5      0
   Resilience                  5        5      0
   Email/Webhook               8        8      0
-  Chat (new)                 15       15      0
+  Chat (REST + service)      15       15      0
+  Chat Server (socket + API)  9        9      0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  TOTAL                     327      327      0
+  TOTAL                     336      336      0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 _* Socket count = test files (auth, reconnect-resync, redis-adapter, sync)_

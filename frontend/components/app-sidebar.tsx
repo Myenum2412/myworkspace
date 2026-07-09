@@ -129,7 +129,7 @@ export const defaultNavData = {
       icon: <Settings2Icon className="size-6" />,
       items: [
         { title: "General", url: "/settings" },
-        { title: "Plans & Billing", url: "/settings/plans" },
+        { title: "Billing", url: "/settings" },
       ],
     },
   ],

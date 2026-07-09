@@ -39,7 +39,6 @@ export const defaultOrgNavData = [
     items: [
       { title: "Details", url: "/orgmenu/org" },
       { title: "Billing", url: "/orgmenu/org/billing" },
-      { title: "Plans", url: "/orgmenu/org/plans" },
     ],
   },
   {
