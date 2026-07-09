@@ -8,16 +8,8 @@ import {
   CalendarIcon,
   AlertCircleIcon,
   XIcon,
-  UserIcon,
-  Building2Icon,
-  FolderKanbanIcon,
-  FlagIcon,
-  UploadCloudIcon,
-  UsersIcon,
-  AlignLeftIcon,
-  SaveIcon,
-  PlusIcon,
   FileTextIcon,
+  PaperclipIcon,
 } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -28,14 +20,7 @@ import { Label } from "@/components/ui/label";
 import { BlogEditor } from "@/components/ui/blog-editor";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-} from "@/components/ui/dialog";
+
 import {
   Select,
   SelectContent,
@@ -77,21 +62,12 @@ const priorities = [
   { id: "p4", name: "urgent" },
 ];
 
-function FieldCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function FormField({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <div className={`pb-2 ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-function FormField({ label, icon, required, children }: { label: string; icon?: React.ReactNode; required?: boolean; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-semibold text-[#64748B] uppercase tracking-wider flex items-center gap-1.5">
-        {icon && <span className="size-3.5 text-[#94A3B8]">{icon}</span>}
+    <div className="space-y-1">
+      <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
         {label}
-        {required && <span className="text-[#EF4444]">*</span>}
+        {required && <span className="text-destructive">*</span>}
       </Label>
       {children}
     </div>
@@ -137,7 +113,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
         fetch("/api/user/me", { credentials: "include" }).then((r) => r.json()).catch(() => ({})),
         fetch("/api/settings", { credentials: "include" }).then((r) => r.json()).catch(() => null),
         fetch("/api/tasks?limit=100", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
-      ]).then(([staff, teamList, clientsRes, projectsRes, userRes, settingsRes, tasksRes]) => {
+      ]).then(([staff, teamList, clientsRes, projectsRes, userRes, _settingsRes, tasksRes]) => {
         setUserOrgId((userRes as any)?.orgId || "");
         setEmployees((staff as any[]).map((s) => ({
           id: s.id,
@@ -235,278 +211,218 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
     }
   };
 
-  const descLen = description.length;
-
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !isSubmitting) onClose(); }}>
-      <DialogContent
-        className="flex flex-col w-auto h-auto max-w-[1200px] max-h-[95vh] p-0 gap-0 bg-white rounded-lg border border-[#E5E7EB]"
-      >
-        {/* ─── Premium Header ─── */}
-        <div className="shrink-0 flex items-start justify-between px-8 pt-8 pb-4">
-          <div className="space-y-1.5">
-            <DialogTitle className="text-2xl font-bold text-[#0F172A] tracking-tight">
-              Create New Task
-            </DialogTitle>
-            <DialogDescription className="text-sm text-[#64748B]">
-              Create and assign work to your team members
-            </DialogDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsSaved(!isSaved)}
-              className="h-9 gap-1.5 rounded-xl border-[#E5E7EB] text-xs font-semibold text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
-            >
-              <SaveIcon className="size-3.5" />
-              {isSaved ? "Saved" : "Save Draft"}
-            </Button>
-            <DialogClose asChild>
-              <button
-                type="button"
-                className="flex items-center justify-center size-8 rounded-xl text-[#94A3B8] hover:bg-[#F1F5F9] hover:text-[#64748B] transition-colors"
-              >
-                <XIcon className="size-5" />
-              </button>
-            </DialogClose>
-          </div>
+    <div className="sm:max-w-[720px] p-0 gap-0 max-h-[90vh] flex flex-col overflow-hidden">
+      {/* ─── Compact Header ─── */}
+      <div className="shrink-0 flex items-start justify-between px-5 pt-4 pb-3 border-b">
+        <div className="space-y-0.5">
+          <h2 className="text-base font-semibold">Create New Task</h2>
+          <p className="text-xs text-muted-foreground">
+            Create and assign work to your team
+          </p>
         </div>
+        <div className="flex items-center gap-1.5">
+          {localTaskDefs.length > 0 && (
+            <Select onValueChange={(val) => {
+              const selected = localTaskDefs.find((d) => d.id === val);
+              if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
+            }}>
+              <SelectTrigger className="h-7 w-fit gap-1 rounded-lg border-none bg-muted px-2 text-xs font-medium text-muted-foreground shadow-none hover:bg-muted/80 [&>svg]:hidden">
+                <FileTextIcon className="size-3" />
+                <span className="max-w-[100px] truncate">Template</span>
+              </SelectTrigger>
+              <SelectContent align="end" className="text-xs">
+                {localTaskDefs.filter((d) => d.isActive).map((def) => (
+                  <SelectItem key={def.id} value={def.id} className="text-xs">{def.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <button
+            type="button"
+            onClick={handleClose}
+            className="flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+          >
+            <XIcon className="size-4" />
+          </button>
+        </div>
+      </div>
 
         {formError && (
-          <div className="mx-8 mb-2 flex items-center gap-2 rounded-xl bg-[#FEF2F2] border border-[#FECACA] px-4 py-3 text-sm text-[#DC2626]">
-            <AlertCircleIcon className="size-4 shrink-0" />
+          <div className="shrink-0 mx-5 mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-xs text-destructive">
+            <AlertCircleIcon className="size-3.5 shrink-0" />
             {formError}
           </div>
         )}
 
-        {/* ─── Quick fill ─── */}
-        {localTaskDefs.length > 0 && (
-          <div className="shrink-0 px-8 pb-2">
-            <div className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-[#FAFBFC] px-4 py-2.5">
-              <FileTextIcon className="size-4 text-[#94A3B8]" />
-              <span className="text-xs font-medium text-[#64748B]">Quick fill from saved task:</span>
-              <Select onValueChange={(val) => {
-                const selected = localTaskDefs.find((d) => d.id === val);
-                if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
-              }}>
-                <SelectTrigger className="h-8 max-w-[200px] rounded-lg border-[#E5E7EB] text-xs">
-                  <SelectValue placeholder="Select a template..." />
+        {/* ─── Scrollable Form Body ─── */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          {/* Row 1: Title (full width) */}
+          <FormField label="Task Title" required>
+            <Input
+              placeholder="e.g. Design new landing page"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="h-9 rounded-lg text-sm"
+            />
+          </FormField>
+
+          {/* Row 2: Client, Project, Priority */}
+          <div className="grid grid-cols-3 gap-3">
+            <FormField label="Client">
+              <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
+                <SelectTrigger className="h-9 rounded-lg text-sm">
+                  <SelectValue placeholder="Client" />
                 </SelectTrigger>
                 <SelectContent>
-                  {localTaskDefs.filter((d) => d.isActive).map((def) => (
-                    <SelectItem key={def.id} value={def.id}>{def.name}</SelectItem>
+                  {clientList.map((c) => (
+                    <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-        )}
+            </FormField>
 
-        {/* ─── Scrollable Form Body ─── */}
-        <div className="flex-1 overflow-y-auto px-8 py-4 space-y-6">
-          {/* Task Information */}
-          <FieldCard>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="size-7 rounded-lg bg-[#EFF6FF] flex items-center justify-center">
-                <FileTextIcon className="size-3.5 text-[#2563EB]" />
-              </div>
-              <span className="text-sm font-bold text-[#0F172A]">Task Information</span>
-            </div>
-
-            <div className="space-y-5">
-              {/* Title — full width */}
-              <FormField label="Task Title" required icon={<AlignLeftIcon className="size-3.5" />}>
-                <Input
-                  placeholder="e.g. Design new landing page"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="h-12 rounded-xl border-[#E5E7EB] bg-white px-4 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus-visible:ring-2 focus-visible:ring-[#2563EB]/20 focus-visible:border-[#2563EB] transition-shadow"
-                />
-              </FormField>
-
-              {/* Row 2: Client, Project, Priority */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-5">
-                <FormField label="Client" icon={<Building2Icon className="size-3.5" />}>
-                  <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
-                    <SelectTrigger className="h-12 rounded-xl border-[#E5E7EB] bg-white px-4 text-sm text-[#0F172A]">
-                      <SelectValue placeholder="Select client" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clientList.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
+            <FormField label="Project">
+              <Select value={projectName} onValueChange={setProjectName}>
+                <SelectTrigger className="h-9 rounded-lg text-sm">
+                  <SelectValue placeholder="Project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {selectedClient
+                    ? projectList.filter((p) => p.client === selectedClient).map((p) => (
+                        <SelectItem key={p.id} value={p.name} className="text-sm">{p.name}</SelectItem>
+                      ))
+                    : projectList.map((p) => (
+                        <SelectItem key={p.id} value={p.name} className="text-sm">{p.name}</SelectItem>
                       ))}
-                    </SelectContent>
-                  </Select>
-                </FormField>
+                </SelectContent>
+              </Select>
+            </FormField>
 
-                <FormField label="Project" icon={<FolderKanbanIcon className="size-3.5" />}>
-                  <Select value={projectName} onValueChange={setProjectName}>
-                    <SelectTrigger className="h-12 rounded-xl border-[#E5E7EB] bg-white px-4 text-sm text-[#0F172A]">
-                      <SelectValue placeholder="Select project" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {selectedClient
-                        ? projectList.filter((p) => p.client === selectedClient).map((p) => (
-                            <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
-                          ))
-                        : projectList.map((p) => (
-                            <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>
-                          ))}
-                      {projectList.length === 0 && (
-                        <div className="px-2 py-4 text-center text-sm text-[#94A3B8]">
-                          No projects available
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </FormField>
-
-                <FormField label="Priority" required icon={<FlagIcon className="size-3.5" />}>
-                  <div className="h-12">
-                    <PrioritySelector
-                      selectedPriority={priority}
-                      priorities={priorities}
-                      onSelect={(val: string) => {
-                        if (val !== "quick-add") setPriority(val);
-                      }}
-                    />
-                  </div>
-                </FormField>
+            <FormField label="Priority" required>
+              <div className="h-9">
+                <PrioritySelector
+                  selectedPriority={priority}
+                  priorities={priorities}
+                  onSelect={(val: string) => {
+                    if (val !== "quick-add") setPriority(val);
+                  }}
+                />
               </div>
+            </FormField>
+          </div>
 
-              {/* Row 3: Due Date, Assign To, Team */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-5">
-                <FormField label="Due Date" icon={<CalendarIcon className="size-3.5" />}>
-                  <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="h-12 w-full justify-between rounded-xl border-[#E5E7EB] bg-white px-4 text-sm font-normal text-[#0F172A] hover:bg-[#FAFBFC]"
-                      >
-                        {dueDate ? (
-                          <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                        ) : (
-                          <span className="text-[#94A3B8]">Select due date</span>
-                        )}
-                        <CalendarIcon className="size-4 text-[#94A3B8]" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-2xl border-[#E5E7EB] shadow-lg" align="start">
-                      <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
-                    </PopoverContent>
-                  </Popover>
-                </FormField>
+          {/* Row 3: Due Date, Assignee, Team */}
+          <div className="grid grid-cols-3 gap-3">
+            <FormField label="Due Date">
+              <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-9 w-full justify-between rounded-lg text-sm font-normal"
+                  >
+                    {dueDate ? (
+                      <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                    ) : (
+                      <span className="text-muted-foreground">Due date</span>
+                    )}
+                    <CalendarIcon className="size-3.5 text-muted-foreground" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                  <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                </PopoverContent>
+              </Popover>
+            </FormField>
 
-                <FormField label="Assign To" icon={<UserIcon className="size-3.5" />}>
-                  <AssigneeSelector
-                    selectedAssignee={selectedAssignee}
-                    selectedAssigneeType={selectedAssigneeType}
-                    employees={employees}
-                    teams={[]}
-                    showTeamAsAssignee={false}
-                    onSelect={(id: string) => {
-                      setSelectedAssignee(id);
-                      setSelectedAssigneeType("staff");
-                    }}
-                    onRemove={() => {
-                      setSelectedAssignee(null);
-                      setSelectedAssigneeType(null);
-                    }}
-                  />
-                </FormField>
+            <FormField label="Assign To">
+              <AssigneeSelector
+                selectedAssignee={selectedAssignee}
+                selectedAssigneeType={selectedAssigneeType}
+                employees={employees}
+                teams={[]}
+                showTeamAsAssignee={false}
+                onSelect={(id: string) => {
+                  setSelectedAssignee(id);
+                  setSelectedAssigneeType("staff");
+                }}
+                onRemove={() => {
+                  setSelectedAssignee(null);
+                  setSelectedAssigneeType(null);
+                }}
+              />
+            </FormField>
 
-                <FormField label="Team" icon={<UsersIcon className="size-3.5" />}>
-                  <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                    <SelectTrigger className="h-12 rounded-xl border-[#E5E7EB] bg-white px-4 text-sm text-[#0F172A]">
-                      <SelectValue placeholder="Select team" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams.length === 0 ? (
-                        <div className="px-2 py-4 text-center text-sm text-[#94A3B8]">No teams available</div>
-                      ) : (
-                        teams.map((t) => (
-                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </FormField>
-              </div>
-            </div>
-          </FieldCard>
+            <FormField label="Team">
+              <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                <SelectTrigger className="h-9 rounded-lg text-sm">
+                  <SelectValue placeholder="Team" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.length === 0 ? (
+                    <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
+                  ) : (
+                    teams.map((t) => (
+                      <SelectItem key={t.id} value={t.id} className="text-sm">{t.name}</SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </FormField>
+          </div>
 
           {/* Description */}
-          <FieldCard>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="size-7 rounded-lg bg-[#EFF6FF] flex items-center justify-center">
-                <AlignLeftIcon className="size-3.5 text-[#2563EB]" />
-              </div>
-              <span className="text-sm font-bold text-[#0F172A]">Description</span>
-            </div>
-            <div className="relative">
-              <BlogEditor
-                value={description}
-                onChange={setDescription}
-                placeholder="Describe the task in detail, including requirements, acceptance criteria, and any relevant context..."
-              />
-              <div className="mt-2 flex justify-end">
-                <span className="text-xs text-[#94A3B8]">{descLen} characters</span>
-              </div>
-            </div>
-          </FieldCard>
+          <FormField label="Description" required>
+            <BlogEditor
+              value={description}
+              onChange={setDescription}
+              placeholder="Requirements, acceptance criteria, context..."
+            />
+          </FormField>
 
           {/* Attachments */}
-          <FieldCard className="mb-6">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="size-7 rounded-lg bg-[#EFF6FF] flex items-center justify-center">
-                <UploadCloudIcon className="size-3.5 text-[#2563EB]" />
-              </div>
-              <span className="text-sm font-bold text-[#0F172A]">Attachments</span>
-            </div>
-            <div className="rounded-2xl border-2 border-dashed border-[#E5E7EB] bg-[#FAFBFC] p-8 transition-all hover:border-[#2563EB]/40 hover:bg-[#F8FAFC]">
-              <div className="flex flex-col items-center gap-4">
-                <div className="size-14 rounded-2xl bg-[#EFF6FF] flex items-center justify-center">
-                  <UploadCloudIcon className="size-7 text-[#2563EB]" />
+          <div>
+            <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-1.5">
+              <PaperclipIcon className="size-3" />
+              Attachments
+            </Label>
+            <div className="rounded-lg border-2 border-dashed border-border bg-muted/30 p-3 transition-colors hover:border-primary/30">
+              <div className="flex items-center gap-3">
+                <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <PaperclipIcon className="size-4 text-primary" />
                 </div>
-                <div className="text-center">
-                  <p className="text-sm font-semibold text-[#0F172A]">Drag & drop files here</p>
-                  <p className="text-xs text-[#94A3B8] mt-1">Supports PDF, DOC, XLS, images, and more — up to 10MB each</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-px w-8 bg-[#E5E7EB]" />
-                  <span className="text-xs text-[#94A3B8]">or</span>
-                  <div className="h-px w-8 bg-[#E5E7EB]" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-foreground">Drop files or click to browse</p>
+                  <p className="text-[11px] text-muted-foreground truncate">PDF, DOC, XLS, images — up to 10MB</p>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-10 rounded-xl border-[#E5E7EB] bg-white text-xs font-semibold text-[#0F172A] hover:bg-[#F8FAFC]"
+                  className="h-8 rounded-lg text-xs shrink-0"
                   onClick={() => {
                     const el = document.querySelector<HTMLInputElement>('[data-file-trigger]');
                     if (el) el.click();
                   }}
                 >
-                  <PlusIcon className="size-3.5 mr-1.5" />
-                  Browse Files
+                  Browse
                 </Button>
               </div>
-              <div className="mt-4" data-file-trigger>
+              <div data-file-trigger className="mt-2">
                 <TableUpload onFilesChange={setUploadedFiles} compactImage={true} />
               </div>
             </div>
-          </FieldCard>
+          </div>
         </div>
 
-        {/* ─── Sticky Footer ─── */}
-        <div className="shrink-0 border-t border-[#E5E7EB] bg-white px-8 py-4 flex items-center justify-between rounded-b-[20px]">
+        {/* ─── Compact Footer ─── */}
+        <div className="shrink-0 border-t px-5 py-3 flex items-center justify-between bg-muted/20">
           <Button
             variant="ghost"
+            size="sm"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="h-10 rounded-xl text-sm font-semibold text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#0F172A]"
+            className="h-8 rounded-lg text-xs text-muted-foreground hover:text-foreground"
           >
             Cancel
           </Button>
@@ -517,25 +433,24 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               size="sm"
               onClick={() => setIsSaved(!isSaved)}
               disabled={isSubmitting}
-              className="h-10 rounded-xl border-[#E5E7EB] text-xs font-semibold text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A] gap-1.5"
+              className="h-8 rounded-lg text-xs gap-1.5"
             >
-              <SaveIcon className="size-3.5" />
-              Save Draft
+              {isSaved ? "Unsave" : "Draft"}
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || !title.trim() || !description.trim() || !priority}
-              className="h-10 rounded-xl bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-sm hover:bg-[#1D4ED8] transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+              size="sm"
+              className="h-8 rounded-lg text-xs px-4"
             >
               {isSubmitting ? (
-                <><Loader2 className="size-4 animate-spin mr-2" />Creating...</>
+                <><Loader2 className="size-3.5 animate-spin mr-1.5" />Creating...</>
               ) : (
                 "Create Task"
               )}
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }
