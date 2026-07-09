@@ -4,3 +4,8 @@ node_modules/
 
 # dependencies
 /.claude
+
+# Desktop app build output
+desktop/dist/
+desktop/node_modules/
+desktop/out/

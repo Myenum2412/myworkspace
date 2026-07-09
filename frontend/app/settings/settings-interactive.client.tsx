@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
+import { InstallForWindows } from "@/components/install-for-windows";
 import {
   Settings2Icon,
   UsersIcon,
@@ -199,6 +200,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             <p className="text-sm text-muted-foreground mt-0.5">Manage your workspace preferences</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <InstallForWindows />
             <Button onClick={handleSave} disabled={saving}>
               {saving ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <SaveIcon className="size-4 mr-1" />}
               {saving ? "Saving..." : "Save Changes"}

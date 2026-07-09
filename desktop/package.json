@@ -1,0 +1,111 @@
+{
+  "name": "myworkspace-desktop",
+  "version": "1.0.0",
+  "description": "MyWorkspace - Native Windows Desktop Application",
+  "author": "MyWorkspace",
+  "license": "SEE LICENSE IN LICENSES/LICENSE.txt",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:win:nsis": "electron-builder --win --config.nsis.installerIcon=assets/icon.ico --config.nsis.uninstallerIcon=assets/icon.ico",
+    "publish": "electron-builder --win --publish always",
+    "dev": "NODE_ENV=development electron .",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "electron-log": "^5.2.4",
+    "electron-updater": "^6.3.9",
+    "fs-extra": "^11.3.0"
+  },
+  "devDependencies": {
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.myworkspace.desktop",
+    "productName": "MyWorkspace",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "assets/**/*",
+      "!**/*.map",
+      "!**/*.test.*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "MyWorkspaceSetup.${ext}",
+      "certificateFile": "",
+      "certificatePassword": "",
+      "signAndEditExecutable": true,
+      "signDlls": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "installerSidebar": "assets/installer-sidebar.bmp",
+      "uninstallerSidebar": "assets/installer-sidebar.bmp",
+      "license": "LICENSES/LICENSE.txt",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MyWorkspace",
+      "include": "installer.nsh",
+      "guid": "6B8B8B8B-8B8B-4B8B-8B8B-8B8B8B8B8B8B",
+      "installerLanguages": ["en_US"],
+      "language": "1033",
+      "unicode": true,
+      "warningsAsErrors": false,
+      "runAfterFinish": true,
+      "menuCategory": true,
+      "menuGroup": "MyWorkspace"
+    },
+    "extraResources": [
+      {
+        "from": "assets/",
+        "to": "assets/",
+        "filter": ["**/*"]
+      }
+    ],
+    "publish": {
+      "provider": "generic",
+      "url": "https://app.myworkspace.com/api/installer/updates",
+      "channel": "latest"
+    },
+    "fileAssociations": [
+      {
+        "ext": "mws",
+        "name": "MyWorkspace Project",
+        "description": "MyWorkspace Project File",
+        "icon": "assets/project-icon.ico"
+      },
+      {
+        "ext": "mwst",
+        "name": "MyWorkspace Template",
+        "description": "MyWorkspace Template File",
+        "icon": "assets/template-icon.ico"
+      }
+    ],
+    "protocols": [
+      {
+        "name": "MyWorkspace Protocol",
+        "schemes": ["myworkspace"]
+      }
+    ]
+  }
+}

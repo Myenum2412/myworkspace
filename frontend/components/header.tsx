@@ -26,6 +26,7 @@ import { usePathname } from "next/navigation";
 import { useUserStatus } from "@/hooks/use-user-status";
 import { SessionTracker } from "@/components/session-tracker";
 import { GlobalSearch } from "@/components/search/global-search";
+import { InstallForWindows } from "@/components/install-for-windows";
 import { StaffStatusForm } from "@/components/staff-status-form";
 import { Fragment, useEffect, useState } from "react";
 import { getAppContext, type AppContextType } from "@/lib/app-context";
@@ -161,6 +162,8 @@ export function Header({ context }: { context?: AppContextType }) {
         </button>
 
         <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
+
+        <InstallForWindows />
 
         <div className="hidden lg:flex items-center gap-2 text-muted-foreground font-medium">
           <CalendarIcon className="size-4 shrink-0" />

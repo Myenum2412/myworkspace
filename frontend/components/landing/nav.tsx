@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InstallForWindows } from "@/components/install-for-windows";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -48,6 +49,7 @@ export function Nav() {
                 </a>
               )
             )}
+            <InstallForWindows />
             <div className="ml-4">
               <Button asChild>
                 <Link href="/signup">Get Started</Link>
