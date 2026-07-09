@@ -100,17 +100,17 @@ export default async function ProfilePage() {
   let memberCount = 0;
 
   if (member?.orgId) {
-    const orgId = String(member.orgId);
+    const memberOrgId = String(member.orgId);
     let orgObjId: ObjectId | undefined;
-    try { orgObjId = new ObjectId(orgId); } catch { /* not an ObjectId */ }
+    try { orgObjId = new ObjectId(memberOrgId); } catch { /* not an ObjectId */ }
     const org = (await db.collection(collections.organizations).findOne(
-      orgObjId ? { $or: [{ id: orgId }, { _id: orgObjId }] } : { id: orgId }
+      orgObjId ? { $or: [{ id: memberOrgId }, { _id: orgObjId }] } : { id: memberOrgId }
     )) as Record<string, unknown> | null;
 
     if (org) {
-      memberCount = await db.collection(collections.orgMembers).countDocuments({ orgId });
+      memberCount = await db.collection(collections.orgMembers).countDocuments({ orgId: member.orgId });
       orgData = {
-        id: (org.id as string) || String(org._id || member?.orgId || ""),
+        id: memberOrgId,
         name: (org.name as string) || "",
         domain: (org.domain as string) || "",
         businessType: (org.businessType as string) || "",

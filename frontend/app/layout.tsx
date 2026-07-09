@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { AppLayout } from "@/components/app-layout";
+import { ContextMenuProvider } from "@/components/context-menu-provider";
 import { OfflineBanner } from "@/components/offline-banner";
 import { OfflineSyncManager } from "@/components/offline-sync-manager";
 import { Toaster } from "sonner";
@@ -178,6 +179,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <Providers>
+          <ContextMenuProvider />
           <NotificationInitializer />
           <AppLayout>
             {children}
