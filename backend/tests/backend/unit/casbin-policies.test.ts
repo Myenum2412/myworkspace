@@ -3,8 +3,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { buildFileResource, buildFolderResource } from "../../../src/config/casbin.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CONFIG_DIR = path.resolve(__dirname, "../../../src/config");
+const _dirname = path.dirname(fileURLToPath(import.meta.url));
+const CONFIG_DIR = path.resolve(_dirname, "../../../src/config");
 
 let enforcer: Enforcer;
 

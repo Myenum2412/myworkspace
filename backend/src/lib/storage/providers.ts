@@ -14,7 +14,7 @@ export interface IStorageProvider {
   getUrl(key: string): string;
 }
 
-class LocalStorageProvider implements IStorageProvider {
+export class LocalStorageProvider implements IStorageProvider {
   private baseDir: string;
 
   constructor() {

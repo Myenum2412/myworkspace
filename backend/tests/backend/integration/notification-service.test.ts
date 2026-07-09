@@ -48,9 +48,9 @@ describe("NotificationService", () => {
 
       const list = await listNotifications(USER_ID);
 
-      expect(list).toHaveLength(2);
-      expect(list[0].title).toBe("Second");
-      expect(list[1].title).toBe("First");
+      expect(list.notifications).toHaveLength(2);
+      expect(list.notifications[0].title).toBe("Second");
+      expect(list.notifications[1].title).toBe("First");
     });
 
     it("does not return other users' notifications", async () => {
@@ -59,8 +59,8 @@ describe("NotificationService", () => {
 
       const list = await listNotifications(USER_ID);
 
-      expect(list).toHaveLength(1);
-      expect(list[0].title).toBe("Mine");
+      expect(list.notifications).toHaveLength(1);
+      expect(list.notifications[0].title).toBe("Mine");
     });
   });
 

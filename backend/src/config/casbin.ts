@@ -5,7 +5,7 @@ import { logger } from "../lib/logger/index.js";
 
 let enforcer: Enforcer | null = null;
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const _dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export type PermissionEffect = "allow" | "deny";
 
@@ -47,9 +47,9 @@ export function buildFolderResource(params: {
 
 export async function getEnforcer(): Promise<Enforcer> {
   if (enforcer) return enforcer;
+  const modelPath = path.join(_dirname, "rbac-model.conf");
 
-  const modelPath = path.join(__dirname, "rbac-model.conf");
-  const policyPath = path.join(__dirname, "casbin-policies.csv");
+  const policyPath = path.join(_dirname, "casbin-policies.csv");
 
   const useMongoAdapter = process.env.CASINB_MONGO_ADAPTER === "1" && process.env.NODE_ENV !== "test";
 

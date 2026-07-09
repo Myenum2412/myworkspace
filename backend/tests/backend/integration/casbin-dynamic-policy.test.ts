@@ -3,8 +3,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CONFIG_DIR = path.resolve(__dirname, "../../../src/config");
+const _dirname = path.dirname(fileURLToPath(import.meta.url));
+const CONFIG_DIR = path.resolve(_dirname, "../../../src/config");
 
 describe("Casbin dynamic policy changes", () => {
   let enforcer: Enforcer;

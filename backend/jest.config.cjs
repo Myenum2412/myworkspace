@@ -8,6 +8,9 @@ module.exports = {
   globalSetup: "<rootDir>/tests/global-setup.ts",
   globalTeardown: "<rootDir>/tests/global-teardown.ts",
   moduleNameMapper: {
+    "^uuid$": "<rootDir>/tests/__mocks__/uuid.cjs",
+    "^jose$": "<rootDir>/tests/__mocks__/jose.cjs",
+    "^file-type$": "<rootDir>/tests/__mocks__/file-type.cjs",
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
   transform: {

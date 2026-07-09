@@ -4,15 +4,15 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const _filename = fileURLToPath(import.meta.url);
+const _dirname = path.dirname(_filename);
 
-const logoBannerPath = path.resolve(__dirname, "../../../../../frontend/public/logobg.png");
+const logoBannerPath = path.resolve(_dirname, "../../../../../frontend/public/logobg.png");
 const logoBannerBase64 = fs.existsSync(logoBannerPath)
   ? `data:image/png;base64,${fs.readFileSync(logoBannerPath).toString("base64")}`
   : `${env.APP_URL}/logobg.png`;
 
-const logoSmallPath = path.resolve(__dirname, "../../../../../frontend/public/logo.jpeg");
+const logoSmallPath = path.resolve(_dirname, "../../../../../frontend/public/logo.jpeg");
 const logoSmallBase64 = fs.existsSync(logoSmallPath)
   ? `data:image/jpeg;base64,${fs.readFileSync(logoSmallPath).toString("base64")}`
   : `${env.APP_URL}/logo.jpeg`;
