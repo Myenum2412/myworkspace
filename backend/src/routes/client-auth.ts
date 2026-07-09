@@ -1,5 +1,6 @@
 import { Router, Response } from "express";
 import { hash, compare } from "bcryptjs";
+import crypto from "crypto";
 import { v4 as uuid } from "uuid";
 import { ClientUser } from "../lib/db/models/ClientUser.js";
 import { Client } from "../lib/db/models/Client.js";
@@ -10,7 +11,10 @@ import { Organization } from "../lib/db/models/Organization.js";
 import { signToken } from "../config/auth.js";
 import { optionalAuth } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { env } from "../config/env.js";
 import { stripe } from "../config/stripe.js";
+import { sendPasswordResetEmail } from "../lib/mail/index.js";
+import { validatePasswordStrength } from "../services/validation.service.js";
 import type { AuthRequest } from "../types/index.js";
 
 const router = Router();
@@ -289,6 +293,61 @@ router.post("/verify-email", optionalAuth, async (req: AuthRequest, res: Respons
   });
 
   res.json({ success: true, message: "Email verified successfully" });
+});
+
+router.post("/forgot-password", async (req: AuthRequest, res: Response) => {
+  const email = (req.body.email || "").toLowerCase().trim();
+  if (!email) {
+    throw new AppError(400, "Email is required");
+  }
+
+  const clientUser = await ClientUser.findOne({ email });
+  if (clientUser) {
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpires = new Date(Date.now() + 3600000);
+    await ClientUser.updateOne({ _id: clientUser._id }, { $set: { resetToken, resetTokenExpires } });
+
+    const resetLink = `${env.APP_URL}/client/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    sendPasswordResetEmail(email, clientUser.name, resetLink).catch((err) => {
+      console.error("[client-auth] Failed to send password reset email:", err?.message || err);
+    });
+  }
+  res.json({
+    success: true,
+    message: "If an account exists with that email, a reset link has been sent.",
+  });
+});
+
+router.post("/reset-password", async (req: AuthRequest, res: Response) => {
+  const { token, email, password } = req.body;
+  if (!token || !email || !password) {
+    throw new AppError(400, "Token, email, and new password are required");
+  }
+
+  validatePasswordStrength(password);
+
+  const clientUser = await ClientUser.findOne({ email: email.toLowerCase().trim(), resetToken: token, resetTokenExpires: { $gt: new Date() } });
+  if (!clientUser) {
+    throw new AppError(400, "Invalid or expired reset token");
+  }
+
+  const hashedPassword = await hash(password, 12);
+  await ClientUser.updateOne(
+    { _id: clientUser._id },
+    { $set: { password: hashedPassword, resetToken: null, resetTokenExpires: null, mustChangePassword: false } }
+  );
+
+  await ClientAuditLog.create({
+    orgId: clientUser.orgId,
+    clientId: clientUser.clientId,
+    clientUserId: clientUser.id,
+    action: "client.password.reset",
+    entityType: "client_user",
+    entityId: clientUser.id,
+    description: `${clientUser.name} reset their password`,
+  });
+
+  res.json({ success: true, message: "Password has been reset successfully." });
 });
 
 // GET /api/client-auth/billing-status

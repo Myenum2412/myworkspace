@@ -16,6 +16,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 import { BlogEditor } from "@/components/ui/blog-editor";
 
@@ -212,41 +213,42 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   };
 
   return (
-    <div className="sm:max-w-[720px] p-0 gap-0 max-h-[90vh] flex flex-col overflow-hidden">
-      {/* ─── Compact Header ─── */}
-      <div className="shrink-0 flex items-start justify-between px-5 pt-4 pb-3 border-b">
-        <div className="space-y-0.5">
-          <h2 className="text-base font-semibold">Create New Task</h2>
-          <p className="text-xs text-muted-foreground">
-            Create and assign work to your team
-          </p>
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}>
+      <DialogContent className="p-0 sm:max-w-[720px] gap-0 max-h-[90vh] flex flex-col overflow-hidden" showCloseButton={false}>
+        {/* ─── Compact Header ─── */}
+        <div className="shrink-0 flex items-start justify-between px-5 pt-4 pb-3 border-b">
+          <div className="space-y-0.5">
+            <h2 className="text-base font-semibold">Create New Task</h2>
+            <p className="text-xs text-muted-foreground">
+              Create and assign work to your team
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {localTaskDefs.length > 0 && (
+              <Select onValueChange={(val) => {
+                const selected = localTaskDefs.find((d) => d.id === val);
+                if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
+              }}>
+                <SelectTrigger className="h-7 w-fit gap-1 rounded-lg border-none bg-muted px-2 text-xs font-medium text-muted-foreground shadow-none hover:bg-muted/80 [&>svg]:hidden">
+                  <FileTextIcon className="size-3" />
+                  <span className="max-w-[100px] truncate">Template</span>
+                </SelectTrigger>
+                <SelectContent align="end" className="text-xs">
+                  {localTaskDefs.filter((d) => d.isActive).map((def) => (
+                    <SelectItem key={def.id} value={def.id} className="text-xs">{def.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+            >
+              <XIcon className="size-4" />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          {localTaskDefs.length > 0 && (
-            <Select onValueChange={(val) => {
-              const selected = localTaskDefs.find((d) => d.id === val);
-              if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
-            }}>
-              <SelectTrigger className="h-7 w-fit gap-1 rounded-lg border-none bg-muted px-2 text-xs font-medium text-muted-foreground shadow-none hover:bg-muted/80 [&>svg]:hidden">
-                <FileTextIcon className="size-3" />
-                <span className="max-w-[100px] truncate">Template</span>
-              </SelectTrigger>
-              <SelectContent align="end" className="text-xs">
-                {localTaskDefs.filter((d) => d.isActive).map((def) => (
-                  <SelectItem key={def.id} value={def.id} className="text-xs">{def.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <button
-            type="button"
-            onClick={handleClose}
-            className="flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
-          >
-            <XIcon className="size-4" />
-          </button>
-        </div>
-      </div>
 
         {formError && (
           <div className="shrink-0 mx-5 mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-xs text-destructive">
@@ -451,6 +453,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             </Button>
           </div>
         </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

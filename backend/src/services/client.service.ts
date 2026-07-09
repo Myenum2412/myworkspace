@@ -178,7 +178,7 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
   const clientUserId = uuid();
   const username = generateUsername(name);
   const rawPassword = data.password || generatePassword();
-  const hashedPassword = await hash(rawPassword, 10);
+  const hashedPassword = await hash(rawPassword, 12);
 
   const allowedFields = {
     name: data.body?.name,
@@ -302,7 +302,7 @@ export async function updateClient(orgId: string, clientId: string, adminId: str
   }
 
   if (body.password) {
-    const hashedPassword = await hash(body.password, 10);
+    const hashedPassword = await hash(body.password, 12);
     await ClientUser.updateOne(
       { clientId: client.id, orgId },
       { $set: { password: hashedPassword, mustChangePassword: true, updatedBy: adminId } },

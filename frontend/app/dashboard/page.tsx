@@ -375,63 +375,63 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Pending Payments */}
-      <Card>
-        <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
-          <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-            <IndianRupeeIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Pending Payments</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {pendingInvoices.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">No pending payments.</p>
-          ) : (
-            <div className="responsive-table">
-              <div className="sm:hidden space-y-2">
-                {pendingInvoices.map((inv) => (
-                  <div key={inv.id} className="border rounded-lg p-3 bg-card space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Invoice #{inv.number || inv.id.slice(0, 8)}</span>
-                      <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">Pending</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{inv.customerName || "—"}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "—"}
-                    </p>
-                    <p className="text-sm font-semibold text-amber-600">
-                      ₹{(inv.amountPaid / 100).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <table className="table-premium hidden sm:table w-full text-sm text-left">
-                <thead>
-                  <tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th></tr>
-                </thead>
-                <tbody>
+        {/* Pending Payments */}
+        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <IndianRupeeIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Pending Payments</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-y-auto min-h-0">
+            {pendingInvoices.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No pending payments.</p>
+            ) : (
+              <div className="responsive-table">
+                <div className="sm:hidden space-y-2">
                   {pendingInvoices.map((inv) => (
-                    <tr key={inv.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
-                      <td className="px-4 py-3 text-sm font-medium">#{inv.number || inv.id.slice(0, 8)}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{inv.customerName || "—"}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                    <div key={inv.id} className="border rounded-lg p-3 bg-card space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Invoice #{inv.number || inv.id.slice(0, 8)}</span>
+                        <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">Pending</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{inv.customerName || "—"}</p>
+                      <p className="text-xs text-muted-foreground">
                         {inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-semibold text-amber-600">
+                      </p>
+                      <p className="text-sm font-semibold text-amber-600">
                         ₹{(inv.amountPaid / 100).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-700">Pending</Badge>
-                      </td>
-                    </tr>
+                      </p>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </div>
+                <table className="table-premium hidden sm:table w-full text-sm text-left">
+                  <thead>
+                    <tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th></tr>
+                  </thead>
+                  <tbody>
+                    {pendingInvoices.map((inv) => (
+                      <tr key={inv.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                        <td className="px-4 py-3 text-sm font-medium">#{inv.number || inv.id.slice(0, 8)}</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{inv.customerName || "—"}</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-semibold text-amber-600">
+                          ₹{(inv.amountPaid / 100).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge variant="secondary" className="bg-blue-50 text-blue-700">Pending</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
+import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { ensureUserOrg } from "@/lib/org";
 
@@ -43,6 +44,10 @@ export async function PUT(
       if (body[field] !== undefined) {
         updateData[field] = body[field] || null;
       }
+    }
+
+    if (body.password) {
+      updateData.password = await hash(body.password, 12);
     }
 
     if (body.firstName || body.lastName) {

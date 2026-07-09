@@ -147,6 +147,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       lastName: firstSlideData.lastName.trim(),
       nickname: firstSlideData.nickname || null,
       email: firstSlideData.email.trim(),
+      password: firstSlideData.password || Math.random().toString(36).slice(-8) + "A1!",
       avatar: firstSlideData.avatar || "",
       department: firstSlideData.department || null,
       designation: firstSlideData.designation || null,

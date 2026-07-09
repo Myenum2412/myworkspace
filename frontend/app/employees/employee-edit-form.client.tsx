@@ -144,7 +144,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
     setSubmitting(true)
 
     try {
-      const updated = await employeeService.updateEmployee({
+      const payload: Record<string, unknown> = {
         id: employee.id,
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -178,7 +178,11 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
         educationDetails: educationDetails.filter(e => e.institute || e.degree),
         dependentDetails: dependentDetails.filter(d => d.name),
         files: [],
-      })
+      };
+      if (formData.password) {
+        payload.password = formData.password;
+      }
+      const updated = await employeeService.updateEmployee(payload as any);
 
       setFormSuccess("Employee updated successfully.")
       onSave(updated as Employee)

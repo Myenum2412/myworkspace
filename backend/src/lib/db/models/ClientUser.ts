@@ -14,6 +14,8 @@ export interface IClientUser extends Document {
   failedLoginAttempts: number;
   lockedUntil?: Date;
   lastLogin?: Date;
+  resetToken?: string;
+  resetTokenExpires?: Date;
   createdByAdminId: string;
   createdBy: string;
   updatedBy?: string;
@@ -36,6 +38,8 @@ const clientUserSchema = new Schema<IClientUser>(
     failedLoginAttempts: { type: Number, default: 0 },
     lockedUntil: Date,
     lastLogin: Date,
+    resetToken: { type: String, index: true },
+    resetTokenExpires: Date,
     createdByAdminId: { type: String, required: true },
     createdBy: { type: String, required: true },
     updatedBy: { type: String },

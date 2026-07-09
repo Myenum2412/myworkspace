@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Eye, EyeOff, Building2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function LoginInteractive() {
   const router = useRouter();
@@ -132,6 +133,11 @@ export default function LoginInteractive() {
                     {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </Button>
                 </div>
+              </div>
+              <div className="flex items-center justify-end">
+                <Link href="/client/forgot-password" className="text-xs text-muted-foreground underline-offset-4 hover:underline hover:text-foreground transition-colors">
+                  Forgot password?
+                </Link>
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? <><Loader2 className="mr-2 size-4 animate-spin" /> Signing in...</> : "Sign In"}

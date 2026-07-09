@@ -28,7 +28,7 @@ async function seed() {
         mongoose.model("SsoConfig").deleteMany({}),
         Counter.deleteMany({}),
     ]);
-    const hashedPassword = await bcrypt.hash("password123", 10);
+    const hashedPassword = await bcrypt.hash("password123", 12);
     const userId = uuid();
     const orgId = uuid();
     const session = await mongoose.startSession();
