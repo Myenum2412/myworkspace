@@ -1,16 +1,14 @@
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
 import { Notification } from "../../../src/lib/db/models/Notification.js";
 import { Session } from "../../../src/lib/db/models/Session.js";
 import { v4 as uuid } from "uuid";
 
 describe("TTL indexes", () => {
-  let mongoServer: MongoMemoryServer;
-
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const uri = mongoServer.getUri();
-    await mongoose.connect(uri);
+    const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/jesttest";
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connect(uri);
+    }
 
     // Create TTL indexes explicitly for test
     const db = mongoose.connection.db!;
@@ -22,11 +20,6 @@ describe("TTL indexes", () => {
       { expiresAt: 1 },
       { expireAfterSeconds: 0, name: "sessions_ttl_test" },
     );
-  });
-
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoServer.stop();
   });
 
   beforeEach(async () => {

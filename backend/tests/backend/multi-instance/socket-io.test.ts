@@ -47,10 +47,12 @@ describe("Multi-instance Socket.IO", () => {
   });
 
   afterAll(async () => {
-    instanceA.io.close();
-    instanceA.httpServer.close();
-    instanceB.io.close();
-    instanceB.httpServer.close();
+    await Promise.all([
+      instanceA.io.close(),
+      new Promise<void>((resolve) => instanceA.httpServer.close(() => resolve())),
+      instanceB.io.close(),
+      new Promise<void>((resolve) => instanceB.httpServer.close(() => resolve())),
+    ]);
   });
 
   it("each instance independently handles its own clients", async () => {
