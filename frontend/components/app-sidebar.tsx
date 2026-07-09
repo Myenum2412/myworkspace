@@ -11,6 +11,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import MuiFolderIcon from "@mui/icons-material/Folder";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import ChatIcon from "@mui/icons-material/Chat";
 import {
   LayoutDashboardIcon,
   ListChecksIcon,
@@ -19,9 +21,7 @@ import {
   ClockIcon,
   Settings2Icon,
   CheckCheckIcon,
-  CreditCardIcon,
   BriefcaseIcon,
-  VideoIcon,
 } from "lucide-react";
 
 export const defaultNavData = {
@@ -110,7 +110,7 @@ export const defaultNavData = {
     {
       title: "Billing",
       url: "/billing",
-      icon: <CreditCardIcon className="size-6" />,
+      icon: <AttachMoneyIcon className="size-6" />,
       items: [
         { title: "Overview", url: "/billing" },
         { title: "Services", url: "/billing/services" },
@@ -121,7 +121,7 @@ export const defaultNavData = {
     {
       title: "Chat",
       url: "/chat",
-      icon: <VideoIcon className="size-6" />,
+      icon: <ChatIcon className="size-6" />,
     },
     {
       title: "Settings",
