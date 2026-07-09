@@ -202,9 +202,18 @@ export async function POST(request: Request) {
     const { sendEmployeeOnboarded } = await import("@/lib/mail");
     const workspaceName = "MyWorkspace";
     const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
-    sendEmployeeOnboarded(email, firstName || name, email, workspaceName, loginUrl, defaultPassword).catch((err) => {
+
+    let emailStatus: "sent" | "failed" | "skipped" = "skipped";
+    let emailError: string | undefined;
+    try {
+      const result = await sendEmployeeOnboarded(email, firstName || name, email, workspaceName, loginUrl, defaultPassword);
+      emailStatus = result.emailStatus;
+      emailError = result.error;
+    } catch (err: any) {
       console.error("[employees] Onboarded email failed:", err?.message || err);
-    });
+      emailStatus = "failed";
+      emailError = err?.message || "Email delivery failed";
+    }
 
     const notificationsCol = db.collection(collections.notifications);
     const now = new Date();
@@ -240,8 +249,14 @@ export async function POST(request: Request) {
       await notificationsCol.insertMany(adminNotifs);
     }
 
-    const employee = await db.collection(collections.users).findOne({ id: userId });
-    return NextResponse.json(employee, { status: 201 });
+    const employee = await db.collection(collections.users).findOne({ id: userId, projection: { password: 0 } });
+    return NextResponse.json({
+      ...employee,
+      _id: employee?._id ? String(employee._id) : undefined,
+      emailStatus,
+      emailError,
+      tempPassword: defaultPassword,
+    }, { status: 201 });
   } catch (err: any) {
     console.error("Create employee error:", err);
     const message = err?.message || "An unexpected error occurred";

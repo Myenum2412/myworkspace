@@ -80,9 +80,15 @@ export async function addEmployeeAction(formData: FormData) {
 
   const { sendEmployeeOnboarded } = await import("@/lib/mail");
   const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
-  sendEmployeeOnboarded(email, name, email, "MyWorkspace", loginUrl, plainPassword).catch((err) => {
+
+  let emailStatus: "sent" | "failed" | "skipped" = "skipped";
+  try {
+    const emailResult = await sendEmployeeOnboarded(email, name, email, "MyWorkspace", loginUrl, plainPassword);
+    emailStatus = emailResult.emailStatus;
+  } catch (err: any) {
     console.error("[addEmployeeAction] Onboarded email failed:", err?.message || err);
-  });
+    emailStatus = "failed";
+  }
 
   const notificationsCol = db.collection(collections.notifications);
   const now = new Date();
@@ -119,5 +125,5 @@ export async function addEmployeeAction(formData: FormData) {
 
   revalidatePath("/employees");
   revalidateTag('dashboard', 'max');
-  return { success: true, password: plainPassword };
+  return { success: true, password: plainPassword, emailStatus };
 }

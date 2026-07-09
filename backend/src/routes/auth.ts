@@ -540,10 +540,10 @@ router.post("/send-employee-onboarded-email", async (req: AuthRequest, res: Resp
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
     await sendEmployeeOnboarded(email, firstName, userEmail, workspaceName, loginUrl, tempPassword);
-    res.json({ success: true, message: "Employee onboarded email sent" });
-  } catch (err) {
+    res.json({ success: true, message: "Employee onboarded email sent", emailStatus: "sent" });
+  } catch (err: any) {
     console.error("[auth] send-employee-onboarded-email error:", err);
-    res.status(500).json({ success: false, message: "Failed to send employee onboarded email" });
+    res.status(500).json({ success: false, message: "Failed to send employee onboarded email", emailStatus: "failed", error: err?.message || "Unknown error" });
   }
 });
 

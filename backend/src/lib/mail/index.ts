@@ -37,17 +37,18 @@ async function sendEmail(to: string, subject: string, htmlBody: string): Promise
         subject,
         html: htmlBody,
       });
-      console.log(`[mail] Email sent to ${to} (messageId: ${info.messageId})`);
+      console.log(`[mail] Email sent to ${to} via SMTP (messageId: ${info.messageId})`);
       return;
     } catch (error: any) {
       console.error(`[mail] Failed to send email via SMTP to ${to}:`, error);
-      throw new Error(`Failed to send email: ${error.message}`);
+      throw new Error(`Failed to send email via SMTP: ${error.message}`);
     }
   }
 
   if (!env.RESEND_API_KEY) {
-    console.warn("[mail] Neither SMTP nor RESEND_API_KEY configured - skipping email");
-    return;
+    const msg = "[mail] CRITICAL: Neither SMTP nor RESEND_API_KEY configured — email delivery skipped";
+    console.error(msg);
+    throw new Error(msg);
   }
 
   if (!resend) {
@@ -67,15 +68,16 @@ async function sendEmail(to: string, subject: string, htmlBody: string): Promise
     });
 
     if (!error) {
-      console.log(`[mail] Email sent to ${to} via ${from} (id: ${data?.id})`);
+      console.log(`[mail] Email sent to ${to} via Resend (from: ${from}, id: ${data?.id})`);
       return;
     }
     lastError = error;
-    console.warn(`[mail] Failed to send via "${from}" to ${to}:`, error.message);
+    console.warn(`[mail] Failed to send via Resend "${from}" to ${to}:`, error.message);
   }
 
-  console.error(`[mail] All send attempts failed for ${to}:`, lastError);
-  throw new Error(`Failed to send email: ${lastError?.message || "unknown error"}`);
+  const errMsg = `Failed to send email to ${to}: ${lastError?.message || "unknown error"}`;
+  console.error(`[mail] ${errMsg}`);
+  throw new Error(errMsg);
 }
 
 // ============================================================

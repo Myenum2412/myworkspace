@@ -90,4 +90,9 @@ async function getAllEmployees(): Promise<Array<Record<string, unknown>>> {
   return data.data || data || [];
 }
 
-export const employeeService = { createEmployee, updateEmployee, getAllEmployees };
+async function resendCredentialsEmail(userId: string): Promise<{ success: boolean; emailStatus: string; error?: string; newTempPassword?: string }> {
+  console.log(`[API POST /api/employees/resend-email] Resending credentials email for user: ${userId}`);
+  return apiFetch("/api/employees/resend-email", { method: "POST", body: JSON.stringify({ userId }) });
+}
+
+export const employeeService = { createEmployee, updateEmployee, getAllEmployees, resendCredentialsEmail };

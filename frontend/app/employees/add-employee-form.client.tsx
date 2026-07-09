@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { CopyIcon, UploadIcon, FileTextIcon, XIcon } from "lucide-react"
+import { CopyIcon, UploadIcon, FileTextIcon, XIcon, MailIcon, RefreshCwIcon, CheckCircleIcon, AlertCircleIcon } from "lucide-react"
 
 import { getDropdownOptions } from "@/lib/dropdown-options"
 
@@ -190,6 +190,9 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
   })
 
   const [successModalOpen, setSuccessModalOpen] = React.useState(false)
+  const [emailStatus, setEmailStatus] = React.useState<"sent" | "failed" | "skipped" | null>(null)
+  const [emailError, setEmailError] = React.useState<string | undefined>(undefined)
+  const [isResending, setIsResending] = React.useState(false)
 
   const handleSave = async () => {
     if (savedEmployee) {
@@ -250,6 +253,8 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       queryClient.invalidateQueries({ queryKey: ["employee"] })
       queryClient.invalidateQueries({ queryKey: ["employee-stats"] })
       trackEvent('save_employee_success')
+      setEmailStatus((employee as any)?.emailStatus || "skipped")
+      setEmailError((employee as any)?.emailError)
       setSuccessModalOpen(true)
     } catch (err: any) {
       const msg = err?.message === "Validation failed" ? "Please fill in all required fields correctly." : (err?.message || "Failed to create employee. Please try again.")
@@ -265,10 +270,28 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
     }
   }
 
+  const handleResendEmail = async () => {
+    if (!savedEmployee?.id) return
+    setIsResending(true)
+    try {
+      const result = await employeeService.resendCredentialsEmail(savedEmployee.id as string)
+      setEmailStatus(result.emailStatus as "sent" | "failed" | "skipped")
+      setEmailError(result.error)
+      if (result.newTempPassword) {
+        setFirstSlideData(prev => ({ ...prev, password: result.newTempPassword! }))
+      }
+    } catch {
+      setEmailStatus("failed")
+      setEmailError("Failed to resend email")
+    } finally {
+      setIsResending(false)
+    }
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-6 overflow-hidden">
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Employee Created</DialogTitle>
           </DialogHeader>
@@ -295,6 +318,48 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                 <Button size="icon" variant="ghost" className="size-8" onClick={() => navigator.clipboard.writeText(firstSlideData.password)}>
                   <CopyIcon className="size-3.5" />
                 </Button>
+              </div>
+            </div>
+
+            {/* Email notification status */}
+            <div className={`rounded-lg border p-3 flex items-start gap-3 ${
+              emailStatus === "sent"
+                ? "border-green-200 bg-green-50"
+                : emailStatus === "failed"
+                  ? "border-red-200 bg-red-50"
+                  : "border-yellow-200 bg-yellow-50"
+            }`}>
+              {emailStatus === "sent" ? (
+                <CheckCircleIcon className="size-4 text-green-600 mt-0.5 shrink-0" />
+              ) : emailStatus === "failed" ? (
+                <AlertCircleIcon className="size-4 text-red-600 mt-0.5 shrink-0" />
+              ) : (
+                <MailIcon className="size-4 text-yellow-600 mt-0.5 shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium ${
+                  emailStatus === "sent" ? "text-green-800" :
+                  emailStatus === "failed" ? "text-red-800" : "text-yellow-800"
+                }`}>
+                  {emailStatus === "sent" && "Credentials email sent successfully"}
+                  {emailStatus === "failed" && "Email delivery failed"}
+                  {emailStatus === "skipped" && "Email not sent (no email provider configured)"}
+                </p>
+                {emailError && (
+                  <p className="text-xs text-red-600 mt-1 truncate">{emailError}</p>
+                )}
+                {emailStatus !== "sent" && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0 mt-1 text-xs"
+                    onClick={handleResendEmail}
+                    disabled={isResending}
+                  >
+                    <RefreshCwIcon className={`size-3 mr-1 ${isResending ? "animate-spin" : ""}`} />
+                    {isResending ? "Resending..." : "Resend credentials email"}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
