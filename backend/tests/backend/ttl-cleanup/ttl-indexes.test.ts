@@ -47,6 +47,7 @@ describe("TTL indexes", () => {
       id: notifId,
       userId: uuid(),
       orgId: uuid(),
+      createdBy: uuid(),
       type: "system",
       title: "TTL Test",
       message: "Should be removed",

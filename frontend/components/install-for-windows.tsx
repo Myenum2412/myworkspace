@@ -67,10 +67,12 @@ export function InstallForWindows() {
 
       if (!response.ok) {
         const errData = await response.json().catch(() => null);
-        if (response.status === 404 && errData?.message) {
+        if (errData?.message) {
           setError(errData.message);
+        } else if (response.status === 404) {
+          setError("Installer not available. Please build it first.");
         } else {
-          setError("Failed to download installer. Please try again.");
+          setError(`Download failed (${response.status}). Please try again.`);
         }
         setDownloadState("error");
         return;

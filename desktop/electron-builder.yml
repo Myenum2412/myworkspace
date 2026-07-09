@@ -19,8 +19,6 @@ win:
         - x64
   icon: assets/icon.ico
   artifactName: MyWorkspaceSetup.${ext}
-  certificateFile: ""
-  certificatePassword: ""
   signAndEditExecutable: false
   signDlls: false
 
