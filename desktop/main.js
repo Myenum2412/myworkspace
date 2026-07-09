@@ -7,7 +7,7 @@ const log = require("electron-log");
 // ── Configuration ──
 const APP_NAME = "MyWorkspace";
 const APP_VERSION = app.getVersion();
-const APP_URL = process.env.APP_URL || "https://app.myworkspace.com";
+let APP_URL = process.env.APP_URL || "https://app.myworkspace.com";
 const UPDATE_FEEDBACK_INTERVAL = 1000 * 60 * 60; // 1 hour
 
 let mainWindow = null;
@@ -31,6 +31,9 @@ function loadConfig() {
       if (config.workspaceDataPath && fs.existsSync(config.workspaceDataPath)) {
         workspaceDataPath = config.workspaceDataPath;
       }
+      if (config.appUrl) {
+        APP_URL = config.appUrl;
+      }
     }
   } catch (err) {
     log.error("Failed to load config:", err);
@@ -42,6 +45,7 @@ function saveConfig() {
     const configPath = path.join(app.getPath("userData"), "workspace-config.json");
     fs.writeJsonSync(configPath, {
       workspaceDataPath,
+      appUrl: APP_URL,
       version: APP_VERSION,
       lastLaunch: new Date().toISOString(),
     });
@@ -63,6 +67,132 @@ function ensureDataDirectories() {
   ];
   dirs.forEach((dir) => fs.ensureDirSync(dir));
   log.info(`Workspace data directories ensured at: ${workspaceDataPath}`);
+}
+
+// ── Error Page HTML ──
+function getErrorPageHTML(url, error) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${APP_NAME} - Connection Error</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+          color: #e2e8f0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          padding: 20px;
+        }
+        .container {
+          max-width: 500px;
+          text-align: center;
+          background: rgba(30, 41, 59, 0.8);
+          border-radius: 16px;
+          padding: 40px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        .icon {
+          width: 80px;
+          height: 80px;
+          background: rgba(239, 68, 68, 0.1);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 24px;
+          font-size: 36px;
+        }
+        h1 {
+          font-size: 24px;
+          margin-bottom: 16px;
+          color: #f8fafc;
+        }
+        .error-message {
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          border-radius: 8px;
+          padding: 12px;
+          margin: 16px 0;
+          font-size: 14px;
+          color: #fca5a5;
+        }
+        .url {
+          word-break: break-all;
+          color: #94a3b8;
+          font-size: 13px;
+          margin: 8px 0;
+        }
+        .help {
+          margin-top: 24px;
+          font-size: 14px;
+          color: #94a3b8;
+          line-height: 1.6;
+        }
+        .help strong {
+          color: #e2e8f0;
+        }
+        .actions {
+          margin-top: 24px;
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+        }
+        button {
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          border: none;
+          transition: all 0.2s;
+        }
+        .btn-primary {
+          background: #3b82f6;
+          color: white;
+        }
+        .btn-primary:hover {
+          background: #2563eb;
+        }
+        .btn-secondary {
+          background: rgba(148, 163, 184, 0.1);
+          color: #e2e8f0;
+          border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+        .btn-secondary:hover {
+          background: rgba(148, 163, 184, 0.2);
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="icon">⚠</div>
+        <h1>Unable to Connect</h1>
+        <p>The application could not load the login page.</p>
+        <div class="error-message">
+          <strong>Error:</strong> ${error || 'Server unreachable'}
+        </div>
+        <p class="url">URL: ${url}</p>
+        <div class="help">
+          <p><strong>Possible causes:</strong></p>
+          <p>• The server is not running</p>
+          <p>• The URL is incorrect</p>
+          <p>• Network connection issue</p>
+        </div>
+        <div class="actions">
+          <button class="btn-primary" onclick="location.reload()">Try Again</button>
+          <button class="btn-secondary" onclick="window.electronAPI?.openSettings()">Settings</button>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
 }
 
 // ── Main Window ──
@@ -89,6 +219,13 @@ function createMainWindow() {
   });
 
   mainWindow.loadURL(APP_URL);
+
+  // Handle load failures
+  mainWindow.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    log.error(`Failed to load ${validatedURL}: ${errorDescription} (${errorCode})`);
+    const errorHTML = getErrorPageHTML(validatedURL, errorDescription);
+    mainWindow.webContents.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(errorHTML)}`);
+  });
 
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
@@ -292,12 +429,79 @@ function setupIPC() {
   ipcMain.on("show-notification", (_event, { title, body }) => {
     new Notification({ title, body }).show();
   });
+
+  // Open settings dialog
+  ipcMain.handle("open-settings", async () => {
+    const result = await dialog.showMessageBox(mainWindow, {
+      type: "question",
+      buttons: ["Change URL", "Cancel"],
+      title: "Application Settings",
+      message: "Server URL Configuration",
+      detail: `Current URL: ${APP_URL}\n\nWould you like to change the server URL?`,
+    });
+
+    if (result.response === 0) {
+      // Show input dialog for URL
+      const urlResult = await dialog.showMessageBox(mainWindow, {
+        type: "question",
+        buttons: ["http://localhost:3000", "https://app.myworkspace.com", "Cancel"],
+        title: "Select Server URL",
+        message: "Choose the server URL to connect to:",
+        detail: "Select an option or click Cancel to keep the current URL.",
+      });
+
+      let newUrl = APP_URL;
+      if (urlResult.response === 0) {
+        newUrl = "http://localhost:3000";
+      } else if (urlResult.response === 1) {
+        newUrl = "https://app.myworkspace.com";
+      } else {
+        return { success: false, error: "Cancelled" };
+      }
+
+      if (newUrl !== APP_URL) {
+        APP_URL = newUrl;
+        saveConfig();
+        mainWindow.loadURL(APP_URL);
+        return { success: true, url: newUrl };
+      }
+    }
+    return { success: false, error: "Cancelled" };
+  });
+}
+
+// ── First Launch Configuration ──
+async function showFirstLaunchDialog() {
+  const configPath = path.join(app.getPath("userData"), "workspace-config.json");
+  const isFirstLaunch = !fs.existsSync(configPath);
+
+  if (!isFirstLaunch) {
+    return;
+  }
+
+  const result = await dialog.showMessageBox(null, {
+    type: "question",
+    buttons: ["Local Development (localhost:3000)", "Production Server (app.myworkspace.com)", "Skip for now"],
+    title: `Welcome to ${APP_NAME}`,
+    message: `Welcome to ${APP_NAME}!`,
+    detail: "This appears to be your first time running the application.\n\nPlease select which server to connect to:",
+    defaultId: 0,
+    cancelId: 2,
+  });
+
+  if (result.response === 0) {
+    APP_URL = "http://localhost:3000";
+  } else if (result.response === 1) {
+    APP_URL = "https://app.myworkspace.com";
+  }
+  // result.response === 2 means Skip, keep default APP_URL
 }
 
 // ── App Lifecycle ──
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   loadConfig();
   ensureDataDirectories();
+  await showFirstLaunchDialog();
   saveConfig();
   setupIPC();
   createMainWindow();

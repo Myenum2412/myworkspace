@@ -60,6 +60,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
     console.log(`[profile-image] updated for userId=${userId}`);
+
+    // Also update organization logo for invoice PDFs
+    try {
+      const member = await db.collection("org_members").findOne({ userId });
+      if (member?.orgId) {
+        await db.collection("organizations").updateOne(
+          { $or: [{ id: member.orgId }, { _id: new ObjectId(member.orgId) }] },
+          { $set: { logo: imageUrl, updatedAt: new Date() } }
+        );
+        console.log(`[profile-image] organization logo updated for orgId=${member.orgId}`);
+      }
+    } catch (orgErr) {
+      console.warn("[profile-image] Failed to update organization logo:", orgErr);
+    }
+
     return NextResponse.json({ image: imageUrl });
   } catch (e) {
     console.error("[profile-image] Failed:", e);

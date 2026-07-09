@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // App info
   getAppInfo: () => ipcRenderer.invoke("get-app-info"),
   getConfig: () => ipcRenderer.invoke("get-config"),
+  openSettings: () => ipcRenderer.invoke("open-settings"),
 
   // Workspace data path
   getWorkspaceDataPath: () => ipcRenderer.invoke("get-workspace-data-path"),

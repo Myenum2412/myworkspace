@@ -83,13 +83,29 @@ export async function generateInvoicePDF(baseInvoice: Invoice, preview = false) 
 
   // 2. Logo & Company Details
   let startY = 20;
-  const logoUrl = org.logoUrl || org.profileImage || "/logobg.png"; 
+  const logoUrl = org.logoUrl || org.logo || org.profileImage || "/logobg.png";
   try {
-    const absoluteUrl = logoUrl.startsWith("http") ? logoUrl : window.location.origin + logoUrl;
-    const base64Img = await getBase64ImageFromURL(absoluteUrl);
-    doc.addImage(base64Img, "PNG", mX + 2, startY, 32, 32);
+    let imgData = logoUrl;
+    // If it's a relative URL, convert to absolute
+    if (!logoUrl.startsWith("http") && !logoUrl.startsWith("data:")) {
+      imgData = window.location.origin + logoUrl;
+    }
+    // If it's a base64 data URL, use directly; otherwise convert via canvas
+    if (imgData.startsWith("data:")) {
+      doc.addImage(imgData, "PNG", mX + 2, startY, 32, 32);
+    } else {
+      const base64Img = await getBase64ImageFromURL(imgData);
+      doc.addImage(base64Img, "PNG", mX + 2, startY, 32, 32);
+    }
   } catch (e) {
     console.error("Error loading logo", e);
+    // Draw a placeholder logo box
+    doc.setFillColor(0, 50, 80);
+    doc.rect(mX + 2, startY, 32, 32, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.text("LOGO", mX + 18, startY + 20, { align: "center" });
+    doc.setTextColor(0, 0, 0);
   }
 
   const compX = mX + 38;
