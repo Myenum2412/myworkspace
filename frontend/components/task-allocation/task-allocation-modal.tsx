@@ -213,7 +213,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}>
+    <Dialog open={open}>
       <DialogContent className="p-0 sm:max-w-[720px] gap-0 max-h-[90vh] flex flex-col overflow-hidden" showCloseButton={false}>
         {/* ─── Compact Header ─── */}
         <div className="shrink-0 flex items-start justify-between px-5 pt-4 pb-3 border-b">

@@ -162,6 +162,12 @@ export async function listTasks(options: TaskListOptions): Promise<TaskListResul
   };
 }
 
+async function lookupUser(id: string) {
+  let u = await User.findOne({ id }).lean();
+  if (!u) { try { u = await User.findById(id).lean(); } catch {} }
+  return u;
+}
+
 export async function createTask(data: {
   orgId: string;
   userId: string;
@@ -216,10 +222,14 @@ export async function createTask(data: {
     description: `Task "${title}" created`,
   });
 
-  const [assigneeUser, creatorUser] = await Promise.all([
-    User.findOne({ id: task.assigneeId || userId }).lean(),
-    User.findOne({ id: userId }).lean(),
-  ]);
+  const targetAssigneeId = task.assigneeId || userId;
+  let assigneeUser = await User.findOne({ id: targetAssigneeId }).lean();
+  if (!assigneeUser) {
+    try {
+      assigneeUser = await User.findById(targetAssigneeId).lean();
+    } catch {}
+  }
+  const creatorUser = await User.findOne({ id: userId }).lean().catch(() => null);
 
   socketIOManager.emitToOrg(orgId, "task:created", {
     id: task._id.toString(),
@@ -228,7 +238,7 @@ export async function createTask(data: {
     title,
     status: task.status,
     priority: task.priority,
-    assigneeId: task.assigneeId?.toString() || userId,
+    assigneeId: targetAssigneeId,
     assigneeName: assigneeUser?.name || "",
     assigneeAvatar: assigneeUser?.image || "",
     creatorId: userId,
@@ -256,6 +266,8 @@ export async function createTask(data: {
         task.priority,
         `${env.APP_URL}/alltasks?id=${task._id}`,
       ).catch((err) => console.error("[mail] Failed to send task assigned email:", err?.message || err));
+    } else {
+      console.warn(`[task] assigneeUser not found or missing email for assigneeId=${targetAssigneeId}`);
     }
   }
 
@@ -317,8 +329,8 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
 
   if (assigneeChanged && newAssigneeId && newAssigneeId !== userId) {
     const [updaterUser, newAssigneeUser] = await Promise.all([
-      User.findOne({ id: userId }).lean(),
-      User.findOne({ id: newAssigneeId }).lean(),
+      User.findOne({ id: userId }).lean().catch(() => null),
+      lookupUser(newAssigneeId),
     ]);
     notifyTaskAssigned(
       { id, title: updated?.title || existing.title || "" },
@@ -343,8 +355,8 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
     }
   } else if (updated?.assigneeId?.toString() && updated.assigneeId.toString() !== userId && !assigneeChanged) {
     const [updaterUser, assigneeUser] = await Promise.all([
-      User.findOne({ id: userId }).lean(),
-      User.findOne({ id: updated.assigneeId.toString() }).lean(),
+      User.findOne({ id: userId }).lean().catch(() => null),
+      lookupUser(updated.assigneeId.toString()),
     ]);
     const changes = [status ? `status changed to ${status}` : ""].filter(Boolean).join(", ");
     notifyTaskUpdated(
@@ -452,8 +464,8 @@ export async function updateTaskStatus(id: string, status: TaskStatus, userId: s
 
   if (existing.assigneeId?.toString() && existing.assigneeId.toString() !== userId) {
     const [updater, assigneeUser] = await Promise.all([
-      User.findOne({ id: userId }).lean(),
-      User.findOne({ id: existing.assigneeId.toString() }).lean(),
+      User.findOne({ id: userId }).lean().catch(() => null),
+      lookupUser(existing.assigneeId.toString()),
     ]);
     notifyTaskUpdated(
       { id, title: existing.title || "" },
