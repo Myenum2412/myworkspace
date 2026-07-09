@@ -120,12 +120,6 @@ export function InstallForWindows() {
 
   if (loading) return null;
 
-  const isWindows =
-    typeof navigator !== "undefined" &&
-    /windows|win32|win64/i.test(navigator.platform || navigator.userAgent);
-
-  if (!isWindows) return null;
-
   return (
     <Popover open={showDetails} onOpenChange={setShowDetails}>
       <PopoverTrigger asChild>
