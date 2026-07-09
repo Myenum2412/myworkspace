@@ -19,7 +19,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { INDUSTRIES } from "@/lib/industries";
-import { StorageUsage } from "@/components/storage-usage";
+import { StorageDashboard } from "@/components/storage-dashboard";
 import {
   MailIcon,
   CalendarIcon,
@@ -656,7 +656,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
 
       {activeTab === "storage" && (
         <div className="flex-1 p-3 sm:p-4 md:p-6 w-full min-w-0 max-w-full overflow-auto">
-          <StorageUsage />
+          <StorageDashboard orgId={initialData.org?.id || ""} />
         </div>
       )}
 

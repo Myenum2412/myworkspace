@@ -113,6 +113,9 @@ export const proxy = auth((req) => {
     const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(roleLower);
     
     if (!isWorkspaceAdmin) {
+      if (roleLower === "client" || roleLower === "client_user") {
+        return NextResponse.redirect(new URL("/client/dashboard", req.url));
+      }
       return NextResponse.redirect(new URL("/staffs", req.url));
     }
 
@@ -162,6 +165,11 @@ export const proxy = auth((req) => {
     }
     if (isOrgAdmin) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
+    }
+
+    const roleLower = userRole?.toLowerCase() || "";
+    if (roleLower === "client" || roleLower === "client_user") {
+      return NextResponse.redirect(new URL("/client/dashboard", req.url));
     }
 
     // Check subscription for staff routes

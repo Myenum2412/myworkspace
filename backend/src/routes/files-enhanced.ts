@@ -189,6 +189,79 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
   });
 });
 
+router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
+  const orgId = req.query.orgId as string;
+  if (!orgId) throw new AppError(400, "orgId is required");
+  await verifyAccess(req.user!.userId, orgId);
+
+  const userId = req.user!.userId;
+  const USER_STORAGE_LIMIT = 1024 * 1024 * 1024;
+
+  const [userFiles, allUserFiles, fileTypeBreakdown, largestFile, recentUploads, monthlyStats] = await Promise.all([
+    FileAttachment.find({ orgId, uploaderId: userId, deletedAt: null }).sort({ size: -1 }).lean(),
+    FileAttachment.aggregate([
+      { $match: { orgId, uploaderId: userId, deletedAt: { $ne: null } } },
+      { $group: { _id: null, count: { $sum: 1 }, totalSize: { $sum: "$size" } } },
+    ]),
+    FileAttachment.aggregate([
+      { $match: { orgId, uploaderId: userId, deletedAt: null } },
+      { $group: { _id: "$category", count: { $sum: 1 }, totalSize: { $sum: "$size" } } },
+      { $sort: { totalSize: -1 } },
+    ]),
+    FileAttachment.findOne({ orgId, uploaderId: userId, deletedAt: null })
+      .sort({ size: -1 }).select({ name: 1, size: 1, mimeType: 1, createdAt: 1 }).lean(),
+    FileAttachment.find({ orgId, uploaderId: userId, deletedAt: null })
+      .sort({ createdAt: -1 }).limit(10)
+      .select({ id: 1, name: 1, size: 1, mimeType: 1, category: 1, createdAt: 1 }).lean(),
+    FileAttachment.aggregate([
+      { $match: { orgId, uploaderId: userId, createdAt: { $gte: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000) } } },
+      { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, count: { $sum: 1 }, totalSize: { $sum: "$size" } } },
+      { $sort: { _id: 1 } },
+    ]),
+  ]);
+
+  const usedStorage = userFiles.reduce((sum, f) => sum + (f.size || 0), 0);
+  const availableStorage = Math.max(0, USER_STORAGE_LIMIT - usedStorage);
+  const usagePercent = Math.min(100, (usedStorage / USER_STORAGE_LIMIT) * 100);
+  const totalFiles = userFiles.length;
+  const deletedFiles = allUserFiles[0]?.count || 0;
+  const deletedStorage = allUserFiles[0]?.totalSize || 0;
+  const averageFileSize = totalFiles > 0 ? Math.round(usedStorage / totalFiles) : 0;
+  const lastUpload = userFiles.length > 0 ? userFiles[0].createdAt : null;
+
+  const categoryLabels: Record<string, string> = {
+    image: "Images", video: "Videos", audio: "Audio",
+    document: "Documents", archive: "Archives", general: "Others",
+  };
+  const fileTypes = fileTypeBreakdown.map((ft) => ({
+    category: ft._id || "general",
+    label: categoryLabels[ft._id] || "Others",
+    count: ft.count,
+    size: ft.totalSize,
+    percent: usedStorage > 0 ? Math.round((ft.totalSize / usedStorage) * 100) : 0,
+  }));
+
+  res.json({
+    success: true,
+    data: {
+      usedStorage, totalStorage: USER_STORAGE_LIMIT, availableStorage,
+      usagePercent: Math.round(usagePercent * 10) / 10,
+      totalFiles, deletedFiles, deletedStorage, averageFileSize,
+      largestFile: largestFile ? {
+        name: largestFile.name, size: largestFile.size,
+        mimeType: largestFile.mimeType, uploadedAt: largestFile.createdAt,
+      } : null,
+      lastUpload,
+      fileTypes,
+      recentUploads: recentUploads.map((f) => ({
+        id: f.id, name: f.name, size: f.size, mimeType: f.mimeType,
+        category: f.category, uploadedAt: f.createdAt,
+      })),
+      monthlyStats: monthlyStats.map((m) => ({ month: m._id, count: m.count, size: m.totalSize })),
+    },
+  });
+});
+
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   const result = await getFileStream(req.params.id);
   if (!result) throw new AppError(404, "File not found");

@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient } = require('mongodb');
 
 async function run() {
   const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/myworkspace";
@@ -6,14 +6,16 @@ async function run() {
   try {
     await client.connect();
     const db = client.db();
-    const invoices = await db.collection("invoices").find({}).toArray();
-    console.log("Invoices count:", invoices.length);
-    if (invoices.length > 0) {
-      console.log("Sample invoice:", JSON.stringify(invoices[0], null, 2));
-    }
+    
+    console.log("--- Users ---");
+    const user = await db.collection("users").findOne({ email: "myenumam@gmail.com" });
+    console.log(user);
+
+    console.log("--- Client Users ---");
+    const cUser = await db.collection("client_users").findOne({ email: "myenumam@gmail.com" });
+    console.log(cUser);
   } finally {
     await client.close();
   }
 }
-
 run().catch(console.error);
