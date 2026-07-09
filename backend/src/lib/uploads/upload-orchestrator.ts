@@ -7,6 +7,9 @@ import { getStorageProvider, computeChecksum } from "../storage/providers.js";
 import { env } from "../../config/env.js";
 import { AppError } from "../../middleware/error.js";
 
+/** Hard per-user storage limit: 1 GB */
+export const USER_STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024;
+
 export type OrchestratorResult =
   | { kind: "created"; fileId: string; isDuplicate: boolean }
   | { kind: "duplicate"; fileId: string };
@@ -39,6 +42,25 @@ export async function updateUsedStorage(orgId: string, deltaBytes: number): Prom
     { $inc: { usedStorageBytes: deltaBytes } },
     { upsert: true },
   );
+}
+
+/** Compute total non-deleted file storage used by a specific user within an org. */
+export async function getUserStorageUsed(orgId: string, userId: string): Promise<number> {
+  const result = await FileAttachment.aggregate([
+    { $match: { orgId, uploaderId: userId, deletedAt: null } },
+    { $group: { _id: null, total: { $sum: "$size" } } },
+  ]);
+  return result[0]?.total || 0;
+}
+
+/** Check per-user 1 GB storage limit. Throws 413 if exceeded. */
+export async function checkUserQuota(orgId: string, userId: string, additionalBytes: number): Promise<void> {
+  const used = await getUserStorageUsed(orgId, userId);
+  if (used + additionalBytes > USER_STORAGE_LIMIT_BYTES) {
+    const usedMB = (used / (1024 * 1024)).toFixed(1);
+    const limitMB = (USER_STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(0);
+    throw new AppError(413, `User storage limit exceeded. Used: ${usedMB} MB of ${limitMB} MB`);
+  }
 }
 
 export function categorizeMime(mimeType: string): "image" | "video" | "audio" | "document" | "archive" | "general" {
@@ -74,6 +96,7 @@ export async function finalizeUpload(input: FinalizeInput): Promise<Orchestrator
   }
 
   await checkOrgQuota(orgId, size);
+  await checkUserQuota(orgId, uploaderId, size);
 
   const provider = getStorageProvider();
   const storagePath = `${orgId}/${Date.now()}-${uuid()}-${name}`;

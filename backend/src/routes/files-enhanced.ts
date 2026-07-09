@@ -149,7 +149,8 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
   if (!orgId) throw new AppError(400, "orgId is required");
   await verifyAccess(req.user!.userId, orgId);
 
-  const [totalFiles, totalSize, deletedFiles, quota] = await Promise.all([
+  const userId = req.user!.userId;
+  const [totalFiles, totalSize, deletedFiles, quota, userStorage] = await Promise.all([
     FileAttachment.countDocuments({ orgId, deletedAt: null }),
     FileAttachment.aggregate([
       { $match: { orgId, deletedAt: null } },
@@ -157,12 +158,19 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
     ]),
     FileAttachment.countDocuments({ orgId, deletedAt: { $ne: null } }),
     (await import("../lib/db/models/StorageQuota.js")).StorageQuota.findOne({ orgId }).lean(),
+    FileAttachment.aggregate([
+      { $match: { orgId, uploaderId: userId, deletedAt: null } },
+      { $group: { _id: null, total: { $sum: "$size" } } },
+    ]),
   ]);
 
   const mimeTypeBreakdown = await FileAttachment.aggregate([
     { $match: { orgId, deletedAt: null } },
     { $group: { _id: { $arrayElemAt: [{ $split: ["$mimeType", "/"] }, 0] }, count: { $sum: 1 }, size: { $sum: "$size" } } },
   ]);
+
+  const userUsedStorage = userStorage[0]?.total || 0;
+  const userStorageLimit = 1024 * 1024 * 1024; // 1 GB per user
 
   res.json({
     success: true,
@@ -173,6 +181,10 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
       maxStorage: quota?.maxStorageBytes || 10 * 1024 * 1024 * 1024,
       deletedFiles,
       mimeTypeBreakdown,
+      userStorage: {
+        used: userUsedStorage,
+        limit: userStorageLimit,
+      },
     },
   });
 });

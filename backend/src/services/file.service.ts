@@ -5,6 +5,7 @@ import { FileShare } from "../lib/db/models/FileShare.js";
 import { ShareLink } from "../lib/db/models/ShareLink.js";
 import { StorageQuota } from "../lib/db/models/StorageQuota.js";
 import { getStorageProvider, computeChecksum } from "../lib/storage/providers.js";
+import { checkUserQuota } from "../lib/uploads/upload-orchestrator.js";
 import { env } from "../config/env.js";
 import { AppError } from "../middleware/error.js";
 import { recordAuditLog } from "./audit.service.js";
@@ -78,6 +79,8 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
   if (quota && quota.usedStorageBytes + size > quota.maxStorageBytes) {
     throw new AppError(413, "Organization storage quota exceeded");
   }
+
+  await checkUserQuota(orgId, uploaderId, size);
 
   const provider = getStorageProvider();
   const storagePath = `${orgId}/${Date.now()}-${uuid()}-${originalName}`;
