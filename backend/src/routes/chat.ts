@@ -15,10 +15,11 @@ router.post("/messages", authenticate, async (req: AuthRequest, res: Response) =
   if (!conversationId || !content) {
     throw new AppError(400, "conversationId and content are required");
   }
+  if (!req.user?.orgId || !req.user?.userId) throw new AppError(401, "Unauthorized");
   const message = await sendMessage({
-    orgId: req.user!.orgId,
-    senderId: req.user!.userId,
-    createdBy: req.user!.userId,
+    orgId: req.user.orgId,
+    senderId: req.user.userId,
+    createdBy: req.user.userId,
     conversationId,
     content,
     messageType,
@@ -33,8 +34,9 @@ router.get("/messages/:conversationId", authenticate, async (req: AuthRequest, r
   const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
   const before = req.query.before as string | undefined;
 
+  if (!req.user?.orgId) throw new AppError(401, "Unauthorized");
   const messages = await getMessageHistory({
-    orgId: req.user!.orgId,
+    orgId: req.user.orgId,
     conversationId,
     limit,
     before,
@@ -44,16 +46,18 @@ router.get("/messages/:conversationId", authenticate, async (req: AuthRequest, r
 
 router.post("/messages/:conversationId/read", authenticate, async (req: AuthRequest, res: Response) => {
   const { conversationId } = req.params;
+  if (!req.user?.orgId || !req.user?.userId) throw new AppError(401, "Unauthorized");
   await markConversationRead({
-    orgId: req.user!.orgId,
+    orgId: req.user.orgId,
     conversationId,
-    userId: req.user!.userId,
+    userId: req.user.userId,
   });
   res.json({ success: true });
 });
 
 router.get("/conversations", authenticate, async (req: AuthRequest, res: Response) => {
-  const conversations = await getConversations(req.user!.orgId, req.user!.userId);
+  if (!req.user?.orgId || !req.user?.userId) throw new AppError(401, "Unauthorized");
+  const conversations = await getConversations(req.user.orgId, req.user.userId);
   res.json({ success: true, data: conversations });
 });
 

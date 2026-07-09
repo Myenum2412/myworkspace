@@ -1,10 +1,10 @@
-import { connectDB } from "../lib/db/index.js";
+import { connectDb } from "../lib/db/index.js";
 import { Receipt } from "../lib/db/models/Receipt.js";
 import { Counter } from "../lib/db/models/Counter.js";
 import { logger } from "../lib/logger/index.js";
 
 async function seed() {
-  await connectDB();
+  await connectDb();
   logger.info("Connected to DB — seeding receipts...");
 
   // Get the first org from the database

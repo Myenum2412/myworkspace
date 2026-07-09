@@ -284,7 +284,7 @@ class CacheService extends EventEmitter {
     this.emit("flush");
   }
 
-  getStats(): CacheLayerStats & { layers: Record<string, unknown> } {
+  getStats(): CacheLayerStats & { version: number; layers: Record<string, unknown> } {
     const nodeStats = this.local.getStats();
     const total = this.stats.hits.l1 + this.stats.hits.l2 + this.stats.misses.l1 + this.stats.misses.l2;
     const keys = this.local.keys();
