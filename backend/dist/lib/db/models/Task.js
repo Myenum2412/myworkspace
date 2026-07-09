@@ -22,5 +22,6 @@ const taskSchema = new Schema({
     dueDate: Date,
     isSaved: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    fileIds: { type: [String], default: [] },
 }, { timestamps: true });
 export const Task = model("Task", taskSchema);

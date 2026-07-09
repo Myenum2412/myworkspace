@@ -171,6 +171,7 @@ export async function createTask(data: {
   dueDate?: Date;
   isSaved?: boolean;
   isActive?: boolean;
+  fileIds?: string[];
 }): Promise<any> {
   const { orgId, userId } = data;
   const title = requireString(data.title, "title", { min: 1, max: 500 });
@@ -201,6 +202,7 @@ export async function createTask(data: {
     dueDate,
     isSaved: data.isSaved,
     isActive: data.isActive,
+    fileIds: data.fileIds || [],
   });
 
   await recordAuditLog({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -10,6 +10,8 @@ import {
   XIcon,
   FileTextIcon,
   PaperclipIcon,
+  FileIcon,
+  CheckCircleIcon,
 } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -31,7 +33,6 @@ import {
 } from "@/components/ui/select";
 import { PrioritySelector, AssigneeSelector } from "@/components/task-allocation/components";
 import type { AssigneeType } from "@/components/task-allocation/types";
-import TableUpload from "@/components/table-upload";
 import { taskService, type Task } from "@/lib/services/task-service";
 import { employeeService } from "@/lib/services/employee-service";
 import { teamService } from "@/lib/services/team-service";
@@ -88,8 +89,9 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
   const [selectedAssigneeType, setSelectedAssigneeType] = useState<AssigneeType | null>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<{ file: File; fileId?: string; status: "pending" | "uploading" | "done" | "error"; error?: string }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formError, setFormError] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [isActive, setIsActive] = useState(true);
@@ -98,6 +100,61 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   const [employees, setEmployees] = useState<Array<{ id: string; name: string; role: string }>>([]);
   const [teams, setTeams] = useState<TeamOption[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
+
+  const handleFilesSelected = (fileList: FileList | null) => {
+    if (!fileList) return;
+    const newFiles = Array.from(fileList).map((file) => ({
+      file,
+      status: "pending" as const,
+    }));
+    setUploadedFiles((prev) => [...prev, ...newFiles]);
+  };
+
+  const removeUploadedFile = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadPendingFiles = async (orgId: string): Promise<string[]> => {
+    const pending = uploadedFiles.filter((f) => f.status === "pending");
+    if (pending.length === 0) return uploadedFiles.filter((f) => f.fileId).map((f) => f.fileId!);
+
+    const fileIds: string[] = [];
+
+    for (const item of pending) {
+      setUploadedFiles((prev) =>
+        prev.map((f, i) => (f.file === item.file ? { ...f, status: "uploading" } : f))
+      );
+
+      try {
+        const formData = new FormData();
+        formData.append("files", item.file);
+        formData.append("orgId", orgId);
+
+        const res = await fetch("/api/files/upload", {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error("Upload failed");
+
+        const data = await res.json();
+        const result = data.results?.[0];
+        if (!result?.fileId) throw new Error("No file ID returned");
+
+        fileIds.push(result.fileId);
+        setUploadedFiles((prev) =>
+          prev.map((f, i) => (f.file === item.file ? { ...f, fileId: result.fileId, status: "done" } : f))
+        );
+      } catch (err: any) {
+        setUploadedFiles((prev) =>
+          prev.map((f, i) => (f.file === item.file ? { ...f, status: "error", error: err.message } : f))
+        );
+      }
+    }
+
+    return fileIds;
+  };
 
   const [dueDateOpen, setDueDateOpen] = useState(false);
   const [userOrgId, setUserOrgId] = useState("");
@@ -184,6 +241,8 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
     setFormError("");
     setIsSubmitting(true);
     try {
+      const fileIds = await uploadPendingFiles(userOrgId);
+
       const payload: Record<string, any> = {
         orgId: userOrgId,
         title: title.trim(),
@@ -194,6 +253,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
         isSaved,
         isActive,
         status: "todo",
+        fileIds,
       };
       if (selectedAssignee) {
         payload.assigneeId = selectedAssignee;
@@ -388,7 +448,11 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <PaperclipIcon className="size-3" />
               Attachments
             </Label>
-            <div className="rounded-lg border-2 border-dashed border-border bg-muted/30 p-3 transition-colors hover:border-primary/30">
+            <div
+              className="rounded-lg border-2 border-dashed border-border bg-muted/30 p-3 transition-colors hover:border-primary/30"
+              onDrop={(e) => { e.preventDefault(); handleFilesSelected(e.dataTransfer.files); }}
+              onDragOver={(e) => e.preventDefault()}
+            >
               <div className="flex items-center gap-3">
                 <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <PaperclipIcon className="size-4 text-primary" />
@@ -402,17 +466,44 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                   variant="outline"
                   size="sm"
                   className="h-8 rounded-lg text-xs shrink-0"
-                  onClick={() => {
-                    const el = document.querySelector<HTMLInputElement>('[data-file-trigger]');
-                    if (el) el.click();
-                  }}
+                  onClick={() => fileInputRef.current?.click()}
                 >
                   Browse
                 </Button>
               </div>
-              <div data-file-trigger className="mt-2">
-                <TableUpload onFilesChange={setUploadedFiles} compactImage={true} />
-              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFilesSelected(e.target.files)}
+              />
+              {uploadedFiles.length > 0 && (
+                <div className="mt-3 space-y-1">
+                  {uploadedFiles.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-muted/50 rounded px-3 py-1.5 text-sm">
+                      {item.status === "done" ? (
+                        <CheckCircleIcon className="size-4 text-success shrink-0" />
+                      ) : item.status === "error" ? (
+                        <AlertCircleIcon className="size-4 text-destructive shrink-0" />
+                      ) : item.status === "uploading" ? (
+                        <Loader2 className="size-4 text-muted-foreground shrink-0 animate-spin" />
+                      ) : (
+                        <FileIcon className="size-4 text-muted-foreground shrink-0" />
+                      )}
+                      <span className="truncate flex-1 text-xs">{item.file.name}</span>
+                      {item.status === "error" && item.error && (
+                        <span className="text-[10px] text-destructive truncate max-w-[120px]">{item.error}</span>
+                      )}
+                      {item.status !== "uploading" && (
+                        <button type="button" onClick={() => removeUploadedFile(i)} className="text-muted-foreground hover:text-destructive shrink-0">
+                          <XIcon className="size-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

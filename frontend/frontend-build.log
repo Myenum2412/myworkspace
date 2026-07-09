@@ -1,4 +1,4 @@
-(node:191463) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:32982) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
 > my-app@0.1.0 build
@@ -15,15 +15,15 @@ Setting a custom Cache-Control header can break Next.js development behavior.
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 12.8s
+✓ Compiled successfully in 13.3s
   Running TypeScript ...
-  Finished TypeScript in 17.9s ...
+  Finished TypeScript in 16.4s ...
   Collecting page data using 11 workers ...
   Generating static pages using 11 workers (0/73) ...
   Generating static pages using 11 workers (18/73) 
   Generating static pages using 11 workers (36/73) 
   Generating static pages using 11 workers (54/73) 
-✓ Generating static pages using 11 workers (73/73) in 694ms
+✓ Generating static pages using 11 workers (73/73) in 590ms
   Finalizing page optimization ...
 
 Route (app)
@@ -100,7 +100,9 @@ Route (app)
 ├ ○ /client/bills
 ├ ƒ /client/dashboard
 ├ ƒ /client/file-manager
+├ ƒ /client/forgot-password
 ├ ƒ /client/login
+├ ƒ /client/reset-password
 ├ ƒ /clients
 ├ ƒ /clients/[id]
 ├ ƒ /dashboard

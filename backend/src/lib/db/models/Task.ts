@@ -15,6 +15,7 @@ export interface ITask extends Document {
   dueDate?: Date;
   isSaved?: boolean;
   isActive?: boolean;
+  fileIds?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,6 +44,7 @@ const taskSchema = new Schema<ITask>(
     dueDate: Date,
     isSaved: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    fileIds: { type: [String], default: [] },
   },
   { timestamps: true }
 );

@@ -14,6 +14,7 @@ export interface ITask extends Document {
     dueDate?: Date;
     isSaved?: boolean;
     isActive?: boolean;
+    fileIds?: string[];
     createdAt: Date;
     updatedAt: Date;
 }
