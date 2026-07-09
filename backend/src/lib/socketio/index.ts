@@ -7,6 +7,7 @@ import { env } from "../../config/env.js";
 import { JwtPayload } from "../../types/index.js";
 import { isRedisConnected } from "../redis.js";
 import { logger } from "../logger/index.js";
+import { sendMessage } from "../../services/chat.service.js";
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -98,6 +99,38 @@ export class SocketIOManager {
         this.io?.to(`user:${socket.userId}`).emit("session:break:ended", {
           sessionId: data.sessionId,
           timestamp: new Date().toISOString(),
+        });
+      });
+
+      socket.on("chat:send", async (data: {
+        conversationId: string;
+        content: string;
+        messageType?: "text" | "system" | "file";
+        replyTo?: string;
+      }) => {
+        if (!socket.userId || !socket.orgId) return;
+        try {
+          const message = await sendMessage({
+            orgId: socket.orgId,
+            senderId: socket.userId,
+            createdBy: socket.userId,
+            conversationId: data.conversationId,
+            content: data.content,
+            messageType: data.messageType,
+            replyTo: data.replyTo,
+          });
+          socket.emit("chat:sent", { success: true, data: message });
+        } catch (err) {
+          socket.emit("chat:error", { error: (err as Error).message });
+        }
+      });
+
+      socket.on("chat:typing", (data: { conversationId: string; isTyping: boolean }) => {
+        if (!socket.userId || !socket.orgId) return;
+        socket.to(`org:${socket.orgId}`).emit("chat:typing", {
+          conversationId: data.conversationId,
+          userId: socket.userId,
+          isTyping: data.isTyping,
         });
       });
 

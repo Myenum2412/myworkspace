@@ -1,0 +1,328 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npx tsc --noEmit
+        working-directory: backend
+        continue-on-error: true
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/unit" --coverage --coverageDirectory=coverage/unit
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-coverage
+          path: backend/coverage/unit
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/integration" --runInBand --coverage --coverageDirectory=coverage/integration
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-coverage
+          path: backend/coverage/integration
+
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/security" --runInBand --coverage --coverageDirectory=coverage/security
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  socket-tests:
+    name: Socket.IO Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/socket" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  queue-tests:
+    name: Queue & Scheduler Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/queue" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  data-integrity-tests:
+    name: Data Integrity Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/data-integrity" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  concurrency-tests:
+    name: Concurrency Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/concurrency" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  build-deploy-validation:
+    name: Build & Deploy Config Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/build-deploy" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  payment-tests:
+    name: Payment Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/payment" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+          STRIPE_SECRET_KEY: sk_test_mock
+          STRIPE_WEBHOOK_SECRET: whsec_mock
+
+  cache-tests:
+    name: Cache Layer Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/cache" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  resilience-tests:
+    name: Resilience / Chaos Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/resilience" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  search-streaming-tests:
+    name: Search & Streaming Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/(search|streaming)" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  ttl-cleanup-multi-instance:
+    name: TTL & Multi-Instance Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test -- --testPathPattern="tests/backend/(ttl-cleanup|multi-instance)" --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+  npm-audit:
+    name: npm Audit (Security Gate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm audit --audit-level=high
+        working-directory: backend
+        continue-on-error: true
+
+  docker-smoke:
+    name: Docker Build Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t myworkspace-backend-test --target=build -f backend/Dockerfile backend/
+        continue-on-error: true
+
+  coverage-report:
+    name: Coverage Report
+    needs:
+      - unit-tests
+      - integration-tests
+      - security-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test:coverage -- --runInBand
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+      - name: Check coverage thresholds
+        run: |
+          echo "Coverage report generated"
+          npx istanbul check-coverage --statement=70 --branch=60 --function=65 --line=70
+        working-directory: backend
+        continue-on-error: true

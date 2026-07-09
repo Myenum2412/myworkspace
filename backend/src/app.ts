@@ -37,6 +37,7 @@ import fileApprovalRoutes from "./routes/file-approval.js";
 import billingRoutes from "./routes/billing.js";
 import receiptRoutes from "./routes/receipts.js";
 import twoFactorRoutes from "./routes/two-factor.js";
+import chatRoutes from "./routes/chat.js";
 
 
 const app = express();
@@ -156,6 +157,7 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/file-approval", fileApprovalRoutes);
 app.use("/api/two-factor", twoFactorRoutes);
 app.use("/api/billing", billingRoutes);
+app.use("/api/chat", chatRoutes);
 
 
 // 404 catch-all — log unmatched routes with clear diagnostics
