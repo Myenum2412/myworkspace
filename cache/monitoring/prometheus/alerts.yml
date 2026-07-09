@@ -1,0 +1,147 @@
+groups:
+  - name: myworkspace-alerts
+    interval: 30s
+    rules:
+
+      # ── Backend Availability ──
+      - alert: BackendDown
+        expr: up{job="myworkspace-backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend instance {{ $labels.instance }} is down"
+          description: "Backend has been unreachable for more than 30 seconds."
+
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.95, rate(api_request_duration_ms_bucket[5m])) > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API request latency on {{ $labels.path }}"
+          description: "95th percentile latency is {{ $value }}ms (threshold: 1000ms)"
+
+      - alert: HighErrorRate
+        expr: rate(api_errors_total[5m]) / rate(api_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API error rate"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      # ── Cache Performance ──
+      - alert: LowCacheHitRate
+        expr: rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m])) < 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low cache hit rate on layer {{ $labels.layer }}"
+          description: "Hit rate is {{ $value | humanizePercentage }} (threshold: 50%)"
+
+      - alert: CacheSetFailures
+        expr: rate(cache_sets_total[5m]) > 0
+        for: 15m
+        labels:
+          severity: info
+        annotations:
+          summary: "Cache sets occurring"
+
+      # ── Database ──
+      - alert: SlowDatabaseQueries
+        expr: histogram_quantile(0.95, rate(db_query_duration_ms_bucket[5m])) > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries on {{ $labels.collection }}"
+          description: "95th percentile query duration is {{ $value }}ms (threshold: 500ms)"
+
+      - alert: DatabaseErrors
+        expr: rate(db_queries_total[5m]) == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No database queries detected"
+          description: "Database may be unavailable"
+
+      # ── Queue Health ──
+      - alert: QueueDepthHigh
+        expr: queue_depth > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Queue {{ $labels.queue }} depth is high"
+          description: "Queue depth is {{ $value }} (threshold: 1000)"
+
+      - alert: QueueFailures
+        expr: rate(queue_failures_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High queue failure rate on {{ $labels.queue }}"
+
+      # ── Upload Health ──
+      - alert: UploadFailures
+        expr: rate(upload_failures_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High upload failure rate"
+
+      - alert: ActiveUploadsHigh
+        expr: active_uploads > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of active uploads: {{ $value }}"
+
+      # ── Resource Usage ──
+      - alert: HighMemoryUsage
+        expr: process_memory_heap_used_bytes / process_memory_heap_total_bytes > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage: {{ $value | humanizePercentage }}"
+
+      - alert: HighStorageUsage
+        expr: storage_used_bytes > 1e12
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Storage usage exceeded 1TB"
+
+      # ── Socket.IO ──
+      - alert: HighSocketDisconnectionRate
+        expr: rate(socket_disconnections_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Socket.IO disconnection rate"
+
+      # ── Core Web Vitals ──
+      - alert: PoorLCP
+        expr: histogram_quantile(0.75, rate(web_vitals_bucket{name="LCP"}[5m])) > 2500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "LCP exceeds 2.5s for 75th percentile"
+
+      - alert: PoorCLS
+        expr: histogram_quantile(0.75, rate(web_vitals_bucket{name="CLS"}[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CLS exceeds 0.1 for 75th percentile"

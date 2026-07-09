@@ -58,7 +58,7 @@ async function checkNodeCache(): Promise<LayerHealth> {
         hits: stats.hits,
         misses: stats.misses,
         hitRate: stats.hitRate,
-        version: stats.version,
+        version: (stats.layers as any)?.version ?? 0,
         memUsage: stats.memUsage,
       },
     };

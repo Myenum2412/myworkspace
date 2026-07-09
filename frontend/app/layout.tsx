@@ -16,6 +16,7 @@ const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],
   style: ["normal", "italic"],
   display: "swap",
+  preload: true,
 });
 
 export const viewport: Viewport = {
@@ -133,6 +134,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const jsonLd = [organizationJsonLd(), webSiteJsonLd(), softwareApplicationJsonLd()];
+  const apiUrl = process.env.API_URL || "http://localhost:4000";
+  const cdnUrl = process.env.CDN_URL;
 
   return (
     <html
@@ -141,6 +144,28 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Resource Hints */}
+        <link rel="dns-prefetch" href={apiUrl} />
+        <link rel="preconnect" href={apiUrl} crossOrigin="anonymous" />
+        {cdnUrl && (
+          <>
+            <link rel="dns-prefetch" href={cdnUrl} />
+            <link rel="preconnect" href={cdnUrl} crossOrigin="anonymous" />
+            <link rel="preload" href={`${cdnUrl}/web-app-manifest-192x192.png`} as="image" />
+          </>
+        )}
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Early Hints compatibility */}
+        <meta httpEquiv="Accept-CH" content="DPR, Viewport-Width, Width" />
+
+        {/* DNS prefetch for third-party services */}
+        <link rel="dns-prefetch" href="https://vercel.live" />
+        <link rel="dns-prefetch" href="https://sentry.io" />
+        <link rel="dns-prefetch" href="https://api.stripe.com" />
+
+        {/* Structured Data */}
         {jsonLd.map((item, i) => (
           <script
             key={i}

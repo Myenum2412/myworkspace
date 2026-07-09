@@ -2,22 +2,49 @@ const withSerwist = require("@serwist/next").default({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
   reloadOnOnline: true,
+  cacheOnNavigation: true,
+  precacheOptions: {
+    concurrency: 10,
+    cleanupOutdatedCaches: true,
+  },
+  disable: process.env.NODE_ENV === "development",
+  disableGoogleAnalytics: true,
 });
 
 const API_URL = process.env.API_URL || "http://localhost:4000";
 
 const nextConfig = {
   output: "standalone",
+  compress: true,
+  generateEtags: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
   serverExternalPackages: ["better-sqlite3", "mongodb"],
   experimental: {
     serverActions: {
       bodySizeLimit: "50mb",
     },
+    optimizePackageImports: [
+      "@mui/material",
+      "@mui/icons-material",
+      "recharts",
+      "lucide-react",
+      "date-fns",
+      "@visx/shape",
+      "@visx/scale",
+    ],
   },
   images: {
     formats: ["image/avif", "image/webp"],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    minimumCacheTTL: 60 * 60 * 24,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2560],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
   },
   async rewrites() {
     return {
@@ -37,12 +64,67 @@ const nextConfig = {
       ],
     };
   },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/web-app-manifest-192x192.png",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/web-app-manifest-512x512.png",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/manifest.json",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=86400" },
+          { key: "Content-Type", value: "application/manifest+json" },
+        ],
+      },
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+      {
+        source: "/offline.html",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        ],
+      },
+    ];
+  },
   turbopack: {
     root: process.cwd(),
   },
-  compress: true,
-  generateEtags: true,
-  poweredByHeader: false,
 };
 
 if (process.env.CDN_URL) {

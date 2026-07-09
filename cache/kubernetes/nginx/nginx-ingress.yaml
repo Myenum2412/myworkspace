@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-ingress-config
+  namespace: myworkspace
+data:
+  proxy-connect-timeout: "10s"
+  proxy-read-timeout: "60s"
+  proxy-send-timeout: "60s"
+  proxy-body-size: "10g"
+  use-forwarded-headers: "true"
+  enable-real-ip: "true"
+  forwarded-for-header: "X-Forwarded-For"
+  compute-full-forwarded-for: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-cache-config
+  namespace: myworkspace
+data:
+  cache-keys: |
+    proxy_cache_path /var/cache/nginx/api levels=1:2 keys_zone=api_cache:500m max_size=10g inactive=60m use_temp_path=off;
+    proxy_cache_path /var/cache/nginx/static levels=1:2 keys_zone=static_cache:500m max_size=50g inactive=7d use_temp_path=off;
+    proxy_cache_path /var/cache/nginx/cdn levels=1:2 keys_zone=cdn_cache:500m max_size=100g inactive=30d use_temp_path=off;
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myworkspace-ingress
+  namespace: myworkspace
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10g"
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "256"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: SAMEORIGIN";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+spec:
+  tls:
+    - hosts:
+        - myworkspace.myenum.in
+      secretName: myworkspace-tls
+  rules:
+    - host: myworkspace.myenum.in
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 4000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cdn-ingress
+  namespace: myworkspace
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10g"
+    nginx.ingress.kubernetes.io/proxy-cache: "cdn_cache"
+    nginx.ingress.kubernetes.io/proxy-cache-valid: "200 30d"
+    nginx.ingress.kubernetes.io/proxy-cache-key: "$scheme$host$request_uri"
+    nginx.ingress.kubernetes.io/proxy-cache-use-stale: "error timeout updating"
+    nginx.ingress.kubernetes.io/proxy-cache-lock: "on"
+spec:
+  tls:
+    - hosts:
+        - cdn.myworkspace.myenum.in
+      secretName: myworkspace-tls
+  rules:
+    - host: cdn.myworkspace.myenum.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 3000

@@ -15,26 +15,10 @@
       background: #f8f9fa;
       color: #1a1a2e;
     }
-    .container {
-      text-align: center;
-      padding: 2rem;
-      max-width: 480px;
-    }
-    .icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-    }
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-    }
-    p {
-      font-size: 1rem;
-      color: #64748b;
-      line-height: 1.5;
-      margin-bottom: 2rem;
-    }
+    .container { text-align: center; padding: 2rem; max-width: 480px; }
+    .icon { font-size: 4rem; margin-bottom: 1rem; }
+    h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; }
+    p { font-size: 1rem; color: #64748b; line-height: 1.5; margin-bottom: 2rem; }
     .btn {
       display: inline-block;
       padding: 0.75rem 2rem;
@@ -46,9 +30,20 @@
       cursor: pointer;
       text-decoration: none;
     }
-    .btn:hover {
-      background: #16213e;
+    .btn:hover { background: #16213e; }
+    .btn-secondary {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.5rem 1.5rem;
+      background: transparent;
+      color: #1a1a2e;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      text-decoration: none;
     }
+    .btn-secondary:hover { background: #f3f4f6; }
     .offline-indicator {
       display: inline-flex;
       align-items: center;
@@ -61,6 +56,39 @@
       font-weight: 500;
       margin-bottom: 1.5rem;
     }
+    .nav-links {
+      margin-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .nav-link {
+      padding: 0.5rem 1rem;
+      background: #f3f4f6;
+      color: #374151;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      text-decoration: none;
+      border: 1px solid #e5e7eb;
+    }
+    .nav-link:hover { background: #e5e7eb; }
+    .sync-status {
+      margin-top: 2rem;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #0f172a; color: #e2e8f0; }
+      p { color: #94a3b8; }
+      .btn { background: #334155; }
+      .btn:hover { background: #475569; }
+      .btn-secondary { color: #e2e8f0; border-color: #334155; }
+      .btn-secondary:hover { background: #1e293b; }
+      .nav-link { background: #1e293b; color: #cbd5e1; border-color: #334155; }
+      .nav-link:hover { background: #334155; }
+      .offline-indicator { background: #78350f; color: #fde68a; }
+    }
   </style>
 </head>
 <body>
@@ -72,10 +100,22 @@
     <div class="icon">&#128247;</div>
     <h1>No internet connection</h1>
     <p>
-      This page hasn't been visited before or has expired from the cache.
-      Connect to the internet and try again, or visit a previously viewed page.
+      You're currently offline. Previously viewed pages, cached content, and
+      any offline data you've created are still available. Changes you make
+      will be synced when you reconnect.
     </p>
     <button class="btn" onclick="window.location.reload()">Try again</button>
+    <div class="nav-links">
+      <a class="nav-link" href="/dashboard">Dashboard</a>
+      <a class="nav-link" href="/mytasks">My Tasks</a>
+      <a class="nav-link" href="/projects">Projects</a>
+      <a class="nav-link" href="/files">Files</a>
+      <a class="nav-link" href="/profile">Profile</a>
+      <a class="nav-link" href="/notifications">Notifications</a>
+    </div>
+    <div class="sync-status">
+      Offline mode enabled &mdash; changes will sync when connectivity is restored.
+    </div>
   </div>
 </body>
 </html>

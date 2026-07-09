@@ -9,6 +9,7 @@ const TUS_ENDPOINT = process.env.NEXT_PUBLIC_TUS_ENDPOINT || "/api/files-tus";
 const DEFAULT_CHUNK_SIZE = 10 * 1024 * 1024;
 const MAX_RETRIES = 5;
 const RETRY_DELAYS = [1000, 2000, 4000, 8000, 16000];
+const MAX_PARALLEL_UPLOADS = 3;
 
 function generateUploadId(): string {
   return `upload_${uuid()}`;
@@ -82,6 +83,7 @@ export async function createUpload(
   const uploadId = generateUploadId();
   const checksum = await calculateChecksum(file);
   const chunkSize = options.chunkSize || networkDetector.getChunkSizeForNetwork();
+  const parallelCount = options.parallelUploads || networkDetector.getParallelUploadsForNetwork() || MAX_PARALLEL_UPLOADS;
 
   const uploadFile: UploadFile = {
     id: uploadId,
@@ -96,6 +98,7 @@ export async function createUpload(
     checksum,
     retryCount: 0,
     chunkSize,
+    parallelUploads: parallelCount,
   };
 
   const context = btoa(
@@ -153,18 +156,19 @@ export async function createUpload(
     const token = getAuthToken();
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
-    headers[CONTEXT_HEADER] = context;
+    headers["x-upload-context"] = context;
 
     return new tus.Upload(file, {
       endpoint: TUS_ENDPOINT,
       retryDelays: RETRY_DELAYS,
       chunkSize,
-      parallelUploads: options.parallelUploads || networkDetector.getParallelUploadsForNetwork(),
+      parallelUploads: parallelCount,
       metadata,
       headers,
       removeFingerprintOnSuccess: true,
       storeFingerprintForResuming: true,
       uploadDataDuringCreation: false,
+      parallelUploadBoundaries: parallelCount > 1 ? undefined : undefined,
 
       onError: async (error: Error) => {
         if (isCancelled) return;
@@ -176,6 +180,7 @@ export async function createUpload(
         await updateSessionStatus(uploadId, "failed");
 
         if (uploadFile.retryCount < MAX_RETRIES) {
+          const delay = RETRY_DELAYS[Math.min(uploadFile.retryCount - 1, RETRY_DELAYS.length - 1)];
           setTimeout(() => {
             if (!isCancelled) {
               uploadFile.status = "uploading";
@@ -183,7 +188,7 @@ export async function createUpload(
               upload = createTusUpload();
               upload.start();
             }
-          }, RETRY_DELAYS[Math.min(uploadFile.retryCount - 1, RETRY_DELAYS.length - 1)]);
+          }, delay);
           return;
         }
 
@@ -225,7 +230,6 @@ export async function createUpload(
         onProgress?.(uploadFile);
 
         await updateSessionStatus(uploadId, "completed");
-
         onComplete?.({ success: true });
       },
 
@@ -275,8 +279,6 @@ export async function createUpload(
     },
   };
 }
-
-const CONTEXT_HEADER = "x-upload-context";
 
 export async function getUploadStatus(tusId: string): Promise<{ success: boolean; data: any } | null> {
   try {

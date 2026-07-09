@@ -39,12 +39,14 @@ import receiptRoutes from "./routes/receipts.js";
 import twoFactorRoutes from "./routes/two-factor.js";
 import chatRoutes from "./routes/chat.js";
 
-
 const app = express();
 
 app.set("trust proxy", 1);
+app.disable("x-powered-by");
 
 const isProd = env.NODE_ENV === "production";
+
+// ── Security headers ──
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -76,16 +78,32 @@ app.use(helmet({
   frameguard: { action: "deny" },
   ieNoOpen: true,
 }));
-app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
-app.use(compression({ level: 6 }));
 
-// Stripe webhook needs raw body (before JSON parser)
+// ── CORS ──
+app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+
+// ── Compression (Brotli preferred, falls back to gzip) ──
+app.use(compression({
+  level: 6,
+  threshold: 1024,
+  filter: (req, res) => {
+    if (req.headers["x-no-compression"]) return false;
+    return compression.filter(req, res);
+  },
+}));
+
+// ── ETag support ──
+app.set("etag", "strong");
+
+// ── Body parsing ──
 app.use("/api/billing/webhook", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(requestIdMiddleware);
 app.use(inputSanitizer);
 app.use(csrfProtection());
+
+// ── Rate limiting ──
 app.use("/api/auth", authLimiter, (req, _res, next) => {
   if (req.path === "/socket-token") socketTokenLimiter(req, _res, next);
   else next();
@@ -97,42 +115,71 @@ app.use("/api/shares", shareDownloadLimiter);
 app.use("/api/search", searchLimiter);
 app.use("/api", apiLimiter);
 
-// Serve uploads and banners statically
-app.use("/uploads", express.static(path.resolve("data", "uploads")));
-app.use("/banners", express.static(path.resolve("public", "banners")));
+// ── Static files with caching headers ──
+const oneYear = 365 * 24 * 60 * 60 * 1000;
+const oneDay = 24 * 60 * 60 * 1000;
 
-// Health check
+app.use("/uploads", express.static(path.resolve("data", "uploads"), {
+  maxAge: oneDay,
+  immutable: false,
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    if (/\.(jpg|jpeg|png|gif|webp|avif|svg|ico)$/i.test(filePath)) {
+      res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+    }
+  },
+}));
+
+app.use("/banners", express.static(path.resolve("public", "banners"), {
+  maxAge: oneDay,
+  immutable: false,
+  etag: true,
+  lastModified: true,
+}));
+
+// ── Cache-Control for all API responses ──
+app.use("/api", (req, res, next) => {
+  if (req.method === "GET") {
+    res.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate");
+  }
+  next();
+});
+
+// ── Health check ──
 app.get("/api/health", (_req, res) => {
   const checks: Record<string, string> = {};
   let healthy = true;
 
   try {
-    if (mongoose.connection.readyState === 1) {
-      checks.mongodb = "connected";
-    } else {
-      checks.mongodb = "disconnected";
-      healthy = false;
-    }
-  } catch {
-    checks.mongodb = "error";
-    healthy = false;
-  }
+    checks.mongodb = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    if (mongoose.connection.readyState !== 1) healthy = false;
+  } catch { checks.mongodb = "error"; healthy = false; }
 
   try {
     checks.redis = isRedisConnected() ? "connected" : "disconnected";
-  } catch {
-    checks.redis = "error";
-  }
+  } catch { checks.redis = "error"; }
+
+  const memUsage = process.memoryUsage();
+  const uptime = process.uptime();
 
   res.status(200).json({
     success: true,
     status: healthy ? "ok" : "degraded",
     checks,
+    metrics: {
+      memory: {
+        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024),
+        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+        rss: Math.round(memUsage.rss / 1024 / 1024),
+      },
+      uptime: Math.round(uptime),
+    },
     timestamp: new Date().toISOString(),
   });
 });
 
-// Routes
+// ── Routes ──
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", tasksRoutes);
 app.use("/api/sessions", sessionsRoutes);
@@ -159,27 +206,17 @@ app.use("/api/two-factor", twoFactorRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/chat", chatRoutes);
 
-
-// 404 catch-all — log unmatched routes with clear diagnostics
+// ── 404 catch-all ──
 app.use((req, res) => {
   const method = req.method;
   const url = req.originalUrl || req.url;
-  if (env.AUTH_DEBUG === "1") {
-      console.warn(`[BACKEND 404] ${method} ${url} — No backend route matches this path.`);
-      console.warn(`  Headers:`, JSON.stringify({
-        contentType: req.headers["content-type"],
-        accept: req.headers["accept"],
-        authorization: req.headers["authorization"] ? "[present]" : "[absent]",
-        origin: req.headers["origin"] || "[not set]",
-      }));
-    }
   res.status(404).json({
     success: false,
     error: `Route not found: ${method} ${url}`,
   });
 });
 
-// Error handler
+// ── Error handler ──
 app.use(errorHandler);
 
 export default app;

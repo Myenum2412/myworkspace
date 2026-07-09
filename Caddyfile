@@ -1,5 +1,18 @@
 myworkspace.myenum.in {
-    # API routes → Express backend
+    # HTTP/3 (QUIC) enabled by default in Caddy 2.8+
+
+    # ── Resource Hints ──
+    header Link "</web-app-manifest-192x192.png>; rel=preload; as=image; fetchpriority=high"
+    header Link "</_next/static/css/*>; rel=preload; as=style"
+    header Link "https://fonts.googleapis.com; rel=preconnect; crossorigin"
+    header Link "https://fonts.gstatic.com; rel=preconnect; crossorigin"
+
+    # ── Early Hints (103) ──
+    early_hints on
+    early_hints_link "</web-app-manifest-192x192.png>; rel=preload; as=image",
+        "</_next/static/css/*>; rel=preload; as=style"
+
+    # ── API routes → Express backend ──
     handle /api/* {
         reverse_proxy backend:4000 {
             header_up X-Forwarded-For {remote_host}
@@ -8,15 +21,37 @@ myworkspace.myenum.in {
         }
     }
 
-    # Static uploads and banners → Express backend
+    # ── Static uploads and banners → Express backend ──
     handle /uploads/* {
+        header Cache-Control "public, max-age=604800, stale-while-revalidate=86400"
         reverse_proxy backend:4000
     }
     handle /banners/* {
+        header Cache-Control "public, max-age=86400"
         reverse_proxy backend:4000
     }
 
-    # Everything else → Next.js frontend
+    # ── Service worker (no cache) ──
+    handle /sw.js {
+        header Cache-Control "public, max-age=0, must-revalidate"
+        header Service-Worker-Allowed "/"
+        reverse_proxy frontend:3000
+    }
+
+    # ── Offline page ──
+    handle /offline.html {
+        header Cache-Control "public, max-age=0, must-revalidate"
+        reverse_proxy frontend:3000
+    }
+
+    # ── Manifest ──
+    handle /manifest.json {
+        header Cache-Control "public, max-age=86400"
+        header Content-Type "application/manifest+json"
+        reverse_proxy frontend:3000
+    }
+
+    # ── Everything else → Next.js frontend ──
     handle {
         reverse_proxy frontend:3000 {
             header_up X-Forwarded-For {remote_host}
@@ -25,7 +60,7 @@ myworkspace.myenum.in {
         }
     }
 
-    # Security headers
+    # ── Security Headers ──
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         X-Content-Type-Options "nosniff"
@@ -35,15 +70,15 @@ myworkspace.myenum.in {
         Permissions-Policy "camera=(), microphone=(), geolocation=()"
     }
 
-    # File upload size limit (10GB for TUS)
+    # ── File Upload Size (10GB for TUS) ──
     request_body /api/files-tus/* {
         max_size 10737418240
     }
 
-    # Gzip/Brotli compression
+    # ── Compression (zstd + gzip) ──
     encode zstd gzip
 
-    # Logs
+    # ── Logging ──
     log {
         output file /var/log/caddy/myworkspace.log
         format json

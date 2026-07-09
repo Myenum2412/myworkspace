@@ -4,10 +4,28 @@ import { io, Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
 let tokenPromise: Promise<string | null> | null = null;
+let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 20;
+const RECONNECT_BASE_DELAY = 1000;
+const RECONNECT_MAX_DELAY = 30_000;
+const HEARTBEAT_INTERVAL = 25_000;
+const HEARTBEAT_TIMEOUT = 10_000;
 
-// Fetch a short-lived socket bearer token (works around the httpOnly session
-// cookie that JS cannot read). Cache the in-flight promise so concurrent
-// callers share one request.
+interface OfflineEvent {
+  event: string;
+  data: unknown;
+  timestamp: number;
+}
+
+const offlineBuffer: OfflineEvent[] = [];
+const MAX_OFFLINE_BUFFER = 100;
+
+function getBackoffDelay(): number {
+  const delay = RECONNECT_BASE_DELAY * Math.pow(2, reconnectAttempts);
+  return Math.min(delay, RECONNECT_MAX_DELAY) + Math.random() * 1000;
+}
+
 function fetchSocketToken(): Promise<string | null> {
   if (tokenPromise) return tokenPromise;
   tokenPromise = (async () => {
@@ -19,40 +37,63 @@ function fetchSocketToken(): Promise<string | null> {
     } catch {
       return null;
     } finally {
-      // Let a future reconnect retry the token.
       setTimeout(() => { tokenPromise = null; }, 5 * 60 * 1000);
     }
   })();
   return tokenPromise;
 }
 
-/**
- * Read the NextAuth JWT straight from the session cookie. Auth.js stores the
- * base64url-encoded JWE in `authjs.session-token` (prefixed `__Secure-` on
- * https). This is the token the backend Socket.IO middleware expects. We parse
- * it synchronously so callers remain synchronous: attaching a `.on` listener
- * immediately works even while the socket handshakes (socket.io queues local
- * events until the transport is open, so nothing is lost).
- */
 function resolveTokenFromCookie(): string | null {
   try {
     const secure = process.env.NEXTAUTH_URL?.startsWith("https") ? "__Secure-" : "";
     const name = `${secure}authjs.session-token`;
     const hit = document.cookie.split(";").map((c) => c.trim()).find((c) => c.startsWith(`${name}=`));
     if (!hit) return null;
-    // Cookie value is the raw JWE compact serialization — pass through as-is.
     return hit.slice(name.length + 1) || null;
   } catch {
     return null;
   }
 }
 
+function startHeartbeat(sock: Socket) {
+  stopHeartbeat();
+  heartbeatInterval = setInterval(() => {
+    if (sock.connected) {
+      const start = Date.now();
+      sock.emit("ping", (response: unknown) => {
+        const latency = Date.now() - start;
+        if (latency > HEARTBEAT_TIMEOUT) {
+          sock.disconnect();
+          sock.connect();
+        }
+      });
+    }
+  }, HEARTBEAT_INTERVAL);
+}
+
+function stopHeartbeat() {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
+}
+
+function flushOfflineBuffer(sock: Socket) {
+  while (offlineBuffer.length > 0) {
+    const buffered = offlineBuffer.shift();
+    if (buffered) {
+      sock.emit(buffered.event, buffered.data);
+    }
+  }
+}
+
 export function getSocketIO(token?: string): Socket {
-  if (socket?.connected) return socket;
+  if (socket?.connected) {
+    reconnectAttempts = 0;
+    return socket;
+  }
 
   if (!socket) {
-    // Token priority: explicit > httpOnly-safe endpoint > cookie fallback
-    // (cookie only works if httpOnly is disabled, which it usually isn't).
     const cookieToken = resolveTokenFromCookie();
     const resolved: string | undefined = token || cookieToken || undefined;
 
@@ -61,31 +102,45 @@ export function getSocketIO(token?: string): Socket {
     socket = io(apiUrl, {
       path: "/api/socketio",
       auth: { token: resolved },
-      // Prefer websocket only — lower latency on local net. Polling fallback is
-      // kept for environments that tunnel WS.
       transports: ["websocket", "polling"],
       reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
+      reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+      reconnectionDelay: RECONNECT_BASE_DELAY,
+      reconnectionDelayMax: RECONNECT_MAX_DELAY,
+      randomizationFactor: 0.5,
+      timeout: 20_000,
+      closeOnBeforeunload: false,
     });
 
     socket.on("connect", () => {
-      console.log("[SocketIO] Connected:", socket?.id);
+      reconnectAttempts = 0;
+      startHeartbeat(socket!);
+      flushOfflineBuffer(socket!);
+
+      socket?.emit("presence:online", {
+        timestamp: Date.now(),
+        userAgent: navigator.userAgent,
+      });
     });
 
     socket.on("disconnect", (reason) => {
-      // On a server-forced disconnect or auth failure, force a fresh socket-token
-      // on the next reconnect so expired / invalid tokens don't loop forever.
+      stopHeartbeat();
       if (reason === "io server disconnect" || reason === "transport error") {
         tokenPromise = null;
       }
     });
 
     socket.on("connect_error", (err) => {
-      console.error("[SocketIO] Connection error:", err.message);
-      // "Invalid token" → drop cached promise so the next connect fetches fresh.
+      reconnectAttempts++;
       if (/token|auth/i.test(err.message)) {
         tokenPromise = null;
+      }
+    });
+
+    socket.on("pong", (latency: number) => {
+      if (latency > HEARTBEAT_TIMEOUT) {
+        socket?.disconnect();
+        socket?.connect();
       }
     });
   }
@@ -94,10 +149,54 @@ export function getSocketIO(token?: string): Socket {
 }
 
 export function disconnectSocketIO() {
+  stopHeartbeat();
   if (socket) {
+    socket.emit("presence:offline", { timestamp: Date.now() });
     socket.disconnect();
     socket = null;
   }
+  reconnectAttempts = 0;
+}
+
+export function emitWithAck<T = unknown>(event: string, data: unknown, timeoutMs = 5000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    if (!socket?.connected) {
+      bufferOfflineEvent(event, data);
+      reject(new Error("Socket not connected, event buffered"));
+      return;
+    }
+    const timer = setTimeout(() => reject(new Error("Event acknowledgement timeout")), timeoutMs);
+    socket!.emit(event, data, (response: T) => {
+      clearTimeout(timer);
+      resolve(response);
+    });
+  });
+}
+
+export function emitSafe(event: string, data: unknown): void {
+  if (socket?.connected) {
+    socket.emit(event, data);
+  } else {
+    bufferOfflineEvent(event, data);
+  }
+}
+
+export function bufferOfflineEvent(event: string, data: unknown): void {
+  if (offlineBuffer.length >= MAX_OFFLINE_BUFFER) {
+    offlineBuffer.shift();
+  }
+  offlineBuffer.push({ event, data, timestamp: Date.now() });
+}
+
+function flushOfflineBuffers(sock: Socket): void {
+  flushOfflineBuffer(sock);
+}
+
+export function getConnectionState(): "connected" | "disconnected" | "reconnecting" {
+  if (!socket) return "disconnected";
+  if (socket.connected) return "connected";
+  if (socket.io?.engine?.transport?.writable) return "reconnecting";
+  return "disconnected";
 }
 
 export type SessionStatus = "online" | "break" | "offline";

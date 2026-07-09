@@ -1,4 +1,3 @@
-# Prometheus Configuration - MyWorkSpace Cache Monitoring
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -7,41 +6,66 @@ global:
 alerting:
   alertmanagers:
     - static_configs:
-        - targets: ["alertmanager:9093"]
+        - targets:
+          - alertmanager:9093
 
 rule_files:
-  - "valkey.yml"
+  - "alerts.yml"
 
 scrape_configs:
-  - job_name: "prometheus"
+  - job_name: 'prometheus'
     static_configs:
-      - targets: ["localhost:9090"]
+      - targets: ['localhost:9090']
 
-  - job_name: "valkey"
+  - job_name: 'myworkspace-backend'
+    metrics_path: '/api/metrics'
     static_configs:
-      - targets: ["valkey-exporter:9121"]
-    metrics_path: /metrics
-    scrape_interval: 10s
+      - targets: ['backend:4000']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'backend'
 
-  - job_name: "nginx"
+  - job_name: 'valkey'
     static_configs:
-      - targets: ["nginx-exporter:9113"]
-    metrics_path: /metrics
-    scrape_interval: 15s
+      - targets: ['valkey:6379']
+    metrics_path: '/metrics'
 
-  - job_name: "varnish"
+  - job_name: 'valkey-cluster'
     static_configs:
-      - targets: ["varnish:6082"]
-    metrics_path: /metrics
-    scrape_interval: 15s
+      - targets:
+        - valkey-cluster-0.valkey-cluster:6379
+        - valkey-cluster-1.valkey-cluster:6379
+        - valkey-cluster-2.valkey-cluster:6379
+        - valkey-cluster-3.valkey-cluster:6379
+        - valkey-cluster-4.valkey-cluster:6379
+        - valkey-cluster-5.valkey-cluster:6379
+    metrics_path: '/metrics'
 
-  - job_name: "trafficserver"
+  - job_name: 'varnish'
     static_configs:
-      - targets: ["trafficserver:8080"]
-    metrics_path: /__ats__/stats
-    scrape_interval: 30s
+      - targets: ['varnish:6082', 'varnish:9131']
+    metrics_path: '/metrics'
 
-  - job_name: "node"
+  - job_name: 'nginx'
     static_configs:
-      - targets: ["node-exporter:9100"]
-    scrape_interval: 15s
+      - targets: ['nginx:9113']
+    metrics_path: '/metrics'
+
+  - job_name: 'trafficserver'
+    static_configs:
+      - targets: ['trafficserver:8080']
+    metrics_path: '/_stats'
+
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    metrics_path: '/metrics'
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']

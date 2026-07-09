@@ -17,7 +17,7 @@ type BannerState =
 function deriveState(
   isOnline: boolean,
   sync: SyncEvent | null,
-  queued: number
+  queued: number,
 ): BannerState {
   if (!isOnline) return { kind: "offline" };
   if (sync && sync.status === "syncing" && sync.remaining > 0) {
@@ -68,7 +68,7 @@ export function OfflineBanner() {
   const state = deriveState(isOnline, sync, queued);
 
   const baseClasses =
-    "fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-lg transition-colors";
+    "fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-lg transition-all duration-300";
 
   const variants: Record<BannerState["kind"], string> = {
     online: "bg-green-100 text-green-800 border border-green-200",
@@ -80,13 +80,13 @@ export function OfflineBanner() {
   const label = (() => {
     switch (state.kind) {
       case "online":
-        return "Online — All saved";
+        return "Online";
       case "offline":
-        return "Offline — Showing cached data";
+        return `Offline — ${queued > 0 ? `${queued} pending` : "cached data"}`;
       case "syncing":
-        return `Syncing — ${state.remaining} pending`;
+        return `Syncing — ${state.remaining} remaining`;
       case "failed":
-        return `Sync failed — ${state.remaining} items`;
+        return `Sync failed — ${state.remaining} pending`;
     }
   })();
 
@@ -95,11 +95,22 @@ export function OfflineBanner() {
       case "online":
         return "Online, all changes saved.";
       case "offline":
-        return "Offline, showing cached data.";
+        return queued > 0
+          ? `Offline, ${queued} changes pending sync.`
+          : "Offline, showing cached data.";
       case "syncing":
         return `Syncing, ${state.remaining} items pending.`;
       case "failed":
         return `Sync failed, ${state.remaining} items remaining.`;
+    }
+  })();
+
+  const indicatorColor = (() => {
+    switch (state.kind) {
+      case "online": return "#22c55e";
+      case "offline": return "#eab308";
+      case "syncing": return "#3b82f6";
+      case "failed": return "#ef4444";
     }
   })();
 
@@ -113,12 +124,12 @@ export function OfflineBanner() {
       aria-label={ariaLabel}
       className={`${baseClasses} ${variants[state.kind]} motion-reduce:transition-none`}
     >
-      <span aria-hidden="true">
-        {state.kind === "offline" && "🔴"}
-        {state.kind === "syncing" && "🔵"}
-        {state.kind === "failed" && "🔴"}
-      </span>
-      <span>{label}</span>
+      <span
+        className="inline-block w-2 h-2 rounded-full motion-safe:animate-pulse"
+        style={{ backgroundColor: indicatorColor }}
+        aria-hidden="true"
+      />
+      <span className="truncate max-w-[200px]">{label}</span>
     </div>
   );
 }

@@ -7,15 +7,26 @@ import { env } from "../../config/env.js";
 import { JwtPayload } from "../../types/index.js";
 import { isRedisConnected } from "../redis.js";
 import { logger } from "../logger/index.js";
+import { metricsRegistry } from "../monitoring/index.js";
 import { sendMessage } from "../../services/chat.service.js";
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
   orgId?: string;
+  lastActivity?: number;
+  reconnectAttempt?: number;
 }
+
+const HEARTBEAT_TIMEOUT = 30_000;
+const HEARTBEAT_INTERVAL = 25_000;
+const RECONNECT_GRACE_PERIOD = 60_000;
 
 export class SocketIOManager {
   private io: Server | null = null;
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+  private userSockets: Map<string, Set<string>> = new Map();
+  private orgUserPresence: Map<string, Set<string>> = new Map();
+  private presenceCache: Map<string, { status: string; timestamp: number }> = new Map();
 
   initialize(server: HttpServer) {
     this.io = new Server(server, {
@@ -24,6 +35,12 @@ export class SocketIOManager {
         origin: env.CORS_ORIGIN,
         credentials: true,
       },
+      pingInterval: HEARTBEAT_INTERVAL,
+      pingTimeout: HEARTBEAT_TIMEOUT,
+      transports: ["websocket", "polling"],
+      allowEIO3: true,
+      connectTimeout: 20_000,
+      maxHttpBufferSize: 1e6,
     });
 
     if (isRedisConnected()) {
@@ -45,6 +62,8 @@ export class SocketIOManager {
     } else {
       logger.info("Socket.IO using in-memory adapter (single instance)");
     }
+
+    // ── Authentication middleware ──
     this.io.use((socket: AuthenticatedSocket, next) => {
       const token = socket.handshake.auth?.token || socket.handshake.query?.token;
       if (token) {
@@ -52,6 +71,7 @@ export class SocketIOManager {
           const decoded = jwt.verify(token as string, env.JWT_SECRET) as JwtPayload;
           socket.userId = decoded.userId;
           socket.orgId = decoded.orgId;
+          socket.lastActivity = Date.now();
         } catch {
           return next(new Error("Invalid token"));
         }
@@ -61,13 +81,45 @@ export class SocketIOManager {
       next();
     });
 
+    // ── Connection handler ──
     this.io.on("connection", (socket: AuthenticatedSocket) => {
-      if (socket.userId) {
-        socket.join(`user:${socket.userId}`);
-        if (socket.orgId) {
-          socket.join(`org:${socket.orgId}`);
-        }
+      if (!socket.userId || !socket.orgId) return;
+
+      const userId = socket.userId;
+      const orgId = socket.orgId;
+
+      // Track user sockets
+      if (!this.userSockets.has(userId)) {
+        this.userSockets.set(userId, new Set());
       }
+      this.userSockets.get(userId)!.add(socket.id);
+      this.presenceCache.set(userId, { status: "online", timestamp: Date.now() });
+
+      // Track org presence
+      if (!this.orgUserPresence.has(orgId)) {
+        this.orgUserPresence.set(orgId, new Set());
+      }
+      this.orgUserPresence.get(orgId)!.add(userId);
+
+      // Join rooms
+      socket.join(`user:${userId}`);
+      socket.join(`org:${orgId}`);
+
+      // Notify org of presence
+      this.io?.to(`org:${orgId}`).emit("user:status:changed", {
+        userId,
+        status: "online",
+        timestamp: new Date().toISOString(),
+      });
+
+      // ── Events ──
+      socket.on("presence:online", (data: { timestamp: number }) => {
+        this.presenceCache.set(userId, { status: "online", timestamp: Date.now() });
+      });
+
+      socket.on("presence:offline", (data: { timestamp: number }) => {
+        this.presenceCache.set(userId, { status: "offline", timestamp: Date.now() });
+      });
 
       socket.on("session:status", async (data: { status: "online" | "break" | "offline"; sessionId?: string }) => {
         if (!socket.userId) return;
@@ -84,6 +136,10 @@ export class SocketIOManager {
             timestamp: new Date().toISOString(),
           });
         }
+        this.presenceCache.set(userId, {
+          status: data.status,
+          timestamp: Date.now(),
+        });
       });
 
       socket.on("session:break:start", (data: { sessionId: string }) => {
@@ -120,6 +176,7 @@ export class SocketIOManager {
             replyTo: data.replyTo,
           });
           socket.emit("chat:sent", { success: true, data: message });
+          metricsRegistry.incrementCounter("chat_messages_sent", { orgId: socket.orgId });
         } catch (err) {
           socket.emit("chat:error", { error: (err as Error).message });
         }
@@ -134,10 +191,64 @@ export class SocketIOManager {
         });
       });
 
-      socket.on("disconnect", () => {
-        // handled by session routes
+      socket.on("chat:read", (data: { conversationId: string; messageId: string }) => {
+        if (!socket.userId) return;
+        this.io?.to(`org:${orgId}`).emit("chat:read:receipt", {
+          conversationId: data.conversationId,
+          messageId: data.messageId,
+          userId: socket.userId,
+          timestamp: new Date().toISOString(),
+        });
+      });
+
+      // ── Ping/pong heartbeat ──
+      socket.on("ping", (cb: (response: unknown) => void) => {
+        socket.lastActivity = Date.now();
+        if (typeof cb === "function") cb({ pong: true, time: Date.now() });
+      });
+
+      // ── Disconnect ──
+      socket.on("disconnect", (reason) => {
+        socket.lastActivity = Date.now();
+
+        // Remove user socket tracking
+        const userSockets = this.userSockets.get(userId);
+        if (userSockets) {
+          userSockets.delete(socket.id);
+          if (userSockets.size === 0) {
+            this.userSockets.delete(userId);
+            // Grace period before marking offline
+            setTimeout(() => {
+              if (!this.userSockets.has(userId)) {
+                this.presenceCache.set(userId, { status: "offline", timestamp: Date.now() });
+                this.io?.to(`org:${orgId}`).emit("user:status:changed", {
+                  userId,
+                  status: "offline",
+                  timestamp: new Date().toISOString(),
+                });
+                this.orgUserPresence.get(orgId)?.delete(userId);
+              }
+            }, RECONNECT_GRACE_PERIOD);
+          }
+        }
+
+        metricsRegistry.incrementCounter("socket_disconnections", { reason });
       });
     });
+
+    // ── Heartbeat monitoring ──
+    this.heartbeatTimer = setInterval(() => {
+      if (!this.io) return;
+      const now = Date.now();
+      const sockets = this.io.sockets.sockets;
+      sockets.forEach((socket: AuthenticatedSocket) => {
+        if (socket.lastActivity && now - socket.lastActivity > HEARTBEAT_TIMEOUT * 2) {
+          logger.warn({ userId: socket.userId }, "Socket heartbeat timeout — forcing disconnect");
+          socket.disconnect(true);
+          metricsRegistry.incrementCounter("socket_heartbeat_timeouts");
+        }
+      });
+    }, HEARTBEAT_INTERVAL);
 
     logger.info({ path: "/api/socketio" }, "Socket.IO initialized");
     return this.io;
@@ -148,10 +259,17 @@ export class SocketIOManager {
   }
 
   close() {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
     if (this.io) {
       this.io.close();
       this.io = null;
     }
+    this.userSockets.clear();
+    this.orgUserPresence.clear();
+    this.presenceCache.clear();
   }
 
   emitToUser<T = any>(userId: string, event: string, data: T) {
@@ -164,6 +282,22 @@ export class SocketIOManager {
 
   emitToSession<T = any>(sessionId: string, event: string, data: T) {
     this.io?.to(`session:${sessionId}`).emit(event, data);
+  }
+
+  isUserOnline(userId: string): boolean {
+    return this.userSockets.has(userId) && (this.userSockets.get(userId)?.size ?? 0) > 0;
+  }
+
+  getOnlineUsers(orgId: string): string[] {
+    return Array.from(this.orgUserPresence.get(orgId) || []);
+  }
+
+  getUserPresence(userId: string): { status: string; timestamp: number } | null {
+    return this.presenceCache.get(userId) || null;
+  }
+
+  getUserSocketCount(userId: string): number {
+    return this.userSockets.get(userId)?.size ?? 0;
   }
 }
 

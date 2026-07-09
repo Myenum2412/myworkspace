@@ -1,17 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { syncOfflineRequests } from "@/lib/offline-sync";
 import { toast } from "sonner";
 import { onlineManager } from "@tanstack/react-query";
+import { triggerSync } from "@/lib/offline/sync-processor";
+import { getQueueLength } from "@/lib/offline/queue";
 
 export function OfflineSyncManager() {
+  const syncInProgress = useRef(false);
+
+  const performSync = useCallback(async () => {
+    if (syncInProgress.current) return;
+    syncInProgress.current = true;
+    try {
+      const queueLen = await getQueueLength();
+      if (queueLen === 0) return;
+
+      await syncOfflineRequests();
+      triggerSync();
+    } catch (err) {
+      console.error("[OfflineSync] Sync failed:", err);
+    } finally {
+      syncInProgress.current = false;
+    }
+  }, []);
+
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       const registerSW = async () => {
         try {
           const registration = await navigator.serviceWorker.register("/sw.js");
-          console.log("Service Worker registered with scope:", registration.scope);
 
           registration.addEventListener("updatefound", () => {
             const newWorker = registration.installing;
@@ -58,10 +77,7 @@ export function OfflineSyncManager() {
 
     const handleOnline = async () => {
       try {
-        await syncOfflineRequests();
-        toast.success("All offline data synchronized.", {
-          id: "offline-sync",
-        });
+        await performSync();
       } catch (err) {
         console.error("Failed to sync offline data", err);
       }
@@ -70,13 +86,13 @@ export function OfflineSyncManager() {
     window.addEventListener("online", handleOnline);
 
     if (navigator.onLine) {
-      syncOfflineRequests();
+      performSync();
     }
 
     return () => {
       window.removeEventListener("online", handleOnline);
     };
-  }, []);
+  }, [performSync]);
 
   return null;
 }

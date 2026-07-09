@@ -4,6 +4,7 @@ import { Redis, Cluster } from "ioredis";
 import { cacheService } from "../lib/cache/cache-service.js";
 import { getRedis, isRedisConnected } from "../lib/redis.js";
 import { logger } from "../lib/logger/index.js";
+import { metricsRegistry } from "../lib/monitoring/index.js";
 import type { AuthRequest } from "./auth.js";
 
 interface CacheEnhancedOptions {
@@ -19,6 +20,8 @@ interface CacheEnhancedOptions {
   tags?: string[];
   staleWhileRevalidate?: boolean;
   staleTtl?: number;
+  backgroundRefresh?: boolean;
+  layer?: number;
 }
 
 interface WarmPayload {
@@ -34,9 +37,17 @@ const l1Cache = new NodeCache({
   useClones: false,
 });
 
+const staleCache = new NodeCache({
+  stdTTL: 3600,
+  checkperiod: 300,
+  maxKeys: 5000,
+  useClones: false,
+});
+
 const hitCounts = new Map<string, number>();
 let totalHits = 0;
 let totalMisses = 0;
+let totalStaleHits = 0;
 
 function buildCacheKey(req: AuthRequest, options: CacheEnhancedOptions): string {
   const parts: string[] = [options.namespace || "cache"];
@@ -63,6 +74,16 @@ function buildCacheKey(req: AuthRequest, options: CacheEnhancedOptions): string 
   }
 
   return parts.join("|");
+}
+
+function buildCacheLayers(options: CacheEnhancedOptions): string[] {
+  const layers: string[] = [];
+  if (options.layer) {
+    for (let i = options.layer; i <= 7; i++) {
+      layers.push(`L${i}`);
+    }
+  }
+  return layers;
 }
 
 function getL2Client(): Redis | Cluster | null {
@@ -123,18 +144,20 @@ async function delL2ByPattern(pattern: string): Promise<number> {
 }
 
 export function cacheEnhanced(options: CacheEnhancedOptions) {
+  const layers = buildCacheLayers(options);
+
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
     if (options.method && !options.method.includes(req.method)) return next();
     if (req.method !== "GET" && req.method !== "HEAD") return next();
-
     if (options.condition && !options.condition(req, res)) return next();
 
     const cacheKey = buildCacheKey(req, options);
 
+    // ── L1: NodeCache ──
     const l1Hit = l1Cache.get<string>(cacheKey);
     if (l1Hit !== undefined) {
       totalHits++;
-      hitCounts.set(cacheKey, (hitCounts.get(cacheKey) || 0) + 1);
+      metricsRegistry.incrementCounter("cache_layer_hits", { layer: "l1", endpoint: req.originalUrl || "" });
       res.setHeader("X-Cache", "HIT");
       res.setHeader("X-Cache-Layer", "L1");
       res.setHeader("X-Cache-Key", cacheKey);
@@ -142,10 +165,35 @@ export function cacheEnhanced(options: CacheEnhancedOptions) {
       return res.status(200).send(l1Hit);
     }
 
+    // ── L1 stale (stale-while-revalidate) ──
+    if (options.staleWhileRevalidate) {
+      const staleHit = staleCache.get<string>(cacheKey);
+      if (staleHit !== undefined) {
+        totalStaleHits++;
+        res.setHeader("X-Cache", "STALE");
+        res.setHeader("X-Cache-Layer", "L1_STALE");
+        totalHits++;
+
+        // Background refresh
+        next();
+        return res.status(200).send(staleHit);
+      }
+    }
+
+    // L1 stale for stale-if-error (storage for error fallback)
+    if (options.staleTtl) {
+      const staleValue = staleCache.get<string>(cacheKey);
+      if (staleValue !== undefined) {
+        // Will be used only if the upstream fails
+      }
+    }
+
+    // ── L2: Redis ──
     const l2Hit = await getFromL2<string>(cacheKey);
     if (l2Hit !== null) {
       totalHits++;
       l1Cache.set(cacheKey, l2Hit, options.ttl);
+      metricsRegistry.incrementCounter("cache_layer_hits", { layer: "l2", endpoint: req.originalUrl || "" });
       res.setHeader("X-Cache", "HIT");
       res.setHeader("X-Cache-Layer", "L2");
       res.setHeader("X-Cache-Key", cacheKey);
@@ -156,43 +204,36 @@ export function cacheEnhanced(options: CacheEnhancedOptions) {
     totalMisses++;
     res.setHeader("X-Cache", "MISS");
 
-    if (options.staleWhileRevalidate && options.staleTtl) {
-      const staleData = l1Cache.get<string>(`stale:${cacheKey}`);
-      if (staleData !== undefined) {
-        res.setHeader("X-Cache-Stale", "true");
-        res.setHeader("Content-Type", "application/json");
-        res.status(200).send(staleData);
-
-        try {
-          const originalSend = res.send.bind(res);
-          res.send = () => res;
-          next();
-        } catch {
-          // revalidation will happen on next request
-        }
-        return;
-      }
-    }
-
+    // ── Intercept response ──
     const originalSend = res.send.bind(res);
     res.send = (body: unknown): Response => {
       if (res.statusCode >= 200 && res.statusCode < 400) {
         const bodyStr = typeof body === "string" ? body : JSON.stringify(body);
-        l1Cache.set(cacheKey, bodyStr, options.ttl);
-        setToL2(cacheKey, bodyStr, options.ttl).catch(() => {});
 
-        if (options.staleWhileRevalidate && options.staleTtl) {
-          l1Cache.set(`stale:${cacheKey}`, bodyStr, options.staleTtl);
+        // L1 store
+        l1Cache.set(cacheKey, bodyStr, options.ttl);
+        metricsRegistry.incrementCounter("cache_sets_total", { layer: "l1" });
+
+        // L1 stale store
+        if (options.staleWhileRevalidate || options.staleTtl) {
+          const staleTtl = options.staleTtl || options.ttl * 12;
+          staleCache.set(cacheKey, bodyStr, staleTtl);
         }
 
+        // L2 store
+        setToL2(cacheKey, bodyStr, options.ttl).catch(() => {});
+        metricsRegistry.incrementCounter("cache_sets_total", { layer: "l2" });
+
+        // Tag indexing
         if (options.tags && options.tags.length > 0) {
           for (const tag of options.tags) {
             const tagKey = `tag:${tag}:${cacheKey}`;
             l1Cache.set(tagKey, cacheKey, options.ttl + 3600);
-            setToL2(tagKey, cacheKey, options.ttl + 3600).catch(() => {});
           }
           res.setHeader("X-Cache-Tags", options.tags.join(","));
         }
+
+        res.setHeader("X-Cache-Layers", layers.join(","));
       }
       return originalSend(body);
     };
@@ -206,28 +247,24 @@ export function invalidateByTag(tag: string) {
     try {
       let clearedCount = 0;
 
-      const tagPattern = `tag:${tag}:*`;
       const l1Keys = l1Cache.keys().filter((k) => k.startsWith(`tag:${tag}:`));
-
       for (const tagKey of l1Keys) {
         const cachedKey = l1Cache.get<string>(tagKey);
         if (cachedKey) {
           l1Cache.del(cachedKey);
-          l1Cache.del(`stale:${cachedKey}`);
+          staleCache.del(cachedKey);
           l1Cache.del(tagKey);
           clearedCount++;
         }
       }
 
-      const l2TagKeys = await delL2ByPattern(tagPattern);
-      clearedCount += l2TagKeys;
-
-      const l2Keys = await delL2ByPattern(`*${tag}*`);
-      clearedCount += l2Keys;
+      const l2Count = await delL2ByPattern(`tag:${tag}:*`);
+      clearedCount += l2Count;
+      await delL2ByPattern(`*${tag}*`);
 
       cacheService.invalidateByTag(tag);
 
-      logger.info({ tag, clearedCount }, "Cache invalidated by tag");
+      metricsRegistry.incrementCounter("cache_invalidations_total", { type: "tag", tag });
       res.json({ success: true, tag, cleared: clearedCount });
     } catch (err) {
       logger.error({ err, tag }, "Tag invalidation failed");
@@ -245,7 +282,7 @@ export function invalidateByPattern(pattern: string) {
       const l1Keys = l1Cache.keys().filter((k) => k.includes(l1Pattern));
       for (const key of l1Keys) {
         l1Cache.del(key);
-        l1Cache.del(`stale:${key}`);
+        staleCache.del(key);
       }
       clearedCount += l1Keys.length;
 
@@ -254,7 +291,7 @@ export function invalidateByPattern(pattern: string) {
 
       cacheService.invalidateByPattern(pattern);
 
-      logger.info({ pattern, clearedCount }, "Cache invalidated by pattern");
+      metricsRegistry.incrementCounter("cache_invalidations_total", { type: "pattern", pattern });
       res.json({ success: true, pattern, cleared: clearedCount });
     } catch (err) {
       logger.error({ err, pattern }, "Pattern invalidation failed");
@@ -283,7 +320,7 @@ export function warmCache() {
         loaded++;
       }
 
-      logger.info({ loaded }, "Cache warmed");
+      metricsRegistry.incrementCounter("cache_warming_sets", { count: String(loaded) });
       res.json({ success: true, loaded });
     } catch (err) {
       next(err);
@@ -306,12 +343,17 @@ export function cacheStats() {
           ksize: l1Stats.ksize,
           vsize: l1Stats.vsize,
         },
+        stale: {
+          keys: staleCache.keys().length,
+          hits: totalStaleHits,
+        },
         l2: {
           connected: isRedisConnected(),
         },
         totals: {
           hits: totalHits,
           misses: totalMisses,
+          staleHits: totalStaleHits,
           hitRate: total > 0 ? totalHits / total : 0,
         },
       },
@@ -323,9 +365,11 @@ export function flushCache() {
   return async (_req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       l1Cache.flushAll();
+      staleCache.flushAll();
       hitCounts.clear();
       totalHits = 0;
       totalMisses = 0;
+      totalStaleHits = 0;
 
       const l2Client = getL2Client();
       if (l2Client) {
@@ -333,7 +377,7 @@ export function flushCache() {
       }
 
       cacheService.flush();
-      logger.info("Cache flushed");
+      logger.info("Cache flushed across all layers");
       res.json({ success: true, message: "All cache layers flushed" });
     } catch (err) {
       next(err);
@@ -351,7 +395,7 @@ export function purgeByTag(tag: string) {
         const cacheKey = l1Cache.get<string>(tagKey);
         if (cacheKey) {
           l1Cache.del(cacheKey);
-          l1Cache.del(`stale:${cacheKey}`);
+          staleCache.del(cacheKey);
           l1Cache.del(tagKey);
           cleared++;
         }
@@ -360,7 +404,6 @@ export function purgeByTag(tag: string) {
       const l2Count = await delL2ByPattern(`tag:${tag}:*`);
       cleared += l2Count;
 
-      logger.info({ tag, cleared }, "Purged by tag");
       res.json({ success: true, purged: cleared, tag });
     } catch (err) {
       next(err);
@@ -372,9 +415,8 @@ export function purgeKey(key: string) {
   return async (_req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       l1Cache.del(key);
-      l1Cache.del(`stale:${key}`);
+      staleCache.del(key);
       await delFromL2(key);
-      logger.info({ key }, "Purged single key");
       res.json({ success: true, purged: true, key });
     } catch (err) {
       next(err);

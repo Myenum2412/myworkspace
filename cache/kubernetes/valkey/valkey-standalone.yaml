@@ -1,22 +1,58 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: valkey-standalone-config
+  namespace: myworkspace
+data:
+  valkey.conf: |
+    port 6379
+    appendonly yes
+    appendfsync everysec
+    save 300 10
+    save 60 10000
+    maxmemory 2gb
+    maxmemory-policy allkeys-lru
+    activedefrag yes
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+    io-threads 2
+    io-threads-do-reads yes
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+    rename-command FLUSHALL ""
+    rename-command FLUSHDB ""
+    rename-command CONFIG ""
+    rename-command KEYS ""
+    rename-command SHUTDOWN "SHUTDOWN"
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: valkey
+  namespace: myworkspace
   labels:
     app: valkey
-    cache-layer: memory
+    layer: l2-cache
 spec:
-  ports:
-    - port: 6379
-      targetPort: 6379
   selector:
     app: valkey
+  ports:
+    - name: valkey
+      port: 6379
+      targetPort: 6379
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: valkey
+  namespace: myworkspace
+  labels:
+    app: valkey
+    layer: l2-cache
 spec:
+  serviceName: valkey
   replicas: 1
   selector:
     matchLabels:
@@ -32,28 +68,39 @@ spec:
           command: ["valkey-server", "/etc/valkey/valkey.conf"]
           ports:
             - containerPort: 6379
+              name: valkey
           volumeMounts:
             - name: config
               mountPath: /etc/valkey
             - name: data
               mountPath: /data
           resources:
-            limits:
-              memory: 4Gi
-              cpu: "2"
             requests:
-              memory: 2Gi
-              cpu: "1"
-          env:
-            - name: VALKEY_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: valkey-secret
-                  key: password
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          readinessProbe:
+            exec:
+              command: ["valkey-cli", "ping"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["valkey-cli", "ping"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
       volumes:
         - name: config
           configMap:
-            name: valkey-config
-        - name: data
-          persistentVolumeClaim:
-            claimName: valkey-data
+            name: valkey-standalone-config
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: ssd
+        resources:
+          requests:
+            storage: 20Gi

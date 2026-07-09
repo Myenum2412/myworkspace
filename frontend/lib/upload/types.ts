@@ -21,6 +21,7 @@ export interface UploadFile {
   completedAt?: number;
   retryCount: number;
   chunkSize: number;
+  parallelUploads?: number;
 }
 
 export interface UploadSessionData {

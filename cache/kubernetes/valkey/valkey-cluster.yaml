@@ -1,26 +1,59 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: valkey-cluster-config
+  namespace: myworkspace
+data:
+  valkey.conf: |
+    port 6379
+    cluster-enabled yes
+    cluster-config-file nodes.conf
+    cluster-node-timeout 5000
+    appendonly yes
+    appendfsync everysec
+    save 300 10
+    save 60 10000
+    maxmemory 4gb
+    maxmemory-policy allkeys-lru
+    activedefrag yes
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+    replica-lazy-flush yes
+    io-threads 4
+    io-threads-do-reads yes
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: valkey-cluster
+  namespace: myworkspace
   labels:
     app: valkey-cluster
-    cache-layer: distributed
+    layer: l3-cache
 spec:
+  clusterIP: None
+  selector:
+    app: valkey-cluster
   ports:
     - name: valkey
       port: 6379
       targetPort: 6379
-    - name: cluster-bus
+    - name: gossip
       port: 16379
       targetPort: 16379
-  clusterIP: None
-  selector:
-    app: valkey-cluster
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: valkey-cluster
+  namespace: myworkspace
+  labels:
+    app: valkey-cluster
+    layer: l3-cache
 spec:
   serviceName: valkey-cluster
   replicas: 6
@@ -32,55 +65,37 @@ spec:
       labels:
         app: valkey-cluster
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - valkey-cluster
-                topologyKey: kubernetes.io/hostname
       containers:
         - name: valkey
           image: valkey/valkey:8-alpine
-          command:
-            - valkey-server
-            - /etc/valkey/valkey.conf
+          command: ["valkey-server", "/etc/valkey/valkey.conf"]
           ports:
             - containerPort: 6379
               name: valkey
             - containerPort: 16379
-              name: cluster-bus
+              name: gossip
           volumeMounts:
             - name: config
               mountPath: /etc/valkey
             - name: data
               mountPath: /data
           resources:
-            limits:
-              memory: 2Gi
-              cpu: "1"
             requests:
-              memory: 1Gi
-              cpu: "0.5"
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
           readinessProbe:
             exec:
-              command:
-                - valkey-cli
-                - ping
+              command: ["valkey-cli", "ping"]
             initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
             exec:
-              command:
-                - valkey-cli
-                - ping
+              command: ["valkey-cli", "ping"]
             initialDelaySeconds: 30
-            periodSeconds: 15
+            periodSeconds: 30
       volumes:
         - name: config
           configMap:
@@ -90,33 +105,7 @@ spec:
         name: data
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: ssd
         resources:
           requests:
-            storage: 10Gi
-        storageClassName: ssd
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: valkey-cluster-init
-spec:
-  template:
-    spec:
-      containers:
-        - name: init
-          image: valkey/valkey:8-alpine
-          command: ["/bin/sh", "/scripts/init-cluster.sh"]
-          volumeMounts:
-            - name: scripts
-              mountPath: /scripts
-          env:
-            - name: VALKEY_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: valkey-secret
-                  key: password
-      volumes:
-        - name: scripts
-          configMap:
-            name: valkey-cluster-init-script
-      restartPolicy: Never
+            storage: 50Gi
