@@ -291,7 +291,77 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, message: "Profile updated successfully" });
+    // Fetch updated user
+    const updatedUser = await db.collection(collections.users).findOne({ email: session.user.email });
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found after update" }, { status: 500 });
+    }
+
+    // Fetch updated org (orgId was resolved during the update above)
+    let updatedOrg: Record<string, unknown> | null = null;
+    let updatedMemberCount = 0;
+    if (orgId) {
+      updatedOrg = await db.collection(collections.organizations).findOne({ id: orgId });
+      if (!updatedOrg) {
+        try { updatedOrg = await db.collection(collections.organizations).findOne({ _id: new ObjectId(orgId) } as never); } catch {}
+      }
+      if (updatedOrg) {
+        updatedMemberCount = await db.collection(collections.orgMembers).countDocuments({ orgId });
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        id: updatedUser.id || updatedUser._id,
+        name: updatedUser.name || "",
+        email: updatedUser.email || "",
+        phone: updatedUser.phone || "",
+        department: updatedUser.department || "",
+        company: updatedUser.company || "",
+        address: updatedUser.address || "",
+        city: updatedUser.city || "",
+        state: updatedUser.state || "",
+        country: updatedUser.country || "",
+        zipCode: updatedUser.zipCode || "",
+        status: updatedUser.status || "offline",
+        role: updatedUser.role || "member",
+        image: updatedUser.image || "",
+        bannerUrl: updatedUser.bannerUrl || "",
+        createdAt: updatedUser.createdAt || new Date().toISOString(),
+      },
+      org: updatedOrg ? {
+        id: updatedOrg.id || updatedOrg._id,
+        name: updatedOrg.name || "",
+        domain: updatedOrg.domain || "",
+        businessType: updatedOrg.businessType || "",
+        industry: updatedOrg.industry || "",
+        gstNumber: updatedOrg.gstNumber || "",
+        panNumber: updatedOrg.panNumber || "",
+        cinNumber: updatedOrg.cinNumber || "",
+        companyEmail: updatedOrg.companyEmail || "",
+        mobileNumber: updatedOrg.mobileNumber || "",
+        alternateMobileNumber: updatedOrg.alternateMobileNumber || "",
+        website: updatedOrg.website || "",
+        addressLine1: updatedOrg.addressLine1 || "",
+        addressLine2: updatedOrg.addressLine2 || "",
+        city: updatedOrg.city || "",
+        state: updatedOrg.state || "",
+        pincode: updatedOrg.pincode || "",
+        country: updatedOrg.country || "India",
+        logoUrl: updatedOrg.logoUrl || "",
+        authorizedPersonName: updatedOrg.authorizedPersonName || "",
+        designation: updatedOrg.designation || "",
+        authorizedPersonEmail: updatedOrg.authorizedPersonEmail || "",
+        authorizedPersonMobile: updatedOrg.authorizedPersonMobile || "",
+        numberOfEmployees: updatedOrg.numberOfEmployees || 0,
+        companyDescription: updatedOrg.companyDescription || "",
+        plan: updatedOrg.plan || "free",
+        createdAt: updatedOrg.createdAt || new Date().toISOString(),
+      } : null,
+      memberCount: updatedMemberCount,
+    });
   } catch (e) {
     console.error("[profile PATCH] Failed:", e);
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });

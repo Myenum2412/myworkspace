@@ -54,19 +54,28 @@ async function sendEmail(to: string, subject: string, htmlBody: string): Promise
     resend = new Resend(env.RESEND_API_KEY);
   }
 
-  const { data, error } = await resend.emails.send({
-    from: env.MAIL_FROM,
-    to,
-    subject,
-    html: htmlBody,
-  });
+  // Try configured from address first, fall back to Resend test sender
+  let lastError: any;
+  const fromAddresses = [env.MAIL_FROM, RESEND_TEST_SENDER];
 
-  if (error) {
-    console.error(`[mail] Failed to send email via Resend to ${to}:`, error);
-    throw new Error(`Failed to send email via Resend: ${error.message}`);
+  for (const from of fromAddresses) {
+    const { data, error } = await resend.emails.send({
+      from,
+      to,
+      subject,
+      html: htmlBody,
+    });
+
+    if (!error) {
+      console.log(`[mail] Email sent to ${to} via ${from} (id: ${data?.id})`);
+      return;
+    }
+    lastError = error;
+    console.warn(`[mail] Failed to send via "${from}" to ${to}:`, error.message);
   }
 
-  console.log(`[mail] Email sent to ${to} (id: ${data?.id})`);
+  console.error(`[mail] All send attempts failed for ${to}:`, lastError);
+  throw new Error(`Failed to send email: ${lastError?.message || "unknown error"}`);
 }
 
 // ============================================================

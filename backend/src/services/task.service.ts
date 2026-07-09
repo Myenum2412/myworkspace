@@ -243,7 +243,7 @@ export async function createTask(data: {
       task.assigneeId,
       creatorUser?.name || "A user",
       orgId,
-    ).catch((err) => logger.error({ err }, "Failed to send task assigned notification"));
+    ).catch((err) => console.error("[notify] Failed to send task assigned notification:", err?.message || err));
 
     if (assigneeUser?.email) {
       sendTaskAssigned(
@@ -255,7 +255,7 @@ export async function createTask(data: {
         task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "No due date",
         task.priority,
         `${env.APP_URL}/alltasks?id=${task._id}`,
-      ).catch((err) => logger.error({ err }, "Failed to send task assigned email"));
+      ).catch((err) => console.error("[mail] Failed to send task assigned email:", err?.message || err));
     }
   }
 

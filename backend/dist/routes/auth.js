@@ -484,4 +484,18 @@ router.post("/send-password-reset-email", async (req, res) => {
         res.status(500).json({ success: false, message: "Failed to send password reset email" });
     }
 });
+router.post("/test-mail", async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email)
+            return res.status(400).json({ success: false, message: "Email is required" });
+        const { sendWelcomeEmail } = await import("../lib/mail/index.js");
+        await sendWelcomeEmail(email, "Test User");
+        res.json({ success: true, message: "Test email sent" });
+    }
+    catch (err) {
+        console.error("[auth] test-mail error:", err);
+        res.status(500).json({ success: false, message: err?.message || "Failed to send test email" });
+    }
+});
 export default router;
