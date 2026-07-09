@@ -298,7 +298,18 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Fetch updated user
-    const updatedUser = await db.collection(collections.users).findOne({ email: session.user.email });
+    let userFetchQuery: { $or?: Record<string, unknown>[], email?: string } = {};
+    if (session.user.email && email === session.user.email) {
+      userFetchQuery = { email: session.user.email };
+    } else {
+      userFetchQuery = { $or: [{ id: userId }] };
+      if (ObjectId.isValid(userId)) {
+        userFetchQuery.$or!.push({ _id: new ObjectId(userId) });
+      } else {
+        userFetchQuery.$or!.push({ _id: userId });
+      }
+    }
+    const updatedUser = await db.collection(collections.users).findOne(userFetchQuery as never);
     if (!updatedUser) {
       return NextResponse.json({ error: "User not found after update" }, { status: 500 });
     }
