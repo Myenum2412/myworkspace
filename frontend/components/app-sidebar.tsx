@@ -13,6 +13,7 @@ import {
 import MuiFolderIcon from "@mui/icons-material/Folder";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ChatIcon from "@mui/icons-material/Chat";
+import CategoryIcon from "@mui/icons-material/Category";
 import {
   LayoutDashboardIcon,
   ListChecksIcon,
@@ -116,6 +117,11 @@ export const defaultNavData = {
       icon: <ChatIcon className="size-6" />,
     },
     {
+      title: "Category",
+      url: "/category",
+      icon: <CategoryIcon className="size-6" />,
+    },
+    {
       title: "Settings",
       url: "/settings",
       icon: <Settings2Icon className="size-6" />,
@@ -161,8 +167,8 @@ export function AppSidebar({
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain.slice(0, -1)} label="Platform" />
-        <NavMain items={data.navMain.slice(-1)} label="Settings" className="mt-auto" />
+        <NavMain items={data.navMain.slice(0, -2)} label="Platform" />
+        <NavMain items={data.navMain.slice(-2)} label="Settings" className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
