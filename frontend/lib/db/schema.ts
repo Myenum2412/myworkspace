@@ -33,4 +33,6 @@ export const collections = {
   calendarConnections: "calendar_connections",
   meetings: "meetings",
   chatMessages: "chat_messages",
+  doctors: "doctors",
+  appointments: "appointments",
 } as const;

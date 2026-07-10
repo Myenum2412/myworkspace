@@ -14,6 +14,7 @@ import MuiFolderIcon from "@mui/icons-material/Folder";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ChatIcon from "@mui/icons-material/Chat";
 import CategoryIcon from "@mui/icons-material/Category";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import {
   LayoutDashboardIcon,
   ListChecksIcon,
@@ -120,6 +121,14 @@ export const defaultNavData = {
       title: "Category",
       url: "/category",
       icon: <CategoryIcon className="size-6" />,
+    },
+    {
+      title: "Doctor Kit",
+      url: "/appointments",
+      icon: <LocalHospitalIcon className="size-6" />,
+      items: [
+        { title: "Booking Appointments", url: "/appointments" },
+      ],
     },
     {
       title: "Settings",
