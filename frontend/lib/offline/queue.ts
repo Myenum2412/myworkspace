@@ -26,18 +26,27 @@ let dbPromise: Promise<IDBPDatabase> | null = null;
 function getDb(): Promise<IDBPDatabase> {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion) {
+      upgrade(db, oldVersion, _newVersion, transaction) {
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           const store = db.createObjectStore(STORE_NAME, {
             keyPath: "id",
             autoIncrement: true,
           });
-        }
-        if (oldVersion < 2) {
-          const store = db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
           store.createIndex("createdAt", "createdAt", { unique: false });
           store.createIndex("idempotencyKey", "idempotencyKey", { unique: false });
           store.createIndex("resourceSynced", ["documentId", "endpoint"], { unique: false });
+        }
+        if (oldVersion < 2) {
+          const store = transaction.objectStore(STORE_NAME);
+          if (!store.indexNames.contains("createdAt")) {
+            store.createIndex("createdAt", "createdAt", { unique: false });
+          }
+          if (!store.indexNames.contains("idempotencyKey")) {
+            store.createIndex("idempotencyKey", "idempotencyKey", { unique: false });
+          }
+          if (!store.indexNames.contains("resourceSynced")) {
+            store.createIndex("resourceSynced", ["documentId", "endpoint"], { unique: false });
+          }
         }
       },
     });

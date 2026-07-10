@@ -11,12 +11,12 @@ let dbPromise: Promise<IDBPDatabase> | null = null;
 function getDb(): Promise<IDBPDatabase> {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion) {
+      upgrade(db, oldVersion, _newVersion, transaction) {
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           db.createObjectStore(STORE_NAME, { keyPath: "id" });
         }
         if (oldVersion < 2) {
-          const store = db.createObjectStore(STORE_NAME, { keyPath: "id" });
+          const store = transaction.objectStore(STORE_NAME);
           if (!store.indexNames.contains("updatedAt")) {
             store.createIndex("updatedAt", "updatedAt", { unique: false });
           }
