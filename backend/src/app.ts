@@ -47,6 +47,14 @@ const app = express();
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
 
+// Normalize double slashes in URLs (e.g., //api/tasks -> /api/tasks)
+app.use((req, _res, next) => {
+  if (req.url.includes("//")) {
+    req.url = req.url.replace(/\/+/g, "/");
+  }
+  next();
+});
+
 const isProd = env.NODE_ENV === "production";
 
 // ── Security headers ──
