@@ -678,23 +678,23 @@ function FeatureToggleSettings() {
           const isHidden = hidden.includes(feature);
           return (
             <Card key={feature} className={isHidden ? "opacity-60" : ""}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">{feature}</CardTitle>
-                <CardDescription className="text-xs">
-                  {featureDescriptions[feature]}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+              <div className="flex items-start justify-between p-4 gap-4">
+                <div className="space-y-1 min-w-0">
+                  <p className="text-sm font-medium leading-none">{feature}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {featureDescriptions[feature]}
+                  </p>
+                </div>
                 <Button
                   variant={isHidden ? "default" : "outline"}
                   size="sm"
-                  className="w-full"
+                  className="shrink-0"
                   onClick={() => handleToggle(feature)}
                   disabled={saving}
                 >
                   {isHidden ? "Unhide" : "Hide"}
                 </Button>
-              </CardContent>
+              </div>
             </Card>
           );
         })}

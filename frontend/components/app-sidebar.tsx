@@ -185,8 +185,6 @@ export function AppSidebar({
   );
 
   const settingsItems: NavItem[] = [
-    categoryItem,
-    ...(doctorKitInstalled ? [doctorKitItem] : []),
     settingsItem,
   ];
 

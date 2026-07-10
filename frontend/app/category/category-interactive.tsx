@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import InfoIcon from "@mui/icons-material/Info";
+import MedicationIcon from "@mui/icons-material/Medication";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,7 @@ const MODULES = [
   {
     key: "doctor-kit",
     title: "Doctor Kit",
-    icon: <InfoIcon className="size-5 text-muted-foreground" />,
+    icon: <MedicationIcon className="size-5 text-muted-foreground" />,
     installedText: "Doctor Kit is currently installed. You can uninstall it from your workspace.",
     uninstalledText: "Install Doctor Kit to manage appointments and patients in your workspace.",
     apiPath: "/api/doctor-kit",
@@ -40,10 +41,12 @@ function ModuleCard({
   return (
     <Card className="rounded-xl border bg-card">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          {module.icon}
-          {module.title}
-          <InfoIcon className="size-4 text-muted-foreground cursor-help" />
+        <CardTitle className="flex items-center justify-between w-full gap-2">
+          <span className="flex items-center gap-2 min-w-0">
+            {module.icon}
+            {module.title}
+          </span>
+          <InfoIcon className="size-4 text-muted-foreground cursor-help shrink-0" />
         </CardTitle>
       </CardHeader>
       <CardContent>
