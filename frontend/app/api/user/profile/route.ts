@@ -115,6 +115,10 @@ export async function GET() {
           state: user.state || "",
           country: user.country || "",
           zipCode: user.zipCode || "",
+          linkedin: user.linkedin || "",
+          github: user.github || "",
+          twitter: user.twitter || "",
+          website: user.website || "",
           status: user.status || "offline",
           role: user.role || "member",
           image: user.image || "",
@@ -184,6 +188,7 @@ export async function PATCH(req: NextRequest) {
   const {
     name, email, phone, department, company,
     address, city, state, country, zipCode,
+    linkedin, github, twitter, website,
     companyName, companyDomain,
     businessType, industry, gstNumber, panNumber, cinNumber,
     companyEmail, mobileNumber, alternateMobileNumber, orgWebsite,
@@ -218,7 +223,7 @@ export async function PATCH(req: NextRequest) {
 
   try {
     // Update user fields
-    const userFields = { name, email, phone, department, company, address, city, state, country, zipCode, secondaryPhone: secondaryPhone || "", nickname, displayId, firstName, lastName, location: userLocation || "", employmentType, branchName, shift, sourceOfHire, joiningDate, currentExperience, totalExperience, designation: empDesignation || "", workExperience, educationDetails, dependentDetails, offerLetter };
+    const userFields = { name, email, phone, department, company, address, city, state, country, zipCode, linkedin, github, twitter, website, secondaryPhone: secondaryPhone || "", nickname, displayId, firstName, lastName, location: userLocation || "", employmentType, branchName, shift, sourceOfHire, joiningDate, currentExperience, totalExperience, designation: empDesignation || "", workExperience, educationDetails, dependentDetails, offerLetter };
     const updates: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(userFields)) {
       if (val !== undefined) updates[key] = val;
@@ -342,6 +347,10 @@ export async function PATCH(req: NextRequest) {
         state: updatedUser.state || "",
         country: updatedUser.country || "",
         zipCode: updatedUser.zipCode || "",
+        linkedin: updatedUser.linkedin || "",
+        github: updatedUser.github || "",
+        twitter: updatedUser.twitter || "",
+        website: updatedUser.website || "",
         status: updatedUser.status || "offline",
         role: updatedUser.role || "member",
         image: updatedUser.image || "",

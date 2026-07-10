@@ -20,7 +20,7 @@ type Task = {
   creatorId: string;
   creatorName: string;
   createdAt: string;
-  isBookmarked?: boolean;
+  isSaved?: boolean;
 };
 
 export default async function OverviewPage() {
@@ -89,7 +89,7 @@ export default async function OverviewPage() {
       creatorId,
       creatorName: (creator?.name as string) || userMap.get(creatorId)?.name || creatorId.slice(0, 8),
       createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
-      isBookmarked: (t.isBookmarked as boolean) || false,
+      isSaved: (t.isSaved as boolean) || false,
       };
     });
   }

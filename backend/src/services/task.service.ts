@@ -111,6 +111,8 @@ export async function listTasks(options: TaskListOptions): Promise<TaskListResul
         creatorId: 1,
         createdAt: 1,
         updatedAt: 1,
+        isSaved: 1,
+        isActive: 1,
         assignee: 1,
         creator: 1,
       },
@@ -145,6 +147,8 @@ export async function listTasks(options: TaskListOptions): Promise<TaskListResul
     creatorName: t.creator?.name || "",
     createdAt: t.createdAt,
     updatedAt: t.updatedAt,
+    isSaved: t.isSaved ?? false,
+    isActive: t.isActive ?? true,
   }));
 
   const total = result.totalCount[0]?.count || 0;
@@ -258,7 +262,7 @@ export async function createTask(data: {
 }
 
 export async function updateTask(id: string, userId: string, body: any, scope?: string): Promise<void> {
-  const { title, status, priority, assigneeId, description, dueDate, project } = body;
+  const { title, status, priority, assigneeId, description, dueDate, project, isSaved, isActive } = body;
   const userOrgId = await requireOrgMembership(userId);
 
   const existing = await Task.findById(id).lean();
@@ -283,6 +287,8 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
   if (description !== undefined) updates.description = description;
   if (project !== undefined) updates.project = project;
   if (dueDate !== undefined) updates.dueDate = dueDate ? new Date(dueDate) : null;
+  if (isSaved !== undefined) updates.isSaved = isSaved;
+  if (isActive !== undefined) updates.isActive = isActive;
 
   const updated = await Task.findByIdAndUpdate(id, updates, { new: true }).lean();
 

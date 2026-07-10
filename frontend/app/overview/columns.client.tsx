@@ -31,7 +31,7 @@ export type Task = {
   creatorId?: string;
   creatorName?: string;
   createdAt: string;
-  isBookmarked?: boolean;
+  isSaved?: boolean;
 };
 
 export const statusStyles: Record<string, string> = {

@@ -96,15 +96,19 @@ export async function updateTask(formData: FormData) {
   const priority = formData.get("priority") as string;
   const assigneeId = formData.get("assigneeId") as string;
   const description = formData.get("description") as string;
+  const isSaved = formData.get("isSaved");
+  const isActive = formData.get("isActive");
 
   if (!taskId) return { error: "Task ID is required" };
 
-  const updates: Record<string, string | Date | null> = { updatedAt: new Date() };
+  const updates: Record<string, string | Date | null | boolean> = { updatedAt: new Date() };
   if (title) updates.title = title;
   if (status) updates.status = status;
   if (priority) updates.priority = priority;
   if (assigneeId) updates.assigneeId = assigneeId;
   if (description !== undefined) updates.description = description;
+  if (isSaved !== null) updates.isSaved = isSaved === "true";
+  if (isActive !== null) updates.isActive = isActive === "true";
 
   await db.collection(collections.tasks).updateOne(
     { id: taskId, orgId },

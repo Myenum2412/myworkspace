@@ -61,7 +61,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
 
   const total = tasks.length;
   const myTasks = currentUserId ? tasks.filter((t) => t.assigneeId === currentUserId).length : 0;
-  const savedCount = tasks.filter((t) => t.isBookmarked).length;
+  const savedCount = tasks.filter((t) => t.isSaved).length;
   const upcomingCount = tasks.filter((t) => {
     if (!t.dueDate || t.status === "done" || t.status === "cancelled") return false;
     return new Date(t.dueDate) >= new Date();

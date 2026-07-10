@@ -72,16 +72,26 @@ export default async function ProfilePage() {
   if (!session?.user?.id) redirect("/login");
 
   const email = session.user.email;
-  if (!email) {
-    return (
-      <Suspense fallback={<div className="flex flex-1 items-center justify-center text-muted-foreground">Loading...</div>}>
-        <ProfilePageInteractive data={{ user: null, org: null, memberCount: 0 }} />
-      </Suspense>
-    );
-  }
+  const userId = session.user.id;
 
-  // Fetch user by email (matches backend /api/user/profile logic)
-  const userDoc = (await db.collection(collections.users).findOne({ email })) as Record<string, unknown> | null;
+  // Fetch user — try email first, then id, then _id (matches backend /api/user/profile logic)
+  let userDoc: Record<string, unknown> | null = null;
+  if (email) {
+    userDoc = (await db.collection(collections.users).findOne({ email })) as Record<string, unknown> | null;
+  }
+  if (!userDoc) {
+    userDoc = (await db.collection(collections.users).findOne({ id: userId })) as Record<string, unknown> | null;
+  }
+  if (!userDoc) {
+    try {
+      if (ObjectId.isValid(userId)) {
+        userDoc = (await db.collection(collections.users).findOne({ _id: new ObjectId(userId) } as never)) as Record<string, unknown> | null;
+      }
+    } catch {}
+  }
+  if (!userDoc) {
+    userDoc = (await db.collection(collections.users).findOne({ _id: userId } as never)) as Record<string, unknown> | null;
+  }
 
   if (!userDoc) {
     return (
@@ -91,10 +101,10 @@ export default async function ProfilePage() {
     );
   }
 
-  const userId = (userDoc.id as string) || String(userDoc._id || "");
+  const dbUserId = (userDoc.id as string) || String(userDoc._id || "");
 
   // Find org membership
-  const member = (await db.collection(collections.orgMembers).findOne({ userId })) as Record<string, unknown> | null;
+  const member = (await db.collection(collections.orgMembers).findOne({ userId: dbUserId })) as Record<string, unknown> | null;
 
   let orgData: ProfileOrg | null = null;
   let memberCount = 0;
@@ -142,7 +152,7 @@ export default async function ProfilePage() {
   }
 
   const userData: ProfileUser = {
-    id: String(userDoc._id || ""),
+    id: (userDoc.id as string) || String(userDoc._id || ""),
     name: (userDoc.name as string) || "",
     email: (userDoc.email as string) || "",
     phone: (userDoc.phone as string) || "",

@@ -21,7 +21,6 @@ import {
   ClockIcon,
   Settings2Icon,
   CheckCheckIcon,
-  BriefcaseIcon,
 } from "lucide-react";
 
 export const defaultNavData = {
@@ -56,15 +55,8 @@ export const defaultNavData = {
         { title: "All Employees", url: "/employees" },
         { title: "Teams", url: "/teams" },
         { title: "Terminated", url: "/terminated" },
-      ],
-    },
-    {
-      title: "Attendance",
-      url: "/attendance",
-      icon: <BriefcaseIcon className="size-6" />,
-      items: [
-        { title: "Overview", url: "/attendance" },
-        { title: "Reports", url: "/attendance/reports" },
+        { title: "Attendance Overview", url: "/attendance" },
+        { title: "Attendance Reports", url: "/attendance/reports" },
       ],
     },
     {

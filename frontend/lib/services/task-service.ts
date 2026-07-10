@@ -12,6 +12,8 @@ export type Task = {
   orgId?: string;
   createdAt?: string;
   updatedAt?: string;
+  isSaved?: boolean;
+  isActive?: boolean;
 };
 
 export const taskService = {

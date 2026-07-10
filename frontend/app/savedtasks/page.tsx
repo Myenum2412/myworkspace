@@ -38,9 +38,8 @@ export default async function SavedTasksPage() {
 
   if (orgId) {
     // Replicates the backend GET /api/tasks query shape: tasks scoped to the
-    // user's org, with assignee/creator names resolved via $lookup. NOTE: the
-    // backend handler has no `saved`/`isSaved` filter (the Task schema has no
-    // such field), so "saved tasks" is currently the full org task set.
+    // user's org, with assignee/creator names resolved via $lookup, filtered
+    // to tasks with isSaved: true.
     const rawTasks = (await db
       .collection(collections.tasks)
       .aggregate([
