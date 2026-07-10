@@ -103,7 +103,6 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
             <Section title="Contact Details">
               <Field icon={Phone} label="Mobile Number" value={client.mobileNumber} />
               <Field icon={Phone} label="Alternate Phone" value={client.alternatePhone} />
-              <Field icon={Phone} label="WhatsApp Number" value={client.whatsappNumber} />
               <Field icon={MapPin} label="Address Line 1" value={client.addressLine1} />
               <Field icon={MapPin} label="Address Line 2" value={client.addressLine2} />
               <Field icon={MapPin} label="City" value={client.city} />

@@ -27,7 +27,6 @@ export type Client = {
   designation?: string;
   mobileNumber?: string;
   alternatePhone?: string;
-  whatsappNumber?: string;
   addressLine1?: string;
   addressLine2?: string;
   city?: string;

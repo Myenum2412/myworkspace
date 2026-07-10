@@ -80,7 +80,6 @@ const clientSchema = new Schema<IClient>(
     designation: String,
     mobileNumber: String,
     alternatePhone: String,
-    whatsappNumber: String,
     addressLine1: String,
     addressLine2: String,
     city: String,

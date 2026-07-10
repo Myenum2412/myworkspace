@@ -29,7 +29,6 @@ export const EMPTY_VALUES: ClientValues = {
   designation: "",
   mobileNumber: "",
   alternatePhone: "",
-  whatsappNumber: "",
   addressLine1: "",
   addressLine2: "",
   city: "",
@@ -90,7 +89,6 @@ export function payloadFromValues(values: ClientValues): Record<string, unknown>
     designation: values.designation,
     mobileNumber: values.mobileNumber,
     alternatePhone: values.alternatePhone,
-    whatsappNumber: values.whatsappNumber,
     addressLine1: values.addressLine1,
     addressLine2: values.addressLine2,
     city: values.city,
@@ -203,10 +201,6 @@ export function EditClientFormFields(props: {
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Alternate Phone Number</Label>
             <Input placeholder="Enter alternate phone" value={v.alternatePhone} onChange={(e) => set("alternatePhone", e.target.value)} />
-          </Field>
-          <Field>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">WhatsApp Number</Label>
-            <Input placeholder="Enter WhatsApp number" value={v.whatsappNumber} onChange={(e) => set("whatsappNumber", e.target.value)} />
           </Field>
         </div>
       </FieldSet>
