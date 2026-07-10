@@ -13,6 +13,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
 import { SubscriptionStatusBanner } from "@/components/subscription-status-banner";
 import { SubscriptionGuard } from "@/components/subscription-guard";
+import { WhatsAppFloat } from "@/components/whatsapp-float";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -89,6 +90,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <SubscriptionGuard>{children}</SubscriptionGuard>
         </main>
         <MobileBottomNav context={context} />
+        {context === "workspace" && <WhatsAppFloat />}
       </SidebarInset>
     </SidebarProvider>
   );
