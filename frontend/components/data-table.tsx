@@ -210,7 +210,7 @@ export function DataTable<TData, TValue>({
                               ? null
                               : flexRender(header.column.columnDef.header, header.getContext())}
                             {canSort && (
-                              <ArrowUpDown className="size-3.5 text-muted-foreground shrink-0" />
+                              <ArrowUpDown className="size-3.5 text-white shrink-0" />
                             )}
                           </div>
                         </th>
