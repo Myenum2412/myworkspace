@@ -59,7 +59,7 @@ async function fetchDashboardMetrics(orgId: string) {
 }
 
 router.get("/metrics", async (req: AuthRequest, res: Response) => {
-  const orgId = (req.query.orgId as string) || req.orgId || await resolveOrgId(req);
+  const orgId = req.orgId || await resolveOrgId(req);
   const cacheKey = CacheKeys.dashboardMetrics(orgId);
   const data = await cacheManager.getOrSet(cacheKey, () => fetchDashboardMetrics(orgId), 30);
   res.json({ success: true, data });

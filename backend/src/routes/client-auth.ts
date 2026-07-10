@@ -203,7 +203,7 @@ router.get("/me", optionalAuth, async (req: AuthRequest, res: Response) => {
     throw new AppError(404, "Client user not found");
   }
 
-  const client = await Client.findOne({ id: clientUser.clientId }).lean();
+  const client = await Client.findOne({ id: clientUser.clientId, orgId: clientUser.orgId }).lean();
 
   res.json({
     success: true,
@@ -255,7 +255,7 @@ router.put("/profile", optionalAuth, async (req: AuthRequest, res: Response) => 
 
   if (updates.mobileNumber || updates.preferredContactMethod || updates.preferredTimeZone) {
     await Client.findOneAndUpdate(
-      { id: clientUser.clientId },
+      { id: clientUser.clientId, orgId: clientUser.orgId },
       { $set: updates }
     );
   }

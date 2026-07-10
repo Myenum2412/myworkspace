@@ -1,4 +1,4 @@
-(node:135672) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:111317) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
 > my-app@0.1.0 build
@@ -15,15 +15,15 @@ Setting a custom Cache-Control header can break Next.js development behavior.
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 11.8s
+✓ Compiled successfully in 10.5s
   Running TypeScript ...
-  Finished TypeScript in 17.7s ...
+  Finished TypeScript in 16.9s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/75) ...
-  Generating static pages using 11 workers (18/75) 
-  Generating static pages using 11 workers (37/75) 
-  Generating static pages using 11 workers (56/75) 
-✓ Generating static pages using 11 workers (75/75) in 605ms
+  Generating static pages using 11 workers (0/89) ...
+  Generating static pages using 11 workers (22/89) 
+  Generating static pages using 11 workers (44/89) 
+  Generating static pages using 11 workers (66/89) 
+✓ Generating static pages using 11 workers (89/89) in 590ms
   Finalizing page optimization ...
 
 Route (app)
@@ -33,6 +33,9 @@ Route (app)
 ├ ƒ /addprojects
 ├ ƒ /admin/profile
 ├ ƒ /alltasks
+├ ƒ /api/appointments
+├ ƒ /api/appointments/[id]
+├ ƒ /api/appointments/stats
 ├ ƒ /api/auth/[...nextauth]
 ├ ƒ /api/billing/create-checkout
 ├ ƒ /api/billing/invoices
@@ -47,6 +50,8 @@ Route (app)
 ├ ƒ /api/clients
 ├ ƒ /api/clients/[id]/workspace
 ├ ƒ /api/dashboard/profit-loss
+├ ƒ /api/doctor-kit
+├ ƒ /api/doctors
 ├ ƒ /api/employees
 ├ ƒ /api/employees/[id]
 ├ ƒ /api/employees/resend-email
@@ -65,13 +70,20 @@ Route (app)
 ├ ƒ /api/files/storage-stats
 ├ ƒ /api/folders
 ├ ƒ /api/folders/[id]
+├ ƒ /api/gallery/upload-image
+├ ƒ /api/gallery/verify
+├ ƒ /api/hermes/chat
 ├ ƒ /api/organizations/[id]
+├ ƒ /api/photography
+├ ƒ /api/photography/galleries
+├ ƒ /api/photography/galleries/token
 ├ ƒ /api/projects-list
 ├ ƒ /api/search
 ├ ƒ /api/shares/internal
 ├ ƒ /api/shares/links/[token]
 ├ ƒ /api/shares/links/[token]/download
 ├ ƒ /api/shares/links/[token]/verify
+├ ƒ /api/sidebar-features
 ├ ƒ /api/tasks/[id]
 ├ ƒ /api/tasks/[id]/comments
 ├ ƒ /api/tasks/[id]/comments/[commentId]
@@ -83,6 +95,10 @@ Route (app)
 ├ ƒ /api/user/profile
 ├ ƒ /api/user/profile-image
 ├ ƒ /api/user/status
+├ ƒ /api/whatsapp/connect
+├ ƒ /api/whatsapp/qr-code
+├ ƒ /api/whatsapp/settings
+├ ƒ /appointments
 ├ ƒ /approvals
 ├ ƒ /approvals/approved
 ├ ƒ /approvals/rejected
@@ -114,6 +130,8 @@ Route (app)
 ├ ƒ /files
 ├ ƒ /files/audit
 ├ ƒ /forgot-password
+├ ƒ /gallery/access/[token]
+├ ƒ /gallery/view
 ├ ƒ /login
 ├ ƒ /login/verify-2fa
 ├ ○ /manifest.json
@@ -142,6 +160,8 @@ Route (app)
 ├ ƒ /orgmenu/settings
 ├ ƒ /orgmenu/settings/notifications
 ├ ƒ /overview
+├ ƒ /photography
+├ ƒ /photography/galleries/[id]
 ├ ƒ /profile
 ├ ƒ /projects
 ├ ƒ /recycle-bin

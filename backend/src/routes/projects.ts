@@ -24,7 +24,8 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["projects"] }),
 });
 
 router.post("/", upload.single("attachment"), async (req: AuthRequest, res: Response) => {
-  const orgId = requireString(req.body.orgId, "orgId");
+  // Enforce workspace isolation: resolve orgId from membership, not from request body
+  const orgId = await requireOrgMembership(req.user!.userId, req.body.orgId || undefined, req.user!.email, req.user!.orgId);
   const name = requireString(req.body.name, "name", { min: 1, max: 200 });
   const client = optionalString(req.body.client, "client", { max: 200 }) ?? "";
   const color = optionalString(req.body.color, "color", { max: 20 }) ?? "#3b82f6";

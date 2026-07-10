@@ -39,6 +39,8 @@ import receiptRoutes from "./routes/receipts.js";
 import twoFactorRoutes from "./routes/two-factor.js";
 import chatRoutes from "./routes/chat.js";
 import installerRoutes from "./routes/installer.js";
+import appointmentRoutes from "./routes/appointments.js";
+import whatsappLocalRoutes from "./routes/whatsapp-local.js";
 
 const app = express();
 
@@ -207,6 +209,8 @@ app.use("/api/two-factor", twoFactorRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/installer", installerRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/whatsapp-local", whatsappLocalRoutes);
 
 // ── 404 catch-all ──
 app.use((req, res) => {

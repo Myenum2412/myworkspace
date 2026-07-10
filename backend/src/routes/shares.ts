@@ -22,7 +22,8 @@ router.post("/links", authenticate, async (req: AuthRequest, res: Response) => {
   const { fileId, orgId, isPublic, password, expiresAt, maxDownloads, allowDownload } = req.body;
   if (!fileId || !orgId) throw new AppError(400, "fileId and orgId are required");
 
-  const file = await FileAttachment.findOne({ id: fileId, deletedAt: null }).lean();
+  // Enforce workspace isolation: verify file belongs to the same org
+  const file = await FileAttachment.findOne({ id: fileId, orgId, deletedAt: null }).lean();
   if (!file) throw new AppError(404, "File not found");
 
   await verifyOrgAccess(req.user!.userId, orgId);

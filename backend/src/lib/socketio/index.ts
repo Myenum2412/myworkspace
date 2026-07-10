@@ -42,20 +42,25 @@ export class SocketIOManager {
       next();
     });
 
-    // Connection handler — only handles notification room joining
+    // Connection handler
     this.io.on("connection", (socket: AuthenticatedSocket) => {
       if (!socket.userId) return;
 
-      // Join user-specific notification room
       socket.join(`user:${socket.userId}`);
-      logger.debug({ userId: socket.userId }, "Socket joined notification room");
+
+      if (socket.orgId) {
+        socket.join(`org:${socket.orgId}`);
+        logger.debug({ userId: socket.userId, orgId: socket.orgId }, "Socket joined user and org rooms");
+      } else {
+        logger.debug({ userId: socket.userId }, "Socket joined user room (no org)");
+      }
 
       socket.on("disconnect", () => {
         logger.debug({ userId: socket.userId }, "Socket disconnected");
       });
     });
 
-    logger.info({ path: "/api/socketio" }, "Socket.IO initialized (notifications only)");
+    logger.info({ path: "/api/socketio" }, "Socket.IO initialized");
     return this.io;
   }
 
@@ -72,6 +77,17 @@ export class SocketIOManager {
 
   emitToUser<T = any>(userId: string, event: string, data: T) {
     this.io?.to(`user:${userId}`).emit(event, data);
+  }
+
+  emitToOrg<T = any>(orgId: string, event: string, data: T) {
+    this.io?.to(`org:${orgId}`).emit(event, data);
+  }
+
+  emitToAppointmentStakeholders<T = any>(data: T) {
+    const record = data as Record<string, unknown>;
+    if (record.orgId && typeof record.orgId === "string") {
+      this.io?.to(`org:${record.orgId}`).emit("appointment:created", data);
+    }
   }
 }
 

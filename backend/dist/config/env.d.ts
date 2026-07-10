@@ -42,4 +42,7 @@ export declare const env: {
     VAPID_PUBLIC_KEY: string;
     VAPID_PRIVATE_KEY: string;
     VAPID_SUBJECT: string;
+    HERMES_AGENT_ENABLED: string;
+    HERMES_DEFAULT_ORG_ID: string;
+    HERMES_DEFAULT_DOCTOR_ID: string;
 };

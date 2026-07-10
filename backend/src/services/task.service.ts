@@ -1,5 +1,6 @@
 import { Task } from "../lib/db/models/Task.js";
 import { TeamMember } from "../lib/db/models/TeamMember.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
 import mongoose from "mongoose";
 import { AppError } from "../middleware/error.js";
@@ -200,10 +201,23 @@ export async function createTask(data: {
     dueDate = d;
   }
 
+  // Enforce workspace isolation: verify assignee belongs to the same org
+  const resolvedAssigneeId = assigneeId || userId;
+  if (resolvedAssigneeId !== userId) {
+    const assigneeMember = await OrgMember.findOne({ userId: resolvedAssigneeId, orgId }).lean();
+    if (!assigneeMember) {
+      // Also check by User.orgId in case OrgMember record is missing
+      const assigneeUser = await User.findOne({ id: resolvedAssigneeId, orgId }).lean();
+      if (!assigneeUser) {
+        throw new AppError(403, "Cannot assign task to a user outside this workspace");
+      }
+    }
+  }
+
   const task = await Task.create({
     orgId,
     teamId,
-    assigneeId: assigneeId || userId,
+    assigneeId: resolvedAssigneeId,
     creatorId: userId,
     createdBy: userId,
     title,
@@ -276,6 +290,17 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
     const isTeamTask = existing.teamId && teamIds.includes(existing.teamId);
     if (!isOwnTask && !isTeamTask) {
       throw new AppError(403, "Not authorized to modify this task");
+    }
+  }
+
+  // Enforce workspace isolation: verify new assignee belongs to the same org
+  if (assigneeId !== undefined && assigneeId !== existing.assigneeId?.toString()) {
+    const assigneeMember = await OrgMember.findOne({ userId: assigneeId, orgId: userOrgId }).lean();
+    if (!assigneeMember) {
+      const assigneeUser = await User.findOne({ id: assigneeId, orgId: userOrgId }).lean();
+      if (!assigneeUser) {
+        throw new AppError(403, "Cannot assign task to a user outside this workspace");
+      }
     }
   }
 

@@ -47,7 +47,7 @@ async function fetchDashboardMetrics(orgId) {
     return { totalTasks, completedTasks, inProgressTasks, overdueTasks, activeMembers, recentActivity };
 }
 router.get("/metrics", async (req, res) => {
-    const orgId = req.query.orgId || req.orgId || await resolveOrgId(req);
+    const orgId = req.orgId || await resolveOrgId(req);
     const cacheKey = CacheKeys.dashboardMetrics(orgId);
     const data = await cacheManager.getOrSet(cacheKey, () => fetchDashboardMetrics(orgId), 30);
     res.json({ success: true, data });

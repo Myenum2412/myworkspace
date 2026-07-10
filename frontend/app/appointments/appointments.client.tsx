@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, ChevronLeftIcon, Loader2 } from "lucide-react";
 import { AppointmentForm } from "@/components/appointments/appointment-form";
@@ -10,6 +10,7 @@ import { AppointmentEditDialog } from "@/components/appointments/appointment-act
 import { AppointmentCancelDialog } from "@/components/appointments/appointment-actions";
 import { AppointmentDeleteDialog } from "@/components/appointments/appointment-actions";
 import { AppointmentStatusDialog } from "@/components/appointments/appointment-status-actions";
+import { getSocketIO } from "@/lib/socketio-client";
 import type { Appointment, AppointmentStats, Doctor, AppointmentPageView } from "@/components/appointments/appointment-types";
 
 export default function Appointments({ initialDoctors }: { initialDoctors: Doctor[] }) {
@@ -53,9 +54,42 @@ export default function Appointments({ initialDoctors }: { initialDoctors: Docto
     }
   }, []);
 
+  const socketRef = useRef<ReturnType<typeof getSocketIO> | null>(null);
+
   useEffect(() => {
     fetchData();
     fetchDoctors();
+
+    const socket = getSocketIO();
+    socketRef.current = socket;
+
+    const handleCreated = (appt: Appointment) => {
+      setAppointments((prev) => {
+        if (prev.some((a) => a.id === appt.id)) return prev;
+        return [appt, ...prev];
+      });
+      fetchData();
+    };
+
+    const handleUpdated = (appt: Appointment) => {
+      setAppointments((prev) => prev.map((a) => (a.id === appt.id ? appt : a)));
+      fetchData();
+    };
+
+    const handleDeleted = (data: { id: string }) => {
+      setAppointments((prev) => prev.filter((a) => a.id !== data.id));
+      fetchData();
+    };
+
+    socket.on("appointment:created", handleCreated);
+    socket.on("appointment:updated", handleUpdated);
+    socket.on("appointment:deleted", handleDeleted);
+
+    return () => {
+      socket.off("appointment:created", handleCreated);
+      socket.off("appointment:updated", handleUpdated);
+      socket.off("appointment:deleted", handleDeleted);
+    };
   }, [fetchData, fetchDoctors]);
 
   async function handleBookAppointment(data: Partial<Appointment>) {

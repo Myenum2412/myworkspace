@@ -39,9 +39,8 @@ export async function resolveOrgId(userId: string, email?: string, userOrgId?: s
 
   const anyOrg = await Organization.findOne({}).sort({ createdAt: 1 }).lean();
   if (anyOrg) {
-    const orgId = (anyOrg as any).id || (anyOrg as any)._id?.toString();
-    await OrgMember.create({ id: uuid(), orgId, userId, role: "admin", joinedAt: new Date() });
-    return orgId;
+    // Do NOT auto-create admin membership — this bypasses workspace isolation
+    throw new AppError(403, "User is not a member of any workspace. Please contact your administrator.");
   }
 
   throw new AppError(400, "No organization found. Please set up company details first.");

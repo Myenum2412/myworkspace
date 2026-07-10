@@ -244,9 +244,8 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 router.post("/", async (req: AuthRequest, res: Response) => {
   const name = requireString(req.body.name, "name", { min: 1, max: 200 });
   const description = optionalString(req.body.description, "description", { max: 5000 }) ?? "";
-  const bodyOrgId = optionalString(req.body.orgId, "orgId");
-  // Second require was redundant (re-fetches membership already implied). Keep one.
-  const orgId = bodyOrgId ?? await requireOrgMembershipFromRequest(req);
+  // Enforce workspace isolation: resolve orgId from membership, not from request body
+  const orgId = await requireOrgMembershipFromRequest(req, req.body.orgId || undefined);
 
   const team = await Team.create({
     orgId,

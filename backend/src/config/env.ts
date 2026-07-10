@@ -62,4 +62,9 @@ export const env = {
   VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || "",
   VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || "",
   VAPID_SUBJECT: process.env.VAPID_SUBJECT || "mailto:admin@myenum.in",
+
+  // ── Hermes Agent ──
+  HERMES_AGENT_ENABLED: process.env.HERMES_AGENT_ENABLED || "true",
+  HERMES_DEFAULT_ORG_ID: process.env.HERMES_DEFAULT_ORG_ID || "",
+  HERMES_DEFAULT_DOCTOR_ID: process.env.HERMES_DEFAULT_DOCTOR_ID || "",
 };
