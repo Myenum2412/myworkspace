@@ -43,6 +43,8 @@ import {
   CheckIcon,
   XIcon,
   Star,
+  MessageCircleIcon,
+  QrCodeIcon,
 } from "lucide-react";
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
 
@@ -236,6 +238,11 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               <BellIcon className="size-4 shrink-0" />
               <span className="hidden sm:inline">Notifications</span>
               <span className="sm:hidden">Notif</span>
+            </TabsTrigger>
+            <TabsTrigger value="whatsapp" className="gap-2">
+              <MessageCircleIcon className="size-4 shrink-0" />
+              <span className="hidden sm:inline">WhatsApp</span>
+              <span className="sm:hidden">WA</span>
             </TabsTrigger>
             <TabsTrigger value="integrations" className="gap-2" asChild>
               <a href="/settings/integrations" className="flex items-center gap-2">
@@ -570,8 +577,279 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               </div>
             </ScrollArea>
           </TabsContent>
+
+          <TabsContent value="whatsapp" className="h-full m-0 p-0">
+            <ScrollArea className="h-full">
+              <div className="p-3 sm:p-4 md:p-6 space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold">WhatsApp</h2>
+                  <p className="text-sm text-muted-foreground">Configure WhatsApp integration for your workspace</p>
+                </div>
+                <WhatsAppSettings orgId={orgId} />
+              </div>
+            </ScrollArea>
+          </TabsContent>
         </div>
       </Tabs>
+    </div>
+  );
+}
+
+const QR_API = "https://api.qrserver.com/v1/create-qr-code/";
+
+function WhatsAppSettings({ orgId }: { orgId: string }) {
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappEnabled, setWhatsappEnabled] = useState(false);
+  const [whatsappMode, setWhatsappMode] = useState<"bot" | "self-chat">("bot");
+  const [allowedUsers, setAllowedUsers] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [qrData, setQrData] = useState<string | null>(null);
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [sessionActive, setSessionActive] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/whatsapp/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.number !== undefined) setWhatsappNumber(data.number || "");
+        if (data.enabled !== undefined) setWhatsappEnabled(data.enabled);
+        if (data.mode) setWhatsappMode(data.mode);
+        if (data.allowedUsers) setAllowedUsers(data.allowedUsers);
+        if (data.sessionActive !== undefined) setSessionActive(data.sessionActive);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await fetch("/api/whatsapp/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          number: whatsappNumber,
+          enabled: whatsappEnabled,
+          mode: whatsappMode,
+          allowedUsers,
+        }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleGenerateQr() {
+    setQrLoading(true);
+    try {
+      const cleanNumber = whatsappNumber.replace(/[^0-9]/g, "");
+      const data = `https://wa.me/${cleanNumber}?text=${encodeURIComponent("Hi, I'd like to connect with your workspace.")}`;
+      const url = `${QR_API}?size=300x300&data=${encodeURIComponent(data)}`;
+      setQrData(data);
+      setQrImageUrl(url);
+    } finally {
+      setQrLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Connection</CardTitle>
+          <CardDescription>Configure your WhatsApp number for receiving messages</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Enable WhatsApp</Label>
+              <p className="text-xs text-muted-foreground">Allow users to contact this workspace via WhatsApp</p>
+            </div>
+            <Switch checked={whatsappEnabled} onCheckedChange={setWhatsappEnabled} />
+          </div>
+
+          <Separator />
+
+          <div className="grid gap-2 max-w-sm">
+            <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
+            <Input
+              id="whatsappNumber"
+              placeholder="+1234567890"
+              value={whatsappNumber}
+              onChange={(e) => setWhatsappNumber(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Include country code (e.g., +1 for US, +91 for India)</p>
+          </div>
+
+          <div className="grid gap-2 max-w-xs">
+            <Label htmlFor="whatsappMode">Mode</Label>
+            <Select value={whatsappMode} onValueChange={(v: "bot" | "self-chat") => setWhatsappMode(v)}>
+              <SelectTrigger id="whatsappMode">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bot">Bot (dedicated number)</SelectItem>
+                <SelectItem value="self-chat">Self-chat (personal number)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Bot mode uses a dedicated business number. Self-chat uses your personal WhatsApp.
+            </p>
+          </div>
+
+          <div className="grid gap-2 max-w-sm">
+            <Label htmlFor="allowedUsers">Allowed Users</Label>
+            <Input
+              id="allowedUsers"
+              placeholder="+1234567890, +1987654321"
+              value={allowedUsers}
+              onChange={(e) => setAllowedUsers(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Comma-separated phone numbers. Use * to allow everyone.</p>
+          </div>
+
+          {sessionActive && (
+            <div className="flex items-center gap-2 text-sm text-green-600">
+              <CheckCircle2Icon className="size-4" />
+              WhatsApp session is active and connected.
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 pt-2">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <SaveIcon className="size-4 mr-1" />}
+              {saving ? "Saving..." : "Save"}
+            </Button>
+            {saved && (
+              <span className="flex items-center gap-1 text-sm text-green-600">
+                <CheckCircle2Icon className="size-4" /> Saved
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>QR Code</CardTitle>
+          <CardDescription>Generate a QR code for users to scan and contact this workspace on WhatsApp</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex justify-center">
+            {qrImageUrl ? (
+              <div className="flex flex-col items-center gap-3">
+                <img
+                  src={qrImageUrl}
+                  alt="WhatsApp QR Code"
+                  className="rounded-lg border"
+                  width={300}
+                  height={300}
+                />
+                <p className="text-xs text-muted-foreground text-center max-w-xs">
+                  Users can scan this QR code with their phone camera to open a WhatsApp chat with your workspace.
+                </p>
+              </div>
+            ) : (
+              <div className="flex size-[300px] items-center justify-center rounded-lg border border-dashed">
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <QrCodeIcon className="size-12" />
+                  <p className="text-sm">No QR code generated yet</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-center gap-3">
+            <Button onClick={handleGenerateQr} disabled={qrLoading || !whatsappNumber}>
+              {qrLoading ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <QrCodeIcon className="size-4 mr-1" />}
+              {qrLoading ? "Generating..." : "Generate QR Code"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Hermes Agent Setup</CardTitle>
+          <CardDescription>Connect your WhatsApp using the Hermes Agent gateway (Baileys bridge)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <div className="rounded-lg bg-muted p-4 space-y-2">
+            <p className="font-medium">Prerequisites</p>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li>Node.js v18+ installed on your server</li>
+              <li>A phone with WhatsApp installed</li>
+              <li>A dedicated phone number for the bot (recommended)</li>
+            </ul>
+          </div>
+
+          <div className="rounded-lg bg-muted p-4 space-y-2">
+            <p className="font-medium">Step 1: Install Hermes Agent</p>
+            <pre className="bg-background rounded p-2 text-xs font-mono">npx hermes-agent whatsapp</pre>
+          </div>
+
+          <div className="rounded-lg bg-muted p-4 space-y-2">
+            <p className="font-medium">Step 2: Configure Environment</p>
+            <pre className="bg-background rounded p-2 text-xs font-mono">
+{`WHATSAPP_ENABLED=true
+WHATSAPP_MODE=${whatsappMode}
+WHATSAPP_ALLOWED_USERS=${allowedUsers || "*"}`}
+            </pre>
+          </div>
+
+          <div className="rounded-lg bg-muted p-4 space-y-2">
+            <p className="font-medium">Step 3: Pair Your Phone</p>
+            <ol className="list-decimal pl-5 space-y-1 text-muted-foreground">
+              <li>Run <code className="bg-background rounded px-1 font-mono text-xs">hermes gateway setup</code> on your server</li>
+              <li>Select <strong>WhatsApp</strong> from the platform list</li>
+              <li>A QR code will appear in your terminal</li>
+              <li>Open WhatsApp on your phone → Settings → Linked Devices → Link a Device</li>
+              <li>Scan the QR code shown in the terminal</li>
+            </ol>
+          </div>
+
+          <div className="rounded-lg bg-muted p-4 space-y-2">
+            <p className="font-medium">Step 4: Start the Gateway</p>
+            <pre className="bg-background rounded p-2 text-xs font-mono">hermes gateway</pre>
+            <p className="text-xs text-muted-foreground">
+              The gateway will start the WhatsApp bridge automatically using the saved session. The session persists across restarts.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-4 space-y-1">
+            <p className="font-medium text-amber-800 dark:text-amber-400">Important Notes</p>
+            <ul className="list-disc pl-5 space-y-1 text-amber-700 dark:text-amber-300 text-xs">
+              <li>Use a dedicated phone number for the bot (not your personal number)</li>
+              <li>Do not send bulk or spam messages — keep usage conversational</li>
+              <li>WhatsApp may periodically update their protocol — update Hermes if the connection breaks</li>
+              <li>The session data is stored in <code className="bg-background rounded px-1 font-mono">~/.hermes/platforms/whatsapp/session</code> — do not share this directory</li>
+              <li>If the session is lost, re-run <code className="bg-background rounded px-1 font-mono">hermes whatsapp</code> to generate a new QR code</li>
+            </ul>
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <Button variant="outline" asChild>
+              <a href="https://hermes-agent.nousresearch.com/docs/user-guide/messaging/whatsapp" target="_blank" rel="noopener noreferrer">
+                <ArrowUpRightIcon className="size-4 mr-1" />
+                Full Documentation
+              </a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
