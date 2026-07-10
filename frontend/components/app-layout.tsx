@@ -46,9 +46,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   useEffect(() => {
     const handleResize = () => {
-      if (pathname === "/chat") {
-        setOpen(false);
-      } else if (window.innerWidth < 768) {
+      if (window.innerWidth < 768) {
         setOpen(false);
       } else {
         setOpen(true);

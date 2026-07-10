@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar";
 import MuiFolderIcon from "@mui/icons-material/Folder";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import ChatIcon from "@mui/icons-material/Chat";
 import CategoryIcon from "@mui/icons-material/Category";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
@@ -25,6 +24,7 @@ import {
   ClockIcon,
   Settings2Icon,
   CheckCheckIcon,
+  BarChart3Icon,
 } from "lucide-react";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
 
@@ -123,9 +123,9 @@ const platformItems: NavItem[] = [
     ],
   },
   {
-    title: "Chat",
-    url: "/chat",
-    icon: <ChatIcon className="size-6" />,
+    title: "Engagement Overview",
+    url: "/engagement",
+    icon: <BarChart3Icon className="size-6" />,
   },
   {
     title: "Category",

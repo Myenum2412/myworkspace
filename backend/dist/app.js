@@ -39,7 +39,7 @@ import twoFactorRoutes from "./routes/two-factor.js";
 import chatRoutes from "./routes/chat.js";
 import installerRoutes from "./routes/installer.js";
 import appointmentRoutes from "./routes/appointments.js";
-import whatsappLocalRoutes from "./routes/whatsapp-local.js";
+import whatsappRoutes from "./routes/whatsapp.js";
 const app = express();
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
@@ -208,7 +208,7 @@ app.use("/api/billing", billingRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/installer", installerRoutes);
 app.use("/api/appointments", appointmentRoutes);
-app.use("/api/whatsapp-local", whatsappLocalRoutes);
+app.use("/api/whatsapp", whatsappRoutes);
 // ── 404 catch-all ──
 app.use((req, res) => {
     const method = req.method;

@@ -15,7 +15,6 @@ import FolderIcon from "@mui/icons-material/Folder";
 import {
   LayoutDashboardIcon,
   ReceiptIcon,
-  VideoIcon,
 } from "lucide-react";
 
 function buildClientNavData(orgId: string) {
@@ -35,11 +34,6 @@ function buildClientNavData(orgId: string) {
       title: "Bills",
       url: "/client/bills",
       icon: <ReceiptIcon className="size-6" />,
-    },
-    {
-      title: "Chat",
-      url: "/chat",
-      icon: <VideoIcon className="size-6" />,
     },
   ];
 }

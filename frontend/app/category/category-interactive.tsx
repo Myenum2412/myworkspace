@@ -16,6 +16,7 @@ const MODULES = [
     installedText: "Doctor Kit is currently installed. You can uninstall it from your workspace.",
     uninstalledText: "Install Doctor Kit to manage appointments and patients in your workspace.",
     apiPath: "/api/doctor-kit",
+    action: "toggle" as const,
   },
   {
     key: "photography",
@@ -24,6 +25,7 @@ const MODULES = [
     installedText: "Photography is currently installed. You can uninstall it from your workspace.",
     uninstalledText: "Install Photography to manage photos and media in your workspace.",
     apiPath: "/api/photography",
+    action: "toggle" as const,
   },
 ];
 

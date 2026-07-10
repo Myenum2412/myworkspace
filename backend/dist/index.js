@@ -11,7 +11,6 @@ import { getChannel, isRabbitMQConfigured } from "./lib/queue/connection.js";
 import { promoteRateLimitersToRedis } from "./middleware/rate-limit.js";
 import { initSentry } from "./lib/sentry.js";
 import { metricsRegistry } from "./lib/monitoring/index.js";
-import { whatsappLocalClient } from "./services/whatsapp-local.service.js";
 // ── Global error handlers (prevent crash on unhandled promise rejections) ──
 process.on("unhandledRejection", (reason) => {
     logger.warn({ err: reason instanceof Error ? reason.message : String(reason) }, "Unhandled rejection — suppressed to prevent crash");
@@ -61,10 +60,6 @@ async function start() {
         logger.error({ err }, "Agenda.js initialization failed");
     });
     promoteRateLimitersToRedis();
-    // Auto-start WhatsApp client if saved auth exists
-    whatsappLocalClient.init().catch((err) => {
-        logger.error({ err: err.message }, "WhatsApp init failed");
-    });
     // Track server metrics
     metricsRegistry.setGauge("server_uptime_seconds", {}, 0);
     setInterval(() => {
