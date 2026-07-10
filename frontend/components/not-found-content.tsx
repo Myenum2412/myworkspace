@@ -25,11 +25,8 @@ export function NotFoundContent() {
         </div>
         <div className="mt-12 space-y-3">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Page not found
+            404
           </h1>
-          <p className="mx-auto max-w-md text-base text-muted-foreground">
-            The page you're looking for doesn't exist or has been moved to a new location.
-          </p>
         </div>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button variant="outline" className="group w-full sm:w-auto" onClick={() => router.back()}>
