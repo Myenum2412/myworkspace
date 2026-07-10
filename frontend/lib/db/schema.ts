@@ -35,4 +35,13 @@ export const collections = {
   chatMessages: "chat_messages",
   doctors: "doctors",
   appointments: "appointments",
+  qrGalleries: "qr_galleries",
+  galleryAccessTokens: "gallery_access_tokens",
+  visitorInfo: "visitor_info",
+  faceEmbeddings: "face_embeddings",
+  persons: "persons",
+  galleryImages: "gallery_images",
+  faceToImageMapping: "face_to_image_mapping",
+  accessLogs: "access_logs",
+  downloadHistory: "download_history",
 } as const;

@@ -16,6 +16,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ChatIcon from "@mui/icons-material/Chat";
 import CategoryIcon from "@mui/icons-material/Category";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import {
   LayoutDashboardIcon,
   ListChecksIcon,
@@ -126,13 +127,12 @@ const platformItems: NavItem[] = [
     url: "/chat",
     icon: <ChatIcon className="size-6" />,
   },
+  {
+    title: "Category",
+    url: "/category",
+    icon: <CategoryIcon className="size-6" />,
+  },
 ];
-
-const categoryItem: NavItem = {
-  title: "Category",
-  url: "/category",
-  icon: <CategoryIcon className="size-6" />,
-};
 
 const doctorKitItem: NavItem = {
   title: "Doctor Kit",
@@ -140,6 +140,15 @@ const doctorKitItem: NavItem = {
   icon: <LocalHospitalIcon className="size-6" />,
   items: [
     { title: "Booking Appointments", url: "/appointments" },
+  ],
+};
+
+const photographyItem: NavItem = {
+  title: "Photography",
+  url: "/photography",
+  icon: <CameraAltIcon className="size-6" />,
+  items: [
+    { title: "Galleries", url: "/photography" },
   ],
 };
 
@@ -165,12 +174,17 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { user: NavUserData }) {
   const [doctorKitInstalled, setDoctorKitInstalled] = useState(false);
+  const [photographyInstalled, setPhotographyInstalled] = useState(false);
   const [hiddenFeatures, setHiddenFeatures] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/doctor-kit")
       .then((r) => r.json())
       .then((data) => setDoctorKitInstalled(data.installed))
+      .catch(() => {});
+    fetch("/api/photography")
+      .then((r) => r.json())
+      .then((data) => setPhotographyInstalled(data.installed))
       .catch(() => {});
     fetch("/api/sidebar-features")
       .then((r) => r.json())
@@ -180,9 +194,11 @@ export function AppSidebar({
       .catch(() => {});
   }, []);
 
-  const visibleItems = platformItems.filter(
-    (item) => !hiddenFeatures.includes(item.title)
-  );
+  const visibleItems = [
+    ...platformItems.filter((item) => !hiddenFeatures.includes(item.title)),
+    ...(doctorKitInstalled && !hiddenFeatures.includes("Doctor Kit") ? [doctorKitItem] : []),
+    ...(photographyInstalled && !hiddenFeatures.includes("Photography") ? [photographyItem] : []),
+  ];
 
   const settingsItems: NavItem[] = [
     settingsItem,
