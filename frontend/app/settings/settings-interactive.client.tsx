@@ -43,12 +43,7 @@ import {
   CheckIcon,
   XIcon,
   Star,
-  MessageCircleIcon,
-  QrCodeIcon,
   EyeOffIcon,
-  XCircleIcon,
-  SmartphoneIcon,
-  KeyRoundIcon,
 } from "lucide-react";
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
@@ -248,11 +243,6 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               <EyeOffIcon className="size-4 shrink-0" />
               <span className="hidden sm:inline">Features</span>
               <span className="sm:hidden">Feat</span>
-            </TabsTrigger>
-            <TabsTrigger value="whatsapp" className="gap-2">
-              <MessageCircleIcon className="size-4 shrink-0" />
-              <span className="hidden sm:inline">WhatsApp</span>
-              <span className="sm:hidden">WA</span>
             </TabsTrigger>
             <TabsTrigger value="integrations" className="gap-2" asChild>
               <a href="/settings/integrations" className="flex items-center gap-2">
@@ -599,18 +589,6 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               </div>
             </ScrollArea>
           </TabsContent>
-
-          <TabsContent value="whatsapp" className="h-full m-0 p-0">
-            <ScrollArea className="h-full">
-              <div className="p-3 sm:p-4 md:p-6 space-y-6">
-                <div>
-                  <h2 className="text-lg font-semibold">WhatsApp</h2>
-                  <p className="text-sm text-muted-foreground">Configure WhatsApp integration for your workspace</p>
-                </div>
-                <LocalWhatsAppSettings />
-              </div>
-            </ScrollArea>
-          </TabsContent>
         </div>
       </Tabs>
     </div>
@@ -709,212 +687,4 @@ function FeatureToggleSettings() {
     </div>
   );
 }
-
-function LocalWhatsAppSettings() {
-  const [state, setState] = useState<{
-    status: string;
-    qrCode?: string;
-    pairingCode?: string;
-    phoneNumber?: string;
-    error?: string;
-  }>({ status: "disconnected" });
-  const [starting, setStarting] = useState(false);
-  const [showPairInput, setShowPairInput] = useState(false);
-  const [phoneInput, setPhoneInput] = useState("");
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    fetch("/api/whatsapp-local/status")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setState(d.data);
-      })
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (state.status === "qr" && state.qrCode && canvasRef.current) {
-      import("qrcode").then((mod) => {
-        mod.toCanvas(canvasRef.current, state.qrCode!, {
-          width: 280,
-          margin: 2,
-          color: { dark: "#1a1a1a", light: "#ffffff" },
-        });
-      });
-    }
-  }, [state.status, state.qrCode]);
-
-  async function handleStart() {
-    setStarting(true);
-    setShowPairInput(false);
-    try {
-      const res = await fetch("/api/whatsapp-local/start", { method: "POST" });
-      const data = await res.json();
-      if (data.success) setState(data.data);
-    } catch {
-      setState({ status: "error", error: "Failed to start client" });
-    } finally {
-      setStarting(false);
-    }
-  }
-
-  async function handlePair() {
-    if (!phoneInput.trim()) return;
-    setStarting(true);
-    try {
-      const res = await fetch("/api/whatsapp-local/pair", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: phoneInput.trim() }),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        setState({ status: "error", error: data.error || "Pairing failed" });
-      } else {
-        setState(data.data);
-      }
-    } catch {
-      setState({ status: "error", error: "Failed to request pairing code" });
-    } finally {
-      setStarting(false);
-    }
-  }
-
-  async function handleStop() {
-    await fetch("/api/whatsapp-local/stop", { method: "POST" });
-    setState({ status: "disconnected" });
-  }
-
-  async function handleLogout() {
-    await fetch("/api/whatsapp-local/logout", { method: "POST" });
-    setState({ status: "disconnected" });
-  }
-
-  const statusBadge = () => {
-    switch (state.status) {
-      case "connected":
-        return <span className="flex items-center gap-1 text-sm text-green-600"><CheckCircle2Icon className="size-4" /> Connected</span>;
-      case "connecting":
-        return <span className="flex items-center gap-1 text-sm text-amber-600"><Loader2Icon className="size-4 animate-spin" /> Connecting...</span>;
-      case "qr":
-        return <span className="flex items-center gap-1 text-sm text-amber-600"><Loader2Icon className="size-4 animate-spin" /> Awaiting scan</span>;
-      case "pairing_code":
-        return <span className="flex items-center gap-1 text-sm text-amber-600"><KeyRoundIcon className="size-4" /> Code generated</span>;
-      case "error":
-        return <span className="flex items-center gap-1 text-sm text-red-600"><XCircleIcon className="size-4" /> Error</span>;
-      default:
-        return <span className="flex items-center gap-1 text-sm text-muted-foreground"><SmartphoneIcon className="size-4" /> Disconnected</span>;
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Local WhatsApp Client (QR / Pairing Code)</CardTitle>
-        <CardDescription>
-          Connect your WhatsApp by scanning a QR code or entering a pairing code — runs locally via WhatsApp Web.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-2">
-          {statusBadge()}
-          {state.phoneNumber && (
-            <span className="text-sm text-muted-foreground ml-2">{state.phoneNumber}</span>
-          )}
-        </div>
-
-        {state.status === "disconnected" && !showPairInput && (
-          <div className="flex flex-col items-start gap-3">
-            <Button onClick={handleStart} disabled={starting}>
-              {starting ? <Loader2Icon className="mr-2 size-4 animate-spin" /> : <SmartphoneIcon className="mr-2 size-4" />}
-              {starting ? "Starting..." : "Start & Show QR Code"}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setShowPairInput(true)} className="gap-2">
-              <KeyRoundIcon className="size-4" />
-              Use pairing code instead
-            </Button>
-          </div>
-        )}
-
-        {state.status === "disconnected" && showPairInput && (
-          <div className="flex flex-col items-start gap-3">
-            <p className="text-sm text-muted-foreground">
-              Enter your phone number with country code. Open WhatsApp → Linked Devices → Link a Device → enter the code shown.
-            </p>
-            <div className="grid gap-2 max-w-xs w-full">
-              <Label htmlFor="settings-phone">Phone Number</Label>
-              <Input
-                id="settings-phone"
-                placeholder="911234567890"
-                value={phoneInput}
-                onChange={(e) => setPhoneInput(e.target.value)}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handlePair} disabled={starting || !phoneInput.trim()}>
-                {starting && <Loader2Icon className="mr-2 size-4 animate-spin" />}
-                Request Pairing Code
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setShowPairInput(false)}>
-                Back to QR
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {state.status === "connecting" && (
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Loader2Icon className="size-4 animate-spin" />
-            Initializing WhatsApp client...
-          </div>
-        )}
-
-        {state.status === "qr" && (
-          <div className="flex flex-col items-center gap-3">
-            <canvas ref={canvasRef} className="rounded-lg border" />
-            <p className="text-xs text-muted-foreground text-center max-w-xs">
-              Open WhatsApp on your phone → Linked Devices → Link a Device → Scan this QR code.
-            </p>
-            <Button variant="outline" size="sm" onClick={handleStop}>Cancel</Button>
-          </div>
-        )}
-
-        {state.status === "pairing_code" && (
-          <div className="flex flex-col items-center gap-3">
-            <div className="bg-muted rounded-lg px-8 py-4">
-              <p className="text-3xl font-mono font-bold tracking-widest text-center">
-                {state.pairingCode}
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground text-center max-w-xs">
-              Open WhatsApp → Linked Devices → Link a Device → enter this code.
-            </p>
-            <Button variant="outline" size="sm" onClick={handleStop}>Cancel</Button>
-          </div>
-        )}
-
-        {state.status === "connected" && (
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              Disconnect & Logout
-            </Button>
-          </div>
-        )}
-
-        {state.status === "error" && (
-          <div className="flex flex-col items-start gap-2">
-            <p className="text-sm text-red-500">{state.error || "Connection failed"}</p>
-            <div className="flex gap-2">
-              <Button size="sm" onClick={handleStart}>Retry with QR</Button>
-              <Button variant="outline" size="sm" onClick={() => { setShowPairInput(true); setState({ status: "disconnected" }); }}>
-                Try Pairing Code
-              </Button>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
 
