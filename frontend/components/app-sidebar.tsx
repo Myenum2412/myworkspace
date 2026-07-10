@@ -25,6 +25,7 @@ import {
   Settings2Icon,
   CheckCheckIcon,
 } from "lucide-react";
+import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
 
 export interface NavItem {
   title: string;
@@ -164,13 +165,24 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { user: NavUserData }) {
   const [doctorKitInstalled, setDoctorKitInstalled] = useState(false);
+  const [hiddenFeatures, setHiddenFeatures] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/doctor-kit")
       .then((r) => r.json())
       .then((data) => setDoctorKitInstalled(data.installed))
       .catch(() => {});
+    fetch("/api/sidebar-features")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.hidden) setHiddenFeatures(data.hidden);
+      })
+      .catch(() => {});
   }, []);
+
+  const visibleItems = platformItems.filter(
+    (item) => !hiddenFeatures.includes(item.title)
+  );
 
   const settingsItems: NavItem[] = [
     categoryItem,
@@ -195,7 +207,7 @@ export function AppSidebar({
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={platformItems} label="Platform" />
+        <NavMain items={visibleItems} label="Platform" />
         <NavMain items={settingsItems} label="Settings" className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

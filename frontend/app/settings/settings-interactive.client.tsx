@@ -45,8 +45,10 @@ import {
   Star,
   MessageCircleIcon,
   QrCodeIcon,
+  EyeOffIcon,
 } from "lucide-react";
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
+import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
 
 const SECTION_LIMITS_KEY = "myworkspace_section_limits";
 
@@ -238,6 +240,11 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               <BellIcon className="size-4 shrink-0" />
               <span className="hidden sm:inline">Notifications</span>
               <span className="sm:hidden">Notif</span>
+            </TabsTrigger>
+            <TabsTrigger value="features" className="gap-2">
+              <EyeOffIcon className="size-4 shrink-0" />
+              <span className="hidden sm:inline">Features</span>
+              <span className="sm:hidden">Feat</span>
             </TabsTrigger>
             <TabsTrigger value="whatsapp" className="gap-2">
               <MessageCircleIcon className="size-4 shrink-0" />
@@ -578,6 +585,18 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             </ScrollArea>
           </TabsContent>
 
+          <TabsContent value="features" className="h-full m-0 p-0">
+            <ScrollArea className="h-full">
+              <div className="p-3 sm:p-4 md:p-6 space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold">App Sidebar Features</h2>
+                  <p className="text-sm text-muted-foreground">Show or hide sidebar navigation items</p>
+                </div>
+                <FeatureToggleSettings />
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
           <TabsContent value="whatsapp" className="h-full m-0 p-0">
             <ScrollArea className="h-full">
               <div className="p-3 sm:p-4 md:p-6 space-y-6">
@@ -596,6 +615,88 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
 }
 
 const QR_API = "https://api.qrserver.com/v1/create-qr-code/";
+
+function FeatureToggleSettings() {
+  const [hidden, setHidden] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/sidebar-features")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.hidden) setHidden(data.hidden);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function handleToggle(feature: string) {
+    const next = hidden.includes(feature)
+      ? hidden.filter((f) => f !== feature)
+      : [...hidden, feature];
+    setHidden(next);
+    setSaving(true);
+    try {
+      await fetch("/api/sidebar-features", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hidden: next }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Sidebar Navigation</CardTitle>
+        <CardDescription>Toggle visibility of sidebar navigation items across the app</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Feature</TableHead>
+              <TableHead className="w-24 text-center">Visible</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {SIDEBAR_FEATURES.map((feature) => (
+              <TableRow key={feature}>
+                <TableCell className="font-medium">{feature}</TableCell>
+                <TableCell className="text-center">
+                  <Switch
+                    checked={!hidden.includes(feature)}
+                    onCheckedChange={() => handleToggle(feature)}
+                    disabled={saving}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        {saved && (
+          <div className="flex items-center gap-1 text-sm text-green-600 mt-4">
+            <CheckCircle2Icon className="size-4" /> Saved
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 function WhatsAppSettings({ orgId }: { orgId: string }) {
   const [whatsappNumber, setWhatsappNumber] = useState("");
@@ -781,75 +882,7 @@ function WhatsAppSettings({ orgId }: { orgId: string }) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Hermes Agent Setup</CardTitle>
-          <CardDescription>Connect your WhatsApp using the Hermes Agent gateway (Baileys bridge)</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm">
-          <div className="rounded-lg bg-muted p-4 space-y-2">
-            <p className="font-medium">Prerequisites</p>
-            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-              <li>Node.js v18+ installed on your server</li>
-              <li>A phone with WhatsApp installed</li>
-              <li>A dedicated phone number for the bot (recommended)</li>
-            </ul>
-          </div>
 
-          <div className="rounded-lg bg-muted p-4 space-y-2">
-            <p className="font-medium">Step 1: Install Hermes Agent</p>
-            <pre className="bg-background rounded p-2 text-xs font-mono">npx hermes-agent whatsapp</pre>
-          </div>
-
-          <div className="rounded-lg bg-muted p-4 space-y-2">
-            <p className="font-medium">Step 2: Configure Environment</p>
-            <pre className="bg-background rounded p-2 text-xs font-mono">
-{`WHATSAPP_ENABLED=true
-WHATSAPP_MODE=${whatsappMode}
-WHATSAPP_ALLOWED_USERS=${allowedUsers || "*"}`}
-            </pre>
-          </div>
-
-          <div className="rounded-lg bg-muted p-4 space-y-2">
-            <p className="font-medium">Step 3: Pair Your Phone</p>
-            <ol className="list-decimal pl-5 space-y-1 text-muted-foreground">
-              <li>Run <code className="bg-background rounded px-1 font-mono text-xs">hermes gateway setup</code> on your server</li>
-              <li>Select <strong>WhatsApp</strong> from the platform list</li>
-              <li>A QR code will appear in your terminal</li>
-              <li>Open WhatsApp on your phone → Settings → Linked Devices → Link a Device</li>
-              <li>Scan the QR code shown in the terminal</li>
-            </ol>
-          </div>
-
-          <div className="rounded-lg bg-muted p-4 space-y-2">
-            <p className="font-medium">Step 4: Start the Gateway</p>
-            <pre className="bg-background rounded p-2 text-xs font-mono">hermes gateway</pre>
-            <p className="text-xs text-muted-foreground">
-              The gateway will start the WhatsApp bridge automatically using the saved session. The session persists across restarts.
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-4 space-y-1">
-            <p className="font-medium text-amber-800 dark:text-amber-400">Important Notes</p>
-            <ul className="list-disc pl-5 space-y-1 text-amber-700 dark:text-amber-300 text-xs">
-              <li>Use a dedicated phone number for the bot (not your personal number)</li>
-              <li>Do not send bulk or spam messages — keep usage conversational</li>
-              <li>WhatsApp may periodically update their protocol — update Hermes if the connection breaks</li>
-              <li>The session data is stored in <code className="bg-background rounded px-1 font-mono">~/.hermes/platforms/whatsapp/session</code> — do not share this directory</li>
-              <li>If the session is lost, re-run <code className="bg-background rounded px-1 font-mono">hermes whatsapp</code> to generate a new QR code</li>
-            </ul>
-          </div>
-
-          <div className="flex items-center gap-2 pt-2">
-            <Button variant="outline" asChild>
-              <a href="https://hermes-agent.nousresearch.com/docs/user-guide/messaging/whatsapp" target="_blank" rel="noopener noreferrer">
-                <ArrowUpRightIcon className="size-4 mr-1" />
-                Full Documentation
-              </a>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
