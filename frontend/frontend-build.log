@@ -1,4 +1,4 @@
-(node:32982) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:79383) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
 > my-app@0.1.0 build
@@ -9,21 +9,21 @@ Warning: Custom Cache-Control headers detected for the following routes:
 
 Setting a custom Cache-Control header can break Next.js development behavior.
 ▲ Next.js 16.2.10 (Turbopack)
-- Environments: .env
+- Environments: .env.local, .env
 - Experiments (use with caution):
   · optimizePackageImports
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 13.3s
+✓ Compiled successfully in 14.2s
   Running TypeScript ...
-  Finished TypeScript in 16.4s ...
+  Finished TypeScript in 19.2s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/73) ...
-  Generating static pages using 11 workers (18/73) 
-  Generating static pages using 11 workers (36/73) 
-  Generating static pages using 11 workers (54/73) 
-✓ Generating static pages using 11 workers (73/73) in 590ms
+  Generating static pages using 11 workers (0/75) ...
+  Generating static pages using 11 workers (18/75) 
+  Generating static pages using 11 workers (37/75) 
+  Generating static pages using 11 workers (56/75) 
+✓ Generating static pages using 11 workers (75/75) in 663ms
   Finalizing page optimization ...
 
 Route (app)
@@ -49,6 +49,7 @@ Route (app)
 ├ ƒ /api/dashboard/profit-loss
 ├ ƒ /api/employees
 ├ ƒ /api/employees/[id]
+├ ƒ /api/employees/resend-email
 ├ ƒ /api/files
 ├ ƒ /api/files/[id]
 ├ ƒ /api/files/[id]/duplicate
@@ -61,6 +62,7 @@ Route (app)
 ├ ƒ /api/files/members
 ├ ƒ /api/files/recent
 ├ ƒ /api/files/stats
+├ ƒ /api/files/storage-stats
 ├ ƒ /api/folders
 ├ ƒ /api/folders/[id]
 ├ ƒ /api/organizations/[id]
@@ -96,6 +98,7 @@ Route (app)
 ├ ƒ /billing/services/[id]/edit
 ├ ○ /billing/services/new
 ├ ƒ /calendar
+├ ƒ /category
 ├ ○ /chat
 ├ ○ /client/bills
 ├ ƒ /client/dashboard
