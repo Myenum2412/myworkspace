@@ -20,7 +20,7 @@ export function Illustration(props: React.ComponentPropsWithoutRef<"svg">) {
 
 export function NotFound({
   title = "Page not found",
-  description = "Lost, this page is. In another system, it may be.",
+  description = "The page you're looking for doesn't exist or has been moved.",
 }: NotFoundProps) {
   return (
     <div className="relative text-center z-[1] pt-52">
