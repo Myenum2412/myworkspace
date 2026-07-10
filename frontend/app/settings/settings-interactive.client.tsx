@@ -659,42 +659,52 @@ function FeatureToggleSettings() {
     );
   }
 
+  const featureDescriptions: Record<string, string> = {
+    Dashboard: "Overview and reports at a glance",
+    "Task Allocation": "Assign and track team tasks",
+    Employees: "Manage employees, teams, and attendance",
+    Projects: "Track clients and project progress",
+    Approvals: "Review pending, approved, and rejected requests",
+    "Time Tracker": "Log and monitor work hours",
+    "File Manager": "Store, upload, and manage files",
+    Billing: "View invoices, services, and receipts",
+    Chat: "Workspace messaging and collaboration",
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Sidebar Navigation</CardTitle>
-        <CardDescription>Toggle visibility of sidebar navigation items across the app</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Feature</TableHead>
-              <TableHead className="w-24 text-center">Visible</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {SIDEBAR_FEATURES.map((feature) => (
-              <TableRow key={feature}>
-                <TableCell className="font-medium">{feature}</TableCell>
-                <TableCell className="text-center">
-                  <Switch
-                    checked={!hidden.includes(feature)}
-                    onCheckedChange={() => handleToggle(feature)}
-                    disabled={saving}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {saved && (
-          <div className="flex items-center gap-1 text-sm text-green-600 mt-4">
-            <CheckCircle2Icon className="size-4" /> Saved
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {SIDEBAR_FEATURES.map((feature) => {
+          const isHidden = hidden.includes(feature);
+          return (
+            <Card key={feature} className={isHidden ? "opacity-60" : ""}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">{feature}</CardTitle>
+                <CardDescription className="text-xs">
+                  {featureDescriptions[feature]}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  variant={isHidden ? "default" : "outline"}
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleToggle(feature)}
+                  disabled={saving}
+                >
+                  {isHidden ? "Unhide" : "Hide"}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+      {saved && (
+        <div className="flex items-center gap-1 text-sm text-green-600">
+          <CheckCircle2Icon className="size-4" /> Saved
+        </div>
+      )}
+    </div>
   );
 }
 
