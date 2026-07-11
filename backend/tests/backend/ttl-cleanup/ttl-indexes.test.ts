@@ -10,8 +10,15 @@ describe("TTL indexes", () => {
       await mongoose.connect(uri);
     }
 
-    // Create TTL indexes explicitly for test
+    // Create TTL indexes explicitly for test - drop existing ones first to avoid conflicts
     const db = mongoose.connection.db!;
+
+    // Drop existing indexes that might conflict
+    try { await db.collection("notifications").dropIndex("notifications_ttl_test"); } catch {}
+    try { await db.collection("notifications").dropIndex("createdAt_1"); } catch {}
+    try { await db.collection("sessions").dropIndex("sessions_ttl_test"); } catch {}
+    try { await db.collection("sessions").dropIndex("expiresAt_1"); } catch {}
+
     await db.collection("notifications").createIndex(
       { createdAt: 1 },
       { expireAfterSeconds: 2, name: "notifications_ttl_test" },
