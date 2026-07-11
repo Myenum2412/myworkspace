@@ -59,6 +59,23 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const rowsPerPage = 15;
 
+  const filtered = useMemo(() => {
+    if (!searchQuery.trim()) return employees;
+    const q = searchQuery.toLowerCase();
+    return employees.filter((e) =>
+      (e.name as string)?.toLowerCase().includes(q) ||
+      (e.email as string)?.toLowerCase().includes(q) ||
+      (e.displayId as string)?.toLowerCase().includes(q) ||
+      (e.department as string)?.toLowerCase().includes(q) ||
+      (e.designation as string)?.toLowerCase().includes(q)
+    );
+  }, [employees, searchQuery]);
+
+  const paginated = useMemo(() => {
+    const start = page * rowsPerPage;
+    return filtered.slice(start, start + rowsPerPage);
+  }, [filtered, page]);
+
   const allSelected = paginated.length > 0 && paginated.every((_, i) => selectedRows.has(i));
 
   function toggleAllRows() {
@@ -80,23 +97,6 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
       return next;
     });
   }
-
-  const filtered = useMemo(() => {
-    if (!searchQuery.trim()) return employees;
-    const q = searchQuery.toLowerCase();
-    return employees.filter((e) =>
-      (e.name as string)?.toLowerCase().includes(q) ||
-      (e.email as string)?.toLowerCase().includes(q) ||
-      (e.displayId as string)?.toLowerCase().includes(q) ||
-      (e.department as string)?.toLowerCase().includes(q) ||
-      (e.designation as string)?.toLowerCase().includes(q)
-    );
-  }, [employees, searchQuery]);
-
-  const paginated = useMemo(() => {
-    const start = page * rowsPerPage;
-    return filtered.slice(start, start + rowsPerPage);
-  }, [filtered, page]);
 
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
 
