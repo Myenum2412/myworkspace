@@ -18,7 +18,7 @@ describe("TTL indexes", () => {
     );
     await db.collection("sessions").createIndex(
       { expiresAt: 1 },
-      { expireAfterSeconds: 0, name: "sessions_ttl_test" },
+      { expireAfterSeconds: 1, name: "sessions_ttl_test" },
     );
   });
 
@@ -62,7 +62,7 @@ describe("TTL indexes", () => {
     const indexes = await Session.collection.indexes();
     const ttlIndex = indexes.find((i) => i.name === "sessions_ttl_test");
     expect(ttlIndex).toBeDefined();
-    expect(ttlIndex!.expireAfterSeconds).toBe(0);
+    expect(ttlIndex!.expireAfterSeconds).toBe(1);
   });
 
   it("soft-deleted records can be purged by scheduled job", async () => {
