@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Camera, ChevronDown, ChevronRight, Eye, EyeOff } from "lucide-react"
 import { getDropdownOptions } from "@/lib/dropdown-options"
 
@@ -73,6 +72,7 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: ProfileImageUploa
       const reader = new FileReader()
       reader.onloadend = () => {
         onAvatarChange(reader.result as string)
+        e.target.value = ""
       }
       reader.readAsDataURL(file)
     }
@@ -81,11 +81,15 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: ProfileImageUploa
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="relative">
-        <Avatar className="h-24 w-24">
-          <AvatarImage src={avatar} alt="Profile" />
-          <AvatarFallback>Upload</AvatarFallback>
-        </Avatar>
+        <div className="size-24 rounded-full overflow-hidden ring-2 ring-background flex items-center justify-center bg-muted">
+          {avatar ? (
+            <img src={avatar} alt="Profile" className="size-full object-cover" />
+          ) : (
+            <Camera className="size-8 text-muted-foreground/50" />
+          )}
+        </div>
         <button
+          type="button"
           onClick={() => fileInputRef.current?.click()}
           className="absolute bottom-0 right-0 rounded-full bg-primary p-2.5 sm:p-2 text-primary-foreground hover:bg-primary/90"
           aria-label="Upload photo"

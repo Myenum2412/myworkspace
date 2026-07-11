@@ -6,6 +6,52 @@ import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { ensureUserOrg } from "@/lib/org";
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const { ObjectId } = await import("mongodb");
+    const orClauses: Record<string, unknown>[] = [{ id }];
+    if (ObjectId.isValid(id)) {
+      orClauses.push({ _id: new ObjectId(id) });
+    }
+    const user = await db.collection(collections.users).findOne(
+      { $or: orClauses } as any,
+      { projection: { password: 0 } }
+    );
+    if (!user) {
+      return NextResponse.json({ error: "Employee not found" }, { status: 404 });
+    }
+
+    const [workExperience, educationDetails, dependentDetails] = await Promise.all([
+      db.collection(collections.workExperience).find({ userId: id }).toArray(),
+      db.collection(collections.educationDetails).find({ userId: id }).toArray(),
+      db.collection(collections.dependentDetails).find({ userId: id }).toArray(),
+    ]);
+
+    return NextResponse.json({
+      data: {
+        ...user,
+        _id: user._id ? String(user._id) : undefined,
+        workExperience,
+        educationDetails,
+        dependentDetails,
+      },
+    });
+  } catch (err: any) {
+    console.error("[API GET /api/employees/:id] Error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

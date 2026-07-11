@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   UsersIcon,
   PlusIcon,
@@ -116,22 +118,22 @@ function MobileEmployeeCard({ employee: emp, onView, onEdit, onTerminate }: {
         {emp.department && (
           <div>
             <span className="text-muted-foreground">Department</span>
-            <p className="font-medium text-gray-800 truncate">{emp.department}</p>
+            <p className="font-medium text-white-800 truncate">{emp.department}</p>
           </div>
         )}
         {emp.designation && (
           <div>
             <span className="text-muted-foreground">Designation</span>
-            <p className="font-medium text-gray-800 truncate">{emp.designation}</p>
+            <p className="font-medium text-white-800 truncate">{emp.designation}</p>
           </div>
         )}
         <div>
           <span className="text-muted-foreground">Role</span>
-          <p className="font-medium text-gray-800 capitalize truncate">{emp.role}</p>
+          <p className="font-medium text-white-800 capitalize truncate">{emp.role}</p>
         </div>
         <div>
           <span className="text-muted-foreground">ID</span>
-          <p className="font-mono font-medium text-gray-800 truncate">{emp.displayId || "—"}</p>
+          <p className="font-mono font-medium text-white-800 truncate">{emp.displayId || "—"}</p>
         </div>
       </div>
       <div className="flex items-center justify-between pt-1 border-t border-gray-100" onClick={() => onView(emp)}>
@@ -169,12 +171,33 @@ export function EmployeeList({
   onEdit,
   onTerminate,
 }: EmployeeListProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedEmployees.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedEmployees.map((e) => e.id)));
+    }
+  };
+
+  const allSelected = paginatedEmployees.length > 0 && selectedIds.size === paginatedEmployees.length;
+
   return (
     <>
       <main className="flex flex-1 flex-col gap-0 p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-4 sm:mb-6">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
+          <div className="flex items-center gap-3 min-w-0 shrink-0">
             <div className="flex items-center justify-center size-10 rounded-xl bg-primary/10 shrink-0">
               <UsersIcon className="size-5 text-primary" />
             </div>
@@ -187,21 +210,41 @@ export function EmployeeList({
             </div>
           </div>
 
+          <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">
+            <div className="relative bg-white border border-gray-200 rounded-lg focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder=""
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="pl-9 h-9 border-0 shadow-none focus-visible:ring-0 w-full"
+              />
+              {searchQuery && (
+                <button
+                  onClick={onSearchClear}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                >
+                  <XIcon className="size-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
           <Button onClick={onAdd} className="gap-2 shrink-0 touch-target">
             <PlusIcon className="size-4" />
             Add Employee
           </Button>
         </div>
 
-        {/* Search */}
-        <div className="relative w-full sm:max-w-md mb-4">
+        {/* Search (mobile) */}
+        <div className="relative w-full mb-4 sm:hidden">
           <div className="relative bg-white border border-gray-200 rounded-lg focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder=""
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9 h-10 sm:h-9 border-0 shadow-none focus-visible:ring-0 w-full"
+              className="pl-9 h-10 border-0 shadow-none focus-visible:ring-0 w-full"
             />
             {searchQuery && (
               <button
@@ -218,11 +261,14 @@ export function EmployeeList({
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)]">
           {/* Desktop Table */}
           <div className="hidden sm:block overflow-x-auto overflow-y-auto flex-1">
-            <table className="table-premium w-full text-sm text-left" style={{ minWidth: 900 }}>
+            <table className="table-premium w-full text-sm text-left" style={{ minWidth: 950 }}>
               <thead className="sticky top-0 z-10">
                 <tr>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10">
+                    <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} aria-label="Select all" className="border-white" />
+                  </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("name")} className="inline-flex items-center gap-1.5 text-gray-800 hover:text-black transition-colors">
+                    <button onClick={() => onSort("name")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
                       Employee {getSortIcon("name", sortField, sortDir)}
                     </button>
                   </th>
@@ -230,36 +276,36 @@ export function EmployeeList({
                     <span className="text-gray-800">ID</span>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("email")} className="inline-flex items-center gap-1.5 text-gray-800 hover:text-black transition-colors">
+                    <button onClick={() => onSort("email")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
                       Email {getSortIcon("email", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("department")} className="inline-flex items-center gap-1.5 text-gray-800 hover:text-black transition-colors">
+                    <button onClick={() => onSort("department")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
                       Department {getSortIcon("department", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("designation")} className="inline-flex items-center gap-1.5 text-gray-800 hover:text-black transition-colors">
+                    <button onClick={() => onSort("designation")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
                       Designation {getSortIcon("designation", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("role")} className="inline-flex items-center gap-1.5 text-gray-800 hover:text-black transition-colors">
+                    <button onClick={() => onSort("role")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
                       Role {getSortIcon("role", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("joiningDate")} className="inline-flex items-center gap-1.5 text-gray-800 hover:text-black transition-colors">
+                    <button onClick={() => onSort("joiningDate")} className="inline-flex items-center gap-1.5 text-white-800 hover:text-white transition-colors">
                       Joined {getSortIcon("joiningDate", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("status")} className="inline-flex items-center gap-1.5 text-gray-800 hover:text-black transition-colors">
+                    <button onClick={() => onSort("status")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
                       Status {getSortIcon("status", sortField, sortDir)}
                     </button>
                   </th>
-                  <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <th className="text-right font-semibold px-4 py-3.5 text-white-800 whitespace-nowrap">
                     <span className="text-gray-800">Action</span>
                   </th>
                 </tr>
@@ -267,7 +313,7 @@ export function EmployeeList({
               <tbody>
                 {paginatedEmployees.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="text-center py-16 bg-white">
+                    <td colSpan={10} className="text-center py-16 bg-white">
                       <div className="flex flex-col items-center gap-3">
                         <div className="flex items-center justify-center size-12 rounded-full bg-muted">
                           <UsersIcon className="size-6 text-muted-foreground/50" />
@@ -290,6 +336,8 @@ export function EmployeeList({
                     <EmployeeTableRow
                       key={emp.id}
                       employee={emp}
+                      selected={selectedIds.has(emp.id)}
+                      onToggleSelect={toggleSelect}
                       onView={onView}
                       onEdit={onEdit}
                       onTerminate={onTerminate}
@@ -351,14 +399,14 @@ export function EmployeeList({
                 </Select>
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
-                <span className="text-sm text-gray-800 whitespace-nowrap">
+                <span className="text-sm text-white-800 whitespace-nowrap">
                   {page * rowsPerPage + 1}–{Math.min((page + 1) * rowsPerPage, filteredCount)} of {filteredCount}
                 </span>
                 <div className="flex items-center gap-1">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="size-9 sm:size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 hover:text-black"
+                    className="size-9 sm:size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 "
                     onClick={() => onPageChange(Math.max(0, page - 1))}
                     disabled={page === 0}
                   >
@@ -367,7 +415,7 @@ export function EmployeeList({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="size-9 sm:size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 hover:text-black"
+                    className="size-9 sm:size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 "
                     onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
                     disabled={page >= totalPages - 1}
                   >

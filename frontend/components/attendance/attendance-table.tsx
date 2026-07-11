@@ -1,7 +1,6 @@
 "use client"
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,10 @@ import { AttendanceViewDialog } from "./attendance-view-dialog";
 
 type AttendanceRecord = {
   name: string;
+  displayId: string;
+  email: string;
+  department: string;
+  designation: string;
   checkIn: string | null;
   checkOut: string | null;
   status: string;
@@ -19,12 +22,6 @@ type AttendanceTableProps = {
 };
 
 const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
-
-const statusStyles: Record<string, string> = {
-  present: "bg-red-100 text-red-700 border-red-300",
-  absent: "bg-gray-100 text-gray-700 border-gray-300",
-  late: "bg-orange-100 text-orange-700 border-orange-300",
-};
 
 export function AttendanceTable({ data }: AttendanceTableProps) {
   const [viewRecord, setViewRecord] = useState<AttendanceRecord | null>(null);
@@ -40,10 +37,14 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
             <table className="table-premium w-full text-sm text-left">
               <thead>
                 <tr>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Staff</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Employee</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">ID</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Email</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Department</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Designation</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Check In</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Check Out</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Remarks</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"></th>
                 </tr>
               </thead>
@@ -58,10 +59,28 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
                         <span className="text-sm font-medium">{t.name}</span>
                       </div>
                     </td>
+                    <td className="px-4 py-3">
+                      <span className="font-mono text-xs text-gray-500">{t.displayId}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-gray-700">{t.email}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {t.department !== "\u2014" ? (
+                        <span className="inline-flex items-center rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">
+                          {t.department}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">\u2014</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-gray-800">{t.designation}</span>
+                    </td>
                     <td className="px-4 py-3">{t.checkIn || "\u2014"}</td>
                     <td className="px-4 py-3">{t.checkOut || "\u2014"}</td>
                     <td className="px-4 py-3">
-                      <Badge className={statusStyles[t.status] || ""}>{t.status}</Badge>
+                      <span className="text-gray-500 italic text-xs">\u2014</span>
                     </td>
                     <td className="px-4 py-3">
                       <Button variant="ghost" size="icon" className="size-8" onClick={(e) => { e.stopPropagation(); setViewRecord(t); }} title="View">

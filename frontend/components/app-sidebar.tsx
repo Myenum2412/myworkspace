@@ -68,7 +68,7 @@ const platformItems: NavItem[] = [
       { title: "Teams", url: "/teams" },
       { title: "Terminated", url: "/terminated" },
       { title: "Attendance Overview", url: "/attendance" },
-      { title: "Attendance Reports", url: "/attendance/reports" },
+      { title: "Employee Report", url: "/attendance/reports" },
     ],
   },
   {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   MoreHorizontalIcon,
   UsersIcon,
@@ -19,12 +20,14 @@ import { statusConfig, getInitials, getAvatarColor } from "./employee-types";
 
 type EmployeeTableRowProps = {
   employee: Employee;
+  selected: boolean;
+  onToggleSelect: (id: string) => void;
   onView: (emp: Employee) => void;
   onEdit: (emp: Employee) => void;
   onTerminate: (emp: Employee) => void;
 };
 
-export function EmployeeTableRow({ employee: emp, onView, onEdit, onTerminate }: EmployeeTableRowProps) {
+export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onView, onEdit, onTerminate }: EmployeeTableRowProps) {
   const status = statusConfig[emp.status] || statusConfig.offline;
 
   return (
@@ -32,6 +35,9 @@ export function EmployeeTableRow({ employee: emp, onView, onEdit, onTerminate }:
       className="group border-b bg-white hover:bg-slate-50 transition-colors cursor-pointer"
       onClick={() => onView(emp)}
     >
+      <td className="px-4 py-3 w-10" onClick={(e) => e.stopPropagation()}>
+        <Checkbox checked={selected} onCheckedChange={() => onToggleSelect(emp.id)} aria-label={`Select ${emp.name}`} className="border-black" />
+      </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           {emp.avatar ? (
