@@ -7,12 +7,18 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onRowClick?: (row: TData) => void;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+  hideSearchBar?: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   onRowClick,
+  searchQuery,
+  onSearchChange,
+  hideSearchBar,
 }: DataTableProps<TData, TValue>) {
   return (
     <SharedDataTable
@@ -23,6 +29,9 @@ export function DataTable<TData, TValue>({
       label="team(s)"
       emptyMessage="No teams yet."
       emptyIcon={<UsersIcon className="size-6 text-muted-foreground/50" />}
+      searchQuery={searchQuery}
+      onSearchChange={onSearchChange}
+      hideSearchBar={hideSearchBar}
     />
   );
 }

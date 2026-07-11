@@ -45,6 +45,7 @@ interface DataTableProps<TData, TValue> {
   getRowProps?: (row: TData) => { className?: string; style?: React.CSSProperties };
   mobileCardView?: boolean;
   renderMobileCard?: (row: TData, index: number) => ReactNode;
+  hideSearchBar?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -62,6 +63,7 @@ export function DataTable<TData, TValue>({
   getRowProps,
   mobileCardView,
   renderMobileCard,
+  hideSearchBar,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [internalFilter, setInternalFilter] = useState("");
@@ -150,41 +152,43 @@ export function DataTable<TData, TValue>({
         </div>
       ) : (
         <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
-          <div className="bg-muted/30 px-3 sm:px-4 py-2.5 sm:py-3 border-b flex items-center justify-between">
-            <div className="relative w-full sm:max-w-sm mx-auto">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                placeholder={searchPlaceholder}
-                value={globalFilter}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                className="pl-9 w-full h-9 text-sm"
-                aria-label={searchPlaceholder}
-              />
+          {!hideSearchBar && (
+            <div className="bg-muted/30 px-3 sm:px-4 py-2.5 sm:py-3 border-b flex items-center justify-between">
+              <div className="relative w-full sm:max-w-sm mx-auto">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder={searchPlaceholder}
+                  value={globalFilter}
+                  onChange={(e) => setGlobalFilter(e.target.value)}
+                  className="pl-9 w-full h-9 text-sm"
+                  aria-label={searchPlaceholder}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                {isMobile && mobileCardView && (
+                  <div className="flex items-center gap-1 border rounded-md p-0.5">
+                    <button
+                      onClick={() => setViewMode("table")}
+                      className={`p-1.5 rounded ${viewMode === "table" ? "bg-muted" : ""}`}
+                      aria-label="Table view"
+                    >
+                      <ListIcon className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("cards")}
+                      className={`p-1.5 rounded ${viewMode === "cards" ? "bg-muted" : ""}`}
+                      aria-label="Card view"
+                    >
+                      <LayoutGridIcon className="size-4" />
+                    </button>
+                  </div>
+                )}
+                <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                  {rowCount} {label ?? "item(s)"}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {isMobile && mobileCardView && (
-                <div className="flex items-center gap-1 border rounded-md p-0.5">
-                  <button
-                    onClick={() => setViewMode("table")}
-                    className={`p-1.5 rounded ${viewMode === "table" ? "bg-muted" : ""}`}
-                    aria-label="Table view"
-                  >
-                    <ListIcon className="size-4" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("cards")}
-                    className={`p-1.5 rounded ${viewMode === "cards" ? "bg-muted" : ""}`}
-                    aria-label="Card view"
-                  >
-                    <LayoutGridIcon className="size-4" />
-                  </button>
-                </div>
-              )}
-              <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
-                {rowCount} {label ?? "item(s)"}
-              </span>
-            </div>
-          </div>
+          )}
           <div className="overflow-x-auto" ref={scrollRef}>
             <table className="table-premium w-full text-sm text-left">
               <thead className="sticky top-0 z-10 bg-primary text-white">
