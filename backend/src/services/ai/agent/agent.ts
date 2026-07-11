@@ -13,6 +13,7 @@ import { aiLogger } from "../logging/ai-logger.js";
 import { AGENT_CONFIG } from "./agent-config.js";
 import { AI_CONFIG } from "../config.js";
 import { BUSINESS_CONFIG } from "../config.js";
+import { Settings } from "../../../lib/db/models/Settings.js";
 import { logger } from "../../../lib/logger/index.js";
 
 export interface AgentRequest {
@@ -69,6 +70,16 @@ export class AIAgent {
     };
   }
 
+  private async loadSoul(orgId?: string): Promise<string> {
+    try {
+      if (!orgId) return "";
+      const settings = await Settings.findOne({ orgId }).lean();
+      return settings?.aiSoul || "";
+    } catch {
+      return "";
+    }
+  }
+
   async run(request: AgentRequest): Promise<AgentResponse> {
     const startTime = Date.now();
     const { userId, sessionId, message, organizationId } = request;
@@ -93,7 +104,8 @@ export class AIAgent {
         request.disabledToolsets
       );
 
-      const systemPrompt = this.promptBuilder.buildSystemPrompt(volatileBlock, toolDefs);
+      const soul = await this.loadSoul(organizationId);
+      const systemPrompt = this.promptBuilder.buildSystemPrompt(volatileBlock, toolDefs, soul);
 
       let apiMessages = this.promptBuilder.buildApiMessages(
         systemPrompt,

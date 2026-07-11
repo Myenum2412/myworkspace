@@ -171,7 +171,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
       <div className="sm:hidden bg-white border-b border-border px-3 py-3 space-y-3 shadow-sm w-full relative z-10">
         <input
           type="text"
-          placeholder="What have you worked on?"
+          placeholder=""
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none bg-transparent"
@@ -274,7 +274,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
         <div className="flex-1 h-full flex items-center">
           <input
             type="text"
-            placeholder="What have you worked on?"
+            placeholder=""
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full border-none focus:ring-0 shadow-none text-[14px] placeholder:text-gray-600 outline-none bg-transparent h-full"

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import {
   Loader2Icon, CheckCircle2Icon, Trash2Icon,
 } from "lucide-react";
-import { DropZoneUpload } from "@/components/dropzone-upload";
+import { UploadThingDropzone } from "@/components/elements/uploadthing-dropzone";
 import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import { FileShareDialog } from "@/components/file-share-dialog";
 import { useFiles, useFileMutations } from "@/hooks/use-files";
@@ -211,12 +211,35 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
   return (
     <div className="space-y-4">
       <div className={showUpload ? "block" : "hidden"}>
-        <DropZoneUpload
-          orgId={orgId}
-          folderId={currentFolderId}
-          clientId={clientId}
-          onUploadComplete={fileMutations.invalidateFiles}
-          maxConcurrency={3}
+        <UploadThingDropzone
+          accept="*"
+          maxFiles={10}
+          maxSize={32 * 1024 * 1024}
+          onUpload={async (files) => {
+            const results = [];
+            for (const file of files) {
+              const formData = new FormData();
+              formData.append("file", file);
+              if (currentFolderId) formData.append("folderId", currentFolderId);
+              if (clientId) formData.append("clientId", clientId);
+              const res = await fetch("/api/files/upload", {
+                method: "POST",
+                credentials: "include",
+                body: formData,
+              });
+              if (res.ok) {
+                const json = await res.json();
+                results.push({
+                  name: json.data?.originalName || file.name,
+                  size: file.size,
+                  type: file.type,
+                  url: json.data?.url || "",
+                });
+              }
+            }
+            fileMutations.invalidateFiles();
+            return results;
+          }}
         />
       </div>
 

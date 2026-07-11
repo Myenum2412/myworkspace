@@ -55,14 +55,25 @@ interface OpenAIStreamChunk {
   };
 }
 
+interface ProviderOptions {
+  apiKey?: string;
+  model?: string;
+  apiBase?: string;
+  extraHeaders?: Record<string, string>;
+}
+
 export class OpenAIProvider implements AIProvider {
   name = "openai";
-  private apiKey: string;
-  private model: string;
+  protected apiKey: string;
+  protected model: string;
+  protected apiBase: string;
+  protected extraHeaders: Record<string, string>;
 
-  constructor() {
-    this.apiKey = AI_CONFIG.apiKey;
-    this.model = AI_CONFIG.model;
+  constructor(options?: ProviderOptions) {
+    this.apiKey = options?.apiKey ?? AI_CONFIG.apiKey;
+    this.model = options?.model ?? AI_CONFIG.model;
+    this.apiBase = options?.apiBase ?? "https://api.openai.com/v1";
+    this.extraHeaders = options?.extraHeaders ?? {};
   }
 
   isAvailable(): boolean {
@@ -73,9 +84,21 @@ export class OpenAIProvider implements AIProvider {
     return this.model;
   }
 
+  protected getApiKeyLabel(): string {
+    return "OpenAI";
+  }
+
+  private getHeaders(): Record<string, string> {
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.apiKey}`,
+      ...this.extraHeaders,
+    };
+  }
+
   async generateResponse(messages: AgentMessage[], options?: GenerationOptions): Promise<AIResponse> {
     if (!this.isAvailable()) {
-      throw new Error("OpenAI API key not configured");
+      throw new Error(`${this.getApiKeyLabel()} API key not configured`);
     }
 
     const body: Record<string, unknown> = {
@@ -91,26 +114,23 @@ export class OpenAIProvider implements AIProvider {
       body.tool_choice = options.toolChoice || "auto";
     }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch(`${this.apiBase}/chat/completions`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-      },
+      headers: this.getHeaders(),
       body: JSON.stringify(body),
       signal: options?.signal ?? AbortSignal.timeout(AGENT_CONFIG.requestTimeoutMs),
     });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(`OpenAI API error (${response.status}): ${JSON.stringify(error)}`);
+      throw new Error(`${this.getApiKeyLabel()} API error (${response.status}): ${JSON.stringify(error)}`);
     }
 
     const data = (await response.json()) as OpenAIResponse;
     const choice = data.choices?.[0];
 
     if (!choice) {
-      throw new Error("OpenAI API returned empty response");
+      throw new Error(`${this.getApiKeyLabel()} API returned empty response`);
     }
 
     let content = choice.message?.content || "";
@@ -136,7 +156,7 @@ export class OpenAIProvider implements AIProvider {
 
   async *streamResponse(messages: AgentMessage[], options?: GenerationOptions): AsyncIterable<StreamChunk> {
     if (!this.isAvailable()) {
-      throw new Error("OpenAI API key not configured");
+      throw new Error(`${this.getApiKeyLabel()} API key not configured`);
     }
 
     const body: Record<string, unknown> = {
@@ -153,19 +173,16 @@ export class OpenAIProvider implements AIProvider {
       body.tool_choice = options.toolChoice || "auto";
     }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch(`${this.apiBase}/chat/completions`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-      },
+      headers: this.getHeaders(),
       body: JSON.stringify(body),
       signal: options?.signal ?? AbortSignal.timeout(AGENT_CONFIG.requestTimeoutMs),
     });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      yield { type: "error", content: `OpenAI API error (${response.status}): ${JSON.stringify(error)}` };
+      yield { type: "error", content: `${this.getApiKeyLabel()} API error (${response.status}): ${JSON.stringify(error)}` };
       return;
     }
 

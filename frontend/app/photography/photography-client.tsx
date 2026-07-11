@@ -77,13 +77,13 @@ export function PhotographyPageClient({ orgId, galleries: initialGalleries }: { 
             <div className="flex flex-col gap-3 max-w-md">
               <input
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                placeholder="Gallery name"
+                placeholder=""
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
               <input
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                placeholder="Description (optional)"
+                placeholder=""
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />

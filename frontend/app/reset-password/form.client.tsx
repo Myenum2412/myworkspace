@@ -95,7 +95,7 @@ export function ResetPasswordForm({ token, email }: { token?: string; email?: st
               type="password"
               required
               minLength={8}
-              placeholder="At least 8 characters"
+              placeholder=""
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="h-10"
@@ -107,7 +107,7 @@ export function ResetPasswordForm({ token, email }: { token?: string; email?: st
               id="confirm-password"
               type="password"
               required
-              placeholder="Re-enter new password"
+              placeholder=""
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               className="h-10"

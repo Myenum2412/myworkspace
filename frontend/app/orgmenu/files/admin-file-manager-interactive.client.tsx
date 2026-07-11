@@ -30,7 +30,6 @@ import {
   ArchiveIcon,
   DownloadIcon,
   Trash2Icon,
-  UploadIcon,
   SearchIcon,
   Building2Icon,
   ChevronLeftIcon,
@@ -38,6 +37,7 @@ import {
   BarChart3Icon,
   FilesIcon,
 } from "lucide-react";
+import { UploadThingDropzone } from "@/components/elements/uploadthing-dropzone";
 
 type FileCategory = "profile" | "report" | "general";
 
@@ -163,14 +163,36 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
               {fileList.length} files across {members.length} members
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">{fileList.length} files</Badge>
-            <Button onClick={() => window.location.href = "/upload"}>
-              <UploadIcon className="mr-2 size-4" />
-              Upload File
-            </Button>
-          </div>
+          <Badge variant="secondary">{fileList.length} files</Badge>
         </div>
+
+        <UploadThingDropzone
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip"
+          maxFiles={10}
+          maxSize={32 * 1024 * 1024}
+          onUpload={async (files) => {
+            const results = [];
+            for (const file of files) {
+              const formData = new FormData();
+              formData.append("file", file);
+              const res = await fetch("/api/files/upload", {
+                method: "POST",
+                credentials: "include",
+                body: formData,
+              });
+              if (res.ok) {
+                const json = await res.json();
+                results.push({
+                  name: json.data?.originalName || file.name,
+                  size: file.size,
+                  type: file.type,
+                  url: json.data?.url || "",
+                });
+              }
+            }
+            return results;
+          }}
+        />
 
         <div className="flex items-center gap-2 flex-wrap">
           {(["all", "profile", "report", "general"] as const).map((cat) => {
@@ -210,7 +232,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
           <div className="relative w-full max-w-sm">
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search members..."
+              placeholder=""
               className="pl-9 h-9 w-full"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -291,13 +313,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">{filteredFiles.length} files</Badge>
-          <Button onClick={() => window.location.href = "/upload"}>
-            <UploadIcon className="mr-2 size-4" />
-            Upload File
-          </Button>
-        </div>
+        <Badge variant="secondary">{filteredFiles.length} files</Badge>
       </div>
 
       <div className="flex items-center justify-between gap-4">
@@ -330,7 +346,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
         <div className="relative w-full max-w-sm">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Search files..."
+            placeholder=""
             className="pl-9 h-9 w-full"
             value={search}
             onChange={(e) => setSearch(e.target.value)}

@@ -233,6 +233,30 @@ class WhatsAppService {
       timestamp: msg.timestamp,
     });
 
+    // Check message limit
+    const MESSAGE_LIMIT = parseInt(process.env.WHATSAPP_MESSAGE_LIMIT || "1000", 10);
+    const totalMessages = await this.chatLogRepo.countTotal();
+    if (totalMessages >= MESSAGE_LIMIT) {
+      const blockMessage = "⚠️ Message limit reached. The AI assistant has been disabled. Please contact support to upgrade your plan.";
+      await this.sendMessage(from, blockMessage);
+      await this.chatLogRepo.log({
+        customerPhone: from,
+        incomingMessage: body,
+        outgoingMessage: blockMessage,
+        intent: "limit_reached",
+        intentConfidence: 0,
+        entities: {},
+        language: "en",
+        databaseOperations: [],
+        processingTimeMs: 0,
+        aiModel: "gpt-3.5-turbo",
+        tokensUsed: 0,
+        status: "fallback",
+        channel: "whatsapp",
+      });
+      return;
+    }
+
     try {
       // Process through AI Assistant
       const aiResponse = await this.aiAssistant.processMessage({

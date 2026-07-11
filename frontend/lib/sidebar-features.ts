@@ -1,6 +1,6 @@
 export const SIDEBAR_FEATURES = [
   "Dashboard",
-  "Task Allocation",
+  "Assign Tasks",
   "Employees",
   "Projects",
   "Approvals",
@@ -10,6 +10,7 @@ export const SIDEBAR_FEATURES = [
   "Category",
   "Engagement",
   "Photography",
+  "AI",
 ] as const;
 
 export type SidebarFeature = (typeof SIDEBAR_FEATURES)[number];

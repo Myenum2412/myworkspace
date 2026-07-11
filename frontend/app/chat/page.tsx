@@ -365,7 +365,7 @@ export default function ChatPage() {
             </div>
             <div className="relative">
               <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input placeholder="Search..." className="pl-9 h-9" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              <Input placeholder="" className="pl-9 h-9" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
           </div>
 
@@ -527,7 +527,7 @@ export default function ChatPage() {
 
               {showMsgSearch && (
                 <div className="px-4 py-2 border-b shrink-0">
-                  <Input placeholder="Search messages..." value={msgSearch} onChange={(e) => setMsgSearch(e.target.value)} className="h-8" />
+                  <Input placeholder="" value={msgSearch} onChange={(e) => setMsgSearch(e.target.value)} className="h-8" />
                 </div>
               )}
 
@@ -580,7 +580,7 @@ export default function ChatPage() {
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="icon" className="size-9 shrink-0"><PaperclipIcon className="size-4" /></Button>
                   <Button variant="ghost" size="icon" className="size-9 shrink-0"><ImageIcon className="size-4" /></Button>
-                  <Input placeholder="Type a message..." value={chatInput}
+                  <Input placeholder="" value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                     className="flex-1" />
@@ -644,11 +644,11 @@ export default function ChatPage() {
             <div className="space-y-3 mt-4">
               <div>
                 <label className="text-sm font-medium">Group Name (optional)</label>
-                <Input placeholder="e.g. Project Team" value={newConvName} onChange={(e) => setNewConvName(e.target.value)} className="mt-1" />
+                <Input placeholder="" value={newConvName} onChange={(e) => setNewConvName(e.target.value)} className="mt-1" />
               </div>
               <div>
                 <label className="text-sm font-medium">Participant IDs (comma-separated)</label>
-                <Input placeholder="user-id-1, user-id-2" value={newConvParticipant} onChange={(e) => setNewConvParticipant(e.target.value)} className="mt-1" />
+                <Input placeholder="" value={newConvParticipant} onChange={(e) => setNewConvParticipant(e.target.value)} className="mt-1" />
               </div>
               <Button onClick={createGroupConversation} className="w-full">Create</Button>
             </div>

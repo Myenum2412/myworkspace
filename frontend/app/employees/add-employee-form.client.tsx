@@ -432,15 +432,15 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field>
                       <FieldLabel>Company Name</FieldLabel>
-                      <Input value={row.company || ""} onChange={(e) => updateWorkRow(row.id, "company", e.target.value)} placeholder="Company name" />
+                      <Input value={row.company || ""} onChange={(e) => updateWorkRow(row.id, "company", e.target.value)} placeholder="" />
                     </Field>
                     <Field>
                       <FieldLabel>Job Title</FieldLabel>
-                      <Input value={row.title || ""} onChange={(e) => updateWorkRow(row.id, "title", e.target.value)} placeholder="Job Title" />
+                      <Input value={row.title || ""} onChange={(e) => updateWorkRow(row.id, "title", e.target.value)} placeholder="" />
                     </Field>
                     <Field>
                       <FieldLabel>Roles</FieldLabel>
-                      <Input value={row.roles || ""} onChange={(e) => updateWorkRow(row.id, "roles", e.target.value)} placeholder="e.g. Developer, Team Lead" />
+                      <Input value={row.roles || ""} onChange={(e) => updateWorkRow(row.id, "roles", e.target.value)} placeholder="" />
                     </Field>
                     <Field>
                       <FieldLabel>From Date</FieldLabel>
@@ -456,7 +456,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                     </div>
                     <Field className="sm:col-span-2">
                       <FieldLabel>Job Description</FieldLabel>
-                      <textarea className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring" value={row.description || ""} onChange={(e) => updateWorkRow(row.id, "description", e.target.value)} placeholder="Job Description" />
+                      <textarea className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring" value={row.description || ""} onChange={(e) => updateWorkRow(row.id, "description", e.target.value)} placeholder="" />
                     </Field>
                   </div>
                 )}
@@ -471,7 +471,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field>
                     <FieldLabel>Date of Exit</FieldLabel>
-                    <Input type="date" placeholder="dd-MMM-yyyy" />
+                    <Input type="date" placeholder="" />
                   </Field>
                 </div>
               </FieldSet>
@@ -519,15 +519,15 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field>
                       <FieldLabel>Institute Name</FieldLabel>
-                      <Input value={row.institute || ""} onChange={(e) => updateRow(setEducationDetails, row.id, "institute", e.target.value)} placeholder="Institute Name" />
+                      <Input value={row.institute || ""} onChange={(e) => updateRow(setEducationDetails, row.id, "institute", e.target.value)} placeholder="" />
                     </Field>
                     <Field>
                       <FieldLabel>Degree/Diploma</FieldLabel>
-                      <Input value={row.degree || ""} onChange={(e) => updateRow(setEducationDetails, row.id, "degree", e.target.value)} placeholder="Degree/Diploma" />
+                      <Input value={row.degree || ""} onChange={(e) => updateRow(setEducationDetails, row.id, "degree", e.target.value)} placeholder="" />
                     </Field>
                     <Field>
                       <FieldLabel>Specialization</FieldLabel>
-                      <Input value={row.specialization || ""} onChange={(e) => updateRow(setEducationDetails, row.id, "specialization", e.target.value)} placeholder="Specialization" />
+                      <Input value={row.specialization || ""} onChange={(e) => updateRow(setEducationDetails, row.id, "specialization", e.target.value)} placeholder="" />
                     </Field>
                     <Field>
                       <FieldLabel>Date of Completion</FieldLabel>
@@ -546,7 +546,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field>
                       <FieldLabel>Name</FieldLabel>
-                      <Input value={row.name || ""} onChange={(e) => updateRow(setDependentDetails, row.id, "name", e.target.value)} placeholder="Name" />
+                      <Input value={row.name || ""} onChange={(e) => updateRow(setDependentDetails, row.id, "name", e.target.value)} placeholder="" />
                     </Field>
                     <SelectWithAdd
                       label="Relationship"

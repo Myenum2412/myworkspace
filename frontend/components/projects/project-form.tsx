@@ -117,7 +117,7 @@ export function ProjectCreateForm({
               <Label htmlFor="projectName" className="text-sm font-medium">Project Name <span className="text-destructive">*</span></Label>
               <Input
                 id="projectName"
-                placeholder="e.g. Website Redesign"
+                placeholder=""
                 value={projectName}
                 onChange={(e) => onProjectNameChange(e.target.value)}
                 disabled={submitting}
@@ -127,7 +127,7 @@ export function ProjectCreateForm({
               <Label htmlFor="client" className="text-sm font-medium">Client <span className="text-destructive">*</span></Label>
               <Select value={selectedClient} onValueChange={onSelectedClientChange} disabled={submitting}>
                 <SelectTrigger id="client">
-                  <SelectValue placeholder="Select a client" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   {clientList.map((c) => (
@@ -141,7 +141,7 @@ export function ProjectCreateForm({
             <Label htmlFor="description" className="text-sm font-medium">Description</Label>
             <Textarea
               id="description"
-              placeholder="Brief project description..."
+              placeholder=""
               value={projectDescription}
               onChange={(e) => onProjectDescriptionChange(e.target.value)}
               disabled={submitting}
@@ -192,7 +192,7 @@ export function ProjectCreateForm({
               <PopoverContent className="w-72 p-2" align="start">
                 <div className="relative mb-2">
                   <Input
-                    placeholder="Search members..."
+                    placeholder=""
                     value={memberSearch}
                     onChange={(e) => onMemberSearchChange(e.target.value)}
                     className="pl-8 h-8"
@@ -254,7 +254,7 @@ export function ProjectCreateForm({
               <Label className="text-sm font-medium">Priority</Label>
               <Select value={projectPriority} onValueChange={onProjectPriorityChange} disabled={submitting}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select priority" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">Low</SelectItem>
@@ -268,7 +268,7 @@ export function ProjectCreateForm({
               <Label className="text-sm font-medium">Category</Label>
               <Select value={projectCategory} onValueChange={onProjectCategoryChange} disabled={submitting}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="development">Development</SelectItem>
@@ -295,7 +295,7 @@ export function ProjectCreateForm({
               <Input
                 type="number"
                 min="0"
-                placeholder="e.g. 50000"
+                placeholder=""
                 value={projectBudget || ""}
                 onChange={(e) => onProjectBudgetChange(e.target.value ? Number(e.target.value) : 0)}
                 disabled={submitting}

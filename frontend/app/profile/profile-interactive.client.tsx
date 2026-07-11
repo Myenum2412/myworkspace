@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -18,8 +19,10 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { INDUSTRIES } from "@/lib/industries";
 import { StorageDashboard } from "@/components/storage-dashboard";
+import { WhatsAppStats } from "@/components/whatsapp-stats";
 import {
   MailIcon,
   CalendarIcon,
@@ -100,6 +103,9 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
     handleSave, handleCancel, updateBanner, handleBannerFile,
     removeProfileImage, handleProfileImageFile,
   } = form;
+
+  const [pincodeResult, setPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
+  const [orgPincodeResult, setOrgPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
 
   const displayName = session?.user?.name || dbUser?.name || "User";
   const displayEmail = session?.user?.email || dbUser?.email || "user@example.com";
@@ -227,12 +233,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Phone</p>
                   {editing ? (
-                    <Input
-                      value={editPhone}
-                      onChange={(e) => setEditPhone(e.target.value)}
-                      placeholder="+1 555-123-4567"
-                      className="h-8 text-sm mt-1"
-                    />
+                    <PhoneInput value={editPhone} onChange={setEditPhone} placeholder="" className="h-8 text-sm mt-1" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.phone || "\u2014"}</p>
                   )}
@@ -247,7 +248,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     <Input
                       value={editDepartment}
                       onChange={(e) => setEditDepartment(e.target.value)}
-                      placeholder="Engineering"
+                      placeholder=""
                       className="h-8 text-sm mt-1"
                     />
                   ) : (
@@ -264,7 +265,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     <Input
                       value={editCompany}
                       onChange={(e) => setEditCompany(e.target.value)}
-                      placeholder="Company name"
+                      placeholder=""
                       className="h-8 text-sm mt-1"
                     />
                   ) : (
@@ -313,7 +314,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div className="sm:col-span-2">
                     <p className="text-xs text-muted-foreground mb-1">Street</p>
                     {editing ? (
-                      <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="text-sm" />
+                      <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.address || "\u2014"}</p>
                     )}
@@ -321,7 +322,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">City</p>
                     {editing ? (
-                      <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="text-sm" />
+                      <LocationSelect options={pincodeResult?.cities || []} value={editCity} onChange={setEditCity} placeholder="" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.city || "\u2014"}</p>
                     )}
@@ -329,7 +330,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">State</p>
                     {editing ? (
-                      <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="text-sm" />
+                      <LocationSelect options={pincodeResult?.states || []} value={editState} onChange={setEditState} placeholder="" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.state || "\u2014"}</p>
                     )}
@@ -337,7 +338,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Country</p>
                     {editing ? (
-                      <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="text-sm" />
+                      <LocationSelect options={pincodeResult?.countries || []} value={editCountry} onChange={setEditCountry} placeholder="" className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.country || "\u2014"}</p>
                     )}
@@ -345,7 +346,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Zip Code</p>
                     {editing ? (
-                      <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="text-sm" />
+                      <PincodeInput value={editZipCode} onChange={setEditZipCode} onResult={setPincodeResult} className="text-sm" />
                     ) : (
                       <p className="text-sm font-medium">{dbUser?.zipCode || "\u2014"}</p>
                     )}
@@ -364,7 +365,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                       <Input
                         value={editLinkedin}
                         onChange={(e) => setEditLinkedin(e.target.value)}
-                        placeholder="https://linkedin.com/in/username"
+                        placeholder=""
                         className="h-8 text-sm"
                       />
                     ) : (
@@ -379,7 +380,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                       <Input
                         value={editGithub}
                         onChange={(e) => setEditGithub(e.target.value)}
-                        placeholder="https://github.com/username"
+                        placeholder=""
                         className="h-8 text-sm"
                       />
                     ) : (
@@ -394,7 +395,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                       <Input
                         value={editTwitter}
                         onChange={(e) => setEditTwitter(e.target.value)}
-                        placeholder="https://twitter.com/username"
+                        placeholder=""
                         className="h-8 text-sm"
                       />
                     ) : (
@@ -409,7 +410,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                       <Input
                         value={editWebsite}
                         onChange={(e) => setEditWebsite(e.target.value)}
-                        placeholder="https://example.com"
+                        placeholder=""
                         className="h-8 text-sm"
                       />
                     ) : (
@@ -438,13 +439,13 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Company Name</Label>
-                      <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="text-sm" placeholder="Acme Corp" />
+                      <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="text-sm" placeholder="" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Business Type</Label>
                       <Select value={editBusinessType} onValueChange={setEditBusinessType}>
                         <SelectTrigger className="text-sm">
-                          <SelectValue placeholder="Select business type" />
+                          <SelectValue placeholder="" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Proprietorship">Proprietorship</SelectItem>
@@ -463,20 +464,20 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                         options={INDUSTRIES}
                         value={editIndustry}
                         onValueChange={setEditIndustry}
-                        placeholder="Select industry"
+                        placeholder=""
                       />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">GST Number</Label>
-                      <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="22AAAAA0000A1Z5" className="text-sm" />
+                      <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">PAN Number</Label>
-                      <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="ABCDE1234F" className="text-sm" />
+                      <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">CIN Number</Label>
-                      <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="L12345MH2020PLC123456" className="text-sm" />
+                      <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                   </div>
 
@@ -485,19 +486,19 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Company Email</Label>
-                      <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="company@example.com" className="text-sm" />
+                      <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Mobile Number</Label>
-                      <Input value={editMobileNumber} onChange={(e) => setEditMobileNumber(e.target.value)} placeholder="+91 9876543210" className="text-sm" />
+                      <PhoneInput value={editMobileNumber} onChange={setEditMobileNumber} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Alternate Mobile Number</Label>
-                      <Input value={editAltMobile} onChange={(e) => setEditAltMobile(e.target.value)} placeholder="+91 9876543211" className="text-sm" />
+                      <PhoneInput value={editAltMobile} onChange={setEditAltMobile} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Website</Label>
-                      <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="https://company.com" className="text-sm" />
+                      <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                   </div>
 
@@ -506,27 +507,27 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="sm:col-span-2 space-y-1.5">
                       <Label className="text-xs font-medium">Address Line 1</Label>
-                      <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="123 Main Street" className="text-sm" />
+                      <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                     <div className="sm:col-span-2 space-y-1.5">
                       <Label className="text-xs font-medium">Address Line 2</Label>
-                      <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="Suite 100" className="text-sm" />
+                      <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">City</Label>
-                      <Input value={editOrgCity} onChange={(e) => setEditOrgCity(e.target.value)} placeholder="Mumbai" className="text-sm" />
+                      <LocationSelect options={orgPincodeResult?.cities || []} value={editOrgCity} onChange={setEditOrgCity} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">State</Label>
-                      <Input value={editOrgState} onChange={(e) => setEditOrgState(e.target.value)} placeholder="Maharashtra" className="text-sm" />
+                      <LocationSelect options={orgPincodeResult?.states || []} value={editOrgState} onChange={setEditOrgState} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Pincode</Label>
-                      <Input value={editPincode} onChange={(e) => setEditPincode(e.target.value)} placeholder="400001" className="text-sm" />
+                      <PincodeInput value={editPincode} onChange={setEditPincode} onResult={setOrgPincodeResult} className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Country</Label>
-                      <Input value={editOrgCountry} onChange={(e) => setEditOrgCountry(e.target.value)} placeholder="India" className="text-sm" />
+                      <LocationSelect options={orgPincodeResult?.countries || []} value={editOrgCountry} onChange={setEditOrgCountry} placeholder="" className="text-sm" />
                     </div>
                   </div>
 
@@ -535,19 +536,19 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Authorized Person Name</Label>
-                      <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="John Doe" className="text-sm" />
+                      <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Designation</Label>
-                      <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="CEO" className="text-sm" />
+                      <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Authorized Person Email</Label>
-                      <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="john@company.com" className="text-sm" />
+                      <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Authorized Person Mobile</Label>
-                      <Input value={editAuthorizedMobile} onChange={(e) => setEditAuthorizedMobile(e.target.value)} placeholder="+91 9876543210" className="text-sm" />
+                      <PhoneInput value={editAuthorizedMobile} onChange={setEditAuthorizedMobile} placeholder="" className="text-sm" />
                     </div>
                   </div>
 
@@ -556,12 +557,12 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Number of Employees</Label>
-                      <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="50" className="text-sm" />
+                      <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="" className="text-sm" />
                     </div>
                   </div>
                   <div className="space-y-1.5 mt-4">
                     <Label className="text-xs font-medium">Company Description</Label>
-                    <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="Describe your company..." className="min-h-[80px] text-sm" />
+                    <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="min-h-[80px] text-sm" />
                   </div>
                 </div>
               ) : (
@@ -655,8 +656,9 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
       )}
 
       {activeTab === "storage" && (
-        <div className="flex-1 p-3 sm:p-4 md:p-6 w-full min-w-0 max-w-full overflow-auto">
+        <div className="flex-1 p-3 sm:p-4 md:p-6 w-full min-w-0 max-w-full overflow-auto space-y-6">
           <StorageDashboard orgId={initialData.org?.id || ""} />
+          <WhatsAppStats />
         </div>
       )}
 
@@ -745,7 +747,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
             <div className="space-y-3">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Paste image URL"
+                  placeholder=""
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
                   className="h-8 text-xs"

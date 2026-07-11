@@ -69,11 +69,11 @@ export function SignupForm({ className, error, plan, ...props }: React.Component
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-password">Password</Label>
-          <PasswordInput id="signup-password" name="password" required autoComplete="new-password" placeholder="Min. 8 characters" />
+          <PasswordInput id="signup-password" name="password" required autoComplete="new-password" placeholder="" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-confirm">Confirm password</Label>
-          <PasswordInput id="signup-confirm" name="confirm" required autoComplete="new-password" placeholder="Re-enter your password" />
+          <PasswordInput id="signup-confirm" name="confirm" required autoComplete="new-password" placeholder="" />
         </div>
         <Button type="submit" className="w-full mt-1 font-semibold">
           Create account

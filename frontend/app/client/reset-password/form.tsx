@@ -96,7 +96,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
               type="password"
               required
               minLength={8}
-              placeholder="At least 8 characters"
+              placeholder=""
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="h-10"
@@ -108,7 +108,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
               id="confirm-password"
               type="password"
               required
-              placeholder="Re-enter new password"
+              placeholder=""
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               className="h-10"

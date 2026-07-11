@@ -198,13 +198,13 @@ export default function ApprovalsInteractive({ initialTasks }: ApprovalsInteract
             {actionType === "reject" && (
               <div>
                 <Label htmlFor="reason" className="text-sm">Rejection Reason *</Label>
-                <Textarea id="reason" value={actionNote} onChange={(e) => setActionNote(e.target.value)} placeholder="Explain why this task is being rejected..." rows={3} className="mt-1" />
+                <Textarea id="reason" value={actionNote} onChange={(e) => setActionNote(e.target.value)} placeholder="" rows={3} className="mt-1" />
               </div>
             )}
             {actionType === "approve" && (
               <div>
                 <Label htmlFor="note" className="text-sm">Approval Note (optional)</Label>
-                <Textarea id="note" value={actionNote} onChange={(e) => setActionNote(e.target.value)} placeholder="Add a note..." rows={2} className="mt-1" />
+                <Textarea id="note" value={actionNote} onChange={(e) => setActionNote(e.target.value)} placeholder="" rows={2} className="mt-1" />
               </div>
             )}
           </div>

@@ -1,6 +1,8 @@
 "use client"
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import {
@@ -146,6 +148,7 @@ export function EditClientFormFields(props: {
 }) {
   const { v, set, errors, members } = props;
   const [showPw, setShowPw] = useState(false);
+  const [pincodeResult, setPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
   const fc = (n: string) => fieldClass(errors, n);
   const fe = (n: string) => fieldError(errors, n);
   return (
@@ -155,23 +158,23 @@ export function EditClientFormFields(props: {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Client Name *</Label>
-            <Input placeholder="Enter client name" value={v.name} onChange={(e) => set("name", e.target.value)} className={fc("name")} />
+            <Input placeholder="" value={v.name} onChange={(e) => set("name", e.target.value)} className={fc("name")} />
             {fe("name") && <p className="text-xs text-red-500 mt-1">{fe("name")}</p>}
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
-            <Input placeholder="Enter company name" value={v.company} onChange={(e) => set("company", e.target.value)} className={fc("company")} />
+            <Input placeholder="" value={v.company} onChange={(e) => set("company", e.target.value)} className={fc("company")} />
             {fe("company") && <p className="text-xs text-red-500 mt-1">{fe("company")}</p>}
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
-            <Input placeholder="client@company.com" type="email" value={v.email} onChange={(e) => set("email", e.target.value)} className={fc("email")} />
+            <Input placeholder="" type="email" value={v.email} onChange={(e) => set("email", e.target.value)} className={fc("email")} />
             {fe("email") && <p className="text-xs text-red-500 mt-1">{fe("email")}</p>}
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Password</Label>
             <div className="relative">
-              <Input placeholder="Leave blank to keep current password" type={showPw ? "text" : "password"} value={v.password} onChange={(e) => set("password", e.target.value)} className={fc("password")} />
+              <Input placeholder="" type={showPw ? "text" : "password"} value={v.password} onChange={(e) => set("password", e.target.value)} className={fc("password")} />
               <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPw(!showPw)} tabIndex={-1}>
                 {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
@@ -187,20 +190,20 @@ export function EditClientFormFields(props: {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Primary Contact Person *</Label>
-            <Input placeholder="Enter contact person" value={v.primaryContact} onChange={(e) => set("primaryContact", e.target.value)} className={fc("primaryContact")} />
+            <Input placeholder="" value={v.primaryContact} onChange={(e) => set("primaryContact", e.target.value)} className={fc("primaryContact")} />
             {fe("primaryContact") && <p className="text-xs text-red-500 mt-1">{fe("primaryContact")}</p>}
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Designation</Label>
-            <Input placeholder="Enter designation" value={v.designation} onChange={(e) => set("designation", e.target.value)} />
+            <Input placeholder="" value={v.designation} onChange={(e) => set("designation", e.target.value)} />
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile Number *</Label>
-            <Input placeholder="Enter mobile number" value={v.mobileNumber} onChange={(e) => set("mobileNumber", e.target.value)} />
+            <PhoneInput value={v.mobileNumber} onChange={(value) => set("mobileNumber", value)} placeholder="" />
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Alternate Phone Number</Label>
-            <Input placeholder="Enter alternate phone" value={v.alternatePhone} onChange={(e) => set("alternatePhone", e.target.value)} />
+            <PhoneInput value={v.alternatePhone} onChange={(value) => set("alternatePhone", value)} placeholder="" />
           </Field>
         </div>
       </FieldSet>
@@ -209,12 +212,12 @@ export function EditClientFormFields(props: {
       <FieldSet>
         <FieldLegend>Address Details</FieldLegend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 1 *</Label><Input placeholder="Enter address" value={v.addressLine1} onChange={(e) => set("addressLine1", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 2</Label><Input placeholder="Enter address line 2" value={v.addressLine2} onChange={(e) => set("addressLine2", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">City *</Label><Input placeholder="Enter city" value={v.city} onChange={(e) => set("city", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">State/Province *</Label><Input placeholder="Enter state/province" value={v.stateProvince} onChange={(e) => set("stateProvince", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Country *</Label><Input placeholder="Enter country" value={v.country} onChange={(e) => set("country", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Postal Code *</Label><Input placeholder="Enter postal code" value={v.postalCode} onChange={(e) => set("postalCode", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 1 *</Label><Input placeholder="" value={v.addressLine1} onChange={(e) => set("addressLine1", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Address Line 2</Label><Input placeholder="" value={v.addressLine2} onChange={(e) => set("addressLine2", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">City *</Label><LocationSelect options={pincodeResult?.cities || []} value={v.city} onChange={(val) => set("city", val)} placeholder="" /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">State/Province *</Label><LocationSelect options={pincodeResult?.states || []} value={v.stateProvince} onChange={(val) => set("stateProvince", val)} placeholder="" /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Country *</Label><LocationSelect options={pincodeResult?.countries || []} value={v.country} onChange={(val) => set("country", val)} placeholder="" /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Postal Code *</Label><PincodeInput value={v.postalCode} onChange={(val) => set("postalCode", val)} onResult={setPincodeResult} /></Field>
         </div>
       </FieldSet>
 
@@ -222,10 +225,10 @@ export function EditClientFormFields(props: {
       <FieldSet>
         <FieldLegend>Business Details</FieldLegend>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">GST Number</Label><Input placeholder="Enter GST number" value={v.gstNumber} onChange={(e) => set("gstNumber", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">PAN Number</Label><Input placeholder="Enter PAN number" value={v.panNumber} onChange={(e) => set("panNumber", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Company Registration Number</Label><Input placeholder="Enter registration number" value={v.companyRegNumber} onChange={(e) => set("companyRegNumber", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Tax ID</Label><Input placeholder="Enter tax ID" value={v.taxId} onChange={(e) => set("taxId", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">GST Number</Label><Input placeholder="" value={v.gstNumber} onChange={(e) => set("gstNumber", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">PAN Number</Label><Input placeholder="" value={v.panNumber} onChange={(e) => set("panNumber", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Company Registration Number</Label><Input placeholder="" value={v.companyRegNumber} onChange={(e) => set("companyRegNumber", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Tax ID</Label><Input placeholder="" value={v.taxId} onChange={(e) => set("taxId", e.target.value)} /></Field>
         </div>
       </FieldSet>
 
@@ -233,11 +236,11 @@ export function EditClientFormFields(props: {
       <FieldSet>
         <FieldLegend>Project Information</FieldLegend>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Project Name</Label><Input placeholder="Enter project name" value={v.projectName} onChange={(e) => set("projectName", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Project Name</Label><Input placeholder="" value={v.projectName} onChange={(e) => set("projectName", e.target.value)} /></Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Service Required</Label>
             <Select value={v.serviceRequired} onValueChange={(val) => set("serviceRequired", val)}>
-              <SelectTrigger><SelectValue placeholder="Select service" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Website Development">Website Development</SelectItem>
                 <SelectItem value="Mobile App Development">Mobile App Development</SelectItem>
@@ -249,7 +252,7 @@ export function EditClientFormFields(props: {
               </SelectContent>
             </Select>
           </Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Project Budget</Label><Input placeholder="Enter budget" value={v.projectBudget} onChange={(e) => set("projectBudget", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Project Budget</Label><Input placeholder="" value={v.projectBudget} onChange={(e) => set("projectBudget", e.target.value)} /></Field>
           <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Expected Start Date</Label><Input type="date" value={v.expectedStartDate} onChange={(e) => set("expectedStartDate", e.target.value)} /></Field>
           <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Expected End Date</Label><Input type="date" value={v.expectedEndDate} onChange={(e) => set("expectedEndDate", e.target.value)} /></Field>
         </div>
@@ -259,13 +262,13 @@ export function EditClientFormFields(props: {
       <FieldSet>
         <FieldLegend>Billing Information</FieldLegend>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Billing Contact Name</Label><Input placeholder="Enter billing contact" value={v.billingContactName} onChange={(e) => set("billingContactName", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Billing Email</Label><Input placeholder="Enter billing email" type="email" value={v.billingEmail} onChange={(e) => set("billingEmail", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Payment Terms</Label><Input placeholder="Enter payment terms" value={v.paymentTerms} onChange={(e) => set("paymentTerms", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Billing Contact Name</Label><Input placeholder="" value={v.billingContactName} onChange={(e) => set("billingContactName", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Billing Email</Label><Input placeholder="" type="email" value={v.billingEmail} onChange={(e) => set("billingEmail", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Payment Terms</Label><Input placeholder="" value={v.paymentTerms} onChange={(e) => set("paymentTerms", e.target.value)} /></Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Currency</Label>
             <Select value={v.currency} onValueChange={(val) => set("currency", val)}>
-              <SelectTrigger><SelectValue placeholder="Select currency" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="USD">USD</SelectItem>
                 <SelectItem value="EUR">EUR</SelectItem>
@@ -276,7 +279,7 @@ export function EditClientFormFields(props: {
               </SelectContent>
             </Select>
           </Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Credit Limit</Label><Input placeholder="Enter credit limit" value={v.creditLimit} onChange={(e) => set("creditLimit", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Credit Limit</Label><Input placeholder="" value={v.creditLimit} onChange={(e) => set("creditLimit", e.target.value)} /></Field>
         </div>
       </FieldSet>
 
@@ -284,16 +287,16 @@ export function EditClientFormFields(props: {
       <FieldSet>
         <FieldLegend>Bank Details</FieldLegend>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Bank Name</Label><Input placeholder="Enter bank name" value={v.bankName} onChange={(e) => set("bankName", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Account Holder Name</Label><Input placeholder="Enter account holder name" value={v.accountHolderName} onChange={(e) => set("accountHolderName", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Account Number</Label><Input placeholder="Enter account number" value={v.accountNumber} onChange={(e) => set("accountNumber", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Confirm Account Number</Label><Input placeholder="Re-enter account number" value={v.confirmAccountNumber} onChange={(e) => set("confirmAccountNumber", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">IFSC Code / Routing No.</Label><Input placeholder="Enter IFSC or routing number" value={v.ifscCode} onChange={(e) => set("ifscCode", e.target.value)} /></Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Branch Name</Label><Input placeholder="Enter branch name" value={v.branchName} onChange={(e) => set("branchName", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Bank Name</Label><Input placeholder="" value={v.bankName} onChange={(e) => set("bankName", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Account Holder Name</Label><Input placeholder="" value={v.accountHolderName} onChange={(e) => set("accountHolderName", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Account Number</Label><Input placeholder="" value={v.accountNumber} onChange={(e) => set("accountNumber", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Confirm Account Number</Label><Input placeholder="" value={v.confirmAccountNumber} onChange={(e) => set("confirmAccountNumber", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">IFSC Code / Routing No.</Label><Input placeholder="" value={v.ifscCode} onChange={(e) => set("ifscCode", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Branch Name</Label><Input placeholder="" value={v.branchName} onChange={(e) => set("branchName", e.target.value)} /></Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Account Type</Label>
             <Select value={v.accountType} onValueChange={(val) => set("accountType", val)}>
-              <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Savings">Savings</SelectItem>
                 <SelectItem value="Current">Current</SelectItem>
@@ -302,7 +305,7 @@ export function EditClientFormFields(props: {
               </SelectContent>
             </Select>
           </Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">UPI ID / PayPal Email</Label><Input placeholder="Enter UPI ID or PayPal email" value={v.upiId} onChange={(e) => set("upiId", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">UPI ID / PayPal Email</Label><Input placeholder="" value={v.upiId} onChange={(e) => set("upiId", e.target.value)} /></Field>
         </div>
       </FieldSet>
 
@@ -313,7 +316,7 @@ export function EditClientFormFields(props: {
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Contact Method</Label>
             <Select value={v.preferredContactMethod} onValueChange={(val) => set("preferredContactMethod", val)}>
-              <SelectTrigger><SelectValue placeholder="Select method" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Email">Email</SelectItem>
                 <SelectItem value="Phone">Phone</SelectItem>
@@ -323,7 +326,7 @@ export function EditClientFormFields(props: {
               </SelectContent>
             </Select>
           </Field>
-          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Time Zone</Label><Input placeholder="e.g. IST, EST, PST" value={v.preferredTimeZone} onChange={(e) => set("preferredTimeZone", e.target.value)} /></Field>
+          <Field><Label className="text-xs text-muted-foreground mb-1.5 block">Preferred Time Zone</Label><Input placeholder="" value={v.preferredTimeZone} onChange={(e) => set("preferredTimeZone", e.target.value)} /></Field>
         </div>
       </FieldSet>
 
@@ -333,7 +336,7 @@ export function EditClientFormFields(props: {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field>
             <Select value={v.status} onValueChange={(val) => set("status", val)}>
-              <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Lead">Lead</SelectItem>
                 <SelectItem value="Prospect">Prospect</SelectItem>
@@ -352,7 +355,7 @@ export function EditClientFormFields(props: {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field>
             <Select value={v.sourceOfLead} onValueChange={(val) => set("sourceOfLead", val)}>
-              <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Referral">Referral</SelectItem>
                 <SelectItem value="Website">Website</SelectItem>
@@ -369,7 +372,7 @@ export function EditClientFormFields(props: {
           <Label className="text-xs text-muted-foreground mb-1.5 block">Notes</Label>
           <textarea
             className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
-            placeholder="Enter notes"
+            placeholder=""
             value={v.notes}
             onChange={(e) => set("notes", e.target.value)}
           />
@@ -382,13 +385,13 @@ export function EditClientFormFields(props: {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Field>
             <Select value={v.assignedSalesPerson} onValueChange={(val) => set("assignedSalesPerson", val)}>
-              <SelectTrigger><SelectValue placeholder="Select sales person" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
               <SelectContent>{members.map((m) => (<SelectItem key={m} value={m}>{m}</SelectItem>))}</SelectContent>
             </Select>
           </Field>
           <Field>
             <Select value={v.assignedProjectManager} onValueChange={(val) => set("assignedProjectManager", val)}>
-              <SelectTrigger><SelectValue placeholder="Select project manager" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
               <SelectContent>{members.map((m) => (<SelectItem key={m} value={m}>{m}</SelectItem>))}</SelectContent>
             </Select>
           </Field>

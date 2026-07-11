@@ -167,7 +167,7 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
                 </Label>
                 <Select value={selectedProject} onValueChange={setSelectedProject}>
                   <SelectTrigger id="project">
-                    <SelectValue placeholder="Select a project (optional)" />
+                    <SelectValue placeholder="" />
                   </SelectTrigger>
                   <SelectContent>
                     {projects.map((p) => (

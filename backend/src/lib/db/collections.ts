@@ -3,7 +3,7 @@ export const collections = {
   // Existing collections
   users: "users",
   organizations: "organizations",
-  orgMembers: "orgMembers",
+  orgMembers: "org_members",
   tasks: "tasks",
   projects: "projects",
   clients: "clients",

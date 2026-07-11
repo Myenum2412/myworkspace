@@ -231,7 +231,7 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search files, tasks, projects, people..."
+            placeholder=""
             className="border-none shadow-none focus-visible:ring-0 h-8 px-0 text-base"
           />
           <kbd className="hidden sm:inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">

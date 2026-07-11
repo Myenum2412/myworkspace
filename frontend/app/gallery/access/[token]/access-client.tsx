@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import {
   CameraIcon,
@@ -202,7 +203,7 @@ export function GalleryAccessClient({
                 <Label htmlFor="fullName">Full Name *</Label>
                 <Input
                   id="fullName"
-                  placeholder="John Doe"
+                  placeholder=""
                   value={form.fullName}
                   onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                 />
@@ -214,7 +215,7 @@ export function GalleryAccessClient({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="john@example.com"
+                  placeholder=""
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
@@ -223,11 +224,11 @@ export function GalleryAccessClient({
 
               <div className="grid gap-2">
                 <Label htmlFor="phone">Phone Number *</Label>
-                <Input
+                <PhoneInput
                   id="phone"
-                  placeholder="+1234567890"
+                  placeholder=""
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  onChange={(value) => setForm({ ...form, phone: value })}
                 />
                 {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
               </div>

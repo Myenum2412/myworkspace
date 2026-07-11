@@ -16,7 +16,8 @@ const WORKSPACE_PREFIXES = [
   "/departments", "/addemployees", "/addprojects", "/files",
   "/savedtasks", "/upcomingtasks", "/terminated",
   "/recycle-bin", "/upload", "/billing",
-  "/attendance", "/category", "/appointments"
+  "/attendance", "/category", "/appointments",
+  "/ai", "/engagement"
 ];
 
 // Pre-compile startsWith prefixes into a structure for faster matching

@@ -106,7 +106,7 @@ export default function LoginInteractive() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder=""
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -118,7 +118,7 @@ export default function LoginInteractive() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder=""
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required

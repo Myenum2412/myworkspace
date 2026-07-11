@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import {
   HardDrive, FileText, Image, Video, Music, Archive, Files,
-  TrendingUp, Clock, AlertTriangle, CheckCircle2, Upload,
+  AlertTriangle,
 } from "lucide-react";
 
 const USER_STORAGE_LIMIT = 1024 * 1024 * 1024;
@@ -183,58 +183,27 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
           </CardContent>
         </Card>
 
-        {/* Metrics Cards */}
-        <div className="col-span-2 grid gap-4 grid-cols-2">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                  <Files className="size-5 text-blue-600" />
+        {/* Extension Breakdown */}
+        <div className="col-span-2 grid gap-4 grid-cols-2 content-start">
+          <Card className="col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Files className="size-4" /> Files by Type
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {stats.extensionStats.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {stats.extensionStats.map((e) => (
+                    <div key={e.ext} className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/50">
+                      <span className="text-sm font-medium">.{e.ext}</span>
+                      <span className="text-sm text-muted-foreground">{e.count}</span>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.totalFiles}</p>
-                  <p className="text-xs text-muted-foreground">Total Files</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-lg bg-green-50 flex items-center justify-center">
-                  <TrendingUp className="size-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{formatBytes(stats.averageFileSize)}</p>
-                  <p className="text-xs text-muted-foreground">Avg File Size</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-lg bg-purple-50 flex items-center justify-center">
-                  <Upload className="size-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{timeAgo(stats.lastUpload)}</p>
-                  <p className="text-xs text-muted-foreground">Last Upload</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-lg bg-red-50 flex items-center justify-center">
-                  <CheckCircle2 className="size-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.deletedFiles}</p>
-                  <p className="text-xs text-muted-foreground">Files Deleted</p>
-                </div>
-              </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No files uploaded</p>
+              )}
             </CardContent>
           </Card>
         </div>

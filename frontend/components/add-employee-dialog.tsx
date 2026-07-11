@@ -46,15 +46,15 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <Label>Full Name</Label>
-                <Input name="name" required placeholder="e.g. Jane Doe" />
+                <Input name="name" required placeholder="" />
               </div>
               <div className="space-y-1.5">
                 <Label>Email</Label>
-                <Input name="email" type="email" required placeholder="jane@myworkspace.io" />
+                <Input name="email" type="email" required placeholder="" />
               </div>
               <div className="space-y-1.5">
                 <Label>Role</Label>
-                <Input name="role" required placeholder="e.g. Frontend Developer" />
+                <Input name="role" required placeholder="" />
               </div>
               <div className="space-y-1.5">
                 <Label>Department</Label>

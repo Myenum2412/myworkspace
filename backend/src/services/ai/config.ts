@@ -7,6 +7,13 @@ export const AI_CONFIG = {
   temperature: parseFloat(process.env.AI_TEMPERATURE || "0.7"),
   maxTokens: parseInt(process.env.AI_MAX_TOKENS || "500"),
 
+  // OpenRouter Settings (OpenAI-compatible routing service)
+  openRouterApiKey: process.env.OPENROUTER_API_KEY || "",
+  openRouterApiBase: process.env.OPENROUTER_API_BASE || "https://openrouter.ai/api/v1",
+  openRouterModel: process.env.OPENROUTER_MODEL || "openai/gpt-3.5-turbo",
+  openRouterSiteUrl: process.env.OPENROUTER_SITE_URL || "",
+  openRouterSiteName: process.env.OPENROUTER_SITE_NAME || "",
+
   // Language Detection
   defaultLanguage: process.env.AI_DEFAULT_LANGUAGE || "en",
   supportedLanguages: ["en", "es", "fr", "de", "hi", "ar", "pt", "zh", "ja"],

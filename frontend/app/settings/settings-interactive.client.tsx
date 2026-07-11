@@ -50,6 +50,7 @@ import {
   CalendarIcon,
   UnplugIcon,
   AlertCircleIcon,
+  BrainIcon,
 } from "lucide-react";
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
@@ -83,7 +84,7 @@ function saveSectionLimits(limits: Record<string, number>) {
   localStorage.setItem(SECTION_LIMITS_KEY, JSON.stringify(limits));
 }
 
-export type SettingsPageClientProps = {
+  export type SettingsPageClientProps = {
   orgId: string;
   user: { name: string; email: string; avatar: string };
   initialSettings: {
@@ -101,6 +102,7 @@ export type SettingsPageClientProps = {
       billingUpdates?: boolean;
       featureAnnouncements?: boolean;
     };
+    aiSoul?: string;
   } | null;
 };
 
@@ -255,6 +257,11 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               <span className="hidden sm:inline">Integrations</span>
               <span className="sm:hidden">Integ</span>
             </TabsTrigger>
+            <TabsTrigger value="ai" className="gap-2">
+              <BrainIcon className="size-4 shrink-0" />
+              <span className="hidden sm:inline">AI</span>
+              <span className="sm:hidden">AI</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -323,7 +330,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                           </div>
                           <div className="flex gap-2">
                             <Input
-                              placeholder="Add item..."
+                              placeholder=""
                               value={newItems[key] || ""}
                               onChange={(e) => setNewItems({ ...newItems, [key]: e.target.value })}
                               onKeyDown={(e) => { if (e.key === "Enter" && !atLimit) { e.preventDefault(); addDropdownItem(key); } }}
@@ -607,6 +614,13 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               </div>
             </ScrollArea>
           </TabsContent>
+          <TabsContent value="ai" className="h-full m-0 p-0">
+            <ScrollArea className="h-full">
+              <div className="p-3 sm:p-4 md:p-6 space-y-6">
+                <AISoulSettings orgId={orgId} initialSoul={initialSettings?.aiSoul || ""} />
+              </div>
+            </ScrollArea>
+          </TabsContent>
         </div>
       </Tabs>
     </div>
@@ -873,12 +887,12 @@ function WhatsAppSettings() {
               <Label htmlFor="recipient">Send Test Message</Label>
               <Input
                 id="recipient"
-                placeholder="Phone number (e.g., 911234567890)"
+                placeholder=""
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
               />
               <Input
-                placeholder="Message to send"
+                placeholder=""
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
@@ -1092,7 +1106,7 @@ function CalendarIntegrations() {
           ) : (
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <Button asChild>
+          <Button asChild>
                   <a href="/api/calendar/microsoft">
                     <CalendarIcon className="size-4 mr-2" />
                     Connect Outlook Calendar
@@ -1112,7 +1126,81 @@ function CalendarIntegrations() {
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
 
+function AISoulSettings({ orgId, initialSoul }: { orgId: string; initialSoul: string }) {
+  const [soul, setSoul] = useState(initialSoul);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/settings/ai-soul?orgId=${orgId}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setSoul(d.data.aiSoul); })
+      .catch(() => {});
+  }, [orgId]);
+
+  async function handleSave() {
+    setSaving(true);
+    setSaved(false);
+    try {
+      const res = await fetch("/api/settings/ai-soul", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orgId, aiSoul: soul }),
+      });
+      if (res.ok) setSaved(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold">AI Soul (soul.md)</h2>
+        <p className="text-sm text-muted-foreground">
+          Define the AI assistant personality and behavior rules. This is injected as a markdown prompt into every AI conversation.
+        </p>
+      </div>
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="aiSoul">soul.md</Label>
+            <textarea
+              id="aiSoul"
+              className="w-full min-h-[300px] font-mono text-sm p-3 rounded-lg border bg-background resize-y"
+              placeholder="# AI Soul / Personality
+
+You are a helpful assistant for MyWorkSpace.
+
+## Tone
+- Friendly and professional
+- Use simple language
+
+## Rules
+- Never make up product information
+- Keep responses under 3-4 sentences
+- ..."
+              value={soul}
+              onChange={(e) => { setSoul(e.target.value); setSaved(false); }}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <SaveIcon className="size-4 mr-1" />}
+              {saving ? "Saving..." : "Save Soul"}
+            </Button>
+            {saved && (
+              <span className="flex items-center gap-1 text-sm text-green-600">
+                <CheckCircle2Icon className="size-4" /> Saved
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

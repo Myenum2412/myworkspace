@@ -262,7 +262,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
           {/* Row 1: Title (full width) */}
           <FormField label="Task Title" required>
             <Input
-              placeholder="e.g. Design new landing page"
+              placeholder=""
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="h-9 rounded-lg text-sm"
@@ -274,7 +274,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             <FormField label="Client">
               <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
                 <SelectTrigger className="h-9 rounded-lg text-sm">
-                  <SelectValue placeholder="Client" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   {clientList.map((c) => (
@@ -287,7 +287,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             <FormField label="Project">
               <Select value={projectName} onValueChange={setProjectName}>
                 <SelectTrigger className="h-9 rounded-lg text-sm">
-                  <SelectValue placeholder="Project" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   {selectedClient
@@ -358,7 +358,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             <FormField label="Team">
               <Select value={selectedTeam} onValueChange={setSelectedTeam}>
                 <SelectTrigger className="h-9 rounded-lg text-sm">
-                  <SelectValue placeholder="Team" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   {teams.length === 0 ? (
@@ -378,7 +378,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             <BlogEditor
               value={description}
               onChange={setDescription}
-              placeholder="Requirements, acceptance criteria, context..."
+              placeholder=""
             />
           </FormField>
 

@@ -80,7 +80,7 @@ export function InviteMemberFormInteractive() {
             <Input
               id={`email-${index}`}
               type="email"
-              placeholder="colleague@company.com"
+              placeholder=""
               value={email}
               onChange={(e) => updateEmail(index, e.target.value)}
               required

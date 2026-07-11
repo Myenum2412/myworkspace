@@ -43,21 +43,21 @@ export default function NewServicePage() {
               <Label className="text-red-500 font-medium">Service Name*</Label>
             </div>
             <div>
-              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" placeholder="Enter service name" />
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" placeholder="" />
             </div>
 
             <div className="pt-2">
               <Label className="text-gray-700 font-medium">Description</Label>
             </div>
             <div>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full min-h-[80px] resize-y" placeholder="Enter description" />
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full min-h-[80px] resize-y" placeholder="" />
             </div>
 
             <div className="pt-2">
               <Label className="text-gray-700 font-medium">Rate*</Label>
             </div>
             <div>
-              <Input type="number" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} className="w-full" placeholder="0.00" />
+              <Input type="number" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} className="w-full" placeholder="" />
             </div>
 
             <div className="pt-2">

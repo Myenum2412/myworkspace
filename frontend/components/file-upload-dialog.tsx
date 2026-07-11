@@ -191,7 +191,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
                 id="desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Briefly describe these files..."
+                placeholder=""
                 className="resize-none focus-visible:ring-primary shadow-sm"
                 rows={2}
               />
@@ -202,7 +202,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
                 id="tags"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="e.g. invoice, Q2, design"
+                placeholder=""
                 className="shadow-sm focus-visible:ring-primary"
               />
             </div>

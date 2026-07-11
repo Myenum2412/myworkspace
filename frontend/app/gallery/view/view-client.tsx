@@ -109,7 +109,7 @@ export function GalleryViewClient({
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <input
               className="flex h-9 w-48 rounded-md border border-input bg-background pl-8 pr-3 py-1 text-sm"
-              placeholder="Search photos..."
+              placeholder=""
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

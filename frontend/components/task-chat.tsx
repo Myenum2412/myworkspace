@@ -431,7 +431,7 @@ export function TaskChat({
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Write a message..."
+            placeholder=""
             className="w-full min-h-[60px] max-h-[120px] resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-gray-400"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {

@@ -255,7 +255,7 @@ export default function InvoiceFormPage() {
               <Label className="text-red-500 font-medium text-xs sm:text-sm">Customer Name*</Label>
               <Select value={selectedClient} onValueChange={setSelectedClient}>
                 <SelectTrigger className="w-full h-10 sm:h-9 text-gray-500 bg-white">
-                  <SelectValue placeholder="Select or add a customer" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   {clients.length === 0 && <SelectItem value="loading" disabled>Loading...</SelectItem>}
@@ -270,7 +270,7 @@ export default function InvoiceFormPage() {
                 <Label className="text-gray-700 font-medium text-xs sm:text-sm">Salesperson</Label>
                 <Select>
                   <SelectTrigger className="w-full h-10 sm:h-9 text-gray-500">
-                    <SelectValue placeholder="Select or Add Salesperson" />
+                    <SelectValue placeholder="" />
                   </SelectTrigger>
                   <SelectContent>
                     {employees.length === 0 && <SelectItem value="loading" disabled>Loading...</SelectItem>}
@@ -314,7 +314,7 @@ export default function InvoiceFormPage() {
                 <Label className="text-gray-700 font-medium text-xs sm:text-sm pt-2 flex items-center gap-1.5">
                   Subject <Info className="size-3.5 sm:size-4 text-gray-400" />
                 </Label>
-                <Textarea placeholder="Let your customer know what this Invoice is for" className="w-full min-h-[40px] resize-y text-sm" />
+                <Textarea placeholder="" className="w-full min-h-[40px] resize-y text-sm" />
               </>
             )}
           </div>
@@ -349,7 +349,7 @@ export default function InvoiceFormPage() {
                       </div>
                     </div>
                     <SearchableSelect
-                      placeholder="Select a service"
+                      placeholder=""
                       value={item.details}
                       onValueChange={(val) => {
                         const service = defaultServices.find(s => `${s.name} - ${s.description}` === val);
@@ -361,7 +361,7 @@ export default function InvoiceFormPage() {
                       options={defaultServices.filter(s => s.status === "Active").map(s => `${s.name} - ${s.description}`)}
                     />
                     <Textarea
-                      placeholder="Additional notes..."
+                      placeholder=""
                       value={item.description}
                       onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                       className="border focus-visible:ring-1 focus-visible:ring-blue-400 rounded-md resize-none min-h-[50px] text-sm"
@@ -377,7 +377,7 @@ export default function InvoiceFormPage() {
                       </div>
                       <div>
                         <Label className="text-[10px] text-muted-foreground">Tax %</Label>
-                        <Input type="number" value={item.tax} onChange={(e) => updateItem(item.id, 'tax', e.target.value)} className="text-sm" placeholder="0" />
+                        <Input type="number" value={item.tax} onChange={(e) => updateItem(item.id, 'tax', e.target.value)} className="text-sm" placeholder="" />
                       </div>
                     </div>
                     <div className="flex items-center justify-between pt-1 border-t border-gray-100">
@@ -431,7 +431,7 @@ export default function InvoiceFormPage() {
                         </td>
                         <td className="p-0 border-r border-gray-200 align-top pt-2 px-2 space-y-1 min-w-[250px]">
                           <SearchableSelect
-                            placeholder="Select a service"
+                            placeholder=""
                             value={item.details}
                             onValueChange={(val) => {
                               const service = defaultServices.find(s => `${s.name} - ${s.description}` === val);
@@ -443,7 +443,7 @@ export default function InvoiceFormPage() {
                             options={defaultServices.filter(s => s.status === "Active").map(s => `${s.name} - ${s.description}`)}
                           />
                           <Textarea
-                            placeholder="Additional notes..."
+                            placeholder=""
                             value={item.description}
                             onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                             className="border-0 focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none resize-none min-h-[60px] bg-transparent text-sm mt-1"
@@ -472,7 +472,7 @@ export default function InvoiceFormPage() {
                               value={item.tax}
                               onChange={(e) => updateItem(item.id, 'tax', e.target.value)}
                               className="h-8 border-gray-200 text-sm bg-transparent"
-                              placeholder="Enter tax"
+                              placeholder=""
                             />
                           </div>
                         </td>
@@ -524,7 +524,7 @@ export default function InvoiceFormPage() {
               <div>
                 <Label className="text-gray-800 font-medium mb-2 block text-sm">Terms & Conditions</Label>
                 <Textarea
-                  placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
+                  placeholder=""
                   className="min-h-[100px] text-sm w-full"
                 />
               </div>
@@ -569,7 +569,7 @@ export default function InvoiceFormPage() {
                       </RadioGroup>
                       <Select value={tdsTcsRate} onValueChange={setTdsTcsRate}>
                         <SelectTrigger className="w-full sm:w-[140px] h-10 sm:h-8 bg-white border-gray-200">
-                          <SelectValue placeholder="Select a Tax" />
+                          <SelectValue placeholder="" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="5">5%</SelectItem>

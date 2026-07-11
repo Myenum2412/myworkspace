@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { INDUSTRIES } from "@/lib/industries";
 import { ArrowRight, ArrowLeft, Building2, MapPin, User, Phone, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -84,6 +86,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pincodeResult, setPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
 
   const update = (field: keyof CompanyDetails, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -149,7 +152,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
             <Label htmlFor="businessType">Business Type *</Label>
             <Select value={form.businessType} onValueChange={(v) => update("businessType", v)}>
               <SelectTrigger className={cn(errors.businessType && "border-destructive")}>
-                <SelectValue placeholder="Select business type" />
+                <SelectValue placeholder="" />
               </SelectTrigger>
               <SelectContent>
                 {businessTypes.map((t) => (
@@ -167,26 +170,26 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
               options={INDUSTRIES}
               value={form.industry}
               onValueChange={(v) => update("industry", v)}
-              placeholder="Select industry"
+              placeholder=""
               error={errors.industry}
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="gstNumber">GST Number</Label>
-            <Input id="gstNumber" value={form.gstNumber} onChange={(e) => update("gstNumber", e.target.value)} placeholder="22AAAAA0000A1Z5" />
+            <Input id="gstNumber" value={form.gstNumber} onChange={(e) => update("gstNumber", e.target.value)} placeholder="" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="panNumber">PAN Number</Label>
-            <Input id="panNumber" value={form.panNumber} onChange={(e) => update("panNumber", e.target.value.toUpperCase())} placeholder="AAAAA0000A" />
+            <Input id="panNumber" value={form.panNumber} onChange={(e) => update("panNumber", e.target.value.toUpperCase())} placeholder="" />
             {errors.panNumber && <p className="text-xs text-destructive mt-1">{errors.panNumber}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cinNumber">CIN Number</Label>
-            <Input id="cinNumber" value={form.cinNumber} onChange={(e) => update("cinNumber", e.target.value)} placeholder="U74999HR2024PTC000000" />
+            <Input id="cinNumber" value={form.cinNumber} onChange={(e) => update("cinNumber", e.target.value)} placeholder="" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="numberOfEmployees">Number of Employees</Label>
-            <Input id="numberOfEmployees" type="number" value={form.numberOfEmployees} onChange={(e) => update("numberOfEmployees", e.target.value)} placeholder="e.g. 50" />
+            <Input id="numberOfEmployees" type="number" value={form.numberOfEmployees} onChange={(e) => update("numberOfEmployees", e.target.value)} placeholder="" />
           </div>
         </div>
       </div>
@@ -199,19 +202,19 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="companyEmail">Company Email *</Label>
-            <Input id="companyEmail" type="email" value={form.companyEmail} onChange={(e) => update("companyEmail", e.target.value)} placeholder="info@company.com" className={cn(errors.companyEmail && "border-destructive")} />
+            <Input id="companyEmail" type="email" value={form.companyEmail} onChange={(e) => update("companyEmail", e.target.value)} placeholder="" className={cn(errors.companyEmail && "border-destructive")} />
             {errors.companyEmail && <p className="text-xs text-destructive mt-1">{errors.companyEmail}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="mobileNumber">Mobile Number *</Label>
-            <Input id="mobileNumber" value={form.mobileNumber} onChange={(e) => update("mobileNumber", e.target.value)} placeholder="+91 98765 43210" className={cn(errors.mobileNumber && "border-destructive")} />
+            <PhoneInput id="mobileNumber" value={form.mobileNumber} onChange={(value) => update("mobileNumber", value)} placeholder="" className={cn(errors.mobileNumber && "border-destructive")} />
             {errors.mobileNumber && <p className="text-xs text-destructive mt-1">{errors.mobileNumber}</p>}
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <Label htmlFor="website">Website</Label>
             <div className="relative">
               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input id="website" value={form.website} onChange={(e) => update("website", e.target.value)} placeholder="https://www.company.com" className="pl-9" />
+              <Input id="website" value={form.website} onChange={(e) => update("website", e.target.value)} placeholder="" className="pl-9" />
             </div>
           </div>
         </div>
@@ -225,40 +228,31 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5 md:col-span-2">
             <Label htmlFor="addressLine1">Address Line 1 *</Label>
-            <Input id="addressLine1" value={form.addressLine1} onChange={(e) => update("addressLine1", e.target.value)} placeholder="Street address" className={cn(errors.addressLine1 && "border-destructive")} />
+            <Input id="addressLine1" value={form.addressLine1} onChange={(e) => update("addressLine1", e.target.value)} placeholder="" className={cn(errors.addressLine1 && "border-destructive")} />
             {errors.addressLine1 && <p className="text-xs text-destructive mt-1">{errors.addressLine1}</p>}
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <Label htmlFor="addressLine2">Address Line 2</Label>
-            <Input id="addressLine2" value={form.addressLine2} onChange={(e) => update("addressLine2", e.target.value)} placeholder="Suite, unit, building, floor" />
+            <Input id="addressLine2" value={form.addressLine2} onChange={(e) => update("addressLine2", e.target.value)} placeholder="" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="city">City *</Label>
-            <Input id="city" value={form.city} onChange={(e) => update("city", e.target.value)} placeholder="City" className={cn(errors.city && "border-destructive")} />
+            <LocationSelect options={pincodeResult?.cities || []} value={form.city} onChange={(v) => update("city", v)} placeholder="" className={cn(errors.city && "border-destructive")} />
             {errors.city && <p className="text-xs text-destructive mt-1">{errors.city}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="state">State *</Label>
-            <Select value={form.state} onValueChange={(v) => update("state", v)}>
-              <SelectTrigger className={cn(errors.state && "border-destructive")}>
-                <SelectValue placeholder="Select state" />
-              </SelectTrigger>
-              <SelectContent>
-                {states.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <LocationSelect options={pincodeResult?.states || []} value={form.state} onChange={(v) => update("state", v)} placeholder="" className={cn(errors.state && "border-destructive")} />
             {errors.state && <p className="text-xs text-destructive mt-1">{errors.state}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="pincode">Pincode *</Label>
-            <Input id="pincode" value={form.pincode} onChange={(e) => update("pincode", e.target.value)} placeholder="000000" className={cn(errors.pincode && "border-destructive")} />
+            <PincodeInput value={form.pincode} onChange={(v) => update("pincode", v)} onResult={setPincodeResult} className={cn(errors.pincode && "border-destructive")} />
             {errors.pincode && <p className="text-xs text-destructive mt-1">{errors.pincode}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="country">Country</Label>
-            <Input id="country" value={form.country} onChange={(e) => update("country", e.target.value)} />
+            <LocationSelect options={pincodeResult?.countries || []} value={form.country} onChange={(v) => update("country", v)} placeholder="" />
           </div>
         </div>
       </div>
@@ -271,21 +265,21 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="authorizedPersonName">Name *</Label>
-            <Input id="authorizedPersonName" value={form.authorizedPersonName} onChange={(e) => update("authorizedPersonName", e.target.value)} placeholder="Full name" className={cn(errors.authorizedPersonName && "border-destructive")} />
+            <Input id="authorizedPersonName" value={form.authorizedPersonName} onChange={(e) => update("authorizedPersonName", e.target.value)} placeholder="" className={cn(errors.authorizedPersonName && "border-destructive")} />
             {errors.authorizedPersonName && <p className="text-xs text-destructive mt-1">{errors.authorizedPersonName}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="designation">Designation</Label>
-            <Input id="designation" value={form.designation} onChange={(e) => update("designation", e.target.value)} placeholder="e.g. CEO, Director" />
+            <Input id="designation" value={form.designation} onChange={(e) => update("designation", e.target.value)} placeholder="" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="authorizedPersonEmail">Email *</Label>
-            <Input id="authorizedPersonEmail" type="email" value={form.authorizedPersonEmail} onChange={(e) => update("authorizedPersonEmail", e.target.value)} placeholder="person@company.com" className={cn(errors.authorizedPersonEmail && "border-destructive")} />
+            <Input id="authorizedPersonEmail" type="email" value={form.authorizedPersonEmail} onChange={(e) => update("authorizedPersonEmail", e.target.value)} placeholder="" className={cn(errors.authorizedPersonEmail && "border-destructive")} />
             {errors.authorizedPersonEmail && <p className="text-xs text-destructive mt-1">{errors.authorizedPersonEmail}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="authorizedPersonMobile">Mobile</Label>
-            <Input id="authorizedPersonMobile" value={form.authorizedPersonMobile} onChange={(e) => update("authorizedPersonMobile", e.target.value)} placeholder="+91 98765 43210" />
+            <PhoneInput id="authorizedPersonMobile" value={form.authorizedPersonMobile} onChange={(value) => update("authorizedPersonMobile", value)} placeholder="" />
             {errors.authorizedPersonMobile && <p className="text-xs text-destructive mt-1">{errors.authorizedPersonMobile}</p>}
           </div>
         </div>
@@ -293,7 +287,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
 
       <div className="space-y-1.5">
         <Label htmlFor="companyDescription">Company Description</Label>
-        <Textarea id="companyDescription" value={form.companyDescription} onChange={(e) => update("companyDescription", e.target.value)} placeholder="Brief description of your company..." rows={3} />
+        <Textarea id="companyDescription" value={form.companyDescription} onChange={(e) => update("companyDescription", e.target.value)} placeholder="" rows={3} />
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t">

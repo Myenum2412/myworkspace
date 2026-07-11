@@ -127,7 +127,7 @@ export default function NotificationsPage() {
         <FilterIcon className="size-4 text-muted-foreground" />
         <Select value={filterCategory} onValueChange={setFilterCategory}>
           <SelectTrigger className="w-40 h-8 text-sm">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {CATEGORIES.map((cat) => (

@@ -85,12 +85,12 @@ export function TeamForm({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="teamName" className="text-sm">Team Name *</Label>
-                <Input id="teamName" placeholder="e.g. Engineering" value={teamName} onChange={(e) => onTeamNameChange(e.target.value)} disabled={submitting} className="mt-1" />
+                <Input id="teamName" placeholder="" value={teamName} onChange={(e) => onTeamNameChange(e.target.value)} disabled={submitting} className="mt-1" />
               </div>
               <div>
                 <Label htmlFor="teamHead" className="text-sm">Team Head</Label>
                 <Select value={teamHeadId} onValueChange={(v) => { const m = members.find((x) => x.userId === v); onTeamHeadChange(v, m?.name || ""); }} disabled={submitting}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Select team lead" /></SelectTrigger>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="" /></SelectTrigger>
                   <SelectContent>
                     {members.map((m) => (
                       <SelectItem key={m.userId} value={m.userId}>
@@ -106,7 +106,7 @@ export function TeamForm({
             </div>
             <div>
               <Label htmlFor="teamDescription" className="text-sm">Description</Label>
-              <Textarea id="teamDescription" placeholder="Brief description of the team" value={teamDescription} onChange={(e) => onTeamDescriptionChange(e.target.value)} disabled={submitting} rows={2} className="mt-1" />
+              <Textarea id="teamDescription" placeholder="" value={teamDescription} onChange={(e) => onTeamDescriptionChange(e.target.value)} disabled={submitting} rows={2} className="mt-1" />
             </div>
           </div>
 
@@ -117,7 +117,7 @@ export function TeamForm({
                 {selectedMemberIds.length > 0 && <span className="ml-1 text-[10px] font-normal text-primary bg-primary/10 rounded-full px-1.5 py-0.5">{selectedMemberIds.length}</span>}
               </h3>
               <div className="flex items-center gap-2">
-                <Input placeholder="Search..." value={memberSearch} onChange={(e) => onMemberSearchChange(e.target.value)} className="max-w-[150px] text-xs" />
+                <Input placeholder="" value={memberSearch} onChange={(e) => onMemberSearchChange(e.target.value)} className="max-w-[150px] text-xs" />
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="text-xs">

@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import {
   Select,
@@ -186,7 +187,7 @@ export function BasicInfoSection({ formData, onChange, options }: SectionProps) 
         <Input
           value={formData.displayId}
           onChange={(e) => onChange("displayId", e.target.value)}
-          placeholder="Employee ID"
+          placeholder=""
         />
       </Field>
       <Field>
@@ -194,7 +195,7 @@ export function BasicInfoSection({ formData, onChange, options }: SectionProps) 
         <Input
           value={formData.nickname}
           onChange={(e) => onChange("nickname", e.target.value)}
-          placeholder="Nickname"
+          placeholder=""
         />
       </Field>
       <Field>
@@ -202,7 +203,7 @@ export function BasicInfoSection({ formData, onChange, options }: SectionProps) 
         <Input
           value={formData.firstName}
           onChange={(e) => onChange("firstName", e.target.value)}
-          placeholder="First Name"
+          placeholder=""
         />
       </Field>
       <Field>
@@ -210,7 +211,7 @@ export function BasicInfoSection({ formData, onChange, options }: SectionProps) 
         <Input
           value={formData.lastName}
           onChange={(e) => onChange("lastName", e.target.value)}
-          placeholder="Last Name"
+          placeholder=""
         />
       </Field>
       <Field>
@@ -219,7 +220,7 @@ export function BasicInfoSection({ formData, onChange, options }: SectionProps) 
           type="email"
           value={formData.email}
           onChange={(e) => onChange("email", e.target.value)}
-          placeholder="Email Address"
+          placeholder=""
         />
       </Field>
       <Field>
@@ -228,14 +229,14 @@ export function BasicInfoSection({ formData, onChange, options }: SectionProps) 
           type="password"
           value={formData.password || ""}
           onChange={(e) => onChange("password", e.target.value)}
-          placeholder="Password (leave empty to auto-generate)"
+          placeholder=""
         />
       </Field>
       <Field>
         <FieldLabel>Department</FieldLabel>
         <Select value={formData.department} onValueChange={(v) => onChange("department", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select department" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.departments || []).map((opt: string) => (
@@ -248,7 +249,7 @@ export function BasicInfoSection({ formData, onChange, options }: SectionProps) 
         <FieldLabel>Location</FieldLabel>
         <Select value={formData.location} onValueChange={(v) => onChange("location", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select location" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.locations || []).map((opt: string) => (
@@ -268,7 +269,7 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
         <FieldLabel>Designation</FieldLabel>
         <Select value={formData.designation} onValueChange={(v) => onChange("designation", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select designation" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.designations || []).map((opt: string) => (
@@ -281,7 +282,7 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
         <FieldLabel>Employment Type</FieldLabel>
         <Select value={formData.employmentType} onValueChange={(v) => onChange("employmentType", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select type" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.employmentTypes || []).map((opt: string) => (
@@ -294,7 +295,7 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
         <FieldLabel>Status</FieldLabel>
         <Select value={formData.status} onValueChange={(v) => onChange("status", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select status" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.statuses || []).map((opt: string) => (
@@ -307,7 +308,7 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
         <FieldLabel>Branch</FieldLabel>
         <Select value={formData.branchName} onValueChange={(v) => onChange("branchName", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select branch" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.branches || []).map((opt: string) => (
@@ -320,7 +321,7 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
         <FieldLabel>Shift</FieldLabel>
         <Select value={formData.shift} onValueChange={(v) => onChange("shift", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select shift" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.shifts || []).map((opt: string) => (
@@ -333,7 +334,7 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
         <FieldLabel>Source of Hire</FieldLabel>
         <Select value={formData.sourceOfHire} onValueChange={(v) => onChange("sourceOfHire", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select source" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.sourceOfHires || []).map((opt: string) => (
@@ -355,7 +356,7 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
         <Input
           value={formData.currentExperience}
           onChange={(e) => onChange("currentExperience", e.target.value)}
-          placeholder="e.g. 2 years"
+          placeholder=""
         />
       </Field>
       <Field>
@@ -363,7 +364,7 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
         <Input
           value={formData.totalExperience}
           onChange={(e) => onChange("totalExperience", e.target.value)}
-          placeholder="e.g. 5 years"
+          placeholder=""
         />
       </Field>
     </div>
@@ -375,11 +376,7 @@ export function ContactDetailsSection({ formData, onChange, options }: SectionPr
     <div className="grid grid-cols-2 gap-4">
       <Field>
         <FieldLabel>Phone</FieldLabel>
-        <Input
-          value={formData.phone}
-          onChange={(e) => onChange("phone", e.target.value)}
-          placeholder="Phone number"
-        />
+        <PhoneInput value={formData.phone} onChange={(value) => onChange("phone", value)} placeholder="" />
       </Field>
       <Field>
         <FieldLabel>Alternate Email</FieldLabel>
@@ -387,7 +384,7 @@ export function ContactDetailsSection({ formData, onChange, options }: SectionPr
           type="email"
           value={formData.alternateEmail}
           onChange={(e) => onChange("alternateEmail", e.target.value)}
-          placeholder="Alternate email"
+          placeholder=""
         />
       </Field>
       <Field className="sm:col-span-2">
@@ -395,7 +392,7 @@ export function ContactDetailsSection({ formData, onChange, options }: SectionPr
         <Input
           value={formData.address}
           onChange={(e) => onChange("address", e.target.value)}
-          placeholder="Street address"
+          placeholder=""
         />
       </Field>
       <Field>
@@ -403,7 +400,7 @@ export function ContactDetailsSection({ formData, onChange, options }: SectionPr
         <Input
           value={formData.city}
           onChange={(e) => onChange("city", e.target.value)}
-          placeholder="City"
+          placeholder=""
         />
       </Field>
       <Field>
@@ -411,14 +408,14 @@ export function ContactDetailsSection({ formData, onChange, options }: SectionPr
         <Input
           value={formData.state}
           onChange={(e) => onChange("state", e.target.value)}
-          placeholder="State"
+          placeholder=""
         />
       </Field>
       <Field>
         <FieldLabel>Country</FieldLabel>
         <Select value={formData.country} onValueChange={(v) => onChange("country", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select country" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.countries || []).map((opt: string) => (
@@ -432,7 +429,7 @@ export function ContactDetailsSection({ formData, onChange, options }: SectionPr
         <Input
           value={formData.zipCode}
           onChange={(e) => onChange("zipCode", e.target.value)}
-          placeholder="Zip code"
+          placeholder=""
         />
       </Field>
     </div>

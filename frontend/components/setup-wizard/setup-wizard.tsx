@@ -268,7 +268,7 @@ export function SetupWizard() {
                     id="storage-path"
                     value={state.storagePath}
                     onChange={handlePathChange}
-                    placeholder="D:\WorkspaceData or /home/user/MyWorkSpaceData"
+                    placeholder=""
                     className="font-mono text-sm"
                   />
                   {isStandalone && (

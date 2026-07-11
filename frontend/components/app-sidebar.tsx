@@ -24,6 +24,7 @@ import {
   Settings2Icon,
   CheckCheckIcon,
   HeartHandshakeIcon,
+  SparklesIcon,
 } from "lucide-react";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
 
@@ -47,7 +48,7 @@ const platformItems: NavItem[] = [
     ],
   },
   {
-    title: "Task Allocation",
+    title: "Assign Tasks",
     url: "/overview",
     icon: <ListChecksIcon className="size-6" />,
     items: [
@@ -122,14 +123,14 @@ const platformItems: NavItem[] = [
     ],
   },
   {
-    title: "Category",
-    url: "/category",
-    icon: <CategoryIcon className="size-6" />,
-  },
-  {
     title: "Engagement",
     url: "/engagement",
     icon: <HeartHandshakeIcon className="size-6" />,
+  },
+{
+    title: "Category",
+    url: "/category",
+    icon: <CategoryIcon className="size-6" />,
   },
 ];
 

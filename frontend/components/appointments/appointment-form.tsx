@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -105,7 +106,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
               value={patientName}
               onChange={(e) => setPatientName(e.target.value)}
               className={errors.patientName ? "border-red-500" : ""}
-              placeholder="Enter patient name"
+              placeholder=""
             />
             {errors.patientName && <p className="text-xs text-red-500">{errors.patientName}</p>}
           </div>
@@ -113,12 +114,11 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
             <Label htmlFor="mobileNumber">
               Mobile Number <span className="text-destructive">*</span>
             </Label>
-            <Input
-              id="mobileNumber"
+            <PhoneInput
               value={mobileNumber}
-              onChange={(e) => setMobileNumber(e.target.value)}
+              onChange={setMobileNumber}
               className={errors.mobileNumber ? "border-red-500" : ""}
-              placeholder="+1234567890"
+              placeholder=""
             />
             {errors.mobileNumber && <p className="text-xs text-red-500">{errors.mobileNumber}</p>}
           </div>
@@ -129,7 +129,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="patient@example.com"
+              placeholder=""
             />
           </div>
         </div>
@@ -144,7 +144,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
             </Label>
             <Select value={doctorId} onValueChange={setDoctorId}>
               <SelectTrigger className={errors.doctorId ? "border-red-500" : ""}>
-                <SelectValue placeholder="Select a doctor" />
+                <SelectValue placeholder="" />
               </SelectTrigger>
               <SelectContent>
                 {doctors.map((doc) => (
@@ -176,7 +176,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
             </Label>
             <Select value={preferredTime} onValueChange={setPreferredTime}>
               <SelectTrigger className={errors.preferredTime ? "border-red-500" : ""}>
-                <SelectValue placeholder="Select time slot" />
+                <SelectValue placeholder="" />
               </SelectTrigger>
               <SelectContent>
                 {TIME_SLOTS.map((slot) => (
@@ -195,7 +195,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
               value={reasonForVisit}
               onChange={(e) => setReasonForVisit(e.target.value)}
               className={errors.reasonForVisit ? "border-red-500" : ""}
-              placeholder="Describe the reason for the visit"
+              placeholder=""
               rows={3}
             />
             {errors.reasonForVisit && <p className="text-xs text-red-500">{errors.reasonForVisit}</p>}
@@ -206,7 +206,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Any additional notes"
+              placeholder=""
               rows={2}
             />
           </div>

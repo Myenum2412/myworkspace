@@ -43,7 +43,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FileExplorer } from "@/components/file-explorer";
-import { DropZoneUpload } from "@/components/dropzone-upload";
+import { UploadThingDropzone } from "@/components/elements/uploadthing-dropzone";
 
 export type ClientFolder = {
   id: string;
@@ -202,16 +202,37 @@ export default function FilesInteractive({
         </div>
 
         {uploadOpen && (
-          <DropZoneUpload
-            orgId={orgId}
-            clientId={activeClientId}
-            onUploadComplete={() => {
+          <UploadThingDropzone
+            accept="*"
+            maxFiles={10}
+            maxSize={32 * 1024 * 1024}
+            onUpload={async (files) => {
+              const results = [];
+              for (const file of files) {
+                const formData = new FormData();
+                formData.append("file", file);
+                if (activeClientId) formData.append("clientId", activeClientId);
+                const res = await fetch("/api/files/upload", {
+                  method: "POST",
+                  credentials: "include",
+                  body: formData,
+                });
+                if (res.ok) {
+                  const json = await res.json();
+                  results.push({
+                    name: json.data?.originalName || file.name,
+                    size: file.size,
+                    type: file.type,
+                    url: json.data?.url || "",
+                  });
+                }
+              }
               setUploadOpen(false);
               queryClient.invalidateQueries({ queryKey: ["files", orgId] });
               queryClient.invalidateQueries({ queryKey: ["folders"] });
               router.refresh();
+              return results;
             }}
-            maxConcurrency={3}
           />
         )}
 
@@ -233,7 +254,7 @@ export default function FilesInteractive({
           <div className="relative w-56">
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search clients..."
+              placeholder=""
               className="pl-9 h-9 w-full"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

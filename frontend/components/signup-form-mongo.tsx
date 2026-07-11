@@ -51,11 +51,11 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
         )}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="mongo-name">Full name</Label>
-          <Input id="mongo-name" name="name" type="text" placeholder="Jane Smith" required autoComplete="name" />
+          <Input id="mongo-name" name="name" type="text" placeholder="" required autoComplete="name" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="mongo-company">Company name</Label>
-          <Input id="mongo-company" name="company" type="text" placeholder="Acme Corp" autoComplete="organization" />
+          <Input id="mongo-company" name="company" type="text" placeholder="" autoComplete="organization" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="mongo-email">Email address</Label>
@@ -63,11 +63,11 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="mongo-password">Password</Label>
-          <PasswordInput id="mongo-password" name="password" placeholder="Min. 8 characters" required autoComplete="new-password" />
+          <PasswordInput id="mongo-password" name="password" placeholder="" required autoComplete="new-password" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="mongo-confirm">Confirm password</Label>
-          <PasswordInput id="mongo-confirm" name="confirm" placeholder="Re-enter your password" required autoComplete="new-password" />
+          <PasswordInput id="mongo-confirm" name="confirm" placeholder="" required autoComplete="new-password" />
         </div>
         <Button type="submit" className="w-full mt-1 font-semibold">
           Create account

@@ -2,6 +2,7 @@ import { AI_CONFIG } from "../config.js";
 import { AGENT_CONFIG } from "../agent/agent-config.js";
 import type { AIProvider } from "./ai-provider.interface.js";
 import { OpenAIProvider } from "./openai-provider.js";
+import { OpenRouterProvider } from "./openrouter-provider.js";
 import { logger } from "../../../lib/logger/index.js";
 
 export class AIProviderFactory {
@@ -41,6 +42,8 @@ export class AIProviderFactory {
     switch (providerName.toLowerCase()) {
       case "openai":
         return new OpenAIProvider();
+      case "openrouter":
+        return new OpenRouterProvider();
       default:
         logger.warn({ provider: providerName }, "Unknown AI provider, falling back to OpenAI");
         return new OpenAIProvider();

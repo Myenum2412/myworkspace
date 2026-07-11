@@ -55,7 +55,7 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
               <Label htmlFor="language">Language</Label>
               <Select name="language" defaultValue={initial.language}>
                 <SelectTrigger id="language">
-                  <SelectValue placeholder="Select language" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en-US">English (US)</SelectItem>
@@ -72,7 +72,7 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
               <Label htmlFor="timezone">Timezone</Label>
               <Select name="timezone" defaultValue={initial.timezone}>
                 <SelectTrigger id="timezone">
-                  <SelectValue placeholder="Select timezone" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="UTC">UTC</SelectItem>
@@ -92,7 +92,7 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
               <Label htmlFor="dateFormat">Date format</Label>
               <Select name="dateFormat" defaultValue={initial.dateFormat}>
                 <SelectTrigger id="dateFormat">
-                  <SelectValue placeholder="Select format" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
@@ -117,7 +117,7 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
                 id="brandName"
                 name="brandName"
                 defaultValue={initial.brandName}
-                placeholder="My Organization"
+                placeholder=""
               />
             </div>
             <p className="text-sm text-muted-foreground">

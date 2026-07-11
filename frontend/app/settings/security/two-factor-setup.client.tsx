@@ -154,7 +154,7 @@ export default function TwoFactorSetup() {
                   id="disable-token"
                   type="text"
                   inputMode="numeric"
-                  placeholder="000000"
+                  placeholder=""
                   value={token}
                   onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   maxLength={6}
@@ -224,7 +224,7 @@ export default function TwoFactorSetup() {
                   id="verify-token"
                   type="text"
                   inputMode="numeric"
-                  placeholder="000000"
+                  placeholder=""
                   value={token}
                   onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   maxLength={6}

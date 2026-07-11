@@ -139,16 +139,16 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Password (optional)</Label>
-                <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Leave empty for no password" className="mt-1" />
+                <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="" className="mt-1" />
               </div>
               <div>
                 <Label>Expires in (hours)</Label>
-                <Input type="number" value={expiresIn} onChange={e => setExpiresIn(e.target.value)} placeholder="Never" className="mt-1" min="1" />
+                <Input type="number" value={expiresIn} onChange={e => setExpiresIn(e.target.value)} placeholder="" className="mt-1" min="1" />
               </div>
             </div>
             <div>
               <Label>Max downloads</Label>
-              <Input type="number" value={maxDownloads} onChange={e => setMaxDownloads(e.target.value)} placeholder="Unlimited" className="mt-1" min="1" />
+              <Input type="number" value={maxDownloads} onChange={e => setMaxDownloads(e.target.value)} placeholder="" className="mt-1" min="1" />
             </div>
 
             {!shareUrl ? (

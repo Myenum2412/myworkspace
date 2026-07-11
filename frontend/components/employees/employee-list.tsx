@@ -198,7 +198,7 @@ export function EmployeeList({
           <div className="relative bg-white border border-gray-200 rounded-lg focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search employees..."
+              placeholder=""
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-9 h-10 sm:h-9 border-0 shadow-none focus-visible:ring-0 w-full"

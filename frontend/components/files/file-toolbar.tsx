@@ -90,7 +90,7 @@ export function FileToolbar({
         <div className="relative flex-1 min-w-[200px]">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Search files..."
+            placeholder=""
             value={search}
             onChange={e => onSearchChange(e.target.value)}
             className="pl-9"
@@ -161,7 +161,7 @@ export function FileToolbar({
         <div className="flex items-center gap-2 p-2 border rounded-md">
           <MuiFolderIcon className="size-5 text-muted-foreground" />
           <Input
-            placeholder="Folder name"
+            placeholder=""
             value={newFolderName}
             onChange={e => onNewFolderNameChange(e.target.value)}
             onKeyDown={e => e.key === "Enter" && onCreateFolder()}

@@ -40,4 +40,31 @@ router.put("/", async (req: AuthRequest, res: Response) => {
   res.json({ success: true, data: rest });
 });
 
+// ── AI Soul ──
+router.get("/ai-soul", async (req: AuthRequest, res: Response) => {
+  const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
+  const settings = await Settings.findOne({ orgId }).lean();
+  res.json({ success: true, data: { aiSoul: settings?.aiSoul || "" } });
+});
+
+router.put("/ai-soul", async (req: AuthRequest, res: Response) => {
+  const orgId = req.body.orgId || await requireOrgMembership(req.user!.userId);
+  const { aiSoul } = req.body;
+
+  if (typeof aiSoul !== "string") {
+    throw new AppError(400, "aiSoul must be a string");
+  }
+
+  const settings = await Settings.findOneAndUpdate(
+    { orgId },
+    { $set: { aiSoul } },
+    { upsert: true, returnDocument: "after" }
+  ).lean();
+
+  if (!settings) throw new AppError(500, "Failed to save AI soul");
+
+  const { _id, ...rest } = settings as any;
+  res.json({ success: true, data: rest });
+});
+
 export default router;

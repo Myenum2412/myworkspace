@@ -85,7 +85,7 @@ export function SearchableSelect({
               ref={inputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder={`Search ${options.length} industries...`}
+              placeholder=""
               className="h-10 sm:h-10 border-0 bg-transparent px-0 py-0 shadow-none outline-none focus-visible:ring-0"
             />
             {search && (

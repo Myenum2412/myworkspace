@@ -160,7 +160,7 @@ export function StaffStatusForm({
           <input
             value={customStatus}
             onChange={(e) => setCustomStatus(e.target.value)}
-            placeholder="Enter your custom status..."
+            placeholder=""
             className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-ring"
             maxLength={60}
             autoFocus
@@ -172,7 +172,7 @@ export function StaffStatusForm({
         <Textarea
           value={statusNote}
           onChange={(e) => setStatusNote(e.target.value)}
-          placeholder="Add a note (optional)..."
+          placeholder=""
           className="min-h-[60px] resize-none text-sm"
           maxLength={200}
         />

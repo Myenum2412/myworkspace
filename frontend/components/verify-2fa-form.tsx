@@ -77,7 +77,7 @@ export default function Verify2FAForm({ email }: { email: string }) {
                 id="token"
                 type="text"
                 inputMode="numeric"
-                placeholder="000000"
+                placeholder=""
                 value={token}
                 onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 required

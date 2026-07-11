@@ -329,9 +329,9 @@ export async function generateInvoicePDF(baseInvoice: Invoice, preview = false) 
   doc.text("Thanks for your business.", mX + 2, leftY); leftY += 6;
 
   doc.setFont("helvetica", "bold");
-  doc.text(`Name: ${org.name || "MYENUM"}`, mX + 2, leftY); leftY += 6;
-  doc.text(`Account No.: ${org.accountNumber || "925020035722362"}`, mX + 2, leftY); leftY += 4;
-  doc.text(`IFSC Code: ${org.ifscCode || "UTIB0004598"}`, mX + 2, leftY); leftY += 8;
+  doc.text(`Name: ${org.name || ""}`, mX + 2, leftY); leftY += 6;
+  doc.text(`Account No.: ${org.accountNumber || ""}`, mX + 2, leftY); leftY += 4;
+  doc.text(`IFSC Code: ${org.ifscCode || ""}`, mX + 2, leftY); leftY += 8;
 
   doc.setFont("helvetica", "italic");
   doc.text("Terms & Conditions", mX + 2, leftY); leftY += 4;

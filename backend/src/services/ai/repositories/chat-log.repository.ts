@@ -76,6 +76,10 @@ export class ChatLogRepository {
     return results as unknown as ChatLog[];
   }
 
+  async countTotal(): Promise<number> {
+    return this.getCollection().countDocuments();
+  }
+
   async getStats(options: { startDate?: Date; endDate?: Date } = {}): Promise<{
     totalConversations: number;
     uniqueCustomers: number;

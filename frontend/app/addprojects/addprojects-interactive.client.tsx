@@ -119,7 +119,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
 
             <div className="grid gap-2">
               <Label htmlFor="name">Project Name</Label>
-              <Input id="name" placeholder="Enter project name" value={name} onChange={(e) => setName(e.target.value)} required disabled={submitting} />
+              <Input id="name" placeholder="" value={name} onChange={(e) => setName(e.target.value)} required disabled={submitting} />
             </div>
 
             <div className="grid gap-2">
@@ -143,7 +143,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
               <Label htmlFor="description">Description</Label>
               <textarea
                 id="description"
-                placeholder="Project description"
+                placeholder=""
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={submitting}

@@ -167,7 +167,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
           <label className="text-sm font-medium">Reason for termination</label>
           <textarea
             className="flex w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring min-h-[80px] mt-1.5"
-            placeholder="Enter reason..."
+            placeholder=""
             value={terminateReason}
             onChange={(e) => setTerminateReason(e.target.value)}
           />

@@ -243,7 +243,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
             <Label className="text-muted-foreground">Reason for reactivation</Label>
             <Textarea
               className="mt-2"
-              placeholder="Enter reactivation reason..."
+              placeholder=""
               value={reactivateReason}
               onChange={(e) => setReactivateReason(e.target.value)}
               rows={3}

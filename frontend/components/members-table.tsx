@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -175,11 +176,11 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-department">Department</Label>
-                <Input id="edit-department" name="department" defaultValue={member.department || ""} placeholder="e.g. Engineering" />
+                <Input id="edit-department" name="department" defaultValue={member.department || ""} placeholder="" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-designation">Designation</Label>
-                <Input id="edit-designation" name="designation" defaultValue={member.designation || ""} placeholder="e.g. Senior Engineer" />
+                <Input id="edit-designation" name="designation" defaultValue={member.designation || ""} placeholder="" />
               </div>
             </div>
           </div>
@@ -190,11 +191,11 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-phone">Phone</Label>
-                <Input id="edit-phone" name="phone" defaultValue={member.phone || ""} placeholder="+1 555 0100" />
+                <PhoneInput id="edit-phone" name="phone" value={member.phone || ""} placeholder="" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-location">Location</Label>
-                <Input id="edit-location" name="location" defaultValue={member.location || ""} placeholder="e.g. Berlin" />
+                <Input id="edit-location" name="location" defaultValue={member.location || ""} placeholder="" />
               </div>
             </div>
           </div>
@@ -352,7 +353,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
         <div className="relative w-full max-w-sm">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Search members..."
+            placeholder=""
             className="pl-9 h-9 w-full"
             value={search}
             onChange={(e) => setSearch(e.target.value)}

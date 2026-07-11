@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { Button } from "@/components/ui/button";
 import {
   MailIcon,
@@ -89,6 +91,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
   const [editState, setEditState] = useState(initialData?.user?.state || "");
   const [editCountry, setEditCountry] = useState(initialData?.user?.country || "");
   const [editZipCode, setEditZipCode] = useState(initialData?.user?.zipCode || "");
+  const [pincodeResult, setPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
   const [editLinkedin, setEditLinkedin] = useState(initialData?.user?.linkedin || "");
   const [editGithub, setEditGithub] = useState(initialData?.user?.github || "");
   const [editTwitter, setEditTwitter] = useState(initialData?.user?.twitter || "");
@@ -367,10 +370,10 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Phone</p>
                 {editing ? (
-                  <Input
+                  <PhoneInput
                     value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    placeholder="+1 555-123-4567"
+                    onChange={setEditPhone}
+                    placeholder=""
                     className="h-8 text-sm mt-1"
                   />
                 ) : (
@@ -387,7 +390,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                   <Input
                     value={editDepartment}
                     onChange={(e) => setEditDepartment(e.target.value)}
-                    placeholder="Engineering"
+                    placeholder=""
                     className="h-8 text-sm mt-1"
                   />
                 ) : (
@@ -404,7 +407,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                   <Input
                     value={editCompany}
                     onChange={(e) => setEditCompany(e.target.value)}
-                    placeholder="Company name"
+                    placeholder=""
                     className="h-8 text-sm mt-1"
                   />
                 ) : (
@@ -453,7 +456,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div className="sm:col-span-2">
                   <p className="text-xs text-muted-foreground mb-1">Street</p>
                   {editing ? (
-                    <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="123 Main St" className="text-sm" />
+                    <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="" className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.address || "—"}</p>
                   )}
@@ -461,7 +464,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">City</p>
                   {editing ? (
-                    <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Mumbai" className="text-sm" />
+                    <LocationSelect options={pincodeResult?.cities || []} value={editCity} onChange={setEditCity} placeholder="" className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.city || "—"}</p>
                   )}
@@ -469,7 +472,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">State</p>
                   {editing ? (
-                    <Input value={editState} onChange={(e) => setEditState(e.target.value)} placeholder="Maharashtra" className="text-sm" />
+                    <LocationSelect options={pincodeResult?.states || []} value={editState} onChange={setEditState} placeholder="" className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.state || "—"}</p>
                   )}
@@ -477,7 +480,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Country</p>
                   {editing ? (
-                    <Input value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="India" className="text-sm" />
+                    <LocationSelect options={pincodeResult?.countries || []} value={editCountry} onChange={setEditCountry} placeholder="" className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.country || "—"}</p>
                   )}
@@ -485,7 +488,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Zip Code</p>
                   {editing ? (
-                    <Input value={editZipCode} onChange={(e) => setEditZipCode(e.target.value)} placeholder="400001" className="text-sm" />
+                    <PincodeInput value={editZipCode} onChange={setEditZipCode} onResult={setPincodeResult} className="text-sm" />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.zipCode || "—"}</p>
                   )}
@@ -504,7 +507,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                     <Input
                       value={editLinkedin}
                       onChange={(e) => setEditLinkedin(e.target.value)}
-                      placeholder="https://linkedin.com/in/username"
+                      placeholder=""
                       className="text-sm"
                     />
                   ) : (
@@ -519,7 +522,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                     <Input
                       value={editGithub}
                       onChange={(e) => setEditGithub(e.target.value)}
-                      placeholder="https://github.com/username"
+                      placeholder=""
                       className="text-sm"
                     />
                   ) : (
@@ -534,7 +537,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                     <Input
                       value={editTwitter}
                       onChange={(e) => setEditTwitter(e.target.value)}
-                      placeholder="https://twitter.com/username"
+                      placeholder=""
                       className="text-sm"
                     />
                   ) : (
@@ -549,7 +552,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                     <Input
                       value={editWebsite}
                       onChange={(e) => setEditWebsite(e.target.value)}
-                      placeholder="https://example.com"
+                      placeholder=""
                       className="text-sm"
                     />
                   ) : (
@@ -577,7 +580,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
             <div className="space-y-3">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Paste image URL"
+                  placeholder=""
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
                   className="h-8 text-xs"

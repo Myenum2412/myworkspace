@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import mongoose from "mongoose";
 import { User } from "../lib/db/models/User.js";
 import { Session } from "../lib/db/models/Session.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
@@ -53,6 +54,7 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
       name: user.name || "",
       email: user.email || "",
       phone: user.phone || "",
+      secondaryPhone: (user as any).secondaryPhone || "",
       department: user.department || "",
       company: user.company || "",
       address: user.address || "",
@@ -60,6 +62,10 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
       state: user.state || "",
       country: user.country || "",
       zipCode: user.zipCode || "",
+      linkedin: (user as any).linkedin || "",
+      github: (user as any).github || "",
+      twitter: (user as any).twitter || "",
+      website: (user as any).website || "",
       status: user.status || "offline",
       role: user.role || "member",
       image: user.image || "",
@@ -107,8 +113,9 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   if (!user) throw new AppError(404, "User not found");
 
   const {
-    name, email, phone, department, company,
+    name, email, phone, secondaryPhone, department, company,
     address, city, state, country, zipCode,
+    linkedin, github, twitter, website,
     companyName, companyDomain,
     businessType, industry, gstNumber, panNumber, cinNumber,
     companyEmail, mobileNumber, alternateMobileNumber, orgWebsite,
@@ -120,8 +127,9 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   // Update user fields
   const userUpdates: Record<string, unknown> = {};
   const userFieldMap: Record<string, unknown> = {
-    name, email, phone, department, company,
+    name, email, phone, secondaryPhone, department, company,
     address, city, state, country, zipCode,
+    linkedin, github, twitter, website,
   };
   for (const [key, val] of Object.entries(userFieldMap)) {
     if (val !== undefined) userUpdates[key] = val;
@@ -132,7 +140,13 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   }
 
   // Update org fields
-  const member = await OrgMember.findOne({ userId: user.id }).lean();
+  let member = await OrgMember.findOne({ userId: user.id }).lean();
+  if (!member) {
+    const legacyMember = await (await mongoose.connection.db!.collection("orgmembers").findOne({ userId: user.id })) as Record<string, unknown> | null;
+    if (legacyMember) {
+      member = { orgId: String(legacyMember.orgId), userId: user.id, role: "member" } as any;
+    }
+  }
   const orgId = member?.orgId as string | undefined;
   if (orgId) {
     const orgUpdates: Record<string, unknown> = {};
@@ -179,6 +193,7 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
           name: updatedUser.name || "",
           email: updatedUser.email || "",
           phone: updatedUser.phone || "",
+          secondaryPhone: (updatedUser as any).secondaryPhone || "",
           department: updatedUser.department || "",
           company: updatedUser.company || "",
           address: updatedUser.address || "",

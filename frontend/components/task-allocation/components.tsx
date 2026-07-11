@@ -30,7 +30,7 @@ export function PrioritySelector({
     <div className="space-y-2">
       <Select value={selectedPriority} onValueChange={onSelect}>
         <SelectTrigger className="h-9 bg-background/50">
-          <SelectValue placeholder="Select priority" />
+          <SelectValue placeholder="" />
         </SelectTrigger>
         <SelectContent>
           {priorities.map((p) => (
@@ -94,7 +94,7 @@ export function AssigneeSelector({
             onSelect(id, type);
           }}>
             <SelectTrigger className="h-9 bg-background/50">
-              <SelectValue placeholder="Select assignee..." />
+              <SelectValue placeholder="" />
             </SelectTrigger>
             <SelectContent>
               {!showTeamAsAssignee && (

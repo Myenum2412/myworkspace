@@ -45,21 +45,21 @@ export default function EditServicePage() {
               <Label className="text-red-500 font-medium">Service Name*</Label>
             </div>
             <div>
-              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" placeholder="Enter service name" />
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" placeholder="" />
             </div>
 
             <div className="pt-2">
               <Label className="text-gray-700 font-medium">Description</Label>
             </div>
             <div>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full min-h-[80px] resize-y" placeholder="Enter description" />
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full min-h-[80px] resize-y" placeholder="" />
             </div>
 
             <div className="pt-2">
               <Label className="text-gray-700 font-medium">Category</Label>
             </div>
             <div>
-              <Input value={category} onChange={(e) => setCategory(e.target.value)} className="w-full" placeholder="e.g. Development, Design, Consulting" />
+              <Input value={category} onChange={(e) => setCategory(e.target.value)} className="w-full" placeholder="" />
             </div>
 
             <div className="pt-2">

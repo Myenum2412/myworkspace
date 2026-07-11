@@ -58,6 +58,11 @@ export declare const env: {
     AI_REQUEST_TIMEOUT: number;
     AI_LOG_LEVEL: string;
     AI_DEBUG: string;
+    OPENROUTER_API_KEY: string;
+    OPENROUTER_API_BASE: string;
+    OPENROUTER_MODEL: string;
+    OPENROUTER_SITE_URL: string;
+    OPENROUTER_SITE_NAME: string;
     BUSINESS_NAME: string;
     BUSINESS_TIMEZONE: string;
     BUSINESS_CURRENCY: string;

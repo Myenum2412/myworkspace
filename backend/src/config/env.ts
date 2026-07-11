@@ -81,6 +81,13 @@ export const env = {
   AI_LOG_LEVEL: process.env.AI_LOG_LEVEL || "info",
   AI_DEBUG: process.env.AI_DEBUG || "false",
 
+  // OpenRouter (OpenAI-compatible routing service)
+  OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
+  OPENROUTER_API_BASE: process.env.OPENROUTER_API_BASE || "https://openrouter.ai/api/v1",
+  OPENROUTER_MODEL: process.env.OPENROUTER_MODEL || "openai/gpt-3.5-turbo",
+  OPENROUTER_SITE_URL: process.env.OPENROUTER_SITE_URL || "",
+  OPENROUTER_SITE_NAME: process.env.OPENROUTER_SITE_NAME || "",
+
   // Business Configuration
   BUSINESS_NAME: process.env.BUSINESS_NAME || "MyWorkSpace",
   BUSINESS_TIMEZONE: process.env.BUSINESS_TIMEZONE || "Asia/Kolkata",

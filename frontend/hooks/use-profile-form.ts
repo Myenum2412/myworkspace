@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export type ProfileData = {
   user: {
@@ -78,6 +78,7 @@ export const roleBadge: Record<string, "default" | "secondary" | "outline"> = {
 
 export function useProfileForm(initialData: ProfileData) {
   const [data, setData] = useState<ProfileData>(initialData);
+  const savedDataRef = useRef<ProfileData>(initialData);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -210,11 +211,15 @@ export function useProfileForm(initialData: ProfileData) {
       setTimeout(() => setSaveSuccess(""), 4000);
 
       if (result.user || result.org) {
-        setData((prev) => ({
-          ...prev,
-          user: result.user ?? prev.user,
-          org: result.org ?? prev.org,
-        }));
+        setData((prev) => {
+          const merged = {
+            ...prev,
+            user: result.user ? { ...prev.user, ...result.user } : prev.user,
+            org: result.org ? { ...prev.org, ...result.org } : prev.org,
+          };
+          savedDataRef.current = merged;
+          return merged;
+        });
       }
     } catch (e) {
       setSaveError(e instanceof TypeError && e.message === "Failed to fetch"
@@ -236,47 +241,49 @@ export function useProfileForm(initialData: ProfileData) {
   ]);
 
   const handleCancel = useCallback(() => {
-    setEditName(dbUser?.name || "");
-    setEditEmail(dbUser?.email || "");
-    setEditPhone(dbUser?.phone || "");
-    setEditDepartment(dbUser?.department || "");
-    setEditCompany(dbUser?.company || "");
-    setEditAddress(dbUser?.address || "");
-    setEditCity(dbUser?.city || "");
-    setEditState(dbUser?.state || "");
-    setEditCountry(dbUser?.country || "");
-    setEditZipCode(dbUser?.zipCode || "");
-    setEditLinkedin(dbUser?.linkedin || "");
-    setEditGithub(dbUser?.github || "");
-    setEditTwitter(dbUser?.twitter || "");
-    setEditWebsite(dbUser?.website || "");
-    setEditCompanyName(org?.name || "");
-    setEditDomain(org?.domain || "");
-    setEditBusinessType(org?.businessType || "");
-    setEditIndustry(org?.industry || "");
-    setEditGstNumber(org?.gstNumber || "");
-    setEditPanNumber(org?.panNumber || "");
-    setEditCinNumber(org?.cinNumber || "");
-    setEditCompanyEmail(org?.companyEmail || "");
-    setEditMobileNumber(org?.mobileNumber || "");
-    setEditAltMobile(org?.alternateMobileNumber || "");
-    setEditOrgWebsite(org?.website || "");
-    setEditAddressLine1(org?.addressLine1 || "");
-    setEditAddressLine2(org?.addressLine2 || "");
-    setEditOrgCity(org?.city || "");
-    setEditOrgState(org?.state || "");
-    setEditPincode(org?.pincode || "");
-    setEditOrgCountry(org?.country || "India");
-    setEditAuthorizedPerson(org?.authorizedPersonName || "");
-    setEditDesignation(org?.designation || "");
-    setEditAuthorizedEmail(org?.authorizedPersonEmail || "");
-    setEditAuthorizedMobile(org?.authorizedPersonMobile || "");
-    setEditNumEmployees(org?.numberOfEmployees?.toString() || "");
-    setEditCompanyDesc(org?.companyDescription || "");
+    const snapUser = savedDataRef.current?.user;
+    const snapOrg = savedDataRef.current?.org;
+    setEditName(snapUser?.name || "");
+    setEditEmail(snapUser?.email || "");
+    setEditPhone(snapUser?.phone || "");
+    setEditDepartment(snapUser?.department || "");
+    setEditCompany(snapUser?.company || "");
+    setEditAddress(snapUser?.address || "");
+    setEditCity(snapUser?.city || "");
+    setEditState(snapUser?.state || "");
+    setEditCountry(snapUser?.country || "");
+    setEditZipCode(snapUser?.zipCode || "");
+    setEditLinkedin(snapUser?.linkedin || "");
+    setEditGithub(snapUser?.github || "");
+    setEditTwitter(snapUser?.twitter || "");
+    setEditWebsite(snapUser?.website || "");
+    setEditCompanyName(snapOrg?.name || "");
+    setEditDomain(snapOrg?.domain || "");
+    setEditBusinessType(snapOrg?.businessType || "");
+    setEditIndustry(snapOrg?.industry || "");
+    setEditGstNumber(snapOrg?.gstNumber || "");
+    setEditPanNumber(snapOrg?.panNumber || "");
+    setEditCinNumber(snapOrg?.cinNumber || "");
+    setEditCompanyEmail(snapOrg?.companyEmail || "");
+    setEditMobileNumber(snapOrg?.mobileNumber || "");
+    setEditAltMobile(snapOrg?.alternateMobileNumber || "");
+    setEditOrgWebsite(snapOrg?.website || "");
+    setEditAddressLine1(snapOrg?.addressLine1 || "");
+    setEditAddressLine2(snapOrg?.addressLine2 || "");
+    setEditOrgCity(snapOrg?.city || "");
+    setEditOrgState(snapOrg?.state || "");
+    setEditPincode(snapOrg?.pincode || "");
+    setEditOrgCountry(snapOrg?.country || "India");
+    setEditAuthorizedPerson(snapOrg?.authorizedPersonName || "");
+    setEditDesignation(snapOrg?.designation || "");
+    setEditAuthorizedEmail(snapOrg?.authorizedPersonEmail || "");
+    setEditAuthorizedMobile(snapOrg?.authorizedPersonMobile || "");
+    setEditNumEmployees(snapOrg?.numberOfEmployees?.toString() || "");
+    setEditCompanyDesc(snapOrg?.companyDescription || "");
     setSaveError("");
     setSaveSuccess("");
     setEditing(false);
-  }, [dbUser, org]);
+  }, []);
 
   const updateBanner = useCallback(async (url: string) => {
     try {

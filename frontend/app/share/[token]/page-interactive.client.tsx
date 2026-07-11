@@ -88,7 +88,7 @@ export function ShareTokenPageInteractive({ token, fileInfo }: { token: string; 
                 type="password"
                 value={password}
                 onChange={e => { setPassword(e.target.value); setError(""); }}
-                placeholder="Enter password"
+                placeholder=""
                 className="mt-1"
               />
             </div>

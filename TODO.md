@@ -1,0 +1,6 @@
+- [x] Identify why /ai and /engagement routes show 404 / not rendering content.
+- [x] Verify existence of Next.js route files for /engagement and /ai and their layout nesting.
+- [x] Reconcile sidebar links (e.g., /ai/setup) with actual route folder structure.
+- [x] Implement fix for missing /ai/setup route (and any other referenced missing nested routes).
+- [x] Build frontend to confirm no route errors.
+- [ ] Provide final verification notes.

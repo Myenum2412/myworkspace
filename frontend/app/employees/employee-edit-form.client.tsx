@@ -246,7 +246,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field>
               <FieldLabel>Date of Exit</FieldLabel>
-              <Input type="date" placeholder="dd-MMM-yyyy" />
+              <Input type="date" placeholder="" />
             </Field>
           </div>
         </Section>
@@ -291,7 +291,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                     <Input
                       value={row.company || ""}
                       onChange={(e) => updateRow(setWorkExperience, row.id, "company", e.target.value)}
-                      placeholder="Company name"
+                      placeholder=""
                     />
                   </Field>
                   <Field>
@@ -299,7 +299,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                     <Input
                       value={row.title || ""}
                       onChange={(e) => updateRow(setWorkExperience, row.id, "title", e.target.value)}
-                      placeholder="Job Title"
+                      placeholder=""
                     />
                   </Field>
                   <Field>
@@ -307,7 +307,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                     <Input
                       value={row.roles || ""}
                       onChange={(e) => updateRow(setWorkExperience, row.id, "roles", e.target.value)}
-                      placeholder="e.g. Developer, Team Lead"
+                      placeholder=""
                     />
                   </Field>
                   <Field>
@@ -330,7 +330,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                     <FieldLabel>Job Description</FieldLabel>
                     <textarea
                       className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
-                      placeholder="Job Description"
+                      placeholder=""
                       value={row.description || ""}
                       onChange={(e) => updateRow(setWorkExperience, row.id, "description", e.target.value)}
                     />
@@ -359,7 +359,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                     <Input
                       value={row.institute || ""}
                       onChange={(e) => updateRow(setEducationDetails, row.id, "institute", e.target.value)}
-                      placeholder="Institute Name"
+                      placeholder=""
                     />
                   </Field>
                   <Field>
@@ -367,7 +367,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                     <Input
                       value={row.degree || ""}
                       onChange={(e) => updateRow(setEducationDetails, row.id, "degree", e.target.value)}
-                      placeholder="Degree/Diploma"
+                      placeholder=""
                     />
                   </Field>
                   <Field>
@@ -375,7 +375,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                     <Input
                       value={row.specialization || ""}
                       onChange={(e) => updateRow(setEducationDetails, row.id, "specialization", e.target.value)}
-                      placeholder="Specialization"
+                      placeholder=""
                     />
                   </Field>
                   <Field>
@@ -402,7 +402,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                     <Input
                       value={row.name || ""}
                       onChange={(e) => updateRow(setDependentDetails, row.id, "name", e.target.value)}
-                      placeholder="Name"
+                      placeholder=""
                     />
                   </Field>
                   <SelectWithAdd

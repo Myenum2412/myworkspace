@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,6 +14,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import {
   Field,
   FieldSet,
@@ -64,6 +66,7 @@ type ClientFormProps = {
 export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
   const [saving, setSaving] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [pincodeResult, setPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
   const [apiError, setApiError] = useState("");
   const [activeTab, setActiveTab] = useState("other-details");
 
@@ -284,7 +287,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Salutation</Label>
                       <Select value={salutation} onValueChange={setSalutation}>
-                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
                         <SelectContent>
                           {SALUTATIONS.map((s) => (
                             <SelectItem key={s} value={s}>{s}</SelectItem>
@@ -294,11 +297,11 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">First Name</Label>
-                      <Input placeholder="Enter first name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                      <Input placeholder="" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Last Name</Label>
-                      <Input placeholder="Enter last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                      <Input placeholder="" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                     </Field>
                   </div>
                 </FieldSet>
@@ -310,12 +313,12 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
-                      <Input placeholder="Enter company name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={fieldClass("companyName")} />
+                      <Input placeholder="" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={fieldClass("companyName")} />
                       {fieldError("companyName") && <p className="text-xs text-red-500 mt-1">{fieldError("companyName")}</p>}
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Display Name *</Label>
-                      <Input placeholder="Enter display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={fieldClass("displayName")} />
+                      <Input placeholder="" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={fieldClass("displayName")} />
                       {fieldError("displayName") && <p className="text-xs text-red-500 mt-1">{fieldError("displayName")}</p>}
                     </Field>
                   </div>
@@ -341,21 +344,21 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
-                      <Input placeholder="client@company.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass("email")} />
+                      <Input placeholder="" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass("email")} />
                       {fieldError("email") && <p className="text-xs text-red-500 mt-1">{fieldError("email")}</p>}
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Work Phone</Label>
-                      <Input placeholder="Enter work phone" value={workPhone} onChange={(e) => setWorkPhone(e.target.value)} />
+                      <PhoneInput value={workPhone} onChange={setWorkPhone} placeholder="" />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile</Label>
-                      <Input placeholder="Enter mobile number" value={mobile} onChange={(e) => setMobile(e.target.value)} />
+                      <PhoneInput value={mobile} onChange={setMobile} placeholder="" />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Customer Language</Label>
                       <Select value={customerLanguage} onValueChange={setCustomerLanguage}>
-                        <SelectTrigger><SelectValue placeholder="Select language" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
                         <SelectContent>
                           {CUSTOMER_LANGUAGES.map((l) => (
                             <SelectItem key={l} value={l}>{l}</SelectItem>
@@ -386,7 +389,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">GST Treatment *</Label>
                       <Select value={gstTreatment} onValueChange={setGstTreatment}>
-                        <SelectTrigger className={fieldClass("gstTreatment")}><SelectValue placeholder="Select GST Treatment" /></SelectTrigger>
+                        <SelectTrigger className={fieldClass("gstTreatment")}><SelectValue placeholder="" /></SelectTrigger>
                         <SelectContent>
                           {GST_TREATMENTS.map((t) => (
                             <SelectItem key={t} value={t}>{t}</SelectItem>
@@ -398,7 +401,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Place of Supply *</Label>
                       <Select value={placeOfSupply} onValueChange={setPlaceOfSupply}>
-                        <SelectTrigger><SelectValue placeholder="Select place of supply" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
                         <SelectContent>
                           {INDIAN_STATES.map((s) => (
                             <SelectItem key={s} value={s}>{s}</SelectItem>
@@ -408,7 +411,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">PAN #</Label>
-                      <Input placeholder="Enter PAN number" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} />
+                      <Input placeholder="" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Tax Preference *</Label>
@@ -509,49 +512,42 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Attention</Label>
-                      <Input placeholder="Attention" value={billingAttention} onChange={(e) => setBillingAttention(e.target.value)} />
+                      <Input placeholder="" value={billingAttention} onChange={(e) => setBillingAttention(e.target.value)} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Country / Region</Label>
-                      <Select value={billingCountry} onValueChange={setBillingCountry}>
-                        <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
-                        <SelectContent>
-                          {COUNTRIES.map((c) => (
-                            <SelectItem key={c} value={c}>{c}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <LocationSelect options={pincodeResult?.countries || []} value={billingCountry} onChange={setBillingCountry} placeholder="" />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Street 1</Label>
-                      <Input placeholder="Street address" value={billingStreet1} onChange={(e) => setBillingStreet1(e.target.value)} />
+                      <Input placeholder="" value={billingStreet1} onChange={(e) => setBillingStreet1(e.target.value)} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Street 2</Label>
-                      <Input placeholder="Street address line 2" value={billingStreet2} onChange={(e) => setBillingStreet2(e.target.value)} />
+                      <Input placeholder="" value={billingStreet2} onChange={(e) => setBillingStreet2(e.target.value)} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">City</Label>
-                      <Input placeholder="City" value={billingCity} onChange={(e) => setBillingCity(e.target.value)} />
+                      <LocationSelect options={pincodeResult?.cities || []} value={billingCity} onChange={setBillingCity} placeholder="" />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">State</Label>
-                      <Input placeholder="State" value={billingState} onChange={(e) => setBillingState(e.target.value)} />
+                      <LocationSelect options={pincodeResult?.states || []} value={billingState} onChange={setBillingState} placeholder="" />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Pin Code</Label>
-                      <Input placeholder="Pin code" value={billingPinCode} onChange={(e) => setBillingPinCode(e.target.value)} />
+                      <PincodeInput value={billingPinCode} onChange={setBillingPinCode} onResult={setPincodeResult} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Phone</Label>
                       <div className="grid grid-cols-3 gap-2">
-                        <Input placeholder="Code" value={billingPhoneCode} onChange={(e) => setBillingPhoneCode(e.target.value)} />
-                        <Input placeholder="Number" className="col-span-2" value={billingPhone} onChange={(e) => setBillingPhone(e.target.value)} />
+                        <Input placeholder="" value={billingPhoneCode} onChange={(e) => setBillingPhoneCode(e.target.value)} />
+                        <Input placeholder="" className="col-span-2" value={billingPhone} onChange={(e) => setBillingPhone(e.target.value)} />
                       </div>
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Fax Number</Label>
-                      <Input placeholder="Fax number" value={billingFax} onChange={(e) => setBillingFax(e.target.value)} />
+                      <Input placeholder="" value={billingFax} onChange={(e) => setBillingFax(e.target.value)} />
                     </Field>
                   </div>
                 </FieldSet>
@@ -588,49 +584,42 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Attention</Label>
-                      <Input placeholder="Attention" value={shippingAttention} onChange={(e) => setShippingAttention(e.target.value)} disabled={copyBilling} />
+                      <Input placeholder="" value={shippingAttention} onChange={(e) => setShippingAttention(e.target.value)} disabled={copyBilling} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Country / Region</Label>
-                      <Select value={shippingCountry} onValueChange={setShippingCountry} disabled={copyBilling}>
-                        <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
-                        <SelectContent>
-                          {COUNTRIES.map((c) => (
-                            <SelectItem key={c} value={c}>{c}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <LocationSelect options={pincodeResult?.countries || []} value={shippingCountry} onChange={setShippingCountry} placeholder="" />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Street 1</Label>
-                      <Input placeholder="Street address" value={shippingStreet1} onChange={(e) => setShippingStreet1(e.target.value)} disabled={copyBilling} />
+                      <Input placeholder="" value={shippingStreet1} onChange={(e) => setShippingStreet1(e.target.value)} disabled={copyBilling} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Street 2</Label>
-                      <Input placeholder="Street address line 2" value={shippingStreet2} onChange={(e) => setShippingStreet2(e.target.value)} disabled={copyBilling} />
+                      <Input placeholder="" value={shippingStreet2} onChange={(e) => setShippingStreet2(e.target.value)} disabled={copyBilling} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">City</Label>
-                      <Input placeholder="City" value={shippingCity} onChange={(e) => setShippingCity(e.target.value)} disabled={copyBilling} />
+                      <LocationSelect options={pincodeResult?.cities || []} value={shippingCity} onChange={setShippingCity} placeholder="" />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">State</Label>
-                      <Input placeholder="State" value={shippingState} onChange={(e) => setShippingState(e.target.value)} disabled={copyBilling} />
+                      <LocationSelect options={pincodeResult?.states || []} value={shippingState} onChange={setShippingState} placeholder="" />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Pin Code</Label>
-                      <Input placeholder="Pin code" value={shippingPinCode} onChange={(e) => setShippingPinCode(e.target.value)} disabled={copyBilling} />
+                      <PincodeInput value={shippingPinCode} onChange={setShippingPinCode} onResult={setPincodeResult} />
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Phone</Label>
                       <div className="grid grid-cols-3 gap-2">
-                        <Input placeholder="Code" value={shippingPhoneCode} onChange={(e) => setShippingPhoneCode(e.target.value)} disabled={copyBilling} />
-                        <Input placeholder="Number" className="col-span-2" value={shippingPhone} onChange={(e) => setShippingPhone(e.target.value)} disabled={copyBilling} />
+                        <Input placeholder="" value={shippingPhoneCode} onChange={(e) => setShippingPhoneCode(e.target.value)} disabled={copyBilling} />
+                        <Input placeholder="" className="col-span-2" value={shippingPhone} onChange={(e) => setShippingPhone(e.target.value)} disabled={copyBilling} />
                       </div>
                     </Field>
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Fax Number</Label>
-                      <Input placeholder="Fax number" value={shippingFax} onChange={(e) => setShippingFax(e.target.value)} disabled={copyBilling} />
+                      <Input placeholder="" value={shippingFax} onChange={(e) => setShippingFax(e.target.value)} disabled={copyBilling} />
                     </Field>
                   </div>
                   <p className="text-xs text-muted-foreground mt-4">
@@ -654,7 +643,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                         <Field>
                           <Label className="text-xs text-muted-foreground mb-1.5 block">Salutation</Label>
                           <Select value={cp.salutation} onValueChange={(v) => updateContactPerson(cp.id, "salutation", v)}>
-                            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
                             <SelectContent>
                               {SALUTATIONS.map((s) => (
                                 <SelectItem key={s} value={s}>{s}</SelectItem>
@@ -664,23 +653,23 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                         </Field>
                         <Field>
                           <Label className="text-xs text-muted-foreground mb-1.5 block">First Name</Label>
-                          <Input placeholder="First name" value={cp.firstName} onChange={(e) => updateContactPerson(cp.id, "firstName", e.target.value)} />
+                          <Input placeholder="" value={cp.firstName} onChange={(e) => updateContactPerson(cp.id, "firstName", e.target.value)} />
                         </Field>
                         <Field>
                           <Label className="text-xs text-muted-foreground mb-1.5 block">Last Name</Label>
-                          <Input placeholder="Last name" value={cp.lastName} onChange={(e) => updateContactPerson(cp.id, "lastName", e.target.value)} />
+                          <Input placeholder="" value={cp.lastName} onChange={(e) => updateContactPerson(cp.id, "lastName", e.target.value)} />
                         </Field>
                         <Field>
                           <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address</Label>
-                          <Input placeholder="Email" type="email" value={cp.email} onChange={(e) => updateContactPerson(cp.id, "email", e.target.value)} />
+                          <Input placeholder="" type="email" value={cp.email} onChange={(e) => updateContactPerson(cp.id, "email", e.target.value)} />
                         </Field>
                         <Field>
                           <Label className="text-xs text-muted-foreground mb-1.5 block">Work Phone</Label>
-                          <Input placeholder="Work phone" value={cp.workPhone} onChange={(e) => updateContactPerson(cp.id, "workPhone", e.target.value)} />
+                          <PhoneInput value={cp.workPhone} onChange={(value) => updateContactPerson(cp.id, "workPhone", value)} placeholder="" />
                         </Field>
                         <Field>
                           <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile</Label>
-                          <Input placeholder="Mobile" value={cp.mobile} onChange={(e) => updateContactPerson(cp.id, "mobile", e.target.value)} />
+                          <PhoneInput value={cp.mobile} onChange={(value) => updateContactPerson(cp.id, "mobile", value)} placeholder="" />
                         </Field>
                       </div>
                     </div>
@@ -697,13 +686,13 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                   {customFields.map((field, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <Input
-                        placeholder="Field name"
+                        placeholder=""
                         value={field.key}
                         onChange={(e) => updateCustomField(index, "key", e.target.value)}
                         className="flex-1"
                       />
                       <Input
-                        placeholder="Field value"
+                        placeholder=""
                         value={field.value}
                         onChange={(e) => updateCustomField(index, "value", e.target.value)}
                         className="flex-1"
@@ -725,7 +714,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                   <Label className="text-xs text-muted-foreground mb-1.5 block">Remarks</Label>
                   <textarea
                     className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px]"
-                    placeholder="Enter remarks"
+                    placeholder=""
                     value={remarks}
                     onChange={(e) => setRemarks(e.target.value)}
                   />

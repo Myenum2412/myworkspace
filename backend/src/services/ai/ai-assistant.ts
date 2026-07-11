@@ -6,12 +6,15 @@ import { IntentDetector, type IntentResult } from "./intent/intent-detector.js";
 import { EntityExtractor, type ExtractedEntities } from "./entities/entity-extractor.js";
 import { ConversationMemory, type ConversationMessage } from "./memory/conversation-memory.js";
 import { ProductWorkflow } from "./workflows/product-workflow.js";
+import { Settings } from "../../lib/db/models/Settings.js";
+import { getSoulTagRegistry } from "./soul-tags/soul-tag-registry.js";
 import { logger } from "../../lib/logger/index.js";
 
 export interface AIRequest {
   customerPhone: string;
   message: string;
   customerName?: string;
+  orgId?: string;
 }
 
 export interface AIResponse {
@@ -44,6 +47,9 @@ export class AIAssistant {
     const databaseOperations: string[] = [];
 
     try {
+      // Load soul from settings
+      const soul = await this.loadSoul(request.orgId);
+
       // 1. Detect language
       const languageResult = this.languageDetector.detect(request.message);
       logger.info({ phone: request.customerPhone, language: languageResult.language }, "Language detected");
@@ -60,7 +66,32 @@ export class AIAssistant {
       const entities = await this.entityExtractor.extract(request.message, intentResult.intent);
       logger.info({ phone: request.customerPhone, entities }, "Entities extracted");
 
-      // 5. Save user message to memory
+      // 5. Check soul tags for custom handlers
+      const tagRegistry = getSoulTagRegistry();
+      const activeTags = tagRegistry.parseTags(soul);
+      let tagReply: string | null = null;
+
+      if (activeTags.length > 0) {
+        const tagIntentMap: Record<string, string[]> = {
+          stock: ["stock_availability", "product_inquiry", "inventory"],
+        };
+
+        for (const tagName of activeTags) {
+          const matchingIntents = tagIntentMap[tagName] || [];
+          if (
+            matchingIntents.includes(intentResult.intent) ||
+            matchingIntents.some((k) => request.message.toLowerCase().includes(k))
+          ) {
+            tagReply = await tagRegistry.executeTag(tagName, request.message);
+            if (tagReply) {
+              databaseOperations.push(`soul_tag_${tagName}`);
+              break;
+            }
+          }
+        }
+      }
+
+      // 6. Save user message to memory
       await this.conversationMemory.addMessage(request.customerPhone, {
         role: "user",
         content: request.message,
@@ -69,41 +100,45 @@ export class AIAssistant {
         entities,
       });
 
-      // 6. Process based on intent
+      // 7. Process based on intent (skip if tag handled)
       let reply = "";
-      switch (intentResult.intent) {
-        case "product_inquiry":
-          reply = await this.productWorkflow.handleProductInquiry(request.message, entities, languageResult.language);
-          databaseOperations.push("product_search");
-          break;
+      if (tagReply) {
+        reply = tagReply;
+      } else {
+        switch (intentResult.intent) {
+          case "product_inquiry":
+            reply = await this.productWorkflow.handleProductInquiry(request.message, entities, languageResult.language);
+            databaseOperations.push("product_search");
+            break;
 
-        case "price_check":
-          reply = await this.productWorkflow.handlePriceCheck(entities, languageResult.language);
-          databaseOperations.push("price_lookup");
-          break;
+          case "price_check":
+            reply = await this.productWorkflow.handlePriceCheck(entities, languageResult.language);
+            databaseOperations.push("price_lookup");
+            break;
 
-        case "stock_availability":
-          reply = await this.productWorkflow.handleStockCheck(entities, languageResult.language);
-          databaseOperations.push("stock_check");
-          break;
+          case "stock_availability":
+            reply = await this.productWorkflow.handleStockCheck(entities, languageResult.language);
+            databaseOperations.push("stock_check");
+            break;
 
-        case "general_conversation":
-          reply = await this.handleGeneralConversation(request.message, history, context);
-          break;
+          case "general_conversation":
+            reply = await this.handleGeneralConversation(request.message, history, context, soul);
+            break;
 
-        default:
-          reply = await this.handleDefaultIntent(request.message, intentResult, history, context);
-          break;
+          default:
+            reply = await this.handleDefaultIntent(request.message, intentResult, history, context, soul);
+            break;
+        }
       }
 
-      // 7. Save assistant response to memory
+      // 8. Save assistant response to memory
       await this.conversationMemory.addMessage(request.customerPhone, {
         role: "assistant",
         content: reply,
         timestamp: new Date(),
       });
 
-      // 8. Update context with extracted entities
+      // 9. Update context with extracted entities
       await this.conversationMemory.updateContext(request.customerPhone, {
         lastIntent: intentResult.intent,
         lastEntities: entities,
@@ -135,16 +170,30 @@ export class AIAssistant {
     }
   }
 
+  private async loadSoul(orgId?: string): Promise<string> {
+    try {
+      const filter: Record<string, unknown> = {};
+      if (orgId) filter.orgId = orgId;
+      const settings = await Settings.findOne(filter).sort({ updatedAt: -1 }).lean();
+      return settings?.aiSoul || "";
+    } catch {
+      return "";
+    }
+  }
+
   private async handleGeneralConversation(
     message: string,
     history: string[],
-    context: Record<string, any>
+    context: Record<string, any>,
+    soul: string
   ): Promise<string> {
     const provider = AIProviderFactory.getProvider();
 
     if (!provider.isAvailable()) {
       return this.getFallbackResponse(message);
     }
+
+    const soulBlock = soul ? `\n\n## Your Soul / Personality\n${soul}` : "";
 
     const systemPrompt = `You are a helpful customer service assistant for ${BUSINESS_CONFIG.name}.
     
@@ -156,7 +205,7 @@ Rules:
 - Never make up information about products or prices
 - Keep responses under 3-4 sentences unless more detail is needed
 - If greeting, introduce yourself and ask how you can help
-- If thanking, acknowledge and ask if there's anything else`;
+- If thanking, acknowledge and ask if there's anything else${soulBlock}`;
 
     const messages: AIMessage[] = [
       { role: "system", content: systemPrompt },
@@ -182,7 +231,8 @@ Rules:
     message: string,
     intent: IntentResult,
     history: string[],
-    context: Record<string, any>
+    context: Record<string, any>,
+    soul: string
   ): Promise<string> {
     const provider = AIProviderFactory.getProvider();
 
@@ -190,13 +240,15 @@ Rules:
       return "I understand you need help. Could you please provide more details so I can assist you better?";
     }
 
+    const soulBlock = soul ? `\n\n## Your Soul / Personality\n${soul}` : "";
+
     const systemPrompt = `You are a customer service assistant for ${BUSINESS_CONFIG.name}.
     
 The customer's message has been analyzed and the detected intent is: ${intent.intent}
 Confidence: ${intent.confidence}
 
 Based on this intent, provide a helpful response. If the intent is unclear, ask clarifying questions.
-Stay focused on what the customer is asking. Do not introduce unrelated topics.`;
+Stay focused on what the customer is asking. Do not introduce unrelated topics.${soulBlock}`;
 
     const messages: AIMessage[] = [
       { role: "system", content: systemPrompt },

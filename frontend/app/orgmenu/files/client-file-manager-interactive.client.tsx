@@ -35,10 +35,8 @@ import {
   Loader2Icon,
   PlusIcon,
   SearchIcon,
-  UploadIcon,
 } from "lucide-react";
 import { FileExplorer } from "@/components/file-explorer";
-import { DropZoneUpload } from "@/components/dropzone-upload";
 
 type ClientFolder = {
   id: string;
@@ -82,7 +80,6 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
   const [search, setSearch] = useState("");
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [activeClientName, setActiveClientName] = useState<string>("");
-  const [uploadOpen, setUploadOpen] = useState(false);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
 
   const refreshData = useCallback(() => {
@@ -134,9 +131,6 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant={uploadOpen ? "secondary" : "outline"} size="sm" onClick={() => setUploadOpen((v) => !v)}>
-            <UploadIcon className="mr-2 size-4" /> {uploadOpen ? "Close Upload" : "Upload to Client"}
-          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -145,15 +139,6 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
             Open Workspace
           </Button>
         </div>
-
-        {uploadOpen && (
-          <DropZoneUpload
-            orgId={orgId}
-            clientId={activeClientId}
-            onUploadComplete={refreshData}
-            maxConcurrency={3}
-          />
-        )}
 
         <FileExplorer orgId={orgId} userId={userId} clientId={activeClientId} />
       </div>
@@ -186,7 +171,7 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
         <div className="relative w-full max-w-sm">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Search clients..."
+            placeholder=""
             className="pl-9 h-9 w-full"
             value={search}
             onChange={(e) => setSearch(e.target.value)}

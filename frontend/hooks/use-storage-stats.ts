@@ -25,6 +25,10 @@ export interface StorageStats {
     size: number;
     percent: number;
   }>;
+  extensionStats: Array<{
+    ext: string;
+    count: number;
+  }>;
   recentUploads: Array<{
     id: string;
     name: string;

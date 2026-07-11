@@ -197,7 +197,7 @@ router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
   const USER_STORAGE_LIMIT = 1024 * 1024 * 1024;
 
-  const [userFiles, allUserFiles, fileTypeBreakdown, largestFile, recentUploads, monthlyStats] = await Promise.all([
+  const [userFiles, allUserFiles, fileTypeBreakdown, extensionBreakdown, largestFile, recentUploads, monthlyStats] = await Promise.all([
     FileAttachment.find({ orgId, uploaderId: userId, deletedAt: null }).sort({ size: -1 }).lean(),
     FileAttachment.aggregate([
       { $match: { orgId, uploaderId: userId, deletedAt: { $ne: null } } },
@@ -207,6 +207,13 @@ router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
       { $match: { orgId, uploaderId: userId, deletedAt: null } },
       { $group: { _id: "$category", count: { $sum: 1 }, totalSize: { $sum: "$size" } } },
       { $sort: { totalSize: -1 } },
+    ]),
+    FileAttachment.aggregate([
+      { $match: { orgId, uploaderId: userId, deletedAt: null } },
+      { $addFields: { ext: { $toLower: { $ifNull: [{ $last: { $split: ["$originalName", "."] } }, "unknown"] } } } },
+      { $group: { _id: "$ext", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 20 },
     ]),
     FileAttachment.findOne({ orgId, uploaderId: userId, deletedAt: null })
       .sort({ size: -1 }).select({ name: 1, size: 1, mimeType: 1, createdAt: 1 }).lean(),
@@ -240,6 +247,10 @@ router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
     size: ft.totalSize,
     percent: usedStorage > 0 ? Math.round((ft.totalSize / usedStorage) * 100) : 0,
   }));
+  const extensionStats = extensionBreakdown.map((e) => ({
+    ext: e._id,
+    count: e.count,
+  }));
 
   res.json({
     success: true,
@@ -253,6 +264,7 @@ router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
       } : null,
       lastUpload,
       fileTypes,
+      extensionStats,
       recentUploads: recentUploads.map((f) => ({
         id: f.id, name: f.name, size: f.size, mimeType: f.mimeType,
         category: f.category, uploadedAt: f.createdAt,

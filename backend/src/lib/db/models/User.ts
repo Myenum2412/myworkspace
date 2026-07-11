@@ -20,6 +20,7 @@ export interface IUser extends Document {
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
   phone?: string;
+  secondaryPhone?: string;
   department?: string;
   company?: string;
   address?: string;
@@ -27,6 +28,10 @@ export interface IUser extends Document {
   state?: string;
   country?: string;
   zipCode?: string;
+  linkedin?: string;
+  github?: string;
+  twitter?: string;
+  website?: string;
   bannerUrl?: string;
   resetToken?: string;
   resetTokenExpires?: Date;
@@ -56,6 +61,7 @@ const userSchema = new Schema<IUser>(
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorSecret: String,
     phone: String,
+    secondaryPhone: String,
     department: String,
     company: String,
     address: String,
@@ -63,6 +69,10 @@ const userSchema = new Schema<IUser>(
     state: String,
     country: String,
     zipCode: String,
+    linkedin: String,
+    github: String,
+    twitter: String,
+    website: String,
     bannerUrl: String,
     resetToken: { type: String, index: true },
     resetTokenExpires: Date,

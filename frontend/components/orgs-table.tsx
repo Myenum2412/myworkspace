@@ -155,7 +155,7 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
                 name="name"
                 defaultValue={org.name}
                 required
-                placeholder="Enter organization name"
+                placeholder=""
                 className="h-10"
               />
             </div>
@@ -188,7 +188,7 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
                   id="edit-domain"
                   name="domain"
                   defaultValue={org.domain || ""}
-                  placeholder="e.g. example.com"
+                  placeholder=""
                   className="h-10"
                 />
               </div>
@@ -203,7 +203,7 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
                 id="edit-slug"
                 name="slug"
                 defaultValue={org.slug || ""}
-                placeholder="url-friendly-slug"
+                placeholder=""
                 className="h-10"
               />
             </div>
@@ -316,7 +316,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
           <div className="relative w-full max-w-sm">
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search organizations..."
+              placeholder=""
               className="pl-9 h-9 w-full"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

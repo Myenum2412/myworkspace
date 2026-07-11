@@ -18,6 +18,7 @@ export interface IUser extends Document {
     twoFactorEnabled: boolean;
     twoFactorSecret?: string;
     phone?: string;
+    secondaryPhone?: string;
     department?: string;
     company?: string;
     address?: string;
@@ -25,6 +26,10 @@ export interface IUser extends Document {
     state?: string;
     country?: string;
     zipCode?: string;
+    linkedin?: string;
+    github?: string;
+    twitter?: string;
+    website?: string;
     bannerUrl?: string;
     resetToken?: string;
     resetTokenExpires?: Date;

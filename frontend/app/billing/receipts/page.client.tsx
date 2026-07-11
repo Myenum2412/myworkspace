@@ -185,7 +185,7 @@ export default function ReceiptsPageClient() {
         <div className="relative w-full sm:w-64">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94A3B8]" />
           <Input
-            placeholder="Search receipts..."
+            placeholder=""
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-10 pl-9 rounded-xl border-[#E5E7EB]"
@@ -193,7 +193,7 @@ export default function ReceiptsPageClient() {
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="h-10 w-36 rounded-xl border-[#E5E7EB]">
-            <SelectValue placeholder="All statuses" />
+            <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
