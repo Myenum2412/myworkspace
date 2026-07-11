@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EyeIcon, PencilIcon, Trash2Icon, MoreHorizontalIcon } from "lucide-react";
 import {
   EvilRadarChart,
@@ -241,10 +240,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
         </div>
 
         <Card className="border-border rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-sm">Recent Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <DataTable
               columns={baseColumns.map((col) => ({
                 ...col,
@@ -270,53 +266,18 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               data={recentTasks}
               onRowClick={(t) => { setSelectedTask(t); setViewOpen(true); }}
               searchPlaceholder="Search tasks..."
+              title="Recent Tasks"
               label="task(s)"
               emptyMessage="No tasks yet."
               emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
-              mobileCardView={true}
-              renderMobileCard={(task: Task) => (
-                <div
-                  className="border rounded-lg bg-card p-3 space-y-2 shadow-sm active:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => { setSelectedTask(task); setViewOpen(true); }}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-medium text-sm flex-1 line-clamp-2">{task.title}</span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Badge className={`text-[10px] px-1.5 py-0.5 ${statusStyles[task.status] || ""}`}>
-                        {task.status.replace(/_/g, " ")}
-                      </Badge>
-                      <Badge className={`text-[10px] px-1.5 py-0.5 ${priorityStyles[task.priority] || ""}`}>
-                        {task.priority}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div className="size-5 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                        {task.assigneeAvatar ? (
-                          <img src={task.assigneeAvatar} alt={task.assigneeName} className="size-full object-cover" />
-                        ) : (
-                          <span className="text-[8px] font-medium">
-                            {(task.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <span className="truncate">{task.assigneeName || "\u2014"}</span>
-                    </div>
-                    {task.dueDate && (
-                      <span className="shrink-0 ml-2">{new Date(task.dueDate).toLocaleDateString()}</span>
-                    )}
-                  </div>
-                </div>
-              )}
             />
           </CardContent>
         </Card>
       </main>
 
-      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setEditMode(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 flex flex-col sm:max-w-4xl" showCloseButton={false}>
-          {selectedTask && (
+      {viewOpen && selectedTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="relative w-full max-w-6xl max-h-[90vh] mx-4 bg-card rounded-xl shadow-xl overflow-hidden flex flex-col">
             <TaskDetailedView
               task={selectedTask}
               editable
@@ -325,9 +286,9 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               }}
               onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
       <TaskAllocationModal
         open={showTaskModal}

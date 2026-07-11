@@ -11,9 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -635,25 +632,25 @@ export default function ChatPage() {
         )}
 
         {/* ── Create Conversation Modal ──────────────────────── */}
-        <Dialog open={createConvOpen} onOpenChange={setCreateConvOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>New Conversation</DialogTitle>
-              <DialogDescription>Start a chat with a team member</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-3 mt-4">
-              <div>
-                <label className="text-sm font-medium">Group Name (optional)</label>
-                <Input placeholder="" value={newConvName} onChange={(e) => setNewConvName(e.target.value)} className="mt-1" />
+        {createConvOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="relative w-full max-w-md mx-4 bg-card rounded-xl shadow-xl overflow-hidden flex flex-col p-6">
+              <h2 className="text-lg font-semibold">New Conversation</h2>
+              <p className="text-sm text-muted-foreground mt-1">Start a chat with a team member</p>
+              <div className="space-y-3 mt-4">
+                <div>
+                  <label className="text-sm font-medium">Group Name (optional)</label>
+                  <Input placeholder="" value={newConvName} onChange={(e) => setNewConvName(e.target.value)} className="mt-1" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Participant IDs (comma-separated)</label>
+                  <Input placeholder="" value={newConvParticipant} onChange={(e) => setNewConvParticipant(e.target.value)} className="mt-1" />
+                </div>
+                <Button onClick={createGroupConversation} className="w-full">Create</Button>
               </div>
-              <div>
-                <label className="text-sm font-medium">Participant IDs (comma-separated)</label>
-                <Input placeholder="" value={newConvParticipant} onChange={(e) => setNewConvParticipant(e.target.value)} className="mt-1" />
-              </div>
-              <Button onClick={createGroupConversation} className="w-full">Create</Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        )}
       </div>
     </>
   );

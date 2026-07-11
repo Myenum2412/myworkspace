@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   SearchIcon,
   ChevronLeftIcon,
@@ -38,6 +39,7 @@ interface DataTableProps<TData, TValue> {
   emptyMessage?: string;
   emptyIcon?: ReactNode;
   label?: string;
+  title?: string;
   meta?: Record<string, unknown>;
   searchQuery?: string;
   onSearchChange?: (value: string) => void;
@@ -46,6 +48,8 @@ interface DataTableProps<TData, TValue> {
   mobileCardView?: boolean;
   renderMobileCard?: (row: TData, index: number) => ReactNode;
   hideSearchBar?: boolean;
+  showCheckboxes?: boolean;
+  onSelectionChange?: (selectedRows: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -56,6 +60,7 @@ export function DataTable<TData, TValue>({
   emptyMessage = "No results found.",
   emptyIcon,
   label,
+  title,
   meta,
   searchQuery,
   onSearchChange,
@@ -64,29 +69,63 @@ export function DataTable<TData, TValue>({
   mobileCardView,
   renderMobileCard,
   hideSearchBar,
+  showCheckboxes = false,
+  onSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [internalFilter, setInternalFilter] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const isMobile = useIsMobile();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const globalFilter = searchQuery ?? internalFilter;
   const setGlobalFilter = onSearchChange ?? setInternalFilter;
 
+  const checkboxColumn: ColumnDef<TData, TValue> = {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+    size: 40,
+  };
+
+  const allColumns = showCheckboxes ? [checkboxColumn, ...columns] : columns;
+
   const table = useReactTable({
     data,
-    columns,
+    columns: allColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
-    state: { sorting, globalFilter },
+    onRowSelectionChange: setRowSelection,
+    state: { sorting, globalFilter, rowSelection },
     initialState: { pagination: { pageSize } },
     meta,
   });
+
+  useEffect(() => {
+    if (onSelectionChange) {
+      const selectedRows = table.getSelectedRowModel().rows.map((r) => r.original);
+      onSelectionChange(selectedRows);
+    }
+  }, [rowSelection, table, onSelectionChange]);
 
   const rowCount = table.getFilteredRowModel().rows.length;
   const rows = table.getRowModel().rows;
@@ -153,39 +192,46 @@ export function DataTable<TData, TValue>({
       ) : (
         <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
           {!hideSearchBar && (
-            <div className="bg-muted/30 px-3 sm:px-4 py-2.5 sm:py-3 border-b flex items-center justify-between">
-              <div className="relative w-full sm:max-w-sm mx-auto">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  placeholder={searchPlaceholder}
-                  value={globalFilter}
-                  onChange={(e) => setGlobalFilter(e.target.value)}
-                  className="pl-9 w-full h-9 text-sm"
-                  aria-label={searchPlaceholder}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                {isMobile && mobileCardView && (
-                  <div className="flex items-center gap-1 border rounded-md p-0.5">
-                    <button
-                      onClick={() => setViewMode("table")}
-                      className={`p-1.5 rounded ${viewMode === "table" ? "bg-muted" : ""}`}
-                      aria-label="Table view"
-                    >
-                      <ListIcon className="size-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("cards")}
-                      className={`p-1.5 rounded ${viewMode === "cards" ? "bg-muted" : ""}`}
-                      aria-label="Card view"
-                    >
-                      <LayoutGridIcon className="size-4" />
-                    </button>
-                  </div>
+            <div className="bg-muted/30 px-3 sm:px-4 py-2.5 sm:py-3 border-b">
+              <div className="flex items-center gap-4">
+                {title && (
+                  <span className="text-sm font-medium text-foreground whitespace-nowrap shrink-0">
+                    {title}
+                  </span>
                 )}
-                <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
-                  {rowCount} {label ?? "item(s)"}
-                </span>
+                <div className="relative flex-1 max-w-md mx-auto">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    placeholder={searchPlaceholder}
+                    value={globalFilter}
+                    onChange={(e) => setGlobalFilter(e.target.value)}
+                    className="pl-9 w-full h-9 text-sm"
+                    aria-label={searchPlaceholder}
+                  />
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {isMobile && mobileCardView && (
+                    <div className="flex items-center gap-1 border rounded-md p-0.5">
+                      <button
+                        onClick={() => setViewMode("table")}
+                        className={`p-1.5 rounded ${viewMode === "table" ? "bg-muted" : ""}`}
+                        aria-label="Table view"
+                      >
+                        <ListIcon className="size-4" />
+                      </button>
+                      <button
+                        onClick={() => setViewMode("cards")}
+                        className={`p-1.5 rounded ${viewMode === "cards" ? "bg-muted" : ""}`}
+                        aria-label="Card view"
+                      >
+                        <LayoutGridIcon className="size-4" />
+                      </button>
+                    </div>
+                  )}
+                  <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                    {rowCount} {label ?? "item(s)"}
+                  </span>
+                </div>
               </div>
             </div>
           )}

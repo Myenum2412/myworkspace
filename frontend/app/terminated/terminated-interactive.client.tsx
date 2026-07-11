@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -37,9 +38,33 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
   const [reactivating, setReactivating] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
   const totalPages = Math.ceil(terminated.length / rowsPerPage);
   const paginatedTerminated = terminated.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+
+  const allSelected = paginatedTerminated.length > 0 && paginatedTerminated.every((emp) => selectedRows.has(emp.id));
+  const someSelected = paginatedTerminated.some((emp) => selectedRows.has(emp.id));
+
+  function toggleAllRows() {
+    if (allSelected) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(paginatedTerminated.map((emp) => emp.id)));
+    }
+  }
+
+  function toggleRow(id: string) {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
 
   function handleReactivateClick(emp: TerminatedEmployee) {
     setReactivateEmp(emp);
@@ -116,6 +141,13 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
               <table className="table-premium w-full text-sm text-left" style={{ minWidth: 900 }}>
                 <thead className="sticky top-0 z-10">
                   <tr>
+                    <th className="px-4 py-3.5 whitespace-nowrap">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={toggleAllRows}
+                        aria-label="Select all"
+                      />
+                    </th>
                     <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Employee</th>
                     <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Department</th>
                     <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Role</th>
@@ -127,6 +159,13 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                 <tbody>
                   {paginatedTerminated.map((emp) => (
                     <tr key={emp.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group cursor-pointer" onClick={() => setViewEmployee(emp)}>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedRows.has(emp.id)}
+                          onCheckedChange={() => toggleRow(emp.id)}
+                          aria-label={`Select ${emp.name}`}
+                        />
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {emp.avatar ? (

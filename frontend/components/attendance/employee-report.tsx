@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -55,7 +56,30 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
   const [employeeDetails, setEmployeeDetails] = useState<Employee | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [page, setPage] = useState(0);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const rowsPerPage = 15;
+
+  const allSelected = paginated.length > 0 && paginated.every((_, i) => selectedRows.has(i));
+
+  function toggleAllRows() {
+    if (allSelected) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(paginated.map((_, i) => i)));
+    }
+  }
+
+  function toggleRow(index: number) {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return employees;
@@ -131,6 +155,13 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
             <table className="table-premium w-full text-sm text-left">
               <thead>
                 <tr>
+                  <th className="px-4 py-3.5 whitespace-nowrap">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={toggleAllRows}
+                      aria-label="Select all"
+                    />
+                  </th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Employee</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">ID</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Email</th>
@@ -144,17 +175,24 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
               <tbody>
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-16 text-muted-foreground">
+                    <td colSpan={9} className="text-center py-16 text-muted-foreground">
                       {searchQuery ? "No employees match your search" : "No employees found"}
                     </td>
                   </tr>
                 ) : (
-                  paginated.map((emp) => (
+                  paginated.map((emp, i) => (
                     <tr
                       key={emp.id as string}
                       className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer"
                       onClick={() => handleViewEmployee(emp)}
                     >
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedRows.has(i)}
+                          onCheckedChange={() => toggleRow(i)}
+                          aria-label={`Select ${emp.name}`}
+                        />
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <Avatar className="size-8">

@@ -42,3 +42,16 @@ export async function PUT(
     return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    return await proxy(request, "PATCH", id, body);
+  } catch {
+    return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
+  }
+}

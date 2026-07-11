@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -204,7 +205,11 @@ export function FileList({
             <thead>
               <tr className="border-b text-left text-sm font-semibold">
                 <th className="px-4 py-3.5 text-left w-8 font-semibold">
-                  <input type="checkbox" checked={selectedIds.size === files.length && files.length > 0} onChange={onSelectAll} className="size-4" />
+                  <Checkbox
+                    checked={selectedIds.size === files.length && files.length > 0}
+                    onCheckedChange={onSelectAll}
+                    aria-label="Select all"
+                  />
                 </th>
                 <th className="px-4 py-3.5 text-left font-semibold">Name</th>
                 <th className="px-4 py-3.5 text-left font-semibold hidden sm:table-cell">Type</th>
@@ -257,7 +262,11 @@ export function FileList({
               {files.map((file) => (
                 <tr key={file.id} className="border-b last:border-0 hover:bg-slate-50 bg-white">
                   <td className="px-4 py-3">
-                    <input type="checkbox" checked={selectedIds.has(file.id)} onChange={() => onToggleSelect(file.id)} className="size-4" />
+                    <Checkbox
+                      checked={selectedIds.has(file.id)}
+                      onCheckedChange={() => onToggleSelect(file.id)}
+                      aria-label={`Select ${file.originalName}`}
+                    />
                   </td>
                   <td className="px-4 py-3 text-sm cursor-pointer" onClick={() => { if (inlineRenamingId !== file.id) { onPreviewFile(file); } }}>
                     <span className="flex items-center gap-2" onDoubleClick={() => onStartInlineRename(file.id, file.originalName)}>

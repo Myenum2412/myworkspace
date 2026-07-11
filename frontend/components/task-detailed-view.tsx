@@ -160,9 +160,10 @@ export function TaskDetailedView({
   const handleStatusChange = async (newStatus: string) => {
     setUpdating(true);
     try {
-      const res = await fetch(`/api/tasks/${task._id}`, {
+      const res = await fetch(`/api/tasks/${task._id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) {

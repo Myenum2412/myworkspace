@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AttendanceViewDialog } from "./attendance-view-dialog";
@@ -25,6 +26,30 @@ const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").
 
 export function AttendanceTable({ data }: AttendanceTableProps) {
   const [viewRecord, setViewRecord] = useState<AttendanceRecord | null>(null);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+
+  const allSelected = data.length > 0 && data.every((_, i) => selectedRows.has(i));
+  const someSelected = data.some((_, i) => selectedRows.has(i));
+
+  function toggleAllRows() {
+    if (allSelected) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(data.map((_, i) => i)));
+    }
+  }
+
+  function toggleRow(index: number) {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }
 
   return (
     <>
@@ -37,6 +62,13 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
             <table className="table-premium w-full text-sm text-left">
               <thead>
                 <tr>
+                  <th className="px-4 py-3.5 whitespace-nowrap">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={toggleAllRows}
+                      aria-label="Select all"
+                    />
+                  </th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Employee</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">ID</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Email</th>
@@ -51,6 +83,13 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
               <tbody>
                 {data.map((t, i) => (
                   <tr key={i} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer" onClick={() => setViewRecord(t)}>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedRows.has(i)}
+                        onCheckedChange={() => toggleRow(i)}
+                        aria-label={`Select ${t.name}`}
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8">
