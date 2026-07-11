@@ -49,6 +49,10 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
 
   async function handleReactivateConfirm() {
     if (!reactivateEmp) return;
+    if (!reactivateReason.trim()) {
+      toast.error("Please provide a reason for reactivation");
+      return;
+    }
     setReactivating(true);
 
     try {
@@ -232,39 +236,69 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
         open={!!reactivateEmp}
         onOpenChange={(o) => { if (!o && !reactivating) { setReactivateEmp(null); setReactivateReason(""); } }}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reactivate Employee</DialogTitle>
-            <DialogDescription>
-              This will move {reactivateEmp?.name} back to the active employees list.
-            </DialogDescription>
+        <DialogContent className="max-w-[700px] max-h-[85vh] p-6">
+          <DialogHeader className="pb-4 border-b">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center size-12 rounded-full bg-green-50 border border-green-200">
+                <Undo2 className="size-6 text-green-600" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl">Reactivate Employee</DialogTitle>
+                <DialogDescription className="mt-1">
+                  Restore employee to active status
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
-          <div className="py-3">
-            <Label className="text-muted-foreground">Reason for reactivation</Label>
-            <Textarea
-              className="mt-2"
-              placeholder=""
-              value={reactivateReason}
-              onChange={(e) => setReactivateReason(e.target.value)}
-              rows={3}
-            />
+
+          <div className="py-6 space-y-5">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50 border">
+              {reactivateEmp?.avatar ? (
+                <img src={reactivateEmp.avatar} alt={reactivateEmp.name} className="size-10 rounded-full object-cover ring-2 ring-background" />
+              ) : (
+                <div className="size-10 rounded-full flex items-center justify-center text-sm font-semibold bg-gray-100 text-gray-600">
+                  {getInitials(reactivateEmp?.name || "")}
+                </div>
+              )}
+              <div>
+                <p className="font-medium">{reactivateEmp?.name}</p>
+                <p className="text-sm text-muted-foreground">{reactivateEmp?.email}</p>
+              </div>
+            </div>
+
+            <div className="space-y-2 px-2">
+              <Label className="text-sm font-medium">Reason for reactivation <span className="text-destructive">*</span></Label>
+              <Textarea
+                className="min-h-[120px] resize-none p-4"
+                placeholder="Enter the reason for reactivating this employee..."
+                value={reactivateReason}
+                onChange={(e) => setReactivateReason(e.target.value)}
+                rows={5}
+              />
+              <p className="text-xs text-muted-foreground">Please provide a detailed reason for reactivating this employee.</p>
+            </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => { setReactivateEmp(null); setReactivateReason(""); }}
-              disabled={reactivating}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              disabled={!reactivateReason.trim() || reactivating}
-              onClick={handleReactivateConfirm}
-            >
-              {reactivating ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <Undo2 className="size-4 mr-1" />}
-              Reactivate
-            </Button>
+
+          <DialogFooter className="pt-4 border-t">
+            <div className="flex w-full gap-4 px-2">
+              <Button
+                variant="outline"
+                onClick={() => { setReactivateEmp(null); setReactivateReason(""); }}
+                disabled={reactivating}
+                className="flex-1 py-3 text-base font-medium"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                disabled={reactivating}
+                onClick={handleReactivateConfirm}
+                className="flex-1 py-3 text-base font-medium bg-green-600 hover:bg-green-700 text-white"
+              >
+                {reactivating ? <Loader2Icon className="size-4 animate-spin mr-2" /> : <Undo2 className="size-4 mr-2" />}
+                Reactivate Employee
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

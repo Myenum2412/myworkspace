@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   UsersIcon, UserPlusIcon, Trash2Icon, XIcon, Loader2Icon, CrownIcon,
   ChevronLeftIcon, ChevronRightIcon,
@@ -64,6 +66,19 @@ export function TeamMembers({
 
   const totalPages = Math.ceil(team.members.length / memberRowsPerPage);
 
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const allSelected = paginatedMembers.length > 0 && paginatedMembers.every((m) => selectedIds.includes(m.id));
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !paginatedMembers.some((m) => m.id === id)));
+    } else {
+      setSelectedIds((prev) => [...new Set([...prev, ...paginatedMembers.map((m) => m.id)])]);
+    }
+  }
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -87,6 +102,7 @@ export function TeamMembers({
             <table className="table-premium w-full text-sm text-left" style={{ minWidth: 900 }}>
               <thead className="sticky top-0 z-10">
                 <tr>
+                  <th className="w-10 px-2 py-3.5 text-center"><Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} /></th>
                   <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Member</th>
                   <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Role</th>
                   <th className="font-semibold px-4 py-3.5 whitespace-nowrap">Department</th>

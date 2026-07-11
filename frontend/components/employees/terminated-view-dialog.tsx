@@ -50,7 +50,7 @@ export function TerminatedViewDialog({ employee, open, onOpenChange }: Terminate
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-full max-h-[90vh] p-0 flex flex-col">
+      <DialogContent className="max-w-[95vw] w-full max-h-[90vh] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b">
           <div className="flex items-start gap-4">
             <Avatar className="size-14 ring-2 ring-border">

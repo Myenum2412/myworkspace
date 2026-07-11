@@ -90,9 +90,9 @@ export function TeamForm({
               <div>
                 <Label htmlFor="teamHead" className="text-sm">Team Head</Label>
                 <Select value={teamHeadId} onValueChange={(v) => { const m = members.find((x) => x.userId === v); onTeamHeadChange(v, m?.name || ""); }} disabled={submitting}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 border-black"><SelectValue placeholder="" /></SelectTrigger>
                   <SelectContent>
-                    {members.map((m) => (
+                    {members.filter((m) => m.userId === teamHeadId || !selectedMemberIds.includes(m.userId)).map((m) => (
                       <SelectItem key={m.userId} value={m.userId}>
                         <div className="flex items-center gap-2">
                           <div className="size-5 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium">{getInitials(m.name)}</div>
@@ -126,14 +126,14 @@ export function TeamForm({
                   </PopoverTrigger>
                   <PopoverContent className="w-80 p-2" align="end">
                     <div className="space-y-1 max-h-64 overflow-y-auto">
-                      {filteredMembers.length === 0 ? (
-                        <p className="text-sm text-muted-foreground py-4 text-center">{memberSearch ? "No matching members" : "No employees available"}</p>
-                      ) : filteredMembers.map((m) => {
-                        const checked = selectedMemberIds.includes(m.userId);
+                      {filteredMembers.filter((m) => !selectedMemberIds.includes(m.userId)).length === 0 ? (
+                        <p className="text-sm text-muted-foreground py-4 text-center">{memberSearch ? "No matching members" : "All members already selected"}</p>
+                      ) : filteredMembers.filter((m) => !selectedMemberIds.includes(m.userId)).map((m) => {
+                        const checked = false;
                         const isLead = m.userId === teamHeadId;
                         return (
-                          <label key={m.userId} className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm ${isLead ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted"}`}>
-                            <Checkbox checked={checked} disabled={isLead} onCheckedChange={() => { onSelectedMemberIdsChange((prev) => checked ? prev.filter((id) => id !== m.userId) : [...prev, m.userId]); }} />
+                          <label key={m.userId} className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-muted">
+                            <Checkbox checked={checked} onCheckedChange={() => { onSelectedMemberIdsChange((prev) => [...prev, m.userId]); }} />
                             <div className="size-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium shrink-0">{getInitials(m.name)}</div>
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium truncate flex items-center gap-1">{m.name}{isLead && <span className="text-[9px] text-red-400 font-semibold">(Lead)</span>}</p>

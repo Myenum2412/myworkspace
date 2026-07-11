@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -94,9 +93,7 @@ export function TeamList({
         <TeamStatsCard icon={<UsersIcon className="size-4" />} label="Avg Team Size" value={avgTeamSize} valueClassName="text-red-500" />
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <DataTable
+      <DataTable
             columns={columns.map((col) => ({
               ...col,
               cell: col.id === "actions"
@@ -123,9 +120,7 @@ export function TeamList({
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             hideSearchBar
-          />
-        </CardContent>
-      </Card>
+      />
     </>
   );
 }
