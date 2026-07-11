@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon } from "lucide-react";
+import { PlusIcon, ListTodoIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
@@ -98,10 +98,9 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
   // Status-summary cards — single memoized pass over the list.
   const summary = useMemo(() => {
     const t0 = perfNow();
-    const init = { todo: 0, assigned: 0, in_progress: 0, review: 0, done: 0, cancelled: 0 };
+    const init = { todo: 0, in_progress: 0, review: 0, done: 0, cancelled: 0 };
     const counts = tasks.reduce((acc: typeof init, t: UiTask) => {
       if (t.status === "todo") acc.todo++;
-      else if (t.status === "assigned") acc.assigned++;
       else if (t.status === "in_progress") acc.in_progress++;
       else if (t.status === "review") acc.review++;
       else if (t.status === "done") acc.done++;
@@ -143,7 +142,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 h-screen">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="w-full sm:w-auto">
             <div className="flex flex-wrap items-center gap-2">
@@ -162,7 +161,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </Button>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-6">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
@@ -171,16 +170,6 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{summary.todo}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <UsersIcon className="size-4" /> Team Task
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.assigned}</div>
             </CardContent>
           </Card>
           <Card>
@@ -241,11 +230,13 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </CardContent>
         </Card>
         ) : (
-          <KanbanBoard
-            tasks={tasks}
-            onStatusChange={handleStatusChange}
-            onCardClick={(task) => { setSelectedTask(task as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
-          />
+          <div className="flex-1 min-h-0">
+            <KanbanBoard
+              tasks={tasks}
+              onStatusChange={handleStatusChange}
+              onCardClick={(task) => { setSelectedTask(task as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
+            />
+          </div>
         )}
 
       <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>

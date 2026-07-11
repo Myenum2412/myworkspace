@@ -40,7 +40,7 @@ const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-700",
 };
 
-const statusGroups = ["todo", "assigned", "in_progress", "review", "done", "cancelled"];
+const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
 
 type KanbanBoardProps = {
   tasks: Task[];
@@ -108,14 +108,14 @@ function Column({ status, tasks, onCardClick }: { status: string; tasks: Task[];
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-3 h-full">
+      <div className="flex items-center justify-between shrink-0">
         <h3 className="text-sm font-semibold capitalize">{status.replace(/_/g, " ")}</h3>
         <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{tasks.length}</span>
       </div>
       <div
         ref={setNodeRef}
-        className={`flex flex-col gap-2 min-h-[120px] rounded-lg p-2 transition-colors ${isOver ? "bg-primary/10 ring-2 ring-primary/40" : "bg-muted/30"}`}
+        className={`flex flex-col gap-2 flex-1 min-h-[200px] max-h-[calc(100vh-280px)] overflow-y-auto rounded-lg p-2 transition-colors ${isOver ? "bg-primary/10 ring-2 ring-primary/40" : "bg-muted/30"}`}
       >
         {tasks.length === 0 ? (
           <p className="text-xs text-muted-foreground italic px-1">No tasks</p>
@@ -176,11 +176,11 @@ export function KanbanBoard({ tasks, onStatusChange, onCardClick }: KanbanBoardP
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-6">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-5 h-[calc(100vh-220px)]">
         {statusGroups.map((s) => {
           const items = tasks.filter((t) => t.status === s);
           return (
-            <div key={s} className="flex flex-col gap-3">
+            <div key={s} className="flex flex-col gap-3 h-full">
               <Column status={s} tasks={items} onCardClick={onCardClick} />
             </div>
           );
