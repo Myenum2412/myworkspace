@@ -1,4 +1,4 @@
-(node:111317) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:7636) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
 > my-app@0.1.0 build
@@ -15,15 +15,15 @@ Setting a custom Cache-Control header can break Next.js development behavior.
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 10.5s
+✓ Compiled successfully in 14.8s
   Running TypeScript ...
-  Finished TypeScript in 16.9s ...
+  Finished TypeScript in 19.1s ...
   Collecting page data using 11 workers ...
   Generating static pages using 11 workers (0/89) ...
   Generating static pages using 11 workers (22/89) 
   Generating static pages using 11 workers (44/89) 
   Generating static pages using 11 workers (66/89) 
-✓ Generating static pages using 11 workers (89/89) in 590ms
+✓ Generating static pages using 11 workers (89/89) in 615ms
   Finalizing page optimization ...
 
 Route (app)
@@ -72,7 +72,6 @@ Route (app)
 ├ ƒ /api/folders/[id]
 ├ ƒ /api/gallery/upload-image
 ├ ƒ /api/gallery/verify
-├ ƒ /api/hermes/chat
 ├ ƒ /api/organizations/[id]
 ├ ƒ /api/photography
 ├ ƒ /api/photography/galleries
@@ -95,9 +94,6 @@ Route (app)
 ├ ƒ /api/user/profile
 ├ ƒ /api/user/profile-image
 ├ ƒ /api/user/status
-├ ƒ /api/whatsapp/connect
-├ ƒ /api/whatsapp/qr-code
-├ ƒ /api/whatsapp/settings
 ├ ƒ /appointments
 ├ ƒ /approvals
 ├ ƒ /approvals/approved
@@ -191,6 +187,8 @@ Route (app)
 ├ ƒ /staffs/time-off
 ├ ƒ /staffs/timesheet
 ├ ƒ /staffs/upcoming-tasks
+├ ○ /stocks
+├ ○ /stocks/reports
 ├ ƒ /team-time
 ├ ƒ /teams
 ├ ƒ /teamtasks

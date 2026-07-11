@@ -3,6 +3,8 @@ import fs from "fs";
 import { logger } from "../lib/logger/index.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 import QRCode from "qrcode";
+import { AIAssistant } from "./ai/ai-assistant.js";
+import { ChatLogRepository } from "./ai/repositories/chat-log.repository.js";
 
 // whatsapp-web.js is CommonJS, use dynamic import for ESM compatibility
 let WhatsAppClient: any;
@@ -11,7 +13,6 @@ let WhatsAppLocalAuth: any;
 async function loadWhatsAppWebjs() {
   if (!WhatsAppClient) {
     const wwebjs = await import("whatsapp-web.js");
-    // whatsapp-web.js CommonJS module exports under .default in ESM
     const mod = wwebjs.default || wwebjs;
     WhatsAppClient = mod.Client;
     WhatsAppLocalAuth = mod.LocalAuth;
@@ -41,11 +42,15 @@ class WhatsAppService {
   private client: any = null;
   private state: WhatsAppClientState = { status: "disconnected" };
   private info: WhatsAppInfo | null = null;
+  private aiAssistant: AIAssistant;
+  private chatLogRepo: ChatLogRepository;
 
   constructor() {
     if (!fs.existsSync(AUTH_DIR)) {
       fs.mkdirSync(AUTH_DIR, { recursive: true });
     }
+    this.aiAssistant = new AIAssistant();
+    this.chatLogRepo = new ChatLogRepository();
   }
 
   getState(): WhatsAppClientState {
@@ -54,6 +59,10 @@ class WhatsAppService {
 
   getInfo() {
     return this.info;
+  }
+
+  hasClient(): boolean {
+    return !!this.client;
   }
 
   async start(): Promise<void> {
@@ -182,8 +191,20 @@ class WhatsAppService {
   }
 
   async sendMessage(chatId: string, content: string): Promise<boolean> {
-    if (!this.client || this.state.status !== "ready") {
-      logger.warn("Cannot send message — WhatsApp not ready");
+    logger.info({ hasClient: !!this.client, status: this.state.status, hasInfo: !!this.info }, "sendMessage called");
+
+    if (!this.client) {
+      logger.warn("Cannot send message — client is null");
+      return false;
+    }
+
+    if (!this.info) {
+      logger.warn("Cannot send message — client info not available");
+      return false;
+    }
+
+    if (this.state.status !== "ready") {
+      logger.warn({ status: this.state.status }, "Cannot send message — status not ready");
       return false;
     }
 
@@ -211,6 +232,64 @@ class WhatsAppService {
       body,
       timestamp: msg.timestamp,
     });
+
+    try {
+      // Process through AI Assistant
+      const aiResponse = await this.aiAssistant.processMessage({
+        customerPhone: from,
+        message: body,
+      });
+
+      // Send AI response
+      await this.sendMessage(from, aiResponse.reply);
+
+      // Log the conversation
+      await this.chatLogRepo.log({
+        customerPhone: from,
+        incomingMessage: body,
+        outgoingMessage: aiResponse.reply,
+        intent: aiResponse.intent.intent,
+        intentConfidence: aiResponse.intent.confidence,
+        entities: aiResponse.entities,
+        language: aiResponse.language,
+        databaseOperations: aiResponse.databaseOperations,
+        processingTimeMs: aiResponse.processingTimeMs,
+        aiModel: "gpt-3.5-turbo",
+        tokensUsed: 0,
+        status: "success",
+        channel: "whatsapp",
+      });
+
+      socketIOManager.getIO()?.emit("whatsapp:ai-response", {
+        from,
+        reply: aiResponse.reply,
+        intent: aiResponse.intent,
+      });
+    } catch (error: any) {
+      logger.error({ error: error.message, from }, "AI processing failed");
+
+      // Send fallback response
+      const fallbackMessage = "I apologize, but I'm having trouble processing your request. Please try again or contact our support team.";
+      await this.sendMessage(from, fallbackMessage);
+
+      // Log the error
+      await this.chatLogRepo.log({
+        customerPhone: from,
+        incomingMessage: body,
+        outgoingMessage: fallbackMessage,
+        intent: "error",
+        intentConfidence: 0,
+        entities: {},
+        language: "en",
+        databaseOperations: [],
+        processingTimeMs: 0,
+        aiModel: "gpt-3.5-turbo",
+        tokensUsed: 0,
+        status: "error",
+        errorMessage: error.message,
+        channel: "whatsapp",
+      });
+    }
   }
 
   private emitState(): void {

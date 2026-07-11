@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 import { env } from "../../config/env.js";
+import { collections } from "./collections.js";
+
+export { collections };
 
 export async function connectDb() {
   // Extract database name from URI or use default

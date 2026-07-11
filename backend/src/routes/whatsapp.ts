@@ -96,4 +96,18 @@ router.get("/qr", (_req: Request, res: Response) => {
   }
 });
 
+// Debug endpoint to check actual client state
+router.get("/debug", (_req: Request, res: Response) => {
+  const state = whatsappService.getState();
+  const info = whatsappService.getInfo();
+  res.json({
+    success: true,
+    data: {
+      state,
+      info,
+      hasClient: whatsappService.hasClient(),
+    }
+  });
+});
+
 export default router;

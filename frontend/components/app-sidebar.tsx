@@ -14,7 +14,6 @@ import {
 import MuiFolderIcon from "@mui/icons-material/Folder";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import CategoryIcon from "@mui/icons-material/Category";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import {
   LayoutDashboardIcon,
@@ -24,7 +23,7 @@ import {
   ClockIcon,
   Settings2Icon,
   CheckCheckIcon,
-  BarChart3Icon,
+  HeartHandshakeIcon,
 } from "lucide-react";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
 
@@ -123,25 +122,16 @@ const platformItems: NavItem[] = [
     ],
   },
   {
-    title: "Engagement Overview",
-    url: "/engagement",
-    icon: <BarChart3Icon className="size-6" />,
-  },
-  {
     title: "Category",
     url: "/category",
     icon: <CategoryIcon className="size-6" />,
   },
+  {
+    title: "Engagement",
+    url: "/engagement",
+    icon: <HeartHandshakeIcon className="size-6" />,
+  },
 ];
-
-const doctorKitItem: NavItem = {
-  title: "Doctor Kit",
-  url: "/appointments",
-  icon: <LocalHospitalIcon className="size-6" />,
-  items: [
-    { title: "Booking Appointments", url: "/appointments" },
-  ],
-};
 
 const photographyItem: NavItem = {
   title: "Photography",
@@ -173,15 +163,10 @@ export function AppSidebar({
   user,
   ...props
 }: React.ComponentProps<typeof Sidebar> & { user: NavUserData }) {
-  const [doctorKitInstalled, setDoctorKitInstalled] = useState(false);
   const [photographyInstalled, setPhotographyInstalled] = useState(false);
   const [hiddenFeatures, setHiddenFeatures] = useState<string[]>([]);
 
   useEffect(() => {
-    fetch("/api/doctor-kit")
-      .then((r) => r.json())
-      .then((data) => setDoctorKitInstalled(data.installed))
-      .catch(() => {});
     fetch("/api/photography")
       .then((r) => r.json())
       .then((data) => setPhotographyInstalled(data.installed))
@@ -196,7 +181,6 @@ export function AppSidebar({
 
   const visibleItems = [
     ...platformItems.filter((item) => !hiddenFeatures.includes(item.title)),
-    ...(doctorKitInstalled && !hiddenFeatures.includes("Doctor Kit") ? [doctorKitItem] : []),
     ...(photographyInstalled && !hiddenFeatures.includes("Photography") ? [photographyItem] : []),
   ];
 

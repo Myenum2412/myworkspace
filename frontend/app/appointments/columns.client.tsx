@@ -1,7 +1,8 @@
 "use client"
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Eye, Pencil, Trash2, XCircle, CheckCircle, Ban } from "lucide-react";
+import { MoreHorizontal, Eye, Pencil, Trash2, XCircle, CheckCircle, Ban, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,6 +69,19 @@ export const columns: ColumnDef<Appointment>[] = [
         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColorMap[status] || ""}`}>
           {status}
         </span>
+      );
+    },
+  },
+  {
+    accessorKey: "source",
+    header: "Source",
+    cell: ({ row }) => {
+      const source = row.getValue<string>("source") || "web";
+      return (
+        <Badge variant={source === "whatsapp" ? "default" : "secondary"} className="gap-1">
+          {source === "whatsapp" && <MessageCircle className="size-3" />}
+          {source === "whatsapp" ? "WhatsApp" : "Web"}
+        </Badge>
       );
     },
   },

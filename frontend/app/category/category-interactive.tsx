@@ -2,22 +2,12 @@
 
 import { useState, useEffect } from "react";
 import InfoIcon from "@mui/icons-material/Info";
-import MedicationIcon from "@mui/icons-material/Medication";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
 const MODULES = [
-  {
-    key: "doctor-kit",
-    title: "Doctor Kit",
-    icon: <MedicationIcon className="size-5 text-muted-foreground" />,
-    installedText: "Doctor Kit is currently installed. You can uninstall it from your workspace.",
-    uninstalledText: "Install Doctor Kit to manage appointments and patients in your workspace.",
-    apiPath: "/api/doctor-kit",
-    action: "toggle" as const,
-  },
   {
     key: "photography",
     title: "Photography",
@@ -66,13 +56,13 @@ function ModuleCard({
   );
 }
 
-export function CategoryPageClient({ initialInstalled }: { initialInstalled: boolean }) {
+export function CategoryPageClient() {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
       <h1 className="text-xl sm:text-2xl font-bold">Category</h1>
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {MODULES.map((m) => (
-          <ModuleCardWrapper key={m.key} module={m} defaultInstalled={m.key === "doctor-kit" ? initialInstalled : false} />
+          <ModuleCardWrapper key={m.key} module={m} defaultInstalled={false} />
         ))}
       </div>
     </main>

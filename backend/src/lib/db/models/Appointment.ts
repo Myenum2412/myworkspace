@@ -20,7 +20,7 @@ export interface IAppointment extends Document {
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
-  source: "web";
+  source: "web" | "whatsapp";
 }
 
 const appointmentSchema = new Schema<IAppointment>(
@@ -44,7 +44,7 @@ const appointmentSchema = new Schema<IAppointment>(
     },
     bookingDatetime: { type: String, required: true },
     createdBy: { type: String, required: true },
-    source: { type: String, enum: ["web"], default: "web" },
+    source: { type: String, enum: ["web", "whatsapp"], default: "web" },
   },
   { timestamps: true }
 );

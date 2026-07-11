@@ -77,15 +77,6 @@ export function IntegrationsClient({ userId, userName, userEmail }: Integrations
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold">Calendar Integrations</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Connect your Google Calendar and Outlook to view events alongside your tasks.
-        </p>
-      </div>
-
-      <Separator />
-
       {/* Google Calendar */}
       <Card>
         <CardHeader>

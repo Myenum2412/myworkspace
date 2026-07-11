@@ -720,27 +720,39 @@ function WhatsAppSettings() {
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    fetch("/api/whatsapp/status")
+    let cancelled = false;
+    const controller = new AbortController();
+
+    fetch("/api/whatsapp/status", { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) setState(d.data);
+        if (!cancelled && d.success) setState(d.data);
       })
       .catch(() => {});
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     const interval = setInterval(() => {
       if (state.status === "initializing" || state.status === "qr") {
         fetch("/api/whatsapp/status")
           .then((r) => r.json())
           .then((d) => {
-            if (d.success) setState(d.data);
+            if (!cancelled && d.success) setState(d.data);
           })
           .catch(() => {});
       }
     }, 2000);
 
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [state.status]);
 
   async function handleStart() {
@@ -780,10 +792,11 @@ function WhatsAppSettings() {
         setMessage("");
         alert("Message sent successfully!");
       } else {
-        alert(data.error || "Failed to send message");
+        // Show detailed error
+        alert(`Error: ${data.error || "Failed to send message"}\n\nStatus: ${state.status}\nPhone: ${state.phoneNumber || "N/A"}`);
       }
-    } catch {
-      alert("Failed to send message");
+    } catch (err) {
+      alert(`Network error: ${err}`);
     } finally {
       setSending(false);
     }
@@ -907,21 +920,22 @@ function CalendarIntegrations() {
   const [loading, setLoading] = useState(true);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
 
-  const fetchConnections = useCallback(async () => {
-    try {
-      const res = await fetch("/api/calendar/connections");
-      const data = await res.json();
-      setConnections(data.data || []);
-    } catch {
-      console.error("Failed to fetch connections");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    let cancelled = false;
+    const fetchConnections = async () => {
+      try {
+        const res = await fetch("/api/calendar/connections");
+        const data = await res.json();
+        if (!cancelled) setConnections(data.data || []);
+      } catch {
+        console.error("Failed to fetch connections");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
     fetchConnections();
-  }, [fetchConnections]);
+    return () => { cancelled = true; };
+  }, []);
 
   const handleDisconnect = async (connectionId: string) => {
     setDisconnecting(connectionId);
@@ -948,11 +962,6 @@ function CalendarIntegrations() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="text-base font-semibold">Calendar Integrations</h3>
-        <p className="text-sm text-muted-foreground">Connect your Google Calendar and Outlook to view events alongside your tasks.</p>
-      </div>
-
       {/* Google Calendar */}
       <Card>
         <CardHeader>

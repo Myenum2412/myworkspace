@@ -27,7 +27,7 @@ export default function ActivityReportsPage() {
           <p className="text-sm text-muted-foreground">Activity chart</p>
         </div>
         <div className="aspect-video rounded-xl bg-muted/50 flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">User engagement</p>
+          <p className="text-sm text-muted-foreground">User activity</p>
         </div>
       </div>
     </div>
