@@ -12,8 +12,8 @@ import { ResponseHandler, type ResponseCallbacks } from "../pipeline/response-ha
 import { aiLogger } from "../logging/ai-logger.js";
 import { AGENT_CONFIG } from "./agent-config.js";
 import { AI_CONFIG } from "../config.js";
-import { BUSINESS_CONFIG } from "../config.js";
 import { Settings } from "../../../lib/db/models/Settings.js";
+import { Organization } from "../../../lib/db/models/Organization.js";
 import { logger } from "../../../lib/logger/index.js";
 
 export interface AgentRequest {
@@ -80,6 +80,22 @@ export class AIAgent {
     }
   }
 
+  private async loadOrgContext(orgId?: string): Promise<string> {
+    try {
+      if (!orgId) return "";
+      const org = await Organization.findOne({ id: orgId }).lean();
+      if (!org) return "";
+      const parts: string[] = [];
+      if (org.name) parts.push(`Company Name: ${org.name}`);
+      if (org.companyDescription) parts.push(`Company Description: ${org.companyDescription}`);
+      if (org.industry) parts.push(`Industry: ${org.industry}`);
+      if (parts.length === 0) return "";
+      return `## Organization Context\n${parts.join("\n")}`;
+    } catch {
+      return "";
+    }
+  }
+
   async run(request: AgentRequest): Promise<AgentResponse> {
     const startTime = Date.now();
     const { userId, sessionId, message, organizationId } = request;
@@ -105,7 +121,8 @@ export class AIAgent {
       );
 
       const soul = await this.loadSoul(organizationId);
-      const systemPrompt = this.promptBuilder.buildSystemPrompt(volatileBlock, toolDefs, soul);
+      const orgContext = await this.loadOrgContext(organizationId);
+      const systemPrompt = this.promptBuilder.buildSystemPrompt(volatileBlock, toolDefs, soul, orgContext);
 
       let apiMessages = this.promptBuilder.buildApiMessages(
         systemPrompt,
@@ -170,7 +187,7 @@ export class AIAgent {
             continue;
           }
 
-          finalContent = `I apologize, but I encountered an error processing your request. Please try again or contact support.`;
+          finalContent = ``;
           break;
         }
 
@@ -295,7 +312,7 @@ export class AIAgent {
       }
 
       if (toolIterationCount >= this.config.maxToolIterations) {
-        finalContent = finalContent || "I've reached the maximum number of tool operations for this request. Let me summarize what I've done or ask if you need further assistance.";
+        finalContent = finalContent || "";
       }
 
       const memoryUpdates = await this.memoryManager.afterTurn(
@@ -345,7 +362,7 @@ export class AIAgent {
       logger.error({ error: errMsg, userId, sessionId }, "AIAgent fatal error");
 
       return {
-        reply: "I apologize, but I encountered an unexpected error. Please try again or contact support.",
+        reply: "",
         sessionId,
         turnCount: 0,
         tokensUsed: 0,

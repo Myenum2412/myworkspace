@@ -71,7 +71,11 @@ export function WhatsAppFloat() {
   async function handleStart() {
     setStarting(true);
     try {
-      await fetch("/api/whatsapp/start", { method: "POST" });
+      const res = await fetch("/api/whatsapp/start", { method: "POST" });
+      const data = await res.json();
+      if (!data.success) {
+        setClientState({ status: "error", error: data.error || "Failed to start client" });
+      }
     } catch {
       setClientState({ status: "error", error: "Failed to start client" });
     } finally {
@@ -80,13 +84,21 @@ export function WhatsAppFloat() {
   }
 
   async function handleStop() {
-    await fetch("/api/whatsapp/stop", { method: "POST" });
-    setClientState({ status: "disconnected" });
+    try {
+      await fetch("/api/whatsapp/stop", { method: "POST" });
+      setClientState({ status: "disconnected" });
+    } catch {
+      setClientState({ status: "error", error: "Failed to stop client" });
+    }
   }
 
   async function handleLogout() {
-    await fetch("/api/whatsapp/logout", { method: "POST" });
-    setClientState({ status: "disconnected" });
+    try {
+      await fetch("/api/whatsapp/logout", { method: "POST" });
+      setClientState({ status: "disconnected" });
+    } catch {
+      setClientState({ status: "error", error: "Failed to logout" });
+    }
   }
 
   const StatusIcon = () => {
@@ -189,9 +201,14 @@ export function WhatsAppFloat() {
                     </p>
                   )}
                 </div>
-                <Button variant="outline" size="sm" onClick={handleLogout}>
-                  Disconnect & Logout
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleStop}>
+                    Disconnect
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </div>
               </div>
             )}
 

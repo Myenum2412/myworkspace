@@ -1,25 +1,22 @@
-import { AI_CONFIG, BUSINESS_CONFIG } from "../config.js";
-import { AGENT_CONFIG } from "../agent/agent-config.js";
 import type { AgentMessage } from "../types/message.types.js";
-import type { SystemPromptTiers } from "../types/agent.types.js";
 import type { ToolDefinition } from "../types/tool.types.js";
 
 export class PromptBuilder {
-  private stablePrompt: string;
+  buildSystemPrompt(
+    volatileBlock: string,
+    toolDefinitions: ToolDefinition[],
+    soul?: string,
+    orgContext?: string
+  ): string {
+    const parts: string[] = [];
 
-  constructor() {
-    this.stablePrompt = this.buildStableTier();
-  }
+    if (orgContext) parts.push(orgContext);
+    if (volatileBlock) parts.push(volatileBlock);
 
-  private buildStableTier(): string {
-    return `You are an intelligent AI assistant for ${BUSINESS_CONFIG.name}, a workspace management platform.
-
-Identity and Purpose:
-- Your name is MyWorkSpace AI Assistant
-- When introducing yourself, say: "Hello! I'm the MyWorkSpace AI Assistant. I can help you with managing your workspace — tasks, projects, clients, files, and team collaboration. How can I help you today?"
-- You help users manage their workspace: tasks, projects, clients, files, and team collaboration
-- You can search for information, create and update tasks, look up projects, and provide insights
-- You have access to tools that let you interact with the workspace
+    if (soul) {
+      parts.push(soul);
+    } else {
+      parts.push(`You are a helpful AI assistant.
 
 Guidelines:
 - Be helpful, warm, concise, and professional
@@ -29,38 +26,22 @@ Guidelines:
 - If you don't have enough information, ask clarifying questions
 - Never make up data or hallucinate results
 - When you need to perform multiple actions, use tools sequentially
-- Auto-reply to any question the user asks — always provide a helpful response
 
 Current time: ${new Date().toISOString()}
-Timezone: ${BUSINESS_CONFIG.timezone || "UTC"}`;
-  }
-
-  buildSystemPrompt(
-    volatileBlock: string,
-    toolDefinitions: ToolDefinition[],
-    soul?: string
-  ): string {
-    const tiers: SystemPromptTiers = {
-      stable: this.stablePrompt,
-      context: this.buildContextTier(),
-      volatile: volatileBlock,
-    };
-
-    const parts: string[] = [tiers.stable];
-
-    if (tiers.context) parts.push(tiers.context);
-    if (tiers.volatile) parts.push(tiers.volatile);
-    if (soul) parts.push(`## Your Soul / Personality\n${soul}`);
+Timezone: ${process.env.TZ || "UTC"}`);
+    }
 
     if (toolDefinitions.length > 0) {
       parts.push(this.formatToolsPrompt(toolDefinitions));
     }
 
-    return parts.join("\n\n");
-  }
+    const prompt = parts.join("\n\n");
 
-  private buildContextTier(): string {
-    return "";
+    if (soul) {
+      return prompt + "\n\nFollow your assigned personality above. Answer concisely, no fluff.";
+    }
+
+    return prompt;
   }
 
   private formatToolsPrompt(definitions: ToolDefinition[]): string {
@@ -73,7 +54,7 @@ Timezone: ${BUSINESS_CONFIG.timezone || "UTC"}`;
       return `/${def.name}: ${def.description}\n${params}`;
     });
 
-    return `## Available Tools\nYou can use these tools to interact with the workspace. When you need information or want to perform actions, call the appropriate tool.\n\n${lines.join("\n\n")}`;
+    return `## Available Tools\nYou can use these tools to interact with the system. When you need information or want to perform actions, call the appropriate tool.\n\n${lines.join("\n\n")}`;
   }
 
   buildApiMessages(
@@ -115,14 +96,4 @@ Timezone: ${BUSINESS_CONFIG.timezone || "UTC"}`;
     return result;
   }
 
-  buildMemoryToolPrompt(): string {
-    return `Use the memory tool to save important information about the user and their preferences.
-- Add: Save new facts you learn about the user
-- Replace: Update existing information when it changes
-- Remove: Delete outdated or incorrect information`;
-  }
-
-  refreshStablePrompt(): void {
-    this.stablePrompt = this.buildStableTier();
-  }
 }

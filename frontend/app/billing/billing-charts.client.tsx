@@ -78,23 +78,35 @@ export default function BillingCharts({ invoices, pieData }: BillingChartsProps)
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={(() => {
-                const months: Record<string, { paid: number; pending: number }> = {};
-                invoices.forEach((inv) => {
-                  const d = new Date(inv.createdAt);
-                  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-                  if (!months[key]) months[key] = { paid: 0, pending: 0 };
-                  if (inv.status === "paid") months[key].paid += inv.amountPaid / 100;
-                  else if (inv.status === "open") months[key].pending += inv.amountPaid / 100;
-                });
-                return Object.entries(months).map(([month, data]) => ({ month, ...data }));
-              })()}>
+              <BarChart
+                data={(() => {
+                  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                  const months: Record<number, { name: string; paid: number; pending: number }> = {};
+
+                  // Initialize all 12 months
+                  for (let i = 0; i < 12; i++) {
+                    months[i] = { name: monthNames[i], paid: 0, pending: 0 };
+                  }
+
+                  // Aggregate invoice data by month
+                  invoices.forEach((inv) => {
+                    const d = new Date(inv.createdAt);
+                    const monthIndex = d.getMonth();
+                    if (inv.status === "paid") months[monthIndex].paid += inv.amountPaid / 100;
+                    else if (inv.status === "open") months[monthIndex].pending += inv.amountPaid / 100;
+                  });
+
+                  return Object.values(months);
+                })()}
+                barCategoryGap="20%"
+                barGap={2}
+              >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip />
-                <Bar dataKey="paid" fill="#22c55e" name="Paid" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="pending" fill="#3b82f6" name="Pending" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="paid" fill="#22c55e" name="Paid" radius={[3, 3, 0, 0]} barSize={12} />
+                <Bar dataKey="pending" fill="#3b82f6" name="Pending" radius={[3, 3, 0, 0]} barSize={12} />
               </BarChart>
             </ResponsiveContainer>
           )}

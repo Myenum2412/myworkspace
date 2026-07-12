@@ -40,7 +40,7 @@ stop_port() {
 # Infrastructure Checks (RabbitMQ, Redis)
 ########################################
 
-echo -e "${YELLOW}[1/7] Checking Infrastructure...${NC}"
+echo -e "${YELLOW}[1/6] Checking Infrastructure...${NC}"
 
 check_amqp() {
     # Try rabbitmqctl first (fastest, no dependencies)
@@ -95,7 +95,7 @@ echo ""
 # Clean Build Cache
 ########################################
 
-echo -e "${YELLOW}[2/7] Cleaning Build Cache...${NC}"
+echo -e "${YELLOW}[2/6] Cleaning Build Cache...${NC}"
 
 rm -rf "$SCRIPT_DIR/backend/.next" \
        "$SCRIPT_DIR/frontend/.next" \
@@ -108,7 +108,7 @@ echo ""
 # Backend Build
 ########################################
 
-echo -e "${YELLOW}[3/7] Building Backend...${NC}"
+echo -e "${YELLOW}[3/6] Building Backend...${NC}"
 
 cd "$SCRIPT_DIR/backend"
 
@@ -127,7 +127,7 @@ echo ""
 # Seed Admin
 ########################################
 
-echo -e "${YELLOW}[4/7] Seeding Admin...${NC}"
+echo -e "${YELLOW}[4/6] Seeding Admin...${NC}"
 
 cd "$SCRIPT_DIR/backend"
 
@@ -146,7 +146,7 @@ echo ""
 # Frontend Build
 ########################################
 
-echo -e "${YELLOW}[5/7] Building Frontend...${NC}"
+echo -e "${YELLOW}[5/6] Building Frontend...${NC}"
 
 cd "$SCRIPT_DIR/frontend"
 
@@ -165,7 +165,7 @@ echo ""
 # Start Backend
 ########################################
 
-echo -e "${YELLOW}[6/7] Starting Backend on Port 4000...${NC}"
+echo -e "${YELLOW}[6/6] Starting Backend on Port 4000...${NC}"
 
 stop_port 4000 "backend"
 
@@ -179,7 +179,7 @@ sleep 5
 # Start Frontend
 ########################################
 
-echo -e "${YELLOW}[7/7] Starting Frontend on Port 3000...${NC}"
+echo -e "${YELLOW}Starting Frontend on Port 3000...${NC}"
 
 stop_port 3000 "frontend"
 

@@ -1,4 +1,4 @@
-(node:7636) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:977563) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
 > my-app@0.1.0 build
@@ -15,15 +15,15 @@ Setting a custom Cache-Control header can break Next.js development behavior.
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 14.8s
+✓ Compiled successfully in 13.7s
   Running TypeScript ...
-  Finished TypeScript in 19.1s ...
+  Finished TypeScript in 17.6s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/89) ...
-  Generating static pages using 11 workers (22/89) 
-  Generating static pages using 11 workers (44/89) 
-  Generating static pages using 11 workers (66/89) 
-✓ Generating static pages using 11 workers (89/89) in 615ms
+  Generating static pages using 11 workers (0/84) ...
+  Generating static pages using 11 workers (21/84) 
+  Generating static pages using 11 workers (42/84) 
+  Generating static pages using 11 workers (63/84) 
+✓ Generating static pages using 11 workers (84/84) in 513ms
   Finalizing page optimization ...
 
 Route (app)
@@ -50,7 +50,6 @@ Route (app)
 ├ ƒ /api/clients
 ├ ƒ /api/clients/[id]/workspace
 ├ ƒ /api/dashboard/profit-loss
-├ ƒ /api/doctor-kit
 ├ ƒ /api/doctors
 ├ ƒ /api/employees
 ├ ƒ /api/employees/[id]
@@ -87,6 +86,7 @@ Route (app)
 ├ ƒ /api/tasks/[id]/comments
 ├ ƒ /api/tasks/[id]/comments/[commentId]
 ├ ƒ /api/tasks/[id]/comments/read
+├ ƒ /api/tasks/[id]/status
 ├ ƒ /api/time-entries
 ├ ƒ /api/time-entries/[id]
 ├ ƒ /api/time-entries/summary
@@ -99,7 +99,7 @@ Route (app)
 ├ ƒ /approvals/approved
 ├ ƒ /approvals/rejected
 ├ ƒ /attendance
-├ ○ /attendance/reports
+├ ƒ /attendance/reports
 ├ ○ /auth/not-found
 ├ ƒ /auth/role-redirect
 ├ ○ /billing
@@ -123,6 +123,7 @@ Route (app)
 ├ ƒ /dashboard
 ├ ƒ /departments
 ├ ƒ /employees
+├ ƒ /engagement
 ├ ƒ /files
 ├ ƒ /files/audit
 ├ ƒ /forgot-password
@@ -187,8 +188,6 @@ Route (app)
 ├ ƒ /staffs/time-off
 ├ ƒ /staffs/timesheet
 ├ ƒ /staffs/upcoming-tasks
-├ ○ /stocks
-├ ○ /stocks/reports
 ├ ƒ /team-time
 ├ ƒ /teams
 ├ ƒ /teamtasks

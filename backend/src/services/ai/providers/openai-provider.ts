@@ -110,7 +110,14 @@ export class OpenAIProvider implements AIProvider {
     };
 
     if (options?.tools && options.tools.length > 0) {
-      body.tools = options.tools;
+      body.tools = options.tools.map((t) => ({
+        type: "function",
+        function: {
+          name: t.name,
+          description: t.description,
+          parameters: t.parameters,
+        },
+      }));
       body.tool_choice = options.toolChoice || "auto";
     }
 
@@ -169,7 +176,14 @@ export class OpenAIProvider implements AIProvider {
     };
 
     if (options?.tools && options.tools.length > 0) {
-      body.tools = options.tools;
+      body.tools = options.tools.map((t) => ({
+        type: "function",
+        function: {
+          name: t.name,
+          description: t.description,
+          parameters: t.parameters,
+        },
+      }));
       body.tool_choice = options.toolChoice || "auto";
     }
 

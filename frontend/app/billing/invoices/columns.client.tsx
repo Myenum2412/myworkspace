@@ -88,7 +88,7 @@ export const columns: ColumnDef<Invoice>[] = [
     header: "Services & Deliverable",
     cell: ({ row }) => {
       const val = row.getValue("services") as string;
-      return <span className="text-gray-600 truncate max-w-[200px] block" title={val}>{val || "—"}</span>;
+      return <span className="text-white-800 truncate max-w-[200px] block" title={val}>{val || "—"}</span>;
     },
     meta: { className: "hidden md:table-cell" },
   },
@@ -114,9 +114,9 @@ export const columns: ColumnDef<Invoice>[] = [
       } else if (status === "open") {
         return <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10">Pending</span>;
       } else if (status === "void") {
-        return <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">Void</span>;
+        return <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-50 text-white-800 ring-1 ring-inset ring-gray-500/10">Void</span>;
       }
-      return <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">{status}</span>;
+      return <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-50 text-white-800 ring-1 ring-inset ring-gray-500/10">{status}</span>;
     },
   },
 

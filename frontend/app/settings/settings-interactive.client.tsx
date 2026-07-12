@@ -654,9 +654,9 @@ function WhatsAppSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>WhatsApp Web.js Integration</CardTitle>
+        <CardTitle>WhatsApp Integration</CardTitle>
         <CardDescription>
-          Connect your workspace with WhatsApp using the whatsapp-web.js library. Scan the QR code with your phone to authenticate.
+          Connect your workspace with WhatsApp using the whatsapp library. Scan the QR code with your phone to authenticate.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

@@ -13,7 +13,8 @@ export class ProductWorkflow {
   async handleProductInquiry(
     message: string,
     entities: ExtractedEntities,
-    language: string
+    language: string,
+    soul?: string
   ): Promise<string> {
     const searchQuery = this.buildSearchQuery(entities);
 
@@ -29,17 +30,18 @@ export class ProductWorkflow {
       // Try to find alternatives
       const alternatives = await this.findAlternatives(entities);
       if (alternatives.length > 0) {
-        return this.formatAlternatives(alternatives, language);
+        return this.generateAIResponse(message, `Here are some alternatives:\n${this.formatAlternatives(alternatives, language)}`, soul);
       }
-      return this.getNoResultsMessage(language);
+      return this.generateAIResponse(message, this.getNoResultsMessage(language), soul);
     }
 
-    return this.formatProductResults(results.products, language);
+    return this.generateAIResponse(message, this.formatProductResults(results.products, language), soul);
   }
 
   async handlePriceCheck(
     entities: ExtractedEntities,
-    language: string
+    language: string,
+    soul?: string
   ): Promise<string> {
     if (entities.productNames.length === 0) {
       return "Please specify which product you'd like to check the price for.";
@@ -55,12 +57,13 @@ export class ProductWorkflow {
       return "I couldn't find that product in our catalog. Could you provide more details?";
     }
 
-    return this.formatPriceInfo(results.products, language);
+    return this.generateAIResponse(`price check for ${searchQuery}`, this.formatPriceInfo(results.products, language), soul);
   }
 
   async handleStockCheck(
     entities: ExtractedEntities,
-    language: string
+    language: string,
+    soul?: string
   ): Promise<string> {
     if (entities.productNames.length === 0) {
       return "Please specify which product you'd like to check availability for.";
@@ -76,13 +79,14 @@ export class ProductWorkflow {
       return "I couldn't find that product. Could you provide more details?";
     }
 
-    return this.formatStockInfo(results.products, entities.quantities[0] || 1, language);
+    return this.generateAIResponse(`stock check for ${searchQuery}`, this.formatStockInfo(results.products, entities.quantities[0] || 1, language), soul);
   }
 
   async handleRecommendation(
     message: string,
     entities: ExtractedEntities,
-    language: string
+    language: string,
+    soul?: string
   ): Promise<string> {
     const recommendations = await this.productRepo.getRecommendations({
       category: entities.categories[0],
@@ -94,7 +98,7 @@ export class ProductWorkflow {
       return "I don't have any specific recommendations at the moment. Could you tell me more about what you're looking for?";
     }
 
-    return this.formatRecommendations(recommendations, language);
+    return this.generateAIResponse(message, this.formatRecommendations(recommendations, language), soul);
   }
 
   private buildSearchQuery(entities: ExtractedEntities): string {
@@ -192,5 +196,41 @@ export class ProductWorkflow {
 
   private getNoResultsMessage(language: string): string {
     return "I couldn't find any products matching your request. Could you provide more details or try a different search term?";
+  }
+
+  private async generateAIResponse(
+    originalMessage: string,
+    dataResponse: string,
+    soul?: string
+  ): Promise<string> {
+    const provider = AIProviderFactory.getProvider();
+
+    if (!provider.isAvailable()) {
+      return dataResponse;
+    }
+
+    const systemPrompt = soul || `You are a helpful customer service assistant. The user asked: "${originalMessage}"
+
+Here is the data retrieved from the database:
+${dataResponse}
+
+Based on this data and your personality, provide a helpful, friendly response to the customer.
+Use the data above but respond in a natural, conversational way that matches your personality.
+Keep the response concise and helpful.`;
+
+    const messages: AIMessage[] = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: originalMessage },
+    ];
+
+    try {
+      const response = await provider.generateResponse(messages, {
+        temperature: 0.7,
+        maxTokens: 300,
+      });
+      return response.content;
+    } catch {
+      return dataResponse;
+    }
   }
 }

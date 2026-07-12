@@ -1,4 +1,3 @@
-export { AIAssistant } from "./ai-assistant.js";
 export { AI_CONFIG, BUSINESS_CONFIG } from "./config.js";
 export { AGENT_CONFIG } from "./agent/agent-config.js";
 export { AIAgent } from "./agent/agent.js";

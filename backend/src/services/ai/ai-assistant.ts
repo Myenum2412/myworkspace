@@ -107,17 +107,17 @@ export class AIAssistant {
       } else {
         switch (intentResult.intent) {
           case "product_inquiry":
-            reply = await this.productWorkflow.handleProductInquiry(request.message, entities, languageResult.language);
+            reply = await this.productWorkflow.handleProductInquiry(request.message, entities, languageResult.language, soul);
             databaseOperations.push("product_search");
             break;
 
           case "price_check":
-            reply = await this.productWorkflow.handlePriceCheck(entities, languageResult.language);
+            reply = await this.productWorkflow.handlePriceCheck(entities, languageResult.language, soul);
             databaseOperations.push("price_lookup");
             break;
 
           case "stock_availability":
-            reply = await this.productWorkflow.handleStockCheck(entities, languageResult.language);
+            reply = await this.productWorkflow.handleStockCheck(entities, languageResult.language, soul);
             databaseOperations.push("stock_check");
             break;
 
@@ -193,9 +193,7 @@ export class AIAssistant {
       return this.getFallbackResponse(message);
     }
 
-    const soulBlock = soul ? `\n\n## Your Soul / Personality\n${soul}` : "";
-
-    const systemPrompt = `You are a helpful customer service assistant for ${BUSINESS_CONFIG.name}.
+    const systemPrompt = soul || `You are a helpful customer service assistant for ${BUSINESS_CONFIG.name}.
     
 Rules:
 - Be friendly, professional, and concise
@@ -205,7 +203,7 @@ Rules:
 - Never make up information about products or prices
 - Keep responses under 3-4 sentences unless more detail is needed
 - If greeting, introduce yourself and ask how you can help
-- If thanking, acknowledge and ask if there's anything else${soulBlock}`;
+- If thanking, acknowledge and ask if there's anything else`;
 
     const messages: AIMessage[] = [
       { role: "system", content: systemPrompt },
@@ -240,15 +238,13 @@ Rules:
       return "I understand you need help. Could you please provide more details so I can assist you better?";
     }
 
-    const soulBlock = soul ? `\n\n## Your Soul / Personality\n${soul}` : "";
-
-    const systemPrompt = `You are a customer service assistant for ${BUSINESS_CONFIG.name}.
+    const systemPrompt = soul || `You are a customer service assistant for ${BUSINESS_CONFIG.name}.
     
 The customer's message has been analyzed and the detected intent is: ${intent.intent}
 Confidence: ${intent.confidence}
 
 Based on this intent, provide a helpful response. If the intent is unclear, ask clarifying questions.
-Stay focused on what the customer is asking. Do not introduce unrelated topics.${soulBlock}`;
+Stay focused on what the customer is asking. Do not introduce unrelated topics.`;
 
     const messages: AIMessage[] = [
       { role: "system", content: systemPrompt },

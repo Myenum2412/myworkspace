@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   FileText, Info,
   GripVertical, PlusCircle, ChevronDown, Trash2,
-  Upload, Sparkles, X, LayoutTemplate, Loader2Icon
+  Sparkles, X, LayoutTemplate, Loader2Icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -229,7 +229,7 @@ export default function InvoiceFormPage() {
         <div className="flex items-center gap-2 sm:gap-6 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <FileText className="size-4 sm:size-5 text-gray-700 shrink-0" />
-            <h1 className="text-base sm:text-xl font-semibold text-gray-800 truncate">{isEditing ? "Edit Invoice" : "New Invoice"}</h1>
+            <h1 className="text-base sm:text-xl font-semibold text-white-800 truncate">{isEditing ? "Edit Invoice" : "New Invoice"}</h1>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Label htmlFor="simplified" className="text-gray-500 text-[10px] sm:text-xs font-medium cursor-pointer whitespace-nowrap">Simplified</Label>
@@ -250,11 +250,11 @@ export default function InvoiceFormPage() {
         <div className="w-full p-3 sm:p-4 md:p-6 lg:p-8 pb-20 space-y-4 sm:space-y-6">
 
           {/* Customer Name & Salesperson */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
-            <div>
-              <Label className="text-red-500 font-medium text-xs sm:text-sm">Customer Name*</Label>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-3">
+              <Label className="text-red-500 font-medium text-xs sm:text-sm whitespace-nowrap">Customer Name*</Label>
               <Select value={selectedClient} onValueChange={setSelectedClient}>
-                <SelectTrigger className="w-full h-10 sm:h-9 text-gray-500 bg-white">
+                <SelectTrigger className="w-full sm:w-[300px] h-10 sm:h-9 text-gray-500 bg-white border-black">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -266,10 +266,10 @@ export default function InvoiceFormPage() {
               </Select>
             </div>
             {!isSimplifiedView && (
-              <div>
-                <Label className="text-gray-700 font-medium text-xs sm:text-sm">Salesperson</Label>
+              <div className="flex items-center gap-3">
+                <Label className="text-gray-700 font-medium text-xs sm:text-sm whitespace-nowrap">Salesperson</Label>
                 <Select>
-                  <SelectTrigger className="w-full h-10 sm:h-9 text-gray-500">
+                  <SelectTrigger className="w-full sm:w-[250px] h-10 sm:h-9 text-gray-500 border-black">
                     <SelectValue placeholder="" />
                   </SelectTrigger>
                   <SelectContent>
@@ -288,23 +288,23 @@ export default function InvoiceFormPage() {
           {/* Invoice# */}
           <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-y-1.5 sm:gap-y-6 sm:gap-x-4 items-start">
             <Label className="text-red-500 font-medium text-xs sm:text-sm pt-2">Invoice#*</Label>
-            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className="w-full sm:max-w-xs" />
+            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className="w-full sm:max-w-xs border-black" />
 
             {/* Order Number */}
             {!isSimplifiedView && (
               <>
                 <Label className="text-gray-700 font-medium text-xs sm:text-sm pt-2">Order Number</Label>
-                <Input className="w-full sm:max-w-xs" />
+                <Input className="w-full sm:max-w-xs border-black" />
               </>
             )}
 
             {/* Invoice Date & Due Date */}
             <Label className="text-red-500 font-medium text-xs sm:text-sm pt-2">Invoice Date*</Label>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-8">
-              <Input type="date" value={currentDate} onChange={(e) => setCurrentDate(e.target.value)} className="w-full sm:w-[200px] text-gray-700" />
+              <Input type="date" value={currentDate} onChange={(e) => setCurrentDate(e.target.value)} className="w-full sm:w-[200px] text-gray-700 border-black" />
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <Label className="text-gray-700 font-medium text-xs sm:text-sm whitespace-nowrap">Due Date</Label>
-                <Input type="date" value={currentDate} className="flex-1 sm:w-[160px] border-dashed border-gray-300 text-gray-500" readOnly />
+                <Input type="date" value={currentDate} className="flex-1 sm:w-[160px] border-dashed border-black text-gray-500" readOnly />
               </div>
             </div>
 
@@ -323,7 +323,7 @@ export default function InvoiceFormPage() {
           <div className="border border-gray-200 rounded-lg overflow-hidden">
             {!isSimplifiedView && (
               <div className="bg-[#f9fafb] px-3 sm:px-4 py-2 border-b border-gray-200">
-                <span className="font-semibold text-gray-800 text-sm">Item Table</span>
+                <span className="font-semibold text-white-800 text-sm">Item Table</span>
               </div>
             )}
             {/* Mobile card view for items */}
@@ -398,23 +398,23 @@ export default function InvoiceFormPage() {
                       <input type="checkbox" checked={selectedItems.size === items.length && items.length > 0} onChange={toggleSelectAll} className="size-4 accent-blue-600" />
                     </th>
                     <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                      <span className="text-gray-800">Services &amp; Deliverable</span>
+                      <span className="text-white-800">Services &amp; Deliverable</span>
                     </th>
                     <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap w-32">
-                      <span className="text-gray-800">QUANTITY</span>
+                      <span className="text-white-800">QUANTITY</span>
                     </th>
                     <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap w-32">
-                      <div className="flex items-center justify-end gap-1 text-gray-800">
+                      <div className="flex items-center justify-end gap-1 text-white-800">
                         RATE <LayoutTemplate className="size-3.5 text-gray-500" />
                       </div>
                     </th>
                     <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-48">
-                      <div className="flex items-center gap-1 text-gray-800">
+                      <div className="flex items-center gap-1 text-white-800">
                         TAX <Info className="size-3.5 text-gray-500" />
                       </div>
                     </th>
                     <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap w-32">
-                      <span className="text-gray-800">AMOUNT</span>
+                      <span className="text-white-800">AMOUNT</span>
                     </th>
                   </tr>
                 </thead>
@@ -515,14 +515,14 @@ export default function InvoiceFormPage() {
             <div className="flex-1 w-full lg:max-w-[500px]">
               {/* Customer Notes */}
               <div className="mb-6 sm:mb-8">
-                <Label className="text-gray-800 font-medium mb-2 block text-sm">Customer Notes</Label>
+                <Label className="text-white-800 font-medium mb-2 block text-sm">Customer Notes</Label>
                 <Textarea defaultValue="" className="min-h-[80px] text-sm text-gray-700 w-full" />
                 <p className="text-[11px] text-gray-500 mt-1.5">Will be displayed on the invoice</p>
               </div>
 
               {/* Terms & Conditions */}
               <div>
-                <Label className="text-gray-800 font-medium mb-2 block text-sm">Terms & Conditions</Label>
+                <Label className="text-white-800 font-medium mb-2 block text-sm">Terms & Conditions</Label>
                 <Textarea
                   placeholder=""
                   className="min-h-[100px] text-sm w-full"
@@ -612,30 +612,14 @@ export default function InvoiceFormPage() {
             </div>
           </div>
 
-          {/* File Attachment & Actions */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 sm:gap-0 pt-6 sm:pt-8 border-t border-gray-100">
-            <div className="w-full sm:w-auto">
-              <Label className="text-gray-700 font-medium mb-3 block text-sm">Attach File(s) to Invoice</Label>
-              <div className="inline-flex items-center rounded overflow-hidden border border-gray-200 bg-white w-full sm:w-auto">
-                <Button variant="ghost" size="sm" className="gap-2 bg-white hover:bg-gray-50 font-medium border-r border-gray-200 px-3 sm:px-4 text-gray-700 flex-1 sm:flex-initial touch-target">
-                  <Upload className="size-3.5" />
-                  Upload File
-                </Button>
-                <Button variant="ghost" size="sm" className="px-2 bg-white hover:bg-gray-50 text-gray-500">
-                  <ChevronDown className="size-4" />
-                </Button>
-              </div>
-              <p className="text-[11px] text-gray-400 mt-2">You can upload a maximum of 3 files, 10MB each</p>
-            </div>
-            
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Button variant="outline" asChild className="flex-1 sm:flex-initial touch-target">
-                <Link href="/billing">Cancel</Link>
-              </Button>
-              <Button onClick={handleSave} disabled={saving} className="flex-1 sm:flex-initial touch-target">
-                {saving ? "Saving…" : "Save Invoice"}
-              </Button>
-            </div>
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3 pt-6 sm:pt-8 border-t border-gray-100">
+            <Button variant="outline" asChild className="touch-target">
+              <Link href="/billing">Cancel</Link>
+            </Button>
+            <Button onClick={handleSave} disabled={saving} className="touch-target">
+              {saving ? "Saving…" : "Save Invoice"}
+            </Button>
           </div>
         </div>
       </div>

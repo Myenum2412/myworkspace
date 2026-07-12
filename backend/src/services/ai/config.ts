@@ -1,16 +1,16 @@
 // AI Configuration
 export const AI_CONFIG = {
   // AI Provider Settings
-  provider: process.env.AI_PROVIDER || "openai",
-  apiKey: process.env.AI_API_KEY || "",
-  model: process.env.AI_MODEL || "gpt-3.5-turbo",
+  provider: process.env.AI_PROVIDER || "openrouter",
+  apiKey: process.env.AI_API_KEY || process.env.OPENROUTER_API_KEY || "",
+  model: process.env.AI_MODEL || process.env.OPENROUTER_MODEL || "tencent/hy3:free",
   temperature: parseFloat(process.env.AI_TEMPERATURE || "0.7"),
   maxTokens: parseInt(process.env.AI_MAX_TOKENS || "500"),
 
   // OpenRouter Settings (OpenAI-compatible routing service)
-  openRouterApiKey: process.env.OPENROUTER_API_KEY || "",
+  openRouterApiKey: process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY || "",
   openRouterApiBase: process.env.OPENROUTER_API_BASE || "https://openrouter.ai/api/v1",
-  openRouterModel: process.env.OPENROUTER_MODEL || "openai/gpt-3.5-turbo",
+  openRouterModel: process.env.OPENROUTER_MODEL || process.env.AI_MODEL || "tencent/hy3:free",
   openRouterSiteUrl: process.env.OPENROUTER_SITE_URL || "",
   openRouterSiteName: process.env.OPENROUTER_SITE_NAME || "",
 

@@ -15,8 +15,9 @@ router.post("/agent/chat", authenticate, async (req: Request, res: Response) => 
 
   try {
     const { message, sessionId, customerPhone, customerName } = req.body;
-    const userId = (req as any).user?.userId || "anonymous";
-    const organizationId = (req as any).orgId;
+    const user = (req as any).user || {};
+    const userId = user.userId || "anonymous";
+    const organizationId = user.orgId;
 
     if (!message || typeof message !== "string" || !message.trim()) {
       res.status(400).json({ success: false, error: "Message is required" });
