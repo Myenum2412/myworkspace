@@ -163,7 +163,6 @@ export default function RootLayout({
         {/* DNS prefetch for third-party services */}
         <link rel="dns-prefetch" href="https://vercel.live" />
         <link rel="dns-prefetch" href="https://sentry.io" />
-        <link rel="dns-prefetch" href="https://api.stripe.com" />
 
         {/* Structured Data */}
         {jsonLd.map((item, i) => (

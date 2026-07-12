@@ -30,9 +30,7 @@ export interface IOrganization extends Document {
   companyDescription?: string;
   plan: "free" | "growth" | "enterprise" | string;
   ownerId: string;
-  stripeCustomerId?: string;
-  stripeSubscriptionId?: string;
-  subscriptionStatus?: "active" | "past_due" | "canceled" | "incomplete" | "incomplete_expired" | "trialing" | "unpaid";
+  subscriptionStatus?: "active" | "past_due" | "canceled" | "trialing" | "expired";
   currentPeriodEnd?: Date;
   trialEnd?: Date;
   createdAt: Date;
@@ -69,9 +67,7 @@ const organizationSchema = new Schema<IOrganization>(
     companyDescription: String,
     plan: { type: String, enum: ["free", "trial", "starter", "professional", "enterprise"], default: "free" },
     ownerId: { type: String, required: true },
-    stripeCustomerId: { type: String, sparse: true, unique: true },
-    stripeSubscriptionId: { type: String, sparse: true, unique: true },
-    subscriptionStatus: { type: String, enum: ["active", "past_due", "canceled", "incomplete", "incomplete_expired", "trialing", "unpaid"] },
+    subscriptionStatus: { type: String, enum: ["active", "past_due", "canceled", "trialing", "expired"] },
     currentPeriodEnd: Date,
     trialEnd: Date,
   },

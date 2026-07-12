@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import FolderIcon from "@mui/icons-material/Folder";
 import { LogOut, Receipt, FileText, Loader2 } from "lucide-react";
-import BillingStatusBanner from "./billing-status-banner";
 
 type ClientUser = {
   id: string;
@@ -134,8 +133,6 @@ export default function DashboardInteractive() {
           <LogOut className="size-4 mr-1" /> Logout
         </Button>
       </div>
-
-      <BillingStatusBanner token={typeof window !== "undefined" ? localStorage.getItem("client_token") || "" : ""} />
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         <QuickActionCard icon={FolderIcon} title="File Manager" description={`${stats?.fileCount ?? 0} files`} href="/client/file-manager" />

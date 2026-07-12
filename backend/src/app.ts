@@ -34,7 +34,6 @@ import timeEntriesRoutes from "./routes/time-entries.js";
 import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
 import fileApprovalRoutes from "./routes/file-approval.js";
-import billingRoutes from "./routes/billing.js";
 import receiptRoutes from "./routes/receipts.js";
 import twoFactorRoutes from "./routes/two-factor.js";
 import chatRoutes from "./routes/chat.js";
@@ -110,7 +109,6 @@ app.use(compression({
 app.set("etag", "strong");
 
 // ── Body parsing ──
-app.use("/api/billing/webhook", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(requestIdMiddleware);
@@ -217,7 +215,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/file-approval", fileApprovalRoutes);
 app.use("/api/two-factor", twoFactorRoutes);
-app.use("/api/billing", billingRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/installer", installerRoutes);
 app.use("/api/appointments", appointmentRoutes);

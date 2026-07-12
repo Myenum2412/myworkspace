@@ -12,7 +12,6 @@ import { signToken } from "../config/auth.js";
 import { optionalAuth } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { env } from "../config/env.js";
-import { stripe } from "../config/stripe.js";
 import { sendPasswordResetEmail } from "../lib/mail/index.js";
 import { validatePasswordStrength } from "../services/validation.service.js";
 import type { AuthRequest } from "../types/index.js";
@@ -348,74 +347,6 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
   });
 
   res.json({ success: true, message: "Password has been reset successfully." });
-});
-
-// GET /api/client-auth/billing-status
-router.get("/billing-status", optionalAuth, async (req: AuthRequest, res: Response) => {
-  const clientUserId = req.user?.userId;
-  if (!clientUserId) {
-    throw new AppError(401, "Authentication required");
-  }
-
-  const clientUser = await ClientUser.findOne({ id: clientUserId }).lean();
-  if (!clientUser) {
-    throw new AppError(404, "Client user not found");
-  }
-
-  const org = await Organization.findOne({ id: clientUser.orgId }).lean();
-  if (!org) {
-    res.json({ success: true, data: { plan: "free", subscriptionStatus: "none", invoices: [] } });
-    return;
-  }
-
-  let stripeSubscription: Record<string, any> | null = null;
-  if (org.stripeSubscriptionId) {
-    try {
-      stripeSubscription = await stripe.subscriptions.retrieve(org.stripeSubscriptionId);
-    } catch {
-      // subscription may have been deleted in Stripe
-    }
-  }
-
-  let invoices: any[] = [];
-  if (org.stripeCustomerId) {
-    try {
-      const stripeInvoices = await stripe.invoices.list({
-        customer: org.stripeCustomerId,
-        limit: 10,
-      });
-      invoices = stripeInvoices.data.map((inv) => ({
-        id: inv.id,
-        number: inv.number,
-        amountDue: inv.amount_due,
-        amountPaid: inv.amount_paid,
-        currency: inv.currency,
-        status: inv.status,
-        pdfUrl: inv.invoice_pdf,
-        hostedUrl: inv.hosted_invoice_url,
-        createdAt: new Date(inv.created * 1000).toISOString(),
-        periodStart: new Date(inv.period_start * 1000).toISOString(),
-        periodEnd: new Date(inv.period_end * 1000).toISOString(),
-      }));
-    } catch {
-      // invoices may fail silently
-    }
-  }
-
-  res.json({
-    success: true,
-    data: {
-      plan: org.plan,
-      stripeCustomerId: org.stripeCustomerId,
-      stripeSubscriptionId: org.stripeSubscriptionId,
-      subscriptionStatus: org.subscriptionStatus,
-      currentPeriodEnd: org.currentPeriodEnd,
-      trialEnd: org.trialEnd,
-      stripeSubscription,
-      invoices,
-      hasPaymentMethod: !!org.stripeCustomerId,
-    },
-  });
 });
 
 export default router;

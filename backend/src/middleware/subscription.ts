@@ -73,8 +73,8 @@ export function getSubscriptionStatus(org: any): SubscriptionStatus {
     };
   }
 
-  // Canceled, incomplete, unpaid - no access
-  if (status === "canceled" || status === "incomplete" || status === "incomplete_expired" || status === "unpaid") {
+  // Canceled - no access
+  if (status === "canceled") {
     return {
       hasAccess: false,
       plan: org.plan || "free",

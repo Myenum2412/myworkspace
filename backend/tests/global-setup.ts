@@ -20,10 +20,6 @@ export default async function globalSetup(): Promise<void> {
   process.env.PERF_LOG = "0";
   process.env.AUTH_DEBUG = "0";
   process.env.ADMIN_EMAIL = "admin@example.com";
-  process.env.STRIPE_SECRET_KEY = "sk_test_mock";
-  process.env.STRIPE_WEBHOOK_SECRET = "whsec_mock";
-  process.env.STRIPE_GROWTH_PRICE_ID = "price_growth_mock";
-  process.env.STRIPE_ENTERPRISE_PRICE_ID = "price_enterprise_mock";
   // Skip rate limiter in tests by default; individual tests re-enable via import.
 }
 

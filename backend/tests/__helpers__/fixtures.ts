@@ -185,28 +185,6 @@ export function algorithmNoneJWT(payload: Record<string, unknown> = {}): string 
   return `${header}.${body}.`;
 }
 
-export function mockStripeEvent(type: string, overrides?: Record<string, unknown>): Record<string, unknown> {
-  return {
-    id: `evt_${uuid().replace(/-/g, "")}`,
-    type,
-    data: {
-      object: {
-        id: `pi_${uuid().replace(/-/g, "")}`,
-        customer: "cus_mock",
-        amount: 2000,
-        currency: "usd",
-        status: "succeeded",
-        metadata: { orgId: uuid() },
-        ...overrides,
-      },
-    },
-    created: Math.floor(Date.now() / 1000),
-    livemode: false,
-    pending_webhooks: 0,
-    request: { id: null, idempotency_key: null },
-  };
-}
-
 export function createLargePayload(sizeBytes: number): Record<string, string> {
   return { data: "x".repeat(sizeBytes) };
 }
