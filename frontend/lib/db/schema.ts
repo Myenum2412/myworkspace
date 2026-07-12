@@ -44,4 +44,6 @@ export const collections = {
   faceToImageMapping: "face_to_image_mapping",
   accessLogs: "access_logs",
   downloadHistory: "download_history",
+  engagements: "engagements",
+  stocks: "stocks",
 } as const;

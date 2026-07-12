@@ -32,4 +32,6 @@ export const collections = {
   promotions: "promotions",
   faq: "faq",
   businessSettings: "businessSettings",
+  stocks: "stocks",
+  engagements: "engagements",
 } as const;

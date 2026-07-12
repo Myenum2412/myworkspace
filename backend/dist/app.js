@@ -42,6 +42,7 @@ import appointmentRoutes from "./routes/appointments.js";
 import whatsappRoutes from "./routes/whatsapp.js";
 import aiChatRoutes from "./routes/ai-chat.js";
 import aiAgentRoutes from "./routes/ai-agent.js";
+import stocksRoutes from "./routes/stocks.js";
 const app = express();
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
@@ -213,6 +214,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/ai", aiChatRoutes);
 app.use("/api/ai", aiAgentRoutes);
+app.use("/api/stocks", stocksRoutes);
 // ── 404 catch-all ──
 app.use((req, res) => {
     const method = req.method;

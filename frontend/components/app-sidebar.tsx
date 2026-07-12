@@ -25,6 +25,7 @@ import {
   CheckCheckIcon,
   HeartHandshakeIcon,
   SparklesIcon,
+  PackageIcon,
 } from "lucide-react";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
 
@@ -128,6 +129,11 @@ const platformItems: NavItem[] = [
     icon: <HeartHandshakeIcon className="size-6" />,
   },
 {
+    title: "Stocks",
+    url: "/stocks",
+    icon: <PackageIcon className="size-6" />,
+  },
+  {
     title: "Category",
     url: "/category",
     icon: <CategoryIcon className="size-6" />,

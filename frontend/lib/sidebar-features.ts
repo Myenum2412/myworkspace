@@ -9,6 +9,7 @@ export const SIDEBAR_FEATURES = [
   "Billing",
   "Category",
   "Engagement",
+  "Stocks",
   "Photography",
   "AI",
 ] as const;

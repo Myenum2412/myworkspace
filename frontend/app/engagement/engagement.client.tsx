@@ -1,0 +1,217 @@
+"use client";
+import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { PlusIcon, Loader2 } from "lucide-react";
+import type { Engagement } from "@/app/engagement/columns";
+import { DataTable } from "@/app/engagement/data-table";
+import { columns, makeActionsCell } from "@/app/engagement/columns";
+import { EngagementForm } from "@/app/engagement/engagement-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+type EngagementPageProps = {
+  initialEngagements: Engagement[];
+};
+
+export default function EngagementPage({ initialEngagements }: EngagementPageProps) {
+  const [engagements, setEngagements] = useState<Engagement[]>(initialEngagements);
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingEngagement, setEditingEngagement] = useState<Engagement | null>(null);
+  const [viewingEngagement, setViewingEngagement] = useState<Engagement | null>(null);
+  const [deletingEngagement, setDeletingEngagement] = useState<Engagement | null>(null);
+
+  async function refreshEngagements() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/engagements", { credentials: "include" });
+      const data = await res.json();
+      const list = data.data || [];
+      setEngagements(Array.isArray(list) ? list : []);
+    } catch {
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refreshEngagements();
+  }, []);
+
+  async function handleSave(formData: Omit<Engagement, "id">) {
+    try {
+      if (editingEngagement) {
+        await fetch(`/api/engagements?id=${editingEngagement.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(formData),
+        });
+      } else {
+        await fetch("/api/engagements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(formData),
+        });
+      }
+      await refreshEngagements();
+      setShowForm(false);
+      setEditingEngagement(null);
+    } catch {
+    }
+  }
+
+  async function handleDelete() {
+    if (!deletingEngagement) return;
+    try {
+      await fetch(`/api/engagements?id=${deletingEngagement.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      await refreshEngagements();
+      setDeletingEngagement(null);
+    } catch {
+    }
+  }
+
+  const handleView = useCallback((engagement: Engagement) => setViewingEngagement(engagement), []);
+  const handleEdit = useCallback((engagement: Engagement) => {
+    setEditingEngagement(engagement);
+    setShowForm(true);
+  }, []);
+  const handleDeleteClick = useCallback((engagement: Engagement) => setDeletingEngagement(engagement), []);
+
+  if (loading && engagements.length === 0) {
+    return (
+      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      </main>
+    );
+  }
+
+  const total = engagements.length;
+  const won = engagements.filter((e) => e.status === "Won").length;
+  const newCount = engagements.filter((e) => e.status === "New").length;
+
+  return (
+    <>
+      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold">Engagement</h1>
+          <Button onClick={() => setShowForm(true)}>
+            <PlusIcon className="mr-2 size-4" />
+            Add Engagement
+          </Button>
+        </div>
+
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Total Engagements</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{total}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">New</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-500">{newCount}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Won</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-500">{won}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Conversion Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {total > 0 ? Math.round((won / total) * 100) : 0}%
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex-1">
+          <DataTable
+            columns={[...columns, makeActionsCell(handleView, handleEdit, handleDeleteClick)]}
+            data={engagements}
+            onRowClick={handleView}
+          />
+        </div>
+      </main>
+
+      <Dialog open={!!viewingEngagement} onOpenChange={(open) => { if (!open) setViewingEngagement(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Engagement Details</DialogTitle>
+          </DialogHeader>
+          {viewingEngagement && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-2">
+                <div><span className="font-medium text-muted-foreground">Date:</span> {viewingEngagement.date}</div>
+                <div><span className="font-medium text-muted-foreground">Customer:</span> {viewingEngagement.customerName}</div>
+                <div><span className="font-medium text-muted-foreground">Contact:</span> {viewingEngagement.contact || "—"}</div>
+                <div><span className="font-medium text-muted-foreground">Source:</span> {viewingEngagement.source || "—"}</div>
+                <div><span className="font-medium text-muted-foreground">Status:</span> {viewingEngagement.status || "—"}</div>
+                <div><span className="font-medium text-muted-foreground">Assigned To:</span> {viewingEngagement.assignedTo || "—"}</div>
+                <div><span className="font-medium text-muted-foreground">Follow-up Date:</span> {viewingEngagement.followUpDate || "—"}</div>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Remarks:</span>
+                <p className="mt-1 text-muted-foreground">{viewingEngagement.remarks || "No remarks."}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingEngagement(null); } }}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{editingEngagement ? "Edit Engagement" : "New Engagement"}</DialogTitle>
+          </DialogHeader>
+          <EngagementForm
+            engagement={editingEngagement}
+            onSave={handleSave}
+            onCancel={() => { setShowForm(false); setEditingEngagement(null); }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deletingEngagement} onOpenChange={(open) => { if (!open) setDeletingEngagement(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Engagement</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the engagement for <strong>{deletingEngagement?.customerName}</strong>? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeletingEngagement(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

@@ -7,7 +7,6 @@ import { OfflineBanner } from "@/components/offline-banner";
 import { OfflineSyncManager } from "@/components/offline-sync-manager";
 import { Toaster } from "sonner";
 import { NotificationInitializer } from "@/components/notification-initializer";
-import { Analytics } from "@vercel/analytics/next";
 import { siteConfig, organizationJsonLd, webSiteJsonLd, softwareApplicationJsonLd } from "@/lib/seo/seo-config";
 import "./globals.css";
 
@@ -186,7 +185,6 @@ export default function RootLayout({
           </AppLayout>
           <OfflineBanner />
           <OfflineSyncManager />
-          <Analytics />
           <Toaster richColors position="bottom-right" />
         </Providers>
       </body>
