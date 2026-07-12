@@ -1,59 +1,60 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 
-/**
- * Initializes notification infrastructure on app load:
- * - Requests notification permission on first login
- * - Registers push subscription if permission granted
- */
+const VAPID_TIMEOUT = 5_000;
+
 export function NotificationInitializer() {
   const { data: session, status } = useSession();
+  const initRef = useRef(false);
 
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (status !== "authenticated" || initRef.current) return;
+    initRef.current = true;
+
     if (!("Notification" in window)) return;
 
-    // If permission hasn't been decided yet, request it
     if (Notification.permission === "default") {
       Notification.requestPermission().catch(() => {});
     }
 
-    // Subscribe to push if permission is granted
     if (Notification.permission === "granted" && "serviceWorker" in navigator) {
-      navigator.serviceWorker.ready
-        .then(async (reg) => {
-          try {
-            const publicKeyRes = await fetch("/api/notifications/vapid-public-key");
-            const publicKeyData = await publicKeyRes.json();
-            const publicKey = publicKeyData.data?.publicKey;
-            if (!publicKey) return;
+      navigator.serviceWorker.ready.then(async (reg) => {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), VAPID_TIMEOUT);
+          const publicKeyRes = await fetch("/api/notifications/vapid-public-key", {
+            signal: controller.signal,
+          });
+          clearTimeout(timer);
+          const publicKeyData = await publicKeyRes.json();
+          const publicKey = publicKeyData.data?.publicKey;
+          if (!publicKey) return;
 
-            const existingSub = await reg.pushManager.getSubscription();
-            if (existingSub) return; // Already subscribed
+          const existingSub = await reg.pushManager.getSubscription();
+          if (existingSub) return;
 
-            const sub = await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(publicKey) as any,
-            });
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicKey) as unknown as string,
+          });
 
-            await fetch("/api/notifications/push/subscribe", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({
-                endpoint: sub.endpoint,
-                keys: {
-                  p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey("p256dh")!))),
-                  auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey("auth")!))),
-                },
-                userAgent: navigator.userAgent,
-              }),
-            });
-          } catch {}
-        })
-        .catch(() => {});
+          await fetch("/api/notifications/push/subscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              endpoint: sub.endpoint,
+              keys: {
+                p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey("p256dh")!))),
+                auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey("auth")!))),
+              },
+              userAgent: navigator.userAgent,
+            }),
+          });
+        } catch {}
+      }).catch(() => {});
     }
   }, [status]);
 

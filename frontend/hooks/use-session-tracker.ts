@@ -28,9 +28,20 @@ export function useSessionTracker() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const breakIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const fetchWithTimeout = useCallback(async (url: string, timeoutMs = 5_000) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { credentials: "include", signal: controller.signal });
+      return res;
+    } finally {
+      clearTimeout(timer);
+    }
+  }, []);
+
   const fetchActiveSession = useCallback(async () => {
     try {
-      const res = await fetch("/api/sessions/active", { credentials: "include" });
+      const res = await fetchWithTimeout("/api/sessions/active");
       const json = await res.json();
       if (json.success && json.data) {
         setActiveSession(json.data);
@@ -51,11 +62,11 @@ export function useSessionTracker() {
     } catch {
       setActiveSession(null);
     }
-  }, []);
+  }, [fetchWithTimeout]);
 
   const fetchTodaySummary = useCallback(async () => {
     try {
-      const res = await fetch("/api/sessions/today", { credentials: "include" });
+      const res = await fetchWithTimeout("/api/sessions/today");
       const json = await res.json();
       if (json.success && json.data) {
         setTodaySummary(json.data.summary);
@@ -63,7 +74,7 @@ export function useSessionTracker() {
     } catch {
       // ignore
     }
-  }, []);
+  }, [fetchWithTimeout]);
 
   useEffect(() => {
     if (!session?.user?.id) {

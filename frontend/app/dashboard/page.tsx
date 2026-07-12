@@ -159,14 +159,28 @@ const getCachedDashboardData = unstable_cache(
 );
 
 export default async function DashboardPage() {
-  const session = await auth();
+  let session;
+  try {
+    session = await auth();
+  } catch {
+    redirect("/login");
+  }
   if (!session?.user?.id) redirect("/login");
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
+  let orgId: string | null = null;
+  try {
+    orgId = await getUserOrgId(session.user.id, session.user.email);
+  } catch {
+    // org lookup failed; proceed with defaults
+  }
 
   let dashboardData: DashboardData | null = null;
   if (orgId) {
-    dashboardData = await getCachedDashboardData(orgId);
+    try {
+      dashboardData = await getCachedDashboardData(orgId);
+    } catch {
+      // dashboard data unavailable; render with defaults
+    }
   }
 
   const {

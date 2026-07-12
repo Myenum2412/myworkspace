@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, memo } from "react";
 import { SessionProvider } from "next-auth/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
@@ -15,46 +15,28 @@ import { createIndexedDbPersister } from "@/lib/offline/query-persister";
 
 const persister = createIndexedDbPersister();
 
-const STALE_TIMES = {
-  dashboard: 30_000,
-  tasks: 15_000,
-  projects: 30_000,
-  teams: 30_000,
-  employees: 30_000,
-  files: 60_000,
-  notifications: 10_000,
-  user: 5 * 60_000,
-  settings: 5 * 60_000,
-  search: 0,
-  chat: 5_000,
-  org: 2 * 60_000,
-  billing: 2 * 60_000,
-  activity: 30_000,
-};
+function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 30_000,
+        gcTime: 30 * 60_000,
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
+        networkMode: "offlineFirst",
+        refetchInterval: false,
+      },
+      mutations: {
+        retry: 1,
+        networkMode: "offlineFirst",
+      },
+    },
+  });
+}
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: STALE_TIMES.dashboard,
-            gcTime: 30 * 60_000,
-            refetchOnWindowFocus: true,
-            refetchOnReconnect: true,
-            retry: 2,
-            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
-            networkMode: "offlineFirst",
-            refetchInterval: false,
-          },
-          mutations: {
-            retry: 1,
-            networkMode: "offlineFirst",
-          },
-        },
-      }),
-  );
-
+const OnlineStatusManager = memo(function OnlineStatusManager({ queryClient }: { queryClient: QueryClient }) {
   useEffect(() => {
     onlineManager.setEventListener((setOnline) => {
       const handleOnline = () => {
@@ -77,8 +59,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
     });
   }, [queryClient]);
 
+  return null;
+});
+
+const onPersistSuccess = (queryClient: QueryClient) => () => {
+  queryClient.resumePausedMutations();
+};
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(createQueryClient);
+
   return (
     <SessionProvider>
+      <OnlineStatusManager queryClient={queryClient} />
       <PersistQueryClientProvider
         client={queryClient}
         persistOptions={{
@@ -86,9 +79,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           maxAge: 7 * 24 * 60 * 60 * 1000,
           buster: "v2",
         }}
-        onSuccess={() => {
-          queryClient.resumePausedMutations();
-        }}
+        onSuccess={onPersistSuccess(queryClient)}
       >
         <TooltipProvider>
           <AppInitProvider>

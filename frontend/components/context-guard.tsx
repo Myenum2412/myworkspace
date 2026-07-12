@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getAppContext, isRouteInContext } from "@/lib/app-context";
 
@@ -18,9 +18,12 @@ interface ContextGuardProps {
 export function ContextGuard({ expectedContext, children }: ContextGuardProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const redirectedRef = useRef(false);
 
   useEffect(() => {
+    if (redirectedRef.current) return;
     if (!isRouteInContext(pathname, expectedContext)) {
+      redirectedRef.current = true;
       const homePage = CONTEXT_HOME_PAGES[expectedContext] || "/dashboard";
       router.replace(homePage);
     }

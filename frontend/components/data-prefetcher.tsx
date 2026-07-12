@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface PrefetchConfig {
   queryKey: string[];
@@ -11,12 +11,25 @@ interface PrefetchConfig {
 
 export function DataPrefetcher({ queries }: { queries: PrefetchConfig[] }) {
   const queryClient = useQueryClient();
+  const prefetchedRef = useRef(false);
 
   useEffect(() => {
+    if (prefetchedRef.current) return;
+    prefetchedRef.current = true;
+
     for (const { queryKey, url, staleTime } of queries) {
       queryClient.prefetchQuery({
         queryKey,
-        queryFn: () => fetch(url).then(res => res.json()),
+        queryFn: async () => {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 8_000);
+          try {
+            const res = await fetch(url, { signal: controller.signal });
+            return res.json();
+          } finally {
+            clearTimeout(timer);
+          }
+        },
         staleTime: staleTime ?? 60_000,
       });
     }

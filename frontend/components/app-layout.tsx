@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -13,9 +13,38 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
 import { SubscriptionStatusBanner } from "@/components/subscription-status-banner";
 import { SubscriptionGuard } from "@/components/subscription-guard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AppLayoutProps {
   children: ReactNode;
+}
+
+function SidebarFallback() {
+  return (
+    <div className="flex h-screen w-64 flex-col border-r bg-background p-4">
+      <Skeleton className="h-8 w-32 mb-6" />
+      <div className="space-y-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-9 w-full" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HeaderFallback() {
+  return (
+    <header className="flex w-full h-14 sm:h-16 md:h-20 shrink-0 border-b items-center justify-between gap-2 px-4">
+      <div className="flex items-center gap-2">
+        <Skeleton className="size-8 rounded-md" />
+        <Skeleton className="h-5 w-32" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton className="size-8 rounded-full" />
+        <Skeleton className="size-8 rounded-full" />
+      </div>
+    </header>
+  );
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
@@ -29,7 +58,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   const context: AppContextType = getAppContext(pathname);
   const isApp = isAppPage(pathname);
 
-  // Redirect client users to their portal
   useEffect(() => {
     const role = session?.user?.role?.toLowerCase() || "";
     if (role === "client" && !pathname.startsWith("/client") && !pathname.startsWith("/login")) {
@@ -46,20 +74,13 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setOpen(false);
-      } else {
-        setOpen(true);
-      }
+      setOpen(window.innerWidth >= 768);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [pathname]);
 
-  // Session loading is handled by AppInitProvider at the root level.
-  // By the time this component renders for app pages, the session is ready.
-  // Public pages are rendered without the init provider's loader.
   if (!isApp) {
     return <SubscriptionGuard>{children}</SubscriptionGuard>;
   }
@@ -79,10 +100,14 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <SidebarProvider open={open} onOpenChange={setOpen}>
-      {renderSidebar()}
+      <Suspense fallback={<SidebarFallback />}>
+        {renderSidebar()}
+      </Suspense>
       <SidebarInset>
-        <SubscriptionStatusBanner />
-        <Header context={context} />
+        <Suspense fallback={<HeaderFallback />}>
+          <SubscriptionStatusBanner />
+          <Header context={context} />
+        </Suspense>
         <main className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 lg:p-6 pb-16 sm:pb-3 md:pb-4 lg:p-6 min-w-0 max-w-full">
           <SubscriptionGuard>{children}</SubscriptionGuard>
         </main>

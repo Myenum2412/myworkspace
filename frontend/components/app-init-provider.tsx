@@ -16,15 +16,26 @@ const PROGRESS_STEPS = [
   "Almost ready...",
 ];
 
+const FETCH_TIMEOUT = 10_000;
+
 async function fetchCriticalData(setProgress: (msg: string) => void) {
   const criticalEndpoints = ["/api/user/profile", "/api/settings"];
 
-  const results = await Promise.allSettled(
+  await Promise.allSettled(
     criticalEndpoints.map(async (endpoint, index) => {
       setProgress(PROGRESS_STEPS[index + 1]);
-      const res = await fetch(endpoint, { credentials: "include" });
-      if (!res.ok) throw new Error(`Failed: ${endpoint}`);
-      return res.json();
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+      try {
+        const res = await fetch(endpoint, {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`Failed: ${endpoint}`);
+        return res.json();
+      } finally {
+        clearTimeout(timer);
+      }
     }),
   );
 
@@ -49,7 +60,7 @@ export function AppInitProvider({ children }: { children: ReactNode }) {
     if (sessionStatus === "authenticated" && session && !initStartedRef.current) {
       initStartedRef.current = true;
       startInit();
-      fetchCriticalData(setProgress).then(() => {
+      fetchCriticalData(setProgress).finally(() => {
         completeInit();
       });
     }
