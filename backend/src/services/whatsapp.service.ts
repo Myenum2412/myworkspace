@@ -22,7 +22,7 @@ async function loadWhatsAppWebjs() {
   }
 }
 
-const AUTH_DIR = path.resolve("data", "whatsapp-webjs-auth");
+const AUTH_DIR = path.resolve("data", "whatsapp-auth");
 
 export type WhatsAppClientStatus = "disconnected" | "initializing" | "qr" | "ready" | "authenticated" | "error";
 

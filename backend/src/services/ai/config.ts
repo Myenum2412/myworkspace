@@ -39,7 +39,17 @@ export const AI_CONFIG = {
   // Logging
   logLevel: process.env.AI_LOG_LEVEL || "info",
   enableDebugLogs: process.env.AI_DEBUG === "true",
+
+  // Orchestration
+  enableMultiAgent: process.env.AI_ENABLE_MULTI_AGENT !== "false",
+  enablePlanning: process.env.AI_ENABLE_PLANNING !== "false",
+  enableRag: process.env.AI_ENABLE_RAG !== "false",
+  enableEnhancedMemory: process.env.AI_ENHANCED_MEMORY !== "false",
 };
+
+// Agent Config - re-exported for convenience
+import { AGENT_CONFIG } from "./agent/agent-config.js";
+export { AGENT_CONFIG };
 
 // Business Context Configuration
 export const BUSINESS_CONFIG = {

@@ -1,0 +1,303 @@
+= MyWorkSpace Enterprise Architecture Guide
+:revnumber: 2.0
+:revdate: 2026-07-13
+:toc: left
+:toclevels: 4
+
+== System Architecture Overview
+
+MyWorkSpace is a multi-tenant SaaS platform with an enterprise AI agent system.
+
+=== Architecture Principles
+
+* Clean Architecture with domain-driven organization
+* SOLID principles throughout
+* Dependency injection via constructor injection
+* Repository pattern for data access
+* CQRS where appropriate
+* Event-driven communication via EventEmitter
+* Multi-layer caching (L1 NodeCache, L2 Redis)
+* Provider-agnostic AI with intelligent routing
+
+=== Technology Stack
+
+|===
+| Layer | Technology | Purpose
+| Frontend | Next.js 16, React 19, TypeScript | SSR/CSR UI
+| API | Express.js 5, TypeScript | REST endpoints
+| Database | MongoDB Atlas (Mongoose 8) | Primary data store
+| Cache | Redis 7 (ioredis) + NodeCache | L1/L2 caching
+| Queue | RabbitMQ (amqplib) | Async job processing
+| Scheduler | Agenda.js | Cron jobs
+| Real-time | Socket.IO | WebSocket comms
+| AI Provider | Multi-provider abstraction | LLM routing
+| Vector Store | Pluggable (Chroma, Qdrant, etc.) | RAG memory
+| Auth | NextAuth.js v5 (JWT/JWE) | Authentication
+| Authorization | Casbin (RBAC/ABAC) | Access control
+| Monitoring | Prometheus + Grafana | Metrics
+| Error Tracking | Sentry | Error reporting
+| Container | Docker + Docker Compose | Local dev
+| Orchestration | Kubernetes | Production
+| Storage | Cloudflare R2 (S3-compatible) | File storage
+| Email | Resend + SMTP | Transactional
+| Payments | Stripe | Billing
+|===
+
+== Project Structure
+
+```
+myworkspace/
+├── backend/
+│   ├── src/
+│   │   ├── config/          # Environment & auth config
+│   │   ├── lib/             # Core infrastructure
+│   │   │   ├── cache/       # Multi-layer caching
+│   │   │   ├── db/          # Database models & migrations
+│   │   │   ├── events/      # Event bus
+│   │   │   ├── logger/      # Pino-based structured logging
+│   │   │   ├── mail/        # Email service with templates
+│   │   │   ├── monitoring/  # Metrics & observability
+│   │   │   ├── queue/       # RabbitMQ producer/consumer
+│   │   │   ├── socketio/    # WebSocket manager
+│   │   │   └── storage/     # S3/R2 abstraction
+│   │   ├── middleware/       # Express middleware chain
+│   │   ├── routes/          # API route handlers
+│   │   ├── services/
+│   │   │   ├── ai/          # AI Agent System (core)
+│   │   │   │   ├── agent/   # Agent, Planner, Orchestrator
+│   │   │   │   ├── intent/  # Intent & language detection
+│   │   │   │   ├── logging/ # AI-specific audit logging
+│   │   │   │   ├── memory/  # Enhanced memory with RAG
+│   │   │   │   ├── pipeline/# Message processing pipeline
+│   │   │   │   ├── providers/# Multi-provider LLM abstraction
+│   │   │   │   ├── repositories/ # AI-specific DB repos
+│   │   │   │   ├── security/# Prompt injection protection
+│   │   │   │   ├── tools/   # Tool registry & execution
+│   │   │   │   ├── types/   # TypeScript type definitions
+│   │   │   │   └── workflows/# Business workflow agents
+│   │   │   ├── audit.service.ts
+│   │   │   ├── chat.service.ts
+│   │   │   ├── file.service.ts
+│   │   │   ├── notification.service.ts
+│   │   │   ├── task.service.ts
+│   │   │   └── whatsapp.service.ts
+│   │   └── types/           # Shared type definitions
+│   ├── tests/               # Test suites
+│   │   ├── unit/
+│   │   └── integration/
+│   └── Dockerfile
+├── frontend/
+│   ├── app/                 # Next.js App Router
+│   ├── components/          # Shared React components
+│   ├── lib/                 # Frontend utilities
+│   ├── actions/             # Server actions
+│   └── hooks/               # React hooks
+├── ai-service/              # Python CrewAI service
+│   ├── app/agents/          # Agent definitions
+│   ├── app/api/             # FastAPI routes
+│   ├── app/services/        # Crew service
+│   └── app/tools/           # Custom tools
+├── k8s/                     # Kubernetes manifests
+├── docs/                    # Documentation
+├── scripts/                 # DevOps scripts
+└── load-tests/              # K6 load testing
+```
+
+== AI Agent Architecture
+
+=== Multi-Layer Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│         Agent Orchestrator                   │
+│  ┌────────┐ ┌─────────┐ ┌──────────┐        │
+│  │Planner │ │Executor │ │  Critic  │        │
+│  │Agent   │ │Agent    │ │  Agent   │        │
+│  └────────┘ └─────────┘ └──────────┘        │
+│  ┌────────┐ ┌─────────┐ ┌──────────┐        │
+│  │Validator│ │Researcher│ │  Writer  │        │
+│  │Agent   │ │Agent    │ │  Agent   │        │
+│  └────────┘ └─────────┘ └──────────┘        │
+└─────────────────────────────────────────────┘
+         │
+┌────────▼────────────────────────────────────┐
+│           Planner Agent                      │
+│  - ReAct Reasoning                           │
+│  - Chain of Thought                          │
+│  - Tree of Thought                           │
+│  - Goal Decomposition                        │
+│  - Task Planning                             │
+└─────────────────────────────────────────────┘
+         │
+┌────────▼────────────────────────────────────┐
+│         Enhanced Memory Manager              │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐    │
+│  │ Working  │ │ Episodic │ │ Semantic │    │
+│  │ Memory   │ │ Memory   │ │ Memory   │    │
+│  └──────────┘ └──────────┘ └──────────┘    │
+│  ┌────────────────────────────────────┐     │
+│  │  RAG Vector Store (pluggable)      │     │
+│  │  Chroma | Qdrant | Pinecone | InMem│     │
+│  └────────────────────────────────────┘     │
+└─────────────────────────────────────────────┘
+         │
+┌────────▼────────────────────────────────────┐
+│         Model Router (Provider Layer)        │
+│  OpenAI | Anthropic | Gemini | Ollama       │
+│  Groq | DeepSeek | Mistral | Perplexity     │
+│  + cost-aware routing + fallback chain      │
+└─────────────────────────────────────────────┘
+```
+
+=== Flow: Standard Agent Run
+
+. User sends message → `POST /api/ai/agent/chat`
+. Authenticate → Resolve org context
+. Load session from memory manager
+. Ingest message (normalize, detect language, extract intent/entities)
+. Build system prompt (org context + RAG + memories + tools)
+. Execute reasoning loop (plan → think → call tools → respond)
+. Store conversation in session
+. Update episodic memory (enhanced)
+. Return formatted response
+
+=== Flow: Multi-Agent Orchestration
+
+. User sends message
+. Orchestrator calls PlannerAgent.createPlan()
+. Plan decomposed into sequential/parallel tasks
+. Task graph resolved (dependency-aware)
+. Tasks executed by specialized agents (executor, researcher, critic)
+. Quality gate evaluates each result
+. Writer agent synthesizes final response
+. Reflection performed on complex plans
+
+== Provider System
+
+Supported providers and their capabilities:
+
+|===
+| Provider | Chat | Stream | Tools | Vision | Embed | Cost (input/1K)
+| OpenAI | ✓ | ✓ | ✓ | ✓ | ✓ | $0.15/$0.60
+| Anthropic | ✓ | ✓ | ✓ | ✓ | - | $3.00/$15.00
+| Gemini | ✓ | ✓ | ✓ | ✓ | ✓ | $0.10/$0.40
+| Groq | ✓ | ✓ | ✓ | - | - | $0.59/$0.79
+| DeepSeek | ✓ | ✓ | ✓ | - | - | $0.14/$0.28
+| Ollama (local) | ✓ | ✓ | ✓ | ✓ | ✓ | Free
+| OpenRouter | ✓ | ✓ | ✓ | ✓ | - | Depends
+|===
+
+=== Model Router Strategies
+
+* `manual` - Use configured provider directly
+* `auto` - Intelligent provider selection
+* `cost_optimized` - Prefer cheapest capable provider
+* `latency_optimized` - Prefer fastest provider
+* `capability_routed` - Route by required capabilities (vision, embeddings, etc.)
+
+== Memory Architecture
+
+=== Memory Tiers
+
+|===
+| Tier | Storage | Persistence | Capacity | Eviction
+| Working | In-memory Map | Session | 50 entries | LRU by score
+| Episodic | Vector store + DB | 30 days | Unlimited | TTL-based
+| Semantic | Vector store | 90 days | Unlimited | TTL-based
+| Procedural | MongoDB | Permanent | Unlimited | None
+|===
+
+=== RAG Pipeline
+
+```
+Document → Chunk (recursive character split) → Embed → Store in Vector DB
+                                                          │
+User Query → Embed → Vector Search → Hybrid Rank → Context → Prompt
+```
+
+== Security Architecture
+
+=== Layers
+
+. **Network**: TLS termination (Caddy), rate limiting, DDoS protection
+. **Auth**: JWE-encrypted cookies, Bearer tokens, OAuth providers
+. **Authorization**: Casbin RBAC/ABAC policies, org-scoped data isolation
+. **Input**: Helmet headers, CSRF tokens, input sanitization middleware
+. **AI**: PromptGuard injection detection, dangerous operation approval
+. **Audit**: Structured logging with correlation IDs, AI interaction logs
+
+=== PromptGuard Threat Detection
+
+* System prompt override attempts
+* DAN/jailbreak patterns
+* Instruction extraction attempts
+* Role-play exploitations
+* Encoding/token smuggling attacks
+* Multi-step manipulation
+* Delimiter breaking
+
+== Deployment Architecture
+
+```
+                          Internet
+                             │
+                         Caddy Proxy
+                      (TLS, Rate Limit)
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+        Next.js F/E    Express API    Socket.IO
+        (3-8 pods)     (3-10 pods)    (co-located)
+              │              │              │
+              └──────────────┼──────────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+          MongoDB        Redis        RabbitMQ
+          (Atlas)       (Cluster)    (Mirrored)
+```
+
+=== Kubernetes Configuration
+
+* **Namespaces**: Production, Staging, Development
+* **Resource Limits**: CPU/Memory requests and limits
+* **HPA**: Horizontal Pod Autoscaler (CPU > 70%)
+* **PDB**: PodDisruptionBudget (min 2 available)
+* **NetworkPolicies**: Pod-to-pod isolation
+* **Secrets**: External secrets via SealedSecrets or External Secrets Operator
+
+== Monitoring & Observability
+
+* Prometheus metrics at `/metrics`
+* Health check at `/api/health` (MongoDB, Redis status)
+* Pino structured JSON logging
+* Correlation IDs via `x-request-id`
+* Sentry error tracking
+* Custom dashboards:
+  * API latency p50/p95/p99
+  * Token usage and cost by provider
+  * Tool usage frequency and latency
+  * Memory utilization
+  * Active users and sessions
+
+== Performance Considerations
+
+* Multi-layer caching with background refresh
+* Connection pooling (Mongoose, Redis)
+* Parallel startup initialization
+* Context compression at threshold
+* Streaming responses for real-time UX
+* Reservoir-sampled histograms (bounded memory)
+* Lazy provider initialization
+* In-memory caches for auth hot path (60s TTL)
+
+== Testing Strategy
+
+|===
+| Type | Scope | Tool | Coverage Target
+| Unit | Individual functions/classes | Jest | >90%
+| Integration | API endpoints, DB interaction | Jest + supertest | >80%
+| Security | Prompt injection, auth bypass | Jest | 100%
+| Load | Concurrent users, throughput | K6 | N/A
+| E2E | Full user flows | Playwright | Critical paths
+|===

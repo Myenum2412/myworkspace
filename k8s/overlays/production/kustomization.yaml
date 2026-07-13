@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: myworkspace
+
+resources:
+  - ../../base
+
+replicas:
+  - name: backend
+    count: 5
+  - name: frontend
+    count: 4

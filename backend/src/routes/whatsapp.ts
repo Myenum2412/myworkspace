@@ -1,12 +1,59 @@
 import { Router, Request, Response } from "express";
 import { whatsappService } from "../services/whatsapp.service.js";
 import { logger } from "../lib/logger/index.js";
+import mongoose from "mongoose";
+import { collections } from "../lib/db/collections.js";
 
 const router = Router();
 
 // Category page expects GET /api/whatsapp to return { installed: boolean }
 router.get("/", (_req: Request, res: Response) => {
   res.json({ installed: true });
+});
+
+// Stats endpoint for WhatsApp AI conversations
+router.get("/stats", async (_req: Request, res: Response) => {
+  try {
+    const collection = mongoose.connection.db!.collection(collections.chatLogs);
+    const matchQuery: any = { channel: "whatsapp" };
+
+    const [total, unique, intentStats, avgTime, successCount] = await Promise.all([
+      collection.countDocuments(matchQuery),
+      collection.distinct("customerPhone", matchQuery).then((phones: string[]) => phones.length),
+      collection.aggregate([
+        { $match: matchQuery },
+        { $group: { _id: "$intent", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]).toArray(),
+      collection.aggregate([
+        { $match: matchQuery },
+        { $group: { _id: null, avg: { $avg: "$processingTimeMs" } } },
+      ]).toArray(),
+      collection.countDocuments({ ...matchQuery, status: "success" }),
+    ]);
+
+    const intentDistribution: Record<string, number> = {};
+    intentStats.forEach((stat: any) => {
+      intentDistribution[stat._id] = stat.count;
+    });
+
+    const messageLimit = 1000;
+    res.json({
+      success: true,
+      data: {
+        totalConversations: total,
+        uniqueCustomers: unique,
+        intentDistribution,
+        avgProcessingTime: avgTime[0]?.avg || 0,
+        successRate: total > 0 ? (successCount / total) * 100 : 0,
+        messageLimit,
+        messagesRemaining: Math.max(0, messageLimit - total),
+      },
+    });
+  } catch (err: any) {
+    logger.error({ err: err.message }, "Failed to fetch WhatsApp stats");
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 router.get("/status", (_req: Request, res: Response) => {

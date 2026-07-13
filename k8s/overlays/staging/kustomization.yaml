@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: myworkspace-staging
+
+resources:
+  - ../../base
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: myworkspace-staging-config
+    target:
+      kind: ConfigMap
+      name: myworkspace-config
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: myworkspace-staging-secrets
+    target:
+      kind: Secret
+      name: myworkspace-secrets
+
+replicas:
+  - name: backend
+    count: 2
+  - name: frontend
+    count: 2

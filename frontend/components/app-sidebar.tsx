@@ -107,7 +107,6 @@ const platformItems: NavItem[] = [
     icon: <MuiFolderIcon className="size-6" />,
     items: [
       { title: "All Files", url: "/files" },
-      { title: "Upload", url: "/files?upload=true" },
       { title: "Recycle Bin", url: "/recycle-bin" },
       { title: "Audit Log", url: "/files/audit" },
     ],
