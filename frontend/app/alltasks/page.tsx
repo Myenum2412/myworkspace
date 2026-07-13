@@ -63,6 +63,16 @@ export default async function AllTasksPage() {
           },
         },
         { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: "teams",
+            localField: "teamId",
+            foreignField: "id",
+            as: "team",
+            pipeline: [{ $project: { _id: 1, name: 1 } }],
+          },
+        },
+        { $unwind: { path: "$team", preserveNullAndEmptyArrays: true } },
         { $sort: { createdAt: -1 } },
       ])
       .toArray()) as unknown as Record<string, unknown>[];
@@ -70,12 +80,14 @@ export default async function AllTasksPage() {
     initialTasks = rawTasks.map((t) => {
       const assignee = (t.assignee as Record<string, unknown> | null) || null;
       const creator = (t.creator as Record<string, unknown> | null) || null;
+      const team = (t.team as Record<string, unknown> | null) || null;
       return {
         id: (t._id as { toString: () => string }).toString(),
         _id: (t._id as { toString: () => string }).toString(),
         title: (t.title as string) || "",
         description: (t.description as string) || "",
-        status: (t.status as string) || "todo",
+        type: (t.type as string) || "individual",
+        status: (t.status as string) || "draft",
         priority: (t.priority as string) || "medium",
         dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
         assigneeId: (t.assigneeId as string) || "",
@@ -83,6 +95,8 @@ export default async function AllTasksPage() {
         assigneeAvatar: (assignee?.image as string) || "",
         creatorId: (t.creatorId as string) || "",
         creatorName: (creator?.name as string) || "",
+        teamId: (t.teamId as string) || "",
+        teamName: (team?.name as string) || "",
         createdAt: t.createdAt
           ? new Date(t.createdAt as string).toISOString()
           : "",

@@ -1,14 +1,35 @@
+export type TaskType = "individual" | "team" | "common" | "upcoming" | "draft";
+
 export type Task = {
   id: string;
-  task: string;
+  _id: string;
+  task?: string;
+  title: string;
   description: string;
   project?: string;
+  type: TaskType;
   priority: string;
   status: string;
-  assignedTo: string;
-  delegatedBy: string;
-  dueDate?: string;
-  finalStatus: string;
+  assigneeId?: string;
+  assigneeName?: string;
+  assigneeAvatar?: string;
+  creatorId?: string;
+  creatorName?: string;
+  teamId?: string;
+  teamName?: string;
+  selectedUserIds?: string[];
+  dueDate?: string | null;
+  startDate?: string | null;
+  scheduledDate?: string | null;
+  activatedAt?: string | null;
+  submittedAt?: string | null;
+  approvedBy?: string;
+  approverName?: string;
+  approvedAt?: string | null;
+  approvalNote?: string;
+  rejectedBy?: string;
+  rejectedAt?: string | null;
+  rejectionReason?: string;
   orgId?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -17,8 +38,14 @@ export type Task = {
 };
 
 export const taskService = {
-  async getAllTasks(orgId?: string): Promise<Task[]> {
-    const url = orgId ? `/api/tasks?orgId=${orgId}` : "/api/tasks";
+  async getAllTasks(orgId?: string, params?: Record<string, string>): Promise<Task[]> {
+    const searchParams = new URLSearchParams();
+    if (orgId) searchParams.set("orgId", orgId);
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => { if (v) searchParams.set(k, v); });
+    }
+    const qs = searchParams.toString();
+    const url = qs ? `/api/tasks?${qs}` : "/api/tasks";
     const res = await fetch(url, { credentials: "include" });
     if (!res.ok) throw new Error("Failed to fetch tasks");
     const data = await res.json();
@@ -38,5 +65,62 @@ export const taskService = {
     }
     const data = await res.json();
     return data.data || data;
+  },
+
+  async assignTask(taskId: string, assigneeId: string): Promise<void> {
+    const res = await fetch(`/api/tasks/${taskId}/assign`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ assigneeId }),
+    });
+    if (!res.ok) throw new Error("Failed to assign task");
+  },
+
+  async submitForVerification(taskId: string): Promise<void> {
+    const res = await fetch(`/api/tasks/${taskId}/submit-verification`, {
+      method: "POST", credentials: "include",
+    });
+    if (!res.ok) throw new Error("Failed to submit for verification");
+  },
+
+  async approveTask(taskId: string, note?: string): Promise<void> {
+    const res = await fetch(`/api/tasks/${taskId}/approve`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ note }),
+    });
+    if (!res.ok) throw new Error("Failed to approve task");
+  },
+
+  async rejectTask(taskId: string, reason: string): Promise<void> {
+    const res = await fetch(`/api/tasks/${taskId}/reject`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) throw new Error("Failed to reject task");
+  },
+
+  async publishCommonTask(taskId: string): Promise<void> {
+    const res = await fetch(`/api/tasks/${taskId}/publish`, {
+      method: "POST", credentials: "include",
+    });
+    if (!res.ok) throw new Error("Failed to publish task");
+  },
+
+  async activateUpcomingTask(taskId: string): Promise<void> {
+    const res = await fetch(`/api/tasks/${taskId}/activate`, {
+      method: "POST", credentials: "include",
+    });
+    if (!res.ok) throw new Error("Failed to activate task");
+  },
+
+  async publishDraft(taskId: string, targetType: TaskType, data?: Record<string, any>): Promise<void> {
+    const res = await fetch(`/api/tasks/${taskId}/publish-draft`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ targetType, ...data }),
+    });
+    if (!res.ok) throw new Error("Failed to publish draft");
   },
 };

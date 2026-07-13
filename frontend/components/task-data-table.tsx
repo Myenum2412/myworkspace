@@ -23,12 +23,14 @@ import { DataTable } from "@/components/data-table";
 export interface TaskRow {
   _id: string;
   title: string;
+  type?: string;
   status: string;
   priority: string;
   dueDate?: string | null;
   assigneeName?: string;
   assigneeAvatar?: string;
   creatorName?: string;
+  teamHeadName?: string;
 }
 
 interface TaskDataTableProps {
@@ -39,14 +41,40 @@ interface TaskDataTableProps {
   searchPlaceholder?: string;
   emptyMessage?: string;
   label?: string;
+  title?: string;
+  showTeamHead?: boolean;
+  hideSearchBar?: boolean;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }
 
+const typeStyles: Record<string, string> = {
+  individual: "bg-blue-50 text-blue-700 border-blue-200",
+  team: "bg-purple-50 text-purple-700 border-purple-200",
+  common: "bg-green-50 text-green-700 border-green-200",
+  upcoming: "bg-orange-50 text-orange-700 border-orange-200",
+  draft: "bg-gray-50 text-gray-700 border-gray-200",
+};
+
 const statusStyles: Record<string, string> = {
+  draft: "bg-gray-100 text-gray-500",
   todo: "bg-gray-100 text-gray-700",
+  assigned: "bg-blue-100 text-blue-700",
+  pending: "bg-yellow-100 text-yellow-700",
   in_progress: "bg-blue-100 text-blue-700",
   review: "bg-purple-100 text-purple-700",
+  submitted: "bg-purple-100 text-purple-700",
+  approved: "bg-green-100 text-green-700",
+  rejected: "bg-red-100 text-red-700",
+  completed: "bg-green-100 text-green-700",
   done: "bg-green-100 text-green-700",
+  hold: "bg-orange-100 text-orange-700",
   cancelled: "bg-red-100 text-red-700",
+  reopened: "bg-purple-100 text-purple-700",
+  published: "bg-teal-100 text-teal-700",
+  accepted: "bg-green-100 text-green-700",
+  scheduled: "bg-blue-100 text-blue-700",
+  activated: "bg-green-100 text-green-700",
 };
 
 const priorityStyles: Record<string, string> = {
@@ -64,6 +92,11 @@ export function TaskDataTable({
   searchPlaceholder = "Search tasks...",
   emptyMessage = "No tasks found.",
   label = "task",
+  title,
+  showTeamHead = false,
+  hideSearchBar,
+  searchQuery,
+  onSearchChange,
 }: TaskDataTableProps) {
   const columns: ColumnDef<TaskRow>[] = [
     {
@@ -86,7 +119,14 @@ export function TaskDataTable({
       accessorKey: "title",
       header: "Task",
       cell: ({ row }) => (
-        <span className="font-medium">{row.original.title}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{row.original.title}</span>
+          {row.original.type && (
+            <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${typeStyles[row.original.type] || ""}`}>
+              {row.original.type}
+            </Badge>
+          )}
+        </div>
       ),
     },
     {
@@ -118,6 +158,17 @@ export function TaskDataTable({
         <span className="text-sm">{row.original.creatorName || "—"}</span>
       ),
     },
+    ...(showTeamHead
+      ? [
+          {
+            id: "teamHead",
+            header: "Team Head",
+            cell: ({ row }: { row: { original: TaskRow } }) => (
+              <span className="text-sm">{row.original.teamHeadName || "—"}</span>
+            ),
+          } as ColumnDef<TaskRow>,
+        ]
+      : []),
     {
       accessorKey: "status",
       header: "Status",
@@ -192,9 +243,13 @@ export function TaskDataTable({
       data={data}
       searchPlaceholder={searchPlaceholder}
       label={`${label}(s)`}
+      title={title}
       emptyMessage={emptyMessage}
       emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
       onRowClick={onView ? (row) => onView(row) : undefined}
+      hideSearchBar={hideSearchBar}
+      searchQuery={searchQuery}
+      onSearchChange={onSearchChange}
       mobileCardView={true}
       renderMobileCard={(task: TaskRow) => (
         <div

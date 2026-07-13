@@ -3,11 +3,6 @@ import fs from "fs";
 import { logger } from "../lib/logger/index.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 import QRCode from "qrcode";
-import { AIAgent } from "./ai/agent/agent.js";
-import { ChatLogRepository } from "./ai/repositories/chat-log.repository.js";
-import { AI_CONFIG } from "./ai/config.js";
-import { User } from "../lib/db/models/User.js";
-import { Settings } from "../lib/db/models/Settings.js";
 
 // whatsapp-web.js is CommonJS, use dynamic import for ESM compatibility
 let WhatsAppClient: any;
@@ -232,8 +227,6 @@ class WhatsAppService {
     }
   }
 
-  private chatLogRepo = new ChatLogRepository();
-
   private async handleMessage(msg: any): Promise<void> {
     if (msg.fromMe) return;
 
@@ -242,127 +235,11 @@ class WhatsAppService {
 
     logger.info({ from, body }, "WhatsApp message received");
 
-    // Emit message event for frontend to handle
     socketIOManager.getIO()?.emit("whatsapp:message", {
       from,
       body,
       timestamp: msg.timestamp,
     });
-
-    // Auto-reply with AI
-    await this.processWithAI(from, body, msg.timestamp);
-  }
-
-  private async processWithAI(from: string, body: string, timestamp: number): Promise<void> {
-    const startTime = Date.now();
-
-    // Look up user by phone to find their org
-    let organizationId: string | undefined;
-    let customerName: string | undefined;
-    try {
-      const phoneClean = from.replace(/@.*$/, "").replace(/[\s\-\(\)\+]/g, "");
-      const last10 = phoneClean.slice(-10);
-      const user = await User.findOne({
-        phone: { $regex: last10 + "$" },
-      }).lean();
-      if (user?.orgId) {
-        organizationId = user.orgId;
-        customerName = user.name;
-      }
-    } catch {
-      // Non-critical - proceed without org context
-    }
-
-    // Fallback: if no user found, try owning org
-    if (!organizationId) {
-      try {
-        // Try looking up the bot's own phone number to find the owning user's org
-        if (this.info?.me) {
-          const owner = await User.findOne({
-            phone: { $regex: this.info.me.replace(/[\s\-\(\)\+]/g, "").slice(-10) + "$" },
-          }).lean();
-          if (owner?.orgId) {
-            organizationId = owner.orgId;
-          }
-        }
-      } catch {
-        // Non-critical
-      }
-    }
-    if (!organizationId) {
-      try {
-        organizationId = process.env.WHATSAPP_ORG_ID;
-        if (!organizationId) {
-          const defaultSettings = await Settings.findOne({
-            aiSoul: { $ne: "" },
-            orgId: { $nin: [null, ""], $exists: true },
-          }).lean();
-          if (defaultSettings?.orgId) {
-            organizationId = defaultSettings.orgId;
-          }
-        }
-      } catch {
-        // Non-critical
-      }
-    }
-
-    try {
-      const agent = new AIAgent();
-
-      const result = await agent.run({
-        userId: `whatsapp:${from}`,
-        sessionId: `wa_${from}`,
-        message: body,
-        organizationId,
-        customerPhone: from,
-        customerName,
-        stream: false,
-      });
-
-      const reply = result.reply;
-
-      if (reply && reply.trim()) {
-        await this.sendMessage(from, reply);
-      }
-
-      await this.chatLogRepo.log({
-        customerPhone: from,
-        incomingMessage: body,
-        outgoingMessage: reply || "",
-        intent: result.intent,
-        intentConfidence: 1.0,
-        entities: {},
-        language: result.language,
-        databaseOperations: [],
-        processingTimeMs: Date.now() - startTime,
-        aiModel: AI_CONFIG.model,
-        tokensUsed: result.tokensUsed,
-        status: "success",
-        channel: "whatsapp",
-      });
-    } catch (error: unknown) {
-      const errMsg = error instanceof Error ? error.message : String(error);
-      logger.error({ error: errMsg, from, body }, "AI processing failed for WhatsApp message");
-
-      await this.chatLogRepo.log({
-        customerPhone: from,
-        incomingMessage: body,
-        outgoingMessage: "",
-        intent: "unknown",
-        intentConfidence: 0,
-        entities: {},
-        language: AI_CONFIG.defaultLanguage,
-        databaseOperations: [],
-        processingTimeMs: Date.now() - startTime,
-        aiModel: AI_CONFIG.model,
-        tokensUsed: 0,
-        status: "error",
-        errorMessage: errMsg,
-        channel: "whatsapp",
-      }).catch((logErr) => {
-        logger.error({ error: logErr }, "Failed to log WhatsApp AI error");
-      });
-    }
   }
 
   private emitState(): void {

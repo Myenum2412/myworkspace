@@ -4,7 +4,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 async function proxy(request: NextRequest, method: string, id: string, body?: unknown) {
   const cookie = request.headers.get("cookie") || "";
+  const csrfToken = request.headers.get("x-csrf-token") || "";
   const headers: Record<string, string> = { cookie };
+  if (csrfToken) headers["x-csrf-token"] = csrfToken;
   if (body) headers["Content-Type"] = "application/json";
   const res = await fetch(`${API_URL}/api/tasks/${id}`, {
     method,

@@ -10,6 +10,11 @@ import {
   XIcon,
   FileTextIcon,
   PaperclipIcon,
+  UserIcon,
+  UsersIcon,
+  GlobeIcon,
+  ClockIcon,
+  FileEditIcon,
 } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -56,6 +61,14 @@ interface TaskAllocationModalProps {
   taskDefinitions?: TaskDefinition[];
 }
 
+const TASK_TYPES = [
+  { id: "individual", name: "Individual Task", icon: UserIcon, desc: "Assigned to one person" },
+  { id: "team", name: "Team Task", icon: UsersIcon, desc: "Collaborative team work" },
+  { id: "common", name: "Common Task", icon: GlobeIcon, desc: "Shared organizational task" },
+  { id: "upcoming", name: "Upcoming Task", icon: ClockIcon, desc: "Future scheduled task" },
+  { id: "draft", name: "Save as Draft", icon: FileEditIcon, desc: "Save and publish later" },
+];
+
 const priorities = [
   { id: "p1", name: "low" },
   { id: "p2", name: "medium" },
@@ -78,6 +91,10 @@ function FormField({ label, required, children }: { label: string; required?: bo
 export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: TaskAllocationModalProps) {
   const queryClient = useQueryClient();
 
+  // Task type
+  const [taskType, setTaskType] = useState("individual");
+
+  // Basic fields
   const [title, setTitle] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [projectName, setProjectName] = useState("");
@@ -86,8 +103,14 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+
+  // Type-specific fields
   const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
   const [selectedAssigneeType, setSelectedAssigneeType] = useState<AssigneeType | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
@@ -100,8 +123,8 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   const [isLoadingData, setIsLoadingData] = useState(false);
 
   const [dueDateOpen, setDueDateOpen] = useState(false);
+  const [scheduledDateOpen, setScheduledDateOpen] = useState(false);
   const [userOrgId, setUserOrgId] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -156,15 +179,18 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   }, [open]);
 
   const resetForm = () => {
+    setTaskType("individual");
     setTitle("");
     setSelectedClient("");
     setProjectName("");
     setDescription("");
     setPriority("");
     setDueDate(undefined);
+    setScheduledDate(undefined);
     setSelectedAssignee(null);
     setSelectedAssigneeType(null);
     setSelectedTeam("");
+    setSelectedUsers([]);
     setUploadedFiles([]);
     setFormError("");
     setIsSaved(false);
@@ -189,18 +215,29 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
         title: title.trim(),
         description: description.trim(),
         project: projectName.trim() || undefined,
+        type: taskType,
         priority,
         dueDate: dueDate?.toISOString(),
         isSaved,
         isActive,
-        status: "todo",
       };
-      if (selectedAssignee) {
+
+      if (taskType === "upcoming") {
+        payload.scheduledDate = scheduledDate?.toISOString() || dueDate?.toISOString();
+      }
+
+      if (selectedAssignee && (taskType === "individual" || taskType === "draft")) {
         payload.assigneeId = selectedAssignee;
       }
-      if (selectedTeam) {
+
+      if (selectedTeam && (taskType === "team" || taskType === "draft")) {
         payload.teamId = selectedTeam;
       }
+
+      if (selectedUsers.length > 0 && taskType === "common") {
+        payload.selectedUserIds = selectedUsers;
+      }
+
       await taskService.createTask(payload as unknown as Partial<Task>);
 
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
@@ -212,10 +249,12 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
     }
   };
 
+  const TaskTypeIcon = TASK_TYPES.find(t => t.id === taskType)?.icon || UserIcon;
+
   return (
     <Dialog open={open}>
       <DialogContent className="p-0 sm:max-w-[720px] gap-0 max-h-[90vh] flex flex-col overflow-hidden" showCloseButton={false}>
-        {/* ─── Compact Header ─── */}
+        {/* ─── Header ─── */}
         <div className="shrink-0 flex items-start justify-between px-5 pt-4 pb-3 border-b">
           <div className="space-y-0.5">
             <h2 className="text-base font-semibold">Create New Task</h2>
@@ -259,7 +298,35 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
         {/* ─── Scrollable Form Body ─── */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-          {/* Row 1: Title (full width) */}
+
+          {/* Task Type Selector */}
+          <div>
+            <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-2">
+              Task Category <span className="text-destructive">*</span>
+            </Label>
+            <div className="grid grid-cols-5 gap-2">
+              {TASK_TYPES.map(({ id, name, icon: Icon, desc }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setTaskType(id)}
+                  className={`flex flex-col items-center gap-1 rounded-lg border p-2.5 transition-all text-center ${
+                    taskType === id
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      : "border-border hover:border-primary/30 hover:bg-muted/50"
+                  }`}
+                >
+                  <Icon className={`size-4 ${taskType === id ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className={`text-[10px] leading-tight font-medium ${taskType === id ? "text-primary" : "text-foreground"}`}>
+                    {name}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground leading-tight hidden sm:block">{desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Title */}
           <FormField label="Task Title" required>
             <Input
               placeholder=""
@@ -269,7 +336,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             />
           </FormField>
 
-          {/* Row 2: Client, Project, Priority */}
+          {/* Row: Client, Project, Priority */}
           <div className="grid grid-cols-3 gap-3">
             <FormField label="Client">
               <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
@@ -314,64 +381,226 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             </FormField>
           </div>
 
-          {/* Row 3: Due Date, Assignee, Team */}
-          <div className="grid grid-cols-3 gap-3">
-            <FormField label="Due Date">
-              <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="h-9 w-full justify-between rounded-lg text-sm font-normal"
-                  >
-                    {dueDate ? (
-                      <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+          {/* Type-specific fields */}
+          {taskType === "individual" && (
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Due Date">
+                <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                      {dueDate ? (
+                        <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      ) : (
+                        <span className="text-muted-foreground">Due date</span>
+                      )}
+                      <CalendarIcon className="size-3.5 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                    <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                  </PopoverContent>
+                </Popover>
+              </FormField>
+
+              <FormField label="Assign To">
+                <AssigneeSelector
+                  selectedAssignee={selectedAssignee}
+                  selectedAssigneeType={selectedAssigneeType}
+                  employees={employees}
+                  teams={[]}
+                  showTeamAsAssignee={false}
+                  onSelect={(id: string) => {
+                    setSelectedAssignee(id);
+                    setSelectedAssigneeType("staff");
+                  }}
+                  onRemove={() => {
+                    setSelectedAssignee(null);
+                    setSelectedAssigneeType(null);
+                  }}
+                />
+              </FormField>
+            </div>
+          )}
+
+          {taskType === "team" && (
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Due Date">
+                <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                      {dueDate ? (
+                        <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      ) : (
+                        <span className="text-muted-foreground">Due date</span>
+                      )}
+                      <CalendarIcon className="size-3.5 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                    <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                  </PopoverContent>
+                </Popover>
+              </FormField>
+
+              <FormField label="Assign Team" required>
+                <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                  <SelectTrigger className="h-9 rounded-lg text-sm">
+                    <SelectValue placeholder="Select a team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teams.length === 0 ? (
+                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
                     ) : (
-                      <span className="text-muted-foreground">Due date</span>
+                      teams.map((t) => (
+                        <SelectItem key={t.id} value={t.id} className="text-sm">{t.name} ({t.memberCount} members)</SelectItem>
+                      ))
                     )}
-                    <CalendarIcon className="size-3.5 text-muted-foreground" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-xl" align="start">
-                  <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
-                </PopoverContent>
-              </Popover>
-            </FormField>
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </div>
+          )}
 
-            <FormField label="Assign To">
-              <AssigneeSelector
-                selectedAssignee={selectedAssignee}
-                selectedAssigneeType={selectedAssigneeType}
-                employees={employees}
-                teams={[]}
-                showTeamAsAssignee={false}
-                onSelect={(id: string) => {
-                  setSelectedAssignee(id);
-                  setSelectedAssigneeType("staff");
-                }}
-                onRemove={() => {
-                  setSelectedAssignee(null);
-                  setSelectedAssigneeType(null);
-                }}
-              />
-            </FormField>
+          {taskType === "common" && (
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Due Date">
+                <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                      {dueDate ? (
+                        <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      ) : (
+                        <span className="text-muted-foreground">Due date</span>
+                      )}
+                      <CalendarIcon className="size-3.5 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                    <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                  </PopoverContent>
+                </Popover>
+              </FormField>
 
-            <FormField label="Team">
-              <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                <SelectTrigger className="h-9 rounded-lg text-sm">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
-                <SelectContent>
-                  {teams.length === 0 ? (
-                    <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
-                  ) : (
-                    teams.map((t) => (
-                      <SelectItem key={t.id} value={t.id} className="text-sm">{t.name}</SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </FormField>
-          </div>
+              <FormField label="Visible To">
+                <Select
+                  value={selectedUsers.length > 0 ? selectedUsers[0] : ""}
+                  onValueChange={(val) => {
+                    if (selectedUsers.includes(val)) {
+                      setSelectedUsers(selectedUsers.filter(u => u !== val));
+                    } else {
+                      setSelectedUsers([...selectedUsers, val]);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-9 rounded-lg text-sm">
+                    <SelectValue placeholder={selectedUsers.length > 0 ? `${selectedUsers.length} user(s) selected` : "Select users"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employees.map((e) => (
+                      <SelectItem key={e.id} value={e.id} className="text-sm">
+                        {selectedUsers.includes(e.id) ? "✓ " : ""}{e.name}{e.role ? ` (${e.role})` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedUsers.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {selectedUsers.map(uid => {
+                      const user = employees.find(e => e.id === uid);
+                      return user ? (
+                        <span key={uid} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                          {user.name}
+                          <button type="button" onClick={() => setSelectedUsers(selectedUsers.filter(u => u !== uid))} className="hover:text-destructive">
+                            <XIcon className="size-2.5" />
+                          </button>
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+              </FormField>
+            </div>
+          )}
+
+          {taskType === "upcoming" && (
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Scheduled Date" required>
+                <Popover open={scheduledDateOpen} onOpenChange={setScheduledDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                      {scheduledDate ? (
+                        <span>{scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      ) : (
+                        <span className="text-muted-foreground">Pick start date</span>
+                      )}
+                      <CalendarIcon className="size-3.5 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                    <Calendar mode="single" selected={scheduledDate} onSelect={(d) => { setScheduledDate(d); setScheduledDateOpen(false); }} />
+                  </PopoverContent>
+                </Popover>
+              </FormField>
+
+              <FormField label="Due Date">
+                <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                      {dueDate ? (
+                        <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      ) : (
+                        <span className="text-muted-foreground">Due date</span>
+                      )}
+                      <CalendarIcon className="size-3.5 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                    <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                  </PopoverContent>
+                </Popover>
+              </FormField>
+            </div>
+          )}
+
+          {taskType === "draft" && (
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Due Date">
+                <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                      {dueDate ? (
+                        <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      ) : (
+                        <span className="text-muted-foreground">Due date</span>
+                      )}
+                      <CalendarIcon className="size-3.5 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                    <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                  </PopoverContent>
+                </Popover>
+              </FormField>
+
+              <FormField label="Assign To (optional)">
+                <AssigneeSelector
+                  selectedAssignee={selectedAssignee}
+                  selectedAssigneeType={selectedAssigneeType}
+                  employees={employees}
+                  teams={[]}
+                  showTeamAsAssignee={false}
+                  onSelect={(id: string) => {
+                    setSelectedAssignee(id);
+                    setSelectedAssigneeType("staff");
+                  }}
+                  onRemove={() => {
+                    setSelectedAssignee(null);
+                    setSelectedAssigneeType(null);
+                  }}
+                />
+              </FormField>
+            </div>
+          )}
 
           {/* Description */}
           <FormField label="Description" required>
@@ -417,7 +646,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
           </div>
         </div>
 
-        {/* ─── Compact Footer ─── */}
+        {/* ─── Footer ─── */}
         <div className="shrink-0 border-t px-5 py-3 flex items-center justify-between bg-muted/20">
           <Button
             variant="ghost"
@@ -430,16 +659,6 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
           </Button>
           <div className="flex items-center gap-2">
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsSaved(!isSaved)}
-              disabled={isSubmitting}
-              className="h-8 rounded-lg text-xs gap-1.5"
-            >
-              {isSaved ? "Unsave" : "Draft"}
-            </Button>
-            <Button
               onClick={handleSubmit}
               disabled={isSubmitting || !title.trim() || !description.trim() || !priority}
               size="sm"
@@ -448,7 +667,10 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               {isSubmitting ? (
                 <><Loader2 className="size-3.5 animate-spin mr-1.5" />Creating...</>
               ) : (
-                "Create Task"
+                <>
+                  <TaskTypeIcon className="size-3.5 mr-1.5" />
+                  {taskType === "draft" ? "Save Draft" : `Create ${taskType === "individual" ? "Task" : taskType === "team" ? "Team Task" : taskType === "common" ? "Common Task" : "Upcoming Task"}`}
+                </>
               )}
             </Button>
           </div>

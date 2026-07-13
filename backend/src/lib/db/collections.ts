@@ -17,13 +17,6 @@ export const collections = {
   fileAttachments: "fileAttachments",
   counters: "counters",
 
-  // AI & WhatsApp collections
-  conversations: "conversations",
-  chatLogs: "chatLogs",
-  knowledgeBase: "knowledgeBase",
-  aiSettings: "aiSettings",
-  aiAgentMemory: "aiAgentMemory",
-
   // Business collections
   categories: "categories",
   inventory: "inventory",
@@ -34,4 +27,9 @@ export const collections = {
   businessSettings: "businessSettings",
   stocks: "stocks",
   engagements: "engagements",
+
+  // MCP collections
+  mcpSessions: "mcp_sessions",
+  mcpMemory: "mcp_memory",
+  mcpAuditLogs: "mcp_audit_logs",
 } as const;

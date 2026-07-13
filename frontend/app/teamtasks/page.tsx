@@ -66,6 +66,41 @@ export default async function TeamTasksPage() {
         },
       },
       { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "teammembers",
+          let: { taskTeamId: "$teamId" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$teamId", "$$taskTeamId"] }, role: "lead" } },
+            { $limit: 1 },
+          ],
+          as: "teamLead",
+        },
+      },
+      { $unwind: { path: "$teamLead", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "teamLead.userId",
+          foreignField: "id",
+          as: "teamHeadUser",
+          pipeline: [{ $project: { name: 1 } }],
+        },
+      },
+      { $unwind: { path: "$teamHeadUser", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "teams",
+          let: { taskTeamId: "$teamId" },
+          pipeline: [
+            { $match: { $expr: { $eq: [{ $toString: "$_id" }, "$$taskTeamId"] } } },
+            { $project: { name: 1 } },
+            { $limit: 1 },
+          ],
+          as: "teamInfo",
+        },
+      },
+      { $unwind: { path: "$teamInfo", preserveNullAndEmptyArrays: true } },
       { $sort: { createdAt: -1 } },
       { $limit: 100 },
     ];
@@ -78,6 +113,8 @@ export default async function TeamTasksPage() {
     tasks = raw.map((t) => {
       const assignee = t.assignee as Record<string, unknown> | null;
       const creator = t.creator as Record<string, unknown> | null;
+      const teamHeadUser = t.teamHeadUser as Record<string, unknown> | null;
+      const teamInfo = t.teamInfo as Record<string, unknown> | null;
       return {
         id: (t._id as { toString: () => string }).toString(),
         _id: (t._id as { toString: () => string }).toString(),
@@ -95,6 +132,8 @@ export default async function TeamTasksPage() {
           ? (t.creatorId as { toString?: () => string }).toString?.() || (t.creatorId as string)
           : "",
         creatorName: creator ? (creator.name as string) || "" : "",
+        teamHeadName: teamHeadUser ? (teamHeadUser.name as string) || "" : "",
+        teamName: teamInfo ? (teamInfo.name as string) || "" : "",
         teamId: (t.teamId as string) || "",
         createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
       };

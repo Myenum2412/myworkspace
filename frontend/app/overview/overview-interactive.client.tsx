@@ -60,6 +60,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
 
   const total = tasks.length;
   const myTasks = currentUserId ? tasks.filter((t) => t.assigneeId === currentUserId).length : 0;
+  const teamTasks = total - myTasks;
   const savedCount = tasks.filter((t) => t.isSaved).length;
   const upcomingCount = tasks.filter((t) => {
     if (!t.dueDate || t.status === "done" || t.status === "cancelled") return false;
@@ -125,7 +126,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
           </Button>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
           <Card className="border-border rounded-xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground">Total Tasks</CardTitle>
@@ -144,6 +145,17 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             <CardContent>
               <div className="text-3xl font-bold">{myTasks}</div>
               <p className="text-xs text-muted-foreground mt-1">Assigned to you</p>
+            </CardContent>
+          </Card>
+          <Card className="border-border rounded-xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <UsersIcon className="size-3.5" /> Team Tasks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{teamTasks}</div>
+              <p className="text-xs text-muted-foreground mt-1">Assigned to others</p>
             </CardContent>
           </Card>
           <Card className="border-border rounded-xl">
@@ -239,40 +251,36 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
 
         </div>
 
-        <Card className="border-border rounded-xl">
-          <CardContent className="p-0">
-            <DataTable
-              columns={baseColumns.map((col) => ({
-                ...col,
-                cell: col.id === "actions"
-                  ? ({ row }: { row: { original: Task } }) => {
-                      const t = row.original;
-                      return (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                            <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive" disabled={deleting} onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDeleteTask(t._id); }}><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      );
-                    }
-                  : col.cell,
-              }))}
-              data={recentTasks}
-              onRowClick={(t) => { setSelectedTask(t); setViewOpen(true); }}
-              searchPlaceholder="Search tasks..."
-              title="Recent Tasks"
-              label="task(s)"
-              emptyMessage="No tasks yet."
-              emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
-            />
-          </CardContent>
-        </Card>
+        <DataTable
+          columns={baseColumns.map((col) => ({
+            ...col,
+            cell: col.id === "actions"
+              ? ({ row }: { row: { original: Task } }) => {
+                  const t = row.original;
+                  return (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive" disabled={deleting} onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDeleteTask(t._id); }}><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                }
+              : col.cell,
+          }))}
+          data={recentTasks}
+          onRowClick={(t) => { setSelectedTask(t); setViewOpen(true); }}
+          searchPlaceholder="Search tasks..."
+          title="Recent Tasks"
+          label="task(s)"
+          emptyMessage="No tasks yet."
+          emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
+        />
       </main>
 
       {viewOpen && selectedTask && (

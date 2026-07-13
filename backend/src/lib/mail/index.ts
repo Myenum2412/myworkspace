@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { env } from "../../config/env.js";
 import nodemailer from "nodemailer";
 import { buildEmailHtml } from "./templates/builder.js";
+import type { EmailData, StatusIndicator } from "./templates/types.js";
 import * as Factory from "./templates/factory.js";
 import { logger } from "../logger/index.js";
 
@@ -272,6 +273,80 @@ export async function sendTaskDeleted(to: string, firstName: string, taskTitle: 
 
 export async function sendDailyTaskSummary(to: string, firstName: string, projectName: string, completedCount: number, pendingCount: number, overdueCount: number, dashboardUrl: string): Promise<void> {
   const data = Factory.buildDailyTaskSummary(firstName, projectName, completedCount, pendingCount, overdueCount, dashboardUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+// ============================================================
+// TEAM TASK MODULE
+// ============================================================
+
+function createSimpleEmailData(opts: {
+  subject: string; previewText: string; firstName: string;
+  statusType: StatusIndicator["type"]; statusLabel: string;
+  intro: string[]; details: { label: string; value: string }[];
+  buttonText: string; buttonUrl: string;
+  tip?: string; warning?: string;
+}): EmailData {
+  return {
+    subject: opts.subject,
+    previewText: opts.previewText,
+    greeting: `Hi ${opts.firstName},`,
+    metadata: { module: "Team Tasks", timestamp: new Date().toLocaleString(), action: opts.subject },
+    statusIndicator: { type: opts.statusType, label: opts.statusLabel },
+    intro: opts.intro,
+    details: opts.details,
+    button: { text: opts.buttonText, url: opts.buttonUrl },
+    tip: opts.tip,
+    warning: opts.warning,
+    supportEmail: "support@workspace.com",
+  };
+}
+
+export async function sendTeamTaskSubmitted(to: string, firstName: string, taskTitle: string, submittedBy: string, taskUrl: string): Promise<void> {
+  const data = createSimpleEmailData({
+    subject: `Verification Requested: ${taskTitle}`,
+    previewText: `${submittedBy} submitted "${taskTitle}" for verification`,
+    firstName, statusType: "warning", statusLabel: "Pending Review",
+    intro: [`${submittedBy} has submitted "${taskTitle}" for your review and approval.`],
+    details: [
+      { label: "Task", value: taskTitle },
+      { label: "Submitted By", value: submittedBy },
+    ],
+    buttonText: "Review Task", buttonUrl: taskUrl,
+  });
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendTeamTaskApproved(to: string, firstName: string, taskTitle: string, approvedBy: string, taskUrl: string): Promise<void> {
+  const data = createSimpleEmailData({
+    subject: `Task Approved: ${taskTitle}`,
+    previewText: `"${taskTitle}" has been approved`,
+    firstName, statusType: "success", statusLabel: "Approved",
+    intro: [`${approvedBy} has approved "${taskTitle}".`],
+    details: [
+      { label: "Task", value: taskTitle },
+      { label: "Approved By", value: approvedBy },
+    ],
+    buttonText: "View Task", buttonUrl: taskUrl,
+    tip: "Great teamwork! Consider reviewing what went well during your next standup.",
+  });
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendTeamTaskRejected(to: string, firstName: string, taskTitle: string, rejectedBy: string, reason: string, taskUrl: string): Promise<void> {
+  const data = createSimpleEmailData({
+    subject: `Task Rejected: ${taskTitle}`,
+    previewText: `"${taskTitle}" needs revision`,
+    firstName, statusType: "error", statusLabel: "Revision Needed",
+    intro: [`${rejectedBy} has requested revisions for "${taskTitle}".`],
+    details: [
+      { label: "Task", value: taskTitle },
+      { label: "Rejected By", value: rejectedBy },
+      { label: "Reason", value: reason },
+    ],
+    buttonText: "View Task", buttonUrl: taskUrl,
+    warning: "Please review the feedback and resubmit once the changes are made.",
+  });
   await sendEmail(to, data.subject, buildEmailHtml(data));
 }
 

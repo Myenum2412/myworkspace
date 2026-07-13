@@ -40,12 +40,13 @@ const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-700",
 };
 
-const statusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
+const defaultStatusGroups = ["todo", "in_progress", "review", "done", "cancelled"];
 
 type KanbanBoardProps = {
   tasks: Task[];
   onStatusChange: (taskId: string, newStatus: string) => void;
   onCardClick: (task: Task) => void;
+  statusGroups?: string[];
 };
 
 function SortableCard({ task, onClick }: { task: Task; onClick: () => void }) {
@@ -115,7 +116,7 @@ function Column({ status, tasks, onCardClick }: { status: string; tasks: Task[];
       </div>
       <div
         ref={setNodeRef}
-        className={`flex flex-col gap-2 flex-1 min-h-[200px] max-h-[calc(100vh-280px)] overflow-y-auto rounded-lg p-2 transition-colors ${isOver ? "bg-primary/10 ring-2 ring-primary/40" : "bg-muted/30"}`}
+        className={`flex flex-col gap-2 flex-1 min-h-[200px] max-h-[calc(100vh-200px)] overflow-y-auto rounded-lg p-2 transition-colors ${isOver ? "bg-primary/10 ring-2 ring-primary/40" : "bg-muted/30"}`}
       >
         {tasks.length === 0 ? (
           <p className="text-xs text-muted-foreground italic px-1">No tasks</p>
@@ -131,7 +132,7 @@ function Column({ status, tasks, onCardClick }: { status: string; tasks: Task[];
   );
 }
 
-export function KanbanBoard({ tasks, onStatusChange, onCardClick }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, onStatusChange, onCardClick, statusGroups = defaultStatusGroups }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -176,7 +177,10 @@ export function KanbanBoard({ tasks, onStatusChange, onCardClick }: KanbanBoardP
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-5 h-[calc(100vh-220px)]">
+      <div
+        className="grid gap-4 h-[calc(100vh-140px)] overflow-x-auto pb-2"
+        style={{ gridTemplateColumns: `repeat(${statusGroups.length}, minmax(180px, 1fr))` }}
+      >
         {statusGroups.map((s) => {
           const items = tasks.filter((t) => t.status === s);
           return (

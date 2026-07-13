@@ -53,21 +53,6 @@ jobs:
           name: coverage-report
           path: backend/coverage/
 
-  ai-security-tests:
-    name: AI Security Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: backend/package-lock.json
-      - run: npm ci --include=dev
-        working-directory: backend
-      - run: npx jest --config jest.config.cjs --testPathPattern="ai/security"
-        working-directory: backend
-
   integration-tests:
     name: Integration Tests
     needs: unit-tests
@@ -99,7 +84,7 @@ jobs:
 
   build:
     name: Build & Docker
-    needs: [unit-tests, ai-security-tests]
+    needs: [unit-tests]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:

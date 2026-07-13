@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { PlusIcon, BookmarkIcon, ListTodoIcon, UsersIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusIcon, BookmarkIcon, SearchIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
@@ -16,6 +16,7 @@ import {
 import { ViewToggle } from "@/components/view-toggle";
 import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
+import { apiFetch } from "@/lib/api";
 
 export type SavedTask = {
   _id: string;
@@ -23,6 +24,7 @@ export type SavedTask = {
   description: string;
   status: string;
   priority: string;
+  type?: string;
   dueDate: string | null;
   assigneeId: string;
   assigneeName: string;
@@ -39,14 +41,13 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<SavedTask | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
     setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
     try {
-      await fetch(`/api/tasks/${taskId}`, {
+      await apiFetch(`/api/tasks/${taskId}/status`, {
         method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
     } catch {}
@@ -54,7 +55,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 h-screen">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <BookmarkIcon className="size-5 sm:size-6" />
@@ -73,71 +74,23 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
         </div>
 
         {view === "table" ? (
-          <><div className="grid gap-4 grid-cols-2 md:grid-cols-6 mb-6">
-            <Card className="bg-blue-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <ListTodoIcon className="size-4" /> Today Tasks
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tasks.filter((t) => t.status === "todo").length}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-blue-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <UsersIcon className="size-4" /> Team Task
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tasks.filter((t) => t.status === "assigned").length}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-yellow-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <ClockIcon className="size-4" /> In Progress
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tasks.filter((t) => t.status === "in_progress").length}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-blue-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <AlertCircleIcon className="size-4" /> Review
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tasks.filter((t) => t.status === "review").length}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-green-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <CheckCircle2Icon className="size-4" /> Completed
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tasks.filter((t) => t.status === "done").length}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-red-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                  <XCircleIcon className="size-4" /> In Completed
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tasks.filter((t) => t.status === "cancelled").length}</div>
-              </CardContent>
-            </Card>
-          </div>
-          <Card>
-            <CardHeader><CardTitle>All Saved Tasks</CardTitle></CardHeader>
-            <CardContent>
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex items-center gap-4 mb-4">
+              <h2 className="text-lg font-semibold shrink-0">All Saved Tasks</h2>
+              <div className="flex-1 flex justify-center">
+                <div className="relative w-full max-w-md">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search saved tasks..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 h-9"
+                  />
+                </div>
+              </div>
+              <span className="text-sm text-muted-foreground shrink-0">{tasks.length} tasks</span>
+            </div>
+            <div className="flex-1 min-h-0">
               <TaskDataTable
                 data={tasks}
                 onView={(t) => { setSelectedTask(t as unknown as SavedTask); setViewOpen(true); }}
@@ -145,15 +98,18 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
                 searchPlaceholder="Search saved tasks..."
                 emptyMessage="No saved tasks."
                 label="task"
+                hideSearchBar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
               />
-            </CardContent>
-          </Card>
-          </>
+            </div>
+          </div>
         ) : (
           <KanbanBoard
             tasks={tasks}
             onStatusChange={handleStatusChange}
             onCardClick={(task) => { setSelectedTask(task as unknown as SavedTask); setViewOpen(true); setEditMode(false); }}
+            statusGroups={["draft", "assigned", "pending", "in_progress", "submitted", "approved", "rejected", "completed", "hold", "cancelled", "reopened", "published", "accepted", "scheduled", "activated"]}
           />
         )}
       </main>

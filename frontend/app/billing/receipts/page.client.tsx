@@ -88,9 +88,16 @@ export default function ReceiptsPageClient() {
   const fetchReceipts = useCallback(async () => {
     setLoading(true);
     try {
+      const profileRes = await fetch("/api/user/profile");
+      if (!profileRes.ok) { setLoading(false); setError("Failed to load profile"); return; }
+      const profileData = await profileRes.json();
+      const oid = profileData?.data?.org?.id;
+      if (!oid) { setLoading(false); setError("No organization found"); return; }
+
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.set("status", statusFilter);
       params.set("limit", "100");
+      params.set("orgId", oid);
       const res = await fetch(`/api/receipts?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load");
       const data = await res.json();

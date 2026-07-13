@@ -38,9 +38,11 @@ import {
   UnplugIcon,
   AlertCircleIcon,
   BrainIcon,
+  BotIcon,
 } from "lucide-react";
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
+import MCPPortalClient from "@/app/mcp/mcp-portal.client";
 
 const SECTION_LIMITS_KEY = "myworkspace_section_limits";
 
@@ -89,7 +91,6 @@ function saveSectionLimits(limits: Record<string, number>) {
       billingUpdates?: boolean;
       featureAnnouncements?: boolean;
     };
-    aiSoul?: string;
   } | null;
 };
 
@@ -240,8 +241,13 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             </TabsTrigger>
             <TabsTrigger value="ai" className="gap-2">
               <BrainIcon className="size-4 shrink-0" />
-              <span className="hidden sm:inline">AI</span>
-              <span className="sm:hidden">AI</span>
+              <span className="hidden sm:inline">AI Soul</span>
+              <span className="sm:hidden">Soul</span>
+            </TabsTrigger>
+            <TabsTrigger value="mcp" className="gap-2">
+              <BotIcon className="size-4 shrink-0" />
+              <span className="hidden sm:inline">MCP</span>
+              <span className="sm:hidden">MCP</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -435,9 +441,12 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
           <TabsContent value="ai" className="h-full m-0 p-0">
             <ScrollArea className="h-full">
               <div className="p-3 sm:p-4 md:p-6 space-y-6">
-                <AISoulSettings orgId={orgId} initialSoul={initialSettings?.aiSoul || ""} />
+                <AISoulSettings orgId={orgId} initialSoul={(initialSettings as any)?.aiSoul || ""} />
               </div>
             </ScrollArea>
+          </TabsContent>
+          <TabsContent value="mcp" className="h-full m-0 p-0">
+            <MCPPortalClient />
           </TabsContent>
         </div>
       </Tabs>
@@ -980,7 +989,7 @@ function AISoulSettings({ orgId, initialSoul }: { orgId: string; initialSoul: st
       <div>
         <h2 className="text-lg font-semibold">AI Soul (soul.md)</h2>
         <p className="text-sm text-muted-foreground">
-          Define the AI assistant personality and behavior rules. This is injected as a markdown prompt into every AI conversation.
+          Define the AI assistant personality and behavior rules. This is loaded by the MCP server at the start of every AI session and used to personalize all AI interactions.
         </p>
       </div>
       <Card>
@@ -1022,4 +1031,5 @@ You are a helpful assistant for MyWorkSpace.
     </div>
   );
 }
+
 

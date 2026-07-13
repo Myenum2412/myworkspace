@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusIcon, ListTodoIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusIcon, SearchIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
@@ -17,12 +17,14 @@ import { ViewToggle } from "@/components/view-toggle";
 import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 type UiTask = {
   _id: string;
   id: string;
   title: string;
   description?: string;
+  type: string;
   status: string;
   priority: string;
   assigneeId?: string;
@@ -50,6 +52,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Seed React Query with the SSR payload.
   const queryKey = useMemo(() => ["tasks", orgId] as const, [orgId]);
@@ -65,7 +68,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
     queryFn: async () => {
       if (!orgId) return [];
       try {
-        const res = await fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
+        const res = await apiFetch(`/api/tasks?orgId=${orgId}&type=individual${userId ? `&assigneeId=${userId}` : ""}`);
         if (!res.ok) return [];
         const d = await res.json();
         return d.data || [];
@@ -99,14 +102,6 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
     [tasks, userId],
   );
 
-  const summary = useMemo(() => {
-    const init = { todo: 0, in_progress: 0, review: 0, done: 0, cancelled: 0 };
-    return myTasks.reduce((acc: typeof init, t: UiTask) => {
-      if (t.status in init) acc[t.status as keyof typeof init]++;
-      return acc;
-    }, init);
-  }, [myTasks]);
-
   const handleTaskUpdate = useCallback((updated: UiTask) => {
     setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
   }, [setTasks]);
@@ -114,10 +109,8 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
   const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
     setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
     try {
-      await fetch(`/api/tasks/${taskId}`, {
+      await apiFetch(`/api/tasks/${taskId}/status`, {
         method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
     } catch {}
@@ -125,7 +118,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 h-screen">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <h1 className="text-xl sm:text-2xl font-bold">My Tasks</h1>
@@ -141,78 +134,43 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
           </Button>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-6 mb-6">
-          <Card className="bg-blue-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <ListTodoIcon className="size-4" /> Today Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.todo}</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-yellow-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <ClockIcon className="size-4" /> In Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.in_progress}</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-blue-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <AlertCircleIcon className="size-4" /> Review
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.review}</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-green-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <CheckCircle2Icon className="size-4" /> Completed
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.done}</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-red-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <XCircleIcon className="size-4" /> Cancelled
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.cancelled}</div>
-            </CardContent>
-          </Card>
-        </div>
-
         {view === "table" ? (
-        <Card>
-          <CardHeader><CardTitle>Assigned to me</CardTitle></CardHeader>
-          <CardContent>
-            <TaskDataTable
-              data={myTasks}
-              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
-              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(true); }}
-              searchPlaceholder="Search my tasks..."
-              emptyMessage="No tasks assigned to you."
-              label="task"
-            />
-          </CardContent>
-        </Card>
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex items-center gap-4 mb-4">
+              <h2 className="text-lg font-semibold shrink-0">Assigned to me</h2>
+              <div className="flex-1 flex justify-center">
+                <div className="relative w-full max-w-md">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search my tasks..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 h-9"
+                  />
+                </div>
+              </div>
+              <span className="text-sm text-muted-foreground shrink-0">{myTasks.length} tasks</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <TaskDataTable
+                data={myTasks}
+                onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
+                onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(true); }}
+                searchPlaceholder="Search my tasks..."
+                emptyMessage="No tasks assigned to you."
+                label="task"
+                hideSearchBar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
+            </div>
+          </div>
         ) : (
           <KanbanBoard
             tasks={myTasks}
             onStatusChange={handleStatusChange}
             onCardClick={(task) => { setSelectedTask(task as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
+            statusGroups={["draft", "assigned", "pending", "in_progress", "completed", "hold", "cancelled", "reopened"]}
           />
         )}
 

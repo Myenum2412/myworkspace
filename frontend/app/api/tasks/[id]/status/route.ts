@@ -9,14 +9,18 @@ export async function PATCH(
   try {
     const { id } = await params;
     const cookie = request.headers.get("cookie") || "";
+    const csrfToken = request.headers.get("x-csrf-token") || "";
     const body = await request.json();
+    
+    const headers: Record<string, string> = {
+      cookie,
+      "Content-Type": "application/json",
+    };
+    if (csrfToken) headers["x-csrf-token"] = csrfToken;
     
     const res = await fetch(`${API_URL}/api/tasks/${id}/status`, {
       method: "PATCH",
-      headers: {
-        cookie,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(body),
     });
     

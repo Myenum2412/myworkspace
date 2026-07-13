@@ -9,7 +9,7 @@ import {
   CalendarIcon, ClockIcon, TargetIcon, AlertCircleIcon,
   CheckCircle2Icon, ArrowUpIcon, ArrowDownIcon, CircleIcon,
   DownloadIcon, EyeIcon, FileIcon, FileSpreadsheetIcon, FileImageIcon, FileArchiveIcon,
-  TimerIcon,
+  TimerIcon, ListChecksIcon,
 } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
 
@@ -19,6 +19,7 @@ const TABS = [
   { id: "timesheet", label: "Timesheet", icon: TimerIcon },
   { id: "activity", label: "Activity", icon: ActivityIcon },
   { id: "files", label: "Files", icon: FileTextIcon },
+  { id: "tasks", label: "Tasks", icon: ListChecksIcon },
   { id: "budget", label: "Budget", icon: BarChart3Icon },
 ];
 
@@ -59,6 +60,8 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
   const [memberNames, setMemberNames] = useState<{ id: string; name: string; image?: string }[]>([]);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [userMap, setUserMap] = useState<Record<string, string>>({});
+  const [projectTasks, setProjectTasks] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
 
   useEffect(() => {
     if (!project.members?.length) return;
@@ -92,6 +95,25 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!orgIdProp) return;
+    fetch(`/api/tasks?orgId=${orgIdProp}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const all = d.data || [];
+        setProjectTasks(all.filter((t: any) => t.project === project.name || t.project === project.id));
+      })
+      .catch(() => {});
+  }, [orgIdProp, project.id, project.name]);
+
+  useEffect(() => {
+    if (!orgIdProp) return;
+    fetch(`/api/billing/invoices?orgId=${orgIdProp}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => setInvoices(d.data || []))
+      .catch(() => {});
+  }, [orgIdProp]);
+
   const progressColor =
     project.progress >= 100 ? "bg-green-500" : project.progress >= 50 ? "bg-blue-500" : project.progress > 0 ? "bg-amber-500" : "bg-muted-foreground/30";
 
@@ -103,10 +125,6 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
     if (diff < 7 * 24 * 60 * 60 * 1000) return "at-risk";
     return "on-track";
   }, [project]);
-
-  const budgetUtilization = project.budget && project.budget > 0
-    ? Math.min(100, Math.round(((project.spent || 0) / project.budget) * 100))
-    : 0;
 
   const daysLeft = project.deadline
     ? Math.ceil((new Date(project.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -335,64 +353,80 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
         )}
 
         {tab === 5 && (
-          <div className="space-y-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Budget & Resources</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-lg border p-4 space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <TargetIcon className="size-4" />
-                  <span>Budget</span>
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Tasks ({projectTasks.length})</h3>
+            {projectTasks.length === 0 ? (
+              <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
+                <div className="text-center space-y-2">
+                  <ListChecksIcon className="size-8 mx-auto text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">No tasks linked to this project</p>
                 </div>
-                <p className="text-2xl font-bold">${(project.budget || 0).toLocaleString()}</p>
               </div>
-              <div className="rounded-lg border p-4 space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <BarChart3Icon className="size-4" />
-                  <span>Spent</span>
-                </div>
-                <p className="text-2xl font-bold">${(project.spent || 0).toLocaleString()}</p>
-              </div>
-            </div>
-            {project.budget && project.budget > 0 && (
-              <div className="rounded-lg border p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Budget Utilization</h3>
-                  <span className={cn("text-sm font-medium", budgetUtilization > 80 ? "text-red-500" : budgetUtilization > 50 ? "text-amber-500" : "text-green-500")}>
-                    {budgetUtilization}%
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={cn("h-full rounded-full transition-all", budgetUtilization > 80 ? "bg-red-500" : budgetUtilization > 50 ? "bg-amber-500" : "bg-green-500")}
-                    style={{ width: `${budgetUtilization}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">${(project.spent || 0).toLocaleString()} of ${project.budget.toLocaleString()} used</p>
+            ) : (
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="text-left px-3 py-2 font-semibold">Task</th>
+                      <th className="text-left px-3 py-2 font-semibold">Status</th>
+                      <th className="text-left px-3 py-2 font-semibold">Priority</th>
+                      <th className="text-left px-3 py-2 font-semibold">Assignee</th>
+                      <th className="text-left px-3 py-2 font-semibold">Due Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {projectTasks.map((t: any) => (
+                      <tr key={t._id || t.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                        <td className="px-3 py-2 font-medium">{t.title}</td>
+                        <td className="px-3 py-2"><span className="text-xs capitalize">{t.status?.replace(/_/g, " ")}</span></td>
+                        <td className="px-3 py-2"><span className="text-xs capitalize">{t.priority}</span></td>
+                        <td className="px-3 py-2 text-muted-foreground">{t.assigneeName || "\u2014"}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "\u2014"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
-            <div className="rounded-lg border p-4 space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resource Allocation</h3>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span>Tracked Hours</span>
-                    <span className="font-medium">{project.tracked}h</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span>Team Size</span>
-                    <span className="font-medium">{memberNames.length} member{memberNames.length !== 1 ? "s" : ""}</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span>Progress</span>
-                    <span className="font-medium">{project.progress}%</span>
-                  </div>
+          </div>
+        )}
+
+        {tab === 6 && (
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Invoices ({invoices.length})</h3>
+            {invoices.length === 0 ? (
+              <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
+                <div className="text-center space-y-2">
+                  <BarChart3Icon className="size-8 mx-auto text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">No invoices yet</p>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="text-left px-3 py-2 font-semibold">Invoice</th>
+                      <th className="text-left px-3 py-2 font-semibold">Customer</th>
+                      <th className="text-left px-3 py-2 font-semibold">Amount</th>
+                      <th className="text-left px-3 py-2 font-semibold">Status</th>
+                      <th className="text-left px-3 py-2 font-semibold">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoices.map((inv: any) => (
+                      <tr key={inv.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                        <td className="px-3 py-2 font-medium">{inv.number}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{inv.customerName || "\u2014"}</td>
+                        <td className="px-3 py-2 font-mono font-medium">${(inv.amountPaid || 0).toLocaleString()}</td>
+                        <td className="px-3 py-2"><span className="text-xs capitalize">{inv.status}</span></td>
+                        <td className="px-3 py-2 text-muted-foreground">{inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "\u2014"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </ScrollArea>

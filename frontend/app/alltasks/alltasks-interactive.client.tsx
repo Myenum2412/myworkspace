@@ -2,30 +2,34 @@
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusIcon, ListTodoIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon } from "lucide-react";
+import {
+  PlusIcon, ListTodoIcon, SearchIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon,
+  UserIcon, UsersIcon, GlobeIcon, FileEditIcon, UserCheckIcon,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { ViewToggle } from "@/components/view-toggle";
 import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
 import { toast } from "sonner";
 import { perfLog, perfNow } from "@/lib/perf";
-
-
+import { apiFetch } from "@/lib/api";
 
 type UiTask = {
   _id: string;
   id: string;
   title: string;
   description?: string;
+  type: string;
   status: string;
   priority: string;
   assigneeId?: string;
@@ -35,7 +39,16 @@ type UiTask = {
   creatorName?: string;
   orgId: string;
   teamId?: string;
+  teamName?: string;
   dueDate?: string | null;
+  startDate?: string | null;
+  scheduledDate?: string | null;
+  activatedAt?: string | null;
+  submittedAt?: string | null;
+  approvedBy?: string;
+  approverName?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt?: string;
 };
@@ -45,13 +58,41 @@ export type AllTasksProps = {
   orgId: string;
 };
 
+const TYPE_TABS = [
+  { id: "all", label: "All", icon: ListTodoIcon },
+  { id: "individual", label: "Individual", icon: UserIcon },
+  { id: "team", label: "Team", icon: UsersIcon },
+  { id: "common", label: "Common", icon: GlobeIcon },
+  { id: "upcoming", label: "Upcoming", icon: ClockIcon },
+  { id: "draft", label: "Drafts", icon: FileEditIcon },
+];
+
+const TYPE_STATUS_GROUPS: Record<string, string[]> = {
+  all: ["draft", "assigned", "pending", "in_progress", "submitted", "approved", "rejected", "completed", "hold", "cancelled", "reopened", "published", "accepted", "scheduled", "activated"],
+  individual: ["draft", "assigned", "pending", "in_progress", "completed", "hold", "cancelled", "reopened"],
+  team: ["draft", "pending", "in_progress", "submitted", "approved", "completed", "rejected", "cancelled"],
+  common: ["draft", "published", "accepted", "completed"],
+  upcoming: ["draft", "scheduled", "activated", "in_progress", "completed", "cancelled"],
+  draft: ["draft"],
+};
+
+const STATUS_ICONS: Record<string, typeof ListTodoIcon> = {
+  draft: FileEditIcon, assigned: UserCheckIcon, pending: ClockIcon,
+  in_progress: ClockIcon, completed: CheckCircle2Icon, closed: CheckCircle2Icon,
+  hold: AlertCircleIcon, cancelled: XCircleIcon, rejected: XCircleIcon,
+  reopened: AlertCircleIcon, submitted: AlertCircleIcon, approved: CheckCircle2Icon,
+  published: GlobeIcon, accepted: CheckCircle2Icon, scheduled: ClockIcon, activated: UserCheckIcon,
+};
+
 export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksProps) {
   const queryClient = useQueryClient();
   const [view, setView] = useState<"kanban" | "table">("table");
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
+  const [activeTypeTab, setActiveTypeTab] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Seed React Query with the SSR payload.
   const queryKey = useMemo(() => ["tasks", orgId] as const, [orgId]);
@@ -67,7 +108,10 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
     queryFn: async () => {
       if (!orgId) return [];
       try {
-        const res = await fetch(`/api/tasks?orgId=${orgId}`, { credentials: "include" });
+        const params = new URLSearchParams({ orgId });
+        if (activeTypeTab !== "all") params.set("type", activeTypeTab);
+        if (statusFilter) params.set("status", statusFilter);
+        const res = await apiFetch(`/api/tasks?${params}`);
         if (!res.ok) return [];
         const d = await res.json();
         return d.data || [];
@@ -77,6 +121,9 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
     gcTime: 5 * 60_000,
     initialData: initialTasks,
   });
+
+  // Refetch when type tab changes
+  useEffect(() => { refetch(); }, [activeTypeTab, statusFilter, refetch]);
 
   // Auto-refresh on window focus
   useEffect(() => {
@@ -95,31 +142,31 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
     [queryClient, queryKey],
   );
 
-  // Status-summary cards — single memoized pass over the list.
+  const filteredTasks = useMemo(() => {
+    let result = tasks;
+    if (activeTypeTab !== "all") {
+      result = result.filter((t: UiTask) => t.type === activeTypeTab);
+    }
+    return result;
+  }, [tasks, activeTypeTab]);
+
+  // Status-summary cards
   const summary = useMemo(() => {
-    const t0 = perfNow();
-    const init = { todo: 0, in_progress: 0, review: 0, done: 0, cancelled: 0 };
-    const counts = tasks.reduce((acc: typeof init, t: UiTask) => {
-      if (t.status === "todo") acc.todo++;
-      else if (t.status === "in_progress") acc.in_progress++;
-      else if (t.status === "review") acc.review++;
-      else if (t.status === "done") acc.done++;
-      else if (t.status === "cancelled") acc.cancelled++;
-      return acc;
-    }, init);
-    perfLog("tasks.summary", perfNow() - t0, { n: tasks.length });
+    const counts: Record<string, number> = {};
+    for (const t of filteredTasks) {
+      counts[t.status] = (counts[t.status] || 0) + 1;
+    }
     return counts;
-  }, [tasks]);
+  }, [filteredTasks]);
 
   const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
     setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
     try {
-      await fetch(`/api/tasks/${taskId}`, {
+      const res = await apiFetch(`/api/tasks/${taskId}/status`, {
         method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
+      if (!res.ok) throw new Error("Failed to update status");
     } catch {
       setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: tasks.find((x: UiTask) => x._id === taskId)?.status || t.status } : t));
     }
@@ -127,16 +174,13 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
 
   const handleDelete = useCallback(async (t: UiTask) => {
     if (!confirm("Are you sure you want to delete this task?")) return;
-    const t0 = perfNow();
     try {
-      const res = await fetch(`/api/tasks/${t._id}`, { method: "DELETE", credentials: "include" });
+      const res = await apiFetch(`/api/tasks/${t._id}`, { method: "DELETE" });
       if (res.ok) {
         setTasks((prev) => prev.filter((x) => x._id !== t._id));
-        perfLog("tasks.delete", perfNow() - t0);
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to delete task";
-      toast.error(message);
+      toast.error(error instanceof Error ? error.message : "Failed to delete task");
     }
   }, [setTasks]);
 
@@ -146,14 +190,14 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="w-full sm:w-auto">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold">All Tasks</h1>
+              <h1 className="text-xl sm:text-2xl font-bold">Tasks</h1>
               <ViewToggle
                 options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
                 value={view}
                 onChange={(v) => setView(v as typeof view)}
               />
             </div>
-            <p className="text-sm text-muted-foreground mt-0.5">Manage all tasks across your organization</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Manage tasks across your organization</p>
           </div>
           <Button onClick={() => setShowTaskModal(true)} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
@@ -161,103 +205,112 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </Button>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <ListTodoIcon className="size-4" /> Today Tasks
+        {/* Type tabs */}
+        <Tabs value={activeTypeTab} onValueChange={setActiveTypeTab} className="w-full">
+          <TabsList className="w-full justify-start overflow-x-auto">
+            {TYPE_TABS.map(({ id, label, icon: Icon }) => (
+              <TabsTrigger key={id} value={id} className="gap-1.5 text-xs sm:text-sm">
+                <Icon className="size-3.5" />
+                <span className="hidden sm:inline">{label}</span>
+                <span className="sm:hidden">{label.slice(0, 4)}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
+        {/* Task Overview */}
+        <div className="grid gap-3 grid-cols-6">
+          {Object.keys(summary).slice(0, 5).map((s) => {
+            const Icon = STATUS_ICONS[s] || ListTodoIcon;
+            return (
+              <Card key={s} className={cn("cursor-pointer transition-colors", statusFilter === s ? "ring-2 ring-primary" : "")} onClick={() => setStatusFilter(statusFilter === s ? "" : s)}>
+                <CardHeader className="pb-1.5">
+                  <CardTitle className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Icon className="size-3" />
+                    {s.replace(/_/g, " ")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pb-3">
+                  <div className="text-xl font-bold">{summary[s]}</div>
+                </CardContent>
+              </Card>
+            );
+          })}
+          <Card className="bg-card">
+            <CardHeader className="pb-1.5">
+              <CardTitle className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <ListTodoIcon className="size-3" />
+                Total
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.todo}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <ClockIcon className="size-4" /> In Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.in_progress}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <AlertCircleIcon className="size-4" /> Review
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.review}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <CheckCircle2Icon className="size-4" /> Completed
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.done}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <XCircleIcon className="size-4" /> In Completed
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.cancelled}</div>
+            <CardContent className="pb-3">
+              <div className="text-xl font-bold">{filteredTasks.length}</div>
             </CardContent>
           </Card>
         </div>
 
         {view === "table" ? (
-        <Card>
-          <CardHeader><CardTitle>All Tasks</CardTitle></CardHeader>
-          <CardContent>
-            <TaskDataTable
-              data={tasks}
-              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
-              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(true); }}
-              onDelete={(t) => handleDelete(t as UiTask)}
-              searchPlaceholder="Search all tasks..."
-              emptyMessage="No tasks found."
-              label="task"
-            />
-          </CardContent>
-        </Card>
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex items-center gap-4 mb-4">
+              <h2 className="text-lg font-semibold shrink-0 capitalize">{activeTypeTab === "all" ? "All" : activeTypeTab} Tasks</h2>
+              <div className="flex-1 flex justify-center">
+                <div className="relative w-full max-w-md">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    placeholder={`Search ${activeTypeTab} tasks...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 h-9"
+                  />
+                </div>
+              </div>
+              <span className="text-sm text-muted-foreground shrink-0">{filteredTasks.length} tasks</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <TaskDataTable
+                data={filteredTasks}
+                onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+                onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+                onDelete={(t) => handleDelete(t as UiTask)}
+                searchPlaceholder={`Search ${activeTypeTab} tasks...`}
+                emptyMessage={`No ${activeTypeTab} tasks found.`}
+                label="task"
+                hideSearchBar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
+            </div>
+          </div>
         ) : (
           <div className="flex-1 min-h-0">
             <KanbanBoard
-              tasks={tasks}
+              tasks={filteredTasks}
               onStatusChange={handleStatusChange}
-              onCardClick={(task) => { setSelectedTask(task as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
+              onCardClick={(task) => { setSelectedTask(task as unknown as UiTask); setViewOpen(true); }}
+              statusGroups={TYPE_STATUS_GROUPS[activeTypeTab] || TYPE_STATUS_GROUPS.all}
             />
           </div>
         )}
 
-      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 flex flex-col sm:max-w-4xl" showCloseButton={false}>
-          {selectedTask && (
-            <TaskDetailedView
-              task={selectedTask}
-              editable
-              onTaskUpdate={(updated) => {
-                setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
-              }}
-              onClose={() => { setViewOpen(false); setSelectedTask(null); }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+        <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
+          <DialogContent className="p-0 flex flex-col sm:max-w-4xl max-h-[90vh]" showCloseButton={false}>
+            {selectedTask && (
+              <TaskDetailedView
+                task={selectedTask}
+                editable
+                onTaskUpdate={(updated) => {
+                  setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
+                }}
+                onClose={() => { setViewOpen(false); setSelectedTask(null); }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
-      <TaskAllocationModal
-        open={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-      />
+        <TaskAllocationModal
+          open={showTaskModal}
+          onClose={() => setShowTaskModal(false)}
+        />
       </main>
     </>
   );

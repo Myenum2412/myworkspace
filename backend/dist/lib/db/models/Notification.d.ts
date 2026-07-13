@@ -1,5 +1,5 @@
 import { Document } from "mongoose";
-export declare const NOTIFICATION_TYPES: readonly ["task_assigned", "task_updated", "task_due_soon", "mention", "invite", "system", "comment", "status_change", "message", "project_update", "billing_reminder", "approval_request", "team_update", "announcement"];
+export declare const NOTIFICATION_TYPES: readonly ["task_assigned", "task_updated", "task_due_soon", "task_submitted", "task_approved", "task_rejected", "task_published", "task_activated", "draft_published", "mention", "invite", "system", "comment", "status_change", "message", "project_update", "billing_reminder", "approval_request", "team_update", "announcement"];
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export declare const NOTIFICATION_CATEGORIES: readonly ["tasks", "projects", "messages", "billing", "approvals", "team", "system"];
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];

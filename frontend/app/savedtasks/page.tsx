@@ -78,6 +78,7 @@ export default async function SavedTasksPage() {
         description: (t.description as string) || "",
         status: (t.status as string) || "todo",
         priority: (t.priority as string) || "medium",
+        type: (t.type as string) || "",
         dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
         assigneeId: (t.assigneeId as string) || "",
         assigneeName: (assignee?.name as string) || "",

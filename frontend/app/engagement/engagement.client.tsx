@@ -6,14 +6,6 @@ import type { Engagement } from "@/app/engagement/columns";
 import { DataTable } from "@/app/engagement/data-table";
 import { columns, makeActionsCell } from "@/app/engagement/columns";
 import { EngagementForm } from "@/app/engagement/engagement-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type EngagementPageProps = {
@@ -160,13 +152,13 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
         </div>
       </main>
 
-      <Dialog open={!!viewingEngagement} onOpenChange={(open) => { if (!open) setViewingEngagement(null); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Interaction Followup Details</DialogTitle>
-          </DialogHeader>
-          {viewingEngagement && (
-            <div className="space-y-3 text-sm">
+      {viewingEngagement && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setViewingEngagement(null)}>
+          <div className="bg-background rounded-xl shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold">Interaction Followup Details</h2>
+            </div>
+            <div className="p-6 space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-2">
                 <div><span className="font-medium text-muted-foreground">Date:</span> {viewingEngagement.date}</div>
                 <div><span className="font-medium text-muted-foreground">Customer:</span> {viewingEngagement.customerName}</div>
@@ -181,34 +173,45 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
                 <p className="mt-1 text-muted-foreground">{viewingEngagement.remarks || "No remarks."}</p>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
-      <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingEngagement(null); } }}>
-        <DialogContent className="sm:max-w-[700px]">
-          <EngagementForm
-            engagement={editingEngagement}
-            onSave={handleSave}
-            onCancel={() => { setShowForm(false); setEditingEngagement(null); }}
-          />
-        </DialogContent>
-      </Dialog>
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setShowForm(false); setEditingEngagement(null); }}>
+          <div className="bg-background rounded-xl shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold">{editingEngagement ? "Edit Interaction Followup" : "Add Interaction Followup"}</h2>
+            </div>
+            <div className="p-6">
+              <EngagementForm
+                engagement={editingEngagement}
+                onSave={handleSave}
+                onCancel={() => { setShowForm(false); setEditingEngagement(null); }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
-      <Dialog open={!!deletingEngagement} onOpenChange={(open) => { if (!open) setDeletingEngagement(null); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Interaction Followup</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this interaction followup for <strong>{deletingEngagement?.customerName}</strong>? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeletingEngagement(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {deletingEngagement && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDeletingEngagement(null)}>
+          <div className="bg-background rounded-xl shadow-lg w-full max-w-md m-4" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold">Delete Interaction Followup</h2>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-muted-foreground mb-6">
+                Are you sure you want to delete this interaction followup for <strong>{deletingEngagement?.customerName}</strong>? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setDeletingEngagement(null)}>Cancel</Button>
+                <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

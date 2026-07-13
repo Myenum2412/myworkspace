@@ -141,6 +141,148 @@ export async function notifyProjectUpdate(
   });
 }
 
+export async function notifyTeamTaskSubmitted(
+  task: { id: string; title: string },
+  headUserId: string,
+  submittedByName: string,
+  orgId: string,
+) {
+  return createNotification({
+    userId: headUserId,
+    orgId,
+    createdBy: headUserId,
+    type: "task_submitted",
+    category: "tasks",
+    priority: "high",
+    title: "Verification Requested",
+    message: `${submittedByName} submitted "${task.title}" for verification`,
+    link: `/alltasks?id=${task.id}`,
+    actions: [
+      { label: "Approve", action: "approve", url: `/alltasks?id=${task.id}` },
+      { label: "Reject", action: "reject", url: `/alltasks?id=${task.id}` },
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}` },
+    ],
+    metadata: { taskId: task.id },
+  });
+}
+
+export async function notifyTeamTaskApproved(
+  task: { id: string; title: string },
+  userId: string,
+  approvedByName: string,
+  orgId: string,
+) {
+  return createNotification({
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "task_approved",
+    category: "tasks",
+    priority: "high",
+    title: "Task Approved",
+    message: `${approvedByName} approved "${task.title}"`,
+    link: `/alltasks?id=${task.id}`,
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}` },
+    ],
+    metadata: { taskId: task.id },
+  });
+}
+
+export async function notifyTeamTaskRejected(
+  task: { id: string; title: string },
+  userId: string,
+  rejectedByName: string,
+  orgId: string,
+  reason: string,
+) {
+  return createNotification({
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "task_rejected",
+    category: "tasks",
+    priority: "high",
+    title: "Task Rejected",
+    message: `${rejectedByName} rejected "${task.title}": ${reason}`,
+    link: `/alltasks?id=${task.id}`,
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}` },
+    ],
+    metadata: { taskId: task.id, rejectionReason: reason },
+  });
+}
+
+export async function notifyCommonTaskPublished(
+  task: { id: string; title: string },
+  userId: string,
+  publishedByName: string,
+  orgId: string,
+) {
+  return createNotification({
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "task_published",
+    category: "tasks",
+    priority: "normal",
+    title: "New Common Task",
+    message: `${publishedByName} published "${task.title}"`,
+    link: `/alltasks?id=${task.id}`,
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}` },
+    ],
+    metadata: { taskId: task.id },
+  });
+}
+
+export async function notifyUpcomingTaskActivated(
+  task: { id: string; title: string },
+  userId: string,
+  activatedByName: string,
+  orgId: string,
+) {
+  return createNotification({
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "task_activated",
+    category: "tasks",
+    priority: "high",
+    title: "Task Activated",
+    message: `${activatedByName} activated "${task.title}"`,
+    link: `/alltasks?id=${task.id}`,
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}` },
+    ],
+    metadata: { taskId: task.id },
+  });
+}
+
+export async function notifyDraftPublished(
+  task: { id: string; title: string },
+  userId: string,
+  publishedByName: string,
+  orgId: string,
+  targetType: string,
+) {
+  return createNotification({
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "draft_published",
+    category: "tasks",
+    priority: "normal",
+    title: "Draft Published",
+    message: `${publishedByName} published "${task.title}" as a ${targetType} task`,
+    link: `/alltasks?id=${task.id}`,
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}` },
+    ],
+    metadata: { taskId: task.id, targetType },
+  });
+}
+
 export async function notifyTaskDueSoon(
   task: { id: string; title: string; dueDate: Date },
   assigneeId: string,
