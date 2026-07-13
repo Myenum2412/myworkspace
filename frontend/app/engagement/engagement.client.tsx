@@ -107,17 +107,17 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
     <>
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
         <div className="flex items-center justify-between gap-2">
-          <h1 className="text-xl sm:text-2xl font-bold">Engagement</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Interaction Followups</h1>
           <Button onClick={() => setShowForm(true)}>
             <PlusIcon className="mr-2 size-4" />
-            Add Engagement
+            Add Interaction Followup
           </Button>
         </div>
 
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total Engagements</CardTitle>
+              <CardTitle className="text-sm text-muted-foreground">Total Interaction Followups</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{total}</div>
@@ -163,7 +163,7 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
       <Dialog open={!!viewingEngagement} onOpenChange={(open) => { if (!open) setViewingEngagement(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Engagement Details</DialogTitle>
+            <DialogTitle>Interaction Followup Details</DialogTitle>
           </DialogHeader>
           {viewingEngagement && (
             <div className="space-y-3 text-sm">
@@ -198,9 +198,9 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
       <Dialog open={!!deletingEngagement} onOpenChange={(open) => { if (!open) setDeletingEngagement(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Engagement</DialogTitle>
+            <DialogTitle>Delete Interaction Followup</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the engagement for <strong>{deletingEngagement?.customerName}</strong>? This action cannot be undone.
+              Are you sure you want to delete this interaction followup for <strong>{deletingEngagement?.customerName}</strong>? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">

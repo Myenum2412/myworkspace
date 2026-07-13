@@ -19,9 +19,9 @@ export function DataTable<TData, TValue>({
       columns={columns}
       data={data}
       onRowClick={onRowClick}
-      searchPlaceholder="Search engagements..."
-      label="engagement(s)"
-      emptyMessage="No engagements yet."
+      searchPlaceholder="Search interaction followups..."
+      label="interaction followup(s)"
+      emptyMessage="No interaction followups yet."
       emptyIcon={<MessageSquareIcon className="size-6 text-muted-foreground/50" />}
     />
   );

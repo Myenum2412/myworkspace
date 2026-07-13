@@ -123,12 +123,12 @@ const platformItems: NavItem[] = [
     ],
   },
   {
-    title: "Engagement",
+    title: "Interaction Followups",
     url: "/engagement",
     icon: <HeartHandshakeIcon className="size-6" />,
   },
 {
-    title: "Stocks",
+    title: "Inventory",
     url: "/stocks",
     icon: <PackageIcon className="size-6" />,
   },

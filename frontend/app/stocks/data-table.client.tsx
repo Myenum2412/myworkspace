@@ -25,9 +25,9 @@ export function DataTable<TData, TValue>({
       columns={columns}
       data={data}
       onRowClick={onRowClick}
-      searchPlaceholder="Search stocks..."
-      label="stock item(s)"
-      emptyMessage="No stock items yet."
+      searchPlaceholder="Search inventory..."
+      label="inventory item(s)"
+      emptyMessage="No inventory items yet."
       emptyIcon={<PackageIcon className="size-6 text-muted-foreground/50" />}
       searchQuery={searchQuery}
       onSearchChange={onSearchChange}
