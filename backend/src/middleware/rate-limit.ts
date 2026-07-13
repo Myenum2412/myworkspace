@@ -1,5 +1,6 @@
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import RedisStore from "rate-limit-redis";
+import { logger } from "../lib/logger/index.js";
 
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -57,10 +58,13 @@ export const searchLimiter = rateLimit({
 export function promoteRateLimitersToRedis() {
   try {
     const { getRedis, isRedisConnected } = require("../lib/redis.js");
-    getRedis();
-    setTimeout(() => {
+    const client = getRedis();
+
+    // Poll for Redis readiness with exponential backoff
+    let attempts = 0;
+    const maxAttempts = 10;
+    const check = () => {
       if (isRedisConnected()) {
-        const client = getRedis();
         const store = new RedisStore({
           sendCommand: (...args: string[]) => (client as any).call(...args),
         });
@@ -70,9 +74,15 @@ export function promoteRateLimitersToRedis() {
         (uploadLimiter as any).store = store;
         (shareDownloadLimiter as any).store = store;
         (searchLimiter as any).store = store;
-        console.log("✦ Rate limiters promoted to Redis-backed store");
+        logger.info("Rate limiters promoted to Redis-backed store");
+        return;
       }
-    }, 200);
+      if (attempts < maxAttempts) {
+        attempts++;
+        setTimeout(check, Math.min(500 * attempts, 5000));
+      }
+    };
+    check();
   } catch {
     // silently fall back to in-memory
   }

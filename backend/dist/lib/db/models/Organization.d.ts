@@ -28,9 +28,7 @@ export interface IOrganization extends Document {
     companyDescription?: string;
     plan: "free" | "growth" | "enterprise" | string;
     ownerId: string;
-    stripeCustomerId?: string;
-    stripeSubscriptionId?: string;
-    subscriptionStatus?: "active" | "past_due" | "canceled" | "incomplete" | "incomplete_expired" | "trialing" | "unpaid";
+    subscriptionStatus?: "active" | "past_due" | "canceled" | "trialing" | "expired";
     currentPeriodEnd?: Date;
     trialEnd?: Date;
     createdAt: Date;

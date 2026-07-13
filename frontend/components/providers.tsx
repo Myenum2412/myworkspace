@@ -13,7 +13,13 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { AppInitProvider } from "@/components/app-init-provider";
 import { createIndexedDbPersister } from "@/lib/offline/query-persister";
 
-const persister = createIndexedDbPersister();
+let persister: ReturnType<typeof createIndexedDbPersister> | null = null;
+function getPersister() {
+  if (!persister && typeof window !== "undefined") {
+    persister = createIndexedDbPersister();
+  }
+  return persister;
+}
 
 function createQueryClient() {
   return new QueryClient({
@@ -36,8 +42,13 @@ function createQueryClient() {
   });
 }
 
+const onlineManagerInitialized = { current: false };
+
 const OnlineStatusManager = memo(function OnlineStatusManager({ queryClient }: { queryClient: QueryClient }) {
   useEffect(() => {
+    if (onlineManagerInitialized.current) return;
+    onlineManagerInitialized.current = true;
+
     onlineManager.setEventListener((setOnline) => {
       const handleOnline = () => {
         setOnline(true);
@@ -75,7 +86,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <PersistQueryClientProvider
         client={queryClient}
         persistOptions={{
-          persister,
+          persister: getPersister()!,
           maxAge: 7 * 24 * 60 * 60 * 1000,
           buster: "v2",
         }}

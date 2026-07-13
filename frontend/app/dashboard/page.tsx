@@ -4,18 +4,35 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import { unstable_cache } from "next/cache";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   ListTodo, CheckCircle2, Clock, AlertCircle,
   CalendarIcon, HourglassIcon, Users, FolderKanbanIcon, Building2Icon,
-  IndianRupeeIcon,
+  IndianRupeeIcon, ArrowRightIcon,
 } from "lucide-react";
 
 export const revalidate = 30;
 
+const ROWS_PER_CARD = 5;
+
 const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+
+function ViewMoreFooter({ href, label = "View More" }: { href: string; label?: string }) {
+  return (
+    <div className="flex justify-end pt-2 mt-2 border-t border-border shrink-0">
+      <Button asChild variant="outline" size="sm">
+        <Link href={href}>
+          {label}
+          <ArrowRightIcon className="size-3.5" />
+        </Link>
+      </Button>
+    </div>
+  );
+}
 
 const statusStyles: Record<string, string> = {
   active: "bg-green-50 text-green-700",
@@ -79,19 +96,28 @@ const getCachedDashboardData = unstable_cache(
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     const [
-      tCount, doneCount, ipCount, overdueCount,
-      todayCount, pendingCount,
-      projDocs, clientDocs,
+      taskCounts, projDocs, clientDocs,
     ] = await Promise.all([
-      db.collection(collections.tasks).countDocuments({ orgId }),
-      db.collection(collections.tasks).countDocuments({ orgId, status: "done" }),
-      db.collection(collections.tasks).countDocuments({ orgId, status: "in_progress" }),
-      db.collection(collections.tasks).countDocuments({ orgId, dueDate: { $lt: now }, status: { $ne: "done" } }),
-      db.collection(collections.tasks).countDocuments({ orgId, createdAt: { $gte: todayStart } }),
-      db.collection(collections.tasks).countDocuments({ orgId, status: "review" }),
+      // Single aggregation instead of 6 separate countDocuments
+      db.collection(collections.tasks).aggregate([
+        { $match: { orgId } },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            done: { $sum: { $cond: [{ $eq: ["$status", "done"] }, 1, 0] } },
+            inProgress: { $sum: { $cond: [{ $eq: ["$status", "in_progress"] }, 1, 0] } },
+            overdue: { $sum: { $cond: [{ $and: [{ $lt: ["$dueDate", now] }, { $ne: ["$status", "done"] }] }, 1, 0] } },
+            today: { $sum: { $cond: [{ $gte: ["$createdAt", todayStart] }, 1, 0] } },
+            review: { $sum: { $cond: [{ $eq: ["$status", "review"] }, 1, 0] } },
+          },
+        },
+      ]).toArray(),
       db.collection(collections.projects).find({ orgId }).sort({ createdAt: -1 }).limit(10).toArray(),
       db.collection(collections.clients).find({ orgId }).sort({ createdAt: -1 }).limit(5).toArray(),
     ]);
+
+    const counts = (taskCounts as any)[0] || { total: 0, done: 0, inProgress: 0, overdue: 0, today: 0, review: 0 };
 
     const projects: Project[] = (projDocs as unknown as Record<string, unknown>[]).map((p) => ({
       id: (p.id as string) || String(p._id || ""),
@@ -145,12 +171,12 @@ const getCachedDashboardData = unstable_cache(
     }));
 
     return {
-      totalTasks: tCount,
-      completedTasks: doneCount,
-      inProgressTasks: ipCount,
-      overdueTasks: overdueCount,
-      todayTasks: todayCount,
-      pendingApproval: pendingCount,
+      totalTasks: counts.total,
+      completedTasks: counts.done,
+      inProgressTasks: counts.inProgress,
+      overdueTasks: counts.overdue,
+      todayTasks: counts.today,
+      pendingApproval: counts.review,
       projects, members, clients, pendingInvoices,
     };
   },
@@ -220,19 +246,19 @@ export default async function DashboardPage() {
       {/* Tables */}
       <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 lg:grid-cols-6">
         {/* Active Projects */}
-        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
+        <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
               <FolderKanbanIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Active Projects</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto min-h-0">
+          <CardContent className="flex flex-1 flex-col min-h-0">
             {projects.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No projects yet.</p>
             ) : (
-              <div className="responsive-table">
+              <div className="responsive-table flex-1 overflow-y-auto min-h-0">
                 <div className="sm:hidden space-y-2">
-                  {projects.map((p) => (
+                  {projects.slice(0, ROWS_PER_CARD).map((p) => (
                     <div key={p.id} className="border rounded-lg p-3 bg-card space-y-1.5 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{p.name}</span>
@@ -260,7 +286,7 @@ export default async function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {projects.map((p) => (
+                    {projects.slice(0, ROWS_PER_CARD).map((p) => (
                       <tr key={p.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
                         <td className="px-4 py-3 text-sm font-medium">{p.name}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{p.client || "—"}</td>
@@ -281,23 +307,24 @@ export default async function DashboardPage() {
                 </table>
               </div>
             )}
+            <ViewMoreFooter href="/projects" />
           </CardContent>
         </Card>
 
         {/* Team Members */}
-        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
+        <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
               <Users className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Team Members</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto min-h-0">
+          <CardContent className="flex flex-1 flex-col min-h-0">
             {members.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No members yet.</p>
             ) : (
-              <div className="responsive-table">
+              <div className="responsive-table flex-1 overflow-y-auto min-h-0">
                 <div className="sm:hidden space-y-2">
-                  {members.map((m) => (
+                  {members.slice(0, ROWS_PER_CARD).map((m) => (
                     <div key={m.email} className="border rounded-lg p-3 bg-card flex items-center gap-3">
                       <Avatar className="size-10 shrink-0">
                         <AvatarImage src={m.avatar} alt={m.name} />
@@ -319,7 +346,7 @@ export default async function DashboardPage() {
                     <tr><th>Name</th><th>Role</th><th>Status</th></tr>
                   </thead>
                   <tbody>
-                    {members.map((m) => (
+                    {members.slice(0, ROWS_PER_CARD).map((m) => (
                       <tr key={m.email} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
@@ -343,23 +370,24 @@ export default async function DashboardPage() {
                 </table>
               </div>
             )}
+            <ViewMoreFooter href="/teams" />
           </CardContent>
         </Card>
 
         {/* Recent Clients */}
-        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
+        <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
               <Building2Icon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Recent Clients</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto min-h-0">
+          <CardContent className="flex flex-1 flex-col min-h-0">
             {clients.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No clients yet.</p>
             ) : (
-              <div className="responsive-table">
+              <div className="responsive-table flex-1 overflow-y-auto min-h-0">
                 <div className="sm:hidden space-y-2">
-                  {clients.map((c) => (
+                  {clients.slice(0, ROWS_PER_CARD).map((c) => (
                     <div key={c.id} className="border rounded-lg p-3 bg-card space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">{c.name}</span>
@@ -375,7 +403,7 @@ export default async function DashboardPage() {
                     <tr><th>Name</th><th>Company</th><th>Email</th><th>Status</th></tr>
                   </thead>
                   <tbody>
-                    {clients.map((c) => (
+                    {clients.slice(0, ROWS_PER_CARD).map((c) => (
                       <tr key={c.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
                         <td className="px-4 py-3 text-sm font-medium">{c.name}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{c.company || "—"}</td>
@@ -387,23 +415,24 @@ export default async function DashboardPage() {
                 </table>
               </div>
             )}
+            <ViewMoreFooter href="/clients" />
           </CardContent>
         </Card>
 
         {/* Pending Payments */}
-        <Card className="flex flex-col min-h-[250px] sm:min-h-[300px] lg:h-[320px] lg:col-span-3">
+        <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
               <IndianRupeeIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Pending Payments</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto min-h-0">
+          <CardContent className="flex flex-1 flex-col min-h-0">
             {pendingInvoices.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No pending payments.</p>
             ) : (
-              <div className="responsive-table">
+              <div className="responsive-table flex-1 overflow-y-auto min-h-0">
                 <div className="sm:hidden space-y-2">
-                  {pendingInvoices.map((inv) => (
+                  {pendingInvoices.slice(0, ROWS_PER_CARD).map((inv) => (
                     <div key={inv.id} className="border rounded-lg p-3 bg-card space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Invoice #{inv.number || inv.id.slice(0, 8)}</span>
@@ -424,7 +453,7 @@ export default async function DashboardPage() {
                     <tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th></tr>
                   </thead>
                   <tbody>
-                    {pendingInvoices.map((inv) => (
+                    {pendingInvoices.slice(0, ROWS_PER_CARD).map((inv) => (
                       <tr key={inv.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
                         <td className="px-4 py-3 text-sm font-medium">#{inv.number || inv.id.slice(0, 8)}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{inv.customerName || "—"}</td>
@@ -443,6 +472,7 @@ export default async function DashboardPage() {
                 </table>
               </div>
             )}
+            <ViewMoreFooter href="/billing" />
           </CardContent>
         </Card>
       </div>

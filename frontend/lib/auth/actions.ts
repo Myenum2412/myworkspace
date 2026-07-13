@@ -27,7 +27,7 @@ export async function loginAction(formData: FormData) {
     redirect("/login?error=Email+and+password+are+required");
   }
 
-  console.log(`[AUTH] loginAction: attempting login for ${email}`);
+
 
   let user;
   let isClient = false;
@@ -35,27 +35,29 @@ export async function loginAction(formData: FormData) {
   try {
     const apiUrl = process.env.API_URL || "http://localhost:4000";
 
-    const challengeRes = await fetch(`${apiUrl}/api/two-factor/challenge`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const challengeData = await challengeRes.json();
-    if (challengeData?.data?.requiresTwoFactor) {
+    // Parallelize 2FA challenge check with DB lookups
+    const [challengeRes, dbUser, clientUser] = await Promise.all([
+      fetch(`${apiUrl}/api/two-factor/challenge`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }).then(r => r.json()),
+      db.collection(collections.users).findOne({ email }),
+      db.collection(collections.clientUsers).findOne({ email }),
+    ]);
+
+    if (challengeRes?.data?.requiresTwoFactor) {
       redirect(`/login/verify-2fa?email=${encodeURIComponent(email)}`);
     }
 
-    user = await db.collection(collections.users).findOne({ email });
-
-    if (!user) {
-      user = await db.collection(collections.clientUsers).findOne({ email });
-      if (user) {
-        isClient = true;
-      }
+    if (dbUser) {
+      user = dbUser;
+    } else if (clientUser) {
+      user = clientUser;
+      isClient = true;
     }
 
     if (!user) {
-      console.error(`[AUTH] loginAction: user not found in DB: ${email}`);
       redirect("/login?error=User+not+found");
     }
   } catch (err) {
@@ -66,7 +68,7 @@ export async function loginAction(formData: FormData) {
     if (isRedirect) {
       throw err;
     }
-    console.error(`[AUTH] loginAction: pre-check failed for ${email}:`, err);
+
     redirect("/login?error=Something+went+wrong.+Please+try+again.");
   }
 
@@ -74,38 +76,43 @@ export async function loginAction(formData: FormData) {
 
   try {
     if (isClient) {
-      await db.collection(collections.clientUsers).updateOne(
-        { _id: user!._id },
-        { $set: { lastLogin: new Date() } }
-      );
-
-      await db.collection(collections.clientAuditLogs).insertOne({
-        orgId: user!.orgId,
-        clientId: user!.clientId,
-        clientUserId: userId,
-        action: "client.login.success",
-        entityType: "client_user",
-        entityId: userId,
-        description: `${user!.name} logged in`,
-      });
+      // Parallelize client login writes
+      await Promise.all([
+        db.collection(collections.clientUsers).updateOne(
+          { _id: user!._id },
+          { $set: { lastLogin: new Date() } }
+        ),
+        db.collection(collections.clientAuditLogs).insertOne({
+          orgId: user!.orgId,
+          clientId: user!.clientId,
+          clientUserId: userId,
+          action: "client.login.success",
+          entityType: "client_user",
+          entityId: userId,
+          description: `${user!.name} logged in`,
+        }),
+      ]);
     } else {
-      await db.collection(collections.users).updateOne(
-        { _id: user!._id },
-        { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
-      );
-
-      const member = await db.collection(collections.orgMembers).findOne({ userId });
+      // Parallelize user status update and member lookup
+      const [member] = await Promise.all([
+        db.collection(collections.orgMembers).findOne({ userId }),
+        db.collection(collections.users).updateOne(
+          { _id: user!._id },
+          { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
+        ),
+      ]);
 
       if (!member) {
         const userName = user!.name || email.split("@")[0];
         const newOrgId = uuid();
         let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
-        const existingSlug = await db.collection(collections.organizations).findOne({ slug });
-        if (existingSlug) {
-          slug = `${slug}-${userId}`;
-        }
 
-        const existingOrg = await db.collection(collections.organizations).findOne({ ownerId: userId });
+        const [existingSlug, existingOrg] = await Promise.all([
+          db.collection(collections.organizations).findOne({ slug }),
+          db.collection(collections.organizations).findOne({ ownerId: userId }),
+        ]);
+
+        if (existingSlug) slug = `${slug}-${userId}`;
         const orgIdToUse = existingOrg?.id || newOrgId;
 
         if (!existingOrg) {
@@ -113,57 +120,43 @@ export async function loginAction(formData: FormData) {
             { slug },
             {
               $setOnInsert: {
-                id: newOrgId,
-                name: `${userName}'s Organization`,
-                slug,
-                plan: "free",
-                ownerId: userId,
-                onboardingCompleted: true,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                id: newOrgId, name: `${userName}'s Organization`, slug,
+                plan: "free", ownerId: userId, onboardingCompleted: true,
+                createdAt: new Date(), updatedAt: new Date(),
               },
             },
             { upsert: true }
           );
         }
 
-        const orgMemberExists = await db.collection(collections.orgMembers).findOne({ userId });
-        if (!orgMemberExists) {
-          await db.collection(collections.orgMembers).updateOne(
-            { userId, orgId: orgIdToUse },
-            {
-              $setOnInsert: {
-                id: uuid(),
-                orgId: orgIdToUse,
-                userId,
-                role: "admin",
-                joinedAt: new Date(),
-              },
+        await db.collection(collections.orgMembers).updateOne(
+          { userId, orgId: orgIdToUse },
+          {
+            $setOnInsert: {
+              id: uuid(), orgId: orgIdToUse, userId,
+              role: "admin", joinedAt: new Date(),
             },
-            { upsert: true }
-          );
-        }
+          },
+          { upsert: true }
+        );
       }
 
       const orgId = member?.orgId || user!.orgId || "system";
-      await db.collection(collections.activityLogs).insertOne({
-        id: uuid(),
-        orgId: orgId,
-        userId,
-        action: "user.login",
-        entityType: "user",
-        entityId: userId,
+      // Fire-and-forget activity log (non-critical)
+      db.collection(collections.activityLogs).insertOne({
+        id: uuid(), orgId, userId,
+        action: "user.login", entityType: "user", entityId: userId,
         description: `${user!.name} logged in`,
-      });
+      }).catch(() => {});
     }
   } catch (err) {
-    console.error(`[AUTH] loginAction: post-check update failed for ${email}:`, err);
+
   }
 
   const role = isClient ? "client" : user?.role;
   const redirectPath = getRedirectPath(role);
 
-  console.log(`[AUTH] loginAction: ${email} role=${role} → ${redirectPath}`);
+
   revalidatePath(redirectPath);
   revalidateTag('dashboard', 'max');
 
@@ -177,7 +170,7 @@ export async function loginAction(formData: FormData) {
     if (isRedirect) {
       throw err;
     }
-    console.error(`[AUTH] loginAction: signIn failed for ${email}:`, err);
+
     redirect("/login?error=Something+went+wrong.+Please+try+again.");
   }
 }
@@ -201,13 +194,11 @@ export async function signupAction(formData: FormData) {
     redirect("/signup?error=Passwords+do+not+match");
   }
 
-  const existingUser = await (await db.collection(collections.users).find({ email })).toArray();
-  if (existingUser.length > 0) {
-    redirect("/signup?error=An+account+with+this+email+already+exists");
-  }
-
-  const existingClient = await db.collection(collections.clientUsers).findOne({ email });
-  if (existingClient) {
+  const [existingUser, existingClient] = await Promise.all([
+    db.collection(collections.users).findOne({ email }),
+    db.collection(collections.clientUsers).findOne({ email }),
+  ]);
+  if (existingUser || existingClient) {
     redirect("/signup?error=An+account+with+this+email+already+exists");
   }
 

@@ -10,7 +10,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const SOURCES = ["Website", "Referral", "Social Media", "Email", "Phone", "Walk-in", "Other"];
 const STATUS_OPTIONS = ["New", "Contacted", "Qualified", "Proposal", "Won", "Lost"];
@@ -65,36 +65,29 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
-          {engagement ? "Edit Engagement" : "New Engagement"}
-        </h3>
-        <Button type="button" variant="ghost" size="icon" onClick={onCancel}>
-          <X className="size-4" />
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="date">Date</Label>
-          <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Customer Information Section */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="date" className="text-sm font-medium">Date</Label>
+          <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-10" />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="customerName">Customer Name *</Label>
-          <Input id="customerName" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Enter customer name" required />
+        <div className="space-y-1.5">
+          <Label htmlFor="customerName" className="text-sm font-medium">Customer Name *</Label>
+          <Input id="customerName" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Enter customer name" required className="h-10" />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="contact">Contact</Label>
-          <Input id="contact" value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Phone or email" />
+        <div className="space-y-1.5">
+          <Label htmlFor="contact" className="text-sm font-medium">Contact</Label>
+          <Input id="contact" value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Phone or email" className="h-10" />
+          <p className="text-[10px] text-muted-foreground">Phone number or email address</p>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="source">Source</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="source" className="text-sm font-medium">Source</Label>
           <Select value={source} onValueChange={setSource}>
-            <SelectTrigger id="source">
+            <SelectTrigger id="source" className="h-10">
               <SelectValue placeholder="Select source" />
             </SelectTrigger>
             <SelectContent>
@@ -104,46 +97,58 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
             </SelectContent>
           </Select>
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger id="status">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Status & Assignment Section */}
+      <div className="border-t pt-5">
+        <h4 className="text-sm font-semibold mb-4 text-muted-foreground">Status & Assignment</h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger id="status" className="h-10">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="assignedTo">Assigned To</Label>
-          <Input id="assignedTo" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Person name" />
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="assignedTo" className="text-sm font-medium">Assigned To</Label>
+            <Input id="assignedTo" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Person name" className="h-10" />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="followUpDate">Follow-up Date</Label>
-          <Input id="followUpDate" type="date" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} />
+          <div className="space-y-1.5">
+            <Label htmlFor="followUpDate" className="text-sm font-medium">Follow-up Date</Label>
+            <Input id="followUpDate" type="date" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} className="h-10" />
+            <p className="text-[10px] text-muted-foreground">Next scheduled follow-up</p>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="remarks">Remarks</Label>
-        <textarea
-          id="remarks"
-          value={remarks}
-          onChange={(e) => setRemarks(e.target.value)}
-          placeholder="Any notes or remarks..."
-          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-        />
+      {/* Remarks Section */}
+      <div className="border-t pt-5">
+        <h4 className="text-sm font-semibold mb-4 text-muted-foreground">Remarks</h4>
+        <div className="space-y-1.5">
+          <Label htmlFor="remarks" className="text-sm font-medium">Notes</Label>
+          <textarea
+            id="remarks"
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            placeholder="Any notes or remarks..."
+            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 min-h-[80px]"
+          />
+        </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" disabled={saving || !customerName.trim()}>
+      {/* Actions */}
+      <div className="flex justify-end gap-3 pt-2 border-t">
+        <Button type="button" variant="outline" onClick={onCancel} className="h-10 px-5">Cancel</Button>
+        <Button type="submit" disabled={saving || !customerName.trim()} className="h-10 px-5">
           {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
           {engagement ? "Update" : "Save"}
         </Button>

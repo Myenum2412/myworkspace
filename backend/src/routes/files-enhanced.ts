@@ -16,7 +16,40 @@ import {
 } from "../services/file.service.js";
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
+
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif", "image/svg+xml",
+  "application/pdf",
+  "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "text/plain", "text/csv", "text/markdown",
+  "application/zip", "application/x-rar-compressed", "application/x-7z-compressed",
+  "application/json", "application/xml",
+  "video/mp4", "video/webm", "video/quicktime",
+  "audio/mpeg", "audio/wav", "audio/ogg",
+]);
+
+const ALLOWED_EXTENSIONS = new Set([
+  ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".svg",
+  ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+  ".txt", ".csv", ".md", ".json", ".xml",
+  ".zip", ".rar", ".7z",
+  ".mp4", ".webm", ".mov", ".mp3", ".wav", ".ogg",
+]);
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB max
+  fileFilter: (_req, file, cb) => {
+    const ext = "." + file.originalname.split(".").pop()?.toLowerCase();
+    if (ALLOWED_MIME_TYPES.has(file.mimetype) && ALLOWED_EXTENSIONS.has(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type not allowed: ${file.mimetype} (${ext})`));
+    }
+  },
+});
 
 router.use(authenticate);
 
@@ -91,11 +124,12 @@ router.get("/shared", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["file-sha
   const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).lean();
 
   const fileIds = [...new Set(shares.map(s => s.fileId))];
+  const { User } = await import("../lib/db/models/User.js");
+
   const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
   const fileMap = new Map(files.map(f => [f.id, f]));
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
-  const { User } = await import("../lib/db/models/User.js");
   const users = await User.find({ id: { $in: userIds } }).lean();
   const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
@@ -275,6 +309,10 @@ router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  if (!file) throw new AppError(404, "File not found");
+  await verifyAccess(req.user!.userId, file.orgId);
+
   const result = await getFileStream(req.params.id);
   if (!result) throw new AppError(404, "File not found");
   res.set("Content-Type", result.mimeType);
@@ -283,6 +321,10 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/:id/download", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  if (!file) throw new AppError(404, "File not found");
+  await verifyAccess(req.user!.userId, file.orgId);
+
   const result = await getFileStream(req.params.id);
   if (!result) throw new AppError(404, "File not found");
 

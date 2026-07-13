@@ -27,7 +27,7 @@ import { useUserStatus } from "@/hooks/use-user-status";
 import { SessionTracker } from "@/components/session-tracker";
 import { GlobalSearch } from "@/components/search/global-search";
 import { StaffStatusForm } from "@/components/staff-status-form";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { getAppContext, type AppContextType } from "@/lib/app-context";
 
 const CONTEXT_LABELS: Record<AppContextType, string> = {
@@ -38,10 +38,20 @@ const CONTEXT_LABELS: Record<AppContextType, string> = {
   client: "Client Portal",
 };
 
+const STATUS_COLORS: Record<string, string> = {
+  available: "bg-green-500", online: "bg-green-500", busy: "bg-red-500",
+  break: "bg-amber-500", meeting: "bg-purple-500", offline: "bg-gray-400", remote: "bg-blue-500",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  available: "Available", online: "Available", busy: "Busy",
+  break: "On Break", meeting: "In Meeting", offline: "Offline", remote: "Remote",
+};
+
 export function Header({ context }: { context?: AppContextType }) {
   const pathname = usePathname() || "";
   const appContext = context || getAppContext(pathname);
-  const segments = pathname.split("/").filter(Boolean);
+  const segments = useMemo(() => pathname.split("/").filter(Boolean), [pathname]);
   const { data: session } = useSession();
   const { status, updateStatus } = useUserStatus(session?.user?.id);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -57,25 +67,6 @@ export function Header({ context }: { context?: AppContextType }) {
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
-  const statusColors: Record<string, string> = {
-    available: "bg-green-500",
-    online: "bg-green-500",
-    busy: "bg-red-500",
-    break: "bg-amber-500",
-    meeting: "bg-purple-500",
-    offline: "bg-gray-400",
-    remote: "bg-blue-500",
-  };
-
-  const statusLabels: Record<string, string> = {
-    available: "Available",
-    online: "Available",
-    busy: "Busy",
-    break: "On Break",
-    meeting: "In Meeting",
-    offline: "Offline",
-    remote: "Remote",
-  };
 
   function handleStatusUpdateFromForm(newStatus: string) {
     const wsStatus = newStatus === "available" ? "online" : newStatus;
@@ -83,7 +74,6 @@ export function Header({ context }: { context?: AppContextType }) {
   }
 
   const { toggleSidebar } = useSidebar();
-
   const contextLabel = CONTEXT_LABELS[appContext];
 
   return (
@@ -194,10 +184,10 @@ export function Header({ context }: { context?: AppContextType }) {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
                 )}
                 <span
-                  className={`relative inline-flex size-2 rounded-full ${statusColors[status] || "bg-gray-400"}`}
+                  className={`relative inline-flex size-2 rounded-full ${STATUS_COLORS[status] || "bg-gray-400"}`}
                 />
               </span>
-              <span className="hidden sm:inline">{statusLabels[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span>
+              <span className="hidden sm:inline">{STATUS_LABELS[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span>
             </Badge>
           </PopoverTrigger>
           <PopoverContent align="end" sideOffset={8} className="w-[280px] sm:w-[320px] p-0">

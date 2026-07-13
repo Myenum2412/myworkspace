@@ -37,4 +37,8 @@ const userSchema = new Schema({
     emailVerificationToken: { type: String, index: true },
     emailVerificationExpires: Date,
 }, { timestamps: true });
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ orgId: 1 });
+userSchema.index({ status: 1 });
+userSchema.index({ role: 1 });
 export const User = model("User", userSchema);

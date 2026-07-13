@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: monitoring
+data:
+  myworkspace-alerts.yml: |
+    groups:
+      - name: myworkspace-alerts
+        rules:
+          # High Error Rate
+          - alert: HighErrorRate
+            expr: rate(api_requests_total{status=~"5.."}[5m]) / rate(api_requests_total[5m]) > 0.05
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High API error rate"
+              description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+          # High Latency
+          - alert: HighLatency
+            expr: histogram_quantile(0.95, rate(api_request_duration_ms_bucket[5m])) > 2000
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High API latency"
+              description: "p95 latency is {{ $value }}ms (threshold: 2000ms)"
+
+          # Memory Usage
+          - alert: HighMemoryUsage
+            expr: process_memory_rss_bytes / 1024 / 1024 > 800
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High memory usage"
+              description: "Memory usage is {{ $value }}MB (threshold: 800MB)"
+
+          # MongoDB Down
+          - alert: MongoDBDown
+            expr: up{job="myworkspace-backend"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "MongoDB is down"
+              description: "MongoDB connection has been lost"
+
+          # Redis Down
+          - alert: RedisDown
+            expr: up{job="redis"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Redis is down"
+              description: "Redis connection has been lost"
+
+          # Pod Restart
+          - alert: PodRestarting
+            expr: increase(kube_pod_container_status_restarts_total{namespace="myworkspace"}[1h]) > 3
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Pod is restarting frequently"
+              description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last hour"
+
+          # High CPU
+          - alert: HighCPU
+            expr: rate(process_cpu_usage_percent[5m]) > 80
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High CPU usage"
+              description: "CPU usage is {{ $value }}% (threshold: 80%)"
+
+          # Cache Hit Ratio
+          - alert: LowCacheHitRatio
+            expr: rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m])) < 0.5
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Low cache hit ratio"
+              description: "Cache hit ratio is {{ $value | humanizePercentage }} (threshold: 50%)"
+
+          # Socket.IO Connections
+          - alert: HighSocketConnections
+            expr: socket_connections_total > 8000
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High Socket.IO connections"
+              description: "{{ $value }} active connections (threshold: 8000)"
+
+          # Disk Usage (via node exporter)
+          - alert: DiskSpaceLow
+            expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Disk space is low"
+              description: "Less than 10% disk space remaining"

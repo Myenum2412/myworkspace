@@ -73,10 +73,15 @@ export async function redisDel(key: string): Promise<void> {
 export async function redisDelByPattern(pattern: string): Promise<void> {
   if (!isRedisConnected()) return;
   try {
-    const keys = await client!.keys(pattern);
-    if (keys.length > 0) {
-      await client!.del(...keys);
-    }
+    let cursor = "0";
+    const batchSize = 100;
+    do {
+      const [nextCursor, keys] = await client!.scan(cursor, "MATCH", pattern, "COUNT", batchSize);
+      cursor = nextCursor;
+      if (keys.length > 0) {
+        await client!.del(...keys);
+      }
+    } while (cursor !== "0");
   } catch {
     // silently fail
   }

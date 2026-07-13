@@ -47,4 +47,13 @@ const taskSchema = new Schema<ITask>(
   { timestamps: true }
 );
 
+taskSchema.index({ orgId: 1, createdAt: -1 });
+taskSchema.index({ orgId: 1, status: 1 });
+taskSchema.index({ orgId: 1, assigneeId: 1 });
+taskSchema.index({ orgId: 1, dueDate: 1 });
+taskSchema.index({ orgId: 1, status: 1, createdAt: -1 });
+taskSchema.index({ assigneeId: 1, createdAt: -1 });
+taskSchema.index({ creatorId: 1, createdAt: -1 });
+taskSchema.index({ teamId: 1, createdAt: -1 });
+
 export const Task = model<ITask>("Task", taskSchema);

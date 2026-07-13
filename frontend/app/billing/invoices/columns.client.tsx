@@ -61,7 +61,7 @@ export const columns: ColumnDef<Invoice>[] = [
     header: "Invoice",
     cell: ({ row }) => {
       const inv = row.original;
-      return <span className="font-medium text-gray-900">{inv.number || inv.id.slice(0, 8)}</span>;
+      return <span className="font-medium text-gray-900">{inv.number || `INV-${inv.id.slice(0, 5).toUpperCase()}`}</span>;
     },
   },
   {
@@ -99,7 +99,7 @@ export const columns: ColumnDef<Invoice>[] = [
       const inv = row.original;
       return (
         <span className="text-gray-700">
-          ₹{(inv.amountPaid / 100).toFixed(2)} {inv.currency.toUpperCase()}
+          ₹{((inv.amountPaid || 0) / 100).toFixed(2)} {(inv.currency || "INR").toUpperCase()}
         </span>
       );
     },

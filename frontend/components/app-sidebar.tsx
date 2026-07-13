@@ -174,16 +174,10 @@ export function AppSidebar({
   const [hiddenFeatures, setHiddenFeatures] = useState<string[]>([]);
 
   useEffect(() => {
-    fetch("/api/photography")
-      .then((r) => r.json())
-      .then((data) => setPhotographyInstalled(data.installed))
-      .catch(() => {});
-    fetch("/api/sidebar-features")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.hidden) setHiddenFeatures(data.hidden);
-      })
-      .catch(() => {});
+    Promise.allSettled([
+      fetch("/api/photography").then(r => r.json()).then(data => setPhotographyInstalled(data.installed)).catch(() => {}),
+      fetch("/api/sidebar-features").then(r => r.json()).then(data => { if (data.hidden) setHiddenFeatures(data.hidden); }).catch(() => {}),
+    ]);
   }, []);
 
   const visibleItems = [

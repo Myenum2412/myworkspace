@@ -37,21 +37,16 @@ function setCookie(res: Response, token: string): void {
 /**
  * CSRF protection middleware.
  *
- * On every request (safe or not) a fresh token is set as a non‑httpOnly cookie
- * so client‑side JS can read it and echo it back.  No cookie‑vs‑header
- * validation is performed — the token is merely a marker that the client
- * has visited the server and received a session cookie.  This avoids the
- * common race where the cookie and header fall out of sync when the initial
- * page load doesn't hit Express.
+ * Sets a random token as a non-httpOnly cookie on every request.
+ * For unsafe methods (POST/PUT/PATCH/DELETE), validates that the
+ * x-csrf-token header matches the cookie value.
  */
 export function csrfProtection() {
   return (req: Request, res: Response, next: NextFunction) => {
     const token = crypto.randomBytes(32).toString("hex");
     setCookie(res, token);
-    if (req.cookies) {
-      req.cookies[CSRF_COOKIE_NAME] = token;
-    }
 
+    // Safe methods don't need CSRF validation
     if (SAFE_METHODS.has(req.method)) {
       next();
       return;
@@ -59,6 +54,24 @@ export function csrfProtection() {
 
     if (pathMatchesExempt(req.path)) {
       next();
+      return;
+    }
+
+    // Validate CSRF token for unsafe methods
+    const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
+    const headerToken = req.headers[CSRF_HEADER_NAME] as string | undefined;
+
+    if (!cookieToken || !headerToken) {
+      res.status(403).json({ success: false, error: "CSRF token missing" });
+      return;
+    }
+
+    // Constant-time comparison to prevent timing attacks
+    const cookieBuf = Buffer.from(cookieToken, "hex");
+    const headerBuf = Buffer.from(headerToken, "hex");
+
+    if (cookieBuf.length !== headerBuf.length || !crypto.timingSafeEqual(cookieBuf, headerBuf)) {
+      res.status(403).json({ success: false, error: "CSRF token mismatch" });
       return;
     }
 

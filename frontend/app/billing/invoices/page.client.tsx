@@ -80,8 +80,8 @@ export default function BillingInvoicesPage() {
   const paidInvoices = invoices.filter((inv) => inv.status === "paid");
   const openInvoices = invoices.filter((inv) => inv.status === "open");
   const voidInvoices = invoices.filter((inv) => inv.status === "void");
-  const totalPaid = paidInvoices.reduce((s, inv) => s + inv.amountPaid, 0);
-  const totalPending = openInvoices.reduce((s, inv) => s + inv.amountPaid, 0);
+  const totalPaid = paidInvoices.reduce((s, inv) => s + (inv.amountPaid || 0), 0);
+  const totalPending = openInvoices.reduce((s, inv) => s + (inv.amountPaid || 0), 0);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -125,16 +125,14 @@ export default function BillingInvoicesPage() {
         />
       </div>
 
-      <Card>
-        <CardHeader><CardTitle className="text-base">All Invoices</CardTitle></CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={invoices}
-            renderMobileCard={(inv: Invoice) => (
+      <DataTable
+        title="All Invoices"
+        columns={columns}
+        data={invoices}
+        renderMobileCard={(inv: Invoice) => (
               <div className="border rounded-lg bg-card p-3 sm:p-4 space-y-2 shadow-sm">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium text-gray-900 truncate">{inv.number || inv.id.slice(0, 8)}</span>
+                  <span className="font-medium text-gray-900 truncate">{inv.number || `INV-${inv.id.slice(0, 5).toUpperCase()}`}</span>
                   <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium shrink-0 ${
                     inv.status === "paid" ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20" :
                     inv.status === "open" ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10" :
@@ -146,7 +144,7 @@ export default function BillingInvoicesPage() {
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-muted-foreground truncate">{inv.customerName || "\u2014"}</span>
                   <span className="text-sm font-semibold text-gray-700 shrink-0">
-                    ₹{(inv.amountPaid / 100).toFixed(2)}
+                    ₹{((inv.amountPaid || 0) / 100).toFixed(2)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
@@ -213,8 +211,6 @@ export default function BillingInvoicesPage() {
               </div>
             )}
           />
-        </CardContent>
-      </Card>
     </div>
   );
 }

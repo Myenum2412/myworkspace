@@ -193,13 +193,15 @@ export function DataTable<TData, TValue>({
         <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
           {!hideSearchBar && (
             <div className="bg-muted/30 px-3 sm:px-4 py-2.5 sm:py-3 border-b">
-              <div className="flex items-center gap-4">
-                {title && (
-                  <span className="text-sm font-medium text-foreground whitespace-nowrap shrink-0">
-                    {title}
-                  </span>
-                )}
-                <div className="relative flex-1 max-w-md mx-auto">
+              <div className="grid grid-cols-3 items-center gap-4">
+                <div className="justify-self-start">
+                  {title && (
+                    <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                      {title}
+                    </span>
+                  )}
+                </div>
+                <div className="relative w-full max-w-md justify-self-center">
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input
                     placeholder={searchPlaceholder}
@@ -209,7 +211,7 @@ export function DataTable<TData, TValue>({
                     aria-label={searchPlaceholder}
                   />
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 justify-self-end">
                   {isMobile && mobileCardView && (
                     <div className="flex items-center gap-1 border rounded-md p-0.5">
                       <button

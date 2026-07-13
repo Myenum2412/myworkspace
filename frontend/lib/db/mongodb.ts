@@ -8,43 +8,49 @@ const globalWithMongo = global as typeof globalThis & {
   _mongoConnectPromise?: Promise<void> | null;
 };
 
+let connectionAttempts = 0;
+const MAX_ATTEMPTS = 3;
+
 export async function connectToMongo() {
   if (globalWithMongo._mongoClient) return;
 
   const uri = process.env.MONGODB_URI;
-  console.log(`[MONGODB] Frontend attempting connection to: ${uri ? uri.replace(/\/\/([^:]+):([^@]+)@/, "//***:***@") : 'NOT SET'}`);
-  console.log(`[MONGODB] Frontend target database: ${dbName}`);
+  if (!uri) {
+    throw new Error("MONGODB_URI is not set");
+  }
 
-  if (uri) {
+  while (connectionAttempts < MAX_ATTEMPTS) {
     try {
+      connectionAttempts++;
       const isDev = process.env.NODE_ENV !== "production";
       const atlasClient = new MongoClient(
         uri.includes("retryWrites=")
           ? uri
           : uri + (uri.includes("?") ? "&" : "?") + "retryWrites=true&w=majority",
         {
-          serverSelectionTimeoutMS: 10000,
-          connectTimeoutMS: 10000,
+          serverSelectionTimeoutMS: 5000,
+          connectTimeoutMS: 5000,
+          maxPoolSize: 20,
+          minPoolSize: 2,
+          maxIdleTimeMS: 30000,
           tls: true,
           tlsAllowInvalidCertificates: isDev,
-          maxPoolSize: 10,
-          minPoolSize: 2,
         },
       );
       await atlasClient.connect();
       await atlasClient.db(dbName).command({ ping: 1 });
       globalWithMongo._mongoClient = atlasClient;
       globalWithMongo._mongoDatabase = atlasClient.db(dbName);
-      console.log(`> Connected to MongoDB Atlas`);
-      console.log(`> Database: ${atlasClient.db(dbName).databaseName}`);
+      connectionAttempts = 0;
       return;
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error("> Atlas unavailable:", msg.split(":")[0]);
+      if (connectionAttempts >= MAX_ATTEMPTS) {
+        const msg = err instanceof Error ? err.message : String(err);
+        throw new Error(`MongoDB connection failed after ${MAX_ATTEMPTS} attempts: ${msg.split(":")[0]}`);
+      }
+      await new Promise(r => setTimeout(r, 1000 * connectionAttempts));
     }
   }
-
-  throw new Error("MONGODB_URI is not set or connection failed. Please configure your MongoDB connection.");
 }
 
 async function ensureDb(): Promise<Db> {
@@ -56,14 +62,7 @@ async function ensureDb(): Promise<Db> {
 }
 
 const TERMINAL_METHODS = new Set([
-  "toArray",
-  "forEach",
-  "map",
-  "reduce",
-  "next",
-  "hasNext",
-  "explain",
-  "stream",
+  "toArray", "forEach", "map", "reduce", "next", "hasNext", "explain", "stream",
 ]);
 
 function createCursorPromise(promise: Promise<any>) {
@@ -87,7 +86,7 @@ function createCursorPromise(promise: Promise<any>) {
 }
 
 function createCollectionProxy(name: string) {
-  const coll = new Proxy({} as Collection, {
+  return new Proxy({} as Collection, {
     get(_target, method: string | symbol) {
       return (...args: any[]) => {
         const result = ensureDb().then((resolved) => {
@@ -100,12 +99,10 @@ function createCollectionProxy(name: string) {
       };
     },
   });
-  return coll;
 }
 
 export const db = new Proxy({} as Db, {
   get(_target, prop: string | symbol) {
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     if (prop === "collection") {
       return (name: string) => createCollectionProxy(name);
     }

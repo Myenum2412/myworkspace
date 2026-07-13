@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Clock, Play, Pause, Coffee, TimerReset } from "lucide-react";
+import { Clock, Play, Coffee } from "lucide-react";
 
 export function SessionTracker() {
   const {
@@ -22,7 +22,6 @@ export function SessionTracker() {
     endBreak,
     formatDuration,
     isOnBreak,
-    isOnline,
   } = useSessionTracker();
 
   if (isLoading || !activeSession) {

@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json* tsconfig.json ./
 COPY .npmrc .npmrc
-RUN npm install
+RUN npm ci --omit=dev
 
 COPY src/ ./src/
 RUN npm run build

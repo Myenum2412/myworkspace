@@ -1,5 +1,10 @@
-import { jsPDF } from "jspdf";
-import { Invoice } from "@/app/billing/invoices/columns";
+import type { Invoice } from "@/app/billing/invoices/columns";
+
+let jsPDFModule: typeof import("jspdf") | null = null;
+async function getJsPDF() {
+  if (!jsPDFModule) jsPDFModule = await import("jspdf");
+  return jsPDFModule;
+}
 
 async function getBase64ImageFromURL(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -60,6 +65,7 @@ export async function generateInvoicePDF(baseInvoice: Invoice, preview = false) 
     console.error("Error fetching details for PDF:", error);
   }
 
+  const { jsPDF } = await getJsPDF();
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.width; // 210
   const pageHeight = doc.internal.pageSize.height; // 297

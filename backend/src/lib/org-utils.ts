@@ -7,29 +7,27 @@ import { AuthRequest } from "../types/index.js";
 import { AppError } from "../middleware/error.js";
 import { cacheManager } from "./cache.js";
 
-const ORG_CACHE_TTL = 30;
+const ORG_CACHE_TTL = 120;
 
 /**
  * Resolve a possible stale userId by looking up the user by email.
- * 
- * When email is available, the MongoDB user document's `id` or `_id` is the
- * authoritative identifier. Some orgmembers entries store this ID as ObjectId
- * rather than string, so we return the hex-string form to let the caller
- * match against both representations.
- * 
- * Falls back to the JWT's userId when no email is provided or when the user
- * doc can't be found.
  */
 async function resolveUserId(userId: string, email?: string): Promise<string> {
-  // Try to find the MongoDB user document via email (authoritative ID source).
   if (email) {
+    const resolveKey = `resolve:${userId}:${email}`;
+    const cached = cacheManager.get<string>(resolveKey);
+    if (cached !== undefined) return cached;
+
     const user = await User.findOne({ email }).lean();
     if (user) {
       const authoritativeId = user.id || (user as any)._id?.toString();
-      if (authoritativeId) return authoritativeId;
+      if (authoritativeId) {
+        cacheManager.set(resolveKey, authoritativeId, ORG_CACHE_TTL);
+        return authoritativeId;
+      }
     }
+    cacheManager.set(resolveKey, userId, 30);
   }
-  // Fallback: the JWT userId itself may already match an orgmembers entry.
   return userId;
 }
 
@@ -37,25 +35,34 @@ async function resolveUserId(userId: string, email?: string): Promise<string> {
  * Get the organization ID for a user from their JWT token or membership record.
  */
 export async function getUserOrgId(userId: string, email?: string): Promise<string | null> {
+  const cacheKey = `org:${userId}`;
+  const cached = cacheManager.get<string>(cacheKey);
+  if (cached) return cached;
+
   const resolvedId = await resolveUserId(userId, email);
   const member = await OrgMember.findOne({ userId: resolvedId }).lean();
-  if (!member) return null;
-  return member.orgId;
+  if (member) {
+    cacheManager.set(cacheKey, member.orgId, ORG_CACHE_TTL);
+    return member.orgId;
+  }
+
+  // Fallback to user document's orgId (which stores MongoDB _id as string)
+  const user = await User.findOne({ id: resolvedId }).select("orgId").lean();
+  if (user?.orgId) {
+    cacheManager.set(cacheKey, user.orgId, ORG_CACHE_TTL);
+    return user.orgId;
+  }
+  return null;
 }
 
 /**
  * Require that the user belongs to an organization. Throws AppError if not.
  *
- * Trust the JWT's orgId first: it's set at login/signup and kept in sync by
- * /switch. Only fall back to a DB lookup when the token carries no orgId
- * (legacy sessions). When a specific `orgId` is supplied and the token
- * already matches it, skip the membership query entirely.
+ * Optimized: trusts JWT orgId first, uses cache, parallelizes fallbacks.
  */
 export async function requireOrgMembership(userId: string, orgId?: string, email?: string, tokenOrgId?: string): Promise<string> {
-  // Token already carries a valid orgId — prefer it over a DB round-trip.
   if (tokenOrgId && (!orgId || tokenOrgId === orgId)) return tokenOrgId;
 
-  // Cache hit skips both the resolveUserId lookup and the membership query.
   const cacheKey = `org:${userId}`;
   const cached = cacheManager.get<string>(cacheKey);
   if (cached && (!orgId || cached === orgId)) {
@@ -65,61 +72,53 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
 
   const resolvedId = await resolveUserId(userId, email);
 
-  // Query OrgMember by string userId (standard Mongoose behavior)
-  const stringQuery = orgId ? { userId: resolvedId, orgId } : { userId: resolvedId };
-  const stringMember = await OrgMember.findOne(stringQuery).lean();
+  // Parallelize all membership lookups
+  const queries: Promise<any>[] = [
+    OrgMember.findOne(orgId ? { userId: resolvedId, orgId } : { userId: resolvedId }).lean(),
+  ];
 
-  // Also try matching as ObjectId — some orgmembers entries store userId as
-  // ObjectId rather than string. Mongoose's String type won't cast to ObjectId,
-  // so bypass the model and use the raw driver.
-  let oidMember: Record<string, any> | null = null;
   if (mongoose.Types.ObjectId.isValid(resolvedId)) {
     const db = mongoose.connection.db;
     if (db) {
       const oidFilter: Record<string, any> = { userId: new mongoose.Types.ObjectId(resolvedId) };
       if (orgId) oidFilter.orgId = orgId;
-      oidMember = (await db.collection("orgmembers").findOne(oidFilter)) as Record<string, any> | null;
+      queries.push(db.collection("orgmembers").findOne(oidFilter));
     }
   }
 
-  // Prefer ObjectId match — Mongoose-created entries carry the canonical orgId
-  // for Mongoose-backed data (clients, projects, tasks).
-  const member = oidMember || stringMember;
-  if (!member) {
-    // Fallback to NextAuth org_members collection — users created via frontend
-    // sign-up may not have a matching Mongoose orgmembers entry.
-    try {
-      const db = mongoose.connection.db;
-      if (db) {
-        const nextAuthFilter: Record<string, unknown> = {
-          userId: { $in: [...new Set([resolvedId, userId].filter(Boolean))] },
-        };
-        if (orgId) nextAuthFilter.orgId = orgId;
-        const nextAuthMember = (await db.collection("org_members").findOne(nextAuthFilter)) as Record<string, unknown> | null;
-        if (nextAuthMember) {
-          const orgIdVal = typeof nextAuthMember.orgId === "string" ? nextAuthMember.orgId : String(nextAuthMember.orgId);
-          cacheManager.set(cacheKey, orgIdVal, ORG_CACHE_TTL);
-          return orgIdVal;
-        }
-      }
-    } catch {}
+  const [stringMember, oidMember] = await Promise.all(queries);
 
-    // No DB row, but token claims an org → keep the session usable instead of
-    // hard-failing. Caller can still enforce stricter checks where needed.
-    if (tokenOrgId && !orgId) return tokenOrgId;
-    if (orgId) throw new AppError(403, "Not a member of this organization");
-    throw new AppError(400, "User is not associated with any organization");
+  const member = oidMember || stringMember;
+  if (member) {
+    const orgIdVal = typeof member.orgId === "string" ? member.orgId : String(member.orgId);
+    cacheManager.set(cacheKey, orgIdVal, ORG_CACHE_TTL);
+    return orgIdVal;
   }
 
-  // Normalize orgId to string — raw driver returns ObjectId for ObjectId fields.
-  const orgIdVal = typeof member.orgId === "string" ? member.orgId : String(member.orgId);
-  cacheManager.set(cacheKey, orgIdVal, ORG_CACHE_TTL);
-  return orgIdVal;
+  // Fallback: NextAuth org_members collection
+  try {
+    const db = mongoose.connection.db;
+    if (db) {
+      const nextAuthFilter: Record<string, unknown> = {
+        userId: { $in: [...new Set([resolvedId, userId].filter(Boolean))] },
+      };
+      if (orgId) nextAuthFilter.orgId = orgId;
+      const nextAuthMember = await db.collection("org_members").findOne(nextAuthFilter);
+      if (nextAuthMember) {
+        const orgIdVal = typeof nextAuthMember.orgId === "string" ? nextAuthMember.orgId : String(nextAuthMember.orgId);
+        cacheManager.set(cacheKey, orgIdVal, ORG_CACHE_TTL);
+        return orgIdVal;
+      }
+    }
+  } catch {}
+
+  if (tokenOrgId && !orgId) return tokenOrgId;
+  if (orgId) throw new AppError(403, "Not a member of this organization");
+  throw new AppError(400, "User is not associated with any organization");
 }
 
 /**
- * Get orgId from AuthRequest. Trusts req.user.orgId from the JWT first;
- * only throws when neither the token nor a membership record yields one.
+ * Get orgId from AuthRequest. Trusts req.user.orgId from the JWT first.
  */
 export function getOrgIdFromRequest(req: AuthRequest, strict = false): string {
   if (!req.user) throw new AppError(401, "Authentication required");
@@ -137,27 +136,32 @@ export async function requireOrgMembershipFromRequest(req: AuthRequest, orgId?: 
 
 /**
  * Verify that a user has access to an organization's files and folders.
- * Checks multiple access paths:
- * 1. OrgMember record (existing)
- * 2. User.orgId matching the org (users without OrgMember record)
- * 3. ClientUser with active workspace (for client portal access)
- * 4. ORG_MENU_ADMIN super admin bypass
+ * Parallelized: all checks run concurrently.
  */
 export async function verifyOrgAccess(userId: string, orgId: string): Promise<void> {
-  const member = await OrgMember.findOne({ userId, orgId }).lean();
-  if (member) return;
+  const cacheKey = `orgAccess:${userId}:${orgId}`;
+  const cached = cacheManager.get<boolean>(cacheKey);
+  if (cached === true) return;
 
-  const user = await User.findOne({ id: userId, orgId }).lean();
-  if (user) return;
+  const [member, user, clientUser, superAdmin] = await Promise.all([
+    OrgMember.findOne({ userId, orgId }).lean(),
+    User.findOne({ id: userId, orgId }).lean(),
+    ClientUser.findOne({ id: userId, orgId }).lean(),
+    User.findOne({ id: userId, role: "ORG_MENU_ADMIN" }).lean(),
+  ]);
 
-  const clientUser = await ClientUser.findOne({ id: userId, orgId }).lean();
-  if (clientUser) {
-    const workspace = await ClientWorkspace.findOne({ clientId: clientUser.clientId }).lean();
-    if (workspace?.fileManagementEnabled) return;
+  if (member || user || superAdmin) {
+    cacheManager.set(cacheKey, true, 60);
+    return;
   }
 
-  const superAdmin = await User.findOne({ id: userId, role: "ORG_MENU_ADMIN" }).lean();
-  if (superAdmin) return;
+  if (clientUser) {
+    const workspace = await ClientWorkspace.findOne({ clientId: clientUser.clientId }).lean();
+    if (workspace?.fileManagementEnabled) {
+      cacheManager.set(cacheKey, true, 60);
+      return;
+    }
+  }
 
   throw new AppError(403, "Not authorized");
 }

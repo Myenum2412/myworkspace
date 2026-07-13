@@ -27,24 +27,18 @@ export function useSessionTracker() {
   const [breakElapsed, setBreakElapsed] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const breakIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const fetchWithTimeout = useCallback(async (url: string, timeoutMs = 5_000) => {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const res = await fetch(url, { credentials: "include", signal: controller.signal });
-      return res;
-    } finally {
-      clearTimeout(timer);
-    }
-  }, []);
+  const activeSessionRef = useRef<ActiveSession | null>(null);
 
   const fetchActiveSession = useCallback(async () => {
     try {
-      const res = await fetchWithTimeout("/api/sessions/active");
+      const res = await fetch("/api/sessions/active", { credentials: "include" });
+      if (!res.ok) return;
       const json = await res.json();
       if (json.success && json.data) {
-        setActiveSession(json.data);
+        setActiveSession(prev => {
+          if (prev?.sessionId === json.data.sessionId && prev?.currentStatus === json.data.currentStatus) return prev;
+          return json.data;
+        });
         if (json.data.currentStatus === "online") {
           const loginMs = new Date(json.data.loginTime).getTime();
           setElapsed(Date.now() - loginMs - json.data.totalBreakDuration);
@@ -62,19 +56,18 @@ export function useSessionTracker() {
     } catch {
       setActiveSession(null);
     }
-  }, [fetchWithTimeout]);
+  }, []);
 
   const fetchTodaySummary = useCallback(async () => {
     try {
-      const res = await fetchWithTimeout("/api/sessions/today");
+      const res = await fetch("/api/sessions/today", { credentials: "include" });
+      if (!res.ok) return;
       const json = await res.json();
       if (json.success && json.data) {
         setTodaySummary(json.data.summary);
       }
-    } catch {
-      // ignore
-    }
-  }, [fetchWithTimeout]);
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     if (!session?.user?.id) {
@@ -82,32 +75,36 @@ export function useSessionTracker() {
       return;
     }
 
+    let cancelled = false;
+
     const init = async () => {
       setIsLoading(true);
-      await fetchActiveSession();
-      await fetchTodaySummary();
-      setIsLoading(false);
+      await Promise.all([fetchActiveSession(), fetchTodaySummary()]);
+      if (!cancelled) setIsLoading(false);
     };
     init();
 
-    // Poll session status every 30 seconds
     const pollInterval = setInterval(() => {
       fetchActiveSession();
       fetchTodaySummary();
-    }, 30_000);
+    }, 60_000);
 
     return () => {
+      cancelled = true;
       clearInterval(pollInterval);
     };
   }, [session?.user?.id, fetchActiveSession, fetchTodaySummary]);
 
-  // Elapsed timer for active time
+  useEffect(() => {
+    activeSessionRef.current = activeSession;
+  }, [activeSession]);
+
   useEffect(() => {
     if (activeSession?.currentStatus === "online") {
-      intervalRef.current = setInterval(() => {
-        const loginMs = new Date(activeSession.loginTime).getTime();
-        setElapsed(Date.now() - loginMs - activeSession.totalBreakDuration);
-      }, 1000);
+      const loginMs = new Date(activeSession.loginTime).getTime();
+      const calc = () => Date.now() - loginMs - activeSession.totalBreakDuration;
+      setElapsed(calc());
+      intervalRef.current = setInterval(() => setElapsed(calc()), 1000);
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current);
     }
@@ -116,7 +113,6 @@ export function useSessionTracker() {
     };
   }, [activeSession?.currentStatus, activeSession?.loginTime, activeSession?.totalBreakDuration]);
 
-  // Break timer
   useEffect(() => {
     if (activeSession?.currentStatus === "break") {
       breakIntervalRef.current = setInterval(() => {
@@ -131,9 +127,10 @@ export function useSessionTracker() {
   }, [activeSession?.currentStatus]);
 
   const startBreak = useCallback(async () => {
-    if (!activeSession) return;
+    const s = activeSessionRef.current;
+    if (!s) return;
     try {
-      await fetch(`/api/sessions/${activeSession.sessionId}/status`, {
+      await fetch(`/api/sessions/${s.sessionId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "break" }),
@@ -143,12 +140,13 @@ export function useSessionTracker() {
     } catch (err) {
       console.error("Failed to start break:", err);
     }
-  }, [activeSession, fetchActiveSession]);
+  }, [fetchActiveSession]);
 
   const endBreak = useCallback(async () => {
-    if (!activeSession) return;
+    const s = activeSessionRef.current;
+    if (!s) return;
     try {
-      await fetch(`/api/sessions/${activeSession.sessionId}/status`, {
+      await fetch(`/api/sessions/${s.sessionId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "online" }),
@@ -158,15 +156,15 @@ export function useSessionTracker() {
     } catch (err) {
       console.error("Failed to end break:", err);
     }
-  }, [activeSession, fetchActiveSession]);
+  }, [fetchActiveSession]);
 
-  const formatDuration = (ms: number) => {
+  const formatDuration = useCallback((ms: number) => {
     const totalSec = Math.floor(ms / 1000);
     const h = Math.floor(totalSec / 3600);
     const m = Math.floor((totalSec % 3600) / 60);
     const s = totalSec % 60;
     return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
+  }, []);
 
   return {
     activeSession,

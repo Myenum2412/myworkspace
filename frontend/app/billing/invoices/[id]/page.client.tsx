@@ -89,7 +89,7 @@ export default function InvoiceFormPage() {
         .then(data => {
           const inv = data.data || data; // handle unwrapped or wrapped response
           if (inv) {
-            setInvoiceNumber(inv.invoiceNumber || inv.number || inv.id?.slice(0,8) || "");
+            setInvoiceNumber(inv.invoiceNumber || inv.number || (inv.id ? `INV-${inv.id.slice(0, 5).toUpperCase()}` : ""));
             const dateStr = inv.invoiceDate || inv.periodStart || inv.createdAt;
             if (dateStr) {
               try {
@@ -162,16 +162,19 @@ export default function InvoiceFormPage() {
     setSaving(true);
     try {
       const profileRes = await fetch("/api/user/profile");
+      if (!profileRes.ok) { toast.error("Failed to load profile"); setSaving(false); return; }
       const profileData = await profileRes.json();
       const oid = profileData?.data?.org?.id;
-      if (!oid) return;
+      if (!oid) { toast.error("No organization found"); setSaving(false); return; }
 
+      const customerName = clients.find(c => c.id === selectedClient)?.name || "";
       const payload = {
         orgId: oid,
-        clientId: selectedClient,
-        customerName: clients.find(c => c.id === selectedClient)?.name || "",
-        invoiceNumber,
-        invoiceDate: currentDate,
+        customerId: selectedClient,
+        customerName,
+        number: invoiceNumber,
+        periodStart: currentDate,
+        periodEnd: currentDate,
         items: items.filter((i) => i.rate > 0),
         subTotal: sub,
         discountPercent,

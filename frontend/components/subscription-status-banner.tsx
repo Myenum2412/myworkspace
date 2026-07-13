@@ -83,7 +83,7 @@ export function SubscriptionStatusBanner() {
         const daysUntilRenewal = Math.max(0, Math.ceil((new Date(periodEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
         setBanner({
           visible: true,
-          label: `Plan: ${plan?.charAt(0).toUpperCase() + plan?.slice(1) || "Active"}`,
+          label: `Plan: ${plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Active"}`,
           icon: CheckCircle2,
           color: "text-emerald-600",
           bg: "bg-emerald-50 dark:bg-emerald-950/30",

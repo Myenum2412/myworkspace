@@ -3,6 +3,7 @@ import { env } from "../../config/env.js";
 import nodemailer from "nodemailer";
 import { buildEmailHtml } from "./templates/builder.js";
 import * as Factory from "./templates/factory.js";
+import { logger } from "../logger/index.js";
 
 let resend: Resend | null = null;
 
@@ -21,11 +22,7 @@ const transporter = env.SMTP_HOST
 const RESEND_TEST_SENDER = "onboarding@resend.dev";
 
 if (!transporter && env.MAIL_FROM === RESEND_TEST_SENDER) {
-  console.warn(
-    "[mail] WARNING: Using Resend test sender (onboarding@resend.dev). " +
-    "Emails will ONLY be delivered to the email address verified with your Resend API key. " +
-    "Set MAIL_FROM to a verified domain (e.g., 'noreply@yourdomain.com') to send to any recipient."
-  );
+  logger.warn("[mail] Using Resend test sender — emails only delivered to verified address");
 }
 
 async function sendEmail(to: string, subject: string, htmlBody: string): Promise<void> {
@@ -37,10 +34,10 @@ async function sendEmail(to: string, subject: string, htmlBody: string): Promise
         subject,
         html: htmlBody,
       });
-      console.log(`[mail] Email sent to ${to} via SMTP (messageId: ${info.messageId})`);
+      logger.info({ to, messageId: info.messageId }, "Email sent via SMTP");
       return;
     } catch (error: any) {
-      console.error(`[mail] Failed to send email via SMTP to ${to}:`, error);
+      logger.error({ err: error, to }, "Failed to send email via SMTP");
       throw new Error(`Failed to send email via SMTP: ${error.message}`);
     }
   }
@@ -68,15 +65,15 @@ async function sendEmail(to: string, subject: string, htmlBody: string): Promise
     });
 
     if (!error) {
-      console.log(`[mail] Email sent to ${to} via Resend (from: ${from}, id: ${data?.id})`);
+      logger.info({ to, from, id: data?.id }, "Email sent via Resend");
       return;
     }
     lastError = error;
-    console.warn(`[mail] Failed to send via Resend "${from}" to ${to}:`, error.message);
+    logger.warn({ err: error, to, from }, "Failed to send via Resend");
   }
 
   const errMsg = `Failed to send email to ${to}: ${lastError?.message || "unknown error"}`;
-  console.error(`[mail] ${errMsg}`);
+  logger.error({ to, error: lastError?.message }, "Email delivery failed");
   throw new Error(errMsg);
 }
 

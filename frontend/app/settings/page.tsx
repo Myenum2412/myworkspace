@@ -5,7 +5,7 @@ import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import { SettingsPageClient } from "./settings-interactive";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function SettingsPage() {
   const session = await auth();

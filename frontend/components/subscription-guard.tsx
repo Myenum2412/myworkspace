@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 const PUBLIC_ROUTES = ["/pricing", "/login", "/signup", "/signup-mongo", "/forgot-password", "/client/login"];
 
-export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
+export const SubscriptionGuard = memo(function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -15,7 +15,6 @@ export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (status === "loading" || status === "unauthenticated") return;
     if (redirectedRef.current) return;
-
     if (PUBLIC_ROUTES.some((r) => pathname.startsWith(r))) return;
     if (pathname.startsWith("/api")) return;
 
@@ -42,4 +41,4 @@ export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   }, [status, session, router, pathname]);
 
   return <>{children}</>;
-}
+});

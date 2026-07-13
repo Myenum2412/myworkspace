@@ -176,62 +176,57 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
 /**
  * Resolve a stale userId from the JWT by looking up the user by email.
  * Called after authenticate to update req.user.userId if needed.
+ * Optimized: parallelized lookups, extended cache TTL.
  */
 export async function resolveStaleUserId(req: AuthRequest): Promise<void> {
   if (!req.user) return;
   const { userId, email } = req.user;
 
-  // Cache hit — userId already verified as valid
   const cached = resolveCacheGet(userId);
   if (cached === true) return;
-  if (cached === false) {
-    // Previously known to need resolution; skip OrgMember query, go straight to User lookup
+
+  // Parallelize membership and user lookups
+  const queries: Promise<any>[] = [
+    OrgMember.findOne({ userId }).lean(),
+  ];
+  if (mongoose.connection.db) {
+    queries.push(
+      mongoose.connection.db.collection("org_members").findOne({ userId }).catch(() => null)
+    );
   }
 
-  // Fast path: userId has a valid membership
-  const member = await OrgMember.findOne({ userId }).lean();
+  const [member, nextAuthMember] = await Promise.all(queries);
 
-  // Fallback to NextAuth org_members collection
-  if (!member && mongoose.connection.db) {
-    const nextAuthMember = await mongoose.connection.db.collection("org_members").findOne({ userId }).catch(() => null);
-    if (nextAuthMember) {
-      resolveCacheSet(userId, true);
-      return;
-    }
-  }
-
-  if (member) {
+  if (member || nextAuthMember) {
     resolveCacheSet(userId, true);
     return;
   }
 
-  let resolvedId: string | null = null;
-
-  // Try looking up user by userId first (in case userId matches a User doc but not OrgMember)
+  // Parallelize user lookups
+  const userQueries: Promise<any>[] = [];
   if (userId) {
-    const userById = await User.findById(userId).lean().catch(() => null)
-      || await User.findOne({ id: userId }).lean().catch(() => null);
-    if (userById) {
-      resolvedId = userById.id || (userById as any)._id?.toString();
-    }
+    userQueries.push(User.findById(userId).lean().catch(() => null));
+  }
+  if (email) {
+    userQueries.push(User.findOne({ email }).lean().catch(() => null));
   }
 
-  // Fallback: lookup by email
-  if (!resolvedId && email) {
-    const userByEmail = await User.findOne({ email }).lean().catch(() => null);
-    if (userByEmail) {
-      resolvedId = userByEmail.id || (userByEmail as any)._id?.toString();
+  const userResults = await Promise.all(userQueries);
+  let resolvedId: string | null = null;
+
+  for (const userDoc of userResults) {
+    if (userDoc) {
+      resolvedId = userDoc.id || (userDoc as any)._id?.toString();
+      break;
     }
   }
 
   if (resolvedId && resolvedId !== userId) {
-    dbg(`[BACKEND AUTH] Resolved stale userId: ${userId} → ${resolvedId}`);
     req.user.userId = resolvedId;
     resolveCacheSet(resolvedId, true);
+  } else {
+    resolveCacheSet(userId, false);
   }
-
-  // Even if resolution failed, cache the miss to avoid re-querying
-  resolveCacheSet(userId, false);
 }
 
 export async function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction): Promise<void> {

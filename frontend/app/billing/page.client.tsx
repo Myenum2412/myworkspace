@@ -85,9 +85,9 @@ export default function BillingPage() {
   const paidInvoices = invoices.filter((inv) => inv.status === "paid");
   const voidInvoices = invoices.filter((inv) => inv.status === "void");
 
-  const totalPaid = paidInvoices.reduce((s, inv) => s + inv.amountPaid, 0);
-  const totalPending = pendingInvoices.reduce((s, inv) => s + inv.amountPaid, 0);
-  const totalRevenue = invoices.reduce((s, inv) => s + inv.amountPaid, 0);
+  const totalPaid = paidInvoices.reduce((s, inv) => s + (inv.amountPaid || 0), 0);
+  const totalPending = pendingInvoices.reduce((s, inv) => s + (inv.amountPaid || 0), 0);
+  const totalRevenue = invoices.reduce((s, inv) => s + (inv.amountPaid || 0), 0);
 
   const thisMonth = new Date().getMonth();
   const thisYear = new Date().getFullYear();
@@ -96,7 +96,7 @@ export default function BillingPage() {
       const d = new Date(inv.createdAt);
       return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
     })
-    .reduce((s, inv) => s + inv.amountPaid, 0);
+    .reduce((s, inv) => s + (inv.amountPaid || 0), 0);
 
   const pieData = [
     { name: "Paid", value: paidInvoices.length, color: COLORS.paid },
@@ -190,9 +190,9 @@ export default function BillingPage() {
                 {pendingInvoices.map((inv) => (
                   <div key={inv.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
                     <div>
-                      <p className="font-medium">{inv.number || inv.id.slice(0, 8)}</p>
+                      <p className="font-medium">{inv.number || `INV-${inv.id.slice(0, 5).toUpperCase()}`}</p>
                       <p className="text-xs text-muted-foreground">
-                        ₹{(inv.amountPaid / 100).toFixed(2)} &middot; {new Date(inv.createdAt).toLocaleDateString()}
+                        ₹{((inv.amountPaid || 0) / 100).toFixed(2)} &middot; {new Date(inv.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -232,9 +232,9 @@ export default function BillingPage() {
                 {paidInvoices.slice(0, 5).map((inv) => (
                   <div key={inv.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
                     <div>
-                      <p className="font-medium">{inv.number || inv.id.slice(0, 8)}</p>
+                      <p className="font-medium">{inv.number || `INV-${inv.id.slice(0, 5).toUpperCase()}`}</p>
                       <p className="text-xs text-muted-foreground">
-                        ₹{(inv.amountPaid / 100).toFixed(2)} &middot; {new Date(inv.createdAt).toLocaleDateString()}
+                        ₹{((inv.amountPaid || 0) / 100).toFixed(2)} &middot; {new Date(inv.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">

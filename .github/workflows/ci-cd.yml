@@ -1,0 +1,243 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: "22"
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  # ── Stage 1: Code Quality ──
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Frontend TypeScript Check
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      - name: Backend TypeScript Check
+        working-directory: backend
+        run: npx tsc --noEmit
+
+      - name: Frontend Build
+        working-directory: frontend
+        run: npm run build
+
+  # ── Stage 2: Security Scanning ──
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
+          ignore-unfixed: true
+
+      - name: Run npm audit (frontend)
+        working-directory: frontend
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Run npm audit (backend)
+        working-directory: backend
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  # ── Stage 3: Backend Tests ──
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run Unit Tests
+        working-directory: backend
+        run: npm run test:unit
+        env:
+          MONGODB_URI: mongodb://localhost:27017/myworkspace-test
+          JWT_SECRET: test-secret
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      - name: Run Integration Tests
+        working-directory: backend
+        run: npm run test:integration
+        env:
+          MONGODB_URI: mongodb://localhost:27017/myworkspace-test
+          JWT_SECRET: test-secret
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+  # ── Stage 4: Docker Build ──
+  docker:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [lint, test-backend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - context: ./backend
+            image: backend
+          - context: ./frontend
+            image: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.image }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Stage 5: Deploy to Staging ──
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.28.0"
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
+      - name: Update image tags
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          kubectl set image deployment/myworkspace-backend \
+            backend=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/backend:$SHORT_SHA \
+            -n myworkspace-staging
+          kubectl set image deployment/myworkspace-frontend \
+            frontend=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/frontend:$SHORT_SHA \
+            -n myworkspace-staging
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/myworkspace-backend -n myworkspace-staging --timeout=300s
+          kubectl rollout status deployment/myworkspace-frontend -n myworkspace-staging --timeout=300s
+
+  # ── Stage 6: Deploy to Production ──
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.28.0"
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > $HOME/.kube/config
+
+      - name: Update image tags
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          kubectl set image deployment/myworkspace-backend \
+            backend=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/backend:$SHORT_SHA \
+            -n myworkspace
+          kubectl set image deployment/myworkspace-frontend \
+            frontend=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/frontend:$SHORT_SHA \
+            -n myworkspace
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/myworkspace-backend -n myworkspace --timeout=300s
+          kubectl rollout status deployment/myworkspace-frontend -n myworkspace --timeout=300s
+
+      - name: Verify health
+        run: |
+          sleep 30
+          kubectl exec -n myworkspace deployment/myworkspace-backend -- wget -qO- http://localhost:4000/api/health

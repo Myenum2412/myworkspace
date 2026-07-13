@@ -21,6 +21,30 @@ process.on("uncaughtException", (err) => {
 async function start() {
     const startTime = Date.now();
     initSentry();
+    // Parallelize independent startup operations
+    const [,] = await Promise.all([
+        connectDb().catch((err) => {
+            logger.error({ err }, "MongoDB connection failed — server will start without DB");
+        }),
+        getEnforcer().catch((err) => {
+            logger.warn({ err }, "Casbin initialization failed (policies will use file fallback)");
+        }),
+    ]);
+    // RabbitMQ + workers (sequential dependency)
+    if (isRabbitMQConfigured()) {
+        try {
+            await getChannel();
+            await startWorkers();
+        }
+        catch (err) {
+            logger.warn({ err }, "RabbitMQ/queue workers not available");
+        }
+    }
+    // Fire-and-forget: non-critical initialization
+    initializeAgenda().catch((err) => {
+        logger.error({ err }, "Agenda.js initialization failed");
+    });
+    promoteRateLimitersToRedis();
     const server = createServer(app);
     socketIOManager.initialize(server);
     server.listen(env.PORT, () => {
@@ -32,34 +56,6 @@ async function start() {
         logger.info(`Startup time: ${elapsed}ms`);
         metricsRegistry.setGauge("server_startup_time_ms", {}, elapsed);
     });
-    await connectDb().catch((err) => {
-        logger.error({ err }, "MongoDB connection failed");
-    });
-    try {
-        await getEnforcer();
-        logger.info("Casbin enforcer initialized");
-    }
-    catch (err) {
-        logger.warn({ err }, "Casbin initialization failed (policies will use file fallback)");
-    }
-    if (isRabbitMQConfigured()) {
-        try {
-            await getChannel();
-        }
-        catch (err) {
-            logger.warn({ err }, "RabbitMQ not available (queues will be disabled)");
-        }
-        try {
-            await startWorkers();
-        }
-        catch (err) {
-            logger.warn({ err }, "Queue workers not started (RabbitMQ may be unavailable)");
-        }
-    }
-    initializeAgenda().catch((err) => {
-        logger.error({ err }, "Agenda.js initialization failed");
-    });
-    promoteRateLimitersToRedis();
     // Track server metrics
     metricsRegistry.setGauge("server_uptime_seconds", {}, 0);
     setInterval(() => {

@@ -8,6 +8,7 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onRowClick?: (row: TData) => void;
+  title?: string;
   renderMobileCard?: (row: TData, index: number) => ReactNode;
 }
 
@@ -15,6 +16,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   onRowClick,
+  title,
   renderMobileCard,
 }: DataTableProps<TData, TValue>) {
   return (
@@ -22,6 +24,7 @@ export function DataTable<TData, TValue>({
       columns={columns}
       data={data}
       onRowClick={onRowClick}
+      title={title}
       searchPlaceholder="Search invoices..."
       label="invoice(s)"
       emptyMessage="No invoices yet."

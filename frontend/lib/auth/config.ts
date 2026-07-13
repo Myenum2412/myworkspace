@@ -41,47 +41,52 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         token.permissions = (user as { permissions?: string[] }).permissions;
         token.orgId = (user as { orgId?: string }).orgId;
         token.onboardingCompleted = (user as { onboardingCompleted?: boolean }).onboardingCompleted;
-        token.lastVerified = Date.now();
+        (token as any).lastVerified = 0;
         return token;
       }
 
-      // Only re-verify from DB every 5 minutes
       if (token.id) {
         const now = Date.now();
         const lastVerified = (token as any).lastVerified as number | undefined;
-        if (lastVerified && (now - lastVerified) < 300_000) {
+        if (lastVerified && (now - lastVerified) < 900_000) {
           return token;
         }
 
         try {
           const { db } = await import("@/lib/db");
-          const dbUser = await db.collection("users").findOne({ id: token.id });
+          const userId = token.id as string;
+
+          const [dbUser, member] = await Promise.all([
+            db.collection("users").findOne({ id: userId }).catch(() => null),
+            token.orgId
+              ? Promise.resolve(null)
+              : db.collection("org_members").findOne({ userId }).catch(() => null),
+          ]);
+
           if (dbUser?.role && dbUser.role !== "USER" && token.role !== "client") {
             token.role = dbUser.role;
           } else if (!token.role || token.role === "USER") {
             token.role = "workspace";
           }
-          const orgId = token.orgId as string | undefined;
-          if (orgId) {
-            const org = await db.collection("organizations").findOne({ id: orgId });
-            token.onboardingCompleted = org?.onboardingCompleted === true;
-            (token as any).plan = org?.plan || "trial";
-            (token as any).subscriptionStatus = org?.subscriptionStatus || "trialing";
-            (token as any).trialEnd = org?.trialEnd?.toISOString() || null;
-            (token as any).currentPeriodEnd = org?.currentPeriodEnd?.toISOString() || null;
-          } else {
-            const member = await db.collection("org_members").findOne({ userId: token.id });
-            if (member) {
-              token.orgId = member.orgId?.toString() || "";
-              const org = await db.collection("organizations").findOne({ id: member.orgId });
-              token.onboardingCompleted = org?.onboardingCompleted === true;
-              (token as any).plan = org?.plan || "trial";
-              (token as any).subscriptionStatus = org?.subscriptionStatus || "trialing";
-              (token as any).trialEnd = org?.trialEnd?.toISOString() || null;
-              (token as any).currentPeriodEnd = org?.currentPeriodEnd?.toISOString() || null;
+
+          let resolvedOrgId = (token.orgId as string) || member?.orgId?.toString() || "";
+          if (member && !token.orgId) {
+            token.orgId = resolvedOrgId;
+          }
+
+          if (resolvedOrgId) {
+            const org = await db.collection("organizations").findOne({ id: resolvedOrgId }).catch(() => null);
+            if (org) {
+              token.onboardingCompleted = org.onboardingCompleted === true;
+              (token as any).plan = org.plan || "trial";
+              (token as any).subscriptionStatus = org.subscriptionStatus || "trialing";
+              (token as any).trialEnd = org.trialEnd?.toISOString() || null;
+              (token as any).currentPeriodEnd = org.currentPeriodEnd?.toISOString() || null;
             } else {
               token.onboardingCompleted = true;
             }
+          } else {
+            token.onboardingCompleted = true;
           }
         } catch {
           if (token.onboardingCompleted === undefined) {
@@ -124,84 +129,43 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         const existing = await db.collection("users").findOne({ email: user.email });
 
         if (!existing) {
-          // Auto-create user from OAuth provider
-          console.log(`[AUTH config] Auto-creating user for ${user.email} from ${account.provider}`);
           const userId = uuid();
           const now = new Date();
           const userName = user.name || user.email.split("@")[0];
           const { getNextSequence } = await import("@/lib/db/counter");
-
-          let userNumber: number;
-          let retries = 0;
-          // eslint-disable-next-line no-constant-condition
-          while (true) {
-            userNumber = await getNextSequence("userNumber");
-            try {
-              await db.collection("users").insertOne({
-                id: userId,
-                userNumber,
-                email: user.email,
-                name: userName,
-                image: user.image || null,
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-                role: "workspace",
-                status: "online",
-                lastLogin: now,
-                createdAt: now,
-                updatedAt: now,
-              });
-              break;
-            } catch (insertErr: unknown) {
-              const mongoErr = insertErr as { code?: number };
-              if (mongoErr.code === 11000 && retries < 5) {
-                retries++;
-                continue;
-              }
-              throw insertErr;
-            }
-          }
-
-          // Auto-create organization for the user
           const newOrgId = uuid();
+          const userNumber = await getNextSequence("userNumber");
           let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
-          const existingSlug = await db.collection("organizations").findOne({ slug });
-          if (existingSlug) {
-            slug = `${slug}-${userId}`;
-          }
+
+          const slugCheck = await db.collection("organizations").findOne({ slug });
+          if (slugCheck) slug = `${slug}-${userId}`;
 
           const trialEnd = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
-          await db.collection("organizations").insertOne({
-            id: newOrgId,
-            name: `${userName}'s Organization`,
-            slug,
-            plan: "trial",
-            trialEnd,
-            subscriptionStatus: "trialing",
-            ownerId: userId,
-            onboardingCompleted: true,
-            createdAt: now,
-            updatedAt: now,
-          });
 
-          // Add user as admin of the organization
-          await db.collection("org_members").insertOne({
-            id: uuid(),
-            orgId: newOrgId,
-            userId,
-            role: "admin",
-            joinedAt: now,
-          });
+          // Parallelize all three writes
+          await Promise.all([
+            db.collection("users").insertOne({
+              id: userId, userNumber, email: user.email, name: userName,
+              image: user.image || null, provider: account.provider,
+              providerAccountId: account.providerAccountId, role: "workspace",
+              status: "online", lastLogin: now, createdAt: now, updatedAt: now,
+            }),
+            db.collection("organizations").insertOne({
+              id: newOrgId, name: `${userName}'s Organization`, slug,
+              plan: "trial", trialEnd, subscriptionStatus: "trialing",
+              ownerId: userId, onboardingCompleted: true, createdAt: now, updatedAt: now,
+            }),
+            db.collection("org_members").insertOne({
+              id: uuid(), orgId: newOrgId, userId, role: "admin", joinedAt: now,
+            }),
+          ]);
 
-          console.log(`[AUTH config] Auto-created user ${userId} and org ${newOrgId} for ${user.email}`);
-          // Update user object with id for the token
           user.id = userId;
           (user as { orgId?: string }).orgId = newOrgId;
           (user as { role?: string }).role = "workspace";
           return true;
         }
 
-        // Existing user - allow sign in
         return true;
       } catch (err) {
         console.error("[AUTH] Failed to check/create user in database:", err);
@@ -311,11 +275,15 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           return null;
         }
 
-        // Staff / default login: check users first, then client_users as fallback
-        const user = await db.collection("users").findOne({ email });
+        // Parallel lookup: check both users and client_users simultaneously
+        const [user, clientUser] = await Promise.all([
+          db.collection("users").findOne({ email }),
+          db.collection("client_users").findOne({ email }),
+        ]);
+
+        // Staff / default login: check users first
         if (user && user.password) {
           const valid = await compare(password, user.password);
-          console.log("[AUTH authorize] password valid:", valid);
           if (valid) {
             const userId = user.id || user._id?.toString();
             const memberDoc = await db.collection("org_members").findOne({ userId });
@@ -329,7 +297,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           }
         }
 
-        const clientUser = await db.collection("client_users").findOne({ email });
+        // Client login fallback
         if (clientUser && clientUser.password && clientUser.isActive) {
           const valid = await compare(password, clientUser.password);
           if (valid) {

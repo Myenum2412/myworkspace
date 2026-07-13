@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -47,23 +47,40 @@ function HeaderFallback() {
   );
 }
 
+const SidebarByContext = ({
+  context,
+  user,
+}: {
+  context: AppContextType;
+  user: { name: string; email: string; avatar: string; role?: string };
+}) => {
+  switch (context) {
+    case "origin":
+      return <OrgSidebar user={user} />;
+    case "staff":
+      return <StaffSidebar user={user} />;
+    case "client":
+      return <ClientSidebar user={user} />;
+    default:
+      return <AppSidebar user={user} />;
+  }
+};
+
 export function AppLayout({ children }: AppLayoutProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const router = useRouter();
-  const routerRef = useRef(router);
-  routerRef.current = router;
   const [open, setOpen] = useState(true);
 
-  const context: AppContextType = getAppContext(pathname);
-  const isApp = isAppPage(pathname);
+  const context = useMemo(() => getAppContext(pathname), [pathname]);
+  const isApp = useMemo(() => isAppPage(pathname), [pathname]);
 
   useEffect(() => {
     const role = session?.user?.role?.toLowerCase() || "";
     if (role === "client" && !pathname.startsWith("/client") && !pathname.startsWith("/login")) {
-      routerRef.current.replace("/client/dashboard");
+      router.replace("/client/dashboard");
     }
-  }, [session?.user?.role, pathname]);
+  }, [session?.user?.role, pathname, router]);
 
   const user = useMemo(() => ({
     name: session?.user?.name || "User",
@@ -79,29 +96,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [pathname]);
+  }, []);
 
   if (!isApp) {
     return <SubscriptionGuard>{children}</SubscriptionGuard>;
   }
 
-  const renderSidebar = () => {
-    switch (context) {
-      case "origin":
-        return <OrgSidebar user={user} />;
-      case "staff":
-        return <StaffSidebar user={user} />;
-      case "client":
-        return <ClientSidebar user={user} />;
-      default:
-        return <AppSidebar user={user} />;
-    }
-  };
-
   return (
     <SidebarProvider open={open} onOpenChange={setOpen}>
       <Suspense fallback={<SidebarFallback />}>
-        {renderSidebar()}
+        <SidebarByContext context={context} user={user} />
       </Suspense>
       <SidebarInset>
         <Suspense fallback={<HeaderFallback />}>

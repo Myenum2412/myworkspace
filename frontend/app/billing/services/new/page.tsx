@@ -1,1 +1,5 @@
-export { default } from "./page.client"
+import NewServicePageClient from "./page.client";
+
+export default function NewServicePage() {
+  return <NewServicePageClient />;
+}

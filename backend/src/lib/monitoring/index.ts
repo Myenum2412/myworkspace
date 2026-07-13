@@ -13,11 +13,13 @@ interface Metric {
   value: number;
 }
 
+const HISTOGRAM_MAX_SAMPLES = 1000;
+
 class MetricsRegistry {
   private metrics: Map<string, Metric> = new Map();
   private counters: Map<string, number> = new Map();
   private gauges: Map<string, number> = new Map();
-  private histograms: Map<string, number[]> = new Map();
+  private histograms: Map<string, { values: number[]; sum: number; count: number }> = new Map();
 
   incrementCounter(name: string, labels: MetricLabels = {}, value = 1) {
     const key = `${name}:${JSON.stringify(labels)}`;
@@ -38,12 +40,25 @@ class MetricsRegistry {
 
   observeHistogram(name: string, labels: MetricLabels = {}, value: number) {
     const key = `${name}:${JSON.stringify(labels)}`;
-    const values = this.histograms.get(key) || [];
-    values.push(value);
-    this.histograms.set(key, values);
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    let hist = this.histograms.get(key);
+    if (!hist) {
+      hist = { values: [], sum: 0, count: 0 };
+      this.histograms.set(key, hist);
+    }
+
+    // Reservoir sampling: keep last HISTOGRAM_MAX_SAMPLES values
+    if (hist.values.length < HISTOGRAM_MAX_SAMPLES) {
+      hist.values.push(value);
+    } else {
+      const idx = hist.count % HISTOGRAM_MAX_SAMPLES;
+      hist.values[idx] = value;
+    }
+    hist.sum += value;
+    hist.count++;
+
+    const avg = hist.sum / hist.count;
     this.metrics.set(key, {
-      name, help: `Histogram ${name}`, type: "histogram", labels, value: avg,
+      name, help: `Histogram ${name}`, type: "histogram", labels, value: Math.round(avg * 100) / 100,
     });
   }
 

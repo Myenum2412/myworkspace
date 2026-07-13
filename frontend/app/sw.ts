@@ -145,7 +145,7 @@ function shouldUseStaleWhileRevalidate(url: URL): boolean {
   return false;
 }
 
-new Serwist({
+const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
@@ -173,59 +173,27 @@ new Serwist({
     },
     ...defaultCache,
   ],
-}).addEventListeners();
+});
 
-// ── Fetch event — offline fallback for navigations and images ──
+serwist.addEventListeners();
+
+// ── Offline fallback for navigations only (Serwist handles caching) ──
 self.addEventListener("fetch", (event: any) => {
   const request = event.request;
   const url = new URL(request.url);
 
   if (url.origin !== self.location.origin) return;
-
-  if (isNavigationRequest(request) && FALLBACK_PATHS.includes(url.pathname)) {
-    event.respondWith(handleOfflineFallback(request));
-    return;
-  }
+  if (request.method !== "GET") return;
 
   if (isNavigationRequest(request)) {
+    if (FALLBACK_PATHS.includes(url.pathname)) {
+      event.respondWith(handleOfflineFallback(request));
+      return;
+    }
     event.respondWith(
       fetch(request)
-        .then((response: Response) => {
-          if (response.status === 404) {
-            return handleOfflineFallback(request);
-          }
-          return response;
-        })
         .catch(() => handleOfflineFallback(request)),
     );
-    return;
-  }
-
-  if (isImageRequest(url)) {
-    event.respondWith(
-      caches.match(request)
-        .then((cached: Response | undefined) => {
-          if (cached) return cached;
-          return fetch(request)
-            .then((response: Response) => {
-              if (response.ok) {
-                const copy = response.clone();
-                caches.open(CACHE_NAMES.images).then((cache) => cache.put(request, copy));
-              }
-              return response;
-            })
-            .catch(() => buildOfflineImagePlaceholder());
-        }),
-    );
-    return;
-  }
-
-  if (url.pathname === "/manifest.json") {
-    event.respondWith(
-      fetch(request)
-        .catch(() => caches.match(request).then((cached: Response | undefined) => cached)),
-    );
-    return;
   }
 });
 

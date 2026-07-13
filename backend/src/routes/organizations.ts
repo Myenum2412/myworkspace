@@ -39,7 +39,10 @@ router.post("/switch", async (req: AuthRequest, res: Response) => {
   // Verify membership
   await requireOrgMembership(req.user!.userId, orgId);
 
-  const org = await Organization.findById(orgId).lean();
+  let org = await Organization.findOne({ id: orgId }).lean();
+  if (!org && orgId.match(/^[0-9a-fA-F]{24}$/)) {
+    org = await Organization.findById(orgId).lean();
+  }
   if (!org) throw new AppError(404, "Organization not found");
 
   // Issue new token with updated orgId
@@ -78,7 +81,10 @@ router.post("/invite", async (req: AuthRequest, res: Response) => {
     throw new AppError(403, "Only organization admins can invite members");
   }
 
-  const org = await Organization.findById(targetOrgId).lean();
+  let org = await Organization.findOne({ id: targetOrgId }).lean();
+  if (!org && targetOrgId.match(/^[0-9a-fA-F]{24}$/)) {
+    org = await Organization.findById(targetOrgId).lean();
+  }
   const orgName = org?.name || "Organization";
 
   const normalizedEmails = emails

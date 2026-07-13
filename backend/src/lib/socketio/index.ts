@@ -12,6 +12,8 @@ interface AuthenticatedSocket extends Socket {
 
 export class SocketIOManager {
   private io: Server | null = null;
+  private connectionCount = 0;
+  private maxConnections = 10_000;
 
   initialize(server: HttpServer) {
     this.io = new Server(server, {
@@ -23,6 +25,12 @@ export class SocketIOManager {
       transports: ["websocket", "polling"],
       allowEIO3: true,
       connectTimeout: 20_000,
+      pingInterval: 25_000,
+      pingTimeout: 20_000,
+      maxHttpBufferSize: 1e6,
+      perMessageDeflate: {
+        threshold: 1024,
+      },
     });
 
     // Authentication middleware
@@ -46,17 +54,21 @@ export class SocketIOManager {
     this.io.on("connection", (socket: AuthenticatedSocket) => {
       if (!socket.userId) return;
 
+      this.connectionCount++;
+      if (this.connectionCount > this.maxConnections) {
+        logger.warn({ connectionCount: this.connectionCount }, "Socket connection limit exceeded");
+        socket.disconnect(true);
+        return;
+      }
+
       socket.join(`user:${socket.userId}`);
 
       if (socket.orgId) {
         socket.join(`org:${socket.orgId}`);
-        logger.debug({ userId: socket.userId, orgId: socket.orgId }, "Socket joined user and org rooms");
-      } else {
-        logger.debug({ userId: socket.userId }, "Socket joined user room (no org)");
       }
 
       socket.on("disconnect", () => {
-        logger.debug({ userId: socket.userId }, "Socket disconnected");
+        this.connectionCount = Math.max(0, this.connectionCount - 1);
       });
     });
 

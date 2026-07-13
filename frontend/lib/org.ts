@@ -2,46 +2,83 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { ObjectId } from "mongodb";
 
+const orgIdCache = new Map<string, { orgId: string; ts: number }>();
+const CACHE_TTL = 120_000;
+
+function toObjectId(id: string): ObjectId | null {
+  try { return ObjectId.isValid(id) ? new ObjectId(id) : null; } catch { return null; }
+}
+
 export async function getUserOrgId(userId: string, email?: string): Promise<string | null> {
-  const possibleIds = await resolvePossibleUserIds(userId, email);
+  const cacheKey = `${userId}:${email || ""}`;
+  const cached = orgIdCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.orgId;
 
-  const objectIdIds = possibleIds
-    .map((id) => { try { return new ObjectId(id); } catch { return null; } })
-    .filter((oid): oid is ObjectId => oid !== null);
+  const possibleIds = [userId];
+  const objectIdIds: ObjectId[] = [];
+  const oid = toObjectId(userId);
+  if (oid) objectIdIds.push(oid);
 
-  // Query NextAuth org_members collection FIRST — the JWT/Session uses this
-  // orgId format (UUID), and the majority of frontend features (projects,
-  // clients, etc.) operate with it. Some userId fields are stored as ObjectId,
-  // others as string, so match both to avoid type-sensitive $in failures.
-  const nextAuthMembers = await db.collection(collections.orgMembers).find({
-    $or: [
-      { userId: { $in: possibleIds } },
-      ...(objectIdIds.length > 0 ? [{ userId: { $in: objectIdIds } }] : []),
-    ],
-  }).toArray() as unknown as Record<string, unknown>[];
-  if (nextAuthMembers.length > 0) {
-    if (nextAuthMembers.length === 1) return String(nextAuthMembers[0].orgId);
-    const orgIds = [...new Set(nextAuthMembers.map(m => String(m.orgId)))];
+  // Parallelize user lookups
+  const queries: Promise<any>[] = [
+    oid
+      ? db.collection(collections.users).findOne({ $or: [{ _id: oid }, { id: userId }] })
+      : db.collection(collections.users).findOne({ id: userId }),
+  ];
+  if (email) {
+    queries.push(db.collection(collections.users).findOne({ email }));
+  }
+
+  const userResults = await Promise.all(queries);
+  for (const userDoc of userResults) {
+    if (userDoc) {
+      if (userDoc.id) possibleIds.push(userDoc.id as string);
+      if (userDoc._id) {
+        const oidStr = (userDoc._id as ObjectId).toString();
+        possibleIds.push(oidStr);
+        const extraOid = toObjectId(oidStr);
+        if (extraOid) objectIdIds.push(extraOid);
+      }
+    }
+  }
+
+  const uniqueIds = [...new Set(possibleIds)];
+  const orConditions: Record<string, unknown>[] = [{ userId: { $in: uniqueIds } }];
+  if (objectIdIds.length > 0) {
+    orConditions.push({ userId: { $in: objectIdIds } });
+  }
+
+  // Query both org_members collections in parallel
+  const [nextAuthMembers, mongooseMembers] = await Promise.all([
+    db.collection(collections.orgMembers).find({ $or: orConditions }).toArray(),
+    db.collection("orgmembers").find({ $or: orConditions }).toArray(),
+  ]);
+
+  const allMembers = [...(nextAuthMembers as unknown as Record<string, unknown>[]), ...(mongooseMembers as unknown as Record<string, unknown>[])];
+
+  if (allMembers.length > 0) {
+    if (allMembers.length === 1) {
+      const orgId = String(allMembers[0].orgId);
+      orgIdCache.set(cacheKey, { orgId, ts: Date.now() });
+      return orgId;
+    }
+
+    const orgIds = [...new Set(allMembers.map(m => String(m.orgId)))];
+    if (orgIds.length === 1) {
+      orgIdCache.set(cacheKey, { orgId: orgIds[0], ts: Date.now() });
+      return orgIds[0];
+    }
+
+    // Find org with most members (the user's primary org)
     const counts = await db.collection(collections.orgMembers).aggregate([
       { $match: { orgId: { $in: orgIds } } },
       { $group: { _id: "$orgId", count: { $sum: 1 } } },
     ]).toArray() as { _id: string; count: number }[];
     const countMap = new Map(counts.map(c => [c._id, c.count]));
     orgIds.sort((a, b) => (countMap.get(b) || 0) - (countMap.get(a) || 0));
-    return orgIds[0];
-  }
 
-  // Fallback to Mongoose orgmembers collection
-  const mongooseMembers = await db.collection("orgmembers").find({
-    $or: [
-      { userId: { $in: possibleIds } },
-      ...(objectIdIds.length > 0 ? [{ userId: { $in: objectIdIds } }] : []),
-    ],
-  }).toArray() as unknown as Record<string, unknown>[];
-  if (mongooseMembers.length > 0) {
-    const objIdMatch = mongooseMembers.find((m) => typeof m.userId !== "string");
-    if (objIdMatch) return String(objIdMatch.orgId);
-    return String(mongooseMembers[0].orgId);
+    orgIdCache.set(cacheKey, { orgId: orgIds[0], ts: Date.now() });
+    return orgIds[0];
   }
 
   return null;
@@ -49,39 +86,27 @@ export async function getUserOrgId(userId: string, email?: string): Promise<stri
 
 async function resolvePossibleUserIds(userId: string, email?: string): Promise<string[]> {
   const ids = [userId];
-  let sessionUserObjId: ObjectId | undefined;
-  try { sessionUserObjId = new ObjectId(userId); } catch {}
-  const userQuery: Record<string, unknown> = sessionUserObjId
-    ? { $or: [{ _id: sessionUserObjId }, { id: userId }] }
-    : { id: userId };
-  const userDoc = await db.collection(collections.users).findOne(userQuery);
-  if (userDoc) {
-    if (userDoc.id) ids.push(userDoc.id as string);
-    if (userDoc._id) ids.push((userDoc._id as ObjectId).toString());
-  }
+  const oid = toObjectId(userId);
+
+  const queries: Promise<any>[] = [
+    oid
+      ? db.collection(collections.users).findOne({ $or: [{ _id: oid }, { id: userId }] })
+      : db.collection(collections.users).findOne({ id: userId }),
+  ];
   if (email) {
-    const userByEmail = await db.collection(collections.users).findOne({ email });
-    if (userByEmail) {
-      if (userByEmail.id) ids.push(userByEmail.id as string);
-      if (userByEmail._id) ids.push((userByEmail._id as ObjectId).toString());
+    queries.push(db.collection(collections.users).findOne({ email }));
+  }
+
+  const results = await Promise.all(queries);
+  for (const doc of results) {
+    if (doc) {
+      if (doc.id) ids.push(doc.id as string);
+      if (doc._id) ids.push((doc._id as ObjectId).toString());
     }
   }
   return [...new Set(ids)];
 }
 
-/**
- * Resolve the user's active orgId.
- *
- * Order of precedence:
- *   1. `tokenOrgId` — already present on the JWT/session. Trust it; do NOT
- *      throw just because the DB lookup below is momentarily out of sync.
- *   2. OrgMember lookup by userId/email (handles legacy sessions whose token
- *      was issued before orgId was embedded).
- *
- * Throws ONLY when neither source yields an orgId. The caller decides how to
- * surface the message — API routes map it to 400/403, pages show a graceful
- * "no organization" state instead of a hard crash.
- */
 export async function requireUserOrgId(
   userId: string,
   email?: string,
@@ -93,32 +118,27 @@ export async function requireUserOrgId(
   throw new Error("User is not associated with any organization");
 }
 
-/**
- * Fetch the organization record for an orgId.
- * Tries string `id` first, then ObjectId `_id`. Returns null if missing
- * (orgId present but org doc deleted) so callers can show a graceful
- * fallback instead of throwing.
- */
 export async function getOrgDetails(orgId: string): Promise<Record<string, unknown> | null> {
   if (!orgId) return null;
-  const org = await db.collection(collections.organizations).findOne({ id: orgId });
-  if (org) return org as Record<string, unknown>;
-  let byObjectId: Record<string, unknown> | null = null;
-  try {
-    if (ObjectId.isValid(orgId)) {
-      byObjectId = (await db.collection(collections.organizations).findOne(
-        { _id: new ObjectId(orgId) },
-      )) as Record<string, unknown> | null;
-    }
-  } catch {}
-  return byObjectId;
+
+  const oid = toObjectId(orgId);
+  const queries: Promise<any>[] = [
+    db.collection(collections.organizations).findOne({ id: orgId }),
+  ];
+  if (oid) {
+    queries.push(db.collection(collections.organizations).findOne({ _id: oid }));
+  }
+
+  const results = await Promise.all(queries);
+  for (const org of results) {
+    if (org) return org as Record<string, unknown>;
+  }
+  return null;
 }
 
 export async function validateOrgMembership(userId: string, orgId: string, email?: string): Promise<boolean> {
   const possibleIds = await resolvePossibleUserIds(userId, email);
-  const objectIdIds = possibleIds
-    .map((id) => { try { return new ObjectId(id); } catch { return null; } })
-    .filter((oid): oid is ObjectId => oid !== null);
+  const objectIdIds = possibleIds.map(toObjectId).filter((oid): oid is ObjectId => oid !== null);
   const member = await db.collection(collections.orgMembers).findOne({
     $or: [
       { userId: { $in: possibleIds }, orgId },
@@ -152,7 +172,8 @@ export async function ensureUserOrg(userId: string, email?: string): Promise<str
   const userName = user?.name || user?.email?.split("@")[0] || "User";
   const newOrgId = uuid();
   const baseSlug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;
-  const slug = baseSlug + (await slugExists(baseSlug) ? `-${Date.now()}` : "");
+  const slugCheck = await db.collection(collections.organizations).findOne({ slug: baseSlug });
+  const slug = slugCheck ? `${baseSlug}-${Date.now()}` : baseSlug;
 
   await db.collection(collections.organizations).insertOne({
     id: newOrgId,
@@ -163,6 +184,7 @@ export async function ensureUserOrg(userId: string, email?: string): Promise<str
     createdAt: new Date(),
     updatedAt: new Date(),
   });
+
   const mainUserId = user?.id || possibleIds[0];
   await db.collection(collections.orgMembers).insertOne({
     id: uuid(),
@@ -171,10 +193,6 @@ export async function ensureUserOrg(userId: string, email?: string): Promise<str
     role: "admin",
     joinedAt: new Date(),
   });
-  return newOrgId;
-}
 
-async function slugExists(slug: string): Promise<boolean> {
-  const existing = await db.collection(collections.organizations).findOne({ slug });
-  return !!existing;
+  return newOrgId;
 }

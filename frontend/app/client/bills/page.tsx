@@ -35,7 +35,7 @@ type BillingData = {
   invoices: InvoiceData[];
 };
 
-function formatCurrency(amount: number, currency: string): string {
+function formatCurrency(amount: number, currency: string = "INR"): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency.toUpperCase(),
@@ -188,10 +188,10 @@ export default function ClientBillsPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold text-sm">
-                            Invoice #{inv.number || inv.id.slice(0, 8)}
+                            Invoice #{inv.number || `INV-${inv.id.slice(0, 5).toUpperCase()}`}
                           </span>
                           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusColor}`}>
-                            {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
+                            {inv.status ? inv.status.charAt(0).toUpperCase() + inv.status.slice(1) : "Unknown"}
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground mt-0.5">

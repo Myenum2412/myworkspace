@@ -29,23 +29,27 @@ export interface NotificationItem {
   createdAt: string;
 }
 
+const NOTIFIED_MAX_SIZE = 200;
+
 export function useNotifications(userId?: string) {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
-  const [offset, setOffset] = useState(0);
+  const offsetRef = useRef(0);
   const [hasMore, setHasMore] = useState(true);
   const { permission, requestPermission } = useNotificationPermission();
   const notifiedRef = useRef<Set<string>>(new Set());
+  const userIdRef = useRef(userId);
+  userIdRef.current = userId;
 
   const fetchNotifications = useCallback(async (reset = false) => {
-    if (!userId) return;
+    if (!userIdRef.current) return;
     setLoading(true);
     try {
-      const currentOffset = reset ? 0 : offset;
+      const currentOffset = reset ? 0 : offsetRef.current;
       const res = await fetch(
-        `/api/notifications?limit=50&offset=${currentOffset}&_=${Date.now()}`,
+        `/api/notifications?limit=50&offset=${currentOffset}`,
         { credentials: "include" }
       );
       if (res.ok) {
@@ -56,14 +60,14 @@ export function useNotifications(userId?: string) {
         }));
         if (reset) {
           setNotifications(list);
-          setOffset(list.length);
+          offsetRef.current = list.length;
         } else {
           setNotifications((prev) => {
             const existing = new Map(prev.map((n) => [n.id, n]));
             for (const n of list) existing.set(n.id, n);
             return Array.from(existing.values());
           });
-          setOffset((o) => o + list.length);
+          offsetRef.current += list.length;
         }
         setHasMore(list.length >= 50);
         setTotal(d.total || list.length);
@@ -71,13 +75,12 @@ export function useNotifications(userId?: string) {
       }
     } catch {}
     setLoading(false);
-  }, [userId, offset]);
+  }, []);
 
-  // Initial fetch
   useEffect(() => {
     if (!userId) return;
     fetchNotifications(true);
-  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, fetchNotifications]);
 
   // Socket.IO real-time listener
   useEffect(() => {
@@ -91,16 +94,20 @@ export function useNotifications(userId?: string) {
       const notif = { ...n, id } as NotificationItem;
 
       setNotifications((prev) => {
-        const exists = prev.some((n) => n.id === notif.id);
-        if (exists) return prev;
+        if (prev.some((existing) => existing.id === notif.id)) return prev;
         return [notif, ...prev];
       });
       if (!notif.read) setUnreadCount((c) => c + 1);
 
-      // Show browser notification if supported and permission granted
       if (!notif.read && "Notification" in window && Notification.permission === "granted") {
         if (!notifiedRef.current.has(notif.id)) {
+          // Bounded set to prevent memory leak
+          if (notifiedRef.current.size >= NOTIFIED_MAX_SIZE) {
+            const first = notifiedRef.current.values().next().value;
+            if (first) notifiedRef.current.delete(first);
+          }
           notifiedRef.current.add(notif.id);
+
           try {
             const sw = await navigator.serviceWorker.ready;
             sw.showNotification(notif.title, {
@@ -115,15 +122,14 @@ export function useNotifications(userId?: string) {
               })),
               vibrate: [200, 100, 200],
             } as any);
-          } catch (err) {
-            // Fallback to simple notification if service worker not ready
+          } catch {
             try {
-              const n = new Notification(notif.title, {
+              const notification = new Notification(notif.title, {
                 body: notif.message,
                 icon: notif.icon || "/web-app-manifest-192x192.png",
                 tag: `notification:${notif.id}`,
               });
-              n.onclick = () => {
+              notification.onclick = () => {
                 if (notif.link) window.open(notif.link, "_self");
               };
             } catch {}
@@ -138,7 +144,6 @@ export function useNotifications(userId?: string) {
     };
   }, [userId]);
 
-  // Auto-subscribe to push on first load if permission granted
   useEffect(() => {
     if (permission === "granted" && "serviceWorker" in navigator) {
       navigator.serviceWorker.ready

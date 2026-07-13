@@ -109,6 +109,19 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: ProfileImageUploa
   )
 }
 
+function OptionList({ options, value }: { options?: string[]; value?: string }) {
+  const safe = options && options.length ? options : []
+  const hasValue = !!value && safe.includes(value)
+  return (
+    <>
+      {safe.map((opt) => (
+        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+      ))}
+      {!hasValue && value ? <SelectItem value={value}>{value}</SelectItem> : null}
+    </>
+  )
+}
+
 interface BasicInfoSectionProps {
   formData: FirstSlideEmployeeForm
   onChange: (field: keyof FirstSlideEmployeeForm, value: string) => void
@@ -190,9 +203,7 @@ export function BasicInfoSection({ formData, onChange, options }: BasicInfoSecti
               <SelectValue placeholder="" />
             </SelectTrigger>
             <SelectContent>
-              {(options?.departments || []).map((opt: string) => (
-                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-              ))}
+              <OptionList options={options?.departments} value={formData.department} />
             </SelectContent>
           </Select>
         </Field>
@@ -203,9 +214,7 @@ export function BasicInfoSection({ formData, onChange, options }: BasicInfoSecti
               <SelectValue placeholder="" />
             </SelectTrigger>
             <SelectContent>
-              {(options?.locations || []).map((opt: string) => (
-                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-              ))}
+              <OptionList options={options?.locations} value={formData.location} />
             </SelectContent>
           </Select>
         </Field>
@@ -232,77 +241,68 @@ export function WorkInfoSection({ formData, onChange, options }: WorkInfoSection
               <SelectTrigger>
                 <SelectValue placeholder="" />
               </SelectTrigger>
-              <SelectContent>
-                {(options?.departments || []).map((opt: string) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel>Location</FieldLabel>
-            <Select value={formData.location} onValueChange={(v) => onChange("location", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="" />
-              </SelectTrigger>
-              <SelectContent>
-                {(options?.locations || []).map((opt: string) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel>Designation</FieldLabel>
-            <Select value={formData.designation} onValueChange={(v) => onChange("designation", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="" />
-              </SelectTrigger>
-              <SelectContent>
-                {(options?.designations || []).map((opt: string) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel>Role Name</FieldLabel>
-            <Select value={formData.roleName || "member"} onValueChange={(v) => onChange("roleName", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="member">Member</SelectItem>
-                <SelectItem value="staff">Staff</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel>Employment Type</FieldLabel>
-            <Select value={formData.employmentType} onValueChange={(v) => onChange("employmentType", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="" />
-              </SelectTrigger>
-              <SelectContent>
-                {(options?.employmentTypes || []).map((opt: string) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel>Status</FieldLabel>
-            <Select value={formData.status} onValueChange={(v) => onChange("status", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="" />
-              </SelectTrigger>
-              <SelectContent>
-                {(options?.statuses || []).map((opt: string) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+            <SelectContent>
+              <OptionList options={options?.departments} value={formData.department} />
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>Location</FieldLabel>
+          <Select value={formData.location} onValueChange={(v) => onChange("location", v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="" />
+            </SelectTrigger>
+            <SelectContent>
+              <OptionList options={options?.locations} value={formData.location} />
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>Designation</FieldLabel>
+          <Select value={formData.designation} onValueChange={(v) => onChange("designation", v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="" />
+            </SelectTrigger>
+            <SelectContent>
+              <OptionList options={options?.designations} value={formData.designation} />
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>Role Name</FieldLabel>
+          <Select value={formData.roleName || "member"} onValueChange={(v) => onChange("roleName", v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="member">Member</SelectItem>
+              <SelectItem value="staff">Staff</SelectItem>
+              <OptionList options={[]} value={formData.roleName || undefined} />
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>Employment Type</FieldLabel>
+          <Select value={formData.employmentType} onValueChange={(v) => onChange("employmentType", v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="" />
+            </SelectTrigger>
+            <SelectContent>
+              <OptionList options={options?.employmentTypes} value={formData.employmentType} />
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>Status</FieldLabel>
+          <Select value={formData.status} onValueChange={(v) => onChange("status", v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="" />
+            </SelectTrigger>
+            <SelectContent>
+              <OptionList options={options?.statuses} value={formData.status} />
+            </SelectContent>
+          </Select>
+        </Field>
         </div>
       </FieldSet>
 
@@ -315,45 +315,39 @@ export function WorkInfoSection({ formData, onChange, options }: WorkInfoSection
               <SelectTrigger>
                 <SelectValue placeholder="" />
               </SelectTrigger>
-              <SelectContent>
-                {(options?.branches || []).map((opt: string) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel>Shift</FieldLabel>
-            <Select value={formData.shift} onValueChange={(v) => onChange("shift", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="" />
-              </SelectTrigger>
-              <SelectContent>
-                {(options?.shifts || []).map((opt: string) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel>Date of Joining</FieldLabel>
-            <Input
-              type="date"
-              value={formData.joiningDate}
-              onChange={(e) => onChange("joiningDate", e.target.value)}
-            />
-          </Field>
-          <Field>
-            <FieldLabel>Source of Hire</FieldLabel>
-            <Select value={formData.sourceOfHire} onValueChange={(v) => onChange("sourceOfHire", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="" />
-              </SelectTrigger>
-              <SelectContent>
-                {(options?.sourceOfHires || []).map((opt: string) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                ))}
-              </SelectContent>
+            <SelectContent>
+              <OptionList options={options?.branches} value={formData.branchName} />
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>Shift</FieldLabel>
+          <Select value={formData.shift} onValueChange={(v) => onChange("shift", v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="" />
+            </SelectTrigger>
+            <SelectContent>
+              <OptionList options={options?.shifts} value={formData.shift} />
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>Date of Joining</FieldLabel>
+          <Input
+            type="date"
+            value={formData.joiningDate}
+            onChange={(e) => onChange("joiningDate", e.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Source of Hire</FieldLabel>
+          <Select value={formData.sourceOfHire} onValueChange={(v) => onChange("sourceOfHire", v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="" />
+            </SelectTrigger>
+            <SelectContent>
+              <OptionList options={options?.sourceOfHires} value={formData.sourceOfHire} />
+            </SelectContent>
             </Select>
           </Field>
         </div>
@@ -446,9 +440,7 @@ export function ContactDetailsSection({
               <SelectValue placeholder="" />
             </SelectTrigger>
             <SelectContent>
-              {(options?.countries || []).map((opt: string) => (
-                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-              ))}
+              <OptionList options={options?.countries} value={country} />
             </SelectContent>
           </Select>
         </Field>
@@ -463,35 +455,39 @@ interface DynamicRowSectionProps {
   onAdd: () => void
   onRemove: (id: string) => void
   renderRow: (row: Row) => React.ReactNode
+  defaultOpen?: boolean
+  readOnly?: boolean
 }
 
-export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: DynamicRowSectionProps) {
-  const [isOpen, setIsOpen] = React.useState(false)
+export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow, defaultOpen = false, readOnly = false }: DynamicRowSectionProps) {
+  const [isOpen, setIsOpen] = React.useState(defaultOpen || rows.some((r) => Object.values(r).some((v) => v !== "" && v !== false && v != null)))
   return (
     <FieldSet>
       <div className="flex items-center justify-between mb-6">
         <FieldLegend>{title}</FieldLegend>
-        <div className="flex items-center gap-2">
-          <Button onClick={onAdd} variant="outline" size="sm" className="touch-target">
-            + Add {title}
-          </Button>
-          <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {isOpen ? <ChevronDown className="size-5" /> : <ChevronRight className="size-5" />}
-          </button>
-        </div>
+        {!readOnly && (
+          <div className="flex items-center gap-2">
+            <Button onClick={onAdd} variant="outline" size="sm" className="touch-target">
+              + Add {title}
+            </Button>
+            <button
+              type="button"
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isOpen ? <ChevronDown className="size-5" /> : <ChevronRight className="size-5" />}
+            </button>
+          </div>
+        )}
       </div>
-      {isOpen && (
+      {(isOpen || readOnly) && (
         <div className="space-y-6">
           {rows.map((row) => (
             <div key={row.id} className="relative border rounded-lg p-4">
               <div className="pt-8 sm:pt-0">
                 {renderRow(row)}
               </div>
-              {rows.length > 1 && (
+              {!readOnly && rows.length > 1 && (
                 <Button
                   onClick={() => onRemove(row.id)}
                   variant="ghost"
@@ -514,11 +510,24 @@ interface SelectWithAddProps {
   options: string[]
   value?: string
   onChange?: (value: string) => void
+  readOnly?: boolean
 }
 
-export function SelectWithAdd({ label, options, value, onChange }: SelectWithAddProps) {
+export function SelectWithAdd({ label, options, value, onChange, readOnly = false }: SelectWithAddProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [customValue, setCustomValue] = React.useState("")
+
+  const safeOptions = options && options.length ? options : []
+  const hasValue = !!value && safeOptions.includes(value)
+
+  if (readOnly) {
+    return (
+      <Field>
+        <FieldLabel>{label}</FieldLabel>
+        <Input value={value || ""} readOnly placeholder="" />
+      </Field>
+    )
+  }
 
   return (
     <Field>
@@ -529,11 +538,14 @@ export function SelectWithAdd({ label, options, value, onChange }: SelectWithAdd
             <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
-            {options.map((opt) => (
+            {safeOptions.map((opt) => (
               <SelectItem key={opt} value={opt}>
                 {opt}
               </SelectItem>
             ))}
+            {!hasValue && value ? (
+              <SelectItem value={value}>{value}</SelectItem>
+            ) : null}
           </SelectContent>
         </Select>
         <Button onClick={() => setIsOpen(true)} variant="outline" size="sm">

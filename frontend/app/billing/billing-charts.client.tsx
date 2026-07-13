@@ -92,8 +92,8 @@ export default function BillingCharts({ invoices, pieData }: BillingChartsProps)
                   invoices.forEach((inv) => {
                     const d = new Date(inv.createdAt);
                     const monthIndex = d.getMonth();
-                    if (inv.status === "paid") months[monthIndex].paid += inv.amountPaid / 100;
-                    else if (inv.status === "open") months[monthIndex].pending += inv.amountPaid / 100;
+                    if (inv.status === "paid") months[monthIndex].paid += (inv.amountPaid || 0) / 100;
+                    else if (inv.status === "open") months[monthIndex].pending += (inv.amountPaid || 0) / 100;
                   });
 
                   return Object.values(months);

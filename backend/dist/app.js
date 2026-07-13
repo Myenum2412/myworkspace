@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
+import crypto from "crypto";
 import path from "path";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
@@ -10,8 +11,11 @@ import { requestIdMiddleware } from "./lib/request-id.js";
 import { authLimiter, socketTokenLimiter, apiLimiter, uploadLimiter, shareDownloadLimiter, searchLimiter } from "./middleware/rate-limit.js";
 import { inputSanitizer } from "./middleware/sanitize.js";
 import { csrfProtection } from "./lib/csrf.js";
+import { requestTimeout } from "./middleware/timeout.js";
 import mongoose from "mongoose";
 import { isRedisConnected } from "./lib/redis.js";
+import { metricsRegistry } from "./lib/monitoring/index.js";
+import { logger } from "./lib/logger/index.js";
 import authRoutes from "./routes/auth.js";
 import tasksRoutes from "./routes/tasks.js";
 import sessionsRoutes from "./routes/sessions.js";
@@ -34,7 +38,6 @@ import timeEntriesRoutes from "./routes/time-entries.js";
 import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
 import fileApprovalRoutes from "./routes/file-approval.js";
-import billingRoutes from "./routes/billing.js";
 import twoFactorRoutes from "./routes/two-factor.js";
 import chatRoutes from "./routes/chat.js";
 import installerRoutes from "./routes/installer.js";
@@ -43,6 +46,7 @@ import whatsappRoutes from "./routes/whatsapp.js";
 import aiChatRoutes from "./routes/ai-chat.js";
 import aiAgentRoutes from "./routes/ai-agent.js";
 import stocksRoutes from "./routes/stocks.js";
+import billingRoutes from "./routes/billing.js";
 const app = express();
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
@@ -101,10 +105,10 @@ app.use(compression({
 // ── ETag support ──
 app.set("etag", "strong");
 // ── Body parsing ──
-app.use("/api/billing/webhook", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(requestIdMiddleware);
+app.use(requestTimeout());
 app.use(inputSanitizer);
 app.use(csrfProtection());
 // ── Rate limiting ──
@@ -146,6 +150,46 @@ app.use("/api", (req, res, next) => {
         res.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate");
     }
     next();
+});
+// ── Request logging and metrics middleware ──
+app.use((req, res, next) => {
+    const start = Date.now();
+    const requestId = crypto.randomUUID();
+    req.headers["x-request-id"] = requestId;
+    res.setHeader("X-Request-Id", requestId);
+    res.on("finish", () => {
+        const duration = Date.now() - start;
+        const path = req.route?.path || req.path;
+        metricsRegistry.incrementCounter("api_requests_total", {
+            method: req.method,
+            path,
+            status: String(res.statusCode),
+        });
+        metricsRegistry.observeHistogram("api_request_duration_ms", {
+            method: req.method,
+            path,
+        }, duration);
+        if (res.statusCode >= 500) {
+            logger.error({ requestId, method: req.method, path, status: res.statusCode, duration }, "Request failed");
+        }
+        else if (res.statusCode >= 400) {
+            logger.warn({ requestId, method: req.method, path, status: res.statusCode, duration }, "Request error");
+        }
+        else {
+            logger.info({ requestId, method: req.method, path, status: res.statusCode, duration }, "Request completed");
+        }
+    });
+    next();
+});
+// ── Prometheus metrics endpoint ──
+app.get("/metrics", (_req, res) => {
+    const mem = process.memoryUsage();
+    metricsRegistry.setGauge("process_memory_heap_used_bytes", {}, mem.heapUsed);
+    metricsRegistry.setGauge("process_memory_heap_total_bytes", {}, mem.heapTotal);
+    metricsRegistry.setGauge("process_memory_rss_bytes", {}, mem.rss);
+    metricsRegistry.setGauge("process_uptime_seconds", {}, process.uptime());
+    res.setHeader("Content-Type", "text/plain; version=0.0.4");
+    res.send(metricsRegistry.getPrometheusFormat());
 });
 // ── Health check ──
 app.get("/api/health", (_req, res) => {
@@ -207,7 +251,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/file-approval", fileApprovalRoutes);
 app.use("/api/two-factor", twoFactorRoutes);
-app.use("/api/billing", billingRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/installer", installerRoutes);
 app.use("/api/appointments", appointmentRoutes);
@@ -215,6 +258,7 @@ app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/ai", aiChatRoutes);
 app.use("/api/ai", aiAgentRoutes);
 app.use("/api/stocks", stocksRoutes);
+app.use("/api/billing", billingRoutes);
 // ── 404 catch-all ──
 app.use((req, res) => {
     const method = req.method;

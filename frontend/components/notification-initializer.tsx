@@ -3,8 +3,6 @@
 import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 
-const VAPID_TIMEOUT = 5_000;
-
 export function NotificationInitializer() {
   const { data: session, status } = useSession();
   const initRef = useRef(false);
@@ -22,8 +20,11 @@ export function NotificationInitializer() {
     if (Notification.permission === "granted" && "serviceWorker" in navigator) {
       navigator.serviceWorker.ready.then(async (reg) => {
         try {
+          const existingSub = await reg.pushManager.getSubscription();
+          if (existingSub) return;
+
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), VAPID_TIMEOUT);
+          const timer = setTimeout(() => controller.abort(), 5_000);
           const publicKeyRes = await fetch("/api/notifications/vapid-public-key", {
             signal: controller.signal,
           });
@@ -32,15 +33,13 @@ export function NotificationInitializer() {
           const publicKey = publicKeyData.data?.publicKey;
           if (!publicKey) return;
 
-          const existingSub = await reg.pushManager.getSubscription();
-          if (existingSub) return;
-
           const sub = await reg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(publicKey) as unknown as string,
           });
 
-          await fetch("/api/notifications/push/subscribe", {
+          // Fire-and-forget: don't await the subscription POST
+          fetch("/api/notifications/push/subscribe", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -52,7 +51,7 @@ export function NotificationInitializer() {
               },
               userAgent: navigator.userAgent,
             }),
-          });
+          }).catch(() => {});
         } catch {}
       }).catch(() => {});
     }

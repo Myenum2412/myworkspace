@@ -186,10 +186,7 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
       </Dialog>
 
       <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingEngagement(null); } }}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{editingEngagement ? "Edit Engagement" : "New Engagement"}</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-[700px]">
           <EngagementForm
             engagement={editingEngagement}
             onSave={handleSave}

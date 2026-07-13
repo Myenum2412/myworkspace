@@ -40,11 +40,14 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
 
   const userId = user.id || (user as any)._id?.toString();
   const member = await OrgMember.findOne({ userId }).lean();
+
   let org = null;
   let memberCount = 0;
   if (member) {
-    org = await Organization.findById(member.orgId).lean();
-    memberCount = org ? await OrgMember.countDocuments({ orgId: member.orgId }) : 0;
+    [org, memberCount] = await Promise.all([
+      Organization.findOne({ id: member.orgId }).lean(),
+      OrgMember.countDocuments({ orgId: member.orgId }),
+    ]);
   }
 
   res.json({
@@ -72,9 +75,9 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
       bannerUrl: user.bannerUrl || "",
       createdAt: user.createdAt || new Date().toISOString(),
     },
-    org: org
+        org: org
       ? {
-          id: org._id.toString(),
+          id: org.id || org._id.toString(),
           name: org.name || "",
           slug: org.slug || "",
           domain: org.domain || "",
@@ -214,7 +217,7 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
       : null,
     org: updatedOrg
       ? {
-          id: updatedOrg._id.toString(),
+          id: updatedOrg.id || updatedOrg._id.toString(),
           name: updatedOrg.name || "",
           slug: updatedOrg.slug || "",
           domain: updatedOrg.domain || "",

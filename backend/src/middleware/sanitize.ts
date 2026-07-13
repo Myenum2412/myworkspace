@@ -84,8 +84,14 @@ function sanitiseValue(value: unknown): unknown {
  */
 export { sanitiseValue };
 export function inputSanitizer(req: Request, _res: Response, next: NextFunction): void {
+  // Skip non-JSON bodies (binary uploads, form data, etc.)
+  const contentType = req.headers["content-type"] || "";
+  if (!contentType.includes("application/json")) {
+    next();
+    return;
+  }
+
   if (req.body && typeof req.body === "object" && !Buffer.isBuffer(req.body)) {
-    // Preserve raw password values — sanitization can corrupt credentials
     const rawPassword = req.body.password;
     try {
       req.body = sanitiseValue(req.body);
@@ -94,7 +100,6 @@ export function inputSanitizer(req: Request, _res: Response, next: NextFunction)
       }
     } catch (err) {
       logger.warn({ err, path: req.path, method: req.method }, "Input sanitisation failed");
-      // Fail open — don't block the request if sanitisation errors
     }
   }
   next();

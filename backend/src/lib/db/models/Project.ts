@@ -45,4 +45,8 @@ const projectSchema = new Schema<IProject>(
   { timestamps: true }
 );
 
+projectSchema.index({ orgId: 1, createdAt: -1 });
+projectSchema.index({ orgId: 1, status: 1 });
+projectSchema.index({ id: 1 }, { unique: true });
+
 export const Project = model<IProject>("Project", projectSchema);

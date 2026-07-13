@@ -282,6 +282,8 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
             <DynamicRowSection
               title="Work Experience"
               rows={workExperience}
+              defaultOpen={isViewMode}
+              readOnly={isViewMode}
               onAdd={() => addRow(setWorkExperience)}
               onRemove={(id: string) => removeRow(setWorkExperience, id)}
               renderRow={(row: Row) => (
@@ -350,6 +352,8 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
             <DynamicRowSection
               title="Education Details"
               rows={educationDetails}
+              defaultOpen={isViewMode}
+              readOnly={isViewMode}
               onAdd={() => addRow(setEducationDetails)}
               onRemove={(id: string) => removeRow(setEducationDetails, id)}
               renderRow={(row: Row) => (
@@ -393,6 +397,8 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
             <DynamicRowSection
               title="Dependent Details"
               rows={dependentDetails}
+              defaultOpen={isViewMode}
+              readOnly={isViewMode}
               onAdd={() => addRow(setDependentDetails)}
               onRemove={(id: string) => removeRow(setDependentDetails, id)}
               renderRow={(row: Row) => (
@@ -409,6 +415,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                     label="Relationship"
                     options={["Spouse", "Child", "Parent"]}
                     value={row.relationship || ""}
+                    readOnly={isViewMode}
                     onChange={(value: string) => updateRow(setDependentDetails, row.id, "relationship", value)}
                   />
                   <Field>
