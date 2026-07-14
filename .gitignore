@@ -11,3 +11,4 @@ node_modules/
 desktop/dist/
 desktop/node_modules/
 desktop/out/
+backend/data/uploads/
