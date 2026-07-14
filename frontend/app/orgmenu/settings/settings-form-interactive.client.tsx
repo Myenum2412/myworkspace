@@ -17,7 +17,6 @@ import { Settings2Icon, PaletteIcon, CheckCircle2Icon, AlertCircleIcon } from "l
 
 interface SettingsFormInteractiveProps {
   initial: {
-    language: string;
     timezone: string;
     dateFormat: string;
     brandName: string;
@@ -51,23 +50,6 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="language">Language</Label>
-              <Select name="language" defaultValue={initial.language}>
-                <SelectTrigger id="language">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en-US">English (US)</SelectItem>
-                  <SelectItem value="en-GB">English (UK)</SelectItem>
-                  <SelectItem value="es">Español</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                  <SelectItem value="de">Deutsch</SelectItem>
-                  <SelectItem value="ja">日本語</SelectItem>
-                  <SelectItem value="zh">中文</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <div className="space-y-2">
               <Label htmlFor="timezone">Timezone</Label>
               <Select name="timezone" defaultValue={initial.timezone}>

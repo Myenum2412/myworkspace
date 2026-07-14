@@ -172,7 +172,6 @@ export async function GET() {
           operatingCountries: org.operatingCountries || "",
           timeZone: org.timeZone || "",
           preferredCurrency: org.preferredCurrency || "",
-          preferredLanguage: org.preferredLanguage || "",
           emailVerified: org.emailVerified || false,
           phoneVerified: org.phoneVerified || false,
           websiteVerified: org.websiteVerified || false,
@@ -227,7 +226,7 @@ export async function PATCH(req: NextRequest) {
     supportEmail, supportPhone,
     facebook, instagram, twitterHandle, youtube,
     primaryBusinessActivity, secondaryBusinessActivity,
-    operatingCountries, timeZone, preferredCurrency, preferredLanguage,
+    operatingCountries, timeZone, preferredCurrency,
     secondaryPhone, nickname, displayId, firstName, lastName,
     location: userLocation, employmentType, branchName, shift,
     sourceOfHire, joiningDate, currentExperience, totalExperience,
@@ -328,7 +327,7 @@ export async function PATCH(req: NextRequest) {
           supportEmail, supportPhone,
           facebook, instagram, twitterHandle, youtube,
           primaryBusinessActivity, secondaryBusinessActivity,
-          operatingCountries, timeZone, preferredCurrency, preferredLanguage,
+          operatingCountries, timeZone, preferredCurrency,
         };
         for (const [key, val] of Object.entries(orgFieldMap)) {
           if (val !== undefined) orgUpdates[key] = val;
@@ -444,7 +443,6 @@ export async function PATCH(req: NextRequest) {
         operatingCountries: updatedOrg.operatingCountries || "",
         timeZone: updatedOrg.timeZone || "",
         preferredCurrency: updatedOrg.preferredCurrency || "",
-        preferredLanguage: updatedOrg.preferredLanguage || "",
         emailVerified: updatedOrg.emailVerified || false,
         phoneVerified: updatedOrg.phoneVerified || false,
         websiteVerified: updatedOrg.websiteVerified || false,

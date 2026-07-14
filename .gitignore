@@ -4,6 +4,8 @@ node_modules/
 
 # dependencies
 /.claude
+/.mimocode
+/.opencode
 
 # Desktop app build output
 desktop/dist/

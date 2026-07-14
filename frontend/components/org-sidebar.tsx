@@ -93,7 +93,6 @@ export const defaultOrgNavData = [
     icon: <Settings2Icon className="size-6" />,
     items: [
       { title: "General", url: "/orgmenu/settings" },
-      { title: "Notifications", url: "/orgmenu/settings/notifications" },
     ],
   },
 ];

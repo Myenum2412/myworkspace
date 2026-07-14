@@ -28,7 +28,6 @@ export interface ISettings extends Document {
     billingUpdates: boolean;
     featureAnnouncements: boolean;
   };
-  aiSoul: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,7 +61,6 @@ const settingsSchema = new Schema<ISettings>(
       billingUpdates: { type: Boolean, default: true },
       featureAnnouncements: { type: Boolean, default: false },
     },
-    aiSoul: { type: String, default: "" },
   },
   { timestamps: true }
 );

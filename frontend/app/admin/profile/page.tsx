@@ -77,7 +77,6 @@ type ProfileOrg = {
   operatingCountries: string;
   timeZone: string;
   preferredCurrency: string;
-  preferredLanguage: string;
   emailVerified: boolean;
   phoneVerified: boolean;
   websiteVerified: boolean;
@@ -173,7 +172,6 @@ export default async function ProfilePage() {
         operatingCountries: (org.operatingCountries as string) || "",
         timeZone: (org.timeZone as string) || "",
         preferredCurrency: (org.preferredCurrency as string) || "",
-        preferredLanguage: (org.preferredLanguage as string) || "",
         emailVerified: (org.emailVerified as boolean) || false,
         phoneVerified: (org.phoneVerified as boolean) || false,
         websiteVerified: (org.websiteVerified as boolean) || false,

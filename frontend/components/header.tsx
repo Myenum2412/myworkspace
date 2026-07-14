@@ -21,7 +21,6 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import { CalendarIcon, Search } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { NotificationBell } from "@/components/notification-bell";
-import { LanguageSelect } from "@/components/language-select";
 import { usePathname } from "next/navigation";
 import { useUserStatus } from "@/hooks/use-user-status";
 import { SessionTracker } from "@/components/session-tracker";
@@ -166,10 +165,6 @@ export function Header({ context }: { context?: AppContextType }) {
         <Separator orientation="vertical" className="hidden lg:block h-6" />
 
         <NotificationBell />
-
-        <div className="hidden sm:block">
-          <LanguageSelect />
-        </div>
 
         <SessionTracker />
 

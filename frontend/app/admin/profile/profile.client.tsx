@@ -86,7 +86,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
     editTwitterHandle, setEditTwitterHandle, editYoutube, setEditYoutube,
     editPrimaryActivity, setEditPrimaryActivity, editSecondaryActivity, setEditSecondaryActivity,
     editOperatingCountries, setEditOperatingCountries, editTimeZone, setEditTimeZone,
-    editCurrency, setEditCurrency, editLanguage, setEditLanguage,
+    editCurrency, setEditCurrency,
     showBannerEditor, setShowBannerEditor, showImageEditor, setShowImageEditor,
     urlInput, setUrlInput, uploading, uploadingImage, fileKey, imageFileKey,
     dbUser, org,

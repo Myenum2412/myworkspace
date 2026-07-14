@@ -18,10 +18,6 @@ import {
   ClockIcon,
   CalendarClockIcon,
   ActivityIcon,
-  SettingsIcon,
-  BriefcaseIcon,
-  StarIcon,
-  PlugIcon,
 } from "lucide-react";
 
 function buildStaffNavData() {
@@ -56,11 +52,6 @@ function buildStaffNavData() {
       title: "Activity",
       url: "/staffs/activity",
       icon: <ActivityIcon className="size-6" />,
-    },
-    {
-      title: "Integrations",
-      url: "/staffs/settings/integrations",
-      icon: <PlugIcon className="size-6" />,
     },
   ];
 }

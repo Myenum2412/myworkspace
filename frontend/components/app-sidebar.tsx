@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar";
 import MuiFolderIcon from "@mui/icons-material/Folder";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import CategoryIcon from "@mui/icons-material/Category";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import {
   LayoutDashboardIcon,
@@ -24,7 +23,6 @@ import {
   Settings2Icon,
   CheckCheckIcon,
   HeartHandshakeIcon,
-  SparklesIcon,
   PackageIcon,
 } from "lucide-react";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
@@ -132,16 +130,6 @@ const platformItems: NavItem[] = [
     url: "/stocks",
     icon: <PackageIcon className="size-6" />,
   },
-  {
-    title: "Category",
-    url: "/category",
-    icon: <CategoryIcon className="size-6" />,
-  },
-  {
-    title: "Hermes AI",
-    url: "/hermes",
-    icon: <SparklesIcon className="size-6" />,
-  },
 ];
 
 const photographyItem: NavItem = {
@@ -159,7 +147,6 @@ const settingsItem: NavItem = {
   icon: <Settings2Icon className="size-6" />,
   items: [
     { title: "General", url: "/settings" },
-    { title: "Billing", url: "/settings" },
   ],
 };
 

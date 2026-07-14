@@ -13,7 +13,7 @@ export async function GET() {
 
   if (!clientId || clientId === "YOUR_MICROSOFT_CLIENT_ID") {
     return NextResponse.redirect(
-      new URL("/settings/integrations?error=microsoft_not_configured", process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000")
+      new URL("/?error=microsoft_not_configured", process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000")
     );
   }
 

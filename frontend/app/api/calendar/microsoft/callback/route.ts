@@ -11,13 +11,13 @@ export async function GET(req: NextRequest) {
 
   if (error) {
     return NextResponse.redirect(
-      new URL(`/settings/integrations?error=${error}`, req.url)
+      new URL(`/?error=${error}`, req.url)
     );
   }
 
   if (!code || !state) {
     return NextResponse.redirect(
-      new URL("/settings/integrations?error=missing_params", req.url)
+      new URL("/?error=missing_params", req.url)
     );
   }
 
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
   if (!clientId || clientId === "YOUR_MICROSOFT_CLIENT_ID") {
     return NextResponse.redirect(
-      new URL("/settings/integrations?error=microsoft_not_configured", req.url)
+      new URL("/?error=microsoft_not_configured", req.url)
     );
   }
 
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     if (!tokenData.access_token) {
       return NextResponse.redirect(
-        new URL("/settings/integrations?error=token_exchange_failed", req.url)
+        new URL("/?error=token_exchange_failed", req.url)
       );
     }
 
@@ -93,12 +93,12 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.redirect(
-      new URL("/settings/integrations?success=microsoft_connected", req.url)
+      new URL("/?success=microsoft_connected", req.url)
     );
   } catch (err) {
     console.error("[Microsoft Calendar Callback]", err);
     return NextResponse.redirect(
-      new URL("/settings/integrations?error=callback_failed", req.url)
+      new URL("/?error=callback_failed", req.url)
     );
   }
 }

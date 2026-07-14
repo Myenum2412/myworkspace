@@ -73,7 +73,6 @@ export type ProfileData = {
     operatingCountries: string;
     timeZone: string;
     preferredCurrency: string;
-    preferredLanguage: string;
     emailVerified: boolean;
     phoneVerified: boolean;
     websiteVerified: boolean;
@@ -170,7 +169,6 @@ export function useProfileForm(initialData: ProfileData) {
   const [editOperatingCountries, setEditOperatingCountries] = useState(initialData?.org?.operatingCountries || "");
   const [editTimeZone, setEditTimeZone] = useState(initialData?.org?.timeZone || "");
   const [editCurrency, setEditCurrency] = useState(initialData?.org?.preferredCurrency || "");
-  const [editLanguage, setEditLanguage] = useState(initialData?.org?.preferredLanguage || "");
 
   const [showBannerEditor, setShowBannerEditor] = useState(false);
   const [showImageEditor, setShowImageEditor] = useState(false);
@@ -262,7 +260,6 @@ export function useProfileForm(initialData: ProfileData) {
           operatingCountries: editOperatingCountries,
           timeZone: editTimeZone,
           preferredCurrency: editCurrency,
-          preferredLanguage: editLanguage,
         }),
       });
 
@@ -367,7 +364,6 @@ export function useProfileForm(initialData: ProfileData) {
     setEditOperatingCountries(snapOrg?.operatingCountries || "");
     setEditTimeZone(snapOrg?.timeZone || "");
     setEditCurrency(snapOrg?.preferredCurrency || "");
-    setEditLanguage(snapOrg?.preferredLanguage || "");
     setSaveError("");
     setSaveSuccess("");
     setEditing(false);
@@ -493,7 +489,7 @@ export function useProfileForm(initialData: ProfileData) {
     editTwitterHandle, setEditTwitterHandle, editYoutube, setEditYoutube,
     editPrimaryActivity, setEditPrimaryActivity, editSecondaryActivity, setEditSecondaryActivity,
     editOperatingCountries, setEditOperatingCountries, editTimeZone, setEditTimeZone,
-    editCurrency, setEditCurrency, editLanguage, setEditLanguage,
+    editCurrency, setEditCurrency,
     showBannerEditor, setShowBannerEditor, showImageEditor, setShowImageEditor,
     urlInput, setUrlInput, uploading, uploadingImage, fileKey, imageFileKey,
     dbUser, org,

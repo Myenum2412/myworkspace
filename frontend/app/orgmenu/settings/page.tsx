@@ -21,7 +21,6 @@ export default async function SettingsPage() {
   const saved = orgId ? await getSettings(orgId) : null;
 
   const initial = {
-    language: (saved?.language as string) || "en-US",
     timezone: (saved?.timezone as string) || "UTC",
     dateFormat: (saved?.dateFormat as string) || "DD/MM/YYYY",
     brandName: (saved?.brandName as string) || "",

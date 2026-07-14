@@ -112,7 +112,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
     editTwitterHandle, setEditTwitterHandle, editYoutube, setEditYoutube,
     editPrimaryActivity, setEditPrimaryActivity, editSecondaryActivity, setEditSecondaryActivity,
     editOperatingCountries, setEditOperatingCountries, editTimeZone, setEditTimeZone,
-    editCurrency, setEditCurrency, editLanguage, setEditLanguage,
+    editCurrency, setEditCurrency,
     showBannerEditor, setShowBannerEditor, showImageEditor, setShowImageEditor,
     urlInput, setUrlInput, uploading, uploadingImage, fileKey, imageFileKey,
     dbUser, org,
@@ -872,26 +872,6 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Preferred Language</Label>
-                    <Select value={editLanguage} onValueChange={setEditLanguage}>
-                      <SelectTrigger className="text-sm">
-                        <SelectValue placeholder="Select language" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="English">English</SelectItem>
-                        <SelectItem value="Hindi">Hindi</SelectItem>
-                        <SelectItem value="Spanish">Spanish</SelectItem>
-                        <SelectItem value="French">French</SelectItem>
-                        <SelectItem value="German">German</SelectItem>
-                        <SelectItem value="Chinese">Chinese</SelectItem>
-                        <SelectItem value="Japanese">Japanese</SelectItem>
-                        <SelectItem value="Arabic">Arabic</SelectItem>
-                        <SelectItem value="Portuguese">Portuguese</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -914,10 +894,6 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   <div>
                     <p className="text-xs text-muted-foreground">Preferred Currency</p>
                     <p className="text-sm font-medium">{org?.preferredCurrency || "\u2014"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Preferred Language</p>
-                    <p className="text-sm font-medium">{org?.preferredLanguage || "\u2014"}</p>
                   </div>
                 </div>
               )}

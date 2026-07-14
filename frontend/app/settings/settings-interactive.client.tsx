@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,29 +17,20 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Link from "next/link";
 import {
   Settings2Icon,
   UsersIcon,
   BellIcon,
-  PlugIcon,
   SaveIcon,
   Loader2Icon,
   CheckCircle2Icon,
   PlusIcon,
   Trash2Icon,
-  ArrowUpRightIcon,
   MinusIcon,
   EyeOffIcon,
-  CalendarIcon,
-  UnplugIcon,
-  AlertCircleIcon,
-  BrainIcon,
-  ExternalLinkIcon,
 } from "lucide-react";
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
-import { INTEGRATIONS_BY_CATEGORY, INTEGRATION_LINK_ICON } from "@/lib/integrations";
 
 const SECTION_LIMITS_KEY = "myworkspace_section_limits";
 
@@ -70,7 +61,7 @@ function saveSectionLimits(limits: Record<string, number>) {
   localStorage.setItem(SECTION_LIMITS_KEY, JSON.stringify(limits));
 }
 
-  export type SettingsPageClientProps = {
+export type SettingsPageClientProps = {
   orgId: string;
   user: { name: string; email: string; avatar: string };
   initialSettings: {
@@ -230,16 +221,6 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               <EyeOffIcon className="size-4 shrink-0" />
               <span className="hidden sm:inline">Features</span>
               <span className="sm:hidden">Feat</span>
-            </TabsTrigger>
-            <TabsTrigger value="integrations" className="gap-2">
-              <PlugIcon className="size-4 shrink-0" />
-              <span className="hidden sm:inline">Integrations</span>
-              <span className="sm:hidden">Integ</span>
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="gap-2">
-              <BrainIcon className="size-4 shrink-0" />
-              <span className="hidden sm:inline">AI Soul</span>
-              <span className="sm:hidden">Soul</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -416,25 +397,6 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               </div>
             </ScrollArea>
           </TabsContent>
-
-          <TabsContent value="integrations" className="h-full m-0 p-0">
-            <ScrollArea className="h-full">
-              <div className="p-3 sm:p-4 md:p-6 space-y-6">
-                <div>
-                  <h2 className="text-lg font-semibold">Integrations</h2>
-                  <p className="text-sm text-muted-foreground">Configure third-party integrations</p>
-                </div>
-                <IntegrationsGrid />
-              </div>
-            </ScrollArea>
-          </TabsContent>
-          <TabsContent value="ai" className="h-full m-0 p-0">
-            <ScrollArea className="h-full">
-              <div className="p-3 sm:p-4 md:p-6 space-y-6">
-                <AISoulSettings orgId={orgId} initialSoul={(initialSettings as any)?.aiSoul || ""} />
-              </div>
-            </ScrollArea>
-          </TabsContent>
         </div>
       </Tabs>
     </div>
@@ -533,130 +495,3 @@ function FeatureToggleSettings() {
     </div>
   );
 }
-
-function IntegrationsGrid() {
-  return (
-    <div className="space-y-6">
-      {/* Social Media */}
-      <div>
-        <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Social Media</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {INTEGRATIONS_BY_CATEGORY.social.map((integration) => (
-            <a
-              key={integration.id}
-              href={integration.oauthUrl}
-              className="group relative flex flex-col items-center gap-2 rounded-xl border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-sm hover:bg-accent/50"
-            >
-              <div className={`size-10 rounded-lg ${integration.bgColor} flex items-center justify-center`}>
-                {integration.icon}
-              </div>
-              <span className="text-xs font-medium text-center leading-tight">{integration.name}</span>
-              <span className="absolute top-2 right-2 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors">
-                {INTEGRATION_LINK_ICON}
-              </span>
-            </a>
-          ))}
-        </div>
-      </div>
-
-      {/* Business */}
-      <div>
-        <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Business</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {INTEGRATIONS_BY_CATEGORY.business.map((integration) => (
-            <a
-              key={integration.id}
-              href={integration.oauthUrl}
-              className="group relative flex flex-col items-center gap-2 rounded-xl border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-sm hover:bg-accent/50"
-            >
-              <div className={`size-10 rounded-lg ${integration.bgColor} flex items-center justify-center`}>
-                {integration.icon}
-              </div>
-              <span className="text-xs font-medium text-center leading-tight">{integration.name}</span>
-              <span className="absolute top-2 right-2 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors">
-                {INTEGRATION_LINK_ICON}
-              </span>
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AISoulSettings({ orgId, initialSoul }: { orgId: string; initialSoul: string }) {
-  const [soul, setSoul] = useState(initialSoul);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    fetch(`/api/settings/ai-soul?orgId=${orgId}`, { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => { if (d.success) setSoul(d.data.aiSoul); })
-      .catch(() => {});
-  }, [orgId]);
-
-  async function handleSave() {
-    setSaving(true);
-    setSaved(false);
-    try {
-      const res = await fetch("/api/settings/ai-soul", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orgId, aiSoul: soul }),
-      });
-      if (res.ok) setSaved(true);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold">AI Soul (soul.md)</h2>
-        <p className="text-sm text-muted-foreground">
-          Define the AI assistant personality and behavior rules. This is loaded by the MCP server at the start of every AI session and used to personalize all AI interactions.
-        </p>
-      </div>
-      <Card>
-        <CardContent className="pt-6 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="aiSoul">soul.md</Label>
-            <textarea
-              id="aiSoul"
-              className="w-full min-h-[300px] font-mono text-sm p-3 rounded-lg border bg-background resize-y"
-              placeholder="# AI Soul / Personality
-
-You are a helpful assistant for MyWorkSpace.
-
-## Tone
-- Friendly and professional
-- Use simple language
-
-## Rules
-- Never make up product information
-- Keep responses under 3-4 sentences
-- ..."
-              value={soul}
-              onChange={(e) => { setSoul(e.target.value); setSaved(false); }}
-            />
-          </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <SaveIcon className="size-4 mr-1" />}
-              {saving ? "Saving..." : "Save Soul"}
-            </Button>
-            {saved && (
-              <span className="flex items-center gap-1 text-sm text-green-600">
-                <CheckCircle2Icon className="size-4" /> Saved
-              </span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-

@@ -27,7 +27,6 @@ import type { Client } from "@/app/clients/columns";
 import type { Credentials } from "@/components/clients/client-types";
 
 const SALUTATIONS = ["Mr.", "Ms.", "Mrs.", "Dr.", "Prof."];
-const CUSTOMER_LANGUAGES = ["English", "Hindi", "Gujarati", "Marathi", "Tamil", "Telugu", "Kannada", "Malayalam", "Bengali"];
 const GST_TREATMENTS = [
   "Registered Regular",
   "Registered Composition",
@@ -79,7 +78,6 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
   const [email, setEmail] = useState("");
   const [workPhone, setWorkPhone] = useState("");
   const [mobile, setMobile] = useState("");
-  const [customerLanguage, setCustomerLanguage] = useState("");
 
   const [gstTreatment, setGstTreatment] = useState("");
   const [placeOfSupply, setPlaceOfSupply] = useState("");
@@ -120,7 +118,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
 
   function resetForm() {
     setCustomerType(""); setSalutation(""); setFirstName(""); setLastName("");
-    setCompanyName(""); setDisplayName(""); setEmail(""); setWorkPhone(""); setMobile(""); setCustomerLanguage("");
+    setCompanyName(""); setDisplayName(""); setEmail(""); setWorkPhone(""); setMobile("");
     setGstTreatment(""); setPlaceOfSupply(""); setPanNumber(""); setTaxPreference("Taxable");
     setPaymentTerms("Due on Receipt"); setPortalAccess(false); setDocuments([]);
     setBillingAttention(""); setBillingCountry(""); setBillingStreet1(""); setBillingStreet2("");
@@ -159,7 +157,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
       clientType: customerType,
       salutation, firstName, lastName,
       displayName,
-      workPhone, mobile, customerLanguage,
+      workPhone, mobile,
       gstTreatment, placeOfSupply, panNumber, taxPreference,
       paymentTerms, portalAccess,
       billingAttention, billingCountry, billingStreet1, billingStreet2,
@@ -354,17 +352,6 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     <Field>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile</Label>
                       <PhoneInput value={mobile} onChange={setMobile} placeholder="" />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Customer Language</Label>
-                      <Select value={customerLanguage} onValueChange={setCustomerLanguage}>
-                        <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
-                        <SelectContent>
-                          {CUSTOMER_LANGUAGES.map((l) => (
-                            <SelectItem key={l} value={l}>{l}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </Field>
                   </div>
                 </FieldSet>

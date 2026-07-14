@@ -11,7 +11,6 @@ export async function saveSettings(_prevState: SettingsState, formData: FormData
   const session = await auth();
   if (!session?.user) return { error: "Unauthorized" };
 
-  const language = formData.get("language") as string;
   const timezone = formData.get("timezone") as string;
   const dateFormat = formData.get("dateFormat") as string;
   const brandName = formData.get("brandName") as string;
@@ -25,7 +24,6 @@ export async function saveSettings(_prevState: SettingsState, formData: FormData
       {
         $set: {
           orgId,
-          language,
           timezone,
           dateFormat,
           brandName,

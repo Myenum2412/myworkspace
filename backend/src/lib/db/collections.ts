@@ -27,9 +27,4 @@ export const collections = {
   businessSettings: "businessSettings",
   stocks: "stocks",
   engagements: "engagements",
-
-  // MCP collections
-  mcpSessions: "mcp_sessions",
-  mcpMemory: "mcp_memory",
-  mcpAuditLogs: "mcp_audit_logs",
 } as const;

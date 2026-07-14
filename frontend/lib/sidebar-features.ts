@@ -10,7 +10,6 @@ export const SIDEBAR_FEATURES = [
   "Interaction Followups",
   "Inventory",
   "Photography",
-  "AI",
 ] as const;
 
 export type SidebarFeature = (typeof SIDEBAR_FEATURES)[number];
