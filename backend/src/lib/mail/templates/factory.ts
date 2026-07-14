@@ -20,6 +20,8 @@ export {
   buildAccountDeactivated,
   buildAccountReactivated,
   buildAccountOnboardingReminder,
+  buildSignupOtpEmail,
+  buildPasswordDeliveredEmail,
 } from "./factory-account.js";
 
 export {

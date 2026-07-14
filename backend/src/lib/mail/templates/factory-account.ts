@@ -313,7 +313,51 @@ export const buildAccountReactivated = (firstName: string, loginUrl: string): Em
   supportEmail: "support@workspace.com"
 });
 
-// 21. User/Client Onboarding Reminder
+// 21. Signup OTP Code
+export const buildSignupOtpEmail = (name: string, otp: string): EmailData => ({
+  subject: "Your MyWorkSpace Verification Code",
+  previewText: `Your verification code is ${otp}`,
+  greeting: `Hi ${name},`,
+  metadata: { module: "Account", timestamp: ts(), action: "Signup OTP" },
+  statusIndicator: { type: "warning", label: "Verification Code" },
+  intro: [
+    "Thank you for signing up for MyWorkSpace. Please use the verification code below to complete your registration.",
+  ],
+  details: [
+    { label: "Verification Code", value: otp },
+    { label: "Expires In", value: "10 minutes" },
+  ],
+  warning: "If you didn't create an account, you can safely ignore this email.",
+  supportEmail: "support@workspace.com",
+});
+
+// 22. Account Password Delivery
+export const buildPasswordDeliveredEmail = (name: string, email: string, password: string, loginUrl: string): EmailData => ({
+  subject: "Your MyWorkSpace Account Password",
+  previewText: "Your account has been created. Here is your password.",
+  greeting: `Hi ${name},`,
+  metadata: { module: "Account", timestamp: ts(), action: "Password Delivered" },
+  statusIndicator: { type: "success", label: "Account Active" },
+  intro: [
+    "Your MyWorkSpace account has been created successfully.",
+    "Please use the password below to sign in. For security, change your password after your first login.",
+  ],
+  details: [
+    { label: "Email", value: email },
+    { label: "Password", value: password },
+  ],
+  button: { text: "Go to Workspace", url: loginUrl },
+  securityNotice: true,
+  warning: "For security, change your password after your first login.",
+  socialLinks: {
+    linkedin: "https://linkedin.com",
+    twitter: "https://twitter.com",
+    youtube: "https://youtube.com",
+  },
+  supportEmail: "support@workspace.com",
+});
+
+// 23. User/Client Onboarding Reminder
 export const buildAccountOnboardingReminder = (
   firstName: string,
   email: string,

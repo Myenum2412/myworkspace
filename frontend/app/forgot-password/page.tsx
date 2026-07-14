@@ -8,24 +8,34 @@ export const metadata: Metadata = {
   description: "Reset your MyWorkSpace account password.",
 }
 
-
 export default async function ForgotPasswordPage(props: { searchParams: Promise<Record<string, string>> }) {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-4 sm:p-6 md:p-10">
-      {/* Logo */}
-      <Link href="/login" className="flex items-center gap-2 font-semibold text-foreground">
-        <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-8 rounded-lg object-cover shadow-sm" />
-        <span className="text-base tracking-tight">MyWorkSpace</span>
-      </Link>
+    <main
+      className="relative min-h-dvh overflow-hidden"
+      style={{
+        background: "linear-gradient(180deg, #03045E 0%, #0077B6 7.5%, #00B4D8 15%, #90E0EF 22.5%, #CAF0F8 27%, #ffffff 35%, #ffffff 100%)",
+      }}
+      role="main"
+    >
+      <div className="relative z-10 flex flex-col min-h-dvh p-4 sm:p-6 md:p-10 safe-paddings">
+        <div className="flex gap-2">
+          <Link href="/login" className="flex items-center gap-2 font-semibold">
+            <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-7 sm:size-8 rounded-lg object-cover shadow-sm" priority />
+            <span className="text-sm sm:text-base tracking-tight text-white">MyWorkSpace</span>
+          </Link>
+        </div>
 
-      {/* Form card */}
-      <div className="w-full max-w-sm">
-        <ForgotPasswordForm searchParams={await props.searchParams} />
+        <div className="flex flex-1 items-center justify-center py-4 sm:py-0">
+          <div className="w-full max-w-sm px-2 sm:px-0">
+            <h1 className="sr-only">Reset your MyWorkSpace password</h1>
+            <ForgotPasswordForm searchParams={await props.searchParams} />
+          </div>
+        </div>
+
+        <p className="text-center text-xs text-muted-foreground safe-bottom">
+          &copy; {new Date().getFullYear()} MyWorkSpace. All rights reserved.
+        </p>
       </div>
-
-      <p className="text-center text-xs text-muted-foreground">
-        &copy; {new Date().getFullYear()} MyWorkSpace. All rights reserved.
-      </p>
-    </div>
+    </main>
   )
 }

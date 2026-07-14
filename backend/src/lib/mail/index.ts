@@ -192,6 +192,16 @@ export async function sendRenewalConfirmation(to: string, firstName: string, amo
   await sendEmail(to, data.subject, buildEmailHtml(data));
 }
 
+export async function sendSignupOtpEmail(to: string, name: string, otp: string): Promise<void> {
+  const data = Factory.buildSignupOtpEmail(name, otp);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
+export async function sendPasswordDeliveredEmail(to: string, name: string, email: string, password: string, loginUrl: string): Promise<void> {
+  const data = Factory.buildPasswordDeliveredEmail(name, email, password, loginUrl);
+  await sendEmail(to, data.subject, buildEmailHtml(data));
+}
+
 export async function sendPasswordReset(to: string, firstName: string, resetUrl: string): Promise<void> {
   const data = Factory.buildPasswordReset(firstName, resetUrl);
   await sendEmail(to, data.subject, buildEmailHtml(data));

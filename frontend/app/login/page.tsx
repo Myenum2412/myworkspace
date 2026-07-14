@@ -20,9 +20,15 @@ export default async function LoginPage(props: {
         />
       ))}
 
-      <main className="flex min-h-dvh flex-col lg:grid lg:min-h-svh lg:grid-cols-2" role="main">
-        <div className="flex flex-col gap-3 sm:gap-4 p-4 sm:p-6 md:p-10 bg-background safe-paddings">
-          <div className="flex justify-center gap-2 lg:justify-start">
+      <main
+        className="relative min-h-dvh overflow-hidden"
+        style={{
+          background: "linear-gradient(180deg, #03045E 0%, #0077B6 7.5%, #00B4D8 15%, #90E0EF 22.5%, #CAF0F8 27%, #ffffff 35%, #ffffff 100%)",
+        }}
+        role="main"
+      >
+        <div className="relative z-10 flex flex-col min-h-dvh p-4 sm:p-6 md:p-10 safe-paddings">
+          <div className="flex gap-2">
             <Link
               href="/"
               className="flex items-center gap-2 font-semibold text-foreground"
@@ -36,7 +42,7 @@ export default async function LoginPage(props: {
                 className="size-7 sm:size-8 rounded-lg object-cover shadow-sm"
                 priority
               />
-              <span className="text-sm sm:text-base tracking-tight">MyWorkSpace</span>
+              <span className="text-sm sm:text-base tracking-tight text-white">MyWorkSpace</span>
             </Link>
           </div>
 
@@ -50,32 +56,6 @@ export default async function LoginPage(props: {
           <p className="text-center text-xs text-muted-foreground safe-bottom">
             &copy; {new Date().getFullYear()} MyWorkSpace. All rights reserved.
           </p>
-        </div>
-
-        <div
-          className="relative hidden lg:block overflow-hidden bg-gray-800"
-          aria-hidden="true"
-        >
-          <Image
-            src="/login-bg.png"
-            alt=""
-            fill
-            className="absolute inset-0 h-full w-full object-cover opacity-80"
-            sizes="50vw"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-900/60 via-transparent to-gray-800/60" />
-          <div className="absolute inset-0 flex flex-col items-start justify-end p-12">
-            <blockquote className="space-y-3">
-              <p className="text-xl font-medium text-black leading-relaxed max-w-xs">
-                &ldquo;The platform that transformed how our team collaborates
-                and ships.&rdquo;
-              </p>
-              <footer className="text-sm text-black/70 font-medium">
-                Team MyWorkSpace
-              </footer>
-            </blockquote>
-          </div>
         </div>
       </main>
     </>

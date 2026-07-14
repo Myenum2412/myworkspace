@@ -12,6 +12,8 @@ const CSRF_EXEMPT_PATHS = new Set([
   "/api/health",
   "/api/auth/login",
   "/api/auth/signup",
+  "/api/auth/send-signup-otp",
+  "/api/auth/verify-signup-otp",
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
   "/api/client-auth/login",

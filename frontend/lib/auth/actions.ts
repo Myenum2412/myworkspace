@@ -269,6 +269,72 @@ export async function signupAction(formData: FormData) {
   }
 }
 
+export async function sendSignupOtpAction(formData: FormData) {
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const company = formData.get("company") as string;
+  const plan = formData.get("selectedPlan") as string;
+
+  if (!name || !email) {
+    return { error: "Name and email are required" };
+  }
+
+  const apiUrl = process.env.API_URL || "http://localhost:4000";
+  try {
+    const res = await fetch(`${apiUrl}/api/auth/send-signup-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, company, plan }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { error: data.error || data.message || "Failed to send verification code" };
+    }
+    return { success: true, email };
+  } catch {
+    return { error: "Unable to connect. Please try again." };
+  }
+}
+
+export async function verifySignupOtpAction(formData: FormData) {
+  const email = formData.get("email") as string;
+  const otp = formData.get("otp") as string;
+
+  if (!email || !otp) {
+    return { error: "Email and verification code are required" };
+  }
+
+  const apiUrl = process.env.API_URL || "http://localhost:4000";
+  try {
+    const res = await fetch(`${apiUrl}/api/auth/verify-signup-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { error: data.error || data.message || "Invalid verification code" };
+    }
+
+    const { password } = data.data!;
+
+    try {
+      await signIn("credentials", { email, password, redirect: true, redirectTo: "/dashboard" });
+    } catch (err) {
+      const isRedirect = err instanceof Error
+        && "digest" in err
+        && typeof (err as Error & { digest: string }).digest === "string"
+        && (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
+      if (isRedirect) {
+        throw err;
+      }
+      return { error: "Something went wrong. Please try signing in manually." };
+    }
+  } catch {
+    return { error: "Unable to connect. Please try again." };
+  }
+}
+
 export async function logoutAction() {
   const session = await import("./config").then(m => m.auth());
   if (session?.user?.id) {

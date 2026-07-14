@@ -4,6 +4,7 @@ import { v4 as uuid } from "uuid";
 import crypto from "crypto";
 import { User } from "../lib/db/models/User.js";
 import { ClientUser } from "../lib/db/models/ClientUser.js";
+import { PendingSignup } from "../lib/db/models/PendingSignup.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { Session } from "../lib/db/models/Session.js";
@@ -13,7 +14,7 @@ import { getUserOrgId } from "../lib/org-utils.js";
 import { env } from "../config/env.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, sendOrganizationInviteEmail, sendClientWelcomeEmail, sendEmployeeOnboarded } from "../lib/mail/index.js";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, sendOrganizationInviteEmail, sendClientWelcomeEmail, sendEmployeeOnboarded, sendSignupOtpEmail, sendPasswordDeliveredEmail } from "../lib/mail/index.js";
 import { mongoose } from "../lib/db/index.js";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "../types/index.js";
@@ -444,6 +445,152 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
       twoFactorEnabled: user.twoFactorEnabled,
       createdAt: user.createdAt,
       orgId: orgId || undefined,
+    },
+  });
+});
+
+// Send signup OTP
+router.post("/send-signup-otp", async (req: AuthRequest, res: Response) => {
+  const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
+  const name = requireString(req.body.name, "name", { min: 1, max: 200 });
+  const company = optionalString(req.body.company, "company", { max: 200 });
+  const plan = optionalString(req.body.plan, "plan", { max: 50 });
+
+  const [existingUser, existingClient] = await Promise.all([
+    User.findOne({ email }),
+    ClientUser.findOne({ email }),
+  ]);
+  if (existingUser || existingClient) {
+    throw new AppError(409, "An account with this email already exists");
+  }
+
+  const otp = String(crypto.randomInt(100000, 999999));
+  const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+  await PendingSignup.updateOne(
+    { email },
+    { $set: { email, name, company, otp, otpExpires, plan, createdAt: new Date() } },
+    { upsert: true }
+  );
+
+  sendSignupOtpEmail(email, name, otp).catch((err) => {
+    console.error("[mail] signup OTP email failed:", err?.message || err);
+  });
+
+  res.json({ success: true, message: "Verification code sent to your email" });
+});
+
+// Verify signup OTP and create account
+router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
+  const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
+  const otp = requireString(req.body.otp, "otp", { min: 6, max: 6 });
+
+  const pending = await PendingSignup.findOne({ email });
+  if (!pending) {
+    throw new AppError(400, "No verification code found. Please request a new one.");
+  }
+
+  if (pending.otp !== otp) {
+    throw new AppError(400, "Invalid verification code");
+  }
+
+  if (pending.otpExpires < new Date()) {
+    await PendingSignup.deleteOne({ email });
+    throw new AppError(400, "Verification code has expired. Please request a new one.");
+  }
+
+  const password = crypto.randomBytes(4).toString("hex");
+  const hashedPassword = await hash(password, 12);
+  const userId = uuid();
+  const orgId = uuid();
+  const userNumber = await getNextSequence("userNumber");
+  const company = pending.company;
+  const name = pending.name;
+  const plan = pending.plan;
+
+  const orgName = company || `${name}'s Organization`;
+  const slug = await generateUniqueSlug(company || `${name}-org`);
+
+  const mongoSession = await mongoose.startSession();
+  let user: any;
+  let org: any;
+
+  try {
+    await mongoSession.withTransaction(async () => {
+      const [createdUser] = await User.create([{
+        id: userId,
+        userNumber,
+        orgId,
+        name,
+        email,
+        password: hashedPassword,
+        status: "online",
+        role: "admin",
+        emailVerified: true,
+      }], { session: mongoSession });
+      user = createdUser;
+
+      const trialEnd = new Date(Date.now() + env.TRIAL_DAYS * 24 * 60 * 60 * 1000);
+      const [createdOrg] = await Organization.create([{
+        id: orgId,
+        name: orgName,
+        slug,
+        plan: plan || "trial",
+        trialEnd: plan ? undefined : trialEnd,
+        subscriptionStatus: plan || "trialing",
+        ownerId: userId,
+      }], { session: mongoSession });
+      org = createdOrg;
+
+      await OrgMember.create([{
+        orgId,
+        userId,
+        role: "admin",
+      }], { session: mongoSession });
+    }, {
+      readPreference: "primary",
+      readConcern: { level: "local" },
+      writeConcern: { w: "majority" },
+    });
+  } finally {
+    await mongoSession.endSession();
+  }
+
+  await PendingSignup.deleteOne({ email });
+
+  const loginUrl = `${env.APP_URL}/login`;
+  sendPasswordDeliveredEmail(email, name, email, password, loginUrl).catch((err) => {
+    console.error("[mail] password delivery email failed:", err?.message || err);
+  });
+
+  sendWelcomeEmail(email, name).catch((err) => {
+    console.error("[mail] welcome email failed:", err?.message || err);
+  });
+
+  const token = signToken({
+    userId: user.id,
+    email,
+    role: "admin",
+    permissions: [],
+    orgId: org.id,
+  });
+
+  res.status(201).json({
+    success: true,
+    message: "Account created successfully",
+    data: {
+      token,
+      password,
+      user: {
+        id: user.id,
+        userNumber: user.userNumber,
+        name,
+        email,
+        role: "admin",
+        status: "online",
+        orgId: org.id,
+      },
+      orgId: org.id,
     },
   });
 });
