@@ -11,7 +11,6 @@ import { getChannel, isRabbitMQConfigured } from "./lib/queue/connection.js";
 import { promoteRateLimitersToRedis } from "./middleware/rate-limit.js";
 import { initSentry } from "./lib/sentry.js";
 import { metricsRegistry } from "./lib/monitoring/index.js";
-// ── Global error handlers (prevent crash on unhandled promise rejections) ──
 process.on("unhandledRejection", (reason) => {
     logger.warn({ err: reason instanceof Error ? reason.message : String(reason) }, "Unhandled rejection — suppressed to prevent crash");
 });

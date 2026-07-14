@@ -12,7 +12,6 @@ import { promoteRateLimitersToRedis } from "./middleware/rate-limit.js";
 import { initSentry } from "./lib/sentry.js";
 import { metricsRegistry } from "./lib/monitoring/index.js";
 
-// ── Global error handlers (prevent crash on unhandled promise rejections) ──
 process.on("unhandledRejection", (reason: unknown) => {
   logger.warn({ err: reason instanceof Error ? reason.message : String(reason) }, "Unhandled rejection — suppressed to prevent crash");
 });

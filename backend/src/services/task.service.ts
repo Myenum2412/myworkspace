@@ -69,7 +69,7 @@ const INDIVIDUAL_TRANSITIONS: Record<string, string[]> = {
   completed: ["closed", "reopened"],
   closed: ["reopened"],
   hold: ["pending", "in_progress", "cancelled"],
-  cancelled: ["reopened"],
+  cancelled: ["reopened", "assigned"],
   rejected: ["pending", "in_progress"],
   reopened: ["in_progress"],
 };

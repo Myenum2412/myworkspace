@@ -53,6 +53,33 @@ export type ProfileData = {
     companyDescription: string;
     plan: string;
     createdAt: string;
+    // Extended fields
+    tradeName: string;
+    yearEstablished: string;
+    companySize: string;
+    registrationNumber: string;
+    registrationAuthority: string;
+    taxIdentificationNumber: string;
+    registrationDate: string;
+    businessStatus: string;
+    supportEmail: string;
+    supportPhone: string;
+    facebook: string;
+    instagram: string;
+    twitterHandle: string;
+    youtube: string;
+    primaryBusinessActivity: string;
+    secondaryBusinessActivity: string;
+    operatingCountries: string;
+    timeZone: string;
+    preferredCurrency: string;
+    preferredLanguage: string;
+    emailVerified: boolean;
+    phoneVerified: boolean;
+    websiteVerified: boolean;
+    businessVerified: boolean;
+    addressVerified: boolean;
+    documentsVerified: boolean;
   } | null;
   memberCount: number;
 };
@@ -123,6 +150,27 @@ export function useProfileForm(initialData: ProfileData) {
   const [editAuthorizedMobile, setEditAuthorizedMobile] = useState(initialData?.org?.authorizedPersonMobile || "");
   const [editNumEmployees, setEditNumEmployees] = useState(initialData?.org?.numberOfEmployees?.toString() || "");
   const [editCompanyDesc, setEditCompanyDesc] = useState(initialData?.org?.companyDescription || "");
+  // Extended fields
+  const [editTradeName, setEditTradeName] = useState(initialData?.org?.tradeName || "");
+  const [editYearEstablished, setEditYearEstablished] = useState(initialData?.org?.yearEstablished || "");
+  const [editCompanySize, setEditCompanySize] = useState(initialData?.org?.companySize || "");
+  const [editRegistrationNumber, setEditRegistrationNumber] = useState(initialData?.org?.registrationNumber || "");
+  const [editRegistrationAuthority, setEditRegistrationAuthority] = useState(initialData?.org?.registrationAuthority || "");
+  const [editTaxId, setEditTaxId] = useState(initialData?.org?.taxIdentificationNumber || "");
+  const [editRegistrationDate, setEditRegistrationDate] = useState(initialData?.org?.registrationDate || "");
+  const [editBusinessStatus, setEditBusinessStatus] = useState(initialData?.org?.businessStatus || "Active");
+  const [editSupportEmail, setEditSupportEmail] = useState(initialData?.org?.supportEmail || "");
+  const [editSupportPhone, setEditSupportPhone] = useState(initialData?.org?.supportPhone || "");
+  const [editFacebook, setEditFacebook] = useState(initialData?.org?.facebook || "");
+  const [editInstagram, setEditInstagram] = useState(initialData?.org?.instagram || "");
+  const [editTwitterHandle, setEditTwitterHandle] = useState(initialData?.org?.twitterHandle || "");
+  const [editYoutube, setEditYoutube] = useState(initialData?.org?.youtube || "");
+  const [editPrimaryActivity, setEditPrimaryActivity] = useState(initialData?.org?.primaryBusinessActivity || "");
+  const [editSecondaryActivity, setEditSecondaryActivity] = useState(initialData?.org?.secondaryBusinessActivity || "");
+  const [editOperatingCountries, setEditOperatingCountries] = useState(initialData?.org?.operatingCountries || "");
+  const [editTimeZone, setEditTimeZone] = useState(initialData?.org?.timeZone || "");
+  const [editCurrency, setEditCurrency] = useState(initialData?.org?.preferredCurrency || "");
+  const [editLanguage, setEditLanguage] = useState(initialData?.org?.preferredLanguage || "");
 
   const [showBannerEditor, setShowBannerEditor] = useState(false);
   const [showImageEditor, setShowImageEditor] = useState(false);
@@ -195,6 +243,26 @@ export function useProfileForm(initialData: ProfileData) {
           authorizedPersonMobile: editAuthorizedMobile,
           numberOfEmployees: editNumEmployees ? Number(editNumEmployees) : undefined,
           companyDescription: editCompanyDesc,
+          tradeName: editTradeName,
+          yearEstablished: editYearEstablished,
+          companySize: editCompanySize,
+          registrationNumber: editRegistrationNumber,
+          registrationAuthority: editRegistrationAuthority,
+          taxIdentificationNumber: editTaxId,
+          registrationDate: editRegistrationDate,
+          businessStatus: editBusinessStatus,
+          supportEmail: editSupportEmail,
+          supportPhone: editSupportPhone,
+          facebook: editFacebook,
+          instagram: editInstagram,
+          twitterHandle: editTwitterHandle,
+          youtube: editYoutube,
+          primaryBusinessActivity: editPrimaryActivity,
+          secondaryBusinessActivity: editSecondaryActivity,
+          operatingCountries: editOperatingCountries,
+          timeZone: editTimeZone,
+          preferredCurrency: editCurrency,
+          preferredLanguage: editLanguage,
         }),
       });
 
@@ -280,6 +348,26 @@ export function useProfileForm(initialData: ProfileData) {
     setEditAuthorizedMobile(snapOrg?.authorizedPersonMobile || "");
     setEditNumEmployees(snapOrg?.numberOfEmployees?.toString() || "");
     setEditCompanyDesc(snapOrg?.companyDescription || "");
+    setEditTradeName(snapOrg?.tradeName || "");
+    setEditYearEstablished(snapOrg?.yearEstablished || "");
+    setEditCompanySize(snapOrg?.companySize || "");
+    setEditRegistrationNumber(snapOrg?.registrationNumber || "");
+    setEditRegistrationAuthority(snapOrg?.registrationAuthority || "");
+    setEditTaxId(snapOrg?.taxIdentificationNumber || "");
+    setEditRegistrationDate(snapOrg?.registrationDate || "");
+    setEditBusinessStatus(snapOrg?.businessStatus || "Active");
+    setEditSupportEmail(snapOrg?.supportEmail || "");
+    setEditSupportPhone(snapOrg?.supportPhone || "");
+    setEditFacebook(snapOrg?.facebook || "");
+    setEditInstagram(snapOrg?.instagram || "");
+    setEditTwitterHandle(snapOrg?.twitterHandle || "");
+    setEditYoutube(snapOrg?.youtube || "");
+    setEditPrimaryActivity(snapOrg?.primaryBusinessActivity || "");
+    setEditSecondaryActivity(snapOrg?.secondaryBusinessActivity || "");
+    setEditOperatingCountries(snapOrg?.operatingCountries || "");
+    setEditTimeZone(snapOrg?.timeZone || "");
+    setEditCurrency(snapOrg?.preferredCurrency || "");
+    setEditLanguage(snapOrg?.preferredLanguage || "");
     setSaveError("");
     setSaveSuccess("");
     setEditing(false);
@@ -396,6 +484,16 @@ export function useProfileForm(initialData: ProfileData) {
     editAuthorizedPerson, setEditAuthorizedPerson, editDesignation, setEditDesignation,
     editAuthorizedEmail, setEditAuthorizedEmail, editAuthorizedMobile, setEditAuthorizedMobile,
     editNumEmployees, setEditNumEmployees, editCompanyDesc, setEditCompanyDesc,
+    editTradeName, setEditTradeName, editYearEstablished, setEditYearEstablished,
+    editCompanySize, setEditCompanySize, editRegistrationNumber, setEditRegistrationNumber,
+    editRegistrationAuthority, setEditRegistrationAuthority, editTaxId, setEditTaxId,
+    editRegistrationDate, setEditRegistrationDate, editBusinessStatus, setEditBusinessStatus,
+    editSupportEmail, setEditSupportEmail, editSupportPhone, setEditSupportPhone,
+    editFacebook, setEditFacebook, editInstagram, setEditInstagram,
+    editTwitterHandle, setEditTwitterHandle, editYoutube, setEditYoutube,
+    editPrimaryActivity, setEditPrimaryActivity, editSecondaryActivity, setEditSecondaryActivity,
+    editOperatingCountries, setEditOperatingCountries, editTimeZone, setEditTimeZone,
+    editCurrency, setEditCurrency, editLanguage, setEditLanguage,
     showBannerEditor, setShowBannerEditor, showImageEditor, setShowImageEditor,
     urlInput, setUrlInput, uploading, uploadingImage, fileKey, imageFileKey,
     dbUser, org,

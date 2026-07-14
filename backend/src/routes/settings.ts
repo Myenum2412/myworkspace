@@ -40,7 +40,7 @@ router.put("/", async (req: AuthRequest, res: Response) => {
   res.json({ success: true, data: rest });
 });
 
-// ── AI Soul (used by MCP server for soul.md) ──
+// ── AI Soul (soul.md) ──
 router.get("/ai-soul", async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
   const settings = await Settings.findOne({ orgId }).lean();

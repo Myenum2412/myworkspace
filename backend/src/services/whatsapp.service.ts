@@ -235,6 +235,7 @@ class WhatsAppService {
 
     logger.info({ from, body }, "WhatsApp message received");
 
+    // Broadcast to frontend
     socketIOManager.getIO()?.emit("whatsapp:message", {
       from,
       body,

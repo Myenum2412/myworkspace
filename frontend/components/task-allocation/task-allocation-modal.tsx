@@ -79,7 +79,7 @@ const priorities = [
 function FormField({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+      <Label className="text-xs font-medium text-muted-foreground">
         {label}
         {required && <span className="text-destructive">*</span>}
       </Label>
@@ -91,10 +91,8 @@ function FormField({ label, required, children }: { label: string; required?: bo
 export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: TaskAllocationModalProps) {
   const queryClient = useQueryClient();
 
-  // Task type
   const [taskType, setTaskType] = useState("individual");
 
-  // Basic fields
   const [title, setTitle] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [projectName, setProjectName] = useState("");
@@ -104,7 +102,6 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   const [priority, setPriority] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
 
-  // Type-specific fields
   const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
   const [selectedAssigneeType, setSelectedAssigneeType] = useState<AssigneeType | null>(null);
   const [selectedTeam, setSelectedTeam] = useState("");
@@ -253,22 +250,22 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
   return (
     <Dialog open={open}>
-      <DialogContent className="p-0 sm:max-w-[720px] gap-0 max-h-[90vh] flex flex-col overflow-hidden" showCloseButton={false}>
-        {/* ─── Header ─── */}
-        <div className="shrink-0 flex items-start justify-between px-5 pt-4 pb-3 border-b">
-          <div className="space-y-0.5">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col overflow-hidden p-4 gap-3">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div>
             <h2 className="text-base font-semibold">Create New Task</h2>
             <p className="text-xs text-muted-foreground">
               Create and assign work to your team
             </p>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {localTaskDefs.length > 0 && (
               <Select onValueChange={(val) => {
                 const selected = localTaskDefs.find((d) => d.id === val);
                 if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
               }}>
-                <SelectTrigger className="h-7 w-fit gap-1 rounded-lg border-none bg-muted px-2 text-xs font-medium text-muted-foreground shadow-none hover:bg-muted/80 [&>svg]:hidden">
+                <SelectTrigger className="h-7 w-fit gap-1 border text-xs font-medium text-muted-foreground">
                   <FileTextIcon className="size-3" />
                   <span className="max-w-[100px] truncate">Template</span>
                 </SelectTrigger>
@@ -282,7 +279,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             <button
               type="button"
               onClick={handleClose}
-              className="flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+              className="flex items-center justify-center size-7 text-muted-foreground hover:bg-muted"
             >
               <XIcon className="size-4" />
             </button>
@@ -290,41 +287,28 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
         </div>
 
         {formError && (
-          <div className="shrink-0 mx-5 mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-xs text-destructive">
+          <div className="mx-0 flex items-center gap-2 border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
             <AlertCircleIcon className="size-3.5 shrink-0" />
             {formError}
           </div>
         )}
 
-        {/* ─── Scrollable Form Body ─── */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        {/* Scrollable Form Body */}
+        <div className="flex-1 overflow-y-auto space-y-3">
 
           {/* Task Type Selector */}
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-2">
-              Task Category <span className="text-destructive">*</span>
-            </Label>
-            <div className="grid grid-cols-5 gap-2">
-              {TASK_TYPES.map(({ id, name, icon: Icon, desc }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setTaskType(id)}
-                  className={`flex flex-col items-center gap-1 rounded-lg border p-2.5 transition-all text-center ${
-                    taskType === id
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border hover:border-primary/30 hover:bg-muted/50"
-                  }`}
-                >
-                  <Icon className={`size-4 ${taskType === id ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className={`text-[10px] leading-tight font-medium ${taskType === id ? "text-primary" : "text-foreground"}`}>
-                    {name}
-                  </span>
-                  <span className="text-[9px] text-muted-foreground leading-tight hidden sm:block">{desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <FormField label="Task Category" required>
+            <Select value={taskType} onValueChange={setTaskType}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="Select task type" />
+              </SelectTrigger>
+              <SelectContent>
+                {TASK_TYPES.map(({ id, name }) => (
+                  <SelectItem key={id} value={id} className="text-sm">{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
 
           {/* Title */}
           <FormField label="Task Title" required>
@@ -332,7 +316,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               placeholder=""
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-9 rounded-lg text-sm"
+              className="h-9 text-sm"
             />
           </FormField>
 
@@ -340,7 +324,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
           <div className="grid grid-cols-3 gap-3">
             <FormField label="Client">
               <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
-                <SelectTrigger className="h-9 rounded-lg text-sm">
+                <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -353,7 +337,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
             <FormField label="Project">
               <Select value={projectName} onValueChange={setProjectName}>
-                <SelectTrigger className="h-9 rounded-lg text-sm">
+                <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -387,7 +371,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Due Date">
                 <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
                       {dueDate ? (
                         <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -396,7 +380,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
                     <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -427,7 +411,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Due Date">
                 <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
                       {dueDate ? (
                         <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -436,7 +420,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
                     <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -444,7 +428,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
               <FormField label="Assign Team" required>
                 <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                  <SelectTrigger className="h-9 rounded-lg text-sm">
+                  <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Select a team" />
                   </SelectTrigger>
                   <SelectContent>
@@ -466,7 +450,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Due Date">
                 <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
                       {dueDate ? (
                         <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -475,7 +459,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
                     <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -492,7 +476,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                     }
                   }}
                 >
-                  <SelectTrigger className="h-9 rounded-lg text-sm">
+                  <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder={selectedUsers.length > 0 ? `${selectedUsers.length} user(s) selected` : "Select users"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -508,7 +492,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                     {selectedUsers.map(uid => {
                       const user = employees.find(e => e.id === uid);
                       return user ? (
-                        <span key={uid} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                        <span key={uid} className="inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-medium">
                           {user.name}
                           <button type="button" onClick={() => setSelectedUsers(selectedUsers.filter(u => u !== uid))} className="hover:text-destructive">
                             <XIcon className="size-2.5" />
@@ -527,7 +511,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Scheduled Date" required>
                 <Popover open={scheduledDateOpen} onOpenChange={setScheduledDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
                       {scheduledDate ? (
                         <span>{scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -536,7 +520,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
                     <Calendar mode="single" selected={scheduledDate} onSelect={(d) => { setScheduledDate(d); setScheduledDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -545,7 +529,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Due Date">
                 <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
                       {dueDate ? (
                         <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -554,7 +538,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
                     <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -567,7 +551,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Due Date">
                 <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between rounded-lg text-sm font-normal">
+                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
                       {dueDate ? (
                         <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -576,7 +560,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-xl" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
                     <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -613,15 +597,12 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
           {/* Attachments */}
           <div>
-            <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-1.5">
+            <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-1">
               <PaperclipIcon className="size-3" />
               Attachments
             </Label>
-            <div className="rounded-lg border-2 border-dashed border-border bg-muted/30 p-3 transition-colors hover:border-primary/30">
+            <div className="border border-dashed p-3">
               <div className="flex items-center gap-3">
-                <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <PaperclipIcon className="size-4 text-primary" />
-                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-foreground">Drop files or click to browse</p>
                   <p className="text-[11px] text-muted-foreground truncate">PDF, DOC, XLS, images — up to 10MB</p>
@@ -630,7 +611,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-8 rounded-lg text-xs shrink-0"
+                  className="h-8 text-xs"
                   onClick={() => {
                     const el = document.querySelector<HTMLInputElement>('[data-file-trigger]');
                     if (el) el.click();
@@ -646,34 +627,32 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
           </div>
         </div>
 
-        {/* ─── Footer ─── */}
-        <div className="shrink-0 border-t px-5 py-3 flex items-center justify-between bg-muted/20">
+        {/* Footer */}
+        <div className="border-t px-0 py-3 flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="h-8 rounded-lg text-xs text-muted-foreground hover:text-foreground"
+            className="h-8 text-xs text-muted-foreground"
           >
             Cancel
           </Button>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting || !title.trim() || !description.trim() || !priority}
-              size="sm"
-              className="h-8 rounded-lg text-xs px-4"
-            >
-              {isSubmitting ? (
-                <><Loader2 className="size-3.5 animate-spin mr-1.5" />Creating...</>
-              ) : (
-                <>
-                  <TaskTypeIcon className="size-3.5 mr-1.5" />
-                  {taskType === "draft" ? "Save Draft" : `Create ${taskType === "individual" ? "Task" : taskType === "team" ? "Team Task" : taskType === "common" ? "Common Task" : "Upcoming Task"}`}
-                </>
-              )}
-            </Button>
-          </div>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !title.trim() || !description.trim() || !priority}
+            size="sm"
+            className="h-8 text-xs"
+          >
+            {isSubmitting ? (
+              <><Loader2 className="size-3.5 animate-spin mr-1.5" />Creating...</>
+            ) : (
+              <>
+                <TaskTypeIcon className="size-3.5 mr-1.5" />
+                {taskType === "draft" ? "Save Draft" : `Create ${taskType === "individual" ? "Task" : taskType === "team" ? "Team Task" : taskType === "common" ? "Common Task" : "Upcoming Task"}`}
+              </>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

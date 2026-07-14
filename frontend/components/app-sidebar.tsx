@@ -137,6 +137,11 @@ const platformItems: NavItem[] = [
     url: "/category",
     icon: <CategoryIcon className="size-6" />,
   },
+  {
+    title: "Hermes AI",
+    url: "/hermes",
+    icon: <SparklesIcon className="size-6" />,
+  },
 ];
 
 const photographyItem: NavItem = {

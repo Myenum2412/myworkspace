@@ -58,6 +58,32 @@ type ProfileOrg = {
   companyDescription: string;
   plan: string;
   createdAt: string;
+  tradeName: string;
+  yearEstablished: string;
+  companySize: string;
+  registrationNumber: string;
+  registrationAuthority: string;
+  taxIdentificationNumber: string;
+  registrationDate: string;
+  businessStatus: string;
+  supportEmail: string;
+  supportPhone: string;
+  facebook: string;
+  instagram: string;
+  twitterHandle: string;
+  youtube: string;
+  primaryBusinessActivity: string;
+  secondaryBusinessActivity: string;
+  operatingCountries: string;
+  timeZone: string;
+  preferredCurrency: string;
+  preferredLanguage: string;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  websiteVerified: boolean;
+  businessVerified: boolean;
+  addressVerified: boolean;
+  documentsVerified: boolean;
 };
 
 type ProfileData = {
@@ -128,6 +154,32 @@ export default async function ProfilePage() {
         companyDescription: (org.companyDescription as string) || "",
         plan: (org.plan as string) || "free",
         createdAt: org.createdAt ? String(org.createdAt) : new Date().toISOString(),
+        tradeName: (org.tradeName as string) || "",
+        yearEstablished: (org.yearEstablished as string) || "",
+        companySize: (org.companySize as string) || "",
+        registrationNumber: (org.registrationNumber as string) || "",
+        registrationAuthority: (org.registrationAuthority as string) || "",
+        taxIdentificationNumber: (org.taxIdentificationNumber as string) || "",
+        registrationDate: (org.registrationDate as string) || "",
+        businessStatus: (org.businessStatus as string) || "Active",
+        supportEmail: (org.supportEmail as string) || "",
+        supportPhone: (org.supportPhone as string) || "",
+        facebook: (org.facebook as string) || "",
+        instagram: (org.instagram as string) || "",
+        twitterHandle: (org.twitterHandle as string) || "",
+        youtube: (org.youtube as string) || "",
+        primaryBusinessActivity: (org.primaryBusinessActivity as string) || "",
+        secondaryBusinessActivity: (org.secondaryBusinessActivity as string) || "",
+        operatingCountries: (org.operatingCountries as string) || "",
+        timeZone: (org.timeZone as string) || "",
+        preferredCurrency: (org.preferredCurrency as string) || "",
+        preferredLanguage: (org.preferredLanguage as string) || "",
+        emailVerified: (org.emailVerified as boolean) || false,
+        phoneVerified: (org.phoneVerified as boolean) || false,
+        websiteVerified: (org.websiteVerified as boolean) || false,
+        businessVerified: (org.businessVerified as boolean) || false,
+        addressVerified: (org.addressVerified as boolean) || false,
+        documentsVerified: (org.documentsVerified as boolean) || false,
       };
     }
   }

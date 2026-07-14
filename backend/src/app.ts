@@ -46,7 +46,7 @@ import appointmentRoutes from "./routes/appointments.js";
 import whatsappRoutes from "./routes/whatsapp.js";
 import stocksRoutes from "./routes/stocks.js";
 import billingRoutes from "./routes/billing.js";
-import { mcpRoutes } from "./mcp/index.js";
+
 
 const app = express();
 
@@ -130,7 +130,9 @@ app.use("/api/files", uploadLimiter);
 app.use("/api/files-tus", uploadLimiter);
 app.use("/api/shares", shareDownloadLimiter);
 app.use("/api/search", searchLimiter);
-app.use("/api", apiLimiter);
+app.use("/api", (req, res, next) => {
+  apiLimiter(req, res, next);
+});
 
 // ── Static files with caching headers ──
 const oneYear = 365 * 24 * 60 * 60 * 1000;
@@ -269,7 +271,6 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/stocks", stocksRoutes);
 app.use("/api/billing", billingRoutes);
-app.use("/api/mcp", mcpRoutes);
 
 // ── 404 catch-all ──
 app.use((req, res) => {

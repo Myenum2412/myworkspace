@@ -7,7 +7,6 @@ export const SIDEBAR_FEATURES = [
   "Time Tracker",
   "File Manager",
   "Billing",
-  "Category",
   "Interaction Followups",
   "Inventory",
   "Photography",

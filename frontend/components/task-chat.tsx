@@ -231,7 +231,7 @@ export function TaskChat({
       {/* Drag Overlay */}
       {isDragging && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-3 animate-in zoom-in-95 duration-200 border border-gray-200">
+          <div className="bg-white p-6 rounded-2xl flex flex-col items-center gap-3 animate-in zoom-in-95 duration-200 border border-gray-200">
             <div className="size-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
               <DownloadIcon className="size-8" />
             </div>
@@ -241,10 +241,10 @@ export function TaskChat({
       )}
 
       {/* Header (WhatsApp Inspired) */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white z-10 shrink-0 shadow-sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white z-10 shrink-0">
         <div className="flex items-center gap-3 overflow-hidden">
           <div className="relative shrink-0">
-            <Avatar className="size-10 border border-gray-200 shadow-sm">
+            <Avatar className="size-10 border border-gray-200">
               {assigneeAvatar ? <AvatarImage src={assigneeAvatar} /> : null}
               <AvatarFallback className="bg-gray-100 text-gray-600 text-xs font-bold">
                 {(assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
@@ -309,7 +309,7 @@ export function TaskChat({
               <div key={c.id} className={`flex gap-3 w-full group ${isMe ? "flex-row-reverse" : ""}`}>
                 {/* Avatar */}
                 <div className={`shrink-0 ${isConsecutive ? "opacity-0" : "opacity-100"}`}>
-                  <Avatar className="size-9 border border-gray-200 shadow-sm">
+                  <Avatar className="size-9 border border-gray-200">
                     {c.senderAvatar ? <AvatarImage src={c.senderAvatar} /> : null}
                     <AvatarFallback className="bg-gray-100 text-gray-600 text-xs font-bold">
                       {(c.senderName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
@@ -328,11 +328,11 @@ export function TaskChat({
                   <div className={`flex items-center gap-2 ${isMe ? "flex-row-reverse" : ""}`}>
                     {/* Text Bubble */}
                     {c.content && (
-                      <div className={`relative rounded-2xl px-4 py-2.5 text-[14px] shadow-sm leading-relaxed ${
-                        isMe 
-                          ? "bg-[#F4F4F5] text-gray-900 border border-gray-200 rounded-tr-sm" 
-                          : "bg-white text-gray-900 rounded-tl-sm border border-gray-200"
-                      }`}>
+                      <div className={`relative rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed ${
+                         isMe 
+                           ? "bg-[#F4F4F5] text-gray-900 border border-gray-200 rounded-tr-sm" 
+                           : "bg-white text-gray-900 rounded-tl-sm border border-gray-200"
+                       }`}>
                             <div className="pb-3 pr-4">
                               {c.content}
                             </div>
@@ -346,7 +346,7 @@ export function TaskChat({
                     )}
 
                     {/* Hover Actions */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200 shadow-sm rounded-lg p-0.5">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-0.5">
                       <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900">
                         <ReplyIcon className="size-3.5" />
                       </Button>
@@ -367,7 +367,7 @@ export function TaskChat({
                   {c.attachments && c.attachments.length > 0 && (
                     <div className={`flex flex-col gap-2 mt-2 w-full max-w-[280px]`}>
                       {c.attachments.map(att => (
-                        <div key={att.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow group/att cursor-pointer">
+                         <div key={att.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-colors group/att cursor-pointer">
                           <div className="shrink-0 bg-gray-50 p-2 rounded-lg">
                             {getFileIcon(att.type)}
                           </div>
@@ -397,7 +397,7 @@ export function TaskChat({
         {pendingAttachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {pendingAttachments.map((file, idx) => (
-              <div key={idx} className="flex items-center gap-2 bg-white border border-gray-200 shadow-sm rounded-lg pl-2 pr-1 py-1 text-xs font-medium text-gray-700">
+               <div key={idx} className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg pl-2 pr-1 py-1 text-xs font-medium text-gray-700">
                 <span className="truncate max-w-[120px]">{file.name}</span>
                 <button 
                   onClick={() => removePendingAttachment(idx)}
@@ -426,7 +426,7 @@ export function TaskChat({
         )}
         <form
           onSubmit={(e) => { e.preventDefault(); send(); }}
-          className={`flex flex-col gap-2 bg-white border border-gray-200 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all p-1 ${editingId ? 'rounded-b-xl rounded-t-none' : 'rounded-xl'}`}
+          className={`flex flex-col gap-2 bg-white border border-gray-200 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all p-1 ${editingId ? 'rounded-b-xl rounded-t-none' : 'rounded-xl'}`}
         >
           <textarea
             value={input}
@@ -462,7 +462,7 @@ export function TaskChat({
             <Button 
               type="submit" 
               size="sm" 
-              className={`rounded-full px-4 font-semibold shadow-sm transition-all ${
+              className={`rounded-full px-4 font-semibold transition-all ${
                 (!input.trim() && pendingAttachments.length === 0) 
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100" 
                   : "bg-gray-900 text-white hover:bg-gray-800"
