@@ -91,7 +91,7 @@ export async function seedTask(orgId: string, assigneeId: string, overrides?: Pa
   const doc = await Task.create({
     orgId,
     title: "Test Task",
-    status: "todo",
+    status: "draft",
     priority: "medium",
     assigneeId,
     createdBy: assigneeId,

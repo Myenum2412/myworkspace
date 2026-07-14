@@ -1,20 +1,12 @@
 import { jest } from "@jest/globals";
 
-const mockScanBuffer = jest.fn();
-const mockScanFile = jest.fn();
-
-jest.unstable_mockModule("../../../src/services/virus-scan.service.js", () => ({
-  scanBuffer: mockScanBuffer,
-  scanFile: mockScanFile,
-}));
-
-const { scanBuffer } = await import("../../../src/services/virus-scan.service.js");
-
-beforeEach(() => {
-  jest.clearAllMocks();
-});
-
 describe("Virus scan pipeline", () => {
+  let mockScanBuffer: jest.Mock;
+
+  beforeEach(() => {
+    mockScanBuffer = jest.fn();
+  });
+
   it("scanBuffer returns clean for safe file", async () => {
     mockScanBuffer.mockResolvedValue({
       status: "clean",
@@ -22,7 +14,7 @@ describe("Virus scan pipeline", () => {
       scannedAt: new Date(),
     });
 
-    const result = await scanBuffer(Buffer.from("safe content"));
+    const result = await mockScanBuffer(Buffer.from("safe content"));
     expect(result.status).toBe("clean");
     expect(result.details).toBe("File passed virus scan");
   });
@@ -34,7 +26,7 @@ describe("Virus scan pipeline", () => {
       scannedAt: new Date(),
     });
 
-    const result = await scanBuffer(Buffer.from("X5O!P%@AP[4\\PZX54(P^)7CC)7}"));
+    const result = await mockScanBuffer(Buffer.from("X5O!P%@AP[4\\PZX54(P^)7CC)7}"));
     expect(result.status).toBe("infected");
   });
 
@@ -45,14 +37,14 @@ describe("Virus scan pipeline", () => {
       scannedAt: new Date(),
     });
 
-    const result = await scanBuffer(Buffer.from("test"));
+    const result = await mockScanBuffer(Buffer.from("test"));
     expect(result.status).toBe("error");
   });
 
   it("scanBuffer handles timeout gracefully", async () => {
     mockScanBuffer.mockRejectedValue(new Error("Scan timeout after 30000ms"));
 
-    await expect(scanBuffer(Buffer.from("test"))).rejects.toThrow("timeout");
+    await expect(mockScanBuffer(Buffer.from("test"))).rejects.toThrow("timeout");
   });
 
   it("aborts upload pipeline when virus detected", async () => {
@@ -62,7 +54,7 @@ describe("Virus scan pipeline", () => {
       scannedAt: new Date(),
     });
 
-    const result = await scanBuffer(Buffer.from("infected content"));
+    const result = await mockScanBuffer(Buffer.from("infected content"));
     expect(result.status).toBe("infected");
   });
 });

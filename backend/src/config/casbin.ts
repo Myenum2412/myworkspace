@@ -1,11 +1,12 @@
 import path from "path";
-import { fileURLToPath } from "url";
 import { newEnforcer, Enforcer } from "casbin";
 import { logger } from "../lib/logger/index.js";
 
 let enforcer: Enforcer | null = null;
 
-const _dirname = path.dirname(fileURLToPath(import.meta.url));
+// Use process.cwd() to find config files relative to project root
+// This works in both ESM and CJS contexts (including Jest)
+const _dirname = path.join(process.cwd(), "src", "config");
 
 export type PermissionEffect = "allow" | "deny";
 

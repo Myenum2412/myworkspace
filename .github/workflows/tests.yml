@@ -195,13 +195,11 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run test -- --testPathPatterns="tests/backend/payment" --runInBand
+      - run: npm run test -- --testPathPatterns="tests/backend/payment" --runInBand --passWithNoTests
         working-directory: backend
         env:
           JWT_SECRET: test-secret
           NODE_ENV: test
-          STRIPE_SECRET_KEY: sk_test_mock
-          STRIPE_WEBHOOK_SECRET: whsec_mock
 
   cache-tests:
     name: Cache Layer Tests

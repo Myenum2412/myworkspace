@@ -2,17 +2,17 @@ import { env } from "../../../config/env.js";
 import { EmailData, SocialLinks, StatusType } from "./types.js";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const _filename = fileURLToPath(import.meta.url);
-const _dirname = path.dirname(_filename);
+// Use process.cwd() to find the frontend/public directory
+// This works in both ESM and CJS contexts (including Jest)
+const publicDir = path.join(process.cwd(), "frontend", "public");
 
-const logoBannerPath = path.resolve(_dirname, "../../../../../frontend/public/logobg.png");
+const logoBannerPath = path.join(publicDir, "logobg.png");
 const logoBannerBase64 = fs.existsSync(logoBannerPath)
   ? `data:image/png;base64,${fs.readFileSync(logoBannerPath).toString("base64")}`
   : `${env.APP_URL}/logobg.png`;
 
-const logoSmallPath = path.resolve(_dirname, "../../../../../frontend/public/logo.jpeg");
+const logoSmallPath = path.join(publicDir, "logo.jpeg");
 const logoSmallBase64 = fs.existsSync(logoSmallPath)
   ? `data:image/jpeg;base64,${fs.readFileSync(logoSmallPath).toString("base64")}`
   : `${env.APP_URL}/logo.jpeg`;

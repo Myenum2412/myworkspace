@@ -1,10 +1,9 @@
 import { newEnforcer, Enforcer } from "casbin";
 import path from "path";
-import { fileURLToPath } from "url";
 import fs from "fs";
 
-const _dirname = path.dirname(fileURLToPath(import.meta.url));
-const CONFIG_DIR = path.resolve(_dirname, "../../../src/config");
+// Use process.cwd() to find config files relative to project root
+const CONFIG_DIR = path.resolve(process.cwd(), "src", "config");
 
 describe("Casbin dynamic policy changes", () => {
   let enforcer: Enforcer;

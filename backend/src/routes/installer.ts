@@ -2,7 +2,6 @@ import { Router, Request, Response } from "express";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import { fileURLToPath } from "url";
 import { env } from "../config/env.js";
 
 const router = Router();
@@ -11,10 +10,8 @@ const INSTALLER_VERSION = "1.0.0";
 const PUBLISHER = "MyWorkspace";
 const PRODUCT_NAME = "MyWorkspace";
 
-// Path where built installers are stored (relative to this file, not CWD)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const INSTALLER_DIR = path.resolve(__dirname, "..", "..", "data", "installers");
+// Path where built installers are stored (relative to project root)
+const INSTALLER_DIR = path.resolve(process.cwd(), "data", "installers");
 
 function getLatestInstallerPath(): string | null {
   try {

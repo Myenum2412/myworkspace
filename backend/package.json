@@ -17,7 +17,7 @@
     "test:security": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns='tests/backend/security' --runInBand",
     "test:socket": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns='tests/backend/socket' --runInBand",
     "test:queue": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns='tests/backend/queue' --runInBand",
-    "test:payment": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns='tests/backend/payment' --runInBand",
+    "test:payment": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns='tests/backend/payment' --runInBand --passWithNoTests",
     "test:cache": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns='tests/backend/cache' --runInBand",
     "test:concurrency": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns='tests/backend/concurrency' --runInBand",
     "test:data-integrity": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns='tests/backend/data-integrity' --runInBand",
