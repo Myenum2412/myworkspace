@@ -30,6 +30,8 @@ export interface FileUploadInput {
   tags?: string[];
   skipDuplicates?: boolean;
   category?: string;
+  moduleName?: string;
+  entityId?: string;
 }
 
 export interface FileUploadResult {
@@ -49,6 +51,7 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
     orgId, clientId, folderId, taskId, projectId, uploaderId,
     name, originalName, mimeType, size, buffer, checksum,
     description, tags, skipDuplicates = true, category,
+    moduleName, entityId,
   } = input;
 
   const actualMimeType = validateFileMagicBytes(buffer, mimeType);
@@ -97,7 +100,21 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
     category: fileCategory as any,
     checksum: sha, currentVersion: 1,
     description: description || "", tags: tags || [],
+    moduleName: moduleName || null,
+    entityId: entityId || null,
   });
+
+  if (clientId && moduleName) {
+    try {
+      const { autoRouteFileInClientFolder } = await import("./client-folder.service.js");
+      await autoRouteFileInClientFolder(fileId, {
+        orgId, clientId, moduleName, entityId: entityId || undefined,
+        createdBy: uploaderId,
+      });
+    } catch (err: any) {
+      logger.warn({ err: err.message, fileId, clientId, moduleName }, "Auto-routing failed for file");
+    }
+  }
 
   await StorageQuota.updateOne(
     { orgId },

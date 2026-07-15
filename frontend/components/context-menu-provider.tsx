@@ -55,6 +55,7 @@ export function ContextMenuProvider() {
   }, []);
 
   const handleContextMenu = useCallback((e: MouseEvent) => {
+    if (e.defaultPrevented) return;
     e.preventDefault();
     setPos({ x: e.clientX, y: e.clientY });
     setVisible(true);

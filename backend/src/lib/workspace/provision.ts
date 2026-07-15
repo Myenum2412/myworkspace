@@ -4,13 +4,9 @@ import { Folder } from "../db/models/Folder.js";
 import { FileAttachment } from "../db/models/FileAttachment.js";
 import { ClientAuditLog } from "../db/models/ClientAuditLog.js";
 import { ClientWorkspace } from "../db/models/ClientWorkspace.js";
+import { CLIENT_SUBFOLDERS, CLIENT_BASE_FOLDER } from "../uploads/folder-mapper.js";
 
-const DEFAULT_FOLDERS = [
-  { name: "Documents", path: "/Documents" },
-  { name: "Reports", path: "/Reports" },
-  { name: "Projects", path: "/Projects" },
-  { name: "Settings", path: "/Settings" },
-];
+const BASE_PATH = `/${CLIENT_BASE_FOLDER}`;
 
 export async function provisionClientWorkspace(
   orgId: string,
@@ -20,32 +16,45 @@ export async function provisionClientWorkspace(
   session: ClientSession
 ): Promise<void> {
   const folderIds: string[] = [];
+  const clientRoot = `${BASE_PATH}/${clientId}`;
 
-  for (const def of DEFAULT_FOLDERS) {
+  const rootFolderId = uuid();
+  await Folder.create(
+    [{
+      id: rootFolderId,
+      orgId,
+      clientId,
+      parentId: null,
+      name: clientName,
+      path: clientRoot,
+      permissions: { clientCanView: true, clientCanUpload: true, clientCanDelete: false },
+      createdBy: adminId,
+    }],
+    { session }
+  );
+  folderIds.push(rootFolderId);
+
+  for (const subName of CLIENT_SUBFOLDERS) {
     const folderId = uuid();
     await Folder.create(
-      [
-        {
-          id: folderId,
-          orgId,
-          clientId,
-          parentId: null,
-          name: def.name,
-          path: `/clients/${clientId}${def.path}`,
-          permissions: {
-            clientCanView: true,
-            clientCanUpload: def.name !== "Reports",
-            clientCanDelete: false,
-          },
-          createdBy: adminId,
+      [{
+        id: folderId,
+        orgId,
+        clientId,
+        parentId: rootFolderId,
+        name: subName,
+        path: `${clientRoot}/${subName}`,
+        permissions: {
+          clientCanView: true,
+          clientCanUpload: subName !== "Reports",
+          clientCanDelete: false,
         },
-      ],
+        createdBy: adminId,
+      }],
       { session }
     );
     folderIds.push(folderId);
   }
-
-  const documentsFolderId = folderIds[0];
 
   await ClientWorkspace.create(
     [
@@ -68,6 +77,8 @@ export async function provisionClientWorkspace(
     ],
     { session }
   );
+
+  const documentsFolderId = folderIds.find((_, i) => CLIENT_SUBFOLDERS[i - 1] === "Documents") || folderIds[1];
 
   await FileAttachment.create(
     [
@@ -111,7 +122,7 @@ export async function provisionClientWorkspace(
         action: "workspace.provisioned",
         entityType: "client",
         entityId: clientId,
-        description: `Workspace provisioned for client ${clientName}: ${DEFAULT_FOLDERS.length} folders created`,
+        description: `Workspace provisioned for client ${clientName}: ${CLIENT_SUBFOLDERS.length + 1} folders created`,
       },
     ],
     { session }

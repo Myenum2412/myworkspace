@@ -437,6 +437,7 @@ router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: 
         folderId: req.body.folderId as string | undefined,
         taskId: req.body.taskId as string | undefined,
         clientId: req.body.clientId as string | undefined,
+        projectId: req.body.projectId as string | undefined,
         uploaderId: req.user!.userId,
         name: file.originalname,
         originalName: file.originalname,
@@ -446,6 +447,8 @@ router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: 
         description: req.body.description as string || "",
         tags: req.body.tags ? (typeof req.body.tags === "string" ? JSON.parse(req.body.tags) : req.body.tags) : [],
         skipDuplicates: req.body.skipDuplicates !== "false",
+        moduleName: req.body.moduleName as string | undefined,
+        entityId: req.body.entityId as string | undefined,
       });
 
       if (result.kind === "duplicate") {

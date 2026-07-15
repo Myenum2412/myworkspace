@@ -88,25 +88,25 @@ export default function BillingServicesPage() {
                   <input type="checkbox" checked={selectedItems.size === filtered.length && filtered.length > 0} onChange={toggleSelectAll} className="size-4 accent-blue-600" />
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <span className="text-gray-800">Name</span>
+                  <span className="text-white">Name</span>
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <span className="text-gray-800">Category</span>
+                  <span className="text-white">Category</span>
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <span className="text-gray-800">Description</span>
+                  <span className="text-white">Description</span>
                 </th>
                 <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <span className="text-gray-800">Rate</span>
+                  <span className="text-white">Rate</span>
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <span className="text-gray-800">Unit</span>
+                  <span className="text-white">Unit</span>
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <span className="text-gray-800">Status</span>
+                  <span className="text-white">Status</span>
                 </th>
                 <th className="text-center font-semibold px-4 py-3.5 whitespace-nowrap w-24">
-                  <span className="text-gray-800">Action</span>
+                  <span className="text-white">Action</span>
                 </th>
               </tr>
             </thead>

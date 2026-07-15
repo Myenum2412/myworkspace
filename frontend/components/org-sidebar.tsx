@@ -81,10 +81,10 @@ export const defaultOrgNavData = [
   },
   {
     title: "File Manager",
-    url: "/orgmenu/files",
+    url: "/files",
     icon: <MuiFolderIcon className="size-6" />,
     items: [
-      { title: "All Files", url: "/orgmenu/files" },
+      { title: "All Files", url: "/files" },
     ],
   },
   {

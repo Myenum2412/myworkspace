@@ -69,7 +69,7 @@ function buildResults(data: any): GroupedResults {
       id: f.id || f._id,
       title: f.name || f.originalName,
       subtitle: f.description || f.mimeType,
-      href: `/orgmenu/files`,
+      href: `/files`,
       icon: <File className="size-4" />,
     }));
   }
@@ -79,7 +79,7 @@ function buildResults(data: any): GroupedResults {
       id: f.id,
       title: f.name,
       subtitle: f.path,
-      href: `/orgmenu/files?folder=${f.id}`,
+      href: `/files`,
       icon: <Folder className="size-4" />,
     }));
   }

@@ -25,15 +25,31 @@ router.get("/", cacheEnhanced({ ttl: 20, varyByUser: true, varyByQuery: true, ta
     }
     const entityType = req.query.entityType || undefined;
     const action = req.query.action || undefined;
+    const search = req.query.search || undefined;
+    const userIdFilter = req.query.userId || undefined;
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(200, Math.max(1, parseInt(req.query.limit) || 50));
     const skip = (page - 1) * limit;
-    const queryFilter = { orgId, userId: req.user.userId };
+    const queryFilter = { orgId };
+    // Show all org activity for admins, own activity for regular users
+    const { User } = await import("../lib/db/models/User.js");
+    const currentUser = await User.findOne({ id: req.user.userId }).lean();
+    const userRole = currentUser?.role || "";
+    const isAdmin = userRole === "super_admin" || userRole === "org_admin" || userRole === "ORG_MENU_ADMIN";
+    if (!isAdmin && !userIdFilter) {
+        queryFilter.userId = req.user.userId;
+    }
+    if (userIdFilter) {
+        queryFilter.userId = userIdFilter;
+    }
     if (entityType) {
         queryFilter.entityType = { $in: entityType.split(",") };
     }
     if (action) {
         queryFilter.action = { $regex: action, $options: "i" };
+    }
+    if (search) {
+        queryFilter.description = { $regex: search, $options: "i" };
     }
     const [rawLogs, total] = await Promise.all([
         ActivityLog.find(queryFilter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),

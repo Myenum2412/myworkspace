@@ -20,9 +20,12 @@ interface FileExplorerProps {
   orgId: string;
   userId: string;
   clientId?: string | null;
+  moduleName?: string;
+  entityId?: string;
+  projectId?: string;
 }
 
-export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerProps) {
+export function FileExplorer({ orgId, userId, clientId = null, moduleName, entityId, projectId }: FileExplorerProps) {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([{ id: null, name: "Files" }]);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -222,6 +225,9 @@ export function FileExplorer({ orgId, userId, clientId = null }: FileExplorerPro
               formData.append("file", file);
               if (currentFolderId) formData.append("folderId", currentFolderId);
               if (clientId) formData.append("clientId", clientId);
+              if (moduleName) formData.append("moduleName", moduleName);
+              if (entityId) formData.append("entityId", entityId);
+              if (projectId) formData.append("projectId", projectId);
               const res = await fetch("/api/files/upload", {
                 method: "POST",
                 credentials: "include",

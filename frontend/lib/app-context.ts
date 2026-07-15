@@ -10,7 +10,7 @@ export const WORKSPACE_ROUTES = [
   "/teamtasks", "/settings", "/profile", "/admin",
   "/departments", "/addemployees", "/addprojects",
   "/savedtasks", "/upcomingtasks", "/terminated",
-  "/upload", "/billing",
+  "/upload", "/billing", "/files",
   "/attendance", "/appointments", "/engagement", "/stocks"
 ];
 

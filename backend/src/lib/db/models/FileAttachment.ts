@@ -13,6 +13,8 @@ export interface IFileAttachment extends Document {
   departmentId: string | null;
   folderId: string | null;
   uploaderId: string;
+  moduleName: string | null;
+  entityId: string | null;
   createdBy: string;
   updatedBy?: string;
   name: string;
@@ -55,6 +57,8 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
     departmentId: { type: String, default: null, index: true },
     folderId: { type: String, default: null, index: true },
     uploaderId: { type: String, required: true, index: true },
+    moduleName: { type: String, default: null, index: true },
+    entityId: { type: String, default: null, index: true },
     createdBy: { type: String, required: true },
     updatedBy: { type: String },
     name: { type: String, required: true },
@@ -103,6 +107,7 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
 
 fileAttachmentSchema.index({ orgId: 1, folderId: 1, deletedAt: 1 });
 fileAttachmentSchema.index({ orgId: 1, projectId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, moduleName: 1, entityId: 1, deletedAt: 1 });
 fileAttachmentSchema.index({ orgId: 1, clientId: 1, deletedAt: 1 });
 fileAttachmentSchema.index({ orgId: 1, uploaderId: 1, deletedAt: 1 });
 fileAttachmentSchema.index({ orgId: 1, name: "text", description: "text", tags: "text" });

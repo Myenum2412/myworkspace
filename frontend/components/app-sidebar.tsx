@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import MuiFolderIcon from "@mui/icons-material/Folder";
 import {
   LayoutDashboardIcon,
   ListChecksIcon,
@@ -96,6 +97,14 @@ const platformItems: NavItem[] = [
       { title: "My Time", url: "/my-time" },
 
       { title: "Time Reports", url: "/time-reports" },
+    ],
+  },
+  {
+    title: "File Manager",
+    url: "/files",
+    icon: <MuiFolderIcon className="size-6" />,
+    items: [
+      { title: "All Files", url: "/files" },
     ],
   },
   {

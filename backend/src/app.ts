@@ -46,6 +46,7 @@ import appointmentRoutes from "./routes/appointments.js";
 import whatsappRoutes from "./routes/whatsapp.js";
 import stocksRoutes from "./routes/stocks.js";
 import billingRoutes from "./routes/billing.js";
+import clientFoldersRoutes from "./routes/client-folders.js";
 
 
 const app = express();
@@ -273,6 +274,8 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/stocks", stocksRoutes);
 app.use("/api/billing", billingRoutes);
+app.use("/api/file-favorites", (await import("./routes/file-favorites.js")).default);
+app.use("/api/client-folders", clientFoldersRoutes);
 
 // ── 404 catch-all ──
 app.use((req, res) => {

@@ -27,6 +27,9 @@ interface FileUploadDialogProps {
   orgId: string;
   folderId?: string | null;
   clientId?: string | null;
+  moduleName?: string;
+  entityId?: string;
+  projectId?: string;
   onUploadComplete?: () => void;
 }
 
@@ -36,7 +39,7 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId, onUploadComplete }: FileUploadDialogProps) {
+export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId, moduleName, entityId, projectId, onUploadComplete }: FileUploadDialogProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [description, setDescription] = useState("");
@@ -87,6 +90,9 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
     formData.append("orgId", orgId);
     formData.append("folderId", folderId || "");
     if (clientId) formData.append("clientId", clientId);
+    if (moduleName) formData.append("moduleName", moduleName);
+    if (entityId) formData.append("entityId", entityId);
+    if (projectId) formData.append("projectId", projectId);
     formData.append("description", description);
     formData.append("tags", JSON.stringify(tags.split(",").map(t => t.trim()).filter(Boolean)));
 

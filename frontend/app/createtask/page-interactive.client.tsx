@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { GoogleDocsEditor } from "@/components/ui/google-docs-editor";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -261,15 +261,15 @@ export function CreateTaskPageInteractive() {
             </div>
           </div>
           {localTaskDefs.length > 0 && (
-            <Select onValueChange={(val) => {
+              <Select onValueChange={(val) => {
               const selected = localTaskDefs.find((d) => d.id === val);
               if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
             }}>
-              <SelectTrigger className="h-7 w-fit gap-1 border text-xs font-medium text-muted-foreground">
+              <SelectTrigger className="h-7 w-fit gap-1 border text-xs font-medium text-muted-foreground shadow-none">
                 <FileTextIcon className="size-3" />
                 <span className="max-w-[100px] truncate">Template</span>
               </SelectTrigger>
-              <SelectContent align="end" className="text-xs">
+              <SelectContent align="end" className="text-xs shadow-none">
                 {localTaskDefs
                   .filter((d) => d.isActive)
                   .filter((d, i, arr) => arr.findIndex((x) => x.id === d.id) === i)
@@ -326,10 +326,10 @@ export function CreateTaskPageInteractive() {
             <div className="grid grid-cols-3 gap-3">
               <FormField label="Client">
                 <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
-                  <SelectTrigger className="h-9 text-sm">
+                  <SelectTrigger className="h-9 text-sm shadow-none">
                     <SelectValue placeholder="" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="shadow-none">
                     {clientList.map((c) => (
                       <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
                     ))}
@@ -339,10 +339,10 @@ export function CreateTaskPageInteractive() {
 
               <FormField label="Project">
                 <Select value={projectName} onValueChange={setProjectName}>
-                  <SelectTrigger className="h-9 text-sm">
+                  <SelectTrigger className="h-9 text-sm shadow-none">
                     <SelectValue placeholder="" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="shadow-none">
                     {selectedClient
                       ? projectList.filter((p) => p.client === selectedClient).map((p) => (
                           <SelectItem key={p.id} value={p.name} className="text-sm">{p.name}</SelectItem>
@@ -431,10 +431,10 @@ export function CreateTaskPageInteractive() {
 
                 <FormField label="Assign Team" required>
                   <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                    <SelectTrigger className="h-9 text-sm">
+                    <SelectTrigger className="h-9 text-sm shadow-none">
                       <SelectValue placeholder="Select a team" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="shadow-none">
                       {teams.length === 0 ? (
                         <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
                       ) : (
@@ -479,10 +479,10 @@ export function CreateTaskPageInteractive() {
                       }
                     }}
                   >
-                    <SelectTrigger className="h-9 text-sm">
+                    <SelectTrigger className="h-9 text-sm shadow-none">
                       <SelectValue placeholder={selectedUsers.length > 0 ? `${selectedUsers.length} user(s) selected` : "Select users"} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="shadow-none">
                       {employees.map((e) => (
                         <SelectItem key={e.id} value={e.id} className="text-sm">
                           {selectedUsers.includes(e.id) ? "✓ " : ""}{e.name}{e.role ? ` (${e.role})` : ""}
@@ -630,9 +630,10 @@ export function CreateTaskPageInteractive() {
             </Label>
           </div>
           <div className="flex-1 min-h-0">
-            <GoogleDocsEditor
+            <TiptapEditor
               value={description}
               onChange={setDescription}
+              placeholder="Write your task description here..."
             />
           </div>
         </div>
