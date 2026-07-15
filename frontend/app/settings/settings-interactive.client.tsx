@@ -28,9 +28,11 @@ import {
   Trash2Icon,
   MinusIcon,
   EyeOffIcon,
+  LinkIcon,
 } from "lucide-react";
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
+import IntegrationsBlock from "@/components/integrations-block";
 
 const SECTION_LIMITS_KEY = "myworkspace_section_limits";
 
@@ -222,6 +224,11 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               <span className="hidden sm:inline">Features</span>
               <span className="sm:hidden">Feat</span>
             </TabsTrigger>
+            <TabsTrigger value="integrations" className="gap-2">
+              <LinkIcon className="size-4 shrink-0" />
+              <span className="hidden sm:inline">Integrations</span>
+              <span className="sm:hidden">Integ</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -394,6 +401,14 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                   <p className="text-sm text-muted-foreground">Show or hide sidebar navigation items</p>
                 </div>
                 <FeatureToggleSettings />
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="integrations" className="h-full m-0 p-0">
+            <ScrollArea className="h-full">
+              <div className="p-3 sm:p-4 md:p-6">
+                <IntegrationsBlock />
               </div>
             </ScrollArea>
           </TabsContent>

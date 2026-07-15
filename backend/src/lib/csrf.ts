@@ -18,11 +18,13 @@ const CSRF_EXEMPT_PATHS = new Set([
   "/api/auth/reset-password",
   "/api/client-auth/login",
   "/api/files-tus",
+  "/api/ai",
 ]);
 
 function pathMatchesExempt(path: string): boolean {
   if (CSRF_EXEMPT_PATHS.has(path)) return true;
   if (path.startsWith("/api/files-tus/")) return true;
+  if (path.startsWith("/api/ai/")) return true;
   return false;
 }
 

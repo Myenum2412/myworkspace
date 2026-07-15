@@ -2,7 +2,7 @@ export type AppContextType = "origin" | "workspace" | "staff" | "public" | "clie
 
 export const ORIGIN_ROUTES = ["/orgmenu"];
 export const STAFF_ROUTES = ["/staffs"];
-export const PUBLIC_ROUTES = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/auth/not-found", "/"];
+export const PUBLIC_ROUTES = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/auth/not-found", "/", "/features", "/solutions", "/platform", "/about", "/blog", "/contact", "/careers", "/changelog", "/docs", "/guides"];
 export const WORKSPACE_ROUTES = [
   "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
   "/projects", "/teams", "/clients", "/approvals", "/reports",
@@ -32,7 +32,7 @@ export function isRouteInContext(pathname: string, context: AppContextType): boo
 export function isAppPage(pathname: string): boolean {
   if (pathname === "/") return false;
   if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-    return pathname === "/pricing";
+    return false;
   }
   if (pathname.startsWith("/api") || pathname.startsWith("/_next")) return false;
   return true;

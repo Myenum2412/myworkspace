@@ -65,4 +65,17 @@ export const env = {
   BUSINESS_SUPPORT_EMAIL: process.env.BUSINESS_SUPPORT_EMAIL || "support@myworkspace.com",
   BUSINESS_HOURS_START: parseInt(process.env.BUSINESS_HOURS_START || "9"),
   BUSINESS_HOURS_END: parseInt(process.env.BUSINESS_HOURS_END || "18"),
+
+  // AI Configuration — OpenRouter (OpenAI-compatible routing)
+  OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
+  OPENROUTER_API_BASE: process.env.OPENROUTER_API_BASE || "https://openrouter.ai/api/v1",
+  OPENROUTER_MODEL: process.env.OPENROUTER_MODEL || "tencent/hy3:free",
+  OPENROUTER_SITE_URL: process.env.OPENROUTER_SITE_URL || "",
+  OPENROUTER_SITE_NAME: process.env.OPENROUTER_SITE_NAME || "MyWorkspace",
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
+  OPENAI_API_BASE: process.env.OPENAI_API_BASE || "",
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
+  AZURE_OPENAI_API_KEY: process.env.AZURE_OPENAI_API_KEY || "",
+  AZURE_OPENAI_ENDPOINT: process.env.AZURE_OPENAI_ENDPOINT || "",
+  AZURE_OPENAI_DEPLOYMENT: process.env.AZURE_OPENAI_DEPLOYMENT || "",
 };

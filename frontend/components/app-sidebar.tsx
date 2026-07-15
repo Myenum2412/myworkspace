@@ -24,6 +24,7 @@ import {
   CheckCheckIcon,
   HeartHandshakeIcon,
   PackageIcon,
+  BotIcon,
 } from "lucide-react";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
 
@@ -123,10 +124,15 @@ const platformItems: NavItem[] = [
     url: "/engagement",
     icon: <HeartHandshakeIcon className="size-6" />,
   },
-{
+  {
     title: "Inventory",
     url: "/stocks",
     icon: <PackageIcon className="size-6" />,
+  },
+  {
+    title: "AI Assistant",
+    url: "/dashboard/ai",
+    icon: <BotIcon className="size-6" />,
   },
 ];
 

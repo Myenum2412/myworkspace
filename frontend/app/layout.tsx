@@ -160,6 +160,19 @@ export default function RootLayout({
         {/* Early Hints compatibility */}
         <meta httpEquiv="Accept-CH" content="DPR, Viewport-Width, Width" />
 
+        {/* Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-1W2KRGMXJE" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-1W2KRGMXJE');
+            `,
+          }}
+        />
+
         {/* DNS prefetch for third-party services */}
         <link rel="dns-prefetch" href="https://vercel.live" />
         <link rel="dns-prefetch" href="https://sentry.io" />

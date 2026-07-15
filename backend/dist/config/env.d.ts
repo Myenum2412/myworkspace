@@ -43,4 +43,15 @@ export declare const env: {
     BUSINESS_SUPPORT_EMAIL: string;
     BUSINESS_HOURS_START: number;
     BUSINESS_HOURS_END: number;
+    OPENROUTER_API_KEY: string;
+    OPENROUTER_API_BASE: string;
+    OPENROUTER_MODEL: string;
+    OPENROUTER_SITE_URL: string;
+    OPENROUTER_SITE_NAME: string;
+    OPENAI_API_KEY: string;
+    OPENAI_API_BASE: string;
+    ANTHROPIC_API_KEY: string;
+    AZURE_OPENAI_API_KEY: string;
+    AZURE_OPENAI_ENDPOINT: string;
+    AZURE_OPENAI_DEPLOYMENT: string;
 };

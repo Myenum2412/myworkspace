@@ -27,6 +27,9 @@
     "@kokonutui": "https://kokonutui.com/r/{name}.json",
     "@smoothui": "https://smoothui.dev/r/{name}.json",
     "@bklit": "https://ui.bklit.com/r/{name}.json",
-    "@elements": "https://www.tryelements.dev/r/{name}.json"
+    "@elements": "https://www.tryelements.dev/r/{name}.json",
+    "@7ovr": "https://7ovr.com/r/{name}.json",
+    "@tailark": "https://tailark.com/r/{name}.json",
+    "@motion-primitives": "https://motion-primitives.com/r/{name}.json"
   }
 }

@@ -1,13 +1,15 @@
 /**
- * Single origin for backend API calls. Canonical data lives on the backend
- * Express server (`/api/*`); the Next `app/api` data routes that duplicated it
- * have been removed. Point everything at the backend origin so there is one
- * source of truth and one RBAC enforcement point.
+ * Backend API base URL.
  *
- * In dev the backend runs on localhost:4000 (see next.config rewrites); in prod
- * set NEXT_PUBLIC_API_URL to the backend origin.
+ * In dev: leave empty so requests are relative (proxied by Next.js rewrites
+ * in next.config.js to localhost:4000). This keeps auth cookies on the same
+ * origin so the backend can verify the NextAuth session.
+ *
+ * In prod: set NEXT_PUBLIC_API_URL to the backend origin. When the backend is
+ * on a separate domain you'll need CORS configured on the backend to accept
+ * credentials from the frontend origin.
  */
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function apiUrl(path: string): string {
   return `${API_URL}${path}`;

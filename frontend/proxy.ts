@@ -80,17 +80,6 @@ export const proxy = auth((req) => {
     return;
   }
 
-  if (pathname === "/") {
-    if (isLoggedIn) {
-      if (isOrgAdmin) {
-        return NextResponse.redirect(new URL("/orgmenu", req.url));
-      }
-      const home = getHomePath(userRole);
-      return NextResponse.redirect(new URL(home, req.url));
-    }
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
   if (isLoggedIn && isPublic) {
     if (isOrgAdmin) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
