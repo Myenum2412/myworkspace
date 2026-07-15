@@ -44,7 +44,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci --include=dev
         working-directory: backend
-      - run: npx jest --config jest.config.cjs --testPathPattern="${{ matrix.test-path }}" --coverage
+      - run: npx jest --config jest.config.cjs --testPathPatterns="${{ matrix.test-path }}" --coverage
         working-directory: backend
         env:
           NODE_ENV: test
@@ -75,7 +75,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci --include=dev
         working-directory: backend
-      - run: npx jest --config jest.config.cjs --testPathPattern="integration"
+      - run: npx jest --config jest.config.cjs --testPathPatterns="integration"
         working-directory: backend
         env:
           NODE_ENV: test
