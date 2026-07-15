@@ -20,11 +20,7 @@ export default async function CreateTaskPage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-6 h-[calc(100vh-4rem)]">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Tasks</h1>
-        <p className="text-muted-foreground">Create and assign tasks to your team</p>
-      </div>
+    <main className="flex flex-1 flex-col h-[calc(100vh-4rem)]">
       <CreateTaskPageInteractive />
     </main>
   );

@@ -94,7 +94,7 @@ const platformItems: NavItem[] = [
     icon: <ClockIcon className="size-6" />,
     items: [
       { title: "My Time", url: "/my-time" },
-      { title: "Team Time", url: "/team-time" },
+
       { title: "Time Reports", url: "/time-reports" },
     ],
   },

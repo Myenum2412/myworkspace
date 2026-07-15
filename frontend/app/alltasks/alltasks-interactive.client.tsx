@@ -199,7 +199,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">Manage tasks across your organization</p>
           </div>
-          <Button onClick={() => router.push('/tasks/create')} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>

@@ -89,7 +89,7 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
 
   if (loading && stocks.length === 0) {
     return (
-      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+      <main className="flex flex-1 flex-col gap-4 min-w-0 w-full">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
@@ -109,19 +109,21 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0">
-        <div className="flex items-center justify-between gap-2 shrink-0">
-          <h1 className="text-xl sm:text-2xl font-bold shrink-0">Inventory</h1>
-          <div className="flex items-center gap-2">
-            <div className="relative">
+      <main className="flex flex-1 flex-col gap-4 min-w-0 w-full">
+        <div className="flex items-center shrink-0">
+          <h1 className="text-xl sm:text-2xl font-bold flex-1">Inventory</h1>
+          <div className="relative flex-1 flex justify-center">
+            <div className="relative w-full max-w-sm">
               <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
               <Input
                 placeholder="Search inventory..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-9 w-48 text-sm"
+                className="pl-8 h-9 w-full text-sm"
               />
             </div>
+          </div>
+          <div className="flex items-center gap-2 flex-1 justify-end">
             {statuses.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

@@ -72,7 +72,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             <ListTodoIcon className="size-5 sm:size-6" />
             <h1 className="text-xl sm:text-2xl font-bold">Task Overview</h1>
           </div>
-          <Button onClick={() => router.push('/tasks/create')} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>

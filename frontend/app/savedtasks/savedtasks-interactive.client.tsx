@@ -67,7 +67,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
               onChange={(v) => setView(v as typeof view)}
             />
           </div>
-          <Button onClick={() => router.push('/tasks/create')} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>

@@ -253,7 +253,7 @@ export function TaskDataTable({
       mobileCardView={true}
       renderMobileCard={(task: TaskRow) => (
         <div
-          className="border rounded-lg bg-card p-3 space-y-2 shadow-sm active:bg-muted/50 transition-colors cursor-pointer"
+          className="border rounded-xl bg-card p-3 space-y-2 shadow-sm active:bg-muted/50 transition-colors cursor-pointer"
           onClick={() => onView?.(task)}
         >
           <div className="flex items-start justify-between gap-2">

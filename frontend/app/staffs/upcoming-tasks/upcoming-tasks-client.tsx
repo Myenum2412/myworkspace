@@ -194,7 +194,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
             </Badge>
           )}
         </div>
-        <Button onClick={() => router.push('/tasks/create')}>
+        <Button onClick={() => router.push('/createtask')}>
           <PlusIcon className="mr-2 size-4" />
           Allocate Task
         </Button>
@@ -447,7 +447,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                     variant="outline"
                     size="sm"
                     className="mt-3"
-                    onClick={() => router.push('/tasks/create')}
+                    onClick={() => router.push('/createtask')}
                   >
                     <PlusIcon className="mr-1 size-3" />
                     Allocate Task

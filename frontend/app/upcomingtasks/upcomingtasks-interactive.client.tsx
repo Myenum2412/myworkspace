@@ -69,7 +69,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
               />
             </div>
           </div>
-          <Button onClick={() => router.push('/tasks/create')}>
+          <Button onClick={() => router.push('/createtask')}>
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -125,18 +124,13 @@ export default function ApprovalsInteractive({ initialTasks }: ApprovalsInteract
           <Badge variant="secondary" className="ml-auto shrink-0">{pending.length} pending</Badge>
         </div>
 
-        <Card>
-          <CardHeader><CardTitle>Tasks awaiting review</CardTitle></CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
-            ) : error ? (
-              <div className="flex items-center justify-center py-12 text-red-500">{error}</div>
-            ) : (
-              <DataTable columns={actionColumns} data={pending} onRowClick={openView} emptyMessage="No tasks pending approval." />
-            )}
-          </CardContent>
-        </Card>
+        {loading ? (
+          <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-12 text-red-500">{error}</div>
+        ) : (
+          <DataTable columns={actionColumns} data={pending} onRowClick={openView} emptyMessage="No tasks pending approval." />
+        )}
       </main>
 
       <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setSelectedTask(null); } }}>

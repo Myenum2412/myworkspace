@@ -12,9 +12,10 @@ const WORKSPACE_PREFIXES = [
   "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
   "/projects", "/teams", "/clients", "/approvals", "/reports",
   "/calendar", "/time-tracker", "/time-reports", "/my-time",
-  "/teamtasks", "/team-time", "/settings", "/profile", "/admin",
+  "/teamtasks", "/settings", "/profile", "/admin",
   "/departments", "/addemployees", "/addprojects",
   "/savedtasks", "/upcomingtasks", "/terminated",
+  "/createtask", "/createproject",
   "/upload", "/billing",
   "/attendance", "/appointments",
   "/ai", "/engagement", "/stocks"

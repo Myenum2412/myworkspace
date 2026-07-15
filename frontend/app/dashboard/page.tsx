@@ -229,7 +229,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between px-0.5">
         <h1 className="text-xl sm:text-2xl font-bold">Dashboard Overview</h1>
         <Button asChild size="sm">
-          <Link href="/overview">
+          <Link href="/createtask">
             <ListTodo className="mr-1 size-4" />
             New Task
           </Link>

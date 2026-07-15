@@ -81,7 +81,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
               <Button variant={view === "kanban" ? "default" : "outline"} size="sm" className="text-xs px-2" onClick={() => setView("kanban")}>Kanban</Button>
             </div>
           </div>
-          <Button onClick={() => router.push('/tasks/create')} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
