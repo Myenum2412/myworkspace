@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   CalendarIcon,
   PlusIcon,
@@ -15,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import {
   Dialog,
@@ -94,11 +94,11 @@ function isToday(date: Date) {
 }
 
 export default function UpcomingTasksClient({ initialTasks }: { initialTasks: CalendarTask[] }) {
+  const router = useRouter();
   const [tasks] = useState<CalendarTask[]>(initialTasks);
   const [externalEvents, setExternalEvents] = useState<ExternalEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<CalendarTask | null>(null);
   const [taskDetailOpen, setTaskDetailOpen] = useState(false);
 
@@ -194,7 +194,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
             </Badge>
           )}
         </div>
-        <Button onClick={() => setShowTaskModal(true)}>
+        <Button onClick={() => router.push('/tasks/create')}>
           <PlusIcon className="mr-2 size-4" />
           Allocate Task
         </Button>
@@ -447,7 +447,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                     variant="outline"
                     size="sm"
                     className="mt-3"
-                    onClick={() => setShowTaskModal(true)}
+                    onClick={() => router.push('/tasks/create')}
                   >
                     <PlusIcon className="mr-1 size-3" />
                     Allocate Task
@@ -458,12 +458,6 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
           </div>
         )}
       </div>
-
-      {/* Task Allocation Modal */}
-      <TaskAllocationModal
-        open={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-      />
 
       {/* Task Detail Dialog */}
       <Dialog open={taskDetailOpen} onOpenChange={(open) => { if (!open) { setTaskDetailOpen(false); setSelectedTask(null); } }}>

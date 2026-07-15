@@ -11,7 +11,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import MuiFolderIcon from "@mui/icons-material/Folder";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import {
@@ -97,16 +96,6 @@ const platformItems: NavItem[] = [
       { title: "My Time", url: "/my-time" },
       { title: "Team Time", url: "/team-time" },
       { title: "Time Reports", url: "/time-reports" },
-    ],
-  },
-  {
-    title: "File Manager",
-    url: "/files",
-    icon: <MuiFolderIcon className="size-6" />,
-    items: [
-      { title: "All Files", url: "/files" },
-      { title: "Recycle Bin", url: "/recycle-bin" },
-      { title: "Audit Log", url: "/files/audit" },
     ],
   },
   {

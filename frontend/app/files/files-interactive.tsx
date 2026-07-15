@@ -1,6 +1,0 @@
-export { default } from "./files-interactive.client"
-export type { ClientFolder } from "./files-interactive.client"
-export type { ClientRecord } from "./files-interactive.client"
-export type { OrgInfo } from "./files-interactive.client"
-export type { FileStats } from "./files-interactive.client"
-export type { FilesInteractiveProps } from "./files-interactive.client"

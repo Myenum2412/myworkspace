@@ -36,13 +36,11 @@ const staffNav: NavItem[] = [
   { href: "/staffs", label: "Home", icon: LayoutDashboardIcon },
   { href: "/staffs/tasks", label: "Tasks", icon: ListTodoIcon },
   { href: "/staffs/timesheet", label: "Time", icon: ClockIcon },
-  { href: "/staffs/files", label: "Files", icon: FolderIcon },
   { href: "/staffs/settings", label: "Settings", icon: Settings2Icon },
 ];
 
 const clientNav: NavItem[] = [
   { href: "/client/dashboard", label: "Home", icon: LayoutDashboardIcon },
-  { href: "/client/file-manager", label: "Files", icon: FolderIcon },
   { href: "/client/bills", label: "Bills", icon: ReceiptIcon },
 ];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   PlusIcon, ListTodoIcon, SearchIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon,
@@ -11,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import {
   Dialog,
@@ -85,9 +85,9 @@ const STATUS_ICONS: Record<string, typeof ListTodoIcon> = {
 };
 
 export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [view, setView] = useState<"kanban" | "table">("table");
-  const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
   const [activeTypeTab, setActiveTypeTab] = useState("all");
@@ -199,7 +199,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">Manage tasks across your organization</p>
           </div>
-          <Button onClick={() => setShowTaskModal(true)} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/tasks/create')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -307,10 +307,6 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </DialogContent>
         </Dialog>
 
-        <TaskAllocationModal
-          open={showTaskModal}
-          onClose={() => setShowTaskModal(false)}
-        />
       </main>
     </>
   );

@@ -454,7 +454,6 @@ function FeatureToggleSettings() {
     Projects: "Track clients and project progress",
     Approvals: "Review pending, approved, and rejected requests",
     "Time Tracker": "Log and monitor work hours",
-    "File Manager": "Store, upload, and manage files",
     Billing: "View invoices, services, and receipts",
     Chat: "Workspace messaging and collaboration",
   };

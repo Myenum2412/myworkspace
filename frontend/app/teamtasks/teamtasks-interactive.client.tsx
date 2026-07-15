@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDataTable } from "@/components/task-data-table";
 import { KanbanBoard } from "@/components/kanban-board";
 import { apiFetch } from "@/lib/api";
@@ -35,10 +35,10 @@ export type TeamTask = {
 };
 
 export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
+  const router = useRouter();
   const [view, setView] = useState<"table" | "kanban">("table");
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TeamTask | null>(null);
 
   const [localTasks, setLocalTasks] = useState<TeamTask[]>(tasks);
@@ -81,7 +81,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
               <Button variant={view === "kanban" ? "default" : "outline"} size="sm" className="text-xs px-2" onClick={() => setView("kanban")}>Kanban</Button>
             </div>
           </div>
-          <Button onClick={() => setShowTaskModal(true)} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/tasks/create')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -132,10 +132,6 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
         </DialogContent>
       </Dialog>
 
-      <TaskAllocationModal
-        open={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-      />
     </>
   );
 }

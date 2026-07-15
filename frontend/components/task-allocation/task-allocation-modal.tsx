@@ -76,9 +76,9 @@ const priorities = [
   { id: "p4", name: "urgent" },
 ];
 
-function FormField({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function FormField({ label, required, className, children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1">
+    <div className={`space-y-1 ${className || ""}`}>
       <Label className="text-xs font-medium text-muted-foreground">
         {label}
         {required && <span className="text-destructive">*</span>}
@@ -168,7 +168,13 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             description: t.description,
             isActive: t.isActive !== false,
           }));
-        setLocalTaskDefs(savedDefs.length > 0 ? savedDefs : taskDefinitions);
+        const source = savedDefs.length > 0 ? savedDefs : (taskDefinitions as { id: string }[]);
+        const seen = new Set<string>();
+        setLocalTaskDefs(source.filter((d: { id: string }) => {
+          if (seen.has(d.id)) return false;
+          seen.add(d.id);
+          return true;
+        }));
 
         setIsLoadingData(false);
       });
@@ -250,9 +256,9 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
   return (
     <Dialog open={open}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col overflow-hidden p-4 gap-3">
+      <DialogContent showCloseButton={false} className="sm:max-w-[90vw] max-h-[100vh] min-h-[80vh] w-full flex flex-col overflow-hidden p-0 gap-0">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between px-6 py-4 border-b shrink-0">
           <div>
             <h2 className="text-base font-semibold">Create New Task</h2>
             <p className="text-xs text-muted-foreground">
@@ -270,7 +276,10 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                   <span className="max-w-[100px] truncate">Template</span>
                 </SelectTrigger>
                 <SelectContent align="end" className="text-xs">
-                  {localTaskDefs.filter((d) => d.isActive).map((def) => (
+                  {localTaskDefs
+                    .filter((d) => d.isActive)
+                    .filter((d, i, arr) => arr.findIndex((x) => x.id === d.id) === i)
+                    .map((def) => (
                     <SelectItem key={def.id} value={def.id} className="text-xs">{def.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -287,27 +296,37 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
         </div>
 
         {formError && (
-          <div className="mx-0 flex items-center gap-2 border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          <div className="mx-6 flex items-center gap-2 border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive shrink-0">
             <AlertCircleIcon className="size-3.5 shrink-0" />
             {formError}
           </div>
         )}
 
         {/* Scrollable Form Body */}
-        <div className="flex-1 overflow-y-auto space-y-3">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 max-w-5xl mx-auto">
+            {/* Left Column: Fields */}
+            <div className="md:col-span-2 space-y-6">
 
           {/* Task Type Selector */}
           <FormField label="Task Category" required>
-            <Select value={taskType} onValueChange={setTaskType}>
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Select task type" />
-              </SelectTrigger>
-              <SelectContent>
-                {TASK_TYPES.map(({ id, name }) => (
-                  <SelectItem key={id} value={id} className="text-sm">{name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-5 gap-1.5">
+              {TASK_TYPES.map(({ id, name, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setTaskType(id)}
+                  className={`flex flex-col items-center justify-center gap-1 rounded-lg border p-2 text-[11px] font-medium transition-colors ${
+                    taskType === id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Icon className="size-4" />
+                  <span className="text-center leading-tight">{name}</span>
+                </button>
+              ))}
+            </div>
           </FormField>
 
           {/* Title */}
@@ -586,15 +605,6 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             </div>
           )}
 
-          {/* Description */}
-          <FormField label="Description" required>
-            <BlogEditor
-              value={description}
-              onChange={setDescription}
-              placeholder=""
-            />
-          </FormField>
-
           {/* Attachments */}
           <div>
             <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-1">
@@ -625,24 +635,35 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               </div>
             </div>
           </div>
+            </div>
+
+            {/* Right Column: Description */}
+            <div className="md:col-span-3 flex flex-col min-h-0">
+              <FormField label="Description" required className="flex-1 flex flex-col min-h-0">
+                <div className="flex-1 flex flex-col min-h-0">
+                  <BlogEditor
+                    value={description}
+                    onChange={setDescription}
+                    placeholder=""
+                  />
+                </div>
+              </FormField>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="border-t px-0 py-3 flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t bg-muted/10 shrink-0">
           <Button
             variant="ghost"
-            size="sm"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="h-8 text-xs text-muted-foreground"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || !title.trim() || !description.trim() || !priority}
-            size="sm"
-            className="h-8 text-xs"
           >
             {isSubmitting ? (
               <><Loader2 className="size-3.5 animate-spin mr-1.5" />Creating...</>

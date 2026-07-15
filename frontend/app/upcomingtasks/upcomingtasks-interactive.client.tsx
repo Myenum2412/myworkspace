@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { PlusIcon, CalendarClockIcon, SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import {
   Dialog,
@@ -35,9 +35,9 @@ export type UpcomingTask = {
 };
 
 export default function UpcomingTasksInteractive({ initialTasks }: { initialTasks: UpcomingTask[] }) {
+  const router = useRouter();
   const [tasks, setTasks] = useState<UpcomingTask[]>(initialTasks);
   const [view, setView] = useState<"kanban" | "table">("table");
-  const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UpcomingTask | null>(null);
@@ -69,7 +69,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
               />
             </div>
           </div>
-          <Button onClick={() => setShowTaskModal(true)}>
+          <Button onClick={() => router.push('/tasks/create')}>
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -138,10 +138,6 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
         </DialogContent>
       </Dialog>
 
-      <TaskAllocationModal
-        open={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-      />
     </>
   );
 }

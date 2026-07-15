@@ -63,7 +63,7 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
       if (xhr.status === 200) {
         setStatus("success");
         setTimeout(() => {
-          router.push("/files");
+          router.push("/dashboard");
           router.refresh();
         }, 1500);
       } else {
@@ -196,7 +196,7 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
               )}
 
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => router.push("/files")} disabled={uploading}>
+                <Button variant="outline" onClick={() => router.push("/dashboard")} disabled={uploading}>
                   Cancel
                 </Button>
                 <Button onClick={handleUpload} disabled={uploading}>

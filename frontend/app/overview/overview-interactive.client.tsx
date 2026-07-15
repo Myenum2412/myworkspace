@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { PlusIcon, ListTodoIcon, UsersIcon, CheckCircle2Icon, BookmarkIcon, CalendarClockIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import { EyeIcon, PencilIcon, Trash2Icon, MoreHorizontalIcon } from "lucide-react";
 import { DataTable } from "@/components/data-table";
@@ -23,8 +23,8 @@ export interface OverviewInteractiveProps {
 }
 
 export default function OverviewInteractive({ tasks: initialTasks, currentUserId }: OverviewInteractiveProps) {
+  const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -72,13 +72,13 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             <ListTodoIcon className="size-5 sm:size-6" />
             <h1 className="text-xl sm:text-2xl font-bold">Task Overview</h1>
           </div>
-          <Button onClick={() => setShowTaskModal(true)} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/tasks/create')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
+        <div className="grid gap-4 grid-cols-3 sm:grid-cols-6">
           <Card className="border-border rounded-xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground">Total Tasks</CardTitle>
@@ -197,10 +197,6 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
         </div>
       )}
 
-      <TaskAllocationModal
-        open={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-      />
     </>
   );
 }

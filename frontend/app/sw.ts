@@ -131,7 +131,7 @@ function isNavigationRequest(request: Request): boolean {
 
 function shouldUseNetworkFirst(url: URL): boolean {
   if (!isApiRequest(url)) return false;
-  const writeMethods = /^\/(api\/(files(-tus)?|auth|billing\/webhook|chat|settings))/i;
+  const writeMethods = /^\/(api\/(auth|billing\/webhook|chat|settings))/i;
   const freshEndpoints = /^\/(api\/(dashboard|tasks|projects|sessions|time-entries|teams|notifications|activity|search))/i;
   if (writeMethods.test(url.pathname)) return true;
   if (freshEndpoints.test(url.pathname)) return true;

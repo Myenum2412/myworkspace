@@ -60,7 +60,7 @@ export async function deleteFileAction(fileId: string) {
     description: `File "${file.originalName}" deleted`,
   });
 
-  revalidatePath("/files");
+
   revalidatePath("/shared");
   revalidateTag('dashboard', 'max');
 
@@ -99,7 +99,7 @@ export async function shareFileAction(fileId: string, sharedWithUserId: string |
     });
   }
 
-  revalidatePath("/files");
+
   revalidatePath("/shared");
   revalidateTag('dashboard', 'max');
 
@@ -112,7 +112,7 @@ export async function unshareFileAction(shareId: string) {
 
   await db.collection(collections.fileShares).deleteOne({ id: shareId });
 
-  revalidatePath("/files");
+
   revalidatePath("/shared");
   revalidateTag('dashboard', 'max');
 

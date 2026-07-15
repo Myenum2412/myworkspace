@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { PlusIcon, BookmarkIcon, SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import {
   Dialog,
@@ -35,9 +35,9 @@ export type SavedTask = {
 };
 
 export default function SavedTasksInteractive({ initialTasks }: { initialTasks: SavedTask[] }) {
+  const router = useRouter();
   const [tasks, setTasks] = useState<SavedTask[]>(initialTasks);
   const [view, setView] = useState<"kanban" | "table">("kanban");
-  const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<SavedTask | null>(null);
@@ -67,7 +67,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
               onChange={(v) => setView(v as typeof view)}
             />
           </div>
-          <Button onClick={() => setShowTaskModal(true)} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/tasks/create')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -129,10 +129,6 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
         </DialogContent>
       </Dialog>
 
-      <TaskAllocationModal
-        open={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-      />
     </>
   );
 }

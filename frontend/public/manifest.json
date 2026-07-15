@@ -63,20 +63,6 @@
       ]
     },
     {
-      "name": "Files",
-      "short_name": "Files",
-      "description": "Browse your files",
-      "url": "/files",
-      "icons": [
-        {
-          "src": "/web-app-manifest-192x192.png",
-          "sizes": "192x192",
-          "type": "image/png",
-          "purpose": "maskable"
-        }
-      ]
-    },
-    {
       "name": "Notifications",
       "short_name": "Notifications",
       "description": "View notifications",

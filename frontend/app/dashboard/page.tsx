@@ -226,7 +226,15 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 min-w-0 max-w-full">
-      <h1 className="text-xl sm:text-2xl font-bold px-0.5">Dashboard Overview</h1>
+      <div className="flex items-center justify-between px-0.5">
+        <h1 className="text-xl sm:text-2xl font-bold">Dashboard Overview</h1>
+        <Button asChild size="sm">
+          <Link href="/overview">
+            <ListTodo className="mr-1 size-4" />
+            New Task
+          </Link>
+        </Button>
+      </div>
 
       {/* Stat Cards - 1 row, 6 columns (3 on mobile) */}
       <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-3 sm:grid-cols-6">

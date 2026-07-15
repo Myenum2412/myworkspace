@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { TaskAllocationModal } from "@/components/task-allocation/task-allocation-modal";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import {
   Dialog,
@@ -46,9 +46,9 @@ export type MyTasksProps = {
 };
 
 export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTasksProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [view, setView] = useState<"kanban" | "table">("table");
-  const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
@@ -128,7 +128,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
               onChange={(v) => setView(v as typeof view)}
             />
           </div>
-          <Button onClick={() => setShowTaskModal(true)} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/tasks/create')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -187,10 +187,6 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
           </DialogContent>
         </Dialog>
 
-        <TaskAllocationModal
-          open={showTaskModal}
-          onClose={() => setShowTaskModal(false)}
-        />
       </main>
     </>
   );
