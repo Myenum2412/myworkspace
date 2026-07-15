@@ -108,7 +108,9 @@ app.use(cookieParser());
 app.use(requestIdMiddleware);
 app.use(requestTimeout());
 app.use(inputSanitizer);
-app.use(csrfProtection());
+if (process.env.NODE_ENV !== "test") {
+    app.use(csrfProtection());
+}
 // ── Rate limiting ──
 app.use("/api/auth", authLimiter, (req, _res, next) => {
     if (req.path === "/socket-token")
