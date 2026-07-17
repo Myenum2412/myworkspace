@@ -23,7 +23,7 @@ router.post("/links", authenticate, async (req: AuthRequest, res: Response) => {
   if (!fileId || !orgId) throw new AppError(400, "fileId and orgId are required");
 
   // Enforce workspace isolation: verify file belongs to the same org
-  const file = await FileAttachment.findOne({ id: fileId, orgId, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: fileId, orgId, deletedAt: null }).select("id orgId originalName").lean();
   if (!file) throw new AppError(404, "File not found");
 
   await verifyOrgAccess(req.user!.userId, orgId);
@@ -50,7 +50,7 @@ router.post("/links", authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/links/:token", optionalAuth, async (req: AuthRequest, res: Response) => {
-  const link = await ShareLink.findOne({ token: req.params.token, isActive: true }).lean();
+  const link = await ShareLink.findOne({ token: req.params.token, isActive: true }).select("fileId password allowDownload expiresAt").lean();
   if (!link) throw new AppError(404, "Share link not found or expired");
 
   if (link.expiresAt && new Date() > link.expiresAt) {
@@ -58,7 +58,7 @@ router.get("/links/:token", optionalAuth, async (req: AuthRequest, res: Response
     throw new AppError(410, "Share link has expired");
   }
 
-  const file = await FileAttachment.findOne({ id: link.fileId, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: link.fileId, deletedAt: null }).select("id originalName mimeType size").lean();
   if (!file) throw new AppError(404, "File not found");
 
   res.json({
@@ -71,7 +71,7 @@ router.get("/links/:token", optionalAuth, async (req: AuthRequest, res: Response
 
 router.post("/links/:token/verify", async (req: AuthRequest, res: Response) => {
   const { password } = req.body;
-  const link = await ShareLink.findOne({ token: req.params.token, isActive: true }).lean();
+  const link = await ShareLink.findOne({ token: req.params.token, isActive: true }).select("password").lean();
   if (!link) throw new AppError(404, "Share link not found");
 
   if (!link.password) return res.json({ verified: true });
@@ -83,7 +83,7 @@ router.post("/links/:token/verify", async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/links/:token/download", async (req: AuthRequest, res: Response) => {
-  const link = await ShareLink.findOne({ token: req.params.token, isActive: true }).lean();
+  const link = await ShareLink.findOne({ token: req.params.token, isActive: true }).select("fileId allowDownload maxDownloads downloadCount expiresAt storagePath").lean();
   if (!link) throw new AppError(404, "Share link not found or expired");
 
   if (link.expiresAt && new Date() > link.expiresAt) {
@@ -97,7 +97,7 @@ router.get("/links/:token/download", async (req: AuthRequest, res: Response) => 
     throw new AppError(429, "Download limit reached for this share link");
   }
 
-  const file = await FileAttachment.findOne({ id: link.fileId, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: link.fileId, deletedAt: null }).select("id originalName mimeType size storagePath").lean();
   if (!file) throw new AppError(404, "File not found");
 
   await ShareLink.updateOne({ token: req.params.token }, { $inc: { downloadCount: 1 } });
@@ -122,12 +122,12 @@ router.get("/links", authenticate, async (req: AuthRequest, res: Response) => {
   const filter: Record<string, unknown> = { orgId };
   if (fileId) filter.fileId = fileId;
 
-  const links = await ShareLink.find(filter).sort({ createdAt: -1 }).lean();
+  const links = await ShareLink.find(filter).sort({ createdAt: -1 }).select("id fileId token isPublic allowDownload maxDownloads downloadCount expiresAt isActive createdAt createdBy orgId").lean();
   res.json({ data: links });
 });
 
 router.delete("/links/:id", authenticate, async (req: AuthRequest, res: Response) => {
-  const link = await ShareLink.findOne({ id: req.params.id }).lean();
+  const link = await ShareLink.findOne({ id: req.params.id }).select("createdBy orgId").lean();
   if (!link) throw new AppError(404, "Share link not found");
   if (link.createdBy !== req.user!.userId) {
     await verifyOrgAccess(req.user!.userId, link.orgId);
@@ -141,7 +141,7 @@ router.post("/internal", authenticate, async (req: AuthRequest, res: Response) =
   const { fileId, sharedWithUserId, orgId } = req.body;
   if (!fileId || !orgId) throw new AppError(400, "fileId and orgId are required");
 
-  const file = await FileAttachment.findOne({ id: fileId, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: fileId, deletedAt: null }).select("id orgId originalName").lean();
   if (!file) throw new AppError(404, "File not found");
 
   await verifyOrgAccess(req.user!.userId, orgId);
@@ -172,7 +172,7 @@ router.post("/internal", authenticate, async (req: AuthRequest, res: Response) =
 });
 
 router.delete("/internal/:id", authenticate, async (req: AuthRequest, res: Response) => {
-  const share = await FileShare.findOne({ id: req.params.id }).lean();
+  const share = await FileShare.findOne({ id: req.params.id }).select("orgId fileId").lean();
   if (!share) throw new AppError(404, "Share not found");
 
   await verifyOrgAccess(req.user!.userId, share.orgId);
@@ -196,9 +196,9 @@ router.get("/internal", authenticate, async (req: AuthRequest, res: Response) =>
 
   if (orgId) {
     await verifyOrgAccess(req.user!.userId, orgId);
-    const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).lean();
+    const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).select("id fileId sharedByUserId sharedWithUserId orgId createdAt").lean();
     const fileIds = [...new Set(shares.map(s => s.fileId))];
-    const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
+    const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("id originalName mimeType size").lean();
     const fileMap = new Map(files.map(f => [f.id, f]));
 
     const result = shares.map(s => ({
@@ -214,9 +214,9 @@ router.get("/internal", authenticate, async (req: AuthRequest, res: Response) =>
   }
 
   if (userId) {
-    const shares = await FileShare.find({ sharedWithUserId: userId }).sort({ createdAt: -1 }).lean();
+    const shares = await FileShare.find({ sharedWithUserId: userId }).sort({ createdAt: -1 }).select("id fileId sharedByUserId sharedWithUserId orgId createdAt").lean();
     const fileIds = [...new Set(shares.map(s => s.fileId))];
-    const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
+    const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("id originalName mimeType size").lean();
     const fileMap = new Map(files.map(f => [f.id, f]));
 
     const result = shares.map(s => ({

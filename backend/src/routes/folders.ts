@@ -20,7 +20,7 @@ router.get("/tree", async (req: AuthRequest, res: Response) => {
   if (!orgId) throw new AppError(400, "orgId is required");
   await verifyMembership(req.user!.userId, orgId);
 
-  const folders = await Folder.find({ orgId, deletedAt: null }).sort({ path: 1 }).lean();
+  const folders = await Folder.find({ orgId, deletedAt: null }).sort({ path: 1 }).select("id name path parentId orgId clientId createdAt updatedAt deletedAt").lean();
   const tree = buildTree(folders, null);
   res.json({ data: tree });
 });
@@ -37,12 +37,12 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   else filter.parentId = null;
   if (clientId) filter.clientId = clientId;
 
-  const folders = await Folder.find(filter).sort({ name: 1 }).lean();
+  const folders = await Folder.find(filter).sort({ name: 1 }).select("id name path parentId orgId clientId createdAt updatedAt").lean();
   res.json({ data: folders });
 });
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
-  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).select("id name path parentId orgId clientId createdAt updatedAt deletedAt").lean();
   if (!folder) throw new AppError(404, "Folder not found");
   await verifyMembership(req.user!.userId, folder.orgId);
   res.json({ data: folder });
@@ -53,10 +53,10 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   if (!orgId || !name) throw new AppError(400, "orgId and name are required");
   await verifyMembership(req.user!.userId, orgId);
 
-  const parent = parentId ? await Folder.findOne({ id: parentId, deletedAt: null }).lean() : null;
+  const parent = parentId ? await Folder.findOne({ id: parentId, deletedAt: null }).select("path").lean() : null;
   const path = parent ? `${parent.path}/${name}` : `/${name}`;
 
-  const existing = await Folder.findOne({ orgId, path, deletedAt: null }).lean();
+  const existing = await Folder.findOne({ orgId, path, deletedAt: null }).select("_id").lean();
   if (existing) throw new AppError(409, "A folder with this name already exists at this location");
 
   const id = uuid();
@@ -77,15 +77,15 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
   const { name } = req.body;
   if (!name) throw new AppError(400, "name is required");
 
-  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).select("id name path parentId orgId").lean();
   if (!folder) throw new AppError(404, "Folder not found");
   await verifyMembership(req.user!.userId, folder.orgId);
 
   const oldPath = folder.path;
-  const parent = folder.parentId ? await Folder.findOne({ id: folder.parentId }).lean() : null;
+  const parent = folder.parentId ? await Folder.findOne({ id: folder.parentId }).select("path").lean() : null;
   const newPath = parent ? `${parent.path}/${name}` : `/${name}`;
 
-  const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null, id: { $ne: folder.id } }).lean();
+  const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null, id: { $ne: folder.id } }).select("_id").lean();
   if (existing) throw new AppError(409, "A folder with this name already exists");
 
   const oldPrefix = oldPath + "/";
@@ -94,7 +94,7 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
   const childFolders = await Folder.find({
     orgId: folder.orgId,
     path: { $regex: `^${escapeRegex(oldPrefix)}` },
-  }).lean();
+  }).select("id path").lean();
   for (const child of childFolders) {
     const childNewPath = child.path.replace(oldPrefix, newPrefix);
     await Folder.updateOne({ id: child.id }, { path: childNewPath });
@@ -113,25 +113,25 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
 
 router.post("/:id/move", async (req: AuthRequest, res: Response) => {
   const { targetParentId } = req.body;
-  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).select("id orgId name path parentId").lean();
   if (!folder) throw new AppError(404, "Source folder not found");
   await verifyMembership(req.user!.userId, folder.orgId);
 
   if (folder.id === targetParentId) throw new AppError(400, "Cannot move folder into itself");
 
-  const targetParent = targetParentId ? await Folder.findOne({ id: targetParentId, deletedAt: null }).lean() : null;
+  const targetParent = targetParentId ? await Folder.findOne({ id: targetParentId, deletedAt: null }).select("path").lean() : null;
   if (targetParentId && !targetParent) throw new AppError(404, "Target folder not found");
 
   const oldPath = folder.path;
   const newPath = targetParent ? `${targetParent.path}/${folder.name}` : `/${folder.name}`;
 
-  const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null, id: { $ne: folder.id } }).lean();
+  const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null, id: { $ne: folder.id } }).select("_id").lean();
   if (existing) throw new AppError(409, "A folder with this name already exists at target location");
 
   await Folder.updateOne({ id: folder.id }, { parentId: targetParentId || null, path: newPath, updatedBy: req.user!.userId });
   const oldPrefix = oldPath + "/";
   const newPrefix = newPath + "/";
-  const childFolders = await Folder.find({ orgId: folder.orgId, path: { $regex: `^${escapeRegex(oldPrefix)}` } }).lean();
+  const childFolders = await Folder.find({ orgId: folder.orgId, path: { $regex: `^${escapeRegex(oldPrefix)}` } }).select("id path").lean();
   for (const child of childFolders) {
     const childNewPath = child.path.replace(oldPrefix, newPrefix);
     await Folder.updateOne({ id: child.id }, { path: childNewPath });
@@ -146,19 +146,19 @@ router.post("/:id/move", async (req: AuthRequest, res: Response) => {
 
 router.post("/:id/copy", async (req: AuthRequest, res: Response) => {
   const { targetParentId } = req.body;
-  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).select("id orgId name path parentId").lean();
   if (!folder) throw new AppError(404, "Folder not found");
   await verifyMembership(req.user!.userId, folder.orgId);
 
-  const targetParent = targetParentId ? await Folder.findOne({ id: targetParentId, deletedAt: null }).lean() : null;
+  const targetParent = targetParentId ? await Folder.findOne({ id: targetParentId, deletedAt: null }).select("path").lean() : null;
   if (targetParentId && !targetParent) throw new AppError(404, "Target folder not found");
 
   const newPath = targetParent ? `${targetParent.path}/${folder.name}` : `/${folder.name}`;
-  const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null }).lean();
+  const existing = await Folder.findOne({ orgId: folder.orgId, path: newPath, deletedAt: null }).select("_id").lean();
   if (existing) throw new AppError(409, "A folder with this name already exists at target location");
 
   const folderIdMap = new Map<string, string>();
-  const sources = await Folder.find({ orgId: folder.orgId, deletedAt: null, $or: [{ id: folder.id }, { path: { $regex: `^${escapeRegex(folder.path)}/` } }] }).sort({ path: 1 }).lean();
+  const sources = await Folder.find({ orgId: folder.orgId, deletedAt: null, $or: [{ id: folder.id }, { path: { $regex: `^${escapeRegex(folder.path)}/` } }] }).sort({ path: 1 }).select("id name path parentId").lean();
 
   for (const src of sources) {
     const newId = uuid();
@@ -169,7 +169,7 @@ router.post("/:id/copy", async (req: AuthRequest, res: Response) => {
     await Folder.create({ id: newId, orgId: folder.orgId, parentId: newParentId, name: src.name, path: copyPath, createdBy: req.user!.userId });
   }
 
-  const files = await FileAttachment.find({ orgId: folder.orgId, folderId: { $in: sources.map(s => s.id) }, deletedAt: null }).lean();
+  const files = await FileAttachment.find({ orgId: folder.orgId, folderId: { $in: sources.map(s => s.id) }, deletedAt: null }).select("id folderId name originalName uploaderId createdAt").lean();
   for (const file of files) {
     const newFolderId = file.folderId ? folderIdMap.get(file.folderId) || null : null;
     const copyId = uuid();
@@ -191,7 +191,7 @@ router.post("/:id/copy", async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
-  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).select("id orgId name path").lean();
   if (!folder) throw new AppError(404, "Folder not found");
   await verifyMembership(req.user!.userId, folder.orgId);
 
@@ -201,7 +201,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   const allChildFolders = await Folder.find({
     orgId: folder.orgId,
     path: { $regex: `^${escapeRegex(folder.path)}/` },
-  }).lean();
+  }).select("id").lean();
   const allFolderIds = [folder.id, ...allChildFolders.map(f => f.id)];
 
   // Soft-delete all descendant folders

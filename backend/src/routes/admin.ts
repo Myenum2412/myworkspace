@@ -59,7 +59,7 @@ router.get("/users", authorizePermission("MANAGE_USERS"), async (req: AuthReques
 });
 
 router.get("/users/:id", authorizePermission("MANAGE_USERS"), async (req: AuthRequest, res: Response) => {
-  const user = await User.findById(req.params.id).lean();
+  const user = await User.findById(req.params.id).select("_id name email role permissions isActive status lastLogin createdAt").lean();
   if (!user) throw new AppError(404, "User not found");
   res.json({
     success: true,
@@ -127,7 +127,7 @@ router.get("/organizations", authorizePermission("MANAGE_WORKSPACES"), async (re
 
 router.get("/logs", authorizePermission("VIEW_SYSTEM_LOGS"), async (req: AuthRequest, res: Response) => {
   const limit = Math.min(parseInt(req.query.limit as string) || 100, 500);
-  const logs = await ActivityLog.find().sort({ createdAt: -1 }).limit(limit).lean();
+  const logs = await ActivityLog.find().sort({ createdAt: -1 }).limit(limit).select("orgId userId entityType action entityId description metadata createdAt").lean();
   res.json({ success: true, data: logs });
 });
 

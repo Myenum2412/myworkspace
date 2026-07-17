@@ -17,6 +17,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
   const approvals = await UploadApproval.find({ orgId, status: "pending" })
     .sort({ createdAt: -1 })
+    .select("orgId uploadId fileName fileSize mimeType uploadedBy uploadedAt status createdAt")
     .lean();
 
   res.json({ success: true, data: approvals });
@@ -24,7 +25,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
 // Approve a file upload
 router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
-  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).lean();
+  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName").lean();
   if (!approval) throw new AppError(404, "Pending approval not found");
 
   await Promise.all([
@@ -54,7 +55,7 @@ router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
 // Reject a file upload
 router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
   const { reason } = req.body;
-  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).lean();
+  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName").lean();
   if (!approval) throw new AppError(404, "Pending approval not found");
 
   await Promise.all([

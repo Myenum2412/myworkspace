@@ -10,7 +10,7 @@ router.use(authenticate);
 
 router.get("/", async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
-  let settings = await Settings.findOne({ orgId }).lean();
+  let settings = await Settings.findOne({ orgId }).select("orgId general team notifications").lean();
   if (!settings) {
     const created = await Settings.create({ orgId });
     settings = created.toObject() as any;

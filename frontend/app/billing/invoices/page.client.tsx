@@ -90,7 +90,7 @@ export default function BillingInvoicesPage() {
           <h1 className="text-xl sm:text-2xl font-bold">Invoices</h1>
           <p className="text-sm text-muted-foreground">Manage your organization's invoices</p>
         </div>
-        <Button asChild className="shrink-0 touch-target">
+        <Button asChild>
           <Link href="/billing/invoices/new">
             <PlusIcon className="mr-2 size-4" />
             New Invoice
@@ -126,7 +126,6 @@ export default function BillingInvoicesPage() {
       </div>
 
       <DataTable
-        title="All Invoices"
         columns={columns}
         data={invoices}
       />

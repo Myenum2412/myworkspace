@@ -25,7 +25,7 @@ function generateTOTP(secret: string): OTPAuth.TOTP {
 }
 
 router.post("/setup", authenticate, async (req: AuthRequest, res: Response) => {
-  const user = await User.findOne({ id: req.user!.userId });
+  const user = await User.findOne({ id: req.user!.userId }).select("id twoFactorEnabled twoFactorSecret email");
   if (!user) throw new AppError(404, "User not found");
 
   if (user.twoFactorEnabled) {
@@ -61,7 +61,7 @@ router.post("/setup", authenticate, async (req: AuthRequest, res: Response) => {
 router.post("/verify", authenticate, async (req: AuthRequest, res: Response) => {
   const token = requireString(req.body.token, "token", { min: 6, max: 6 });
 
-  const user = await User.findOne({ id: req.user!.userId });
+  const user = await User.findOne({ id: req.user!.userId }).select("id twoFactorEnabled twoFactorSecret name");
   if (!user) throw new AppError(404, "User not found");
   if (!user.twoFactorSecret) throw new AppError(400, "2FA not set up. Run setup first.");
   if (user.twoFactorEnabled) throw new AppError(400, "2FA is already enabled");
@@ -92,7 +92,7 @@ router.post("/verify", authenticate, async (req: AuthRequest, res: Response) => 
 router.post("/disable", authenticate, async (req: AuthRequest, res: Response) => {
   const token = requireString(req.body.token, "token", { min: 6, max: 6 });
 
-  const user = await User.findOne({ id: req.user!.userId });
+  const user = await User.findOne({ id: req.user!.userId }).select("id twoFactorEnabled twoFactorSecret name");
   if (!user) throw new AppError(404, "User not found");
   if (!user.twoFactorEnabled) throw new AppError(400, "2FA is not enabled");
 
@@ -123,7 +123,7 @@ router.post("/disable", authenticate, async (req: AuthRequest, res: Response) =>
 router.post("/challenge", async (req, res: Response) => {
   const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("twoFactorEnabled").lean();
   if (!user) {
     res.json({ success: true, data: { requiresTwoFactor: false } });
     return;
@@ -141,7 +141,7 @@ router.post("/login", async (req, res: Response) => {
   const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
   const token = requireString(req.body.token, "token", { min: 6, max: 6 });
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("id email name role permissions status isActive lockedUntil failedLoginAttempts twoFactorEnabled twoFactorSecret orgId emailVerified image userNumber lastLogin");
   if (!user) throw new AppError(401, "Invalid email or token");
   if (!user.twoFactorEnabled) throw new AppError(400, "2FA is not enabled for this account");
   if (!user.twoFactorSecret) throw new AppError(400, "2FA not configured");

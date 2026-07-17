@@ -41,7 +41,7 @@ router.get("/", cacheEnhanced({ ttl: 20, varyByUser: true, varyByQuery: true, ta
   const queryFilter: Record<string, unknown> = { orgId };
   // Show all org activity for admins, own activity for regular users
   const { User } = await import("../lib/db/models/User.js");
-  const currentUser = await User.findOne({ id: req.user!.userId }).lean() as Record<string, unknown> | null;
+  const currentUser = await User.findOne({ id: req.user!.userId }).select("role").lean() as Record<string, unknown> | null;
   const userRole = currentUser?.role as string || "";
   const isAdmin = userRole === "super_admin" || userRole === "org_admin" || userRole === "ORG_MENU_ADMIN";
   if (!isAdmin && !userIdFilter) {
@@ -61,7 +61,7 @@ router.get("/", cacheEnhanced({ ttl: 20, varyByUser: true, varyByQuery: true, ta
   }
 
   const [rawLogs, total] = await Promise.all([
-    ActivityLog.find(queryFilter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    ActivityLog.find(queryFilter).sort({ createdAt: -1 }).skip(skip).limit(limit).select("orgId userId entityType action entityId description metadata createdAt").lean(),
     ActivityLog.countDocuments(queryFilter),
   ]);
 

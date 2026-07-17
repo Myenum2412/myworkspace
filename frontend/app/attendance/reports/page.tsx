@@ -34,7 +34,7 @@ export default async function EmployeeReportPage() {
         const objectIds = userIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
         const users = await db.collection(collections.users).find(
           { $or: [{ id: { $in: userIds } }, ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : [])] },
-          { projection: { password: 0 } }
+          { projection: { _id: 1, id: 1, name: 1, email: 1, image: 1, department: 1, designation: 1, status: 1, displayId: 1, createdAt: 1 } }
         ).sort({ createdAt: -1 }).toArray();
 
         employees = users.map((u: Record<string, unknown>) => ({

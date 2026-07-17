@@ -29,7 +29,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   const offsetNum = parseInt(offset as string) || 0;
 
   const [docs, total] = await Promise.all([
-    Receipt.find(filter).sort({ createdAt: -1 }).skip(offsetNum).limit(limitNum).lean(),
+    Receipt.find(filter).sort({ createdAt: -1 }).skip(offsetNum).limit(limitNum).select("orgId receiptNumber invoiceId invoiceNumber customerName customerEmail amount currency paymentMethod status notes paidAt createdAt updatedAt").lean(),
     Receipt.countDocuments(filter),
   ]);
 

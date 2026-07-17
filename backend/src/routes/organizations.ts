@@ -17,9 +17,9 @@ router.use(authenticate);
 
 // GET /api/organizations -- list all orgs for current user
 router.get("/", async (req: AuthRequest, res: Response) => {
-  const memberships = await OrgMember.find({ userId: req.user!.userId }).lean();
+  const memberships = await OrgMember.find({ userId: req.user!.userId }).select("orgId role").lean();
   const orgIds = memberships.map(m => m.orgId);
-  const orgs = await Organization.find({ _id: { $in: orgIds } }).sort({ createdAt: -1 }).lean();
+  const orgs = await Organization.find({ _id: { $in: orgIds } }).sort({ createdAt: -1 }).select("id name slug domain plan businessType industry ownerId logo createdAt updatedAt").lean();
 
   // Attach membership role to each org
   const membershipMap = new Map(memberships.map(m => [m.orgId.toString(), m.role]));
@@ -39,9 +39,9 @@ router.post("/switch", async (req: AuthRequest, res: Response) => {
   // Verify membership
   await requireOrgMembership(req.user!.userId, orgId);
 
-  let org = await Organization.findOne({ id: orgId }).lean();
+  let org = await Organization.findOne({ id: orgId }).select("name slug").lean();
   if (!org && orgId.match(/^[0-9a-fA-F]{24}$/)) {
-    org = await Organization.findById(orgId).lean();
+    org = await Organization.findById(orgId).select("name slug").lean();
   }
   if (!org) throw new AppError(404, "Organization not found");
 
@@ -76,14 +76,14 @@ router.post("/invite", async (req: AuthRequest, res: Response) => {
   if (!targetOrgId) throw new AppError(400, "orgId is required");
 
   // Verify sender is an admin of the target org
-  const membership = await OrgMember.findOne({ orgId: targetOrgId, userId: req.user!.userId }).lean();
+  const membership = await OrgMember.findOne({ orgId: targetOrgId, userId: req.user!.userId }).select("role").lean();
   if (!membership || membership.role !== "admin") {
     throw new AppError(403, "Only organization admins can invite members");
   }
 
-  let org = await Organization.findOne({ id: targetOrgId }).lean();
+  let org = await Organization.findOne({ id: targetOrgId }).select("name").lean();
   if (!org && targetOrgId.match(/^[0-9a-fA-F]{24}$/)) {
-    org = await Organization.findById(targetOrgId).lean();
+    org = await Organization.findById(targetOrgId).select("name").lean();
   }
   const orgName = org?.name || "Organization";
 
@@ -149,7 +149,7 @@ router.post("/invite", async (req: AuthRequest, res: Response) => {
 
 // GET /api/organizations/:id -- get single org (with tenant isolation)
 router.get("/:id", async (req: AuthRequest, res: Response) => {
-  const org = await resolveOrg(req.params.id).lean();
+  const org = await resolveOrg(req.params.id).select("id name slug domain plan businessType industry ownerId logo gstNumber panNumber cinNumber companyEmail mobileNumber alternateMobileNumber website addressLine1 addressLine2 city state pincode country authorizedPersonName designation authorizedPersonEmail authorizedPersonMobile numberOfEmployees companyDescription createdAt updatedAt").lean();
   if (!org) throw new AppError(404, "Organization not found");
 
   // Tenant isolation: verify membership
@@ -164,7 +164,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   if (!name || !slug) throw new AppError(400, "Name and slug are required");
 
   // Ensure slug uniqueness
-  const existing = await Organization.findOne({ slug });
+  const existing = await Organization.findOne({ slug }).select("_id").lean();
   if (existing) throw new AppError(409, "An organization with this slug already exists");
 
   const orgPlan = plan || "free";
@@ -207,7 +207,7 @@ function resolveOrg(orgId: string) {
   if (mongoose.Types.ObjectId.isValid(orgId)) {
     filter.push({ _id: new mongoose.Types.ObjectId(orgId) });
   }
-  return Organization.findOne({ $or: filter });
+  return Organization.findOne({ $or: filter }).select("_id id name slug domain plan businessType industry ownerId logo gstNumber panNumber cinNumber companyEmail mobileNumber alternateMobileNumber website addressLine1 addressLine2 city state pincode country authorizedPersonName designation authorizedPersonEmail authorizedPersonMobile numberOfEmployees companyDescription createdAt updatedAt");
 }
 
 // PUT /api/organizations/:id -- update org (admin only)
@@ -221,7 +221,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (mongoose.Types.ObjectId.isValid(req.user!.userId)) {
     adminFilter.push({ orgId: org._id, userId: new mongoose.Types.ObjectId(req.user!.userId) });
   }
-  const membership = await OrgMember.findOne({ $or: adminFilter }).lean();
+  const membership = await OrgMember.findOne({ $or: adminFilter }).select("role").lean();
   if (!membership || membership.role !== "admin") {
     throw new AppError(403, "Only organization admins can update organization details");
   }
@@ -229,8 +229,8 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   const { name, slug, domain, plan } = req.body;
   if (name) org.name = name;
   if (slug) {
-    const existing = await Organization.findOne({ slug, _id: { $ne: org._id } });
-    if (existing) throw new AppError(409, "Slug already in use");
+    const slugExists = await Organization.findOne({ slug, _id: { $ne: org._id } }).select("_id").lean();
+    if (slugExists) throw new AppError(409, "Slug already in use");
     org.slug = slug;
   }
   if (domain !== undefined) org.domain = domain;
@@ -271,7 +271,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 router.get("/:id/members", async (req: AuthRequest, res: Response) => {
   const orgId = req.params.id as string;
   await requireOrgMembership(req.user!.userId, orgId);
-  const members = await OrgMember.find({ orgId }).populate("userId", "name email image status").lean();
+  const members = await OrgMember.find({ orgId }).select("orgId userId role joinedAt").populate("userId", "name email image status").lean();
   res.json({ success: true, data: members });
 });
 

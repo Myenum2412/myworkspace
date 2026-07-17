@@ -8,7 +8,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get("/status", async (req: AuthRequest, res: Response) => {
-  const user = await User.findById(req.user!.userId).lean();
+  const user = await User.findById(req.user!.userId).select("status").lean();
   if (!user) {
     res.json({ success: true, data: { status: "offline" } });
     return;

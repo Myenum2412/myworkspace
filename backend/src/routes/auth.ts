@@ -50,7 +50,7 @@ async function generateUniqueSlug(base: string): Promise<string> {
 }
 
 async function getUserPrimaryOrgId(userId: string): Promise<string | null> {
-  const member = await OrgMember.findOne({ userId }).lean();
+  const member = await OrgMember.findOne({ userId }).select("orgId").lean();
   return member ? member.orgId : null;
 }
 
@@ -58,7 +58,8 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   const email = requireString(req.body.email || "", "email", { min: 1, max: 254 }).toLowerCase();
   const password = requireString(req.body.password || "", "password", { min: 1, max: 1000 });
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email })
+    .select("id email password name role permissions status isActive lockedUntil failedLoginAttempts twoFactorEnabled orgId emailVerified image userNumber lastLogin");
   if (!user || !user.password) {
     throw new AppError(401, "Invalid email or password");
   }
@@ -176,12 +177,12 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
 
   validatePasswordStrength(password);
 
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ email }).select("_id").lean();
   if (existingUser) {
     throw new AppError(409, "An account with this email already exists");
   }
 
-  const existingClient = await ClientUser.findOne({ email });
+  const existingClient = await ClientUser.findOne({ email }).select("_id").lean();
   if (existingClient) {
     throw new AppError(409, "An account with this email already exists");
   }
@@ -298,7 +299,7 @@ router.post("/verify-email", async (req: AuthRequest, res: Response) => {
     email: email.toLowerCase().trim(),
     emailVerificationToken: token,
     emailVerificationExpires: { $gt: new Date() },
-  });
+  }).select("_id").lean();
 
   if (!user) {
     throw new AppError(400, "Invalid or expired verification token");
@@ -319,7 +320,7 @@ router.post("/verify-email", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/resend-verification", authenticate, async (req: AuthRequest, res: Response) => {
-  const user = await User.findOne({ id: req.user!.userId });
+  const user = await User.findOne({ id: req.user!.userId }).select("_id email name emailVerified").lean();
   if (!user) throw new AppError(404, "User not found");
   if (user.emailVerified) {
     throw new AppError(400, "Email is already verified");
@@ -348,7 +349,7 @@ router.post("/logout", authenticate, async (req: AuthRequest, res: Response) => 
   const userId = req.user!.userId;
   const orgId = req.user!.orgId;
 
-  const activeSession = await Session.findOne({ userId, logoutTime: { $exists: false } }).sort({ loginTime: -1 });
+  const activeSession = await Session.findOne({ userId, logoutTime: { $exists: false } }).sort({ loginTime: -1 }).select("_id currentStatus statusTransitions loginTime totalBreakDuration duration logoutTime");
   if (activeSession) {
     if (activeSession.currentStatus === "break") {
       const breakStart = [...activeSession.statusTransitions].reverse().find(t => t.status === "break");
@@ -382,7 +383,7 @@ router.post("/logout", authenticate, async (req: AuthRequest, res: Response) => 
 router.post("/forgot-password", async (req: AuthRequest, res: Response) => {
   const email = requireString(req.body.email || "", "email", { min: 1, max: 254 }).toLowerCase();
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("_id name").lean();
   if (user) {
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpires = new Date(Date.now() + 3600000);
@@ -407,7 +408,7 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
 
   validatePasswordStrength(password);
 
-  const user = await User.findOne({ email, resetToken: token, resetTokenExpires: { $gt: new Date() } });
+  const user = await User.findOne({ email, resetToken: token, resetTokenExpires: { $gt: new Date() } }).select("_id").lean();
   if (!user) {
     throw new AppError(400, "Invalid or expired reset token");
   }
@@ -457,8 +458,8 @@ router.post("/send-signup-otp", async (req: AuthRequest, res: Response) => {
   const plan = optionalString(req.body.plan, "plan", { max: 50 });
 
   const [existingUser, existingClient] = await Promise.all([
-    User.findOne({ email }),
-    ClientUser.findOne({ email }),
+    User.findOne({ email }).select("_id").lean(),
+    ClientUser.findOne({ email }).select("_id").lean(),
   ]);
   if (existingUser || existingClient) {
     throw new AppError(409, "An account with this email already exists");
@@ -485,7 +486,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
   const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
   const otp = requireString(req.body.otp, "otp", { min: 6, max: 6 });
 
-  const pending = await PendingSignup.findOne({ email });
+  const pending = await PendingSignup.findOne({ email }).select("email otp otpExpires name company plan").lean();
   if (!pending) {
     throw new AppError(400, "No verification code found. Please request a new one.");
   }

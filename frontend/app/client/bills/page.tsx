@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileViewer, type ViewerFile } from "@/components/ui/file-viewer";
+import { type ViewerFile } from "@/components/ui/file-viewer";
+import dynamic from "next/dynamic";
+
+const FileViewer = dynamic(() => import("@/components/ui/file-viewer").then((m) => m.FileViewer), { ssr: false });
 import {
   ReceiptIcon,
   DownloadIcon,
@@ -75,6 +78,7 @@ export default function ClientBillsPage() {
   const [viewerOpen, setViewerOpen] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
     const token = localStorage.getItem("client_token") || "";
     if (!token) {
       router.push("/client/login");
@@ -83,6 +87,7 @@ export default function ClientBillsPage() {
 
     fetch("/api/client-auth/billing-status", {
       headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
     })
       .then((r) => r.json())
       .then((res) => {
@@ -92,8 +97,10 @@ export default function ClientBillsPage() {
           setError(res.error || "Failed to load billing data");
         }
       })
-      .catch(() => setError("Network error"))
-      .finally(() => setLoading(false));
+      .catch((err) => { if (err.name !== "AbortError") setError("Network error"); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+
+    return () => controller.abort();
   }, [router]);
 
   const invoices = useMemo(() => {

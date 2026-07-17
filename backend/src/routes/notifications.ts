@@ -131,15 +131,15 @@ router.post("/push/unsubscribe", async (req: AuthRequest, res: Response) => {
 // Get notification settings
 router.get("/settings", async (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
-  let settings = await NotificationSettings.findOne({ userId });
+  let settings = await NotificationSettings.findOne({ userId }).lean() as any;
   if (!settings) {
-    settings = await NotificationSettings.create({
+    settings = (await NotificationSettings.create({
       userId,
       orgId: req.user!.orgId,
       settings: [],
       desktopEnabled: true,
       soundEnabled: true,
-    });
+    })).toObject();
   }
   res.json({ success: true, data: settings });
 });

@@ -15,7 +15,7 @@ router.get("/:clientId/tree", async (req: AuthRequest, res: Response) => {
   const orgId = req.query.orgId as string;
   if (!orgId || !clientId) throw new AppError(400, "orgId and clientId are required");
 
-  const folders = await Folder.find({ orgId, clientId, deletedAt: null }).sort({ path: 1 }).lean();
+  const folders = await Folder.find({ orgId, clientId, deletedAt: null }).sort({ path: 1 }).select("id name path parentId clientId orgId deletedAt createdAt").lean();
   res.json({ success: true, data: folders });
 });
 
@@ -72,7 +72,7 @@ router.post("/:clientId/sync", async (req: AuthRequest, res: Response) => {
     description: `Client folders synced for ${clientId}`,
   });
 
-  const folders = await Folder.find({ orgId, clientId, deletedAt: null }).sort({ path: 1 }).lean();
+  const folders = await Folder.find({ orgId, clientId, deletedAt: null }).sort({ path: 1 }).select("id name path parentId clientId orgId deletedAt createdAt").lean();
 
   res.json({
     success: true,

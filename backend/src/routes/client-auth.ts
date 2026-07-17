@@ -8,6 +8,7 @@ import { ClientAuditLog } from "../lib/db/models/ClientAuditLog.js";
 import { Folder } from "../lib/db/models/Folder.js";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { Organization } from "../lib/db/models/Organization.js";
+import { Invoice } from "../lib/db/models/Invoice.js";
 import { signToken } from "../config/auth.js";
 import { optionalAuth } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
@@ -28,11 +29,11 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
 
   const normalizedEmail = (email as string).toLowerCase();
   const escapedEmail = normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  let clientUser = await ClientUser.findOne({ email: normalizedEmail });
+  let clientUser = await ClientUser.findOne({ email: normalizedEmail }).select("id email password name isActive lockedUntil failedLoginAttempts mustChangePassword emailVerified lastLogin orgId clientId");
   if (!clientUser) {
     clientUser = await ClientUser.findOne({
       email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') }
-    });
+    }).select("id email password name isActive lockedUntil failedLoginAttempts mustChangePassword emailVerified lastLogin orgId clientId") as typeof clientUser;
   }
   if (!clientUser) {
     throw new AppError(401, "Invalid email or password");
@@ -157,7 +158,7 @@ router.get("/workspace-stats", optionalAuth, async (req: AuthRequest, res: Respo
     throw new AppError(401, "Authentication required");
   }
 
-  const clientUser = await ClientUser.findOne({ id: clientUserId }).lean();
+  const clientUser = await ClientUser.findOne({ id: clientUserId }).select("orgId clientId").lean();
   if (!clientUser) {
     throw new AppError(404, "Client user not found");
   }
@@ -191,18 +192,64 @@ router.get("/workspace-stats", optionalAuth, async (req: AuthRequest, res: Respo
   });
 });
 
+router.get("/billing-status", optionalAuth, async (req: AuthRequest, res: Response) => {
+  const clientUserId = req.user?.userId;
+  if (!clientUserId) throw new AppError(401, "Authentication required");
+
+  const clientUser = await ClientUser.findOne({ id: clientUserId }).select("orgId").lean();
+  if (!clientUser) throw new AppError(404, "Client user not found");
+
+  const orgId = clientUser.orgId;
+  if (!orgId) {
+    res.json({ success: true, data: { pendingCount: 0, totalDue: 0, invoices: [] } });
+    return;
+  }
+
+  const invoices = await     Invoice.find({
+    orgId,
+    status: { $in: ["open", "past_due"] },
+  })
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .select("id number total amountPaid currency status pdfUrl hostedUrl createdAt periodStart periodEnd")
+    .lean();
+
+  const totalDue = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+
+  res.json({
+    success: true,
+    data: {
+      pendingCount: invoices.length,
+      totalDue,
+      invoices: invoices.map((inv) => ({
+        id: inv.id,
+        number: inv.number,
+        amountDue: inv.total,
+        amountPaid: inv.amountPaid,
+        currency: inv.currency,
+        status: inv.status,
+        pdfUrl: inv.pdfUrl,
+        hostedUrl: inv.hostedUrl,
+        createdAt: inv.createdAt,
+        periodStart: inv.periodStart,
+        periodEnd: inv.periodEnd,
+      })),
+    },
+  });
+});
+
 router.get("/me", optionalAuth, async (req: AuthRequest, res: Response) => {
   const clientUserId = req.user?.userId;
   if (!clientUserId) {
     throw new AppError(401, "Authentication required");
   }
 
-  const clientUser = await ClientUser.findOne({ id: clientUserId }).lean();
+  const clientUser = await ClientUser.findOne({ id: clientUserId }).select("id username name email isActive emailVerified mustChangePassword lastLogin createdAt orgId clientId").lean();
   if (!clientUser) {
     throw new AppError(404, "Client user not found");
   }
 
-  const client = await Client.findOne({ id: clientUser.clientId, orgId: clientUser.orgId }).lean();
+  const client = await Client.findOne({ id: clientUser.clientId, orgId: clientUser.orgId }).select("id name company status projects").lean();
 
   res.json({
     success: true,
@@ -300,7 +347,7 @@ router.post("/forgot-password", async (req: AuthRequest, res: Response) => {
     throw new AppError(400, "Email is required");
   }
 
-  const clientUser = await ClientUser.findOne({ email });
+  const clientUser = await ClientUser.findOne({ email }).select("_id name").lean();
   if (clientUser) {
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpires = new Date(Date.now() + 3600000);
@@ -325,7 +372,7 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
 
   validatePasswordStrength(password);
 
-  const clientUser = await ClientUser.findOne({ email: email.toLowerCase().trim(), resetToken: token, resetTokenExpires: { $gt: new Date() } });
+  const clientUser = await ClientUser.findOne({ email: email.toLowerCase().trim(), resetToken: token, resetTokenExpires: { $gt: new Date() } }).select("_id name orgId clientId").lean();
   if (!clientUser) {
     throw new AppError(400, "Invalid or expired reset token");
   }

@@ -21,6 +21,7 @@ export default async function StocksServerPage() {
       .collection(collections.stocks)
       .find({ orgId })
       .sort({ createdAt: -1 })
+      .limit(100)
       .toArray()) as Record<string, unknown>[];
 
     const stocks: Stock[] = rawStocks.map((s) => {

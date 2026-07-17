@@ -17,7 +17,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 *
 const isObjectId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
 
 router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
-  const user = await User.findOne({ id: req.user!.userId }).lean();
+  const user = await User.findOne({ id: req.user!.userId }).select("id name email image role status createdAt").lean();
   if (!user) throw new AppError(404, "User not found");
 
   res.json({
@@ -35,17 +35,17 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => {
-  const user = await User.findOne({ id: req.user!.userId }).lean();
+  const user = await User.findOne({ id: req.user!.userId }).select("id name email image role status phone secondaryPhone department company address city state country zipCode linkedin github twitter website bannerUrl createdAt").lean();
   if (!user) throw new AppError(404, "User not found");
 
   const userId = user.id || (user as any)._id?.toString();
-  const member = await OrgMember.findOne({ userId }).lean();
+  const member = await OrgMember.findOne({ userId }).select("orgId role").lean();
 
   let org = null;
   let memberCount = 0;
   if (member) {
     [org, memberCount] = await Promise.all([
-      Organization.findOne({ id: member.orgId }).lean(),
+      Organization.findOne({ id: member.orgId }).select("id name slug domain businessType industry gstNumber panNumber cinNumber companyEmail mobileNumber alternateMobileNumber website addressLine1 addressLine2 city state pincode country logo authorizedPersonName designation authorizedPersonEmail authorizedPersonMobile numberOfEmployees companyDescription plan createdAt").lean(),
       OrgMember.countDocuments({ orgId: member.orgId }),
     ]);
   }
@@ -143,9 +143,9 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   }
 
   // Update org fields
-  let member = await OrgMember.findOne({ userId: user.id }).lean();
+  let member = await OrgMember.findOne({ userId: user.id }).select("orgId").lean();
   if (!member) {
-    const legacyMember = await (await mongoose.connection.db!.collection("orgmembers").findOne({ userId: user.id })) as Record<string, unknown> | null;
+    const legacyMember = await (await mongoose.connection.db!.collection("orgmembers").findOne({ userId: user.id }, { projection: { orgId: 1 } })) as Record<string, unknown> | null;
     if (legacyMember) {
       member = { orgId: String(legacyMember.orgId), userId: user.id, role: "member" } as any;
     }
@@ -178,12 +178,12 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
 
   // Fetch updated data and return it
-  const updatedUser = await User.findOne({ id: req.user!.userId }).lean();
-  const updatedMember = await OrgMember.findOne({ userId: user.id }).lean();
+  const updatedUser = await User.findOne({ id: req.user!.userId }).select("id name email image role status phone secondaryPhone department company address city state country zipCode linkedin github twitter website bannerUrl createdAt").lean();
+  const updatedMember = await OrgMember.findOne({ userId: user.id }).select("orgId").lean();
   let updatedOrg = null;
   let updatedMemberCount = 0;
   if (updatedMember?.orgId) {
-    updatedOrg = await Organization.findOne({ id: updatedMember.orgId as string }).lean();
+    updatedOrg = await Organization.findOne({ id: updatedMember.orgId as string }).select("id name slug domain businessType industry gstNumber panNumber cinNumber companyEmail mobileNumber alternateMobileNumber website addressLine1 addressLine2 city state pincode country logo authorizedPersonName designation authorizedPersonEmail authorizedPersonMobile numberOfEmployees companyDescription plan createdAt").lean();
     updatedMemberCount = await OrgMember.countDocuments({ orgId: updatedMember.orgId });
   }
 
@@ -257,9 +257,9 @@ router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {
 
   let user;
   if (isObjectId(userId)) {
-    user = await User.findById(userId).lean();
+    user = await User.findById(userId).select("status").lean();
   } else {
-    user = await User.findOne({ id: userId }).lean();
+    user = await User.findOne({ id: userId }).select("status").lean();
   }
   res.json({ success: true, data: { status: user?.status || "offline" } });
 });
@@ -280,10 +280,10 @@ router.post("/status", authenticate, async (req: AuthRequest, res: Response) => 
 
   // Update active session if this is the current user
   if (!bodyUserId || bodyUserId === req.user?.userId) {
-    const activeSession = await Session.findOne({
-      userId: isObjectId(targetUserId) ? targetUserId : req.user?.userId,
-      logoutTime: { $exists: false },
-    }).sort({ loginTime: -1 });
+  const activeSession = await Session.findOne({
+    userId: isObjectId(targetUserId) ? targetUserId : req.user?.userId,
+    logoutTime: { $exists: false },
+  }).sort({ loginTime: -1 }).select("_id currentStatus statusTransitions loginTime totalBreakDuration duration");
 
     if (activeSession && activeSession.currentStatus !== status) {
       const previousStatus = activeSession.currentStatus;

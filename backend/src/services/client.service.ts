@@ -70,8 +70,8 @@ export function generateUsername(clientName: string): string {
 }
 
 export async function listClients(orgId: string): Promise<any[]> {
-  const clients = await Client.find({ orgId }).sort({ createdAt: -1 }).lean();
-  const clientUsers = await ClientUser.find({ orgId }).lean();
+  const clients = await Client.find({ orgId }).sort({ createdAt: -1 }).select("id orgId name email primaryContact phone company address notes isActive createdByAdminId clientUserId createdAt updatedAt").lean();
+  const clientUsers = await ClientUser.find({ orgId }).select("id clientId username email name isActive").lean();
   const userMap = new Map(clientUsers.map((u) => [u.clientId, u]));
   return clients.map((c) => ({
     ...c,

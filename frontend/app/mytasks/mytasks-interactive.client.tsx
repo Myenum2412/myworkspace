@@ -52,7 +52,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
   const [searchQuery, setSearchQuery] = useState("");
 
   // Seed React Query with the SSR payload.
-  const queryKey = useMemo(() => ["tasks", orgId] as const, [orgId]);
+  const queryKey = useMemo(() => ["tasks", "my", orgId] as const, [orgId]);
   const seeded = useRef(false);
   useEffect(() => {
     if (seeded.current || !orgId) return;

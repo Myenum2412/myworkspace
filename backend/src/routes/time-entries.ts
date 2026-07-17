@@ -226,8 +226,8 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     const orgId = bodyOrgId || await requireOrgMembership(req.user!.userId);
     const userId = req.user!.userId;
 
-    const membership = await OrgMember.findOne({ userId, orgId }).lean();
-    if (!membership) throw new AppError(403, "Not authorized");
+  const membership = await OrgMember.findOne({ userId, orgId }).select("_id").lean();
+  if (!membership) throw new AppError(403, "Not authorized");
 
     const entry = await TimeEntry.create({
       orgId,

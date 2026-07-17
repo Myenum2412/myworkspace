@@ -42,82 +42,41 @@ const platformItems: NavItem[] = [
     url: "/dashboard",
     icon: <LayoutDashboardIcon className="size-6" />,
     isActive: true,
-    items: [
-      { title: "Overview", url: "/dashboard" },
-      { title: "Reports", url: "/reports" },
-    ],
   },
   {
     title: "Assign Tasks",
     url: "/overview",
     icon: <ListChecksIcon className="size-6" />,
-    items: [
-      { title: "Team Tasks", url: "/teamtasks" },
-      { title: "All Tasks", url: "/alltasks" },
-      { title: "My Tasks", url: "/mytasks" },
-      { title: "Saved Tasks", url: "/savedtasks" },
-      { title: "Upcoming Tasks", url: "/upcomingtasks" },
-    ],
   },
   {
     title: "Employees",
     url: "/employees",
     icon: <UsersIcon className="size-6" />,
-    items: [
-      { title: "All Employees", url: "/employees" },
-      { title: "Teams", url: "/teams" },
-      { title: "Terminated", url: "/terminated" },
-      { title: "Attendance Overview", url: "/attendance" },
-      { title: "Employee Report", url: "/attendance/reports" },
-    ],
   },
   {
     title: "Projects",
     url: "/projects",
     icon: <WorkflowIcon className="size-6" />,
-    items: [
-      { title: "Clients", url: "/clients" },
-      { title: "All Projects", url: "/projects" },
-    ],
   },
   {
     title: "Approvals",
     url: "/approvals",
     icon: <CheckCheckIcon className="size-6" />,
-    items: [
-      { title: "Pending", url: "/approvals" },
-      { title: "Approved", url: "/approvals/approved" },
-      { title: "Rejected", url: "/approvals/rejected" },
-    ],
   },
   {
     title: "Time Tracker",
     url: "/time-tracker",
     icon: <ClockIcon className="size-6" />,
-    items: [
-      { title: "My Time", url: "/my-time" },
-
-      { title: "Time Reports", url: "/time-reports" },
-    ],
   },
   {
     title: "File Manager",
     url: "/files",
     icon: <MuiFolderIcon className="size-6" />,
-    items: [
-      { title: "All Files", url: "/files" },
-    ],
   },
   {
     title: "Billing",
     url: "/billing",
     icon: <AttachMoneyIcon className="size-6" />,
-    items: [
-      { title: "Overview", url: "/billing" },
-      { title: "Services", url: "/billing/services" },
-      { title: "Invoices", url: "/billing/invoices" },
-      { title: "Receipt", url: "/billing/receipts" },
-    ],
   },
   {
     title: "Interaction Followups",
@@ -140,18 +99,12 @@ const photographyItem: NavItem = {
   title: "Photography",
   url: "/photography",
   icon: <CameraAltIcon className="size-6" />,
-  items: [
-    { title: "Galleries", url: "/photography" },
-  ],
 };
 
 const settingsItem: NavItem = {
   title: "Settings",
   url: "/settings",
   icon: <Settings2Icon className="size-6" />,
-  items: [
-    { title: "General", url: "/settings" },
-  ],
 };
 
 interface NavUserData {

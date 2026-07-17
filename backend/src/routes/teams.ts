@@ -303,7 +303,7 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
   await requireOrgMembership(userId, team.orgId.toString());
 
   // Check not already in team
-  const existing = await TeamMember.findOne({ teamId: team._id, userId }).lean();
+  const existing = await TeamMember.findOne({ teamId: team._id, userId }).select("_id").lean();
   if (existing) throw new AppError(400, "User is already a member of this team");
 
   const teamMember = await TeamMember.create({

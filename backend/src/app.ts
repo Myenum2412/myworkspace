@@ -275,6 +275,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/stocks", stocksRoutes);
 app.use("/api/billing", billingRoutes);
+app.use("/api/receipts", receiptRoutes);
 app.use("/api/file-favorites", (await import("./routes/file-favorites.js")).default);
 app.use("/api/client-folders", clientFoldersRoutes);
 app.use("/api/ai", aiRoutes);

@@ -101,13 +101,13 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tag
   else sortObj[sort] = 1;
 
   const [files, total] = await Promise.all([
-    FileAttachment.find(filter).sort(sortObj).skip(skip).limit(limit).lean(),
+    FileAttachment.find(filter).sort(sortObj).skip(skip).limit(limit).select("id orgId folderId clientId projectId name originalName mimeType size category uploaderId description tags isLocked lockedBy approvalStatus createdAt updatedAt deletedAt").lean(),
     FileAttachment.countDocuments(filter),
   ]);
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
   const { User } = await import("../lib/db/models/User.js");
-  const users = await User.find({ id: { $in: userIds } }).lean();
+  const users = await User.find({ id: { $in: userIds } }).select("id name").lean();
   const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   const result = files.map(f => ({
@@ -121,16 +121,16 @@ router.get("/shared", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["file-sha
   const orgId = (req.query.orgId as string) || "";
   if (!orgId) { res.json({ success: true, data: [] }); return; }
   await verifyAccess(req.user!.userId, orgId);
-  const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).lean();
+  const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).select("id fileId sharedByUserId sharedWithUserId orgId createdAt").lean();
 
   const fileIds = [...new Set(shares.map(s => s.fileId))];
   const { User } = await import("../lib/db/models/User.js");
 
-  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("id originalName mimeType size uploaderId").lean();
   const fileMap = new Map(files.map(f => [f.id, f]));
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
-  const users = await User.find({ id: { $in: userIds } }).lean();
+  const users = await User.find({ id: { $in: userIds } }).select("id name").lean();
   const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   const result = shares.map(share => {
@@ -156,7 +156,7 @@ router.get("/recycle-bin", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["fil
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
   const { User } = await import("../lib/db/models/User.js");
-  const users = await User.find({ id: { $in: userIds } }).lean();
+  const users = await User.find({ id: { $in: userIds } }).select("id name").lean();
   const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   res.json({ success: true, data: files.map(f => ({ ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown" })) });
@@ -168,11 +168,11 @@ router.get("/recent", async (req: AuthRequest, res: Response) => {
   await verifyAccess(req.user!.userId, orgId);
 
   const files = await FileAttachment.find({ orgId, deletedAt: null })
-    .sort({ updatedAt: -1 }).limit(20).lean();
+    .sort({ updatedAt: -1 }).limit(20).select("id orgId name originalName mimeType size uploaderId category createdAt updatedAt").lean();
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
   const { User } = await import("../lib/db/models/User.js");
-  const users = await User.find({ id: { $in: userIds } }).lean();
+  const users = await User.find({ id: { $in: userIds } }).select("id name").lean();
   const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   res.json({ success: true, data: files.map(f => ({ ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown" })) });
@@ -191,7 +191,7 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
       { $group: { _id: null, total: { $sum: "$size" } } },
     ]),
     FileAttachment.countDocuments({ orgId, deletedAt: { $ne: null } }),
-    (await import("../lib/db/models/StorageQuota.js")).StorageQuota.findOne({ orgId }).lean(),
+    (await import("../lib/db/models/StorageQuota.js")).StorageQuota.findOne({ orgId }).select("usedStorageBytes maxStorageBytes").lean(),
     FileAttachment.aggregate([
       { $match: { orgId, uploaderId: userId, deletedAt: null } },
       { $group: { _id: null, total: { $sum: "$size" } } },
@@ -232,7 +232,7 @@ router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
   const USER_STORAGE_LIMIT = 1024 * 1024 * 1024;
 
   const [userFiles, allUserFiles, fileTypeBreakdown, extensionBreakdown, largestFile, recentUploads, monthlyStats] = await Promise.all([
-    FileAttachment.find({ orgId, uploaderId: userId, deletedAt: null }).sort({ size: -1 }).lean(),
+    FileAttachment.find({ orgId, uploaderId: userId, deletedAt: null }).sort({ size: -1 }).select("id orgId name originalName mimeType size category uploaderId createdAt").lean(),
     FileAttachment.aggregate([
       { $match: { orgId, uploaderId: userId, deletedAt: { $ne: null } } },
       { $group: { _id: null, count: { $sum: 1 }, totalSize: { $sum: "$size" } } },
@@ -309,7 +309,7 @@ router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
-  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
   if (!file) throw new AppError(404, "File not found");
   await verifyAccess(req.user!.userId, file.orgId);
 
@@ -321,7 +321,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/:id/download", async (req: AuthRequest, res: Response) => {
-  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
   if (!file) throw new AppError(404, "File not found");
   await verifyAccess(req.user!.userId, file.orgId);
 
@@ -336,14 +336,14 @@ router.get("/:id/download", async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/:id/versions", async (req: AuthRequest, res: Response) => {
-  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
   if (!file) throw new AppError(404, "File not found");
   await verifyAccess(req.user!.userId, file.orgId);
 
-  const versions = await FileVersion.find({ fileId: req.params.id }).sort({ versionNumber: -1 }).lean();
+  const versions = await FileVersion.find({ fileId: req.params.id }).sort({ versionNumber: -1 }).select("id fileId versionNumber storagePath size uploadedBy comment createdAt").lean();
   const userIds = [...new Set(versions.map(v => v.uploadedBy))];
   const { User } = await import("../lib/db/models/User.js");
-  const users = await User.find({ id: { $in: userIds } }).lean();
+  const users = await User.find({ id: { $in: userIds } }).select("id name").lean();
   const userMap = new Map(users.map(u => [u.id || u._id.toString(), u.name]));
 
   res.json({ success: true, data: versions.map(v => ({ ...v, uploadedByName: userMap.get(v.uploadedBy) || "Unknown" })) });
@@ -359,11 +359,11 @@ router.post("/:id/rollback", async (req: AuthRequest, res: Response) => {
   const { versionId } = req.body;
   if (!versionId) throw new AppError(400, "versionId is required");
 
-  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId id storagePath size currentVersion").lean();
   if (!file) throw new AppError(404, "File not found");
   await verifyAccess(req.user!.userId, file.orgId);
 
-  const version = await FileVersion.findOne({ id: versionId, fileId: file.id }).lean();
+  const version = await FileVersion.findOne({ id: versionId, fileId: file.id }).select("id storagePath size versionNumber").lean();
   if (!version) throw new AppError(404, "Version not found");
 
   await FileAttachment.updateOne(
@@ -413,7 +413,7 @@ router.post("/:id/share", async (req: AuthRequest, res: Response) => {
 router.delete("/:id/share", async (req: AuthRequest, res: Response) => {
   const { id } = req.body;
   if (!id) throw new AppError(400, "share id is required");
-  const share = await FileShare.findOne({ id }).lean();
+  const share = await FileShare.findOne({ id }).select("orgId").lean();
   if (!share) throw new AppError(404, "Share not found");
   await verifyOrgAccess(req.user!.userId, share.orgId);
   await FileShare.deleteOne({ id });
@@ -473,7 +473,7 @@ router.post("/:id/duplicate", async (req: AuthRequest, res: Response) => {
 router.patch("/:id", async (req: AuthRequest, res: Response) => {
   const { name, description, tags, folderId } = req.body;
 
-  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId id originalName isLocked lockedBy").lean();
   if (!file) throw new AppError(404, "File not found");
   await verifyAccess(req.user!.userId, file.orgId);
 
@@ -505,7 +505,7 @@ router.post("/bulk/delete", async (req: AuthRequest, res: Response) => {
   const { fileIds } = req.body;
   if (!fileIds?.length) throw new AppError(400, "fileIds is required");
 
-  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("orgId").lean();
   const orgIds = [...new Set(files.map(f => f.orgId))];
   if (orgIds.length !== 1) throw new AppError(400, "All files must be in the same organization");
   await verifyAccess(req.user!.userId, orgIds[0]);
@@ -531,7 +531,7 @@ router.post("/bulk/restore", async (req: AuthRequest, res: Response) => {
   const { fileIds } = req.body;
   if (!fileIds?.length) throw new AppError(400, "fileIds is required");
 
-  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: { $ne: null } }).lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: { $ne: null } }).select("orgId").lean();
   if (!files.length) throw new AppError(404, "No files found in trash");
   await verifyAccess(req.user!.userId, files[0].orgId);
 
@@ -549,7 +549,7 @@ router.post("/bulk/move", async (req: AuthRequest, res: Response) => {
   const { fileIds, targetFolderId } = req.body;
   if (!fileIds?.length) throw new AppError(400, "fileIds is required");
 
-  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("orgId").lean();
   if (!files.length) throw new AppError(404, "No files found");
   await verifyAccess(req.user!.userId, files[0].orgId);
 
@@ -567,7 +567,7 @@ router.post("/bulk/tag", async (req: AuthRequest, res: Response) => {
   const { fileIds, tags, action: tagAction } = req.body;
   if (!fileIds?.length || !tags?.length) throw new AppError(400, "fileIds and tags are required");
 
-  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("orgId").lean();
   if (!files.length) throw new AppError(404, "No files found");
   await verifyAccess(req.user!.userId, files[0].orgId);
 
@@ -586,7 +586,7 @@ router.post("/bulk/permanent", async (req: AuthRequest, res: Response) => {
   const { fileIds } = req.body;
   if (!fileIds?.length) throw new AppError(400, "fileIds is required");
 
-  const files = await FileAttachment.find({ id: { $in: fileIds } }).lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds } }).select("orgId id storagePath size").lean();
   if (!files.length) throw new AppError(404, "No files found");
   await verifyAccess(req.user!.userId, files[0].orgId);
 
@@ -594,7 +594,7 @@ router.post("/bulk/permanent", async (req: AuthRequest, res: Response) => {
   let totalSizeFreed = 0;
   for (const file of files) {
     try { await provider.delete(file.storagePath); } catch { /* skip */ }
-    const versions = await FileVersion.find({ fileId: file.id }).lean();
+    const versions = await FileVersion.find({ fileId: file.id }).select("id storagePath").lean();
     for (const v of versions) {
       try { await provider.delete(v.storagePath); } catch { /* skip */ }
     }

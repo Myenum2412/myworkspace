@@ -13,10 +13,10 @@ router.use(authenticate);
 async function resolveOrgId(userId: string, email?: string, userOrgId?: string): Promise<string> {
   if (userOrgId) return userOrgId;
   const { OrgMember } = await import("../lib/db/models/OrgMember.js");
-  const member = await OrgMember.findOne({ userId }).lean();
+  const member = await OrgMember.findOne({ userId }).select("orgId").lean();
   if (member) return String(member.orgId);
   if (mongoose.connection.db) {
-    const nextAuthMember = await mongoose.connection.db.collection("org_members").findOne({ userId }).catch(() => null);
+    const nextAuthMember = await mongoose.connection.db.collection("org_members").findOne({ userId }, { projection: { orgId: 1 } }).catch(() => null);
     if (nextAuthMember) return String(nextAuthMember.orgId);
   }
   throw new AppError(400, "User is not associated with any organization");
@@ -26,7 +26,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   const orgId = await resolveOrgId(req.user!.userId, req.user!.email, req.user!.orgId);
   const db = mongoose.connection.db;
   if (!db) throw new AppError(500, "Database connection unavailable");
-  const data = await db.collection(collections.stocks).find({ orgId }).sort({ createdAt: -1 }).toArray();
+  const data = await db.collection(collections.stocks).find({ orgId }).sort({ createdAt: -1 }).project({ _id: 0, id: 1, orgId: 1, itemCode: 1, productName: 1, category: 1, brand: 1, unit: 1, openingStock: 1, stockIn: 1, stockOut: 1, availableStock: 1, reorderLevel: 1, purchasePrice: 1, sellingPrice: 1, supplier: 1, warehouse: 1, status: 1, image: 1, createdBy: 1, createdAt: 1, updatedAt: 1 }).toArray();
   res.json({ success: true, data });
 });
 

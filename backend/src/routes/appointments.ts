@@ -52,6 +52,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
       .sort({ [sortField]: sortOrder })
       .skip(skip)
       .limit(limit)
+      .select("id orgId appointmentId patientName mobileNumber email doctorId doctorName appointmentDate preferredTime reasonForVisit notes status bookingDatetime createdBy source createdAt updatedAt")
       .lean(),
     Appointment.countDocuments(filter),
   ]);
@@ -92,7 +93,7 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   const orgId = req.user!.orgId || await requireOrgMembership(req.user!.userId);
-  const appointment = await Appointment.findOne({ id: req.params.id, orgId }).lean();
+  const appointment = await Appointment.findOne({ id: req.params.id, orgId }).select("id orgId appointmentId patientName mobileNumber email doctorId doctorName appointmentDate preferredTime reasonForVisit notes status bookingDatetime createdBy source createdAt updatedAt").lean();
   if (!appointment) throw new AppError(404, "Appointment not found");
   const { _id, __v, ...rest } = appointment as any;
   res.json({ success: true, data: { ...rest, id: rest.id } });
@@ -120,7 +121,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     appointmentDate: body.appointmentDate,
     preferredTime: body.preferredTime,
     status: { $ne: "Cancelled" },
-  });
+  }).select("_id").lean();
 
   if (duplicate) {
     throw new AppError(409, "This time slot is already booked for this doctor");

@@ -19,7 +19,7 @@ router.use(authenticate);
 
 router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["projects"] }), async (req: AuthRequest, res: Response) => {
   const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
-  const projects = await Project.find({ orgId }).sort({ createdAt: -1 }).lean();
+  const projects = await Project.find({ orgId }).sort({ createdAt: -1 }).select("id name client color description deadline tracked progress access status members priority category budget spent startDate createdAt updatedAt orgId health").lean();
   res.json({ success: true, data: projects.map(normalize) });
 });
 

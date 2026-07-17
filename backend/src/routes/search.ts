@@ -26,7 +26,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   if (!orgId) throw new AppError(400, "orgId is required");
   if (!q) throw new AppError(400, "Search query (q) is required");
 
-  const member = await OrgMember.findOne({ userId: req.user!.userId, orgId }).lean();
+  const member = await OrgMember.findOne({ userId: req.user!.userId, orgId }).select("_id").lean();
   if (!member) throw new AppError(403, "Not authorized");
 
   const escaped = escapeRegex(q);
@@ -74,17 +74,17 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     clients,
     teams,
   ] = await Promise.all([
-    FileAttachment.find(fileMatch).sort({ createdAt: -1 }).limit(limit).lean(),
-    Folder.find(folderMatch).limit(limit).lean(),
-    Task.find(taskMatch).sort({ createdAt: -1 }).limit(limit).lean(),
-    Project.find(projectMatch).sort({ createdAt: -1 }).limit(limit).lean(),
-    User.find(userMatch).sort({ createdAt: -1 }).limit(limit).lean(),
-    Client.find(clientMatch).sort({ createdAt: -1 }).limit(limit).lean(),
-    Team.find(teamMatch).sort({ createdAt: -1 }).limit(limit).lean(),
+    FileAttachment.find(fileMatch).sort({ createdAt: -1 }).limit(limit).select("id orgId name originalName mimeType size uploaderId createdAt").lean(),
+    Folder.find(folderMatch).limit(limit).select("id name path parentId").lean(),
+    Task.find(taskMatch).sort({ createdAt: -1 }).limit(limit).select("id orgId title description status priority createdAt").lean(),
+    Project.find(projectMatch).sort({ createdAt: -1 }).limit(limit).select("id name description status").lean(),
+    User.find(userMatch).sort({ createdAt: -1 }).limit(limit).select("id name email role").lean(),
+    Client.find(clientMatch).sort({ createdAt: -1 }).limit(limit).select("id name email company").lean(),
+    Team.find(teamMatch).sort({ createdAt: -1 }).limit(limit).select("id name description").lean(),
   ]);
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
-  const uploaders = await User.find({ _id: { $in: userIds } }).lean();
+  const uploaders = await User.find({ _id: { $in: userIds } }).select("_id name").lean();
   const userMap = new Map(uploaders.map(u => [u._id.toString(), u.name]));
 
   const total =

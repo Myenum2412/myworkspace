@@ -20,6 +20,7 @@ export default async function EngagementServerPage() {
     .collection(collections.engagements)
     .find({ orgId })
     .sort({ createdAt: -1 })
+    .limit(100)
     .toArray()) as Record<string, unknown>[];
 
   const engagements: Engagement[] = rawEngagements.map((e) => {

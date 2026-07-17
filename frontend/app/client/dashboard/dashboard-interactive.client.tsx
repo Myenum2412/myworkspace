@@ -6,7 +6,8 @@ import { useSession, signOut } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import FolderIcon from "@mui/icons-material/Folder";
-import { LogOut, Receipt, FileText, Loader2 } from "lucide-react";
+import { LogOut, Receipt, FileText, Loader2, AlertCircleIcon, ClockIcon } from "lucide-react";
+import Link from "next/link";
 
 type ClientUser = {
   id: string;
@@ -30,11 +31,18 @@ type WorkspaceStats = {
   recentFiles: { id: string; name: string; mimeType: string; size: number; category: string; createdAt: string }[];
 };
 
+type BillingStatus = {
+  pendingCount: number;
+  totalDue: number;
+  invoices: { id: string; number: string; amountDue: number; status: string }[];
+};
+
 export default function DashboardInteractive() {
   const router = useRouter();
   const [user, setUser] = useState<ClientUser | null>(null);
   const [client, setClient] = useState<ClientInfo | null>(null);
   const [stats, setStats] = useState<WorkspaceStats | null>(null);
+  const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { data: session, status } = useSession();
@@ -63,6 +71,7 @@ export default function DashboardInteractive() {
       }
       fetchMe(token);
       fetchStats(token);
+      fetchBillingStatus(token);
     }
   }, [status, router, session]);
 
@@ -91,6 +100,20 @@ export default function DashboardInteractive() {
       const data = await res.json();
       if (data.success && data.data) {
         setStats(data.data);
+      }
+    } catch {
+      // silent
+    }
+  }
+
+  async function fetchBillingStatus(token: string) {
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(`/api/client-auth/billing-status`, { headers });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setBillingStatus(data.data);
       }
     } catch {
       // silent
@@ -133,6 +156,21 @@ export default function DashboardInteractive() {
           <LogOut className="size-4 mr-1" /> Logout
         </Button>
       </div>
+
+      {billingStatus && billingStatus.pendingCount > 0 && (
+        <Link href="/client/bills" className="block w-full no-underline">
+          <div className="w-full flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+            <AlertCircleIcon className="size-5 text-amber-600 shrink-0" />
+            <span className="font-medium text-amber-800">
+              {billingStatus.pendingCount} pending invoice{billingStatus.pendingCount > 1 ? "s" : ""}
+            </span>
+            <span className="text-amber-700">
+              — ₹{(billingStatus.totalDue / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+            </span>
+            <ClockIcon className="size-4 text-amber-500 ml-auto shrink-0" />
+          </div>
+        </Link>
+      )}
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         <QuickActionCard icon={FolderIcon} title="File Manager" description={`${stats?.fileCount ?? 0} files`} href="/client/file-manager" />

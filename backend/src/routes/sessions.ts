@@ -75,7 +75,7 @@ router.patch("/:id/status", authenticate, async (req: AuthRequest, res: Response
     throw new AppError(400, "Invalid status. Must be online, break, or offline");
   }
 
-  const session = await Session.findOne({ _id: id, userId, logoutTime: { $exists: false } });
+  const session = await Session.findOne({ _id: id, userId, logoutTime: { $exists: false } }).select("_id currentStatus statusTransitions totalBreakDuration loginTime");
   if (!session) {
     throw new AppError(404, "Active session not found");
   }
@@ -125,7 +125,7 @@ router.patch("/:id/close", authenticate, async (req: AuthRequest, res: Response)
   const { id } = req.params;
   const userId = req.user!.userId;
 
-  const session = await Session.findOne({ _id: id, userId, logoutTime: { $exists: false } });
+  const session = await Session.findOne({ _id: id, userId, logoutTime: { $exists: false } }).select("_id currentStatus statusTransitions totalBreakDuration loginTime logoutTime duration");
   if (!session) {
     throw new AppError(404, "Active session not found");
   }
@@ -205,6 +205,7 @@ router.get("/history", authenticate, async (req: AuthRequest, res: Response) => 
     .sort({ loginTime: -1 })
     .skip(skip)
     .limit(limit)
+    .select("_id userId orgId loginTime logoutTime currentStatus statusTransitions totalBreakDuration duration expiresAt createdAt")
     .lean();
 
   const total = await Session.countDocuments({ userId });
@@ -226,7 +227,7 @@ router.get("/today", authenticate, async (req: AuthRequest, res: Response) => {
   const sessions = await Session.find({
     userId,
     loginTime: { $gte: today, $lt: tomorrow },
-  }).sort({ loginTime: 1 }).lean();
+  }).sort({ loginTime: 1 }).select("_id userId loginTime logoutTime currentStatus statusTransitions totalBreakDuration duration").lean();
 
   const activeSession = sessions.find(s => !s.logoutTime);
   const completedSessions = sessions.filter(s => s.logoutTime);

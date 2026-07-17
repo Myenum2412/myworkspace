@@ -12,11 +12,11 @@ const router = Router();
 router.use(authenticate);
 
 router.post("/:id/favorite", async (req: AuthRequest, res: Response) => {
-  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).lean();
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("id orgId originalName").lean();
   if (!file) throw new AppError(404, "File not found");
 
   const userId = req.user!.userId;
-  const existing = await Favorite.findOne({ userId, fileId: req.params.id }).lean();
+  const existing = await Favorite.findOne({ userId, fileId: req.params.id }).select("_id").lean();
 
   if (existing) {
     await Favorite.deleteOne({ _id: (existing as any)._id });
@@ -44,8 +44,8 @@ router.get("/favorites", async (req: AuthRequest, res: Response) => {
   const orgId = req.query.orgId as string;
 
   const favs = orgId
-    ? await Favorite.find({ userId, orgId }).lean()
-    : await Favorite.find({ userId }).lean();
+    ? await Favorite.find({ userId, orgId }).select("fileId folderId").lean()
+    : await Favorite.find({ userId }).select("fileId folderId").lean();
 
   if (!favs.length) {
     res.json({ success: true, data: [] });
@@ -57,16 +57,16 @@ router.get("/favorites", async (req: AuthRequest, res: Response) => {
 
   const [files, folders] = await Promise.all([
     fileIds.length > 0
-      ? FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean()
+      ? FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("id originalName mimeType size createdAt uploaderId").lean()
       : [],
     folderIds.length > 0
-      ? (await import("../lib/db/models/Folder.js")).Folder.find({ id: { $in: folderIds }, deletedAt: null }).lean()
+      ? (await import("../lib/db/models/Folder.js")).Folder.find({ id: { $in: folderIds }, deletedAt: null }).select("id name createdAt").lean()
       : [],
   ]);
 
   const { User } = await import("../lib/db/models/User.js");
   const userIds = [...new Set(files.map((f: any) => f.uploaderId))];
-  const users = await User.find({ id: { $in: userIds } }).lean();
+  const users = await User.find({ id: { $in: userIds } }).select("id name").lean();
   const userMap = new Map(users.map((u: any) => [u.id || u._id.toString(), u.name]));
 
   const result = [

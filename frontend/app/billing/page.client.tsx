@@ -108,7 +108,7 @@ export default function BillingPage() {
     <div className="flex flex-1 flex-col gap-6 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
       <div className="flex items-center justify-between">
         <h1 className="text-xl sm:text-2xl font-bold">Billing</h1>
-        <Button asChild className="shrink-0 touch-target">
+        <Button asChild>
           <Link href="/billing/invoices/new">
             <PlusIcon className="mr-2 size-4" />
             New Invoice

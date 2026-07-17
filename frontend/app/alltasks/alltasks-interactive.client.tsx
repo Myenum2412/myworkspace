@@ -83,7 +83,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
   const [searchQuery, setSearchQuery] = useState("");
 
   // Seed React Query with the SSR payload.
-  const queryKey = useMemo(() => ["tasks", orgId] as const, [orgId]);
+  const queryKey = useMemo(() => ["tasks", "all", orgId] as const, [orgId]);
   const seeded = useRef(false);
   useEffect(() => {
     if (seeded.current || !orgId) return;

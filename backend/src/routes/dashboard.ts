@@ -17,10 +17,10 @@ router.use(authenticate);
 async function resolveOrgId(req: AuthRequest): Promise<string> {
   if (req.user!.orgId) return req.user!.orgId;
   const userId = req.user!.userId;
-  const member = await OrgMember.findOne({ userId }).lean();
+  const member = await OrgMember.findOne({ userId }).select("orgId").lean();
   if (member) return member.orgId.toString();
   const { Organization } = await import("../lib/db/models/Organization.js");
-  const anyOrg = await Organization.findOne({}).sort({ createdAt: 1 }).lean();
+  const anyOrg = await Organization.findOne({}).sort({ createdAt: 1 }).select("id").lean();
   if (anyOrg) {
     const { v4: uuid } = await import("uuid");
     await OrgMember.create({ id: uuid(), orgId: anyOrg.id, userId, role: "admin", joinedAt: new Date() });

@@ -2,6 +2,7 @@ import { createServer } from "http";
 import app from "./app.js";
 import { env } from "./config/env.js";
 import { connectDb } from "./lib/db/index.js";
+import { createIndexes } from "./indexes.js";
 import { socketIOManager } from "./lib/socketio/index.js";
 import { initializeAgenda } from "./lib/agenda/index.js";
 import { logger } from "./lib/logger/index.js";
@@ -34,6 +35,11 @@ async function start() {
       logger.warn({ err }, "Casbin initialization failed (policies will use file fallback)");
     }),
   ]);
+
+  // Create indexes after DB connection is established
+  createIndexes().catch((err) => {
+    logger.warn({ err }, "Index creation failed (non-fatal)");
+  });
 
   // RabbitMQ + workers (sequential dependency)
   if (isRabbitMQConfigured()) {

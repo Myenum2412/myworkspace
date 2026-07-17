@@ -311,7 +311,7 @@ router.get("/settings", async (req: AuthRequest, res: Response) => {
       throw new AppError(403, "Access denied. Only admins can view AI settings.");
     }
 
-    const settings = await AiSettings.findOne({ orgId });
+    const settings = await AiSettings.findOne({ orgId }).lean();
     res.json({ success: true, data: settings || {} });
   } catch (err: any) {
     if (err instanceof AppError) throw err;

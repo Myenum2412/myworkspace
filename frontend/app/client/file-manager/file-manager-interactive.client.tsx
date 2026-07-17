@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import FolderIcon from "@mui/icons-material/Folder";
-import { ArrowLeft, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, Loader2, FolderIcon } from "lucide-react";
 
 type FileItem = {
   id: string;

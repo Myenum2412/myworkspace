@@ -32,7 +32,7 @@ router.get("/invoices", async (req: AuthRequest, res: Response) => {
     if (status) filter.status = status;
 
     const [invoices, total] = await Promise.all([
-      Invoice.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      Invoice.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).select("id orgId number customerId customerName customerEmail amountPaid currency status pdfUrl hostedUrl periodStart periodEnd subTotal discountPercent discountAmount tdsTcsType tdsTcsRate tdsTcsAmount adjustmentValue total isSimplifiedView createdAt updatedAt").lean(),
       Invoice.countDocuments(filter),
     ]);
 
@@ -57,7 +57,7 @@ router.get("/invoices", async (req: AuthRequest, res: Response) => {
 // GET /api/billing/invoices/:id — Get single invoice
 router.get("/invoices/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const invoice = await Invoice.findOne({ id: req.params.id }).lean();
+    const invoice = await Invoice.findOne({ id: req.params.id }).select("id orgId number customerId customerName customerEmail amountPaid currency status pdfUrl hostedUrl periodStart periodEnd items subTotal discountPercent discountAmount tdsTcsType tdsTcsRate tdsTcsAmount adjustmentValue total isSimplifiedView createdAt updatedAt").lean();
     if (!invoice) throw new AppError(404, "Invoice not found");
     res.json({ success: true, data: invoice });
   } catch (err: any) {

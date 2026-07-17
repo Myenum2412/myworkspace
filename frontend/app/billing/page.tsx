@@ -1,5 +1,5 @@
-import BillingPageClient from "./page.client";
+import BillingClient from "./billing-client"
 
 export default function BillingPage() {
-  return <BillingPageClient />;
+  return <BillingClient />
 }

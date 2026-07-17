@@ -21,11 +21,13 @@ export default function LoginInteractive() {
   const [error, setError] = useState("");
   const [newClient, setNewClient] = useState(false);
 
+  const emailParam = params.get("email");
+  const newClientParam = params.get("newClient");
+
   useEffect(() => {
-    const emailParam = params.get("email");
     if (emailParam) setEmail(emailParam);
-    if (params.get("newClient") === "true") setNewClient(true);
-  }, [params]);
+    if (newClientParam === "true") setNewClient(true);
+  }, [emailParam, newClientParam]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
