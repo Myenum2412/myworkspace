@@ -17,14 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { UserX, Undo2, Loader2Icon, ChevronLeftIcon, ChevronRightIcon, EyeIcon } from "lucide-react";
+import { UserX, Undo2, Loader2Icon, EyeIcon } from "lucide-react";
 import { TerminatedViewDialog } from "@/components/employees/terminated-view-dialog";
 import type { TerminatedEmployee } from "../employees/columns";
 
@@ -218,49 +211,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                 </tbody>
               </table>
             </div>
-            {terminated.length > 0 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-[#f3f4f6] text-gray-900 sticky bottom-0 z-10">
-                <div className="flex items-center gap-2 text-sm text-gray-800">
-                  <span>Rows per page:</span>
-                  <Select value={String(rowsPerPage)} onValueChange={(v) => { setRowsPerPage(Number(v)); setPage(0); }}>
-                    <SelectTrigger className="w-[68px] h-8 text-xs bg-white border-gray-300">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5</SelectItem>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-gray-800">
-                    {page * rowsPerPage + 1}–{Math.min((page + 1) * rowsPerPage, terminated.length)} of {terminated.length}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 hover:text-black bg-white"
-                      onClick={() => setPage((p) => Math.max(0, p - 1))}
-                      disabled={page === 0}
-                    >
-                      <ChevronLeftIcon className="size-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 hover:text-black bg-white"
-                      onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                      disabled={page >= totalPages - 1}
-                    >
-                      <ChevronRightIcon className="size-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+
           </div>
         )}
       </main>

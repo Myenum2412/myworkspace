@@ -6,7 +6,7 @@ const ORG_NAME = "MyWorkSpace";
 const LOGO_URL = `${SITE_URL}/logo.jpeg`;
 const OG_IMAGE = `${SITE_URL}/login-bg.png`;
 const OG_IMAGE_ALT =
-  "MyWorkSpace — the platform that transforms how your team collaborates and ships";
+  "MyWorkSpace — AI-powered workspace management, AI detailing, and rebar detailing platform for modern teams";
 
 export const siteConfig = {
   url: SITE_URL,
@@ -25,6 +25,7 @@ export const siteConfig = {
 
 // ── Keywords ──────────────────────────────────────────────────────────
 export const sharedKeywords = [
+  // Core workspace
   "workspace management",
   "SaaS platform",
   "project management",
@@ -39,6 +40,33 @@ export const sharedKeywords = [
   "HR management",
   "organization management",
   "business automation",
+  // AI Detailing
+  "AI detailing",
+  "artificial intelligence detailing",
+  "AI-powered detailing",
+  "intelligent detailing automation",
+  "AI detail management",
+  "machine learning detailing",
+  "automated detail extraction",
+  "AI data analysis",
+  "smart detailing tools",
+  "AI workflow automation",
+  // Rebar Detailing
+  "rebar detailing",
+  "reinforcement detailing",
+  "rebar shop drawings",
+  "rebar fabrication",
+  "concrete reinforcement",
+  "rebar placement drawings",
+  "structural detailing",
+  "rebar schedule",
+  "rebar quantity takeoff",
+  "rebar bending schedule",
+  "reinforced concrete detailing",
+  "rebar 3D modeling",
+  "rebar BIM",
+  "rebar estimation",
+  "steel reinforcement detailing",
 ] as const;
 
 export const loginKeywords = [
@@ -84,6 +112,47 @@ export const chatKeywords = [
   "enterprise communication",
 ] as const;
 
+export const aiDetailingKeywords = [
+  ...sharedKeywords,
+  "AI detailing software",
+  "artificial intelligence construction",
+  "AI structural analysis",
+  "intelligent automation",
+  "machine learning engineering",
+  "AI-powered design",
+  "smart construction tools",
+  "AI project optimization",
+  "predictive analytics detailing",
+  "AI quality control",
+  "automated engineering workflows",
+  "AI cost estimation",
+  "intelligent data processing",
+  "AI documentation",
+  "machine learning construction",
+] as const;
+
+export const rebarDetailingKeywords = [
+  ...sharedKeywords,
+  "rebar detailing software",
+  "reinforcement detailing tools",
+  "rebar shop drawing software",
+  "concrete reinforcement detailing",
+  "structural rebar design",
+  "rebar fabrication drawings",
+  "rebar placement optimization",
+  "rebar quantity calculation",
+  "rebar bending schedule software",
+  "reinforced concrete design",
+  "rebar 3D visualization",
+  "rebar BIM integration",
+  "rebar estimation software",
+  "steel reinforcement design",
+  "rebar clash detection",
+  "rebar anchorage detailing",
+  "rebar lap splice detailing",
+  "rebar development length",
+] as const;
+
 // ── Common robots config ──────────────────────────────────────────────
 const robots: Metadata["robots"] = {
   index: true,
@@ -106,6 +175,7 @@ export function organizationJsonLd() {
     name: ORG_NAME,
     url: SITE_URL,
     logo: LOGO_URL,
+    description: "MyWorkSpace - AI-powered workspace management, AI detailing, and rebar detailing platform",
     sameAs: [],
     contactPoint: {
       "@type": "ContactPoint",
@@ -122,6 +192,7 @@ export function webSiteJsonLd() {
     "@type": "WebSite",
     name: SITE_NAME,
     url: SITE_URL,
+    description: "AI-powered workspace management, AI detailing, and rebar detailing platform",
     potentialAction: {
       "@type": "SearchAction",
       target: `${SITE_URL}/search?q={search_term_string}`,
@@ -140,7 +211,19 @@ export function softwareApplicationJsonLd() {
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description:
-      "The platform that transforms how your team collaborates and ships. Workspace management, project management, task management, and team collaboration in one powerful SaaS platform.",
+      "AI-powered workspace management platform featuring AI detailing, rebar detailing, project management, task management, and team collaboration. Transform your construction and engineering workflows with intelligent automation.",
+    featureList: [
+      "AI Detailing",
+      "Rebar Detailing",
+      "Project Management",
+      "Task Management",
+      "Team Collaboration",
+      "Employee Management",
+      "File Management",
+      "Time Tracking",
+      "Real-time Notifications",
+      "Business Automation",
+    ],
     offers: {
       "@type": "Offer",
       price: "0",
@@ -150,14 +233,72 @@ export function softwareApplicationJsonLd() {
   };
 }
 
+// ── AI Detailing JSON-LD ──────────────────────────────────────────────
+export function aiDetailingJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: `${SITE_NAME} AI Detailing`,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    description:
+      "AI-powered detailing solution for intelligent automation, data analysis, and workflow optimization. Leverage machine learning for construction and engineering detailing.",
+    featureList: [
+      "AI-Powered Detail Extraction",
+      "Intelligent Data Analysis",
+      "Automated Workflow Optimization",
+      "Machine Learning Engineering",
+      "Smart Quality Control",
+      "Predictive Analytics",
+      "AI Cost Estimation",
+      "Automated Documentation",
+    ],
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+  };
+}
+
+// ── Rebar Detailing JSON-LD ───────────────────────────────────────────
+export function rebarDetailingJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: `${SITE_NAME} Rebar Detailing`,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    description:
+      "Comprehensive rebar detailing software for reinforcement detailing, shop drawings, fabrication, and BIM integration. Streamline your concrete reinforcement workflows.",
+    featureList: [
+      "Rebar Shop Drawings",
+      "Reinforcement Detailing",
+      "Rebar Bending Schedules",
+      "3D Rebar Modeling",
+      "BIM Integration",
+      "Quantity Takeoff",
+      "Clash Detection",
+      "Anchorage Detailing",
+      "Lap Splice Detailing",
+      "Development Length Calculation",
+    ],
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+  };
+}
+
 // ── Login page metadata ───────────────────────────────────────────────
 export function getLoginMetadata(): Metadata {
   return {
     title: {
-      absolute: "Sign In — MyWorkSpace | Secure Workspace Login",
+      absolute: "Sign In — MyWorkSpace | AI Detailing & Rebar Detailing Platform",
     },
     description:
-      "Sign in to MyWorkSpace — the all-in-one SaaS platform for workspace management, project management, team collaboration, task management, and business automation. Secure login with enterprise-grade authentication.",
+      "Sign in to MyWorkSpace — the AI-powered platform for workspace management, AI detailing, rebar detailing, project management, and team collaboration. Secure login with enterprise-grade authentication.",
     keywords: [...loginKeywords],
     authors: [{ name: ORG_NAME, url: SITE_URL }],
     creator: ORG_NAME,
@@ -167,9 +308,9 @@ export function getLoginMetadata(): Metadata {
       canonical: `${SITE_URL}/login`,
     },
     openGraph: {
-      title: "Sign In — MyWorkSpace | Secure Workspace Login",
+      title: "Sign In — MyWorkSpace | AI Detailing & Rebar Detailing Platform",
       description:
-        "Sign in to MyWorkSpace — the all-in-one SaaS platform for workspace management, project management, team collaboration, and business automation.",
+        "Sign in to MyWorkSpace — the AI-powered platform for workspace management, AI detailing, rebar detailing, and team collaboration.",
       url: `${SITE_URL}/login`,
       siteName: SITE_NAME,
       images: [
@@ -185,9 +326,9 @@ export function getLoginMetadata(): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Sign In — MyWorkSpace | Secure Workspace Login",
+      title: "Sign In — MyWorkSpace | AI Detailing & Rebar Detailing Platform",
       description:
-        "Sign in to MyWorkSpace — the all-in-one SaaS platform for workspace management, project management, team collaboration, and business automation.",
+        "Sign in to MyWorkSpace — the AI-powered platform for workspace management, AI detailing, rebar detailing, and team collaboration.",
       images: [OG_IMAGE],
       site: siteConfig.twitterHandle,
       creator: siteConfig.twitterHandle,
@@ -203,10 +344,10 @@ export function getLoginMetadata(): Metadata {
 export function getSignupMetadata(): Metadata {
   return {
     title: {
-      absolute: "Create Account — MyWorkSpace | Free Workspace Signup",
+      absolute: "Create Account — MyWorkSpace | AI Detailing & Rebar Detailing",
     },
     description:
-      "Create your free MyWorkSpace account. Get started with workspace management, project management, team collaboration, task management, and business automation on a powerful SaaS platform.",
+      "Create your free MyWorkSpace account. Get started with AI detailing, rebar detailing, workspace management, project management, and team collaboration on a powerful SaaS platform.",
     keywords: [...signupKeywords],
     authors: [{ name: ORG_NAME, url: SITE_URL }],
     creator: ORG_NAME,
@@ -216,9 +357,9 @@ export function getSignupMetadata(): Metadata {
       canonical: `${SITE_URL}/signup`,
     },
     openGraph: {
-      title: "Create Account — MyWorkSpace | Free Workspace Signup",
+      title: "Create Account — MyWorkSpace | AI Detailing & Rebar Detailing",
       description:
-        "Create your free MyWorkSpace account. Get started with workspace management, project management, team collaboration, and business automation.",
+        "Create your free MyWorkSpace account. Get started with AI detailing, rebar detailing, workspace management, and team collaboration.",
       url: `${SITE_URL}/signup`,
       siteName: SITE_NAME,
       images: [
@@ -234,9 +375,9 @@ export function getSignupMetadata(): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Create Account — MyWorkSpace | Free Workspace Signup",
+      title: "Create Account — MyWorkSpace | AI Detailing & Rebar Detailing",
       description:
-        "Create your free MyWorkSpace account. Get started with workspace management, project management, team collaboration, and business automation.",
+        "Create your free MyWorkSpace account. Get started with AI detailing, rebar detailing, workspace management, and team collaboration.",
       images: [OG_IMAGE],
       site: siteConfig.twitterHandle,
       creator: siteConfig.twitterHandle,
@@ -252,10 +393,10 @@ export function getSignupMetadata(): Metadata {
 export function getChatMetadata(): Metadata {
   return {
     title: {
-      absolute: "Chat & Video Calls — MyWorkSpace | Real-Time Communication",
+      absolute: "Chat & Video Calls — MyWorkSpace | AI Detailing Platform",
     },
     description:
-      "Connect with your team through real-time messaging, HD video calls, audio calls, and screen sharing. MyWorkSpace communication platform supports group chats, online meetings, and enterprise collaboration.",
+      "Connect with your team through real-time messaging, HD video calls, audio calls, and screen sharing. MyWorkSpace communication platform supports group chats, online meetings, and enterprise collaboration for AI detailing and rebar detailing teams.",
     keywords: [...chatKeywords],
     authors: [{ name: ORG_NAME, url: SITE_URL }],
     creator: ORG_NAME,
@@ -265,9 +406,9 @@ export function getChatMetadata(): Metadata {
       canonical: `${SITE_URL}/chat`,
     },
     openGraph: {
-      title: "Chat & Video Calls — MyWorkSpace | Real-Time Communication",
+      title: "Chat & Video Calls — MyWorkSpace | AI Detailing Platform",
       description:
-        "Connect with your team through real-time messaging, HD video calls, audio calls, and screen sharing. Enterprise-grade communication platform.",
+        "Connect with your team through real-time messaging, HD video calls, audio calls, and screen sharing. Enterprise-grade communication for AI detailing and rebar detailing teams.",
       url: `${SITE_URL}/chat`,
       siteName: SITE_NAME,
       images: [
@@ -283,7 +424,7 @@ export function getChatMetadata(): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Chat & Video Calls — MyWorkSpace | Real-Time Communication",
+      title: "Chat & Video Calls — MyWorkSpace | AI Detailing Platform",
       description:
         "Connect with your team through real-time messaging, HD video calls, audio calls, and screen sharing.",
       images: [OG_IMAGE],
@@ -308,7 +449,7 @@ export function loginPageJsonLd() {
       "@type": "WebPage",
       name: "Sign In — MyWorkSpace",
       description:
-        "Sign in to MyWorkSpace — the all-in-one SaaS platform for workspace management, project management, team collaboration, and business automation.",
+        "Sign in to MyWorkSpace — the AI-powered platform for workspace management, AI detailing, rebar detailing, and team collaboration.",
       url: `${SITE_URL}/login`,
       isPartOf: {
         "@type": "WebSite",
@@ -382,7 +523,7 @@ export function chatPageJsonLd() {
       "@type": "WebPage",
       name: "Chat & Video Calls — MyWorkSpace",
       description:
-        "Real-time messaging, HD video calls, audio calls, and screen sharing for team collaboration.",
+        "Real-time messaging, HD video calls, audio calls, and screen sharing for AI detailing and rebar detailing teams.",
       url: `${SITE_URL}/chat`,
       isPartOf: {
         "@type": "WebSite",
@@ -409,7 +550,7 @@ export function chatPageJsonLd() {
       applicationCategory: "CommunicationApplication",
       operatingSystem: "Web",
       description:
-        "Real-time messaging, video conferencing, audio calls, screen sharing, and team collaboration platform.",
+        "Real-time messaging, video conferencing, audio calls, screen sharing, and team collaboration platform for AI detailing and rebar detailing teams.",
       featureList: [
         "HD Video Calls",
         "Audio Calls",
@@ -474,7 +615,7 @@ export function signupPageJsonLd() {
       "@type": "WebPage",
       name: "Create Account — MyWorkSpace",
       description:
-        "Create your free MyWorkSpace account. Get started with workspace management, project management, team collaboration, and business automation.",
+        "Create your free MyWorkSpace account. Get started with AI detailing, rebar detailing, workspace management, and team collaboration.",
       url: `${SITE_URL}/signup`,
       isPartOf: {
         "@type": "WebSite",
@@ -513,7 +654,7 @@ export function signupPageJsonLd() {
           name: "Is MyWorkSpace free to use?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. MyWorkSpace offers a free plan that includes core workspace management, project management, and team collaboration features. Paid plans are available for advanced needs.",
+            text: "Yes. MyWorkSpace offers a free plan that includes core workspace management, AI detailing, rebar detailing, project management, and team collaboration features. Paid plans are available for advanced needs.",
           },
         },
         {
@@ -529,7 +670,7 @@ export function signupPageJsonLd() {
           name: "What features are included in MyWorkSpace?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "MyWorkSpace includes workspace management, project management, task management, team collaboration, employee management, CRM, HR management, business automation, file management, time tracking, and real-time notifications.",
+            text: "MyWorkSpace includes AI detailing, rebar detailing, workspace management, project management, task management, team collaboration, employee management, CRM, HR management, business automation, file management, time tracking, and real-time notifications.",
           },
         },
       ],

@@ -17,8 +17,6 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { ViewToggle } from "@/components/view-toggle";
-import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
 import { toast } from "sonner";
 import { perfLog, perfNow } from "@/lib/perf";
@@ -67,15 +65,6 @@ const TYPE_TABS = [
   { id: "draft", label: "Drafts", icon: FileEditIcon },
 ];
 
-const TYPE_STATUS_GROUPS: Record<string, string[]> = {
-  all: ["draft", "assigned", "pending", "in_progress", "submitted", "approved", "rejected", "completed", "hold", "cancelled", "reopened", "published", "accepted", "scheduled", "activated"],
-  individual: ["draft", "assigned", "pending", "in_progress", "completed", "hold", "cancelled", "reopened"],
-  team: ["draft", "pending", "in_progress", "submitted", "approved", "completed", "rejected", "cancelled"],
-  common: ["draft", "published", "accepted", "completed"],
-  upcoming: ["draft", "scheduled", "activated", "in_progress", "completed", "cancelled"],
-  draft: ["draft"],
-};
-
 const STATUS_ICONS: Record<string, typeof ListTodoIcon> = {
   draft: FileEditIcon, assigned: UserCheckIcon, pending: ClockIcon,
   in_progress: ClockIcon, completed: CheckCircle2Icon, closed: CheckCircle2Icon,
@@ -87,7 +76,6 @@ const STATUS_ICONS: Record<string, typeof ListTodoIcon> = {
 export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [view, setView] = useState<"kanban" | "table">("table");
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
   const [activeTypeTab, setActiveTypeTab] = useState("all");
@@ -159,19 +147,6 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
     return counts;
   }, [filteredTasks]);
 
-  const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
-    setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
-    try {
-      const res = await apiFetch(`/api/tasks/${taskId}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: newStatus }),
-      });
-      if (!res.ok) throw new Error("Failed to update status");
-    } catch {
-      setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: tasks.find((x: UiTask) => x._id === taskId)?.status || t.status } : t));
-    }
-  }, [setTasks, tasks]);
-
   const handleDelete = useCallback(async (t: UiTask) => {
     if (!confirm("Are you sure you want to delete this task?")) return;
     try {
@@ -189,14 +164,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
       <main className="flex flex-1 flex-col gap-4 p-4 h-screen">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="w-full sm:w-auto">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold">Tasks</h1>
-              <ViewToggle
-                options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
-                value={view}
-                onChange={(v) => setView(v as typeof view)}
-              />
-            </div>
+            <h1 className="text-xl sm:text-2xl font-bold">Tasks</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Manage tasks across your organization</p>
           </div>
           <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
@@ -249,8 +217,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </Card>
         </div>
 
-        {view === "table" ? (
-          <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex flex-col flex-1 min-h-0">
             <div className="flex items-center gap-4 mb-4">
               <h2 className="text-lg font-semibold shrink-0 capitalize">{activeTypeTab === "all" ? "All" : activeTypeTab} Tasks</h2>
               <div className="flex-1 flex justify-center">
@@ -281,16 +248,6 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
               />
             </div>
           </div>
-        ) : (
-          <div className="flex-1 min-h-0">
-            <KanbanBoard
-              tasks={filteredTasks}
-              onStatusChange={handleStatusChange}
-              onCardClick={(task) => { setSelectedTask(task as unknown as UiTask); setViewOpen(true); }}
-              statusGroups={TYPE_STATUS_GROUPS[activeTypeTab] || TYPE_STATUS_GROUPS.all}
-            />
-          </div>
-        )}
 
         <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
           <DialogContent className="p-0 flex flex-col sm:max-w-4xl max-h-[90vh]" showCloseButton={false}>

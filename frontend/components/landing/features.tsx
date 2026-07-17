@@ -4,7 +4,7 @@ const features = [
   {
     icon: LayoutDashboard,
     title: "Project Dashboards",
-    description: "Get a bird's-eye view of all your projects with real-time progress tracking and customizable kanban boards.",
+    description: "Get a bird's-eye view of all your projects with real-time progress tracking and customizable boards.",
   },
   {
     icon: Users,

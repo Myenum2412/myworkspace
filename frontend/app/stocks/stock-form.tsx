@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +35,8 @@ type Stock = {
   status: string;
   lastUpdated: string;
   image?: string;
+  projectId?: string;
+  projectName?: string;
 };
 
 type StockFormProps = {
@@ -62,6 +64,23 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
   const [preview, setPreview] = useState(stock?.image || "");
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [projectId, setProjectId] = useState(stock?.projectId || "");
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const res = await fetch("/api/projects-list", { credentials: "include" });
+        const json = await res.json();
+        if (json.data && Array.isArray(json.data)) {
+          setProjects(json.data.map((p: any) => ({ id: p.id, name: p.name })));
+        }
+      } catch (err) {
+        console.error("Failed to fetch projects:", err);
+      }
+    }
+    fetchProjects();
+  }, []);
 
   const opening = Number(openingStock) || 0;
   const stockInNum = Number(stockIn) || 0;
@@ -111,6 +130,8 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
         status: "",
         lastUpdated: "",
         image,
+        projectId,
+        projectName: projects.find((p) => p.id === projectId)?.name || "",
       });
     } finally {
       setSaving(false);
@@ -194,6 +215,19 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
           <div className="space-y-1.5">
             <Label htmlFor="warehouse" className="text-sm font-medium">Warehouse / Location</Label>
             <Input id="warehouse" value={warehouse} onChange={(e) => setWarehouse(e.target.value)} placeholder="Warehouse or location" className="h-10" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="project" className="text-sm font-medium">Project (Optional)</Label>
+            <Select value={projectId} onValueChange={setProjectId}>
+              <SelectTrigger id="project" className="h-10">
+                <SelectValue placeholder="Select project" />
+              </SelectTrigger>
+              <SelectContent>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

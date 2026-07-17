@@ -27,8 +27,6 @@ import {
   MailIcon,
   MapPinIcon,
   CalendarIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -238,21 +236,7 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
             </table>
           </div>
 
-          {filtered.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
-              <span className="text-sm text-gray-600">
-                {page * rowsPerPage + 1}\u2013{Math.min((page + 1) * rowsPerPage, filtered.length)} of {filtered.length}
-              </span>
-              <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" className="size-8" onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}>
-                  <ChevronLeftIcon className="size-4" />
-                </Button>
-                <Button variant="outline" size="icon" className="size-8" onClick={() => setPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1}>
-                  <ChevronRightIcon className="size-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+
         </CardContent>
       </Card>
 

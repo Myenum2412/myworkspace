@@ -19,7 +19,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { Checkbox } from "@/components/ui/checkbox";
 
 type Task = {
   _id: string;
@@ -127,7 +126,6 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
                 <table className="table-premium w-full text-sm text-left">
                   <thead className="sticky top-0 z-10">
                     <tr>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"><Checkbox /></th>
                       <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-20">Task #</th>
                       <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Task</th>
                       <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Assigned To</th>
@@ -141,7 +139,6 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
                   <tbody>
                     {localTasks.map((t, idx) => (
                       <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group cursor-pointer" onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
-                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}><Checkbox /></td>
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground">#{idx + 1}</td>
                         <td className="px-4 py-3 font-medium">{t.title}</td>
                         <td className="px-4 py-3">

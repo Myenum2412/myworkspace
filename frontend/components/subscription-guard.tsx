@@ -4,7 +4,11 @@ import { useEffect, useRef, memo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-const PUBLIC_ROUTES = ["/pricing", "/login", "/signup", "/signup-mongo", "/forgot-password", "/client/login"];
+const PUBLIC_ROUTES = [
+  "/pricing", "/login", "/signup", "/signup-mongo", "/forgot-password", "/client/login",
+  "/features", "/solutions", "/platform", "/about", "/blog", "/contact", "/careers",
+  "/changelog", "/docs", "/guides", "/new-update", "/notifications",
+];
 
 export const SubscriptionGuard = memo(function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();

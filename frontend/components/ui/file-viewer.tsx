@@ -249,7 +249,7 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
       <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full border-b">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+            <div className="size-10 bg-muted flex items-center justify-center shrink-0">
               <CategoryIcon className="size-5 text-muted-foreground" />
             </div>
             <div className="min-w-0 flex-1">
@@ -363,7 +363,7 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
               <div className="w-full h-full flex items-center justify-center p-4">
                 <video
                   controls
-                  className="max-w-full max-h-full rounded-lg"
+                  className="max-w-full max-h-full"
                   onLoadedData={() => setLoading(false)}
                   onError={() => { setError("Failed to load video"); setLoading(false) }}
                 >
@@ -387,7 +387,7 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
             {!loading && !error && (category === "text" || category === "code") && (
               <div className="w-full h-full overflow-auto p-4">
                 <pre className={cn(
-                  "text-sm leading-relaxed rounded-lg border bg-card p-4 overflow-x-auto min-h-full",
+                  "text-sm leading-relaxed border bg-card p-4 overflow-x-auto min-h-full",
                   category === "code" && "font-mono"
                 )}>
                   <code>{textContent || "Empty file"}</code>

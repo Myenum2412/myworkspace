@@ -28,6 +28,8 @@ export type Stock = {
   status: string;
   lastUpdated: string;
   image?: string;
+  projectId?: string;
+  projectName?: string;
 };
 
 const stockStatus = (available: number, reorder: number) => {

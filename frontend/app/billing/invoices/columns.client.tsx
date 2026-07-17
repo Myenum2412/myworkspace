@@ -1,46 +1,89 @@
 "use client"
-import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ExternalLinkIcon, FileTextIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, DownloadIcon } from "lucide-react";
+
+import { type ColumnDef } from "@tanstack/react-table"
+import {
+  RiArrowDownLine,
+  RiArrowUpLine,
+  RiDownloadLine,
+  RiExpandUpDownLine,
+  RiEyeLine,
+  RiMoreLine,
+  RiPencilLine,
+  RiDeleteBinLine,
+  RiExternalLinkLine,
+} from "@remixicon/react"
+
+import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { generateInvoicePDF } from "@/lib/pdf";
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { generateInvoicePDF } from "@/lib/pdf"
 
 export type Invoice = {
-  id: string;
-  number: string;
-  amountPaid: number;
-  currency: string;
-  status: string;
-  pdfUrl: string;
-  hostedUrl: string;
-  createdAt: string;
-  customerName: string;
-  services: string;
-};
+  id: string
+  number: string
+  amountPaid: number
+  currency: string
+  status: string
+  pdfUrl: string
+  hostedUrl: string
+  createdAt: string
+  customerName: string
+  services: string
+}
+
+const statusConfig: Record<
+  string,
+  { variant: "default" | "secondary" | "destructive" | "outline"; dot: string }
+> = {
+  paid: { variant: "default", dot: "bg-primary-foreground" },
+  open: { variant: "secondary", dot: "bg-muted-foreground" },
+  void: { variant: "outline", dot: "bg-muted-foreground" },
+}
+
+const headLabel =
+  "text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+const sortButton =
+  "-mx-1 inline-flex items-center gap-1 rounded-none px-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase transition-colors hover:text-foreground"
+
+function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {
+  if (sorted === "asc")
+    return <RiArrowUpLine className="size-3.5" aria-hidden="true" />
+  if (sorted === "desc")
+    return <RiArrowDownLine className="size-3.5" aria-hidden="true" />
+  return (
+    <RiExpandUpDownLine
+      className="size-3.5 text-muted-foreground/60"
+      aria-hidden="true"
+    />
+  )
+}
 
 export const columns: ColumnDef<Invoice>[] = [
   {
     id: "select",
     header: ({ table }) => (
       <Checkbox
-        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(checked) =>
+          table.toggleAllPageRowsSelected(checked === true)
+        }
+        aria-label="Select all invoices"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
+        onCheckedChange={(checked) => row.toggleSelected(checked === true)}
+        aria-label={`Select ${row.original.id}`}
       />
     ),
     enableSorting: false,
@@ -49,154 +92,206 @@ export const columns: ColumnDef<Invoice>[] = [
     meta: { className: "hidden md:table-cell" },
   },
   {
-    id: "sno",
-    header: "S.No",
-    cell: ({ row }) => <span className="text-muted-foreground text-sm">{row.index + 1}</span>,
-    enableSorting: false,
-    size: 50,
-    meta: { className: "hidden md:table-cell" },
+    accessorKey: "number",
+    header: () => <span className={headLabel}>Invoice</span>,
+    cell: ({ row }) => {
+      const inv = row.original
+      return (
+        <span className="font-mono text-xs text-muted-foreground">
+          {inv.number || `INV-${inv.id.slice(0, 5).toUpperCase()}`}
+        </span>
+      )
+    },
   },
   {
-    accessorKey: "number",
-    header: "Invoice",
+    accessorKey: "customerName",
+    header: ({ column }) => (
+      <button
+        type="button"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className={sortButton}
+      >
+        Customer
+        <SortIcon sorted={column.getIsSorted()} />
+      </button>
+    ),
     cell: ({ row }) => {
-      const inv = row.original;
-      return <span className="font-medium text-gray-900">{inv.number || `INV-${inv.id.slice(0, 5).toUpperCase()}`}</span>;
+      const inv = row.original
+      const initials = (inv.customerName || "U")
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+      return (
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Avatar size="sm" className="shrink-0 border border-border">
+            <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+          </Avatar>
+          <span className="truncate text-sm font-medium text-foreground">
+            {inv.customerName || "—"}
+          </span>
+        </div>
+      )
     },
   },
   {
     accessorKey: "createdAt",
-    header: "Date",
+    header: () => <span className={headLabel}>Date</span>,
     cell: ({ row }) => {
-      const val = row.getValue("createdAt") as string;
-      if (!val) return <span className="text-muted-foreground">—</span>;
+      const val = row.getValue("createdAt") as string
+      if (!val) return <span className="text-muted-foreground">—</span>
       try {
-        return <span className="text-muted-foreground">{new Date(val).toLocaleDateString()}</span>;
+        return (
+          <span className="text-sm text-muted-foreground tabular-nums">
+            {new Date(val).toLocaleDateString()}
+          </span>
+        )
       } catch {
-        return <span>{val}</span>;
+        return <span className="text-sm text-muted-foreground">{val}</span>
       }
     },
     meta: { className: "hidden md:table-cell" },
   },
   {
-    accessorKey: "customerName",
-    header: "Customer Name",
-    cell: ({ row }) => <span className="font-medium text-gray-700">{row.getValue("customerName") || "—"}</span>,
-  },
-  {
     accessorKey: "services",
-    header: "Services & Deliverable",
+    header: () => <span className={headLabel}>Services</span>,
     cell: ({ row }) => {
-      const val = row.getValue("services") as string;
-      return <span className="text-white-800 truncate max-w-[200px] block" title={val}>{val || "—"}</span>;
+      const val = row.getValue("services") as string
+      return (
+        <span
+          className="block max-w-[140px] truncate text-sm text-muted-foreground"
+          title={val}
+        >
+          {val || "—"}
+        </span>
+      )
     },
-    meta: { className: "hidden md:table-cell" },
+    meta: { className: "hidden lg:table-cell" },
   },
   {
-    id: "amount",
-    header: "Amount",
+    accessorKey: "amountPaid",
+    sortingFn: "basic",
+    header: ({ column }) => (
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className={sortButton}
+        >
+          Amount
+          <SortIcon sorted={column.getIsSorted()} />
+        </button>
+      </div>
+    ),
     cell: ({ row }) => {
-      const inv = row.original;
+      const inv = row.original
       return (
-        <span className="text-gray-700">
-          ₹{((inv.amountPaid || 0) / 100).toFixed(2)} {(inv.currency || "INR").toUpperCase()}
+        <span className="block text-right text-sm font-semibold text-foreground tabular-nums">
+          ₹{((inv.amountPaid || 0) / 100).toFixed(2)}{" "}
+          {(inv.currency || "INR").toUpperCase()}
         </span>
-      );
+      )
     },
   },
   {
     accessorKey: "status",
-    header: "Status",
+    enableSorting: false,
+    header: () => <span className={headLabel}>Status</span>,
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      if (status === "paid") {
-        return <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Paid</span>;
-      } else if (status === "open") {
-        return <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10">Pending</span>;
-      } else if (status === "void") {
-        return <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-50 text-white-800 ring-1 ring-inset ring-gray-500/10">Void</span>;
-      }
-      return <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-50 text-white-800 ring-1 ring-inset ring-gray-500/10">{status}</span>;
+      const status = row.getValue("status") as string
+      const cfg = statusConfig[status] || statusConfig.open
+      const label = status === "paid" ? "Paid" : status === "open" ? "Pending" : status === "void" ? "Void" : status
+      return (
+        <Badge
+          variant={cfg.variant}
+          className="gap-1.5 text-[11px] font-medium"
+        >
+          <span
+            className={cn("inline-block size-1.5 shrink-0", cfg.dot)}
+            aria-hidden="true"
+          />
+          {label}
+        </Badge>
+      )
     },
   },
-
   {
     id: "actions",
-    header: "Action",
-    cell: ({ row }) => {
-      const inv = row.original;
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm">
-              <MoreHorizontalIcon className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => window.location.href = `/billing/invoices/${inv.id}`}>
-              <PencilIcon className="mr-2 size-4" />
-              Edit
-            </DropdownMenuItem>
-            
-            <DropdownMenuItem 
-              onClick={(e) => {
-                if (!inv.pdfUrl) {
-                  e.preventDefault();
-                  generateInvoicePDF(inv);
-                }
-              }}
-              asChild={!!inv.pdfUrl}
-            >
-              {inv.pdfUrl ? (
-                <a href={inv.pdfUrl} download={`Invoice_${inv.number || inv.id}.pdf`}>
-                  <DownloadIcon className="mr-2 size-4" />
-                  Download PDF
-                </a>
-              ) : (
-                <div className="flex items-center cursor-pointer w-full">
-                  <DownloadIcon className="mr-2 size-4" />
-                  Download PDF
-                </div>
-              )}
-            </DropdownMenuItem>
-
-            {inv.pdfUrl && (
-              <DropdownMenuItem onClick={() => window.open(inv.pdfUrl, "_blank")}>
-                <FileTextIcon className="mr-2 size-4" />
-                View PDF
-              </DropdownMenuItem>
-            )}
-            {!inv.pdfUrl && (
-              <DropdownMenuItem onClick={() => generateInvoicePDF(inv, true)}>
-                <FileTextIcon className="mr-2 size-4" />
-                Preview PDF
-              </DropdownMenuItem>
-            )}
-            {inv.hostedUrl && (
-              <DropdownMenuItem onClick={() => window.open(inv.hostedUrl, "_blank")}>
-                <ExternalLinkIcon className="mr-2 size-4" />
-                Open Hosted
-              </DropdownMenuItem>
-            )}
-
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              className="text-destructive"
-              onClick={async () => {
-                if (confirm("Are you sure you want to delete this invoice?")) {
-                  await fetch(`/api/billing/invoices/${inv.id}`, { method: "DELETE" });
-                  window.location.reload();
-                }
-              }}
-            >
-              <Trash2Icon className="mr-2 size-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
     enableSorting: false,
-    size: 40,
+    enableHiding: false,
+    header: () => <span className="sr-only">Actions</span>,
+    cell: ({ row }) => {
+      const inv = row.original
+      return (
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Actions for ${inv.id}`}
+              >
+                <RiMoreLine className="size-4" aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem
+                onClick={() =>
+                  (window.location.href = `/billing/invoices/${inv.id}`)
+                }
+              >
+                <RiPencilLine aria-hidden="true" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  if (!inv.pdfUrl) {
+                    e.preventDefault()
+                    generateInvoicePDF(inv)
+                  }
+                }}
+              >
+                <RiDownloadLine aria-hidden="true" />
+                {inv.pdfUrl ? "Download PDF" : "Generate PDF"}
+              </DropdownMenuItem>
+              {inv.pdfUrl && (
+                <DropdownMenuItem
+                  onClick={() => window.open(inv.pdfUrl, "_blank")}
+                >
+                  <RiEyeLine aria-hidden="true" />
+                  View PDF
+                </DropdownMenuItem>
+              )}
+              {inv.hostedUrl && (
+                <DropdownMenuItem
+                  onClick={() => window.open(inv.hostedUrl, "_blank")}
+                >
+                  <RiExternalLinkLine aria-hidden="true" />
+                  Open Hosted
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={async () => {
+                  if (
+                    confirm("Are you sure you want to delete this invoice?")
+                  ) {
+                    await fetch(`/api/billing/invoices/${inv.id}`, {
+                      method: "DELETE",
+                    })
+                    window.location.reload()
+                  }
+                }}
+              >
+                <RiDeleteBinLine aria-hidden="true" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )
+    },
   },
-];
+]

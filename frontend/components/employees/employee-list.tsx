@@ -8,35 +8,17 @@ import {
   UsersIcon,
   PlusIcon,
   SearchIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   ArrowUpDownIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   XIcon,
   EyeIcon,
   PencilIcon,
-  UserXIcon,
-  MoreHorizontalIcon,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { Employee } from "@/app/employees/columns";
 import type { SortField, SortDir } from "./employee-types";
 import { EmployeeTableRow } from "./employee-table-row";
-import { statusConfig, getInitials, getAvatarColor } from "./employee-types";
+
 
 type EmployeeListProps = {
   filteredCount: number;
@@ -66,90 +48,6 @@ function getSortIcon(field: SortField, sortField: SortField, sortDir: SortDir) {
     : <ArrowDownIcon className="size-3.5 text-foreground" />;
 }
 
-function MobileEmployeeCard({ employee: emp, onView, onEdit, onTerminate }: {
-  employee: Employee;
-  onView: (emp: Employee) => void;
-  onEdit: (emp: Employee) => void;
-  onTerminate: (emp: Employee) => void;
-}) {
-  const status = statusConfig[emp.status] || statusConfig.offline;
-
-  return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0 flex-1" onClick={() => onView(emp)}>
-          {emp.avatar ? (
-            <img
-              src={emp.avatar}
-              alt={emp.name}
-              className="size-10 rounded-full object-cover ring-2 ring-background shrink-0"
-            />
-          ) : (
-            <div className={`size-10 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${getAvatarColor(emp.name)}`}>
-              {getInitials(emp.name)}
-            </div>
-          )}
-          <div className="min-w-0">
-            <p className="font-medium text-gray-900 text-sm truncate">{emp.name}</p>
-            <p className="text-xs text-gray-500 truncate">{emp.email}</p>
-          </div>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="shrink-0" onClick={(e) => e.stopPropagation()}>
-              <MoreHorizontalIcon className="size-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem onClick={() => onView(emp)}>
-              <EyeIcon className="size-3.5 mr-2" /> View
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(emp)}>
-              <PencilIcon className="size-3.5 mr-2" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onTerminate(emp)} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-              <UserXIcon className="size-3.5 mr-2" /> Terminate
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="grid grid-cols-2 gap-2 text-xs" onClick={() => onView(emp)}>
-        {emp.department && (
-          <div>
-            <span className="text-muted-foreground">Department</span>
-            <p className="font-medium text-white-800 truncate">{emp.department}</p>
-          </div>
-        )}
-        {emp.designation && (
-          <div>
-            <span className="text-muted-foreground">Designation</span>
-            <p className="font-medium text-white-800 truncate">{emp.designation}</p>
-          </div>
-        )}
-        <div>
-          <span className="text-muted-foreground">Role</span>
-          <p className="font-medium text-white-800 capitalize truncate">{emp.role}</p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">ID</span>
-          <p className="font-mono font-medium text-white-800 truncate">{emp.displayId || "—"}</p>
-        </div>
-      </div>
-      <div className="flex items-center justify-between pt-1 border-t border-gray-100" onClick={() => onView(emp)}>
-        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
-          <span className={`size-1.5 rounded-full ${status.dot}`} />
-          {status.label}
-        </span>
-        {emp.joiningDate && (
-          <span className="text-xs text-gray-500">
-            Joined {new Date(emp.joiningDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
 
 export function EmployeeList({
   filteredCount,
@@ -257,10 +155,9 @@ export function EmployeeList({
           </div>
         </div>
 
-        {/* Table + Card View */}
+        {/* Table View */}
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)]">
-          {/* Desktop Table */}
-          <div className="hidden sm:block overflow-x-auto overflow-y-auto flex-1">
+          <div className="overflow-x-auto overflow-y-auto flex-1">
             <table className="table-premium w-full text-sm text-left" style={{ minWidth: 950 }}>
               <thead className="sticky top-0 z-10">
                 <tr>
@@ -347,84 +244,8 @@ export function EmployeeList({
               </tbody>
             </table>
           </div>
-
-          {/* Mobile Card View */}
-          <div className="sm:hidden overflow-y-auto flex-1 p-1">
-            {paginatedEmployees.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 py-16">
-                <div className="flex items-center justify-center size-12 rounded-full bg-muted">
-                  <UsersIcon className="size-6 text-muted-foreground/50" />
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {hasActiveFilters ? "No employees match your filters" : "No employees yet"}
-                  </p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">
-                    {hasActiveFilters
-                      ? "Try adjusting your search or filter criteria"
-                      : "Tap 'Add Employee' to get started"}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {paginatedEmployees.map((emp) => (
-                  <MobileEmployeeCard
-                    key={emp.id}
-                    employee={emp}
-                    onView={onView}
-                    onEdit={onEdit}
-                    onTerminate={onTerminate}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Pagination */}
-          {filteredCount > 0 && (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 border-t border-gray-200 bg-[#f3f4f6] text-gray-900 sticky bottom-0 z-10">
-              <div className="flex items-center gap-2 text-sm text-gray-800">
-                <span>Rows per page:</span>
-                <Select value={String(rowsPerPage)} onValueChange={(v) => onRowsPerPageChange(Number(v))}>
-                  <SelectTrigger className="w-[68px] h-9 sm:h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="25">25</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
-                <span className="text-sm text-white-800 whitespace-nowrap">
-                  {page * rowsPerPage + 1}–{Math.min((page + 1) * rowsPerPage, filteredCount)} of {filteredCount}
-                </span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="size-9 sm:size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 "
-                    onClick={() => onPageChange(Math.max(0, page - 1))}
-                    disabled={page === 0}
-                  >
-                    <ChevronLeftIcon className="size-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="size-9 sm:size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 "
-                    onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-                    disabled={page >= totalPages - 1}
-                  >
-                    <ChevronRightIcon className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+
         </div>
       </main>
     </>

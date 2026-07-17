@@ -24,7 +24,7 @@ export function BannerUpload({ onFile, disabled }: Props) {
         {({ acceptedFiles }) => (
           <>
             <div className="flex items-center gap-3 w-full">
-              <div className="size-10 shrink-0 rounded-xl border border-border bg-muted flex items-center justify-center overflow-hidden">
+              <div className="size-10 shrink-0 border border-border bg-muted flex items-center justify-center overflow-hidden">
                 {acceptedFiles.length > 0 ? (
                   <FileUpload.ItemGroup>
                     <FileUpload.Item file={acceptedFiles[0]}>
@@ -38,7 +38,7 @@ export function BannerUpload({ onFile, disabled }: Props) {
                 )}
               </div>
 
-              <FileUpload.Trigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full">
+              <FileUpload.Trigger className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full">
                 {acceptedFiles.length > 0 ? "Change image" : "Upload image"}
               </FileUpload.Trigger>
             </div>

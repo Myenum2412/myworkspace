@@ -14,6 +14,7 @@ import {
   CalendarIcon, HourglassIcon, Users, FolderKanbanIcon, Building2Icon,
   IndianRupeeIcon, ArrowRightIcon,
 } from "lucide-react";
+import DashboardCalendarPopup from "@/components/dashboard-calendar-popup";
 
 export const revalidate = 30;
 
@@ -228,12 +229,15 @@ export default async function DashboardPage() {
     <div className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 min-w-0 max-w-full">
       <div className="flex items-center justify-between px-0.5">
         <h1 className="text-xl sm:text-2xl font-bold">Dashboard Overview</h1>
-        <Button asChild size="sm">
-          <Link href="/createtask">
-            <ListTodo className="mr-1 size-4" />
-            New Task
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <DashboardCalendarPopup />
+          <Button asChild size="sm">
+            <Link href="/createtask">
+              <ListTodo className="mr-1 size-4" />
+              New Task
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stat Cards - 1 row, 6 columns (3 on mobile) */}

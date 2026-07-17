@@ -76,11 +76,13 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isApp = useMemo(() => isAppPage(pathname), [pathname]);
 
   useEffect(() => {
+    // Only redirect if user is authenticated and on a protected route
+    if (status !== "authenticated") return;
     const role = session?.user?.role?.toLowerCase() || "";
     if (role === "client" && !pathname.startsWith("/client") && !pathname.startsWith("/login")) {
       router.replace("/client/dashboard");
     }
-  }, [session?.user?.role, pathname, router]);
+  }, [session?.user?.role, pathname, router, status]);
 
   const user = useMemo(() => ({
     name: session?.user?.name || "User",

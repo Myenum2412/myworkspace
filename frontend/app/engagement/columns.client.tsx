@@ -32,27 +32,6 @@ const statusColorMap: Record<string, string> = {
 
 export const columns: ColumnDef<Engagement>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <input
-        type="checkbox"
-        className="size-4 cursor-pointer rounded border-border accent-primary"
-        checked={table.getIsAllPageRowsSelected()}
-        onChange={(e) => table.toggleAllPageRowsSelected(e.target.checked)}
-      />
-    ),
-    cell: ({ row }) => (
-      <input
-        type="checkbox"
-        className="size-4 cursor-pointer rounded border-border accent-primary"
-        checked={row.getIsSelected()}
-        onChange={(e) => row.toggleSelected(e.target.checked)}
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     id: "sno",
     header: "S.No",
     cell: ({ row }) => <span className="text-muted-foreground">{row.index + 1}</span>,

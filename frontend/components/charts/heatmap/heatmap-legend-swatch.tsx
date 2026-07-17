@@ -23,7 +23,7 @@ export const HeatmapLegendSwatch = memo(function HeatmapLegendSwatch({
   const shellStyle = {
     width: cellSize,
     height: cellSize,
-    borderRadius: cornerRadius,
+    borderRadius: 0,
   };
 
   if (isHeatmapLevelPattern(style) && style.pattern) {

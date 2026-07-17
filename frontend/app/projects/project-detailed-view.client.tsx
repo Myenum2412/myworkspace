@@ -294,26 +294,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                     </tbody>
                   </table>
                 </div>
-                <div className="sm:hidden space-y-2">
-                  {timeEntries.map((entry) => {
-                    const dur = entry.startTime && entry.endTime
-                      ? (() => { const [sh,sm]=entry.startTime.split(":").map(Number); const [eh,em]=entry.endTime.split(":").map(Number); return Math.max(0,(eh*60+em)-(sh*60+sm)); })()
-                      : entry.duration;
-                    return (
-                      <div key={entry.id} className="rounded-lg border p-3 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">{userMap[entry.userId] || entry.userId.slice(0, 8)}</span>
-                          <span className="text-xs font-mono font-medium">{Math.floor(dur / 60)}h {dur % 60}m</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{entry.description}</p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span>{new Date(entry.date).toLocaleDateString()}</span>
-                          {entry.startTime && entry.endTime && <span>{entry.startTime} - {entry.endTime}</span>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+
               </>
             )}
           </div>

@@ -13,8 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ViewToggle } from "@/components/view-toggle";
-import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -48,7 +46,6 @@ export type MyTasksProps = {
 export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTasksProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [view, setView] = useState<"kanban" | "table">("table");
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
@@ -106,27 +103,12 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
     setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
   }, [setTasks]);
 
-  const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
-    setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
-    try {
-      await apiFetch(`/api/tasks/${taskId}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: newStatus }),
-      });
-    } catch {}
-  }, [setTasks]);
-
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4 h-screen">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <h1 className="text-xl sm:text-2xl font-bold">My Tasks</h1>
-            <ViewToggle
-              options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
-              value={view}
-              onChange={(v) => setView(v as typeof view)}
-            />
           </div>
           <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
@@ -134,8 +116,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
           </Button>
         </div>
 
-        {view === "table" ? (
-          <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex flex-col flex-1 min-h-0">
             <div className="flex items-center gap-4 mb-4">
               <h2 className="text-lg font-semibold shrink-0">Assigned to me</h2>
               <div className="flex-1 flex justify-center">
@@ -165,14 +146,6 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
               />
             </div>
           </div>
-        ) : (
-          <KanbanBoard
-            tasks={myTasks}
-            onStatusChange={handleStatusChange}
-            onCardClick={(task) => { setSelectedTask(task as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
-            statusGroups={["draft", "assigned", "pending", "in_progress", "completed", "hold", "cancelled", "reopened"]}
-          />
-        )}
 
         <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
           <DialogContent className="p-0 flex flex-col sm:max-w-4xl" showCloseButton={false}>

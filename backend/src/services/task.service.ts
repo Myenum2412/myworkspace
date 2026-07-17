@@ -88,7 +88,8 @@ const TEAM_TRANSITIONS: Record<string, string[]> = {
 
 const COMMON_TRANSITIONS: Record<string, string[]> = {
   draft: ["published"],
-  published: ["accepted", "completed"],
+  published: ["accepted", "completed", "in_progress"],
+  in_progress: ["completed"],
   accepted: ["completed"],
   completed: ["closed"],
 };

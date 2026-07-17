@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
       warehouse: body.warehouse || "",
       status: body.status || "Active",
       image: body.image || "",
+      projectId: body.projectId || "",
+      projectName: body.projectName || "",
       createdBy: session.user.id,
       createdAt: new Date(),
       updatedAt: new Date(),

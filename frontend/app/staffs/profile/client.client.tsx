@@ -1139,7 +1139,7 @@ export default function ProfileClient({ data }: Props) {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <BriefcaseIcon className="size-5" />
-                  Employee Details
+                  Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlusIcon, BookmarkIcon, SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -13,8 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ViewToggle } from "@/components/view-toggle";
-import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
 import { apiFetch } from "@/lib/api";
 
@@ -37,21 +35,10 @@ export type SavedTask = {
 export default function SavedTasksInteractive({ initialTasks }: { initialTasks: SavedTask[] }) {
   const router = useRouter();
   const [tasks, setTasks] = useState<SavedTask[]>(initialTasks);
-  const [view, setView] = useState<"kanban" | "table">("kanban");
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<SavedTask | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
-    setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
-    try {
-      await apiFetch(`/api/tasks/${taskId}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: newStatus }),
-      });
-    } catch {}
-  }, [setTasks]);
 
   return (
     <>
@@ -61,11 +48,6 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
             <BookmarkIcon className="size-5 sm:size-6" />
             <h1 className="text-xl sm:text-2xl font-bold">Saved Tasks</h1>
             <Badge variant="secondary" className="text-[10px] sm:text-xs">{tasks.length} tasks</Badge>
-            <ViewToggle
-              options={[{ value: "kanban", label: "Kanban" }, { value: "table", label: "Table" }]}
-              value={view}
-              onChange={(v) => setView(v as typeof view)}
-            />
           </div>
           <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
@@ -73,8 +55,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
           </Button>
         </div>
 
-        {view === "table" ? (
-          <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex flex-col flex-1 min-h-0">
             <div className="flex items-center gap-4 mb-4">
               <h2 className="text-lg font-semibold shrink-0">All Saved Tasks</h2>
               <div className="flex-1 flex justify-center">
@@ -104,14 +85,6 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
               />
             </div>
           </div>
-        ) : (
-          <KanbanBoard
-            tasks={tasks}
-            onStatusChange={handleStatusChange}
-            onCardClick={(task) => { setSelectedTask(task as unknown as SavedTask); setViewOpen(true); setEditMode(false); }}
-            statusGroups={["draft", "assigned", "pending", "in_progress", "submitted", "approved", "rejected", "completed", "hold", "cancelled", "reopened", "published", "accepted", "scheduled", "activated"]}
-          />
-        )}
       </main>
 
       <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setEditMode(false); setSelectedTask(null); } }}>

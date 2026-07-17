@@ -329,7 +329,7 @@ export default function InvoiceFormPage() {
                 <span className="font-semibold text-white-800 text-sm">Item Table</span>
               </div>
             )}
-            {/* Mobile card view for items */}
+            {/* Mobile card view for items (form controls, not a data table) */}
             <div className="sm:hidden space-y-3 p-3">
               {items.map((item) => {
                 const amount = item.quantity * item.rate;

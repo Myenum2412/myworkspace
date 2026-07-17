@@ -196,14 +196,16 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
 
   return (
     <>
-      <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 shrink-0 bg-white border-b">
-        <h2 className="flex items-center gap-2 text-xl font-semibold text-black">
-          <UserIcon className="size-5" />
-          {isViewMode ? "Employee Details" : "Edit Employee"}
-        </h2>
-        <p className="text-sm text-gray-600 mt-1">
-          {isViewMode ? "View employee information across all sections." : "Update employee details across all sections."}
-        </p>
+      <div className="flex items-start gap-3 px-4 sm:px-6 pt-4 sm:pt-6 pb-2 shrink-0 bg-white border-b">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-xl font-semibold text-black">
+            <UserIcon className="size-5" />
+            {isViewMode ? "Details" : "Edit"}
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            {isViewMode ? "View employee information across all sections." : "Update employee details across all sections."}
+          </p>
+        </div>
       </div>
 
       {formSuccess && (

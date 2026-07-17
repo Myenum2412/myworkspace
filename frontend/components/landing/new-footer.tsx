@@ -2,11 +2,36 @@ import { RiGithubFill, RiTwitterXFill, RiDiscordFill } from "@remixicon/react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
 
 const columns = [
-  { title: "Product", links: ["Features", "Pricing", "Changelog"] },
-  { title: "Resources", links: ["Docs", "Guides", "Support", "API"] },
-  { title: "Company", links: ["About", "Blog", "Careers", "Contact"] },
+  {
+    title: "Product",
+    links: [
+      { label: "Features", href: "/features" },
+      { label: "Pricing", href: "/pricing" },
+      { label: "Changelog", href: "/new-update" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Docs", href: "/docs" },
+      { label: "Guides", href: "/guides" },
+      { label: "Support", href: "/support" },
+      { label: "API", href: "/docs" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About", href: "/about" },
+      { label: "Blog", href: "/blog" },
+      { label: "Careers", href: "/careers" },
+      { label: "Contact", href: "/contact" },
+    ],
+  },
 ]
 
 const socials = [
@@ -23,14 +48,22 @@ export function NewFooter() {
         <div className="grid gap-8 md:grid-cols-2">
           <div className="max-w-sm">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-800">
-                <span className="text-sm font-bold text-white">M</span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-none bg-brand-800">
+                <Image src="/logo.png" alt="Logo" width={24} height={24} className="h-6 w-6 object-contain" />
               </div>
               <span className="text-lg font-bold tracking-tight text-brand-900">MyWorkSpace</span>
             </Link>
             <p className="mt-3 text-sm text-muted-foreground">
               Everything your team needs to build, ship, and scale.
             </p>
+            <div className="mt-4">
+              <Button asChild variant="outline" size="sm" className="gap-1.5">
+                <Link href="/new-update">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">New</Badge>
+                  Updated
+                </Link>
+              </Button>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
             {columns.map((col) => (
@@ -40,13 +73,13 @@ export function NewFooter() {
                 </h3>
                 <ul className="mt-3 flex flex-col gap-2">
                   {col.links.map((link) => (
-                    <li key={link}>
-                      <a
-                        href="#"
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
                         className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        {link}
-                      </a>
+                        {link.label}
+                      </Link>
                     </li>
                   ))}
                 </ul>

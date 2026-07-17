@@ -64,7 +64,7 @@ export function NewNav() {
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2.5">
                 <div className="flex h-7 w-7 items-center justify-center rounded-none bg-brand-800">
-                  <span className="text-xs font-bold text-white">M</span>
+                  <Image src="/logo.png" alt="Logo" width={20} height={20} className="h-5 w-5 object-contain" />
                 </div>
                 MyWorkSpace
               </SheetTitle>

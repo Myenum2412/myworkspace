@@ -5,7 +5,12 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "developer@myenum.in";
 
 const ORIGIN_PREFIXES = ["/orgmenu"];
 const STAFF_PREFIXES = ["/staffs"];
-const PUBLIC_PATHS = new Set(["/login", "/login/verify-2fa", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/client/login", "/auth/not-found"]);
+const PUBLIC_PATHS = new Set([
+  "/login", "/login/verify-2fa", "/signup", "/signup-mongo", "/forgot-password",
+  "/pricing", "/client/login", "/auth/not-found", "/",
+  "/features", "/solutions", "/platform", "/about", "/blog", "/contact",
+  "/careers", "/changelog", "/docs", "/guides", "/new-update", "/notifications",
+]);
 const PUBLIC_PREFIXES = new Set(["/share"]);
 const CLIENT_PREFIXES = ["/client"];
 const WORKSPACE_PREFIXES = [

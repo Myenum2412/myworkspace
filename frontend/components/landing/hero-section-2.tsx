@@ -83,7 +83,7 @@ export function HeroSection2() {
               >
                 <div
                   key={1}
-                  className="bg-foreground/10 rounded-[calc(var(--radius-xl)+0.125rem)] border p-0.5"
+                  className="bg-foreground/10 rounded-none border p-0.5"
                 >
                   <Button
                     asChild
@@ -123,7 +123,7 @@ export function HeroSection2() {
             }}
           >
             <div className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
-              <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-5xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
+              <div className="ring-background bg-background relative mx-auto max-w-5xl overflow-hidden rounded-2xl border p-4 ring-1">
                 <div className="bg-gradient-to-br from-brand-100 to-brand-200 aspect-15/8 relative flex items-center justify-center rounded-2xl">
                   <div className="text-center">
                     <div className="text-4xl font-bold text-brand-600 mb-2">

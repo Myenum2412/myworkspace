@@ -31,6 +31,7 @@ export const collections = {
   counters: "counters",
   taskComments: "task_comments",
   calendarConnections: "calendar_connections",
+  emailConnections: "email_connections",
   meetings: "meetings",
   chatMessages: "chat_messages",
   doctors: "doctors",

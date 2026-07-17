@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   RiCheckLine,
   RiMailLine,
@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
+import { Loader2Icon } from "lucide-react"
 
 type Integration = {
   id: string
@@ -31,6 +32,7 @@ type Integration = {
   icon: typeof RiWhatsappLine
   category: string
   defaultConnected?: boolean
+  oauthUrl?: string
 }
 
 const integrations: Integration[] = [
@@ -40,6 +42,7 @@ const integrations: Integration[] = [
     description: "Send and receive emails through your Gmail account.",
     icon: RiMailLine,
     category: "Email",
+    oauthUrl: "/api/email/gmail",
   },
   {
     id: "whatsapp",
@@ -72,14 +75,47 @@ const integrations: Integration[] = [
 ]
 
 export default function IntegrationsBlock() {
-  const [connected, setConnected] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
-      integrations.map((i) => [i.id, Boolean(i.defaultConnected)])
-    )
-  )
+  const [connected, setConnected] = useState<Record<string, boolean>>({})
+  const [loading, setLoading] = useState<Record<string, boolean>>({})
+  const [gmailEmail, setGmailEmail] = useState("")
 
-  const toggle = (id: string) =>
-    setConnected((prev) => ({ ...prev, [id]: !prev[id] }))
+  useEffect(() => {
+    fetch("/api/email/connections")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.data?.length) {
+          setConnected((prev) => ({ ...prev, gmail: true }))
+          setGmailEmail(data.data[0].email || "")
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const handleConnect = async (integration: Integration) => {
+    if (integration.id === "gmail") {
+      setLoading((prev) => ({ ...prev, gmail: true }))
+      window.location.href = integration.oauthUrl!
+      return
+    }
+    setConnected((prev) => ({ ...prev, [integration.id]: true }))
+  }
+
+  const handleDisconnect = async (integration: Integration) => {
+    if (integration.id === "gmail") {
+      setLoading((prev) => ({ ...prev, gmail: true }))
+      try {
+        await fetch("/api/email/connections", { method: "DELETE" })
+        setConnected((prev) => ({ ...prev, gmail: false }))
+        setGmailEmail("")
+      } catch {
+        // silent
+      } finally {
+        setLoading((prev) => ({ ...prev, gmail: false }))
+      }
+      return
+    }
+    setConnected((prev) => ({ ...prev, [integration.id]: false }))
+  }
 
   return (
     <section className="flex w-full justify-center text-foreground">
@@ -89,17 +125,12 @@ export default function IntegrationsBlock() {
             <RiStackLine data-icon="inline-start" className="size-3.5" />
             Connections
           </Badge>
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Integrations
-          </h2>
-          <p className="max-w-prose text-sm text-muted-foreground">
-            Connect your favorite services to automate notifications and streamline your workflow.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {integrations.map((integration) => {
             const isOn = Boolean(connected[integration.id])
+            const isLoading = Boolean(loading[integration.id])
             const Icon = integration.icon
             return (
               <Card
@@ -128,17 +159,26 @@ export default function IntegrationsBlock() {
                       </CardDescription>
                     </div>
                   </div>
-                  <Switch
-                    checked={isOn}
-                    onCheckedChange={() => toggle(integration.id)}
-                    aria-label={`Toggle ${integration.name}`}
-                  />
+                  {integration.id !== "gmail" && (
+                    <Switch
+                      checked={isOn}
+                      onCheckedChange={() =>
+                        isOn ? handleDisconnect(integration) : handleConnect(integration)
+                      }
+                      aria-label={`Toggle ${integration.name}`}
+                    />
+                  )}
                 </CardHeader>
 
                 <CardContent className="flex-1 py-4">
                   <p className="text-sm text-muted-foreground">
                     {integration.description}
                   </p>
+                  {isOn && gmailEmail && integration.id === "gmail" && (
+                    <p className="mt-1 text-xs text-primary font-medium truncate">
+                      {gmailEmail}
+                    </p>
+                  )}
                 </CardContent>
 
                 <CardFooter className="items-center justify-between">
@@ -156,10 +196,19 @@ export default function IntegrationsBlock() {
                   <Button
                     variant={isOn ? "ghost" : "default"}
                     size="sm"
-                    onClick={() => toggle(integration.id)}
+                    onClick={() =>
+                      isOn ? handleDisconnect(integration) : handleConnect(integration)
+                    }
+                    disabled={isLoading}
                     className={cn(isOn && "text-muted-foreground")}
                   >
-                    {isOn ? "Disconnect" : "Connect"}
+                    {isLoading ? (
+                      <Loader2Icon className="size-4 animate-spin" />
+                    ) : isOn ? (
+                      "Disconnect"
+                    ) : (
+                      "Connect"
+                    )}
                   </Button>
                 </CardFooter>
               </Card>

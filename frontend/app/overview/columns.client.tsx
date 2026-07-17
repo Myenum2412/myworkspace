@@ -2,7 +2,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,13 +49,6 @@ export const priorityStyles: Record<string, string> = {
 };
 
 export const columns: ColumnDef<Task>[] = [
-  {
-    id: "checkbox",
-    header: () => <Checkbox />,
-    cell: () => <Checkbox />,
-    enableSorting: false,
-    size: 40,
-  },
   {
     id: "index",
     header: "Task #",
@@ -122,10 +114,20 @@ export const columns: ColumnDef<Task>[] = [
     header: "Due Date",
     cell: ({ row }) => {
       const val = row.getValue("dueDate") as string | null;
-      return val ? (
-        <span className="text-muted-foreground">{new Date(val).toLocaleDateString()}</span>
-      ) : (
-        <span className="text-muted-foreground">—</span>
+      const status = row.original.status;
+      if (!val) return <span className="text-muted-foreground">—</span>;
+      const due = new Date(val);
+      const now = new Date();
+      const isOverdue = due < now && status !== "done" && status !== "cancelled";
+      const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return (
+        <span className={isOverdue ? "text-red-600 font-semibold" : "text-muted-foreground"}>
+          {isOverdue
+            ? diffDays === 0
+              ? "Overdue"
+              : `Overdue by ${Math.abs(diffDays)}d`
+            : due.toLocaleDateString()}
+        </span>
       );
     },
   },

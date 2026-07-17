@@ -110,10 +110,29 @@
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
+
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-2xl: none;
+  --shadow-xs: none;
+  --shadow-inner: none;
+  --shadow: none;
+
+  --inset-shadow-2xs: none;
+  --inset-shadow-xs: none;
+  --inset-shadow-sm: none;
+  --inset-shadow-md: none;
+  --inset-shadow-lg: none;
+  --inset-shadow-xl: none;
 }
 
 :root {
@@ -140,7 +159,7 @@
   --chart-3: oklch(0.8214 0.1600 82.5337);
   --chart-4: oklch(0.7064 0.1822 151.7125);
   --chart-5: oklch(0.5919 0.2186 10.5826);
-  --radius: 0.625rem;
+  --radius: 0;
   --sidebar: #0D2A54;
   --sidebar-foreground: #FFFFFF;
   --sidebar-primary: #5077A5;
@@ -251,7 +270,7 @@
   --legend-muted: oklch(0.274 0.006 286.033);
   --legend-muted-foreground: oklch(0.705 0.015 286.067);
   --legend-track: oklch(0.274 0.006 286.033);
-  --radius: 0.625rem;
+  --radius: 0;
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;

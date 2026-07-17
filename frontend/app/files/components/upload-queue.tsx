@@ -3,68 +3,89 @@
 import { useCallback, useRef, useState } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { cn } from "@/lib/utils";
-import { formatSize } from "@/lib/file-system/types";
 import {
-  UploadCloudIcon,
-  XIcon,
-  CheckCircleIcon,
-  AlertCircleIcon,
-  PauseIcon,
-  PlayIcon,
-  RefreshCwIcon,
-  FileIcon,
-} from "lucide-react";
+  RiAlertLine,
+  RiCheckLine,
+  RiCloseLine,
+  RiUploadCloud2Line,
+} from "@remixicon/react";
+import { toast } from "sonner";
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+} from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Spinner } from "@/components/ui/spinner";
+
+const MAX_SIZE = 50 * 1024 * 1024;
+
+type UploadStatus = "uploading" | "done" | "error";
+
+type UploadItem = {
+  id: string;
+  name: string;
+  size: number;
+  progress: number;
+  status: UploadStatus;
+  error?: string;
+  xhr?: XMLHttpRequest;
+};
+
+function formatSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export function UploadZone() {
   const {
     showUpload,
     setShowUpload,
-    addUploadItem,
-    updateUploadItem,
-    removeUploadItem,
-    uploadQueue,
-    clearUploadQueue,
     orgId,
     currentFolderId,
   } = useFileSystemStore();
+
+  const [items, setItems] = useState<UploadItem[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const dragDepth = useRef(0);
 
-  const handleUpload = useCallback(async (files: FileList | File[]) => {
-    const fileArray = Array.from(files);
-    for (const file of fileArray) {
-      const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      addUploadItem({
-        id,
-        file,
-        progress: 0,
-        status: "pending",
-      });
-    }
-
-    for (const item of useFileSystemStore.getState().uploadQueue.filter((q) => q.status === "pending")) {
-      updateUploadItem(item.id, { status: "uploading" });
+  const uploadFile = useCallback(
+    async (item: UploadItem, file: File) => {
       try {
         const formData = new FormData();
-        formData.append("file", item.file);
+        formData.append("file", file);
         if (currentFolderId) formData.append("folderId", currentFolderId);
         if (orgId) formData.append("orgId", orgId);
 
         const xhr = new XMLHttpRequest();
-        updateUploadItem(item.id, { xhr: xhr as unknown as XMLHttpRequest });
+        setItems((prev) =>
+          prev.map((i) => (i.id === item.id ? { ...i, xhr } : i))
+        );
 
-        const result = await new Promise<{ kind: string; data: { originalName: string } }>((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
           xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {
               const pct = Math.round((e.loaded / e.total) * 100);
-              updateUploadItem(item.id, { progress: pct });
+              setItems((prev) =>
+                prev.map((i) => (i.id === item.id ? { ...i, progress: pct } : i))
+              );
             }
           };
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
-              resolve(JSON.parse(xhr.responseText));
+              setItems((prev) =>
+                prev.map((i) =>
+                  i.id === item.id ? { ...i, progress: 100, status: "done" } : i
+                )
+              );
+              toast.success(`${file.name} uploaded`);
+              resolve();
             } else {
               reject(new Error(`Upload failed: ${xhr.status}`));
             }
@@ -74,118 +95,185 @@ export function UploadZone() {
           xhr.withCredentials = true;
           xhr.send(formData);
         });
-
-        updateUploadItem(item.id, { progress: 100, status: "completed" });
-        setTimeout(() => removeUploadItem(item.id), 3000);
       } catch (err) {
-        updateUploadItem(item.id, {
-          status: "failed",
-          error: err instanceof Error ? err.message : "Upload failed",
-        });
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id
+              ? {
+                  ...i,
+                  status: "error",
+                  error: err instanceof Error ? err.message : "Upload failed",
+                }
+              : i
+          )
+        );
       }
-    }
-  }, [orgId, currentFolderId, addUploadItem, updateUploadItem, removeUploadItem]);
+    },
+    [orgId, currentFolderId]
+  );
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    if (e.dataTransfer.files.length > 0) {
-      handleUpload(e.dataTransfer.files);
-    }
-  }, [handleUpload]);
+  const addFiles = useCallback(
+    (fileList: FileList | null) => {
+      if (!fileList) return;
+      const newItems: UploadItem[] = Array.from(fileList).map((file) => ({
+        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+        name: file.name,
+        size: file.size,
+        progress: 0,
+        status: "uploading" as UploadStatus,
+      }));
+      setItems((prev) => [...newItems, ...prev]);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleUpload(e.target.files);
-      e.target.value = "";
-    }
-  }, [handleUpload]);
+      newItems.forEach((item, idx) => {
+        uploadFile(item, Array.from(fileList)[idx]);
+      });
+    },
+    [uploadFile]
+  );
 
-  const retryUpload = useCallback((id: string) => {
-    const item = uploadQueue.find((q) => q.id === id);
-    if (!item) return;
-    removeUploadItem(id);
-    handleUpload([item.file] as unknown as FileList);
-  }, [uploadQueue, removeUploadItem, handleUpload]);
+  const removeItem = useCallback((id: string) => {
+    setItems((prev) => {
+      const item = prev.find((i) => i.id === id);
+      if (item?.xhr) item.xhr.abort();
+      return prev.filter((i) => i.id !== id);
+    });
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      dragDepth.current = 0;
+      setIsDragging(false);
+      addFiles(event.dataTransfer.files);
+    },
+    [addFiles]
+  );
 
   if (!showUpload) return null;
 
   return (
     <div
-      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-      onDragLeave={() => setIsDragOver(false)}
-      onDrop={handleDrop}
+      role="button"
+      tabIndex={0}
+      onClick={() => inputRef.current?.click()}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          inputRef.current?.click();
+        }
+      }}
+      onDragOver={(event) => {
+        event.preventDefault();
+      }}
+      onDragEnter={(event) => {
+        event.preventDefault();
+        dragDepth.current += 1;
+        setIsDragging(true);
+      }}
+      onDragLeave={(event) => {
+        event.preventDefault();
+        dragDepth.current -= 1;
+        if (dragDepth.current <= 0) {
+          dragDepth.current = 0;
+          setIsDragging(false);
+        }
+      }}
+      onDrop={onDrop}
       className={cn(
-        "relative border-2 border-dashed rounded-lg p-6 transition-all",
-        isDragOver && "border-primary bg-primary/5",
-        "border-muted-foreground/20",
+        "relative cursor-pointer flex flex-col items-center justify-center gap-3 border border-dashed px-6 py-8 text-center transition-colors outline-none rounded-lg",
+        "focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        isDragging
+          ? "border-primary bg-primary/5"
+          : "border-muted-foreground/20 hover:bg-muted/40"
       )}
     >
       <input
         ref={inputRef}
         type="file"
         multiple
-        onChange={handleFileSelect}
         className="sr-only"
-        aria-label="Upload files"
+        onChange={(event) => {
+          addFiles(event.target.files);
+          event.target.value = "";
+        }}
       />
-
-      <div className="flex flex-col items-center gap-2 text-center">
-        <UploadCloudIcon className={cn("size-8 text-muted-foreground", isDragOver && "text-primary")} />
-        <p className="text-sm font-medium">
-          {isDragOver ? "Drop files here" : "Drag & drop files or click to browse"}
+      <div
+        className={cn(
+          "flex size-10 items-center justify-center border transition-colors",
+          isDragging
+            ? "border-primary bg-background text-primary"
+            : "border-border bg-background text-muted-foreground"
+        )}
+      >
+        <RiUploadCloud2Line className="size-5" aria-hidden="true" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <p className="text-sm font-medium text-foreground">
+          {isDragging
+            ? "Release to upload"
+            : "Drag & drop files or click to browse"}
         </p>
-        <p className="text-xs text-muted-foreground">Files are uploaded securely</p>
-        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
-          Select Files
-        </Button>
+        <p className="text-xs text-muted-foreground">
+          Max file size: 50 MB
+        </p>
       </div>
 
-      {uploadQueue.length > 0 && (
-        <div className="mt-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium">Upload Queue ({uploadQueue.length})</span>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={clearUploadQueue}>
-                Clear
-              </Button>
-              <Button variant="ghost" size="sm" className="h-6" onClick={() => setShowUpload(false)}>
-                <XIcon className="size-3" />
-              </Button>
-            </div>
+      {items.length > 0 && (
+        <div
+          className="mt-4 w-full"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted-foreground tabular-nums">
+              <span className="font-medium text-foreground">{items.length}</span>{" "}
+              {items.length === 1 ? "File" : "Files"}
+            </p>
+            <button
+              type="button"
+              onClick={() => setItems([])}
+              className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Clear All
+            </button>
           </div>
-          <div className="space-y-1.5 max-h-48 overflow-y-auto">
-            {uploadQueue.map((item) => (
-              <div key={item.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-                <FileIcon className="size-4 shrink-0 text-muted-foreground" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{item.file.name}</p>
-                  <div className="flex items-center gap-2">
-                    <Progress value={item.progress} className="h-1 flex-1" />
-                    <span className="text-[10px] text-muted-foreground shrink-0">{item.progress}%</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-0.5 shrink-0">
-                  {item.status === "completed" && <CheckCircleIcon className="size-3.5 text-green-500" />}
-                  {item.status === "failed" && <AlertCircleIcon className="size-3.5 text-destructive" />}
-                  {(item.status === "pending" || item.status === "uploading") && (
-                    <button onClick={() => removeUploadItem(item.id)} className="text-muted-foreground hover:text-foreground">
-                      <XIcon className="size-3.5" />
-                    </button>
-                  )}
-                  {item.status === "failed" && (
-                    <button onClick={() => retryUpload(item.id)} className="text-muted-foreground hover:text-foreground">
-                      <RefreshCwIcon className="size-3.5" />
-                    </button>
-                  )}
-                </div>
-              </div>
+          <ul className="flex flex-col gap-2">
+            {items.map((item) => (
+              <li key={item.id}>
+                <Attachment state={item.status} size="sm" className="w-full">
+                  <AttachmentMedia>
+                    {item.status === "error" ? (
+                      <RiAlertLine aria-hidden="true" />
+                    ) : item.status === "done" ? (
+                      <RiCheckLine className="text-primary" aria-hidden="true" />
+                    ) : (
+                      <Spinner />
+                    )}
+                  </AttachmentMedia>
+                  <AttachmentContent>
+                    <AttachmentTitle>{item.name}</AttachmentTitle>
+                    <AttachmentDescription className="tabular-nums">
+                      {item.status === "error"
+                        ? item.error
+                        : item.status === "done"
+                          ? `Uploaded ${formatSize(item.size)}`
+                          : `Uploading ${Math.round(item.progress)}%`}
+                    </AttachmentDescription>
+                  </AttachmentContent>
+                  <AttachmentActions>
+                    <AttachmentAction
+                      aria-label={`Remove ${item.name}`}
+                      onClick={() => removeItem(item.id)}
+                    >
+                      <RiCloseLine aria-hidden="true" />
+                    </AttachmentAction>
+                  </AttachmentActions>
+                </Attachment>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
     </div>
   );
 }
-
-

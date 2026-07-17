@@ -6,15 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   UsersIcon, UserPlusIcon, Trash2Icon, XIcon, Loader2Icon, CrownIcon,
-  ChevronLeftIcon, ChevronRightIcon,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -165,49 +157,7 @@ export function TeamMembers({
             </table>
           </div>
 
-          {team.members.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-[#f3f4f6] text-gray-900 sticky bottom-0 z-10">
-              <div className="flex items-center gap-2 text-sm text-gray-800">
-                <span>Rows per page:</span>
-                <Select value={String(memberRowsPerPage)} onValueChange={(v) => { onMemberRowsPerPageChange?.(Number(v)); onMemberPageChange?.(0); }}>
-                  <SelectTrigger className="w-[68px] h-8 text-xs bg-white border-gray-300">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="25">25</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-800">
-                  {memberPage * memberRowsPerPage + 1}–{Math.min((memberPage + 1) * memberRowsPerPage, team.members.length)} of {team.members.length}
-                </span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 hover:text-black bg-white"
-                    onClick={() => onMemberPageChange?.(Math.max(0, memberPage - 1))}
-                    disabled={memberPage === 0}
-                  >
-                    <ChevronLeftIcon className="size-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="size-8 border-gray-700/30 text-gray-900 hover:bg-black/10 hover:text-black bg-white"
-                    onClick={() => onMemberPageChange?.(Math.min(totalPages - 1, memberPage + 1))}
-                    disabled={memberPage >= totalPages - 1}
-                  >
-                    <ChevronRightIcon className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+
         </div>
       ) : (
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>

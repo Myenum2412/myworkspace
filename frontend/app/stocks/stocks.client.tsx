@@ -228,16 +228,14 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
           </Card>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-auto">
-          <DataTable
-              columns={columns}
-              data={filteredData}
-              onRowClick={handleView}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              hideSearchBar
-            />
-        </div>
+        <DataTable
+            columns={columns}
+            data={filteredData}
+            onRowClick={handleView}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            hideSearchBar
+          />
       </main>
 
       {viewingStock && (
@@ -260,6 +258,7 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
                 <div><span className="font-medium text-muted-foreground">Unit:</span> {viewingStock.unit || "—"}</div>
                 <div><span className="font-medium text-muted-foreground">Supplier:</span> {viewingStock.supplier || "—"}</div>
                 <div><span className="font-medium text-muted-foreground">Warehouse:</span> {viewingStock.warehouse || "—"}</div>
+                <div><span className="font-medium text-muted-foreground">Project:</span> {viewingStock.projectName || "—"}</div>
                 <div><span className="font-medium text-muted-foreground">Status:</span> {viewingStock.status || "—"}</div>
               </div>
               <div className="border-t pt-4 grid grid-cols-2 gap-4">

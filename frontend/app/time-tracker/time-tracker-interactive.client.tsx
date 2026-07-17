@@ -536,46 +536,6 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                 </tbody>
               </table>
 
-              {/* Mobile cards */}
-              <div className="sm:hidden space-y-2 p-2">
-                {entries.map((entry) => {
-                  const dur = calcDuration(entry.startTime, entry.endTime) || entry.duration || 0;
-                  return (
-                    <div
-                      key={entry.id}
-                      className={`border rounded-lg p-3 space-y-2 cursor-pointer ${selectedIds.has(entry.id) ? "bg-blue-50/50 border-blue-200" : "bg-white border-gray-200"}`}
-                      onClick={() => setViewEntry(entry)}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.has(entry.id)}
-                            onChange={(e) => { e.stopPropagation(); toggleSelect(entry.id); }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="size-4 rounded border-gray-300 cursor-pointer shrink-0"
-                          />
-                          <p className="text-sm font-medium truncate">{entry.description}</p>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                          <button onClick={() => setViewEntry(entry)} className="text-muted-foreground hover:text-black p-1" title="View">
-                            <EyeIcon className="size-4" />
-                          </button>
-                          <button onClick={() => handleDelete(entry.id)} className="text-muted-foreground hover:text-red-500 p-1" title="Delete">
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        <span>Project: <span className="font-medium text-gray-700">{entry.projectName || "—"}</span></span>
-                        <span>Date: <span className="font-medium text-gray-700">{new Date(entry.date).toLocaleDateString()}</span></span>
-                        <span>Time: <span className="font-medium text-gray-700">{entry.startTime && entry.endTime ? `${to12h(entry.startTime)} - ${to12h(entry.endTime)}` : "—"}</span></span>
-                        <span>Duration: <span className="font-medium text-gray-700 font-mono">{Math.floor(dur / 60)}h {dur % 60}m</span></span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           </div>
         )}

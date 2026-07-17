@@ -277,29 +277,6 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
                 </tbody>
               </table>
 
-              {/* Mobile cards */}
-              <div className="sm:hidden space-y-2 p-2">
-                {data.slice(0, 10).map((entry) => (
-                  <div key={entry.id} className="border border-gray-100 rounded-lg p-3 bg-white space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium flex-1">{entry.description}</p>
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        className="text-muted-foreground hover:text-red-500 transition-colors p-1 shrink-0"
-                        title="Delete"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <span>Project: <span className="font-medium text-gray-700">{entry.projectName || "—"}</span></span>
-                      <span>Date: <span className="font-medium text-gray-700">{new Date(entry.date).toLocaleDateString()}</span></span>
-                      <span>Time: <span className="font-medium text-gray-700">{entry.startTime && entry.endTime ? `${entry.startTime} - ${entry.endTime}` : "—"}</span></span>
-                      <span>Duration: <span className="font-medium text-gray-700 font-mono">{Math.floor(entryMinutes(entry) / 60)}h {entryMinutes(entry) % 60}m</span></span>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
         </CardContent>

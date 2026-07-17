@@ -1,66 +1,57 @@
-"use client";
+"use client"
 
+import * as React from "react"
 import {
-  BellIcon,
-  CheckCheckIcon,
-  Loader2Icon,
-  ArchiveIcon,
-  Trash2Icon,
-  ExternalLinkIcon,
-  MessageSquareIcon,
-  CheckCircle2Icon,
-  AlertTriangleIcon,
-  CreditCardIcon,
-  MegaphoneIcon,
-  UsersIcon,
-  FolderKanbanIcon,
-  InfoIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { useNotifications, type NotificationItem } from "@/hooks/use-notifications";
-import { useSession } from "next-auth/react";
-import { useCallback, useState } from "react";
-import Link from "next/link";
+  RiBellLine,
+  RiCheckLine,
+  RiErrorWarningLine,
+  RiFileTextLine,
+  RiGitMergeLine,
+  RiMegaphoneLine,
+  RiShieldCheckLine,
+  RiUserAddLine,
+} from "@remixicon/react"
 
-function timeAgo(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { cn } from "@/lib/utils"
+import { useNotifications, type NotificationItem } from "@/hooks/use-notifications"
+import { useSession } from "next-auth/react"
+import Link from "next/link"
+
+const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  tasks: RiFileTextLine,
+  projects: RiGitMergeLine,
+  messages: RiMegaphoneLine,
+  billing: RiFileTextLine,
+  approvals: RiErrorWarningLine,
+  team: RiUserAddLine,
+  system: RiShieldCheckLine,
 }
 
-const categoryIcons: Record<string, React.ReactNode> = {
-  tasks: <CheckCircle2Icon className="size-4 text-blue-500" />,
-  projects: <FolderKanbanIcon className="size-4 text-violet-500" />,
-  messages: <MessageSquareIcon className="size-4 text-green-500" />,
-  billing: <CreditCardIcon className="size-4 text-amber-500" />,
-  approvals: <AlertTriangleIcon className="size-4 text-orange-500" />,
-  team: <UsersIcon className="size-4 text-cyan-500" />,
-  system: <InfoIcon className="size-4 text-slate-500" />,
-};
-
-const priorityColors: Record<string, string> = {
-  urgent: "bg-red-100 text-red-800 border-red-200",
-  high: "bg-orange-100 text-orange-800 border-orange-200",
-  normal: "bg-blue-100 text-blue-800 border-blue-200",
-  low: "bg-slate-100 text-slate-800 border-slate-200",
-};
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return "Just now"
+  if (mins < 60) return `${mins} Min Ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs} Hour${hrs > 1 ? "s" : ""} Ago`
+  const days = Math.floor(hrs / 24)
+  return `${days} Day${days > 1 ? "s" : ""} Ago`
+}
 
 export function NotificationBell() {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { data: session } = useSession()
+  const userId = session?.user?.id
   const {
     notifications,
     unreadCount,
@@ -71,177 +62,144 @@ export function NotificationBell() {
     loading,
     loadMore,
     hasMore,
-  } = useNotifications(userId);
+  } = useNotifications(userId)
 
-  const [open, setOpen] = useState(false);
+  const handleMarkAllRead = React.useCallback(() => {
+    markAllAsRead()
+  }, [markAllAsRead])
 
-  const handleMarkAllRead = useCallback(() => {
-    markAllAsRead();
-  }, [markAllAsRead]);
-
-  const handleNotificationClick = useCallback(
+  const handleNotificationClick = React.useCallback(
     async (n: NotificationItem) => {
-      if (!n.read) await markAsRead(n.id);
+      if (!n.read) await markAsRead(n.id)
       if (n.link) {
-        window.location.href = n.link;
+        window.location.href = n.link
       }
     },
     [markAsRead]
-  );
-
-  const handleAction = useCallback(
-    async (e: React.MouseEvent, n: NotificationItem, action: NotificationItem["actions"][0]) => {
-      e.stopPropagation();
-      if (action.url) {
-        window.location.href = action.url;
-      }
-    },
-    []
-  );
+  )
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative size-8">
-          <BellIcon className="size-4" />
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative size-9" aria-label="Open notifications">
+          <RiBellLine className="size-4" aria-hidden="true" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex min-w-[16px] h-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1">
+            <span className="absolute -top-0.5 -right-0.5 flex min-w-[16px] h-4 items-center justify-center bg-primary text-[10px] font-semibold text-primary-foreground px-1">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
         </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="w-96 p-0">
-        <div className="flex items-center justify-between px-4 py-3 border-b">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">Notifications</span>
+      </SheetTrigger>
+
+      <SheetContent side="right" className="w-full p-0 sm:max-w-md">
+        <SheetHeader className="flex-row items-center gap-2 space-y-0 pr-12">
+          <SheetTitle className="flex items-center gap-2">
+            Notifications
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                {unreadCount} unread
-              </Badge>
+              <span className="flex size-5 items-center justify-center bg-primary text-[10px] font-semibold text-primary-foreground">
+                {unreadCount}
+              </span>
             )}
-          </div>
-          <div className="flex items-center gap-1">
-            <Button variant="link" size="sm" className="h-auto px-2 py-1 text-xs" asChild>
-              <Link href="/notifications">View all</Link>
-            </Button>
-            {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs gap-1" onClick={handleMarkAllRead}>
-                <CheckCheckIcon className="size-3" />
-                Mark all read
-              </Button>
-            )}
-          </div>
-        </div>
-        <ScrollArea className="max-h-[480px]">
+          </SheetTitle>
+        </SheetHeader>
+
+        <Separator />
+
+        <ScrollArea className="flex-1 [&_[data-slot=scroll-area-viewport]]:scroll-fade-y">
           {loading && notifications.length === 0 ? (
             <div className="flex items-center justify-center py-10">
-              <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
+              <div className="size-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-              <BellIcon className="size-8 mb-2 opacity-30" />
+              <RiBellLine className="size-8 mb-2 opacity-30" />
               <p className="text-sm">No notifications yet</p>
               <p className="text-xs mt-1">You&apos;ll see updates here when they arrive</p>
             </div>
           ) : (
-            <div className="divide-y">
-              {notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className={`relative transition-colors ${!n.read ? "bg-accent/20" : ""}`}
-                >
-                  <button
-                    onClick={() => handleNotificationClick(n)}
-                    className="w-full text-left px-4 py-3 pr-12 hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 shrink-0">
-                        {categoryIcons[n.category] || <InfoIcon className="size-4 text-slate-400" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className={`text-sm leading-tight truncate ${!n.read ? "font-semibold" : "font-medium"}`}>
-                            {n.title}
-                          </p>
-                          {n.priority === "urgent" && (
-                            <span className="size-1.5 rounded-full bg-red-500 shrink-0" />
-                          )}
+            <ul className="flex flex-col">
+              {notifications.map((item, index) => {
+                const Icon = categoryIcons[item.category] || RiBellLine
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => handleNotificationClick(item)}
+                      className={cn(
+                        "w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/50",
+                        !item.read && "bg-muted/30"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "mt-0.5 flex size-8 shrink-0 items-center justify-center bg-muted text-muted-foreground",
+                          !item.read && "bg-primary/10 text-primary"
+                        )}
+                      >
+                        <Icon className="size-4" aria-hidden="true" />
+                      </span>
+
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <span
+                            className={cn(
+                              "truncate text-xs font-medium",
+                              !item.read ? "text-foreground" : "text-muted-foreground"
+                            )}
+                          >
+                            {item.title}
+                          </span>
+                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                            {timeAgo(item.createdAt)}
+                          </span>
                         </div>
-                        {n.message && (
-                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                            {n.message}
+                        {item.message && (
+                          <p className="text-xs/relaxed text-muted-foreground">
+                            {item.message}
                           </p>
                         )}
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-[10px] text-muted-foreground/60">{timeAgo(n.createdAt)}</p>
-                          {n.type && (
-                            <Badge variant="outline" className="text-[9px] px-1 py-0 capitalize">
-                              {n.type.replace(/_/g, " ")}
-                            </Badge>
-                          )}
-                        </div>
-                        {n.actions && n.actions.length > 0 && (
-                          <div className="flex items-center gap-1.5 mt-2" onClick={(e) => e.stopPropagation()}>
-                            {n.actions.slice(0, 2).map((a) => (
-                              <Button
-                                key={a.action}
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-[11px] px-2 gap-1"
-                                onClick={(e) => handleAction(e, n, a)}
-                              >
-                                {a.action === "view" || a.action === "reply" ? (
-                                  <ExternalLinkIcon className="size-3" />
-                                ) : a.action === "approve" ? (
-                                  <CheckCircle2Icon className="size-3 text-green-500" />
-                                ) : a.action === "reject" ? (
-                                  <AlertTriangleIcon className="size-3 text-red-500" />
-                                ) : null}
-                                {a.label}
-                              </Button>
-                            ))}
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  </button>
-                  <div className="absolute right-2 top-2 flex gap-0.5">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        archiveNotification(n.id);
-                      }}
-                      className="p-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-                      title="Archive"
-                    >
-                      <ArchiveIcon className="size-3.5" />
+
+                      {!item.read && (
+                        <span
+                          className="mt-1.5 size-1.5 shrink-0 bg-primary"
+                          aria-label="Unread"
+                        />
+                      )}
                     </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteNotification(n.id);
-                      }}
-                      className="p-1 text-muted-foreground/40 hover:text-destructive transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2Icon className="size-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                    {index < notifications.length - 1 && <Separator />}
+                  </li>
+                )
+              })}
               {hasMore && (
                 <div className="px-4 py-2 text-center">
                   <Button variant="ghost" size="sm" className="text-xs" onClick={loadMore} disabled={loading}>
-                    {loading ? <Loader2Icon className="size-3 animate-spin mr-1" /> : null}
                     Load more
                   </Button>
                 </div>
               )}
-            </div>
+            </ul>
           )}
         </ScrollArea>
-      </PopoverContent>
-    </Popover>
-  );
+
+        <Separator />
+
+        <div className="flex gap-2 p-3">
+          <SheetClose asChild>
+            <Button variant="outline" size="sm" className="flex-1">
+              Close
+            </Button>
+          </SheetClose>
+          <Button
+            size="sm"
+            className="flex-1"
+            onClick={handleMarkAllRead}
+            disabled={unreadCount === 0}
+          >
+            <RiCheckLine className="size-3.5 mr-1" />
+            Mark All Read
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
 }

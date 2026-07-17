@@ -30,7 +30,7 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "flex h-8 w-full items-center justify-between gap-2 rounded-lg border border-input bg-background px-3 py-1 text-sm text-foreground shadow-sm shadow-black/5 outline-none transition-all focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-muted-foreground [&>svg]:shrink-0",
+        "flex h-8 w-full items-center justify-between gap-2 border border-gray-300 bg-background px-3 py-1 text-sm text-foreground outline-none transition-all focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-muted-foreground [&>svg]:shrink-0",
         className
       )}
       {...props}
@@ -66,7 +66,7 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          "relative z-[60] max-h-96 min-w-[8rem] overflow-hidden rounded-lg border border-input bg-background text-foreground shadow-lg shadow-black/5 data-side=bottom:animate-in data-side=top:animate-out data-side=top:fade-out-0 data-side=bottom:fade-in-0 data-side=top:zoom-out-95 data-side=bottom:zoom-in-95",
+          "relative z-[60] max-h-96 min-w-[8rem] overflow-hidden border border-gray-300 bg-background text-foreground data-side=bottom:animate-in data-side=top:animate-out data-side=top:fade-out-0 data-side=bottom:fade-in-0 data-side=top:zoom-out-95 data-side=bottom:zoom-in-95",
           position === "popper" &&
             "data-side=bottom:translate-y-1 data-side=top:-translate-y-1",
           className
@@ -97,7 +97,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-md px-2 py-3 sm:py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 min-h-[44px] sm:min-h-0 [&>svg]:size-4 [&>svg]:shrink-0",
+        "relative flex w-full cursor-default select-none items-center px-2 py-3 sm:py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 min-h-[44px] sm:min-h-0 [&>svg]:size-4 [&>svg]:shrink-0",
         className
       )}
       {...props}

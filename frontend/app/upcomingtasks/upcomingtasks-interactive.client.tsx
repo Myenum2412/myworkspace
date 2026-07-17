@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlusIcon, CalendarClockIcon, SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ViewToggle } from "@/components/view-toggle";
-import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDataTable } from "@/components/task-data-table";
 import { apiFetch } from "@/lib/api";
 
@@ -37,21 +35,10 @@ export type UpcomingTask = {
 export default function UpcomingTasksInteractive({ initialTasks }: { initialTasks: UpcomingTask[] }) {
   const router = useRouter();
   const [tasks, setTasks] = useState<UpcomingTask[]>(initialTasks);
-  const [view, setView] = useState<"kanban" | "table">("table");
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UpcomingTask | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const handleStatusChange = useCallback(async (taskId: string, newStatus: string) => {
-    setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, status: newStatus } : t));
-    try {
-      await apiFetch(`/api/tasks/${taskId}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: newStatus }),
-      });
-    } catch {}
-  }, [setTasks]);
 
   return (
     <>
@@ -61,13 +48,6 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
             <CalendarClockIcon className="size-6" />
             <h1 className="text-2xl font-bold">Upcoming Tasks</h1>
             <Badge variant="secondary">{tasks.length} upcoming</Badge>
-            <div className="flex gap-1 ml-2">
-              <ViewToggle
-                options={[{ value: "table", label: "Table" }, { value: "kanban", label: "Kanban" }]}
-                value={view}
-                onChange={(v) => setView(v as typeof view)}
-              />
-            </div>
           </div>
           <Button onClick={() => router.push('/createtask')}>
             <PlusIcon className="mr-2 size-4" />
@@ -82,7 +62,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
               <p className="text-sm text-muted-foreground">You&apos;re all caught up!</p>
             </CardContent>
           </Card>
-        ) : view === "table" ? (
+        ) : (
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex items-center gap-4 mb-4">
               <h2 className="text-lg font-semibold shrink-0">Upcoming Tasks</h2>
@@ -113,13 +93,6 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
               />
             </div>
           </div>
-        ) : (
-          <KanbanBoard
-            tasks={tasks}
-            onStatusChange={handleStatusChange}
-            onCardClick={(task) => { setSelectedTask(task as unknown as UpcomingTask); setViewOpen(true); setEditMode(false); }}
-            statusGroups={["draft", "scheduled", "activated", "in_progress", "completed", "cancelled"]}
-          />
         )}
       </main>
 
