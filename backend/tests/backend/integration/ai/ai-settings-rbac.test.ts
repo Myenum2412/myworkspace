@@ -1,4 +1,4 @@
-import { connectTestDb, resetDb } from "../../__helpers__/db.js";
+import { connectTestDb, resetDb } from "../../../__helpers__/db.js";
 import { AiSettings } from "../../../../src/lib/db/models/AiSettings.js";
 import { AiConversation } from "../../../../src/lib/db/models/AiConversation.js";
 

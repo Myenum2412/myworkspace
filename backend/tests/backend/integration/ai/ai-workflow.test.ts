@@ -1,4 +1,4 @@
-import { connectTestDb, resetDb } from "../../__helpers__/db.js";
+import { connectTestDb, resetDb } from "../../../__helpers__/db.js";
 import { AiConversation } from "../../../../src/lib/db/models/AiConversation.js";
 import { AiMessage } from "../../../../src/lib/db/models/AiMessage.js";
 import { AiSettings } from "../../../../src/lib/db/models/AiSettings.js";
@@ -17,7 +17,7 @@ describe("AI Workflow Integration", () => {
     await AiSettings.create({
       orgId,
       provider: "openrouter",
-      model: "tencent/hy3:free",
+      aiModel: "tencent/hy3:free",
       temperature: 0.7,
       maxTokens: 4096,
       responseLength: "medium",
@@ -28,7 +28,7 @@ describe("AI Workflow Integration", () => {
 
     const settings = await AiSettings.findOne({ orgId });
     expect(settings).not.toBeNull();
-    expect(settings!.model).toBe("tencent/hy3:free");
+    expect(settings!.aiModel).toBe("tencent/hy3:free");
 
     // Step 2: Create conversation
     const conv = await AiConversation.create({
@@ -57,7 +57,7 @@ describe("AI Workflow Integration", () => {
       userId,
       role: "assistant",
       content: "Your project is on track.",
-      model: "tencent/hy3:free",
+      aiModel: "tencent/hy3:free",
       tokens: { prompt: 15, completion: 10, total: 25 },
       executionTime: 500,
     });
@@ -73,7 +73,7 @@ describe("AI Workflow Integration", () => {
       userId,
       action: "chat",
       prompt: "What is my current project status?",
-      model: "tencent/hy3:free",
+      aiModel: "tencent/hy3:free",
       tokens: { prompt: 15, completion: 10, total: 25 },
       executionTime: 500,
       status: "success",
@@ -94,7 +94,7 @@ describe("AI Workflow Integration", () => {
       totalTokens: 25,
       estimatedCost: 0.001,
       executionTimeMs: 500,
-      model: "tencent/hy3:free",
+      aiModel: "tencent/hy3:free",
     });
 
     const usage = await AiUsageLog.find({ orgId });

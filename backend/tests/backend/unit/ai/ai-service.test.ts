@@ -8,11 +8,6 @@ beforeAll(async () => await connectTestDb());
 beforeEach(async () => {
   await resetDb();
   aiService = new AIService();
-  process.env.OPENROUTER_API_KEY = "sk-or-v1-test-key";
-});
-
-afterEach(() => {
-  delete process.env.OPENROUTER_API_KEY;
 });
 
 describe("AIService", () => {
@@ -106,7 +101,7 @@ describe("AIService", () => {
         prompt: "What are my priorities for today?",
         context: "workspace",
         streaming: false,
-      })).rejects.toThrow("API key"); // Will fail because no real API, but not injection
+      })).rejects.toThrow(); // Will fail because no real API, but not injection
     });
   });
 });

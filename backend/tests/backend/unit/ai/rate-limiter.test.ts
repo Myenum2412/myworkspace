@@ -1,9 +1,12 @@
 import { RateLimiter } from "../../../../src/services/ai/rate-limiter.service.js";
+import { connectTestDb, resetDb } from "../../../__helpers__/db.js";
 
 describe("RateLimiter", () => {
   let limiter: RateLimiter;
 
-  beforeEach(() => {
+  beforeAll(async () => await connectTestDb());
+  beforeEach(async () => {
+    await resetDb();
     limiter = new RateLimiter();
   });
 

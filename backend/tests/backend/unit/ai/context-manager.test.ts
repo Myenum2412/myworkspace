@@ -1,9 +1,15 @@
 import { ContextManager } from "../../../../src/services/ai/context-manager.service.js";
+import { connectTestDb, resetDb } from "../../../__helpers__/db.js";
+import { Organization } from "../../../../src/lib/db/models/Organization.js";
+import { OrgMember } from "../../../../src/lib/db/models/OrgMember.js";
+import { User } from "../../../../src/lib/db/models/User.js";
 
 describe("ContextManager", () => {
   let manager: ContextManager;
 
-  beforeEach(() => {
+  beforeAll(async () => await connectTestDb());
+  beforeEach(async () => {
+    await resetDb();
     manager = new ContextManager();
   });
 

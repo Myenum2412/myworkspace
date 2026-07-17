@@ -38,7 +38,7 @@ describe("ConversationService", () => {
 
   describe("findById", () => {
     it("returns null for non-existent conversation", async () => {
-      const result = await service.findById("nonexistent");
+      const result = await service.findById("000000000000000000000000");
       expect(result).toBeNull();
     });
 
@@ -123,7 +123,7 @@ describe("ConversationService", () => {
     });
 
     it("throws for non-existent conversation", async () => {
-      await expect(service.softDelete("nonexistent", orgId, userId)).rejects.toThrow("Conversation not found");
+      await expect(service.softDelete("000000000000000000000000", orgId, userId)).rejects.toThrow("Conversation not found");
     });
   });
 
