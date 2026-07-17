@@ -49,6 +49,9 @@ import billingRoutes from "./routes/billing.js";
 import clientFoldersRoutes from "./routes/client-folders.js";
 import aiRoutes from "./routes/ai.js";
 import lrmRoutes from "./services/lrm/routes/lrm.routes.js";
+import consentRoutes from "./routes/consent.js";
+import analyticsRoutes from "./routes/analytics.js";
+import adminConsentRoutes from "./routes/admin-consent.js";
 
 const app = express();
 
@@ -280,6 +283,9 @@ app.use("/api/file-favorites", (await import("./routes/file-favorites.js")).defa
 app.use("/api/client-folders", clientFoldersRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/lrm", lrmRoutes);
+app.use("/api/consent", consentRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/admin", adminConsentRoutes);
 
 // ── 404 catch-all ──
 app.use((req, res) => {
