@@ -16,10 +16,9 @@ myworkspace.myenum.in
 │       ├── /api/files-tus ........ TUS resumable uploads
 │       └── /api/file-approval .... File approval workflow
 │
-└── Cloudflare R2 (S3-compatible storage)
-    └── Bucket: myworkspace
-        └── {orgId}/
-            ├── {timestamp}-{uuid}-{filename}  (files stored flat)
+└── Local Filesystem (data/uploads/)
+    └── {orgId}/
+        ├── {timestamp}-{uuid}-{filename}  (files stored flat)
 ```
 
 ## Database Models
@@ -44,7 +43,7 @@ MongoDB: myworkspace
 ├── fileAttachments ............ All uploaded files
 │   ├── id, orgId, name, originalName, mimeType, size
 │   ├── storagePath: "{orgId}/{timestamp}-{uuid}-{name}"
-│   ├── storageProvider: "s3" | "local"
+│   ├── storageProvider: "local"
 │   ├── category: "profile" | "report" | "general" | "document" | ...
 │   ├── projectId: null | "..."  ── Linked to a project
 │   ├── clientId: null | "..."   ── Linked to a client
@@ -131,10 +130,7 @@ Nginx → Backend (port 4000)
 4. Virus scan (ClamAV)
 5. Compute checksum (dedup)
         │
-        ├──► Cloudflare R2 (if S3 configured)
-        │   └── storagePath: "{orgId}/{timestamp}-{uuid}-{name}"
-        │
-        └──► Local filesystem (fallback)
+        └──► Local filesystem
             └── backend/data/uploads/{storagePath}
         │
         ▼

@@ -8,13 +8,20 @@ import { AppError } from "../../middleware/error.js";
 
 const providerCache = new Map<string, IAIProvider>();
 
-export function getAIProvider(provider: AIProvider): IAIProvider {
-  const cached = providerCache.get(provider);
+export class AIFactory {
+  getAIProvider(provider?: AIProvider): IAIProvider {
+    return getAIProvider(provider || "openrouter");
+  }
+}
+
+export function getAIProvider(provider?: AIProvider): IAIProvider {
+  const actualProvider = provider || "openrouter";
+  const cached = providerCache.get(actualProvider);
   if (cached) return cached;
 
   let instance: IAIProvider;
 
-  switch (provider) {
+  switch (actualProvider) {
     case "openrouter":
       instance = new OpenRouterProvider();
       break;
@@ -31,7 +38,7 @@ export function getAIProvider(provider: AIProvider): IAIProvider {
       throw new AppError(400, `Unsupported AI provider: ${provider}`);
   }
 
-  providerCache.set(provider, instance);
+  providerCache.set(actualProvider, instance);
   return instance;
 }
 

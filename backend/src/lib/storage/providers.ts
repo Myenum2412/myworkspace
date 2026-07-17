@@ -1,17 +1,43 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
-import { env } from "../../config/env.js";
 import path from "path";
 import fs from "fs/promises";
 import { constants as fsConstants } from "fs";
+import { Readable } from "stream";
+import {
+  getR2Client,
+  getR2Config,
+  isR2Configured,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  CopyObjectCommand,
+  CreateMultipartUploadCommand,
+  UploadPartCommand,
+  CompleteMultipartUploadCommand,
+  AbortMultipartUploadCommand,
+  ListPartsCommand,
+  getSignedUrl,
+} from "./r2-client.js";
+import { logger } from "../logger/index.js";
 
-export type StorageProviderType = "local" | "s3" | "gcs" | "azure";
+export type StorageProviderType = "local" | "r2";
 
 export interface IStorageProvider {
   save(buffer: Buffer, key: string): Promise<void>;
   get(key: string): Promise<Buffer | null>;
+  getStream(key: string): Promise<Readable | null>;
   delete(key: string): Promise<void>;
   exists(key: string): Promise<boolean>;
   getUrl(key: string): string;
+  getPresignedUrl(key: string, expiresIn?: number): Promise<string>;
+  getPresignedUploadUrl(key: string, expiresIn?: number): Promise<string>;
+  copy(sourceKey: string, destKey: string): Promise<void>;
+  initMultipartUpload(key: string): Promise<string>;
+  getPresignedUploadPartUrl(key: string, uploadId: string, partNumber: number): Promise<string>;
+  completeMultipartUpload(key: string, uploadId: string, parts: { ETag: string; PartNumber: number }[]): Promise<void>;
+  abortMultipartUpload(key: string, uploadId: string): Promise<void>;
+  list(prefix: string): Promise<string[]>;
 }
 
 export class LocalStorageProvider implements IStorageProvider {
@@ -21,12 +47,7 @@ export class LocalStorageProvider implements IStorageProvider {
     this.baseDir = path.resolve(process.cwd(), "data", "uploads");
   }
 
-  /**
-   * Sanitize key: prevent path traversal by resolving relative to baseDir
-   * and ensuring the result stays within baseDir.
-   */
   private fullPath(key: string): string {
-    // Strip null bytes and reject suspicious patterns
     const clean = key.replace(/\0/g, "");
     const resolved = path.resolve(this.baseDir, clean);
     if (!resolved.startsWith(this.baseDir)) {
@@ -60,6 +81,17 @@ export class LocalStorageProvider implements IStorageProvider {
     }
   }
 
+  async getStream(key: string): Promise<Readable | null> {
+    const fp = this.fullPath(key);
+    try {
+      await fs.access(fp, fsConstants.F_OK);
+      const { createReadStream } = await import("fs");
+      return createReadStream(fp) as Readable;
+    } catch {
+      return null;
+    }
+  }
+
   async delete(key: string): Promise<void> {
     const fp = this.fullPath(key);
     try {
@@ -82,80 +114,220 @@ export class LocalStorageProvider implements IStorageProvider {
   getUrl(key: string): string {
     return `/uploads/${key}`;
   }
-}
 
-class S3CompatibleProvider implements IStorageProvider {
-  private client: S3Client;
-  private bucket: string;
-  private endpoint: string;
-  private publicUrlBase: string;
-
-  constructor(config: { endpoint: string; bucket: string; accessKeyId: string; secretAccessKey: string; publicUrlBase?: string; region?: string }) {
-    this.client = new S3Client({
-      region: config.region || "auto",
-      endpoint: config.endpoint,
-      credentials: { accessKeyId: config.accessKeyId, secretAccessKey: config.secretAccessKey },
-      forcePathStyle: true,
-    });
-    this.bucket = config.bucket;
-    this.endpoint = config.endpoint;
-    this.publicUrlBase = config.publicUrlBase || `${config.endpoint}/${config.bucket}`;
+  async getPresignedUrl(_key: string, _expiresIn = 3600): Promise<string> {
+    throw new Error("Presigned URLs not supported for local storage");
   }
 
+  async getPresignedUploadUrl(_key: string, _expiresIn = 3600): Promise<string> {
+    throw new Error("Presigned upload URLs not supported for local storage");
+  }
+
+  async copy(sourceKey: string, destKey: string): Promise<void> {
+    const buffer = await this.get(sourceKey);
+    if (!buffer) throw new Error(`Source not found: ${sourceKey}`);
+    await this.save(buffer, destKey);
+  }
+
+  async initMultipartUpload(_key: string): Promise<string> {
+    throw new Error("Multipart upload not supported for local storage");
+  }
+
+  async getPresignedUploadPartUrl(_key: string, _uploadId: string, _partNumber: number): Promise<string> {
+    throw new Error("Multipart upload not supported for local storage");
+  }
+
+  async completeMultipartUpload(_key: string, _uploadId: string, _parts: { ETag: string; PartNumber: number }[]): Promise<void> {
+    throw new Error("Multipart upload not supported for local storage");
+  }
+
+  async abortMultipartUpload(_key: string, _uploadId: string): Promise<void> {
+    throw new Error("Multipart upload not supported for local storage");
+  }
+
+  async list(prefix: string): Promise<string[]> {
+    const dir = this.fullPath(prefix);
+    try {
+      const entries = await fs.readdir(path.dirname(dir), { withFileTypes: true });
+      return entries.filter(e => e.isFile()).map(e => e.name);
+    } catch {
+      return [];
+    }
+  }
+}
+
+export class R2StorageProvider implements IStorageProvider {
   async save(buffer: Buffer, key: string): Promise<void> {
-    await this.client.send(new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: buffer }));
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: buffer,
+    });
+    await client.send(command);
   }
 
   async get(key: string): Promise<Buffer | null> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
     try {
-      const resp = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
+      const command = new GetObjectCommand({ Bucket: bucket, Key: key });
+      const response = await client.send(command);
+      if (!response.Body) return null;
       const chunks: Uint8Array[] = [];
-      for await (const chunk of resp.Body as any) {
-        chunks.push(chunk);
+      const stream = response.Body as Readable;
+      for await (const chunk of stream) {
+        chunks.push(chunk instanceof Buffer ? chunk : Buffer.from(chunk));
       }
       return Buffer.concat(chunks);
-    } catch {
-      return null;
+    } catch (err: any) {
+      if (err.name === "NoSuchKey") return null;
+      throw err;
+    }
+  }
+
+  async getStream(key: string): Promise<Readable | null> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    try {
+      const command = new GetObjectCommand({ Bucket: bucket, Key: key });
+      const response = await client.send(command);
+      if (!response.Body) return null;
+      return response.Body as Readable;
+    } catch (err: any) {
+      if (err.name === "NoSuchKey") return null;
+      throw err;
     }
   }
 
   async delete(key: string): Promise<void> {
-    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const command = new DeleteObjectCommand({ Bucket: bucket, Key: key });
+    await client.send(command);
   }
 
   async exists(key: string): Promise<boolean> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
     try {
-      await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }));
+      const command = new HeadObjectCommand({ Bucket: bucket, Key: key });
+      await client.send(command);
       return true;
-    } catch {
-      return false;
+    } catch (err: any) {
+      if (err.name === "NotFound" || err.name === "NoSuchKey") return false;
+      throw err;
     }
   }
 
   getUrl(key: string): string {
-    return `${this.publicUrlBase}/${key}`;
+    const { publicUrl, bucket, endpoint } = getR2Config();
+    if (publicUrl) {
+      return `${publicUrl.replace(/\/+$/, "")}/${key}`;
+    }
+    return `${endpoint.replace(/\/+$/, "")}/${bucket}/${key}`;
+  }
+
+  async getPresignedUrl(key: string, expiresIn = 3600): Promise<string> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const command = new GetObjectCommand({ Bucket: bucket, Key: key });
+    return getSignedUrl(client, command, { expiresIn });
+  }
+
+  async getPresignedUploadUrl(key: string, expiresIn = 3600): Promise<string> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const command = new PutObjectCommand({ Bucket: bucket, Key: key });
+    return getSignedUrl(client, command, { expiresIn });
+  }
+
+  async copy(sourceKey: string, destKey: string): Promise<void> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const command = new CopyObjectCommand({
+      Bucket: bucket,
+      CopySource: `${bucket}/${sourceKey}`,
+      Key: destKey,
+    });
+    await client.send(command);
+  }
+
+  async initMultipartUpload(key: string): Promise<string> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const command = new CreateMultipartUploadCommand({ Bucket: bucket, Key: key });
+    const response = await client.send(command);
+    return response.UploadId || "";
+  }
+
+  async getPresignedUploadPartUrl(key: string, uploadId: string, partNumber: number): Promise<string> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const command = new UploadPartCommand({
+      Bucket: bucket,
+      Key: key,
+      UploadId: uploadId,
+      PartNumber: partNumber,
+    });
+    return getSignedUrl(client, command, { expiresIn: 3600 });
+  }
+
+  async completeMultipartUpload(key: string, uploadId: string, parts: { ETag: string; PartNumber: number }[]): Promise<void> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const command = new CompleteMultipartUploadCommand({
+      Bucket: bucket,
+      Key: key,
+      UploadId: uploadId,
+      MultipartUpload: { Parts: parts },
+    });
+    await client.send(command);
+  }
+
+  async abortMultipartUpload(key: string, uploadId: string): Promise<void> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const command = new AbortMultipartUploadCommand({
+      Bucket: bucket,
+      Key: key,
+      UploadId: uploadId,
+    });
+    await client.send(command);
+  }
+
+  async list(prefix: string): Promise<string[]> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const keys: string[] = [];
+    let continuationToken: string | undefined;
+
+    do {
+      const command = new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      });
+      const response = await client.send(command);
+      if (response.Contents) {
+        for (const obj of response.Contents) {
+          if (obj.Key) keys.push(obj.Key);
+        }
+      }
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
+
+    return keys;
   }
 }
 
-let provider: IStorageProvider | null = null;
-
 export function getStorageProvider(): IStorageProvider {
-  if (provider) return provider;
-
-  if (env.S3_ENDPOINT && env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY) {
-    provider = new S3CompatibleProvider({
-      endpoint: env.S3_ENDPOINT,
-      bucket: env.S3_BUCKET_NAME || "myworkspace",
-      accessKeyId: env.S3_ACCESS_KEY_ID,
-      secretAccessKey: env.S3_SECRET_ACCESS_KEY,
-      region: env.S3_REGION || "auto",
-      publicUrlBase: env.S3_PUBLIC_URL || undefined,
-    });
-    return provider;
+  if (isR2Configured()) {
+    logger.info("Using R2 storage provider");
+    return new R2StorageProvider();
   }
-
-  provider = new LocalStorageProvider();
-  return provider;
+  return new LocalStorageProvider();
 }
 
 export async function computeChecksum(buffer: Buffer): Promise<string> {

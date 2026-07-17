@@ -10,7 +10,7 @@ MyWorkSpace is a multi-tenant SaaS platform built with:
 - **Queue:** RabbitMQ (amqplib)
 - **Real-time:** Socket.IO
 - **Auth:** NextAuth.js v5 (JWT strategy)
-- **Storage:** Cloudflare R2 (S3-compatible)
+- **Storage:** Local filesystem
 - **Email:** Resend
 - **Payments:** Stripe
 - **Monitoring:** Prometheus + Grafana
@@ -42,7 +42,7 @@ MyWorkSpace is a multi-tenant SaaS platform built with:
     ┌─────────▼───────────────────────▼───────────────────────▼─────────┐
     │                      Data Layer                                   │
     ├─────────────────┬─────────────────┬─────────────────┬─────────────┤
-    │   MongoDB       │   Redis         │   RabbitMQ      │   R2/S3     │
+    │   MongoDB       │   Redis         │   RabbitMQ      │   Local FS  │
     │   (Atlas)       │   (Cache)       │   (Queue)       │   (Storage) │
     └─────────────────┴─────────────────┴─────────────────┴─────────────┘
 ```
@@ -77,7 +77,7 @@ MyWorkSpace is a multi-tenant SaaS platform built with:
 - **Database:** MongoDB Atlas auto-scaling
 - **Cache:** Redis Cluster ready
 - **Queue:** RabbitMQ mirrored queues
-- **Storage:** R2 unlimited
+- **Storage:** Local filesystem
 
 ## Security
 

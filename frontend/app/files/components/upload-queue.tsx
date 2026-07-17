@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
 const MAX_SIZE = 50 * 1024 * 1024;
+const R2_CHUNK_SIZE = 5 * 1024 * 1024;
+const R2_MAX_CONCURRENCY = 4;
 
 type UploadStatus = "uploading" | "done" | "error";
 
@@ -55,7 +57,105 @@ export function UploadZone() {
   const inputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
 
-  const uploadFile = useCallback(
+  const uploadViaPresigned = useCallback(
+    async (item: UploadItem, file: File) => {
+      try {
+        const totalChunks = Math.ceil(file.size / R2_CHUNK_SIZE);
+        setItems((prev) =>
+          prev.map((i) => (i.id === item.id ? { ...i, progress: 0 } : i))
+        );
+
+        const initRes = await fetch("/api/files/presigned/multipart/init", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            fileName: file.name,
+            fileSize: file.size,
+            mimeType: file.type,
+            folderId: currentFolderId || null,
+            orgId,
+          }),
+        });
+        const initData = await initRes.json();
+        if (!initData.data?.uploadId) throw new Error("Failed to initiate multipart upload");
+        const { uploadId } = initData.data;
+
+        const partUrls: string[] = [];
+        for (let i = 0; i < totalChunks; i++) {
+          const urlRes = await fetch("/api/files/presigned/multipart/part-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ uploadId, partNumber: i + 1, fileName: file.name }),
+          });
+          const urlData = await urlRes.json();
+          if (!urlData.data?.url) throw new Error(`Failed to get presigned URL for part ${i + 1}`);
+          partUrls.push(urlData.data.url);
+        }
+
+        const uploadedParts: { PartNumber: number; ETag: string }[] = [];
+        let aborted = false;
+
+        const uploadChunk = async (partNumber: number): Promise<void> => {
+          const start = (partNumber - 1) * R2_CHUNK_SIZE;
+          const end = Math.min(start + R2_CHUNK_SIZE, file.size);
+          const blob = file.slice(start, end);
+
+          const res = await fetch(partUrls[partNumber - 1], {
+            method: "PUT",
+            body: blob,
+          });
+          if (!res.ok) throw new Error(`Part ${partNumber} upload failed: ${res.status}`);
+          const etag = res.headers.get("ETag") || "";
+          uploadedParts.push({ PartNumber: partNumber, ETag: etag.replace(/^"/, "").replace(/"$/, "") });
+
+          const pct = Math.round((uploadedParts.length / totalChunks) * 100);
+          setItems((prev) =>
+            prev.map((i) => (i.id === item.id ? { ...i, progress: pct } : i))
+          );
+        };
+
+        const queue = Array.from({ length: totalChunks }, (_, i) => i + 1);
+        while (queue.length > 0 && !aborted) {
+          const batch = queue.splice(0, R2_MAX_CONCURRENCY);
+          await Promise.all(batch.map(uploadChunk));
+        }
+
+        if (!aborted) {
+          uploadedParts.sort((a, b) => a.PartNumber - b.PartNumber);
+          const completeRes = await fetch("/api/files/presigned/multipart/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              uploadId,
+              fileName: file.name,
+              parts: uploadedParts,
+            }),
+          });
+          if (!completeRes.ok) throw new Error("Failed to complete multipart upload");
+          setItems((prev) =>
+            prev.map((i) =>
+              i.id === item.id ? { ...i, progress: 100, status: "done" } : i
+            )
+          );
+          toast.success(`${file.name} uploaded`);
+        }
+      } catch (err) {
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id
+              ? { ...i, status: "error", error: err instanceof Error ? err.message : "Upload failed" }
+              : i
+          )
+        );
+      }
+    },
+    [orgId, currentFolderId]
+  );
+
+  const uploadViaDirect = useCallback(
     async (item: UploadItem, file: File) => {
       try {
         const formData = new FormData();
@@ -99,17 +199,24 @@ export function UploadZone() {
         setItems((prev) =>
           prev.map((i) =>
             i.id === item.id
-              ? {
-                  ...i,
-                  status: "error",
-                  error: err instanceof Error ? err.message : "Upload failed",
-                }
+              ? { ...i, status: "error", error: err instanceof Error ? err.message : "Upload failed" }
               : i
           )
         );
       }
     },
     [orgId, currentFolderId]
+  );
+
+  const uploadFile = useCallback(
+    async (item: UploadItem, file: File) => {
+      if (file.size > MAX_SIZE) {
+        await uploadViaPresigned(item, file);
+      } else {
+        await uploadViaDirect(item, file);
+      }
+    },
+    [uploadViaDirect, uploadViaPresigned]
   );
 
   const addFiles = useCallback(

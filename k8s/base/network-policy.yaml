@@ -62,7 +62,7 @@ spec:
       ports:
         - protocol: TCP
           port: 6379
-    # Allow external HTTPS (Stripe, Resend, S3, etc.)
+    # Allow external HTTPS (Stripe, Resend, etc.)
     - to: []
       ports:
         - protocol: TCP

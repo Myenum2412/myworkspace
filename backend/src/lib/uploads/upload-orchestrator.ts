@@ -108,7 +108,7 @@ export async function finalizeUpload(input: FinalizeInput): Promise<Orchestrator
     id: fileId, orgId, folderId: folderId || null, clientId: clientId || null,
     uploaderId, createdBy: uploaderId, name, originalName,
     mimeType, size, storagePath,
-    storageProvider: env.S3_ENDPOINT ? "s3" : "local",
+    storageProvider: "local",
     category: categorizeMime(mimeType), checksum: sha, currentVersion: 1,
     approvalStatus,
   });

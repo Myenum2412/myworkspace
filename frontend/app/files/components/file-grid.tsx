@@ -131,7 +131,15 @@ function FileCard({ file }: { file: FileItem }) {
         <ContextMenuItem onClick={() => setPreviewFile(file)}>
           <EyeIcon className="size-3.5 mr-2" /> Preview
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}>
+        <ContextMenuItem onClick={async () => {
+          try {
+            const res = await fetch(`/api/files/presigned/download/${file.id}`, { credentials: "include" });
+            const data = await res.json();
+            window.open(data.data?.url || `/api/files/${file.id}/download`, "_blank");
+          } catch {
+            window.open(`/api/files/${file.id}/download`, "_blank");
+          }
+        }}>
           <DownloadIcon className="size-3.5 mr-2" /> Download
         </ContextMenuItem>
         <ContextMenuItem onClick={() => setRenameTarget({ type: "file", id: file.id, name: file.originalName })}>

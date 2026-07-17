@@ -6,7 +6,7 @@ import { FileVersion } from "../lib/db/models/FileVersion.js";
 import { FileShare } from "../lib/db/models/FileShare.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { verifyOrgAccess } from "../lib/org-utils.js";
+import { verifyOrgAccess, requireOrgMembership } from "../lib/org-utils.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { cacheManager, CacheKeys } from "../lib/cache.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
@@ -14,6 +14,10 @@ import {
   uploadFile, softDeleteFile, restoreFile, permanentDeleteFile,
   createFileVersion, toggleFileLock, getFileStream, duplicateFile,
 } from "../services/file.service.js";
+import { getStorageProvider } from "../lib/storage/providers.js";
+import { SignedUrlService } from "../lib/storage/signed-urls.js";
+import { FileIntelligenceService } from "../services/lrm/file-intelligence.js";
+import { logger } from "../lib/logger/index.js";
 
 const router = Router();
 
@@ -634,6 +638,309 @@ router.post("/:id/restore", async (req: AuthRequest, res: Response) => {
 router.delete("/:id/permanent", async (req: AuthRequest, res: Response) => {
   await permanentDeleteFile(req.params.id, req.user!.userId);
   res.json({ success: true });
+});
+
+// ─── R2 Presigned Upload ──────────────────────────────────────────────────────
+
+router.post("/presigned-upload", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId, fileName, mimeType, size } = req.body;
+    if (!orgId || !fileName) throw new AppError(400, "orgId and fileName are required");
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const signedUrlService = new SignedUrlService();
+    const key = `${orgId}/${Date.now()}-${uuid()}-${fileName}`;
+    const url = await signedUrlService.getUploadUrl(key, mimeType || "application/octet-stream");
+
+    res.json({ success: true, data: { url, key } });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to generate presigned upload URL");
+  }
+});
+
+// ─── R2 Presigned Download ────────────────────────────────────────────────────
+
+router.post("/presigned-download", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId, keys, fileId } = req.body;
+    if (!orgId) throw new AppError(400, "orgId is required");
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const signedUrlService = new SignedUrlService();
+
+    if (fileId) {
+      const file = await FileAttachment.findOne({ id: fileId, orgId, deletedAt: null }).lean();
+      if (!file) throw new AppError(404, "File not found");
+
+      const url = await signedUrlService.getDownloadUrl(file.storagePath);
+      res.json({ success: true, data: { url, key: file.storagePath } });
+      return;
+    }
+
+    if (keys && Array.isArray(keys)) {
+      const urls = await signedUrlService.getBatchDownloadUrls(keys);
+      const result = Array.from(urls.entries()).map(([key, url]) => ({ key, url }));
+      res.json({ success: true, data: { urls: result } });
+      return;
+    }
+
+    throw new AppError(400, "fileId or keys is required");
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to generate presigned download URL");
+  }
+});
+
+// ─── R2 Multipart Upload ──────────────────────────────────────────────────────
+
+router.post("/multipart/init", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId, fileName, mimeType } = req.body;
+    if (!orgId || !fileName) throw new AppError(400, "orgId and fileName are required");
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const key = `${orgId}/multipart/${Date.now()}-${uuid()}-${fileName}`;
+    const provider = getStorageProvider();
+    const uploadId = await provider.initMultipartUpload(key);
+
+    res.json({ success: true, data: { uploadId, key } });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to initialize multipart upload");
+  }
+});
+
+router.post("/multipart/part-url", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId, key, uploadId, partNumber } = req.body;
+    if (!orgId || !key || !uploadId || !partNumber) {
+      throw new AppError(400, "orgId, key, uploadId, and partNumber are required");
+    }
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const provider = getStorageProvider();
+    const url = await provider.getPresignedUploadPartUrl(key, uploadId, partNumber);
+
+    res.json({ success: true, data: { url } });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to generate part upload URL");
+  }
+});
+
+router.post("/multipart/complete", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId, key, uploadId, parts } = req.body;
+    if (!orgId || !key || !uploadId || !parts) {
+      throw new AppError(400, "orgId, key, uploadId, and parts are required");
+    }
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const provider = getStorageProvider();
+    await provider.completeMultipartUpload(key, uploadId, parts);
+
+    await recordAuditLog({
+      orgId, userId: req.user!.userId, createdBy: req.user!.userId,
+      action: "file.multipart.completed", entityType: "file", entityId: key,
+      description: "Multipart upload completed",
+    });
+
+    res.json({ success: true });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to complete multipart upload");
+  }
+});
+
+router.post("/multipart/abort", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId, key, uploadId } = req.body;
+    if (!orgId || !key || !uploadId) {
+      throw new AppError(400, "orgId, key, and uploadId are required");
+    }
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const provider = getStorageProvider();
+    await provider.abortMultipartUpload(key, uploadId);
+
+    res.json({ success: true });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to abort multipart upload");
+  }
+});
+
+// ─── File Processing Pipeline ─────────────────────────────────────────────────
+
+router.post("/process", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId, fileId } = req.body;
+    if (!orgId || !fileId) throw new AppError(400, "orgId and fileId are required");
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const file = await FileAttachment.findOne({ id: fileId, orgId, deletedAt: null }).lean();
+    if (!file) throw new AppError(404, "File not found");
+
+    // Run processing tasks in background
+    const fileIntel = new FileIntelligenceService();
+    Promise.all([
+      fileIntel.analyzeFile(fileId, orgId).catch((e: any) => logger.warn({ err: e, fileId }, "Analysis failed")),
+      fileIntel.generateEmbeddings(fileId, orgId).catch((e: any) => logger.warn({ err: e, fileId }, "Embedding failed")),
+    ]);
+
+    await recordAuditLog({
+      orgId, userId: req.user!.userId, createdBy: req.user!.userId,
+      action: "file.processing.triggered", entityType: "file", entityId: fileId,
+      description: `File processing pipeline triggered for "${file.originalName}"`,
+    });
+
+    res.json({ success: true, message: "File processing pipeline triggered" });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to trigger file processing");
+  }
+});
+
+// ─── Storage Analytics ────────────────────────────────────────────────────────
+
+router.get("/analytics/stats", async (req: AuthRequest, res: Response) => {
+  try {
+    const orgId = req.query.orgId as string;
+    if (!orgId) throw new AppError(400, "orgId is required");
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const [totalFiles, sizeAgg, deletedCount, byExtension, byMimeType, dailyUploads] = await Promise.all([
+      FileAttachment.countDocuments({ orgId, deletedAt: null }),
+      FileAttachment.aggregate([
+        { $match: { orgId, deletedAt: null } },
+        { $group: { _id: null, totalSize: { $sum: "$size" }, avgSize: { $avg: "$size" }, maxSize: { $max: "$size" } } },
+      ]),
+      FileAttachment.countDocuments({ orgId, deletedAt: { $ne: null } }),
+      FileAttachment.aggregate([
+        { $match: { orgId, deletedAt: null } },
+        { $addFields: { ext: { $toLower: { $ifNull: [{ $last: { $split: ["$originalName", "."] } }, "unknown"] } } } },
+        { $group: { _id: "$ext", count: { $sum: 1 }, totalSize: { $sum: "$size" } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 },
+      ]),
+      FileAttachment.aggregate([
+        { $match: { orgId, deletedAt: null } },
+        { $group: { _id: { $arrayElemAt: [{ $split: ["$mimeType", "/"] }, 0] }, count: { $sum: 1 }, totalSize: { $sum: "$size" } } },
+      ]),
+      FileAttachment.aggregate([
+        { $match: { orgId, deletedAt: null, createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } } },
+        { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 }, totalSize: { $sum: "$size" } } },
+        { $sort: { _id: 1 } },
+      ]),
+    ]);
+
+    const stats = sizeAgg[0] || { totalSize: 0, avgSize: 0, maxSize: 0 };
+
+    res.json({
+      success: true,
+      data: {
+        totalFiles,
+        totalSize: stats.totalSize,
+        averageFileSize: Math.round(stats.avgSize),
+        largestFileSize: stats.maxSize,
+        deletedFiles: deletedCount,
+        byExtension: byExtension.map((e: any) => ({ ext: e._id, count: e.count, size: e.totalSize })),
+        byType: byMimeType.map((t: any) => ({ type: t._id, count: t.count, size: t.totalSize })),
+        dailyUploads: dailyUploads.map((d: any) => ({ date: d._id, count: d.count, size: d.totalSize })),
+      },
+    });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to fetch analytics");
+  }
+});
+
+// ─── AI File Analysis ─────────────────────────────────────────────────────────
+
+router.post("/ai/analyze", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId, fileId } = req.body;
+    if (!orgId || !fileId) throw new AppError(400, "orgId and fileId are required");
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const fileIntel = new FileIntelligenceService();
+    const analysis = await fileIntel.analyzeFile(fileId, orgId);
+
+    // Update file with analysis results
+    await FileAttachment.updateOne(
+      { id: fileId },
+      { $set: { category: analysis.categories[0]?.toLowerCase() as any, tags: analysis.tags, description: analysis.summary.substring(0, 500) } },
+    );
+
+    res.json({ success: true, data: analysis });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "AI analysis failed");
+  }
+});
+
+router.post("/ai/search", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId, query, limit } = req.body;
+    if (!orgId || !query) throw new AppError(400, "orgId and query are required");
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const fileIntel = new FileIntelligenceService();
+    const results = await fileIntel.semanticSearch(query, orgId, limit || 10);
+
+    res.json({ success: true, data: results });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Semantic search failed");
+  }
+});
+
+router.get("/ai/related/:id", async (req: AuthRequest, res: Response) => {
+  try {
+    const orgId = req.query.orgId as string;
+    const fileId = req.params.id;
+    const limit = parseInt(req.query.limit as string) || 5;
+
+    if (!orgId) throw new AppError(400, "orgId is required");
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const fileIntel = new FileIntelligenceService();
+    const related = await fileIntel.findRelatedFiles(fileId, orgId, limit);
+
+    res.json({ success: true, data: related });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to find related files");
+  }
+});
+
+router.post("/ai/suggest-organization", async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId } = req.body;
+    if (!orgId) throw new AppError(400, "orgId is required");
+
+    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
+
+    const fileIntel = new FileIntelligenceService();
+    const suggestions = await fileIntel.suggestOrganization(orgId);
+
+    res.json({ success: true, data: suggestions });
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(500, err.message || "Failed to generate organization suggestions");
+  }
 });
 
 export default router;

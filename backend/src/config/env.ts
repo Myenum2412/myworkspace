@@ -22,29 +22,23 @@ export const env = {
   // Websocket connect-src for Helmet CSP (derived from APP_URL).
   BASE_URL_WS: process.env.BASE_URL_WS || (process.env.APP_URL || "http://localhost:3000").replace(/^http/, "ws"),
 
-  S3_ENDPOINT: process.env.S3_ENDPOINT || "",
-  S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || "",
-  S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || "",
-  S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || "",
-  S3_REGION: process.env.S3_REGION || "auto",
-  S3_PUBLIC_URL: process.env.S3_PUBLIC_URL || "",
-
-  // TUS resumable upload (tus-node-server + FileStore). Chunk persistence lands
-  // under data/tus-uploads/; final objects go to S3 via the orchestrator.
+  // TUS resumable upload (tus-node-server + FileStore).
   TUS_PREFIX: process.env.TUS_PREFIX || "/files-tus",
   TUS_MAX_SIZE: Number(process.env.TUS_MAX_SIZE || 10 * 1024 * 1024 * 1024),
   TUS_TTL_MS: Number(process.env.TUS_TTL_MS || 24 * 60 * 60 * 1000),
-
-  GCS_BUCKET_NAME: process.env.GCS_BUCKET_NAME || "",
-  GCS_KEYFILE: process.env.GCS_KEYFILE || "",
 
   // "1" enables per-request stage timing logs (PERF_LOG) and auth debug logs.
   // Off by default — zero cost in production.
   PERF_LOG: process.env.PERF_LOG || "0",
   AUTH_DEBUG: process.env.AUTH_DEBUG || "0",
 
-  AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING || "",
-  AZURE_STORAGE_CONTAINER: process.env.AZURE_STORAGE_CONTAINER || "",
+  // Cloudflare R2 Object Storage
+  R2_ENDPOINT: process.env.R2_ENDPOINT || "",
+  R2_ACCESS_KEY: process.env.R2_ACCESS_KEY || "",
+  R2_SECRET_KEY: process.env.R2_SECRET_KEY || "",
+  R2_BUCKET: process.env.R2_BUCKET || "myworkspace",
+  R2_PUBLIC_URL: process.env.R2_PUBLIC_URL || "",
+  R2_REGION: process.env.R2_REGION || "auto",
 
   LOG_LEVEL: process.env.LOG_LEVEL || "",
 

@@ -38,7 +38,7 @@ MyWorkSpace is a multi-tenant SaaS platform with an enterprise AI agent system.
 | Error Tracking | Sentry | Error reporting
 | Container | Docker + Docker Compose | Local dev
 | Orchestration | Kubernetes | Production
-| Storage | Cloudflare R2 (S3-compatible) | File storage
+| Storage | Local filesystem | File storage
 | Email | Resend + SMTP | Transactional
 | Payments | Stripe | Billing
 |===
@@ -59,7 +59,7 @@ myworkspace/
 │   │   │   ├── monitoring/  # Metrics & observability
 │   │   │   ├── queue/       # RabbitMQ producer/consumer
 │   │   │   ├── socketio/    # WebSocket manager
-│   │   │   └── storage/     # S3/R2 abstraction
+│   │   │   └── storage/     # File storage abstraction
 │   │   ├── middleware/       # Express middleware chain
 │   │   ├── routes/          # API route handlers
 │   │   ├── services/

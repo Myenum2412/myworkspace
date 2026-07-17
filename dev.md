@@ -46,9 +46,8 @@
 | Stripe | Payment processing |
 | Resend | Transactional email delivery |
 | Sentry | Error tracking |
-| AWS S3 / Cloudflare R2 | Object storage (S3-compatible) |
-| Google Cloud Storage | Object storage (configured) |
-| Azure Blob Storage | Object storage (configured) |
+| Local filesystem | File storage (data/uploads/) |
+
 | ClamAV | Virus scanning on file upload |
 | Vercel Analytics | Web analytics |
 | NVIDIA AI | AI/ML API |
@@ -80,6 +79,6 @@
 - **7-layer caching**: NodeCache (L1) → Valkey standalone (L2) → Valkey cluster (L3) → Varnish (L4) → Nginx (L5) → Apache Traffic Server (L6) → Linux FS-Cache (L7)
 - **Dual auth**: JWT Bearer tokens + JWE-encrypted NextAuth cookies
 - **Offline support**: Service Worker + IndexedDB-backed offline queue
-- **Multi-cloud storage**: Abstraction layer supporting local FS, S3-compatible, GCS, Azure
+- **Local file storage**: Files stored on local filesystem under `data/uploads/`
 - **CI/CD**: GitHub Actions → build → deploy to EC2 via PM2
 - **Orchestration**: Docker Compose (dev + prod) + Kubernetes manifests (cache services)

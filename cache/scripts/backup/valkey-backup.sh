@@ -4,7 +4,7 @@ set -euo pipefail
 # ============================================================
 # Valkey Backup Script - MyWorkSpace Cache Architecture
 # Backs up: standalone Valkey (RDB+AOF), Cluster nodes, Sentinel
-# Supports: local backup, S3 upload, retention policy
+# Supports: local backup, retention policy
 # ============================================================
 
 SCRIPT_NAME=$(basename "$0")
@@ -14,12 +14,6 @@ VERSION="1.0.0"
 # Defaults (overridable via environment)
 # ---------------------------------------------------------------------------
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/valkey}"
-S3_ENDPOINT="${S3_ENDPOINT:-}"
-S3_BUCKET="${S3_BUCKET:-}"
-S3_PREFIX="${S3_PREFIX:-valkey-backups}"
-S3_REGION="${S3_REGION:-us-east-1}"
-S3_ACCESS_KEY="${S3_ACCESS_KEY:-}"
-S3_SECRET_KEY="${S3_SECRET_KEY:-}"
 
 RETENTION_DAILY="${RETENTION_DAILY:-7}"
 RETENTION_WEEKLY="${RETENTION_WEEKLY:-4}"
@@ -83,19 +77,14 @@ Options:
   --password <pass>     Valkey password.
   --cluster-hosts       Comma-separated list of cluster node host:port.
   --sentinel-hosts      Comma-separated list of sentinel host:port.
-  --s3-endpoint <url>   S3-compatible endpoint.
-  --s3-bucket <name>    S3 bucket name.
-  --s3-prefix <prefix>  S3 key prefix (default: valkey-backups).
   --retention-daily <n>  Keep last N daily backups (default: 7).
   --retention-weekly <n> Keep last N weekly backups (default: 4).
   --retention-monthly <n> Keep last N monthly backups (default: 12).
-  --no-s3               Skip S3 upload even if configured.
   --log-file <path>     Log to file.
   --help                Show this help.
 
 Environment variables override defaults:
-  BACKUP_DIR, S3_ENDPOINT, S3_BUCKET, S3_PREFIX, S3_REGION,
-  S3_ACCESS_KEY, S3_SECRET_KEY, VALKEY_PASSWORD, VALKEY_HOST,
+  BACKUP_DIR, VALKEY_PASSWORD, VALKEY_HOST,
   VALKEY_PORT, RETENTION_DAILY, RETENTION_WEEKLY, RETENTION_MONTHLY,
   BACKUP_TYPE, LOG_FILE, CLUSTER_HOSTS, SENTINEL_HOSTS
 EOF
@@ -105,7 +94,6 @@ EOF
 # ---------------------------------------------------------------------------
 # Parse arguments
 # ---------------------------------------------------------------------------
-NO_S3=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --full) BACKUP_TYPE="full"; shift ;;
@@ -117,13 +105,9 @@ while [[ $# -gt 0 ]]; do
     --password) VALKEY_PASSWORD="$2"; shift 2 ;;
     --cluster-hosts) CLUSTER_HOSTS="$2"; shift 2 ;;
     --sentinel-hosts) SENTINEL_HOSTS="$2"; shift 2 ;;
-    --s3-endpoint) S3_ENDPOINT="$2"; shift 2 ;;
-    --s3-bucket) S3_BUCKET="$2"; shift 2 ;;
-    --s3-prefix) S3_PREFIX="$2"; shift 2 ;;
     --retention-daily) RETENTION_DAILY="$2"; shift 2 ;;
     --retention-weekly) RETENTION_WEEKLY="$2"; shift 2 ;;
     --retention-monthly) RETENTION_MONTHLY="$2"; shift 2 ;;
-    --no-s3) NO_S3=true; shift ;;
     --log-file) LOG_FILE="$2"; shift 2 ;;
     --help|-h) usage ;;
     *) error "Unknown option: $1. Use --help for usage." ;;
@@ -143,12 +127,6 @@ check_prereqs() {
 
   if [[ "$BACKUP_TYPE" != "full" && "$BACKUP_TYPE" != "incremental" ]]; then
     error "BACKUP_TYPE must be 'full' or 'incremental', got '$BACKUP_TYPE'"
-  fi
-
-  if [[ -n "$S3_ENDPOINT" && -n "$S3_BUCKET" && "$NO_S3" == false ]]; then
-    if ! command -v aws &>/dev/null && ! command -v s3cmd &>/dev/null && ! command -v mc &>/dev/null; then
-      warn "S3 endpoint configured but no S3 client (aws/s3cmd/mc) found. S3 upload will be skipped."
-    fi
   fi
 
   mkdir -p "$BACKUP_DIR" || error "Cannot create backup directory: $BACKUP_DIR"
@@ -427,51 +405,6 @@ compress_backup() {
 }
 
 # ---------------------------------------------------------------------------
-# S3 Upload
-# ---------------------------------------------------------------------------
-upload_to_s3() {
-  local file_path="$1"
-  local target_key="$2"
-
-  if [[ "$NO_S3" == true ]]; then
-    info "S3 upload disabled via --no-s3"
-    return
-  fi
-
-  if [[ -z "$S3_ENDPOINT" || -z "$S3_BUCKET" ]]; then
-    info "S3 not configured, skipping upload"
-    return
-  fi
-
-  info "Uploading to S3: s3://${S3_BUCKET}/${target_key}"
-
-  local s3_args=()
-  if [[ -n "$S3_ENDPOINT" ]]; then
-    s3_args+=(--endpoint-url "$S3_ENDPOINT")
-  fi
-  if [[ -n "$S3_REGION" ]]; then
-    s3_args+=(--region "$S3_REGION")
-  fi
-
-  local filename
-  filename=$(basename "$file_path")
-
-  if command -v aws &>/dev/null; then
-    AWS_ACCESS_KEY_ID="${S3_ACCESS_KEY}" AWS_SECRET_ACCESS_KEY="${S3_SECRET_KEY}" \
-      aws s3 cp "$file_path" "s3://${S3_BUCKET}/${target_key}${filename}" "${s3_args[@]}" || \
-      warn "S3 upload failed via aws CLI"
-  elif command -v s3cmd &>/dev/null; then
-    s3cmd put "$file_path" "s3://${S3_BUCKET}/${target_key}${filename}" || \
-      warn "S3 upload failed via s3cmd"
-  elif command -v mc &>/dev/null; then
-    mc cp "$file_path" "myminio/${S3_BUCKET}/${target_key}${filename}" || \
-      warn "S3 upload failed via mc (minio client)"
-  else
-    warn "No S3 client available, skipping upload"
-  fi
-}
-
-# ---------------------------------------------------------------------------
 # Retention policy
 # ---------------------------------------------------------------------------
 apply_retention() {
@@ -570,21 +503,7 @@ main() {
     fi
   done
 
-  # Step 6: Upload to S3
-  for cf in "${compressed_files[@]}"; do
-    if [[ -f "$cf" ]]; then
-      local s3_key="${S3_PREFIX}/${TIMESTAMP}/"
-      upload_to_s3 "$cf" "$s3_key"
-    fi
-  done
-
-  # Upload manifest
-  if [[ -f "$manifest" ]]; then
-    local s3_key="${S3_PREFIX}/${TIMESTAMP}/"
-    upload_to_s3 "$manifest" "$s3_key"
-  fi
-
-  # Step 7: Apply retention
+  # Step 6: Apply retention
   enforce_retention
 
   info "=== Backup completed successfully at $(date '+%Y-%m-%d %H:%M:%S') ==="

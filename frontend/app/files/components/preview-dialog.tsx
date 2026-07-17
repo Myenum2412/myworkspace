@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { isPreviewable, formatSize } from "@/lib/file-system/types";
 import { getFileIcon } from "@/components/files/utils";
@@ -13,9 +14,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { DownloadIcon, FileIcon, XIcon } from "lucide-react";
 
+function usePresignedUrl(fileId: string | null) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!fileId) { setUrl(null); return; }
+    let cancelled = false;
+    fetch(`/api/files/presigned/download/${fileId}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => { if (!cancelled) setUrl(data.data?.url || null); })
+      .catch(() => { if (!cancelled) setUrl(null); });
+    return () => { cancelled = true; };
+  }, [fileId]);
+
+  return url;
+}
+
 export function PreviewDialog() {
   const { previewFile, setPreviewFile } = useFileSystemStore();
   const file = previewFile;
+  const presignedUrl = usePresignedUrl(file?.id || null);
+  const src = presignedUrl || (file ? `/api/files/${file.id}` : "");
 
   return (
     <Dialog open={!!file} onOpenChange={(o) => { if (!o) setPreviewFile(null); }}>
@@ -38,7 +57,7 @@ export function PreviewDialog() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}
+                    onClick={() => window.open(presignedUrl || `/api/files/${file.id}/download`, "_blank")}
                   >
                     <DownloadIcon className="size-3.5 mr-1.5" /> Download
                   </Button>
@@ -51,26 +70,26 @@ export function PreviewDialog() {
                 file.mimeType.startsWith("image/") ? (
                   <div className="flex items-center justify-center h-full p-4">
                     <img
-                      src={`/api/files/${file.id}`}
+                      src={src}
                       alt={file.originalName}
                       className="max-w-full max-h-full object-contain rounded-md"
                     />
                   </div>
                 ) : file.mimeType.startsWith("video/") ? (
                   <div className="flex items-center justify-center h-full p-4">
-                    <video controls className="max-w-full max-h-full rounded-md" src={`/api/files/${file.id}`}>
+                    <video controls className="max-w-full max-h-full rounded-md" src={src}>
                       Your browser does not support the video tag.
                     </video>
                   </div>
                 ) : file.mimeType.startsWith("audio/") ? (
                   <div className="flex items-center justify-center h-full p-8">
-                    <audio controls className="w-full max-w-lg" src={`/api/files/${file.id}`}>
+                    <audio controls className="w-full max-w-lg" src={src}>
                       Your browser does not support the audio tag.
                     </audio>
                   </div>
                 ) : (
                   <iframe
-                    src={`/api/files/${file.id}`}
+                    src={src}
                     className="w-full h-full border-0"
                     title={file.originalName}
                     sandbox="allow-scripts allow-same-origin"
@@ -82,7 +101,7 @@ export function PreviewDialog() {
                   <p className="text-sm">Preview not available for this file type</p>
                   <Button
                     variant="outline"
-                    onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}
+                    onClick={() => window.open(presignedUrl || `/api/files/${file.id}/download`, "_blank")}
                   >
                     <DownloadIcon className="mr-2 size-4" />
                     Download to view

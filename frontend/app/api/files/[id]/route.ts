@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
-import { getFileBuffer, isS3Configured } from "@/lib/storage";
 import { validateOrgMembership } from "@/lib/org";
 import fs from "fs";
 import path from "path";
@@ -42,23 +41,6 @@ export async function GET(
     }
 
     const mime = file.mimeType || "application/octet-stream";
-
-    if (isS3Configured()) {
-      const buffer = await getFileBuffer(file.storagePath);
-      if (!buffer) {
-        return NextResponse.json({ error: "File not found in storage" }, { status: 404 });
-      }
-      const headers: Record<string, string> = {
-        "Content-Type": mime,
-        "Content-Length": String(buffer.length),
-      };
-      if (download) {
-        headers["Content-Disposition"] = `attachment; filename="${file.originalName}"`;
-      } else {
-        headers["Content-Disposition"] = `inline; filename="${file.originalName}"`;
-      }
-      return new NextResponse(new Uint8Array(buffer), { headers });
-    }
 
     const localPath = path.join(UPLOADS_DIR, file.storagePath);
     if (!fs.existsSync(localPath)) {

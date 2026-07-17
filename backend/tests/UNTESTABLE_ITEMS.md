@@ -76,16 +76,13 @@ This document lists test categories that cannot be automated in CI, with recomme
   - Verify Socket.IO Redis adapter reconnects correctly
   - Monitor connection disruption time
 
-## 8. Multi-Cloud Provider Failover
+## 8. Storage Provider Failover
 
-**Why challenging in CI:** Testing S3 ↔ GCS ↔ Azure failover requires real credentials and multi-region infrastructure.
+**Why challenging in CI:** Testing storage failover requires real remote credentials.
 
 **Verification plan:**
-- Configure all three cloud providers in staging
-- Simulate S3 outage: block S3 endpoint in firewall/network ACL
-- Verify automatic failover to GCS or Azure
-- Test fallback to local filesystem when all clouds are down
-- Verify data consistency across providers
+- Verify graceful fallback when local disk is full or unavailable
+- Test file operation retry logic under I/O errors
 
 ## 9. MongoDB Replica Set Failover
 

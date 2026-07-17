@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { useFileData } from "@/hooks/file-system/use-file-data";
 import { useKeyboardShortcuts } from "@/hooks/file-system/use-keyboard";
@@ -21,6 +21,9 @@ import { RecentView } from "./components/recent-view";
 import { ClientFilesView } from "./components/client-files-view";
 import { StaffFilesView } from "./components/staff-files-view";
 import { CreateFolderDialog, RenameDialog, MoveDialog } from "./components/dialogs";
+import { AiInsightsPanel } from "./components/ai-insights-panel";
+import { FileSearch } from "./components/file-search";
+import { StorageDashboard } from "./components/storage-dashboard";
 
 interface FileManagerClientProps {
   orgId: string;
@@ -31,13 +34,31 @@ interface FileManagerClientProps {
 export function FileManagerClient({ orgId, userId, userRole }: FileManagerClientProps) {
   const currentNav = useFileSystemStore((s) => s.currentNav);
   const viewMode = useFileSystemStore((s) => s.viewMode);
+  const previewFile = useFileSystemStore((s) => s.previewFile);
   const { loading } = useFileData();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [insightsFileId, setInsightsFileId] = useState<string | null>(null);
 
   useKeyboardShortcuts();
 
   useEffect(() => {
     useFileSystemStore.getState().setOrgContext(orgId, userId, userRole);
   }, [orgId, userId, userRole]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const handleShowInsights = (fileId: string) => {
+    setInsightsFileId(insightsFileId === fileId ? null : fileId);
+  };
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)]">
@@ -73,9 +94,20 @@ export function FileManagerClient({ orgId, userId, userRole }: FileManagerClient
           {currentNav === "audit" && <AuditLogView />}
           {currentNav === "client-files" && <ClientFilesView />}
           {currentNav === "staff-files" && <StaffFilesView />}
-
+          {currentNav === "storage" && <StorageDashboard orgId={orgId} />}
         </div>
       </main>
+
+      {insightsFileId && currentNav === "files" && (
+        <AiInsightsPanel
+          fileId={insightsFileId}
+          orgId={orgId}
+          onNavigate={(id) => useFileSystemStore.getState().setPreviewFile(
+            useFileSystemStore.getState().files.find(f => f.id === id) || null
+          )}
+          onClose={() => setInsightsFileId(null)}
+        />
+      )}
 
       {/* Dialogs and overlays */}
       <CreateFolderDialog />
@@ -84,6 +116,19 @@ export function FileManagerClient({ orgId, userId, userRole }: FileManagerClient
       <PreviewDialog />
       <ShareDialog />
       <PropertiesPanel />
+
+      {searchOpen && (
+        <FileSearch
+          orgId={orgId}
+          onSelectFile={(fileId) => {
+            useFileSystemStore.getState().setPreviewFile(
+              useFileSystemStore.getState().files.find(f => f.id === fileId) || null
+            );
+            setSearchOpen(false);
+          }}
+          onClose={() => setSearchOpen(false)}
+        />
+      )}
     </div>
   );
 }

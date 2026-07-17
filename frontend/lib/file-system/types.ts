@@ -1,7 +1,7 @@
 export type ViewMode = "grid" | "list";
 export type SortField = "name" | "createdAt" | "updatedAt" | "size" | "uploaderName" | "mimeType";
 export type SortDir = "asc" | "desc";
-export type NavSection = "files" | "shared" | "recent" | "favorites" | "recycle" | "audit" | "starred" | "team" | "client-files" | "staff-files" | "company";
+export type NavSection = "files" | "shared" | "recent" | "favorites" | "recycle" | "audit" | "starred" | "team" | "client-files" | "staff-files" | "company" | "storage";
 
 export type FileItem = {
   id: string;

@@ -48,7 +48,7 @@ import stocksRoutes from "./routes/stocks.js";
 import billingRoutes from "./routes/billing.js";
 import clientFoldersRoutes from "./routes/client-folders.js";
 import aiRoutes from "./routes/ai.js";
-
+import lrmRoutes from "./services/lrm/routes/lrm.routes.js";
 
 const app = express();
 
@@ -73,10 +73,10 @@ app.use(helmet({
       scriptSrc: ["'self'", "'strict-dynamic'", ...(isProd ? [] : ["'unsafe-inline'", "'unsafe-eval'"])],
       styleSrc: ["'self'", "https://fonts.googleapis.com", ...(isProd ? [] : ["'unsafe-inline'"])],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-      imgSrc: ["'self'", "data:", "blob:", env.APP_URL, env.S3_ENDPOINT].filter(Boolean),
-      connectSrc: ["'self'", env.APP_URL, env.BASE_URL_WS].filter(Boolean),
+       imgSrc: ["'self'", "data:", "blob:", env.APP_URL, env.R2_PUBLIC_URL].filter(Boolean),
+       connectSrc: ["'self'", env.APP_URL, env.BASE_URL_WS, env.R2_ENDPOINT].filter(Boolean),
       objectSrc: ["'none'"],
-      mediaSrc: ["'self'", "blob:", "data:"],
+       mediaSrc: ["'self'", "blob:", "data:", env.R2_PUBLIC_URL].filter(Boolean),
       frameAncestors: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'", env.APP_URL].filter(Boolean),
@@ -279,6 +279,7 @@ app.use("/api/receipts", receiptRoutes);
 app.use("/api/file-favorites", (await import("./routes/file-favorites.js")).default);
 app.use("/api/client-folders", clientFoldersRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/lrm", lrmRoutes);
 
 // ── 404 catch-all ──
 app.use((req, res) => {

@@ -186,7 +186,7 @@ Instant notifications and activity feeds delivered via Socket.IO. Users receive 
 | **File Locking** | Prevent concurrent edits by locking files during active editing sessions. |
 | **Secure External Sharing** | Password-protected share links with expiration dates and download limits. |
 | **Virus Scanning** | ClamAV integration for automatic threat detection on uploaded files. |
-| **Multi-Cloud Storage** | Abstraction layer supporting local filesystem, AWS S3, Google Cloud Storage, and Azure Blob Storage. |
+| **Local File Storage** | Files stored on local filesystem under `data/uploads/`. |
 | **Session & Break Tracking** | Real-time user session management with automatic break detection. |
 | **Cross-Entity Search** | Unified search across files, folders, tasks, projects, employees, clients, and teams. |
 | **Kanban Board** | Drag-and-drop task management board for visual workflow tracking. |
@@ -404,7 +404,7 @@ MyWorkSpace is architected for horizontal and vertical scalability:
   7. **L7:** Linux FS-Cache (filesystem-level caching)
 - **Message Queue:** RabbitMQ handles async job processing, preventing blocking of API requests.
 - **Scheduled Jobs:** Agenda.js with MongoDB backend handles cron tasks reliably at scale.
-- **File Storage:** Multi-cloud abstraction (local FS, S3, GCS, Azure) allows storage scaling independent of compute.
+- **File Storage:** Local filesystem under `data/uploads/` with plans for distributed object storage.
 
 ### Performance Measurements
 
@@ -464,9 +464,8 @@ MyWorkSpace is architected for horizontal and vertical scalability:
 | **Authentication** | Google OAuth | Implemented |
 | **Authentication** | GitHub OAuth | Implemented |
 | **Authentication** | LinkedIn OAuth | Implemented |
-| **Storage** | AWS S3 | Implemented (abstraction layer) |
-| **Storage** | Google Cloud Storage | Implemented (abstraction layer) |
-| **Storage** | Azure Blob Storage | Implemented (abstraction layer) |
+| **Storage** | Local Filesystem | Implemented |
+
 | **Storage** | Local Filesystem | Implemented |
 | **Payments** | Stripe | Implemented (subscriptions, invoices, webhooks) |
 | **Email** | Resend | Implemented |

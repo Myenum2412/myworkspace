@@ -4,19 +4,13 @@ set -euo pipefail
 # ============================================================
 # Valkey Restore Script - MyWorkSpace Cache Architecture
 # Restores: standalone Valkey, Cluster, Sentinel
-# Sources: local backup directory or S3
+# Sources: local backup directory
 # ============================================================
 
 SCRIPT_NAME=$(basename "$0")
 VERSION="1.0.0"
 
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/valkey}"
-S3_ENDPOINT="${S3_ENDPOINT:-}"
-S3_BUCKET="${S3_BUCKET:-}"
-S3_PREFIX="${S3_PREFIX:-valkey-backups}"
-S3_REGION="${S3_REGION:-us-east-1}"
-S3_ACCESS_KEY="${S3_ACCESS_KEY:-}"
-S3_SECRET_KEY="${S3_SECRET_KEY:-}"
 
 VALKEY_PASSWORD="${VALKEY_PASSWORD:-}"
 VALKEY_HOST="${VALKEY_HOST:-127.0.0.1}"
@@ -65,8 +59,6 @@ Restore options:
   --backup-date <date>  Restore most recent backup from date (YYYYMMDD).
   --latest              Restore latest available backup.
   --type <type>         Restore type: standalone | cluster | sentinel | all (default: all).
-  --source <source>     Backup source: local | s3 (default: local).
-  --s3-key <key>        Full S3 key to restore.
   --dir <path>          Local backup directory (default: \$BACKUP_DIR).
   --host <host>         Valkey target host (default: 127.0.0.1).
   --port <port>         Valkey target port (default: 6379).
@@ -86,8 +78,6 @@ COMMAND=""
 BACKUP_PATH=""
 BACKUP_DATE=""
 RESTORE_TYPE="all"
-SOURCE="local"
-S3_KEY=""
 NO_RESTART=false
 DRY_RUN=false
 
@@ -98,8 +88,6 @@ while [[ $# -gt 0 ]]; do
     --backup-date) BACKUP_DATE="$2"; shift 2 ;;
     --latest) BACKUP_DATE="latest"; shift ;;
     --type) RESTORE_TYPE="$2"; shift 2 ;;
-    --source) SOURCE="$2"; shift 2 ;;
-    --s3-key) S3_KEY="$2"; shift 2 ;;
     --dir) BACKUP_DIR="$2"; shift 2 ;;
     --host) VALKEY_HOST="$2"; shift 2 ;;
     --port) VALKEY_PORT="$2"; shift 2 ;;
@@ -126,47 +114,7 @@ check_prereqs() {
     fi
   done
 
-  if [[ "$SOURCE" == "s3" ]]; then
-    if ! command -v aws &>/dev/null && ! command -v s3cmd &>/dev/null && ! command -v mc &>/dev/null; then
-      error "S3 source requires aws, s3cmd, or mc CLI"
-    fi
-  fi
-
   mkdir -p "$BACKUP_DIR" 2>/dev/null || true
-}
-
-# ---------------------------------------------------------------------------
-# S3 helpers
-# ---------------------------------------------------------------------------
-s3_ls() {
-  local prefix="$1"
-  if command -v aws &>/dev/null; then
-    local s3_args=()
-    [[ -n "$S3_ENDPOINT" ]] && s3_args+=(--endpoint-url "$S3_ENDPOINT")
-    [[ -n "$S3_REGION" ]] && s3_args+=(--region "$S3_REGION")
-    AWS_ACCESS_KEY_ID="${S3_ACCESS_KEY}" AWS_SECRET_ACCESS_KEY="${S3_SECRET_KEY}" \
-      aws s3 ls "s3://${S3_BUCKET}/${prefix}" "${s3_args[@]}" 2>/dev/null || true
-  elif command -v s3cmd &>/dev/null; then
-    s3cmd ls "s3://${S3_BUCKET}/${prefix}" 2>/dev/null || true
-  elif command -v mc &>/dev/null; then
-    mc ls "myminio/${S3_BUCKET}/${prefix}" 2>/dev/null || true
-  fi
-}
-
-s3_cp() {
-  local src="$1"
-  local dst="$2"
-  if command -v aws &>/dev/null; then
-    local s3_args=()
-    [[ -n "$S3_ENDPOINT" ]] && s3_args+=(--endpoint-url "$S3_ENDPOINT")
-    [[ -n "$S3_REGION" ]] && s3_args+=(--region "$S3_REGION")
-    AWS_ACCESS_KEY_ID="${S3_ACCESS_KEY}" AWS_SECRET_ACCESS_KEY="${S3_SECRET_KEY}" \
-      aws s3 cp "s3://${S3_BUCKET}/${src}" "$dst" "${s3_args[@]}" 2>/dev/null || error "S3 download failed"
-  elif command -v s3cmd &>/dev/null; then
-    s3cmd get "s3://${S3_BUCKET}/${src}" "$dst" 2>/dev/null || error "S3 download failed"
-  elif command -v mc &>/dev/null; then
-    mc cp "myminio/${S3_BUCKET}/${src}" "$dst" 2>/dev/null || error "S3 download failed"
-  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -203,17 +151,6 @@ cmd_list() {
     fi
   fi
 
-  if [[ -n "$S3_ENDPOINT" && -n "$S3_BUCKET" ]]; then
-    echo ""
-    info "S3 backups (s3://${S3_BUCKET}/${S3_PREFIX}/):"
-    local s3_result
-    s3_result=$(s3_ls "${S3_PREFIX}/")
-    if [[ -z "$s3_result" ]]; then
-      echo "  No S3 backups found."
-    else
-      echo "  $s3_result"
-    fi
-  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -310,37 +247,6 @@ resolve_backup() {
       return
     fi
     error "Backup path does not exist: $BACKUP_PATH"
-  fi
-
-  if [[ "$SOURCE" == "s3" ]]; then
-    if [[ -n "$S3_KEY" ]]; then
-      local tmp_dir
-      tmp_dir=$(mktemp -d)
-      info "Downloading from S3: s3://${S3_BUCKET}/${S3_KEY}"
-      s3_cp "$S3_KEY" "$tmp_dir/"
-      local file
-      file=$(find "$tmp_dir" -type f | head -1)
-      if [[ -n "$file" ]]; then
-        echo "$file"
-        return
-      fi
-      error "Failed to download S3 backup"
-    fi
-
-    # List latest from S3
-    local latest
-    latest=$(s3_ls "${S3_PREFIX}/" | sort -r | head -1 | awk '{print $NF}')
-    if [[ -z "$latest" ]]; then
-      error "No backups found in S3"
-    fi
-    local tmp_dir
-    tmp_dir=$(mktemp -d)
-    info "Downloading latest S3 backup: ${latest}"
-    s3_cp "${latest}" "$tmp_dir/"
-    local file
-    file=$(find "$tmp_dir" -type f | head -1)
-    echo "$file"
-    return
   fi
 
   # Local source
