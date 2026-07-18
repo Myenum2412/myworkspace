@@ -35,7 +35,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ data: folders });
   } catch (err) {
     console.error("[API /api/folders] GET error:", err);
-    return NextResponse.json({ error: "Failed to fetch folders" }, { status: 500 });
+      return NextResponse.json({ error: "Could not load folders" }, { status: 500 });
   }
 }
 

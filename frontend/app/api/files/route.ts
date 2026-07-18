@@ -86,6 +86,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ data: result });
   } catch (e) {
     console.error("Failed to fetch files:", e);
-    return NextResponse.json({ error: "Failed to fetch files" }, { status: 500 });
+    return NextResponse.json({ error: "Could not load files" }, { status: 500 });
   }
 }

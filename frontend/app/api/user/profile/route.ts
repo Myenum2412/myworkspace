@@ -184,7 +184,7 @@ export async function GET() {
     });
   } catch (e) {
     console.error("[profile GET] Failed:", e);
-    return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+      return NextResponse.json({ error: "Could not load profile" }, { status: 500 });
   }
 }
 

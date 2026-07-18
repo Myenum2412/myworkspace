@@ -50,7 +50,7 @@ router.get("/invoices", async (req: AuthRequest, res: Response) => {
     });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "Failed to fetch invoices");
+    throw new AppError(500, err.message || "Could not load invoices");
   }
 });
 
@@ -62,7 +62,7 @@ router.get("/invoices/:id", async (req: AuthRequest, res: Response) => {
     res.json({ success: true, data: invoice });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "Failed to fetch invoice");
+    throw new AppError(500, err.message || "Could not load invoice");
   }
 });
 

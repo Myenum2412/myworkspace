@@ -475,7 +475,6 @@ MyWorkSpace is architected for horizontal and vertical scalability:
 | **Observability** | OpenTelemetry + Prometheus | Implemented |
 | **Caching** | Redis / Valkey | Implemented |
 | **Message Queue** | RabbitMQ | Implemented |
-| **AI/ML** | NVIDIA AI API | Configured |
 | **Analytics** | Vercel Analytics | Implemented |
 | **SSO** | SAML / SSO | Configuration page exists |
 | **Integrations Hub** | App Store directory | Directory exists (page content pending) |

@@ -91,7 +91,7 @@ router.get("/team-summary", async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError(500, "Failed to fetch team summary");
+    throw new AppError(500, "Could not load team summary");
   }
 });
 
@@ -214,7 +214,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError(500, "Failed to fetch time entries");
+    throw new AppError(500, "Could not load time entries");
   }
 });
 

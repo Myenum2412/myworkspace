@@ -56,7 +56,7 @@ export function useStorageStats(orgId?: string) {
     }
     try {
       const res = await fetch(`/api/files/storage-stats?orgId=${orgId}`, { credentials: "include", signal });
-      if (!res.ok) throw new Error("Failed to fetch storage stats");
+      if (!res.ok) throw new Error("Could not load storage stats");
       const data = await res.json();
       setStats(data.data);
       setError(null);

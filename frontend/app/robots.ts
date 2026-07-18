@@ -39,39 +39,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "Microsoft Bing",
         allow: "/",
       },
-      // ── AI Crawlers ──────────────────────────────────────────
-      {
-        userAgent: "OAI-SearchBot",
-        allow: "/",
-      },
-      {
-        userAgent: "ChatGPT-User",
-        allow: "/",
-      },
-      {
-        userAgent: "GPTBot",
-        allow: "/",
-      },
-      {
-        userAgent: "PerplexityBot",
-        allow: "/",
-      },
-      {
-        userAgent: "ClaudeBot",
-        allow: "/",
-      },
-      {
-        userAgent: "Claude-Web",
-        allow: "/",
-      },
-      {
-        userAgent: "anthropic-ai",
-        allow: "/",
-      },
-      {
-        userAgent: "Bytespider",
-        allow: "/",
-      },
+      // ── Other Search Engines ──────────────────────────────────
       {
         userAgent: "Applebot",
         allow: "/",
@@ -122,51 +90,6 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: "TelegramBot",
-        allow: "/",
-      },
-      // ── Other AI Search Engines ──────────────────────────────
-      {
-        userAgent: "YouBot",
-        allow: "/",
-      },
-      {
-        userAgent: "Timpibot",
-        allow: "/",
-      },
-      {
-        userAgent: "PetalseBot",
-        allow: "/",
-      },
-      {
-        userAgent: "Brightbot",
-        allow: "/",
-      },
-      {
-        userAgent: "AI2Bot",
-        allow: "/",
-      },
-      {
-        userAgent: "AI2Bot-Dolma",
-        allow: "/",
-      },
-      {
-        userAgent: "FriendlyCrawler",
-        allow: "/",
-      },
-      {
-        userAgent: "DataForSeoBot",
-        allow: "/",
-      },
-      {
-        userAgent: "NaverBot",
-        allow: "/",
-      },
-      {
-        userAgent: "Daum",
-        allow: "/",
-      },
-      {
-        userAgent: "Sogou",
         allow: "/",
       },
       // ── Default for all other crawlers ───────────────────────

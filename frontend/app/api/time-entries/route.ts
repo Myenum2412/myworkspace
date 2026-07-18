@@ -92,6 +92,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ data: entries });
   } catch (err) {
     console.error("[API /api/time-entries] GET error:", err);
-    return NextResponse.json({ error: "Failed to fetch entries" }, { status: 500 });
+      return NextResponse.json({ error: "Could not load time entries" }, { status: 500 });
   }
 }

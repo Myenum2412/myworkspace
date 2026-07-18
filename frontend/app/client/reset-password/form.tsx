@@ -65,7 +65,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error(d.message || "Failed to reset password");
+        throw new Error(d.message || "Could not reset password. Please try again.");
       }
       setSuccess(true);
     } catch (err: any) {

@@ -32,11 +32,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "MyWorkSpace | AI Detailing & Rebar Detailing Platform",
+    default: "MyWorkSpace | Rebar Detailing Platform",
     template: "%s | MyWorkSpace",
   },
   description:
-    "MyWorkSpace — AI-powered workspace management platform featuring AI detailing, rebar detailing, project management, team collaboration, and business automation. Transform your construction and engineering workflows.",
+    "MyWorkSpace — workspace management platform featuring rebar detailing, project management, team collaboration, and business automation. Transform your construction and engineering workflows.",
   keywords: [
     // Core
     "workspace management",
@@ -53,16 +53,6 @@ export const metadata: Metadata = {
     "HR management",
     "organization management",
     "business automation",
-    // AI Detailing
-    "AI detailing",
-    "artificial intelligence detailing",
-    "AI-powered detailing",
-    "intelligent detailing automation",
-    "AI detail management",
-    "machine learning detailing",
-    "automated detail extraction",
-    "AI workflow automation",
-    "smart detailing tools",
     // Rebar Detailing
     "rebar detailing",
     "reinforcement detailing",
@@ -126,9 +116,9 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "MyWorkSpace | AI Detailing & Rebar Detailing Platform",
+    title: "MyWorkSpace | Rebar Detailing Platform",
     description:
-      "AI-powered workspace management platform featuring AI detailing, rebar detailing, project management, team collaboration, and business automation.",
+      "Workspace management platform featuring rebar detailing, project management, team collaboration, and business automation.",
     url: siteConfig.url,
     siteName: siteConfig.name,
     images: [
@@ -144,9 +134,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MyWorkSpace | AI Detailing & Rebar Detailing Platform",
+    title: "MyWorkSpace | Rebar Detailing Platform",
     description:
-      "AI-powered workspace management platform featuring AI detailing, rebar detailing, project management, and team collaboration.",
+      "Workspace management platform featuring rebar detailing, project management, and team collaboration.",
     images: [siteConfig.ogImage],
     site: siteConfig.twitterHandle,
     creator: siteConfig.twitterHandle,

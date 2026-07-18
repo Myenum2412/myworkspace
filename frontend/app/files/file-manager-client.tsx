@@ -21,7 +21,6 @@ import { RecentView } from "./components/recent-view";
 import { ClientFilesView } from "./components/client-files-view";
 import { StaffFilesView } from "./components/staff-files-view";
 import { CreateFolderDialog, RenameDialog, MoveDialog } from "./components/dialogs";
-import { AiInsightsPanel } from "./components/ai-insights-panel";
 import { FileSearch } from "./components/file-search";
 import { StorageDashboard } from "./components/storage-dashboard";
 
@@ -37,7 +36,6 @@ export function FileManagerClient({ orgId, userId, userRole }: FileManagerClient
   const previewFile = useFileSystemStore((s) => s.previewFile);
   const { loading } = useFileData();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [insightsFileId, setInsightsFileId] = useState<string | null>(null);
 
   useKeyboardShortcuts();
 
@@ -55,10 +53,6 @@ export function FileManagerClient({ orgId, userId, userRole }: FileManagerClient
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
-
-  const handleShowInsights = (fileId: string) => {
-    setInsightsFileId(insightsFileId === fileId ? null : fileId);
-  };
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)]">
@@ -97,17 +91,6 @@ export function FileManagerClient({ orgId, userId, userRole }: FileManagerClient
           {currentNav === "storage" && <StorageDashboard orgId={orgId} />}
         </div>
       </main>
-
-      {insightsFileId && currentNav === "files" && (
-        <AiInsightsPanel
-          fileId={insightsFileId}
-          orgId={orgId}
-          onNavigate={(id) => useFileSystemStore.getState().setPreviewFile(
-            useFileSystemStore.getState().files.find(f => f.id === id) || null
-          )}
-          onClose={() => setInsightsFileId(null)}
-        />
-      )}
 
       {/* Dialogs and overlays */}
       <CreateFolderDialog />

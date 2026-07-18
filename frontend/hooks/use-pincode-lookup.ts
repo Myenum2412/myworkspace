@@ -49,7 +49,7 @@ export function usePincodeLookup() {
           setResult(null);
         }
       } catch {
-        setError("Failed to fetch location data");
+        setError("Could not verify pincode");
         setResult(null);
       } finally {
         setLoading(false);

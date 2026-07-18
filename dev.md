@@ -50,7 +50,6 @@
 
 | ClamAV | Virus scanning on file upload |
 | Vercel Analytics | Web analytics |
-| NVIDIA AI | AI/ML API |
 | GitHub OAuth | Social login |
 | Google OAuth | Social login |
 | LinkedIn OAuth | Social login |

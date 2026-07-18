@@ -178,7 +178,6 @@ Supported providers and their capabilities:
 
 |===
 | Provider | Chat | Stream | Tools | Vision | Embed | Cost (input/1K)
-| OpenAI | ✓ | ✓ | ✓ | ✓ | ✓ | $0.15/$0.60
 | Anthropic | ✓ | ✓ | ✓ | ✓ | - | $3.00/$15.00
 | Gemini | ✓ | ✓ | ✓ | ✓ | ✓ | $0.10/$0.40
 | Groq | ✓ | ✓ | ✓ | - | - | $0.59/$0.79

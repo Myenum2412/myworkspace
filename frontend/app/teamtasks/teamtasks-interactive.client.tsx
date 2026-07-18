@@ -47,7 +47,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
       const res = await apiFetch(`/api/tasks/${t._id}`, { method: "DELETE" });
       if (res.ok) setLocalTasks((prev) => prev.filter((x) => x._id !== t._id));
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to delete task";
+      const message = error instanceof TypeError && error.message === "Failed to fetch" ? "Could not connect to server" : error instanceof Error ? error.message : "Could not delete task";
       toast.error(message);
     }
   }, []);

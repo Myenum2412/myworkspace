@@ -36,7 +36,7 @@ export default function TeamsInteractive({ teams: initialTeams, members: initial
       const result = Array.isArray(data) ? data : data.data || [];
       setTeams(result);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to fetch teams");
+      toast.error("Could not load teams. Please try again.");
     }
   }, []);
 

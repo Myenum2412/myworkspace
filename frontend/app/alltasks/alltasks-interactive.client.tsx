@@ -155,7 +155,8 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
         setTasks((prev) => prev.filter((x) => x._id !== t._id));
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete task");
+      const msg = error instanceof TypeError && error.message === "Failed to fetch" ? "Could not connect to server" : error instanceof Error ? error.message : "Could not delete task";
+      toast.error(msg);
     }
   }, [setTasks]);
 

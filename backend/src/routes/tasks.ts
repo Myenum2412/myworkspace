@@ -50,7 +50,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     res.json({ success: true, data: result.data, pagination: result.pagination });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "Failed to fetch tasks");
+    throw new AppError(500, err.message || "Could not load tasks");
   }
 });
 

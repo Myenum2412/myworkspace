@@ -50,7 +50,7 @@ export function PincodeInput({ value, onChange, onResult, className }: PincodeIn
             setError("Invalid pincode");
           }
         } catch {
-          setError("Failed to fetch");
+          setError("Could not verify pincode");
         } finally {
           setLoading(false);
         }

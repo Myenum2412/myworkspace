@@ -11,6 +11,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch {
-    return NextResponse.json({ error: "Failed to fetch share link" }, { status: 500 });
+      return NextResponse.json({ error: "Could not load share link" }, { status: 500 });
   }
 }

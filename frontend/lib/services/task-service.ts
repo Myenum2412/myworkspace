@@ -47,7 +47,7 @@ export const taskService = {
     const qs = searchParams.toString();
     const url = qs ? `/api/tasks?${qs}` : "/api/tasks";
     const res = await fetch(url, { credentials: "include" });
-    if (!res.ok) throw new Error("Failed to fetch tasks");
+    if (!res.ok) throw new Error("Could not load tasks");
     const data = await res.json();
     return data.data || data || [];
   },

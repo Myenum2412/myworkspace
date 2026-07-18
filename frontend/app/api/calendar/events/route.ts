@@ -21,6 +21,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: events });
   } catch (err) {
     console.error("[Calendar Events]", err);
-    return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 });
+      return NextResponse.json({ error: "Could not load calendar events" }, { status: 500 });
   }
 }

@@ -23,7 +23,7 @@ export function useFiles(params: FileQueryParams) {
       if (params.sort) sp.set("sort", params.sort);
       if (params.clientId) sp.set("clientId", params.clientId);
       const res = await fetch(`/api/files?${sp}`, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch files");
+      if (!res.ok) throw new Error("Could not load files");
       const json = await res.json();
       return json.data || [];
     },
@@ -39,7 +39,7 @@ export function useFiles(params: FileQueryParams) {
       else sp.set("parentId", "");
       if (params.clientId) sp.set("clientId", params.clientId);
       const res = await fetch(`/api/folders?${sp}`, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch folders");
+      if (!res.ok) throw new Error("Could not load folders");
       const json = await res.json();
       return json.data || [];
     },

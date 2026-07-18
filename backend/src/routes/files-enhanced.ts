@@ -16,7 +16,6 @@ import {
 } from "../services/file.service.js";
 import { getStorageProvider } from "../lib/storage/providers.js";
 import { SignedUrlService } from "../lib/storage/signed-urls.js";
-import { FileIntelligenceService } from "../services/lrm/file-intelligence.js";
 import { logger } from "../lib/logger/index.js";
 
 const router = Router();
@@ -794,13 +793,6 @@ router.post("/process", async (req: AuthRequest, res: Response) => {
     const file = await FileAttachment.findOne({ id: fileId, orgId, deletedAt: null }).lean();
     if (!file) throw new AppError(404, "File not found");
 
-    // Run processing tasks in background
-    const fileIntel = new FileIntelligenceService();
-    Promise.all([
-      fileIntel.analyzeFile(fileId, orgId).catch((e: any) => logger.warn({ err: e, fileId }, "Analysis failed")),
-      fileIntel.generateEmbeddings(fileId, orgId).catch((e: any) => logger.warn({ err: e, fileId }, "Embedding failed")),
-    ]);
-
     await recordAuditLog({
       orgId, userId: req.user!.userId, createdBy: req.user!.userId,
       action: "file.processing.triggered", entityType: "file", entityId: fileId,
@@ -865,86 +857,7 @@ router.get("/analytics/stats", async (req: AuthRequest, res: Response) => {
     });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "Failed to fetch analytics");
-  }
-});
-
-// ─── AI File Analysis ─────────────────────────────────────────────────────────
-
-router.post("/ai/analyze", async (req: AuthRequest, res: Response) => {
-  try {
-    const { orgId, fileId } = req.body;
-    if (!orgId || !fileId) throw new AppError(400, "orgId and fileId are required");
-
-    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
-
-    const fileIntel = new FileIntelligenceService();
-    const analysis = await fileIntel.analyzeFile(fileId, orgId);
-
-    // Update file with analysis results
-    await FileAttachment.updateOne(
-      { id: fileId },
-      { $set: { category: analysis.categories[0]?.toLowerCase() as any, tags: analysis.tags, description: analysis.summary.substring(0, 500) } },
-    );
-
-    res.json({ success: true, data: analysis });
-  } catch (err: any) {
-    if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "AI analysis failed");
-  }
-});
-
-router.post("/ai/search", async (req: AuthRequest, res: Response) => {
-  try {
-    const { orgId, query, limit } = req.body;
-    if (!orgId || !query) throw new AppError(400, "orgId and query are required");
-
-    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
-
-    const fileIntel = new FileIntelligenceService();
-    const results = await fileIntel.semanticSearch(query, orgId, limit || 10);
-
-    res.json({ success: true, data: results });
-  } catch (err: any) {
-    if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "Semantic search failed");
-  }
-});
-
-router.get("/ai/related/:id", async (req: AuthRequest, res: Response) => {
-  try {
-    const orgId = req.query.orgId as string;
-    const fileId = req.params.id;
-    const limit = parseInt(req.query.limit as string) || 5;
-
-    if (!orgId) throw new AppError(400, "orgId is required");
-
-    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
-
-    const fileIntel = new FileIntelligenceService();
-    const related = await fileIntel.findRelatedFiles(fileId, orgId, limit);
-
-    res.json({ success: true, data: related });
-  } catch (err: any) {
-    if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "Failed to find related files");
-  }
-});
-
-router.post("/ai/suggest-organization", async (req: AuthRequest, res: Response) => {
-  try {
-    const { orgId } = req.body;
-    if (!orgId) throw new AppError(400, "orgId is required");
-
-    await requireOrgMembership(req.user!.userId, orgId, req.user!.email, req.user!.orgId);
-
-    const fileIntel = new FileIntelligenceService();
-    const suggestions = await fileIntel.suggestOrganization(orgId);
-
-    res.json({ success: true, data: suggestions });
-  } catch (err: any) {
-    if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "Failed to generate organization suggestions");
+    throw new AppError(500, err.message || "Could not load analytics");
   }
 });
 

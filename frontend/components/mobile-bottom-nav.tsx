@@ -14,7 +14,6 @@ import {
   ReceiptIcon,
   Settings2Icon,
   BriefcaseIcon,
-  BotIcon,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,14 +30,12 @@ const workspaceNav: NavItem[] = [
   { href: "/time-tracker", label: "Time", icon: ClockIcon },
   { href: "/employees", label: "Team", icon: UsersIcon },
   { href: "/billing/invoices", label: "Invoices", icon: ReceiptIcon },
-  { href: "/dashboard/ai", label: "AI", icon: BotIcon },
 ];
 
 const staffNav: NavItem[] = [
   { href: "/staffs", label: "Home", icon: LayoutDashboardIcon },
   { href: "/staffs/tasks", label: "Tasks", icon: ListTodoIcon },
   { href: "/staffs/timesheet", label: "Time", icon: ClockIcon },
-  { href: "/staffs/ai", label: "AI", icon: BotIcon },
   { href: "/staffs/settings", label: "Settings", icon: Settings2Icon },
 ];
 

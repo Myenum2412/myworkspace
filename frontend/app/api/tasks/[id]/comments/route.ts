@@ -44,7 +44,7 @@ export async function GET(
 
     return NextResponse.json({ data });
   } catch {
-    return NextResponse.json({ error: "Failed to fetch comments" }, { status: 500 });
+      return NextResponse.json({ error: "Could not load comments" }, { status: 500 });
   }
 }
 

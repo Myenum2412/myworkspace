@@ -33,7 +33,6 @@ Validate all application functionality across every role, permission level, and 
 | Billing | ✓ | ✓ | ✗ | ✗ | ✓ |
 | Reports | ✓ | ✓ | ✓ | ✗ | ✗ |
 | Client Portal | ✓ | ✓ | ✗ | ✗ | ✓ |
-| AI Features | ✓ | ✓ | ✓ | ✓ | ✗ |
 | Admin Dashboard | ✓ | ✓ | ✗ | ✗ | ✗ |
 
 **Test scenarios:**
@@ -245,19 +244,7 @@ Validate all application functionality across every role, permission level, and 
 
 ---
 
-## 9. AI Features
-
-| TC-ID | Scenario | Steps | Expected |
-|-------|----------|-------|----------|
-| AI-01 | AI task generation | "Create tasks for project onboarding" | Tasks generated, reviewable |
-| AI-02 | AI content suggestions | Start typing task description | Suggestions appear after 3 chars |
-| AI-03 | AI search | Natural language search query | Relevant results ranked by AI |
-| AI-04 | AI report summary | Generate AI summary of project | Concise summary of status, risks |
-| AI-05 | Rate limiting | Rapid AI requests | 429 after threshold exceeded |
-
----
-
-## 10. Client Portal
+## 9. Client Portal
 
 | TC-ID | Scenario | Steps | Expected |
 |-------|----------|-------|----------|
@@ -271,7 +258,7 @@ Validate all application functionality across every role, permission level, and 
 
 ---
 
-## 11. Tenant Isolation
+## 10. Tenant Isolation
 
 | TC-ID | Scenario | Steps | Expected |
 |-------|----------|-------|----------|
@@ -283,7 +270,7 @@ Validate all application functionality across every role, permission level, and 
 
 ---
 
-## 12. Client Authentication Portal
+## 11. Client Authentication Portal
 
 | TC-ID | Scenario | Steps | Expected |
 |-------|----------|-------|----------|
@@ -296,7 +283,7 @@ Validate all application functionality across every role, permission level, and 
 
 ---
 
-## 13. WhatsApp Integration
+## 12. WhatsApp Integration
 
 | TC-ID | Scenario | Steps | Expected |
 |-------|----------|-------|----------|
@@ -307,7 +294,7 @@ Validate all application functionality across every role, permission level, and 
 
 ---
 
-## 14. Edge Cases & Error Handling
+## 13. Edge Cases & Error Handling
 
 | TC-ID | Scenario | Steps | Expected |
 |-------|----------|-------|----------|

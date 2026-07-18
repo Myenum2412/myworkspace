@@ -18,7 +18,6 @@ import {
   ClockIcon,
   CalendarClockIcon,
   ActivityIcon,
-  BotIcon,
 } from "lucide-react";
 
 function buildStaffNavData() {
@@ -53,11 +52,6 @@ function buildStaffNavData() {
       title: "Activity",
       url: "/staffs/activity",
       icon: <ActivityIcon className="size-6" />,
-    },
-    {
-      title: "AI Assistant",
-      url: "/staffs/ai",
-      icon: <BotIcon className="size-6" />,
     },
   ];
 }

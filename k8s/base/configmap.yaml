@@ -11,8 +11,6 @@ data:
   NEXTAUTH_URL: "https://myworkspace.myenum.in"
   TRIAL_DAYS: "15"
   LOG_LEVEL: "info"
-
-  # AI Provider Configuration
 ---
 apiVersion: v1
 kind: Secret

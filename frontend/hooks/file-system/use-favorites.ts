@@ -20,7 +20,7 @@ export function useFavorites() {
     queryKey: ["favorites", orgId],
     queryFn: async () => {
       const res = await fetch(`/api/file-favorites/favorites?orgId=${orgId}`, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch favorites");
+      if (!res.ok) throw new Error("Could not load favorites");
       const json = await res.json();
       return (json.data || []) as FavoriteItem[];
     },

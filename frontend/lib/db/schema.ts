@@ -47,4 +47,5 @@ export const collections = {
   downloadHistory: "download_history",
   engagements: "engagements",
   stocks: "stocks",
+  webhookConfigs: "webhook_configs",
 } as const;

@@ -22,7 +22,7 @@ export function useInstantDashboard() {
     queryKey: ["dashboard", "metrics", bootstrap?.orgId],
     queryFn: async () => {
       const res = await fetch("/api/dashboard/metrics", { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch dashboard metrics");
+      if (!res.ok) throw new Error("Could not load dashboard data");
       const json = await res.json();
       return json.data;
     },

@@ -52,7 +52,6 @@ export const EVENT_CATEGORIES = {
   RETENTION: "retention",
   CHURN: "churn",
   SUPPORT: "support",
-  AI: "ai",
   SEARCH: "search",
   DASHBOARD: "dashboard",
   BUSINESS: "business",
@@ -118,11 +117,6 @@ export const STANDARD_EVENTS = {
   FEATURE_ENABLED: "feature_enabled",
   FEATURE_USED: "feature_used",
   INTEGRATION_CONNECTED: "integration_connected",
-
-  // AI
-  AI_QUERY: "ai_query",
-  AI_RESPONSE: "ai_response",
-  AI_FEEDBACK: "ai_feedback",
 
   // Search
   SEARCH_PERFORMED: "search_performed",

@@ -9,7 +9,11 @@ async function withRetry<T>(fn: () => Promise<T>, label: string, retries = 3): P
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       return await fn();
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.code === 85) {
+        logger.info({ label }, "Index already exists with different name — skipping");
+        return undefined as T;
+      }
       if (attempt === retries) throw err;
       logger.warn({ err, attempt, label }, "Index creation attempt failed, retrying...");
       await new Promise((r) => setTimeout(r, attempt * 2000));

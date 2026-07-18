@@ -97,6 +97,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (e) {
     console.error("[storage-stats] Failed:", e);
-    return NextResponse.json({ error: "Failed to fetch storage stats" }, { status: 500 });
+      return NextResponse.json({ error: "Could not load storage stats" }, { status: 500 });
   }
 }

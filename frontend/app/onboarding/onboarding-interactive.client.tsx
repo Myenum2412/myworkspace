@@ -39,8 +39,9 @@ export function OnboardingInteractive() {
       if ((error as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
         throw error;
       }
-      toast.error(error instanceof Error ? error.message : "Failed to save. Try again.");
-      setSubmitError(error instanceof Error ? error.message : "Failed to save. Try again.");
+      const msg = error instanceof TypeError && error.message === "Failed to fetch" ? "Could not connect to server" : error instanceof Error ? error.message : "Could not save. Try again.";
+      toast.error(msg);
+      setSubmitError(msg);
       setIsSubmitting(false);
     }
   };
