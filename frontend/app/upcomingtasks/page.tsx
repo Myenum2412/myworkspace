@@ -4,27 +4,7 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import UpcomingTasksInteractive, { UpcomingTask } from "./upcomingtasks-interactive";
-
-function TaskListSkeleton() {
-  return (
-    <div className="space-y-3 p-4">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 rounded-lg border p-4">
-          <Skeleton className="h-4 w-4 rounded" />
-          <div className="flex-1 space-y-1">
-            <Skeleton className="h-4 w-3/5" />
-            <Skeleton className="h-3 w-1/3" />
-          </div>
-          <Skeleton className="h-6 w-20 rounded-full" />
-          <Skeleton className="h-6 w-16 rounded-full" />
-          <Skeleton className="h-4 w-24" />
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export const dynamic = "force-dynamic";
 
@@ -105,7 +85,7 @@ export default async function UpcomingTasksPage() {
   }
 
   return (
-    <Suspense fallback={<TaskListSkeleton />}>
+    <Suspense fallback={null}>
       <UpcomingTasksInteractive initialTasks={initialTasks} />
     </Suspense>
   );

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  PlusIcon, ReceiptIcon, CheckCircleIcon, ClockIcon, IndianRupee, Loader2Icon,
+  PlusIcon, ReceiptIcon, CheckCircleIcon, ClockIcon, IndianRupee,
   MoreHorizontalIcon, PencilIcon, Trash2Icon, DownloadIcon, ExternalLinkIcon, FileTextIcon,
 } from "lucide-react";
 import {
@@ -18,6 +18,7 @@ import Link from "next/link";
 import { DataTable } from "./data-table";
 import { columns, type Invoice } from "./columns";
 import { generateInvoicePDF } from "@/lib/pdf";
+import { useBootstrapStore } from "@/stores/bootstrap-store";
 
 function InvoiceStatsCard({ icon, label, value, valueClassName, subtitle }: { icon: React.ReactNode; label: string; value: string | number; valueClassName?: string; subtitle?: React.ReactNode }) {
   return (
@@ -39,34 +40,34 @@ export default function BillingInvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const orgId = useBootstrapStore((s) => s.data?.orgId);
 
   useEffect(() => {
+    if (!orgId) return;
+    const controller = new AbortController();
+
     (async () => {
       try {
-        const profileRes = await fetch("/api/user/profile");
-        if (!profileRes.ok) { setLoading(false); setError("Failed to load profile"); return; }
-        const profileData = await profileRes.json();
-        const oid = profileData?.data?.org?.id;
-        if (!oid) { setLoading(false); setError("No organization found"); return; }
-
-        const res = await fetch(`/api/billing/invoices?orgId=${oid}`, { credentials: "include" });
+        const res = await fetch(`/api/billing/invoices?orgId=${orgId}`, {
+          credentials: "include",
+          signal: controller.signal,
+        });
         if (!res.ok) { setLoading(false); setError("Failed to load invoices"); return; }
         const data = await res.json();
         setInvoices(data.data?.invoices || []);
-      } catch {
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
         setError("Network error loading invoices");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     })();
-  }, []);
+
+    return () => controller.abort();
+  }, [orgId]);
 
   if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-4">
-        <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <div className="flex flex-1 items-center justify-center p-4" />;
   }
 
   if (error) {

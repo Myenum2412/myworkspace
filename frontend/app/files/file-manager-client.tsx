@@ -71,8 +71,8 @@ export function FileManagerClient({ orgId, userId, userRole }: FileManagerClient
               <div className="flex items-center justify-between">
                 <BreadcrumbNav />
               </div>
-              <Toolbar />
-              <UploadZone />
+              <Toolbar readonly={userRole === "client"} />
+              {userRole !== "client" && <UploadZone />}
               {loading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                   {Array.from({ length: 8 }).map((_, i) => (

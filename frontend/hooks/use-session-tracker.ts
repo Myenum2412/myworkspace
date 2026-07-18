@@ -29,9 +29,9 @@ export function useSessionTracker() {
   const breakIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activeSessionRef = useRef<ActiveSession | null>(null);
 
-  const fetchActiveSession = useCallback(async () => {
+  const fetchActiveSession = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("/api/sessions/active", { credentials: "include" });
+      const res = await fetch("/api/sessions/active", { credentials: "include", signal });
       if (!res.ok) return;
       const json = await res.json();
       if (json.success && json.data) {
@@ -58,9 +58,9 @@ export function useSessionTracker() {
     }
   }, []);
 
-  const fetchTodaySummary = useCallback(async () => {
+  const fetchTodaySummary = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("/api/sessions/today", { credentials: "include" });
+      const res = await fetch("/api/sessions/today", { credentials: "include", signal });
       if (!res.ok) return;
       const json = await res.json();
       if (json.success && json.data) {
@@ -75,22 +75,25 @@ export function useSessionTracker() {
       return;
     }
 
-    let cancelled = false;
+    const controller = new AbortController();
+    const { signal } = controller;
 
     const init = async () => {
       setIsLoading(true);
-      await Promise.all([fetchActiveSession(), fetchTodaySummary()]);
-      if (!cancelled) setIsLoading(false);
+      await Promise.all([fetchActiveSession(signal), fetchTodaySummary(signal)]);
+      if (!signal.aborted) setIsLoading(false);
     };
     init();
 
     const pollInterval = setInterval(() => {
-      fetchActiveSession();
-      fetchTodaySummary();
+      if (!signal.aborted) {
+        fetchActiveSession(signal);
+        fetchTodaySummary(signal);
+      }
     }, 60_000);
 
     return () => {
-      cancelled = true;
+      controller.abort();
       clearInterval(pollInterval);
     };
   }, [session?.user?.id, fetchActiveSession, fetchTodaySummary]);

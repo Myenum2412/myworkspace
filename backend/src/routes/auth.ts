@@ -118,6 +118,18 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     description: `${user.name} logged in`,
   });
 
+  // Close any prior active sessions
+  await Session.updateMany(
+    { userId: user.id, logoutTime: { $exists: false } },
+    {
+      $set: {
+        logoutTime: new Date(),
+        currentStatus: "offline",
+      },
+      $push: { statusTransitions: { status: "offline", timestamp: new Date() } },
+    },
+  );
+
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const session = await Session.create({
     userId: user.id,
@@ -360,7 +372,7 @@ router.post("/logout", authenticate, async (req: AuthRequest, res: Response) => 
     activeSession.statusTransitions.push({ status: "offline", timestamp: new Date() });
     activeSession.logoutTime = new Date();
     activeSession.currentStatus = "offline";
-    activeSession.duration = activeSession.logoutTime.getTime() - activeSession.loginTime.getTime() - activeSession.totalBreakDuration;
+    activeSession.duration = Math.max(0, activeSession.logoutTime.getTime() - activeSession.loginTime.getTime() - activeSession.totalBreakDuration);
     await activeSession.save();
 
     await recordAuditLog({

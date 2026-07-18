@@ -122,7 +122,7 @@ router.get("/links", authenticate, async (req: AuthRequest, res: Response) => {
   const filter: Record<string, unknown> = { orgId };
   if (fileId) filter.fileId = fileId;
 
-  const links = await ShareLink.find(filter).sort({ createdAt: -1 }).select("id fileId token isPublic allowDownload maxDownloads downloadCount expiresAt isActive createdAt createdBy orgId").lean();
+  const links = await ShareLink.find(filter).sort({ createdAt: -1 }).limit(200).select("id fileId token isPublic allowDownload maxDownloads downloadCount expiresAt isActive createdAt createdBy orgId").lean();
   res.json({ data: links });
 });
 
@@ -196,7 +196,7 @@ router.get("/internal", authenticate, async (req: AuthRequest, res: Response) =>
 
   if (orgId) {
     await verifyOrgAccess(req.user!.userId, orgId);
-    const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).select("id fileId sharedByUserId sharedWithUserId orgId createdAt").lean();
+    const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).limit(200).select("id fileId sharedByUserId sharedWithUserId orgId createdAt").lean();
     const fileIds = [...new Set(shares.map(s => s.fileId))];
     const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("id originalName mimeType size").lean();
     const fileMap = new Map(files.map(f => [f.id, f]));
@@ -214,7 +214,7 @@ router.get("/internal", authenticate, async (req: AuthRequest, res: Response) =>
   }
 
   if (userId) {
-    const shares = await FileShare.find({ sharedWithUserId: userId }).sort({ createdAt: -1 }).select("id fileId sharedByUserId sharedWithUserId orgId createdAt").lean();
+    const shares = await FileShare.find({ sharedWithUserId: userId }).sort({ createdAt: -1 }).limit(200).select("id fileId sharedByUserId sharedWithUserId orgId createdAt").lean();
     const fileIds = [...new Set(shares.map(s => s.fileId))];
     const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("id originalName mimeType size").lean();
     const fileMap = new Map(files.map(f => [f.id, f]));

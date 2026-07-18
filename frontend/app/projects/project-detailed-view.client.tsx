@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,67 +64,76 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
   const [invoices, setInvoices] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!project.members?.length) return;
-    fetch("/api/employees", { credentials: "include" })
+    if (!project.members?.length && !orgIdProp) return;
+    const controller = new AbortController();
+
+    fetch("/api/employees", { credentials: "include", signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
         const all = (d?.data || []) as { id?: string; _id?: string; name: string; image?: string }[];
         const filtered = all.filter((e) => project.members!.includes(e.id || e._id || ""));
         setMemberNames(filtered.map((e) => ({ id: e.id || e._id || "", name: e.name, image: e.image })));
-      })
-      .catch(() => {});
-  }, [project.members]);
-
-  useEffect(() => {
-    if (!orgIdProp) return;
-    fetch(`/api/time-entries?orgId=${orgIdProp}&projectId=${project.id}`, { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => setTimeEntries(d.data || []))
-      .catch(() => {});
-  }, [project.id, orgIdProp]);
-
-  useEffect(() => {
-    fetch("/api/employees", { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => {
-        const all = (d?.data || []) as { id?: string; _id?: string; name: string }[];
         const map: Record<string, string> = {};
         all.forEach((u) => { if (u.id || u._id) map[u.id || u._id!] = u.name; });
         setUserMap(map);
       })
       .catch(() => {});
-  }, []);
+
+    return () => controller.abort();
+  }, [project.members, orgIdProp]);
 
   useEffect(() => {
     if (!orgIdProp) return;
-    fetch(`/api/tasks?orgId=${orgIdProp}`, { credentials: "include" })
+    const controller = new AbortController();
+
+    fetch(`/api/time-entries?orgId=${orgIdProp}&projectId=${project.id}`, { credentials: "include", signal: controller.signal })
+      .then((r) => r.json())
+      .then((d) => setTimeEntries(d.data || []))
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, [project.id, orgIdProp]);
+
+  useEffect(() => {
+    if (!orgIdProp) return;
+    const controller = new AbortController();
+
+    fetch(`/api/tasks?orgId=${orgIdProp}`, { credentials: "include", signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
         const all = d.data || [];
         setProjectTasks(all.filter((t: any) => t.project === project.name || t.project === project.id));
       })
       .catch(() => {});
+
+    return () => controller.abort();
   }, [orgIdProp, project.id, project.name]);
 
   useEffect(() => {
     if (!orgIdProp) return;
-    fetch(`/api/billing/invoices?orgId=${orgIdProp}`, { credentials: "include" })
+    const controller = new AbortController();
+
+    fetch(`/api/billing/invoices?orgId=${orgIdProp}`, { credentials: "include", signal: controller.signal })
       .then((r) => r.json())
       .then((d) => setInvoices(d.data || []))
       .catch(() => {});
+
+    return () => controller.abort();
   }, [orgIdProp]);
 
   const progressColor =
     project.progress >= 100 ? "bg-green-500" : project.progress >= 50 ? "bg-blue-500" : project.progress > 0 ? "bg-amber-500" : "bg-muted-foreground/30";
 
-  const health = useMemo(() => {
+  const activityTimestamp = useRef(new Date().toISOString()).current;
+
+  const health = (() => {
     if (project.health) return project.health;
     if (!project.deadline) return "on-track";
     const diff = new Date(project.deadline).getTime() - Date.now();
     if (diff < 0) return "delayed";
     if (diff < 7 * 24 * 60 * 60 * 1000) return "at-risk";
     return "on-track";
-  }, [project]);
+  })();
 
   const daysLeft = project.deadline
     ? Math.ceil((new Date(project.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -305,9 +314,9 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent Activity</h3>
             <div className="space-y-3">
               {[
-                { action: "Project created", user: "System", time: new Date().toISOString() },
-                ...(project.status === "Active" ? [{ action: "Project marked as active", user: "System", time: new Date().toISOString() }] : []),
-                ...(memberNames.length > 0 ? [{ action: `${memberNames.length} team member(s) assigned`, user: "System", time: new Date().toISOString() }] : []),
+                { action: "Project created", user: "System", time: activityTimestamp },
+                ...(project.status === "Active" ? [{ action: "Project marked as active", user: "System", time: activityTimestamp }] : []),
+                ...(memberNames.length > 0 ? [{ action: `${memberNames.length} team member(s) assigned`, user: "System", time: activityTimestamp }] : []),
               ].map((activity, i) => (
                 <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
                   <div className="size-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
@@ -429,13 +438,15 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/files?projectId=${projectId}&orgId=${orgId}`, { credentials: "include" })
+    const controller = new AbortController();
+    fetch(`/api/files?projectId=${projectId}&orgId=${orgId}`, { credentials: "include", signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setFiles(d.data || []);
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [projectId]);
 
   function fileIcon(mimeType: string) {
@@ -454,14 +465,7 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
   }
 
   if (loading) {
-    return (
-      <div className="space-y-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Files</h3>
-        <div className="flex items-center justify-center py-12">
-          <p className="text-sm text-muted-foreground">Loading files...</p>
-        </div>
-      </div>
-    );
+    return <div className="space-y-3"><h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Files</h3></div>;
   }
 
   return (

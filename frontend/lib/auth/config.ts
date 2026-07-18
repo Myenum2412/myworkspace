@@ -56,27 +56,35 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           const { db } = await import("@/lib/db");
           const userId = token.id as string;
 
-          const [dbUser, member] = await Promise.all([
+          const [dbUser, org] = await Promise.all([
             db.collection("users").findOne({ id: userId }).catch(() => null),
             token.orgId
-              ? Promise.resolve(null)
-              : db.collection("org_members").findOne({ userId }).catch(() => null),
+              ? db.collection("organizations").findOne({ id: token.orgId as string }).catch(() => null)
+              : Promise.resolve(null),
           ]);
 
           if (dbUser?.role && dbUser.role !== "USER" && token.role !== "client") {
             token.role = dbUser.role;
-          } else if (!token.role || token.role === "USER") {
-            token.role = "workspace";
           }
 
-          let resolvedOrgId = (token.orgId as string) || member?.orgId?.toString() || "";
-          if (member && !token.orgId) {
-            token.orgId = resolvedOrgId;
+          if (!token.orgId && dbUser?.orgId) {
+            token.orgId = dbUser.orgId;
           }
 
-          if (resolvedOrgId) {
-            const org = await db.collection("organizations").findOne({ id: resolvedOrgId }).catch(() => null);
-            if (org) {
+          if (org || (!token.orgId && dbUser)) {
+            const resolvedOrgId = token.orgId || dbUser?.orgId || "";
+            if (!org && resolvedOrgId) {
+              const fetchedOrg = await db.collection("organizations").findOne({ id: resolvedOrgId }).catch(() => null);
+              if (fetchedOrg) {
+                token.onboardingCompleted = fetchedOrg.onboardingCompleted === true;
+                (token as any).plan = fetchedOrg.plan || "trial";
+                (token as any).subscriptionStatus = fetchedOrg.subscriptionStatus || "trialing";
+                (token as any).trialEnd = fetchedOrg.trialEnd?.toISOString() || null;
+                (token as any).currentPeriodEnd = fetchedOrg.currentPeriodEnd?.toISOString() || null;
+              } else {
+                token.onboardingCompleted = true;
+              }
+            } else if (org) {
               token.onboardingCompleted = org.onboardingCompleted === true;
               (token as any).plan = org.plan || "trial";
               (token as any).subscriptionStatus = org.subscriptionStatus || "trialing";
@@ -286,12 +294,17 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           const valid = await compare(password, user.password);
           if (valid) {
             const userId = user.id || user._id?.toString();
-            const memberDoc = await db.collection("org_members").findOne({ userId });
-            const orgId = memberDoc?.orgId?.toString() || "";
+            const [memberDoc, orgByUserId] = await Promise.all([
+              db.collection("org_members").findOne({ userId }),
+              db.collection("organizations").findOne({ ownerId: userId }),
+            ]);
+            const orgId = memberDoc?.orgId?.toString() || orgByUserId?.id || "";
             let onboardingCompleted = true;
-            if (orgId) {
+            if (orgId && !orgByUserId) {
               const org = await db.collection("organizations").findOne({ id: orgId });
               onboardingCompleted = org?.onboardingCompleted === true;
+            } else if (orgByUserId) {
+              onboardingCompleted = orgByUserId.onboardingCompleted === true;
             }
             return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [], orgId, onboardingCompleted };
           }

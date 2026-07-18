@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   ReceiptIcon,
-  Loader2Icon,
   SearchIcon,
   ChevronDownIcon,
   CheckCircleIcon,
@@ -77,6 +76,8 @@ function ReceiptStatusBadge({ status }: { status: ReceiptStatus }) {
   );
 }
 
+import { useBootstrapStore } from "@/stores/bootstrap-store";
+
 export default function ReceiptsPageClient() {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,20 +85,16 @@ export default function ReceiptsPageClient() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const orgId = useBootstrapStore((s) => s.data?.orgId);
 
   const fetchReceipts = useCallback(async () => {
+    if (!orgId) return;
     setLoading(true);
     try {
-      const profileRes = await fetch("/api/user/profile");
-      if (!profileRes.ok) { setLoading(false); setError("Failed to load profile"); return; }
-      const profileData = await profileRes.json();
-      const oid = profileData?.data?.org?.id;
-      if (!oid) { setLoading(false); setError("No organization found"); return; }
-
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.set("status", statusFilter);
       params.set("limit", "100");
-      params.set("orgId", oid);
+      params.set("orgId", orgId);
       const res = await fetch(`/api/receipts?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load");
       const data = await res.json();
@@ -107,11 +104,22 @@ export default function ReceiptsPageClient() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, [statusFilter, orgId]);
 
   useEffect(() => {
-    fetchReceipts();
-  }, [fetchReceipts]);
+    if (!orgId) return;
+    const controller = new AbortController();
+    const params = new URLSearchParams();
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    params.set("limit", "100");
+    params.set("orgId", orgId);
+    fetch(`/api/receipts?${params}`, { credentials: "include", signal: controller.signal })
+      .then((r) => { if (!r.ok) throw new Error("Failed to load"); return r.json(); })
+      .then((data) => { if (!controller.signal.aborted) setReceipts(data.data || []); })
+      .catch(() => { if (!controller.signal.aborted) setError("Failed to load receipts"); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [statusFilter, orgId]);
 
   const handleStatusChange = useCallback(async (id: string, newStatus: ReceiptStatus) => {
     setUpdatingId(id);
@@ -157,7 +165,7 @@ export default function ReceiptsPageClient() {
           <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A]">Receipts</h1>
           <p className="text-sm text-[#64748B] mt-0.5">Manage payment receipts and their status</p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchReceipts} className="gap-1.5">
+        <Button variant="outline" size="sm" onClick={() => fetchReceipts()} className="gap-1.5">
           <RefreshCwIcon className="size-3.5" />
           Refresh
         </Button>
@@ -215,9 +223,7 @@ export default function ReceiptsPageClient() {
       <Card>
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2Icon className="size-6 animate-spin text-[#94A3B8]" />
-            </div>
+            <div className="flex-1 py-16" />
           ) : error ? (
             <div className="flex items-center justify-center py-16 text-red-500 text-sm">{error}</div>
           ) : filtered.length === 0 ? (

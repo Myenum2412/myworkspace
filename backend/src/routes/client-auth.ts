@@ -152,13 +152,21 @@ router.post("/change-password", optionalAuth, async (req: AuthRequest, res: Resp
   res.json({ success: true, message: "Password changed successfully" });
 });
 
+async function lookupClientUser(userId: string, email?: string) {
+  let user = await ClientUser.findOne({ id: userId }).select("orgId clientId").lean();
+  if (!user && email) {
+    user = await ClientUser.findOne({ email }).select("orgId clientId").lean();
+  }
+  return user;
+}
+
 router.get("/workspace-stats", optionalAuth, async (req: AuthRequest, res: Response) => {
   const clientUserId = req.user?.userId;
   if (!clientUserId) {
     throw new AppError(401, "Authentication required");
   }
 
-  const clientUser = await ClientUser.findOne({ id: clientUserId }).select("orgId clientId").lean();
+  const clientUser = await lookupClientUser(clientUserId, req.user?.email);
   if (!clientUser) {
     throw new AppError(404, "Client user not found");
   }
@@ -196,7 +204,7 @@ router.get("/billing-status", optionalAuth, async (req: AuthRequest, res: Respon
   const clientUserId = req.user?.userId;
   if (!clientUserId) throw new AppError(401, "Authentication required");
 
-  const clientUser = await ClientUser.findOne({ id: clientUserId }).select("orgId").lean();
+  const clientUser = await lookupClientUser(clientUserId, req.user?.email);
   if (!clientUser) throw new AppError(404, "Client user not found");
 
   const orgId = clientUser.orgId;

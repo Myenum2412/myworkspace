@@ -12,6 +12,7 @@ import { authLimiter, socketTokenLimiter, apiLimiter, uploadLimiter, shareDownlo
 import { inputSanitizer } from "./middleware/sanitize.js";
 import { csrfProtection } from "./lib/csrf.js";
 import { requestTimeout } from "./middleware/timeout.js";
+import { perfLogger } from "./middleware/perf-logger.js";
 import mongoose from "mongoose";
 import { isRedisConnected } from "./lib/redis.js";
 import { metricsRegistry } from "./lib/monitoring/index.js";
@@ -52,6 +53,7 @@ import lrmRoutes from "./services/lrm/routes/lrm.routes.js";
 import consentRoutes from "./routes/consent.js";
 import analyticsRoutes from "./routes/analytics.js";
 import adminConsentRoutes from "./routes/admin-consent.js";
+import bootstrapRoutes from "./routes/bootstrap.js";
 
 const app = express();
 
@@ -216,7 +218,7 @@ app.get("/metrics", (_req, res) => {
 });
 
 // ── Health check ──
-app.get("/api/health", (_req, res) => {
+app.get("/api/health", async (_req, res) => {
   const checks: Record<string, string> = {};
   let healthy = true;
 
@@ -229,12 +231,24 @@ app.get("/api/health", (_req, res) => {
     checks.redis = isRedisConnected() ? "connected" : "disconnected";
   } catch { checks.redis = "error"; }
 
+  try {
+    const { isRabbitMQConfigured, getChannel } = await import("./lib/queue/connection.js");
+    if (isRabbitMQConfigured()) {
+      const ch = await getChannel();
+      checks.rabbitmq = ch ? "connected" : "disconnected";
+    } else {
+      checks.rabbitmq = "not_configured";
+    }
+  } catch { checks.rabbitmq = "error"; }
+
   const memUsage = process.memoryUsage();
   const uptime = process.uptime();
+  const cpuUsage = process.cpuUsage();
 
   res.status(200).json({
     success: true,
     status: healthy ? "ok" : "degraded",
+    version: process.env.npm_package_version || "1.0.0",
     checks,
     metrics: {
       memory: {
@@ -242,11 +256,18 @@ app.get("/api/health", (_req, res) => {
         heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
         rss: Math.round(memUsage.rss / 1024 / 1024),
       },
+      cpu: {
+        user: Math.round(cpuUsage.user / 1000),
+        system: Math.round(cpuUsage.system / 1000),
+      },
       uptime: Math.round(uptime),
     },
     timestamp: new Date().toISOString(),
   });
 });
+
+// ── Performance logging ──
+app.use(perfLogger);
 
 // ── Routes ──
 app.use("/api/auth", authRoutes);
@@ -286,6 +307,7 @@ app.use("/api/lrm", lrmRoutes);
 app.use("/api/consent", consentRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", adminConsentRoutes);
+app.use("/api/bootstrap", bootstrapRoutes);
 
 // ── 404 catch-all ──
 app.use((req, res) => {

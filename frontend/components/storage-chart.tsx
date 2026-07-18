@@ -42,21 +42,23 @@ export function StorageChart({ orgPlan: rawOrgPlan }: StorageChartProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
     async function fetchData() {
       try {
-        const statsRes = await fetch("/api/files/stats");
+        const statsRes = await fetch("/api/files/stats", { signal: controller.signal });
         if (statsRes.ok) {
           const stats = await statsRes.json();
           const used = stats?.data?.totalSize ?? 0;
-          setUsedMB(used);
+          if (!controller.signal.aborted) setUsedMB(used);
         }
       } catch {
         // fallback defaults
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
     fetchData();
+    return () => controller.abort();
   }, []);
 
   const used = Math.min(usedMB, totalMB);

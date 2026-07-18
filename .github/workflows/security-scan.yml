@@ -1,0 +1,142 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # Every Monday at 6 AM
+
+jobs:
+  npm-audit:
+    name: npm Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Audit Backend
+        working-directory: backend
+        run: npm audit --audit-level=high || true
+
+      - name: Audit Frontend
+        working-directory: frontend
+        run: npm audit --audit-level=high || true
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
+
+  trivy-scan:
+    name: Trivy Container Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker Images
+        run: |
+          docker build -t myworkspace-backend:scan ./backend
+          docker build -t myworkspace-frontend:scan ./frontend
+
+      - name: Scan Backend Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: myworkspace-backend:scan
+          format: sarif
+          output: trivy-backend.sarif
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
+      - name: Scan Frontend Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: myworkspace-frontend:scan
+          format: sarif
+          output: trivy-frontend.sarif
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
+      - name: Upload Trivy Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-backend.sarif
+          category: trivy-backend
+        continue-on-error: true
+
+      - name: Upload Trivy Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-frontend.sarif
+          category: trivy-frontend
+        continue-on-error: true
+
+  secret-scan:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  dockerfile-lint:
+    name: Dockerfile Lint (Hadolint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint Backend Dockerfile
+        uses: hadolint/hadolint-action@v3
+        with:
+          dockerfile: backend/Dockerfile
+
+      - name: Lint Frontend Dockerfile
+        uses: hadolint/hadolint-action@v3
+        with:
+          dockerfile: frontend/Dockerfile
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

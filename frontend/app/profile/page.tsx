@@ -120,7 +120,7 @@ export default async function ProfilePage() {
 
   if (!userDoc) {
     return (
-      <Suspense fallback={<div className="flex flex-1 items-center justify-center text-muted-foreground">Loading...</div>}>
+      <Suspense fallback={null}>
         <ProfilePageInteractive data={{ user: null, org: null, memberCount: 0 }} />
       </Suspense>
     );
@@ -225,7 +225,7 @@ export default async function ProfilePage() {
   };
 
   return (
-    <Suspense fallback={<div className="flex flex-1 items-center justify-center text-muted-foreground">Loading...</div>}>
+    <Suspense fallback={null}>
       <ProfilePageInteractive data={{ user: userData, org: orgData, memberCount }} />
     </Suspense>
   );

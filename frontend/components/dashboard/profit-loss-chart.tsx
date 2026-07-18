@@ -104,14 +104,5 @@ export function ProfitLossChart({ data, className }: Props) {
 }
 
 export function ProfitLossChartSkeleton({ className }: { className?: string }) {
-  return (
-    <Card className={cn("flex flex-col", className)}>
-      <CardHeader className="pb-2">
-        <Skeleton className="h-5 w-32" />
-      </CardHeader>
-      <CardContent className="flex-1 min-h-0">
-        <Skeleton className="h-full w-full rounded-md" />
-      </CardContent>
-    </Card>
-  );
+  return null;
 }

@@ -1,37 +1,48 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
+import { useBootstrapStore } from "@/stores/bootstrap-store";
+import { fetchBootstrapData, getCachedBootstrap, invalidateBootstrapCache } from "@/lib/api/bootstrap";
 import { isAppPage } from "@/lib/app-context";
 
 export function AppInitProvider({ children }: { children: ReactNode }) {
-  const { status: sessionStatus } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
-  const initStartedRef = useRef(false);
+  const { setData, setLoading, setError, setHydrated } = useBootstrapStore();
 
-  const isInitRequired = isAppPage(pathname);
+  const isApp = isAppPage(pathname);
 
   useEffect(() => {
-    if (!isInitRequired) {
-      initStartedRef.current = false;
+    if (!isApp) return;
+    if (status !== "authenticated") return;
+
+    const cached = getCachedBootstrap();
+    if (cached) {
+      setData(cached);
       return;
     }
 
-    if (sessionStatus === "authenticated" && !initStartedRef.current) {
-      initStartedRef.current = true;
+    setLoading(true);
 
-      // Fire-and-forget: warm up caches without blocking render
-      Promise.allSettled([
-        fetch("/api/user/profile", { credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null),
-        fetch("/api/settings", { credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null),
-      ]);
-    }
+    fetchBootstrapData()
+      .then((data) => {
+        setData(data);
+        useBootstrapStore.setState({ isHydrated: true, isLoading: false });
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setHydrated(true);
+      });
+  }, [session?.user?.id, status, isApp, setData, setLoading, setError, setHydrated]);
 
-    if (sessionStatus === "unauthenticated") {
-      initStartedRef.current = false;
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      invalidateBootstrapCache();
+      useBootstrapStore.getState().reset();
     }
-  }, [sessionStatus, isInitRequired]);
+  }, [status]);
 
   return <>{children}</>;
 }

@@ -141,7 +141,7 @@ router.patch("/:id/close", authenticate, async (req: AuthRequest, res: Response)
   session.statusTransitions.push({ status: "offline", timestamp: new Date() });
   session.logoutTime = new Date();
   session.currentStatus = "offline";
-  session.duration = session.logoutTime.getTime() - session.loginTime.getTime() - session.totalBreakDuration;
+  session.duration = Math.max(0, session.logoutTime.getTime() - session.loginTime.getTime() - session.totalBreakDuration);
   await session.save();
 
   await User.findByIdAndUpdate(userId, { status: "offline" });

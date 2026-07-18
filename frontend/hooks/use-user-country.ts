@@ -4,7 +4,7 @@ export function useUserCountry() {
   const [country, setCountry] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchCountry = useCallback(() => {
+  const fetchCountry = useCallback((signal?: AbortSignal) => {
     const cached = sessionStorage.getItem("user_country");
     if (cached) {
       setCountry(cached);
@@ -12,7 +12,7 @@ export function useUserCountry() {
       return;
     }
 
-    fetch("https://ipapi.co/json/")
+    fetch("https://ipapi.co/json/", { signal })
       .then((res) => res.json())
       .then((data) => {
         const c = data?.country || null;
@@ -25,7 +25,11 @@ export function useUserCountry() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { fetchCountry(); }, [fetchCountry]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchCountry(controller.signal);
+    return () => controller.abort();
+  }, [fetchCountry]);
 
   const toggleCurrency = useCallback(() => {
     const next = country && isINR(country) ? "USD" : "INR";

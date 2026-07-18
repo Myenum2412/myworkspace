@@ -27,11 +27,13 @@ export function StorageUsage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/files/stats")
+    const controller = new AbortController();
+    fetch("/api/files/stats", { signal: controller.signal })
       .then((r) => r.json())
       .then((res) => setCategories(res?.data?.mimeBreakdown || []))
       .catch(() => setCategories([]))
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, []);
 
   const top5 = categories.slice(0, 5);

@@ -1,8 +1,10 @@
 import { Router, Request, Response } from "express";
 import { whatsappService } from "../services/whatsapp.service.js";
 import { logger } from "../lib/logger/index.js";
+import { authenticate } from "../middleware/auth.js";
 
 const router = Router();
+router.use(authenticate);
 
 // Category page expects GET /api/whatsapp to return { installed: boolean }
 router.get("/", (_req: Request, res: Response) => {

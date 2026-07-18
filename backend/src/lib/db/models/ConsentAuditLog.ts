@@ -43,7 +43,6 @@ const consentAuditLogSchema = new Schema<IConsentAuditLog>(
 );
 
 consentAuditLogSchema.index({ userId: 1, createdAt: -1 });
-consentAuditLogSchema.index({ consentId: 1 });
 consentAuditLogSchema.index({ createdAt: -1 });
 consentAuditLogSchema.index({ action: 1, createdAt: -1 });
 

@@ -59,6 +59,10 @@ async function start() {
   promoteRateLimitersToRedis();
 
   const server = createServer(app);
+  server.keepAliveTimeout = 65000;
+  server.headersTimeout = 66000;
+  server.requestTimeout = 30000;
+  server.timeout = 60000;
   socketIOManager.initialize(server);
 
   server.listen(env.PORT, () => {

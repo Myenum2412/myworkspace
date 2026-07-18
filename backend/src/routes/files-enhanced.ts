@@ -68,6 +68,7 @@ function invalidateFileCaches(orgId: string): void {
 }
 
 router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tags: ["files"] }), async (req: AuthRequest, res: Response) => {
+  const start = Date.now();
   const orgId = req.query.orgId as string;
   const folderId = req.query.folderId as string | undefined;
   const clientId = req.query.clientId as string | undefined;
@@ -118,6 +119,7 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tag
     ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown",
   }));
 
+  console.log(`[PERF] GET /files took ${Date.now() - start}ms`);
   res.json({ success: true, data: result, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
 });
 
@@ -125,7 +127,7 @@ router.get("/shared", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["file-sha
   const orgId = (req.query.orgId as string) || "";
   if (!orgId) { res.json({ success: true, data: [] }); return; }
   await verifyAccess(req.user!.userId, orgId);
-  const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).select("id fileId sharedByUserId sharedWithUserId orgId createdAt").lean();
+  const shares = await FileShare.find({ orgId }).sort({ createdAt: -1 }).limit(200).select("id fileId sharedByUserId sharedWithUserId orgId createdAt").lean();
 
   const fileIds = [...new Set(shares.map(s => s.fileId))];
   const { User } = await import("../lib/db/models/User.js");
@@ -156,6 +158,7 @@ router.get("/recycle-bin", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["fil
   const files = await FileAttachment.find({ orgId, deletedAt: { $ne: null } })
     .select("id originalName mimeType size createdAt uploaderId deletedAt")
     .sort({ deletedAt: -1 })
+    .limit(200)
     .lean();
 
   const userIds = [...new Set(files.map(f => f.uploaderId))];
@@ -425,6 +428,7 @@ router.delete("/:id/share", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: Response) => {
+  const uploadStart = Date.now();
   const orgId = req.body.orgId as string;
   if (!orgId) throw new AppError(400, "orgId is required");
   if (!req.files || !(req.files as Express.Multer.File[]).length) throw new AppError(400, "No files provided");
@@ -466,6 +470,7 @@ router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: 
   }
 
   const successCount = results.filter(r => !r.error || r.error === "duplicate_skipped").length;
+  console.log(`[PERF] POST /upload (${files.length} files) took ${Date.now() - uploadStart}ms`);
   res.status(201).json({ success: true, total: files.length, uploaded: successCount, results });
 });
 

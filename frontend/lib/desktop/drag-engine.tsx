@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useCallback,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -133,7 +134,7 @@ export function DragEngineProvider({
 
   return (
     <DragContext.Provider
-      value={{ activeDrag, dragItems, dropTarget, startDrag, endDrag, setDropTarget, canDrop }}
+      value={useMemo(() => ({ activeDrag, dragItems, dropTarget, startDrag, endDrag, setDropTarget, canDrop }), [activeDrag, dragItems, dropTarget, startDrag, endDrag, setDropTarget, canDrop])}
     >
       {children}
       {activeDrag && (

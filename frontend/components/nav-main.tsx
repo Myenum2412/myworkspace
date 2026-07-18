@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { ChevronRightIcon } from "lucide-react"
+import { useRoutePrefetcher } from "@/components/route-prefetcher"
 
 export function NavMain({
   items,
@@ -41,6 +42,7 @@ export function NavMain({
 }) {
   const pathname = usePathname()
   const { setOpenMobile, isMobile } = useSidebar()
+  const { prefetchRoute } = useRoutePrefetcher()
 
   const closeMobile = useCallback(() => {
     if (isMobile) setOpenMobile(false)
@@ -54,6 +56,10 @@ export function NavMain({
     },
     [pathname]
   )
+
+  const handleMouseEnter = useCallback((url: string) => {
+    prefetchRoute(url)
+  }, [prefetchRoute])
 
   return (
     <SidebarGroup className={className}>
@@ -70,7 +76,7 @@ export function NavMain({
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton size="lg" tooltip={item.title} className="text-base" asChild>
-                    <Link href={item.url} onClick={closeMobile}>
+                    <Link href={item.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(item.url)} prefetch={true}>
                       {item.icon}
                       <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                       <ChevronRightIcon className="ml-auto size-5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
@@ -82,7 +88,7 @@ export function NavMain({
                     {item.items.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton asChild className="text-sm py-2" data-active={pathname === subItem.url}>
-                          <Link href={subItem.url} onClick={closeMobile}>
+                          <Link href={subItem.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(subItem.url)} prefetch={true}>
                             <span>{subItem.title}</span>
                           </Link>
                         </SidebarMenuSubButton>
@@ -95,7 +101,7 @@ export function NavMain({
           ) : (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton size="lg" tooltip={item.title} className="text-base" asChild>
-                <Link href={item.url} onClick={closeMobile}>
+                <Link href={item.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(item.url)} prefetch={true}>
                   {item.icon}
                   <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                 </Link>

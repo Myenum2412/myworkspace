@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   useCallback,
+  useMemo,
   createContext,
   useContext,
   type ReactNode,
@@ -208,7 +209,7 @@ export function DesktopProvider({
   }, []);
 
   return (
-    <DesktopContext.Provider value={{ isOnline, updateStatus, statusText }}>
+    <DesktopContext.Provider value={useMemo(() => ({ isOnline, updateStatus, statusText }), [isOnline, updateStatus, statusText])}>
       <KeyboardShortcutProvider>
         <DragEngineProvider>
           <ContextMenuProvider>

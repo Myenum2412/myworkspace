@@ -6,6 +6,7 @@ import { getFileIcon } from "@/components/files/utils";
 import { formatSize, type FileItem, type FolderItem } from "@/lib/file-system/types";
 import {
   FolderIcon,
+  FolderPlusIcon,
   MoreHorizontalIcon,
   StarIcon,
   LockIcon,
@@ -176,19 +177,17 @@ function FileCard({ file }: { file: FileItem }) {
 }
 
 export function FileGrid() {
-  const { folders, files, setCurrentFolder, breadcrumbs } = useFileSystemStore();
+  const { folders, files, setCurrentFolder, breadcrumbs, setIsCreatingFolder } = useFileSystemStore();
+  const userRole = useFileSystemStore((s) => s.userRole);
+  const readonly = userRole === "client";
 
-  if (folders.length === 0 && files.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
-        <FolderIcon className="size-16 text-muted-foreground/20" />
-        <p className="text-sm">This folder is empty</p>
-        <p className="text-xs">Upload files or create a folder to get started</p>
-      </div>
-    );
-  }
-
-  return (
+  const content = folders.length === 0 && files.length === 0 ? (
+    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+      <FolderIcon className="size-16 text-muted-foreground/20" />
+      <p className="text-sm">This folder is empty</p>
+      <p className="text-xs">Upload files or create a folder to get started</p>
+    </div>
+  ) : (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
       {folders.map((folder) => (
         <FolderCard
@@ -207,5 +206,18 @@ export function FileGrid() {
         <FileCard key={file.id} file={file} />
       ))}
     </div>
+  );
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>{content}</ContextMenuTrigger>
+      <ContextMenuContent>
+        {!readonly && (
+          <ContextMenuItem onClick={() => setIsCreatingFolder(true)}>
+            <FolderPlusIcon className="size-3.5 mr-2" /> Create Folder
+          </ContextMenuItem>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }

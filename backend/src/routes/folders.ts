@@ -20,7 +20,7 @@ router.get("/tree", async (req: AuthRequest, res: Response) => {
   if (!orgId) throw new AppError(400, "orgId is required");
   await verifyMembership(req.user!.userId, orgId);
 
-  const folders = await Folder.find({ orgId, deletedAt: null }).sort({ path: 1 }).select("id name path parentId orgId clientId createdAt updatedAt deletedAt").lean();
+  const folders = await Folder.find({ orgId, deletedAt: null }).sort({ path: 1 }).limit(200).select("id name path parentId orgId clientId createdAt updatedAt deletedAt").lean();
   const tree = buildTree(folders, null);
   res.json({ data: tree });
 });
@@ -37,7 +37,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   else filter.parentId = null;
   if (clientId) filter.clientId = clientId;
 
-  const folders = await Folder.find(filter).sort({ name: 1 }).select("id name path parentId orgId clientId createdAt updatedAt").lean();
+  const folders = await Folder.find(filter).sort({ name: 1 }).limit(200).select("id name path parentId orgId clientId createdAt updatedAt").lean();
   res.json({ data: folders });
 });
 
@@ -91,14 +91,10 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
   const oldPrefix = oldPath + "/";
   const newPrefix = newPath + "/";
   await Folder.updateOne({ id: folder.id }, { name, path: newPath, updatedBy: req.user!.userId });
-  const childFolders = await Folder.find({
-    orgId: folder.orgId,
-    path: { $regex: `^${escapeRegex(oldPrefix)}` },
-  }).select("id path").lean();
-  for (const child of childFolders) {
-    const childNewPath = child.path.replace(oldPrefix, newPrefix);
-    await Folder.updateOne({ id: child.id }, { path: childNewPath });
-  }
+  await Folder.updateMany(
+    { orgId: folder.orgId, path: { $regex: `^${escapeRegex(oldPrefix)}` } },
+    [{ $set: { path: { $concat: [newPrefix, { $substrCP: ["$path", oldPrefix.length, { $strLenCP: "$path" }] }] } } }]
+  );
 
   await recordAuditLog({
     orgId: folder.orgId, userId: req.user!.userId, createdBy: req.user!.userId, action: "folder.renamed",
@@ -131,11 +127,10 @@ router.post("/:id/move", async (req: AuthRequest, res: Response) => {
   await Folder.updateOne({ id: folder.id }, { parentId: targetParentId || null, path: newPath, updatedBy: req.user!.userId });
   const oldPrefix = oldPath + "/";
   const newPrefix = newPath + "/";
-  const childFolders = await Folder.find({ orgId: folder.orgId, path: { $regex: `^${escapeRegex(oldPrefix)}` } }).select("id path").lean();
-  for (const child of childFolders) {
-    const childNewPath = child.path.replace(oldPrefix, newPrefix);
-    await Folder.updateOne({ id: child.id }, { path: childNewPath });
-  }
+  await Folder.updateMany(
+    { orgId: folder.orgId, path: { $regex: `^${escapeRegex(oldPrefix)}` } },
+    [{ $set: { path: { $concat: [newPrefix, { $substrCP: ["$path", oldPrefix.length, { $strLenCP: "$path" }] }] } } }]
+  );
 
   await FileAttachment.updateMany({ orgId: folder.orgId, folderId: folder.id }, { folderId: targetParentId || null });
 

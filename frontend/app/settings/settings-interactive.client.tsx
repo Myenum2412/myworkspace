@@ -447,18 +447,18 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
 
 function FeatureToggleSettings() {
   const [hidden, setHidden] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    fetch("/api/sidebar-features")
+    const controller = new AbortController();
+    fetch("/api/sidebar-features", { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
         if (data.hidden) setHidden(data.hidden)
       })
       .catch(() => {})
-      .finally(() => setLoading(false))
+    return () => controller.abort();
   }, [])
 
   async function handleToggle(feature: string) {
@@ -478,14 +478,6 @@ function FeatureToggleSettings() {
     } finally {
       setSaving(false)
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-      </div>
-    )
   }
 
   const featureDescriptions: Record<string, string> = {

@@ -50,7 +50,7 @@ export default async function OrgProfilePage() {
   const email = session.user.email;
   if (!email) {
     return (
-      <Suspense fallback={<div className="flex flex-1 items-center justify-center text-muted-foreground">Loading...</div>}>
+      <Suspense fallback={null}>
         <ProfileLeafInteractive data={{ user: null, org: null }} />
       </Suspense>
     );
@@ -61,7 +61,7 @@ export default async function OrgProfilePage() {
 
   if (!userDoc) {
     return (
-      <Suspense fallback={<div className="flex flex-1 items-center justify-center text-muted-foreground">Loading...</div>}>
+      <Suspense fallback={null}>
         <ProfileLeafInteractive data={{ user: null, org: null }} />
       </Suspense>
     );
@@ -116,7 +116,7 @@ export default async function OrgProfilePage() {
   };
 
   return (
-    <Suspense fallback={<div className="flex flex-1 items-center justify-center text-muted-foreground">Loading...</div>}>
+    <Suspense fallback={null}>
       <ProfileLeafInteractive data={{ user: userData, org: orgData }} />
     </Suspense>
   );

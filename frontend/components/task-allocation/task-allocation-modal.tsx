@@ -124,61 +124,66 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   const [userOrgId, setUserOrgId] = useState("");
 
   useEffect(() => {
-    if (open) {
-      setIsLoadingData(true);
-      Promise.all([
-        employeeService.getAllEmployees().catch(() => []),
-        teamService.getAllTeams().catch(() => []),
-        fetch("/api/clients", { credentials: "include" }).then((r) => r.json()).catch(() => []),
-        fetch("/api/projects-list", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch("/api/user/me", { credentials: "include" }).then((r) => r.json()).catch(() => ({})),
-        fetch("/api/settings", { credentials: "include" }).then((r) => r.json()).catch(() => null),
-        fetch("/api/tasks?limit=100", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
-      ]).then(([staff, teamList, clientsRes, projectsRes, userRes, _settingsRes, tasksRes]) => {
-        setUserOrgId((userRes as any)?.orgId || "");
-        setEmployees((staff as any[]).map((s) => ({
-          id: s.id,
-          name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || "Unknown",
-          role: s.designation || s.role || "",
-        })));
-        setTeams((teamList as any[]).map((t) => ({
-          id: t.id,
-          name: t.name,
-          created_by: t.headUserId || "",
-          memberCount: t.memberIds?.length || 0,
-        })));
-        const clientArr = Array.isArray(clientsRes) ? clientsRes : clientsRes?.data || [];
-        const clientNames = clientArr.map((c: { name?: string }) => c.name).filter(Boolean);
-        const projectArr = Array.isArray(projectsRes) ? projectsRes : projectsRes?.data || [];
-        const mappedProjects = projectArr.map((p: { id?: string; name?: string; client?: string }) => ({
-          id: p.id || "",
-          name: p.name || "",
-          client: p.client || "",
-        }));
-        setProjectList(mappedProjects);
-        const projectClientNames = [...new Set(mappedProjects.map((p: { client: string }) => p.client).filter(Boolean))];
-        setClientList([...new Set([...clientNames, ...projectClientNames])]);
+    if (!open) return;
+    const controller = new AbortController();
+    const { signal } = controller;
 
-        const tasksArr = Array.isArray(tasksRes?.data) ? tasksRes.data : [];
-        const savedDefs = tasksArr
-          .filter((t: any) => t.isSaved)
-          .map((t: any) => ({
-            id: t.id || t._id,
-            name: t.title,
-            description: t.description,
-            isActive: t.isActive !== false,
-          }));
-        const source = savedDefs.length > 0 ? savedDefs : (taskDefinitions as { id: string }[]);
-        const seen = new Set<string>();
-        setLocalTaskDefs(source.filter((d: { id: string }) => {
-          if (seen.has(d.id)) return false;
-          seen.add(d.id);
-          return true;
-        }));
+    setIsLoadingData(true);
+    Promise.all([
+      employeeService.getAllEmployees().catch(() => []),
+      teamService.getAllTeams().catch(() => []),
+      fetch("/api/clients", { credentials: "include", signal }).then((r) => r.json()).catch(() => []),
+      fetch("/api/projects-list", { credentials: "include", signal }).then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch("/api/user/me", { credentials: "include", signal }).then((r) => r.json()).catch(() => ({})),
+      fetch("/api/settings", { credentials: "include", signal }).then((r) => r.json()).catch(() => null),
+      fetch("/api/tasks?limit=100", { credentials: "include", signal }).then((r) => r.json()).catch(() => ({ data: [] })),
+    ]).then(([staff, teamList, clientsRes, projectsRes, userRes, _settingsRes, tasksRes]) => {
+      if (signal.aborted) return;
+      setUserOrgId((userRes as any)?.orgId || "");
+      setEmployees((staff as any[]).map((s) => ({
+        id: s.id,
+        name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || "Unknown",
+        role: s.designation || s.role || "",
+      })));
+      setTeams((teamList as any[]).map((t) => ({
+        id: t.id,
+        name: t.name,
+        created_by: t.headUserId || "",
+        memberCount: t.memberIds?.length || 0,
+      })));
+      const clientArr = Array.isArray(clientsRes) ? clientsRes : clientsRes?.data || [];
+      const clientNames = clientArr.map((c: { name?: string }) => c.name).filter(Boolean);
+      const projectArr = Array.isArray(projectsRes) ? projectsRes : projectsRes?.data || [];
+      const mappedProjects = projectArr.map((p: { id?: string; name?: string; client?: string }) => ({
+        id: p.id || "",
+        name: p.name || "",
+        client: p.client || "",
+      }));
+      setProjectList(mappedProjects);
+      const projectClientNames = [...new Set(mappedProjects.map((p: { client: string }) => p.client).filter(Boolean))];
+      setClientList([...new Set([...clientNames, ...projectClientNames])]);
 
-        setIsLoadingData(false);
-      });
-    }
+      const tasksArr = Array.isArray(tasksRes?.data) ? tasksRes.data : [];
+      const savedDefs = tasksArr
+        .filter((t: any) => t.isSaved)
+        .map((t: any) => ({
+          id: t.id || t._id,
+          name: t.title,
+          description: t.description,
+          isActive: t.isActive !== false,
+        }));
+      const source = savedDefs.length > 0 ? savedDefs : (taskDefinitions as { id: string }[]);
+      const seen = new Set<string>();
+      setLocalTaskDefs(source.filter((d: { id: string }) => {
+        if (seen.has(d.id)) return false;
+        seen.add(d.id);
+        return true;
+      }));
+
+      setIsLoadingData(false);
+    });
+
+    return () => controller.abort();
   }, [open]);
 
   const resetForm = () => {

@@ -3,7 +3,23 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertCircleIcon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, AlertCircleIcon, FileText } from "lucide-react";
+
+type RecentFile = {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  category: string;
+  createdAt: string;
+};
+
+type WorkspaceStats = {
+  folderCount: number;
+  fileCount: number;
+  recentFiles: RecentFile[];
+};
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -16,6 +32,7 @@ export default function ClientDashboardPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [billing, setBilling] = useState<{ pendingCount: number; totalDue: number } | null>(null);
+  const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,10 +45,12 @@ export default function ClientDashboardPage() {
     Promise.all([
       fetch("/api/client-auth/me", opts).then(r => r.json()),
       fetch("/api/client-auth/billing-status", opts).then(r => r.json()),
+      fetch("/api/client-auth/workspace-stats", opts).then(r => r.json()),
     ])
-      .then(([me, bill]) => {
+      .then(([me, bill, stats]) => {
         if (me.success) setName(me.data?.user?.name || "");
         if (bill.success) setBilling(bill.data);
+        if (stats.success && stats.data?.recentFiles) setRecentFiles(stats.data.recentFiles);
       })
       .catch(() => {})
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
@@ -69,6 +88,29 @@ export default function ClientDashboardPage() {
           </Button>
         </div>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Recent Files</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {recentFiles.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No files yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {recentFiles.map((f) => (
+                <div key={f.id} className="flex items-center justify-between text-sm py-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileText className="size-4 text-muted-foreground shrink-0" />
+                    <span className="truncate">{f.name}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground shrink-0 ml-4 capitalize">{f.category}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

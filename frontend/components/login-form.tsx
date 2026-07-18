@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { loginAction } from "@/lib/auth/actions";
 import { signIn } from "next-auth/react";
+import { useInstantLogin } from "@/hooks/use-instant-login";
 
 function GoogleIcon() {
   return (
@@ -23,25 +23,36 @@ function GoogleIcon() {
 
 export function LoginForm({ className, error, ...props }: React.ComponentProps<"div"> & { error?: string }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { loading, error: loginError, step, instantLogin } = useInstantLogin();
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+    await instantLogin(email, password);
+  }, [email, password, loading, instantLogin]);
+
+  const displayError = loginError || error;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-2 text-center">
         <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
         <p className="text-sm text-muted-foreground">
-          Sign in to your account to continue
+          {loading ? "Preparing your workspace..." : "Sign in to your account to continue"}
         </p>
       </div>
 
-      <form action={loginAction} className="flex flex-col gap-4">
-        {error && (
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {displayError && !displayError.includes("2fa") && (
           <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            {error}
+            {displayError}
           </div>
         )}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="email">Email address</Label>
-          <Input id="email" name="email" type="email" required autoComplete="email" />
+          <Input id="email" name="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
         </div>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
@@ -58,6 +69,9 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
               required
               autoComplete="current-password"
               className="pr-10"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
             />
             <button
               type="button"
@@ -79,8 +93,8 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
             </button>
           </div>
         </div>
-        <Button type="submit" className="w-full mt-1 font-semibold">
-          Sign in
+        <Button type="submit" className="w-full mt-1 font-semibold" disabled={loading}>
+          {loading ? "Signing in..." : "Sign in"}
         </Button>
       </form>
 
@@ -90,7 +104,7 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
         <Separator className="flex-1" />
       </div>
 
-      <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign in with Google" onClick={() => signIn("google", { callbackUrl: "/" })}>
+      <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign in with Google" onClick={() => signIn("google", { callbackUrl: "/" })} disabled={loading}>
         <GoogleIcon /><span>Google</span>
       </Button>
 

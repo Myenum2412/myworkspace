@@ -142,9 +142,7 @@ export default function NotificationsPage() {
       {/* Notification List */}
       <div className="flex-1">
         {loading && filtered.length === 0 ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-          </div>
+          <div className="flex-1" />
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <BellIcon className="size-12 mb-3 opacity-20" />

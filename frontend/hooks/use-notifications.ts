@@ -43,14 +43,14 @@ export function useNotifications(userId?: string) {
   const userIdRef = useRef(userId);
   userIdRef.current = userId;
 
-  const fetchNotifications = useCallback(async (reset = false) => {
+  const fetchNotifications = useCallback(async (reset = false, signal?: AbortSignal) => {
     if (!userIdRef.current) return;
     setLoading(true);
     try {
       const currentOffset = reset ? 0 : offsetRef.current;
       const res = await fetch(
         `/api/notifications?limit=50&offset=${currentOffset}`,
-        { credentials: "include" }
+        { credentials: "include", signal }
       );
       if (res.ok) {
         const d = await res.json();
@@ -79,7 +79,9 @@ export function useNotifications(userId?: string) {
 
   useEffect(() => {
     if (!userId) return;
-    fetchNotifications(true);
+    const controller = new AbortController();
+    fetchNotifications(true, controller.signal);
+    return () => controller.abort();
   }, [userId, fetchNotifications]);
 
   // Socket.IO real-time listener

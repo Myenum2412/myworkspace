@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { useState } from "react";
 
-export function Toolbar() {
+export function Toolbar({ readonly }: { readonly?: boolean }) {
   const {
     search,
     setSearch,
@@ -53,12 +53,16 @@ export function Toolbar() {
       {/* Top row: upload, new folder, up, view toggle, sort */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-1">
-          <Button size="sm" variant="default" onClick={() => setShowUpload(true)}>
-            <UploadIcon className="size-3.5 mr-1.5" /> Upload
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setIsCreatingFolder(true)}>
-            <FolderPlusIcon className="size-3.5 mr-1.5" /> New Folder
-          </Button>
+          {!readonly && (
+            <Button size="sm" variant="default" onClick={() => setShowUpload(true)}>
+              <UploadIcon className="size-3.5 mr-1.5" /> Upload
+            </Button>
+          )}
+          {!readonly && (
+            <Button size="sm" variant="outline" onClick={() => setIsCreatingFolder(true)}>
+              <FolderPlusIcon className="size-3.5 mr-1.5" /> New Folder
+            </Button>
+          )}
           {currentFolderId && (
             <Button size="sm" variant="ghost" onClick={() => setCurrentFolder(null)}>
               <ArrowUpIcon className="size-3.5" />

@@ -25,13 +25,15 @@ export function useNotificationSettings() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSettings();
+    const controller = new AbortController();
+    fetchSettings(controller.signal);
+    return () => controller.abort();
   }, []);
 
-  const fetchSettings = async () => {
+  const fetchSettings = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/notifications/settings", { credentials: "include" });
+      const res = await fetch("/api/notifications/settings", { credentials: "include", signal });
       if (res.ok) {
         const d = await res.json();
         setSettings(d.data);

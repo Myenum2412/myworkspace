@@ -12,3 +12,7 @@ desktop/dist/
 desktop/node_modules/
 desktop/out/
 backend/data/uploads/
+backend/dist/
+*.tsbuildinfo
+*.log
+.DS_Store

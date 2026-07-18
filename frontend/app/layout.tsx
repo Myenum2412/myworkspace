@@ -7,6 +7,8 @@ import { OfflineBanner } from "@/components/offline-banner";
 import { OfflineSyncManager } from "@/components/offline-sync-manager";
 import { Toaster } from "sonner";
 import { NotificationInitializer } from "@/components/notification-initializer";
+import { DataPreloader } from "@/hooks/use-data-preloader";
+import { PerformanceMonitor } from "@/components/performance-monitor";
 import CookieConsentBlock from "@/components/cookie-consent-block";
 import { siteConfig, organizationJsonLd, webSiteJsonLd, softwareApplicationJsonLd } from "@/lib/seo/seo-config";
 import "./globals.css";
@@ -220,9 +222,12 @@ export default function RootLayout({
         <Providers>
           <ContextMenuProvider />
           <NotificationInitializer />
-          <AppLayout>
-            {children}
-          </AppLayout>
+          <PerformanceMonitor />
+          <DataPreloader>
+            <AppLayout>
+              {children}
+            </AppLayout>
+          </DataPreloader>
           <OfflineBanner />
           <OfflineSyncManager />
           <CookieConsentBlock />

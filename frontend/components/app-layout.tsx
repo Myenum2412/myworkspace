@@ -1,50 +1,22 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { OrgSidebar } from "@/components/org-sidebar";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { ClientSidebar } from "@/components/client-sidebar";
-import { Header } from "@/components/header";
-import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
-import { SubscriptionStatusBanner } from "@/components/subscription-status-banner";
 import { SubscriptionGuard } from "@/components/subscription-guard";
-import { Skeleton } from "@/components/ui/skeleton";
+
+const Header = lazy(() => import("@/components/header").then(m => ({ default: m.Header })));
+const MobileBottomNav = lazy(() => import("@/components/mobile-bottom-nav").then(m => ({ default: m.MobileBottomNav })));
+const SubscriptionStatusBanner = lazy(() => import("@/components/subscription-status-banner").then(m => ({ default: m.SubscriptionStatusBanner })));
 
 interface AppLayoutProps {
   children: ReactNode;
-}
-
-function SidebarFallback() {
-  return (
-    <div className="flex h-screen w-64 flex-col border-r bg-background p-4">
-      <Skeleton className="h-8 w-32 mb-6" />
-      <div className="space-y-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-9 w-full" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function HeaderFallback() {
-  return (
-    <header className="flex w-full h-14 sm:h-16 md:h-20 shrink-0 border-b items-center justify-between gap-2 px-4">
-      <div className="flex items-center gap-2">
-        <Skeleton className="size-8 rounded-md" />
-        <Skeleton className="h-5 w-32" />
-      </div>
-      <div className="flex items-center gap-2">
-        <Skeleton className="size-8 rounded-full" />
-        <Skeleton className="size-8 rounded-full" />
-      </div>
-    </header>
-  );
 }
 
 const SidebarByContext = ({
@@ -75,8 +47,15 @@ export function AppLayout({ children }: AppLayoutProps) {
   const context = useMemo(() => getAppContext(pathname), [pathname]);
   const isApp = useMemo(() => isAppPage(pathname), [pathname]);
 
+  // Override sidebar context based on session role so client users
+  // never see a flash of the wrong sidebar while the redirect fires.
+  const effectiveContext = useMemo((): AppContextType => {
+    const role = session?.user?.role?.toLowerCase() || "";
+    if (role === "client") return "client";
+    return context;
+  }, [context, session?.user?.role]);
+
   useEffect(() => {
-    // Only redirect if user is authenticated and on a protected route
     if (status !== "authenticated") return;
     const role = session?.user?.role?.toLowerCase() || "";
     if (role === "client" && !pathname.startsWith("/client") && !pathname.startsWith("/login")) {
@@ -104,20 +83,26 @@ export function AppLayout({ children }: AppLayoutProps) {
     return <SubscriptionGuard>{children}</SubscriptionGuard>;
   }
 
+  if (status === "loading") {
+    return <div className="flex h-screen w-full bg-background" />;
+  }
+
   return (
     <SidebarProvider open={open} onOpenChange={setOpen}>
-      <Suspense fallback={<SidebarFallback />}>
-        <SidebarByContext context={context} user={user} />
+      <Suspense fallback={null}>
+        <SidebarByContext context={effectiveContext} user={user} />
       </Suspense>
       <SidebarInset>
-        <Suspense fallback={<HeaderFallback />}>
+        <Suspense fallback={null}>
           <SubscriptionStatusBanner />
-          <Header context={context} />
+          <Header context={effectiveContext} />
         </Suspense>
         <main className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 lg:p-6 pb-16 sm:pb-3 md:pb-4 lg:p-6 min-w-0 max-w-full">
           <SubscriptionGuard>{children}</SubscriptionGuard>
         </main>
-        <MobileBottomNav context={context} />
+        <Suspense fallback={null}>
+          <MobileBottomNav context={effectiveContext} />
+        </Suspense>
       </SidebarInset>
     </SidebarProvider>
   );

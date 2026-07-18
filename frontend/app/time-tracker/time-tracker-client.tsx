@@ -1,7 +1,7 @@
 "use client"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import TimeTrackerOverview from "./time-tracker-overview.client"
+import TimeTrackerOverview from "./time-tracker-overview"
 import TimeTracker from "./time-tracker-interactive.client"
 
 type Entry = {

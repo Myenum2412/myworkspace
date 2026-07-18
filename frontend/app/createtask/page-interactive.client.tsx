@@ -25,7 +25,9 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { TiptapEditor } from "@/components/ui/tiptap-editor";
+import dynamic from "next/dynamic";
+
+const TiptapEditor = dynamic(() => import("@/components/ui/tiptap-editor").then((m) => ({ default: m.TiptapEditor })), { ssr: false });
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 

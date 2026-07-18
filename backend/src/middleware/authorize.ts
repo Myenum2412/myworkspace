@@ -5,6 +5,20 @@ import { AppError } from "./error.js";
 import { env } from "../config/env.js";
 import { recordAuditLog } from "../services/audit.service.js";
 
+const permCache = new Map<string, { permissions: string[]; expiresAt: number }>();
+const PERM_CACHE_TTL = 60_000;
+
+function getCachedPermissions(userId: string): string[] | null {
+  const cached = permCache.get(`perm:${userId}`);
+  if (cached && cached.expiresAt > Date.now()) return cached.permissions;
+  permCache.delete(`perm:${userId}`);
+  return null;
+}
+
+function setCachedPermissions(userId: string, permissions: string[]): void {
+  permCache.set(`perm:${userId}`, { permissions, expiresAt: Date.now() + PERM_CACHE_TTL });
+}
+
 export function authorizeRole(...roles: string[]) {
   return async (req: AuthRequest, _res: Response, next: NextFunction) => {
     if (!req.user) {
@@ -34,13 +48,19 @@ export function authorizePermission(...permissions: string[]) {
     }
 
     if (req.user.role === "ORG_MENU_ADMIN") {
-      try {
-        const user = await User.findById(req.user.userId);
-        if (user) {
-          req.user.permissions = user.permissions;
+      const cached = getCachedPermissions(req.user.userId);
+      if (cached) {
+        req.user.permissions = cached;
+      } else {
+        try {
+          const user = await User.findById(req.user.userId);
+          if (user) {
+            req.user.permissions = user.permissions;
+            setCachedPermissions(req.user.userId, user.permissions || []);
+          }
+        } catch {
+          // proceed with token permissions
         }
-      } catch {
-        // proceed with token permissions
       }
     }
 

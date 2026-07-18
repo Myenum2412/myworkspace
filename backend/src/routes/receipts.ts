@@ -42,9 +42,9 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
 // Get single receipt
 router.get("/:id", async (req: AuthRequest, res: Response) => {
-  const receipt = await Receipt.findById(req.params.id);
+  const receipt = await Receipt.findById(req.params.id).lean();
   if (!receipt) throw new AppError(404, "Receipt not found");
-  res.json({ success: true, data: { ...receipt.toObject(), id: receipt._id.toString() } });
+  res.json({ success: true, data: { ...receipt, id: receipt._id.toString() } });
 });
 
 // Create receipt

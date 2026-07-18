@@ -5,9 +5,7 @@ import { hkdf } from "@panva/hkdf";
 import { env } from "../config/env.js";
 import { JwtPayload } from "../types/index.js";
 import type { AuthRequest } from "../types/index.js";
-import mongoose from "mongoose";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
-import { User } from "../lib/db/models/User.js";
 export type { AuthRequest };
 
 // Per-request auth logging is gated behind AUTH_DEBUG=1. The JWE/cookie path
@@ -23,12 +21,23 @@ const dbgError = (...a: unknown[]) => {
 const JWE_ALG = "dir" as const;
 const JWE_ENC = "A256CBC-HS512" as const;
 
-// --- In-memory caches for auth hot path ---
-const JWE_CACHE_TTL = 60_000; // 60s TTL for JWT decrypt results
-const USER_CACHE_TTL = 300_000; // 5min TTL for userId resolution
+// --- In-memory caches for auth hot path (bounded at 1000 entries) ---
+const JWE_CACHE_TTL = 60_000;
+const USER_CACHE_TTL = 300_000;
+const CACHE_MAX = 1000;
 
 const jweCache = new Map<string, { payload: JwtPayload; exp: number }>();
 const resolveUserIdCache = new Map<string, { found: boolean; exp: number }>();
+
+function cacheEvictIfNeeded<K>(cache: Map<K, unknown>): void {
+  if (cache.size >= CACHE_MAX) {
+    const iter = cache.keys();
+    const toDelete = cache.size >> 1;
+    for (let i = 0; i < toDelete; i++) {
+      cache.delete(iter.next().value as K);
+    }
+  }
+}
 
 function jweCacheGet(key: string): JwtPayload | null {
   const hit = jweCache.get(key);
@@ -38,6 +47,7 @@ function jweCacheGet(key: string): JwtPayload | null {
 }
 
 function jweCacheSet(key: string, payload: JwtPayload): void {
+  cacheEvictIfNeeded(jweCache);
   jweCache.set(key, { payload, exp: Date.now() + JWE_CACHE_TTL });
 }
 
@@ -49,6 +59,7 @@ function resolveCacheGet(userId: string): boolean | null {
 }
 
 function resolveCacheSet(userId: string, found: boolean): void {
+  cacheEvictIfNeeded(resolveUserIdCache);
   resolveUserIdCache.set(userId, { found, exp: Date.now() + USER_CACHE_TTL });
 }
 // --- End caches ---
@@ -177,7 +188,7 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
     const token = header.slice(7);
     dbg(`[BACKEND AUTH] Bearer token found, length: ${token.length}`);
     try {
-      const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+      const decoded = jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] }) as JwtPayload;
       dbg(`[BACKEND AUTH] Bearer token verified:`, JSON.stringify(decoded));
       dbg(`[BACKEND AUTH] User ID from token: ${decoded.userId}`);
       dbg(`[BACKEND AUTH] Org ID from token: ${decoded.orgId}`);
@@ -222,53 +233,24 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
  */
 export async function resolveStaleUserId(req: AuthRequest): Promise<void> {
   if (!req.user) return;
-  const { userId, email } = req.user;
+  const { userId, orgId } = req.user;
 
-  const cached = resolveCacheGet(userId);
-  if (cached === true) return;
-
-  // Parallelize membership and user lookups
-  const queries: Promise<any>[] = [
-    OrgMember.findOne({ userId }).lean(),
-  ];
-  if (mongoose.connection.db) {
-    queries.push(
-      mongoose.connection.db.collection("org_members").findOne({ userId }).catch(() => null)
-    );
-  }
-
-  const [member, nextAuthMember] = await Promise.all(queries);
-
-  if (member || nextAuthMember) {
+  if (orgId) {
     resolveCacheSet(userId, true);
     return;
   }
 
-  // Parallelize user lookups
-  const userQueries: Promise<any>[] = [];
-  if (userId) {
-    userQueries.push(User.findById(userId).lean().catch(() => null));
-  }
-  if (email) {
-    userQueries.push(User.findOne({ email }).lean().catch(() => null));
+  const cached = resolveCacheGet(userId);
+  if (cached === true) return;
+
+  const member = await OrgMember.findOne({ userId }).lean().select("orgId").exec();
+  if (member) {
+    req.user.orgId = member.orgId;
+    resolveCacheSet(userId, true);
+    return;
   }
 
-  const userResults = await Promise.all(userQueries);
-  let resolvedId: string | null = null;
-
-  for (const userDoc of userResults) {
-    if (userDoc) {
-      resolvedId = userDoc.id || (userDoc as any)._id?.toString();
-      break;
-    }
-  }
-
-  if (resolvedId && resolvedId !== userId) {
-    req.user.userId = resolvedId;
-    resolveCacheSet(resolvedId, true);
-  } else {
-    resolveCacheSet(userId, false);
-  }
+  resolveCacheSet(userId, false);
 }
 
 export async function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction): Promise<void> {

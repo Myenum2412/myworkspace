@@ -104,7 +104,7 @@ export default async function StaffTasksPage() {
   }
 
   return (
-    <Suspense fallback={<div className="flex items-center justify-center py-12"><div className="text-sm text-muted-foreground">Loading tasks...</div></div>}>
+    <Suspense fallback={null}>
       <TasksInteractive tasks={tasks} sessionUserId={session?.user?.id} />
     </Suspense>
   );

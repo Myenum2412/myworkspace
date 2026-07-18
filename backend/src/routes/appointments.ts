@@ -162,7 +162,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   const orgId = req.user!.orgId || await requireOrgMembership(req.user!.userId);
   const userId = req.user!.userId;
 
-  const existing = await Appointment.findOne({ id: req.params.id, orgId });
+  const existing = await Appointment.findOne({ id: req.params.id, orgId }).lean();
   if (!existing) throw new AppError(404, "Appointment not found");
 
   const allowed = ["patientName", "mobileNumber", "email", "doctorId", "doctorName", "appointmentDate", "preferredTime", "reasonForVisit", "notes", "status"];

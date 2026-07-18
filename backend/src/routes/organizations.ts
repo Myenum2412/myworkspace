@@ -271,7 +271,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 router.get("/:id/members", async (req: AuthRequest, res: Response) => {
   const orgId = req.params.id as string;
   await requireOrgMembership(req.user!.userId, orgId);
-  const members = await OrgMember.find({ orgId }).select("orgId userId role joinedAt").populate("userId", "name email image status").lean();
+  const members = await OrgMember.find({ orgId }).limit(200).select("orgId userId role joinedAt").populate("userId", "name email image status").lean();
   res.json({ success: true, data: members });
 });
 
