@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { cn } from "@/lib/utils";
 import { getFileIcon } from "@/components/files/utils";
@@ -35,6 +36,32 @@ import {
 import * as api from "@/lib/file-system/api";
 import { apiFetch } from "@/lib/api";
 
+function FileThumbnail({ file, className }: { file: FileItem; className?: string }) {
+  const [error, setError] = useState(false);
+  const isImage = file.mimeType.startsWith("image/");
+  const thumbSrc = `/api/files/thumbnail/${file.id}?size=medium`;
+
+  if (isImage && !error) {
+    return (
+      <div className={cn("size-full", className)}>
+        <img
+          src={thumbSrc}
+          alt={file.originalName}
+          className="size-full object-cover"
+          loading="lazy"
+          onError={() => setError(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("size-16 flex items-center justify-center", className)}>
+      {getFileIcon(file.mimeType)}
+    </div>
+  );
+}
+
 function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleClick: () => void }) {
   const { selectedIds, toggleSelection, setCurrentFolder, setRenameTarget, setPropertiesTarget, setMoveTarget, currentFolderId } = useFileSystemStore();
   const selected = selectedIds.has(folder.id);
@@ -46,7 +73,7 @@ function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleCli
           onDoubleClick={onDoubleClick}
           onClick={(e) => { if (e.ctrlKey || e.metaKey) toggleSelection(folder.id); }}
           className={cn(
-            "group relative flex flex-col items-center gap-2 p-4 rounded-xl border bg-card cursor-pointer transition-all select-none",
+            "group relative flex flex-col items-center gap-2 p-4 cursor-pointer transition-all select-none",
             selected && "ring-2 ring-primary bg-primary/5",
             "hover:border-primary/30 hover:shadow-sm",
           )}
@@ -99,24 +126,27 @@ function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleCli
 }
 
 function FileCard({ file }: { file: FileItem }) {
-  const { selectedIds, toggleSelection, setPreviewFile, setShareFile, setRenameTarget, setPropertiesTarget } = useFileSystemStore();
+  const { selectedIds, toggleSelection, setPreviewFile, setPreviewPaneFile, previewPaneFile, setShareFile, setRenameTarget, setPropertiesTarget } = useFileSystemStore();
   const selected = selectedIds.has(file.id);
+  const isPaneActive = previewPaneFile?.id === file.id;
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
         <div
-          onClick={(e) => { if (e.ctrlKey || e.metaKey) toggleSelection(file.id); }}
+          onClick={(e) => {
+            if (e.ctrlKey || e.metaKey) toggleSelection(file.id);
+            else setPreviewPaneFile(file);
+          }}
           onDoubleClick={() => setPreviewFile(file)}
           className={cn(
-            "group relative flex flex-col items-center gap-2 p-4 rounded-xl border bg-card cursor-pointer transition-all select-none",
+            "group relative flex flex-col items-center gap-2 p-4 cursor-pointer transition-all select-none",
             selected && "ring-2 ring-primary bg-primary/5",
+            isPaneActive && "ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/20",
             "hover:border-primary/30 hover:shadow-sm",
           )}
         >
-          <div className="size-16 rounded-2xl bg-muted flex items-center justify-center">
-            {getFileIcon(file.mimeType)}
-          </div>
+          <FileThumbnail file={file} />
           <div className="text-center min-w-0 w-full">
             <p className="text-xs font-medium truncate">{file.originalName}</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">{formatSize(file.size)}</p>

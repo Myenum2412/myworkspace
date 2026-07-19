@@ -86,6 +86,56 @@ export async function initializeAgenda() {
 
   await agenda.start();
 
+  // ─── File Processing Jobs ─────────────────────────────────────────────
+
+  agenda.define("generate-file-thumbnails", async (job: any, done: any) => {
+    try {
+      const { fileId } = job.attrs.data || {};
+      if (!fileId) { done(); return; }
+      const { generateThumbnail } = await import("../../services/thumbnail.service.js");
+      const { FileAttachment } = await import("../db/models/FileAttachment.js");
+      const file = await FileAttachment.findOne({ id: fileId }).lean();
+      if (file) {
+        await generateThumbnail(fileId, file.orgId);
+        console.log(`✦ Agenda: generated thumbnails for ${fileId}`);
+      }
+      done();
+    } catch (err) {
+      console.error("[agenda] generate-file-thumbnails error:", err);
+      done(err as Error);
+    }
+  });
+
+  agenda.define("extract-file-metadata", async (job: any, done: any) => {
+    try {
+      const { fileId } = job.attrs.data || {};
+      if (!fileId) { done(); return; }
+      const { extractFileMetadata } = await import("../../services/metadata.service.js");
+      const { FileAttachment } = await import("../db/models/FileAttachment.js");
+      const file = await FileAttachment.findOne({ id: fileId }).lean();
+      if (file) {
+        await extractFileMetadata(fileId, file.orgId);
+        console.log(`✦ Agenda: extracted metadata for ${fileId}`);
+      }
+      done();
+    } catch (err) {
+      console.error("[agenda] extract-file-metadata error:", err);
+      done(err as Error);
+    }
+  });
+
+  agenda.define("cleanup-files", async (_job: any, done: any) => {
+    try {
+      const { runFullCleanup } = await import("../../services/cleanup.service.js");
+      const result = await runFullCleanup();
+      console.log(`✦ Agenda: cleanup complete`, result);
+      done();
+    } catch (err) {
+      console.error("[agenda] cleanup-files error:", err);
+      done(err as Error);
+    }
+  });
+
   agenda.define("task-due-reminders", async (job: any, done: any) => {
     try {
       const now = new Date();
@@ -150,6 +200,7 @@ export async function initializeAgenda() {
   await agenda.every("15 minutes", "close-stale-sessions");
   await agenda.every("0 0 * * *", "session-daily-report");
   await agenda.every("*/30 * * * *", "task-due-reminders");
+  await agenda.every("0 */6 * * *", "cleanup-files");
 
   console.log("✦ Agenda.js scheduler initialized");
   return agenda;

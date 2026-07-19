@@ -1,4 +1,4 @@
-export { getStorageProvider, LocalStorageProvider, R2StorageProvider, computeChecksum } from "./providers.js";
+export { getStorageProvider, LocalStorageProvider, R2StorageProvider, computeChecksum, isLocalProvider, getStorageType } from "./providers.js";
 export { getR2Client, getR2Config, isR2Configured, getSignedUrl, GetObjectCommand, PutObjectCommand } from "./r2-client.js";
 
 import { getStorageProvider } from "./providers.js";

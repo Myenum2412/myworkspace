@@ -13,7 +13,14 @@ import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import {
   uploadFile, softDeleteFile, restoreFile, permanentDeleteFile,
   createFileVersion, toggleFileLock, getFileStream, duplicateFile,
+  getThumbnailStream,
 } from "../services/file.service.js";
+import { getThumbnail } from "../services/thumbnail.service.js";
+import { getFileMetadata } from "../services/metadata.service.js";
+import { generatePreview } from "../services/preview.service.js";
+import { streamFile, getFileInfo, handleConditionalRequest } from "../services/streaming.service.js";
+import { getConvertedFile } from "../services/conversion.service.js";
+import { runFullCleanup } from "../services/cleanup.service.js";
 import { getStorageProvider } from "../lib/storage/providers.js";
 import { SignedUrlService } from "../lib/storage/signed-urls.js";
 import { logger } from "../lib/logger/index.js";
@@ -22,31 +29,70 @@ const router = Router();
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif", "image/svg+xml",
+  "image/bmp", "image/tiff", "image/x-icon", "image/heic", "image/heif", "image/x-canon-cr2",
+  "image/x-nikon-nef", "image/x-sony-arw", "image/x-adobe-dng", "image/x-olympus-orf",
+  "image/x-fuji-raf",
   "application/pdf",
   "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/plain", "text/csv", "text/markdown",
+  "text/plain", "text/csv", "text/markdown", "text/html", "text/css", "text/javascript",
+  "text/x-scss", "text/x-typescript", "text/x-java", "text/x-python", "text/x-go",
+  "text/x-rust", "text/x-c", "text/x-cpp", "text/x-csharp", "text/x-php", "text/x-yaml",
+  "text/xml", "application/json", "application/xml", "application/x-yaml",
   "application/zip", "application/x-rar-compressed", "application/x-7z-compressed",
-  "application/json", "application/xml",
-  "video/mp4", "video/webm", "video/quicktime",
-  "audio/mpeg", "audio/wav", "audio/ogg",
+  "application/x-tar", "application/gzip", "application/x-bzip2",
+  "video/mp4", "video/webm", "video/quicktime", "video/x-msvideo", "video/x-matroska",
+  "video/x-ms-wmv", "video/x-flv", "video/mpeg", "video/3gpp", "video/ogg", "video/mp2t",
+  "video/x-m2ts", "video/dv",
+  "audio/mpeg", "audio/wav", "audio/ogg", "audio/aac", "audio/flac", "audio/x-m4a",
+  "audio/x-ms-wma", "audio/x-aiff", "audio/opus",
+  "model/gltf+json", "model/gltf-binary", "model/stl", "model/obj", "model/vnd.fbx",
+  "model/ply",
+  "image/vnd.dwg", "image/vnd.dxf", "application/x-step", "application/x-iges",
+  "image/vnd.adobe.photoshop", "application/postscript", "application/x-figma",
+  "application/x-sketch",
+  "application/octet-stream",
 ]);
 
+const MIME_PREFIXES = [
+  "image/", "video/", "audio/", "text/", "model/",
+  "application/",
+];
+
+function isAllowedMimeType(mimeType: string): boolean {
+  if (ALLOWED_MIME_TYPES.has(mimeType)) return true;
+  return MIME_PREFIXES.some((p) => mimeType.startsWith(p));
+}
+
 const ALLOWED_EXTENSIONS = new Set([
-  ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".svg",
-  ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-  ".txt", ".csv", ".md", ".json", ".xml",
-  ".zip", ".rar", ".7z",
-  ".mp4", ".webm", ".mov", ".mp3", ".wav", ".ogg",
+  ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".svg", ".bmp", ".tiff", ".tif", ".ico",
+  ".heic", ".heif", ".cr2", ".nef", ".arw", ".dng", ".orf", ".raf",
+  ".pdf",
+  ".doc", ".docx", ".dot", ".xls", ".xlsx", ".csv", ".ppt", ".pptx",
+  ".txt", ".md", ".json", ".xml", ".yml", ".yaml", ".toml", ".ini", ".cfg", ".env", ".log", ".sql",
+  ".js", ".ts", ".jsx", ".tsx", ".html", ".css", ".scss", ".sass", ".less",
+  ".php", ".java", ".py", ".go", ".rs", ".c", ".cpp", ".h", ".cs", ".sh", ".bat", ".ps1",
+  ".zip", ".rar", ".7z", ".tar", ".gz", ".bz2",
+  ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".m4v", ".mpeg", ".mpg",
+  ".3gp", ".ogv", ".ts", ".mts", ".vob",
+  ".mp3", ".wav", ".ogg", ".aac", ".flac", ".m4a", ".wma", ".aiff", ".opus",
+  ".glb", ".gltf", ".obj", ".fbx", ".stl", ".ply",
+  ".dwg", ".dxf", ".ifc", ".dgn", ".stp", ".step", ".igs", ".iges",
+  ".psd", ".ai", ".xd", ".fig", ".sketch",
+  ".ttf", ".otf", ".woff", ".woff2", ".eot",
 ]);
+
+function isAllowedExtension(ext: string): boolean {
+  return ALLOWED_EXTENSIONS.has(ext);
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB max
+  limits: { fileSize: 500 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ext = "." + file.originalname.split(".").pop()?.toLowerCase();
-    if (ALLOWED_MIME_TYPES.has(file.mimetype) && ALLOWED_EXTENSIONS.has(ext)) {
+    if (isAllowedMimeType(file.mimetype) || isAllowedExtension(ext)) {
       cb(null, true);
     } else {
       cb(new Error(`File type not allowed: ${file.mimetype} (${ext})`));
@@ -320,6 +366,126 @@ router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
       monthlyStats: monthlyStats.map((m) => ({ month: m._id, count: m.count, size: m.totalSize })),
     },
   });
+});
+
+// ─── Preview API (must precede /:id catch-all) ──────────────────────────
+
+router.get("/preview/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId mimeType").lean();
+  if (!file) return void res.status(404).json({ error: "File not found" });
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  const result = await generatePreview(req.params.id);
+  if (result.url) {
+    res.json({ success: true, data: result });
+  } else {
+    res.status(404).json({ error: "Preview not available" });
+  }
+});
+
+router.get("/thumbnail/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
+  if (!file) return void res.status(404).json({ error: "File not found" });
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  const size = (req.query.size as string) || "medium";
+  const validSizes = ["small", "medium", "large"];
+  const thumbSize = validSizes.includes(size) ? size as any : "medium";
+
+  const result = await getThumbnail(req.params.id, thumbSize);
+  if (!result) return void res.status(404).json({ error: "Thumbnail not available" });
+
+  res.set("Content-Type", result.mimeType);
+  res.set("Cache-Control", "public, max-age=86400");
+  res.set("ETag", `"${req.params.id}-${thumbSize}"`);
+  res.send(result.buffer);
+});
+
+router.get("/metadata/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null })
+    .select("orgId mimeType originalName size checksum createdAt updatedAt")
+    .lean();
+  if (!file) return void res.status(404).json({ error: "File not found" });
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  const meta = await getFileMetadata(req.params.id);
+
+  res.json({
+    success: true,
+    data: meta || {},
+    file: {
+      mimeType: file.mimeType,
+      originalName: file.originalName,
+      size: file.size,
+      checksum: file.checksum,
+      createdAt: file.createdAt,
+      updatedAt: file.updatedAt,
+    },
+  });
+});
+
+router.get("/stream/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
+  if (!file) return void res.status(404).json({ error: "File not found" });
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  const info = await getFileInfo(req.params.id);
+  if (!info) return void res.status(404).json({ error: "File not found" });
+
+  if (handleConditionalRequest(req as any, res, info.etag, info.lastModified)) return;
+
+  await streamFile(req.params.id, req as any, res);
+});
+
+router.get("/download/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
+  if (!file) return void res.status(404).json({ error: "File not found" });
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  const result = await getFileStream(req.params.id);
+  if (!result) throw new AppError(404, "File not found");
+
+  const isPreview = req.query.preview === "true";
+  res.set("Content-Type", result.mimeType);
+  res.set("Content-Disposition", `${isPreview ? "inline" : "attachment"}; filename="${result.originalName}"`);
+  res.set("Content-Length", String(result.size));
+  res.set("Cache-Control", "public, max-age=3600");
+  res.send(result.buffer);
+});
+
+router.get("/conversion/:orgId/*storageKey", async (req: AuthRequest, res: Response) => {
+  await verifyAccess(req.user!.userId, req.params.orgId);
+  const storageKey = (req.params as any).storageKey;
+  if (!storageKey) return void res.status(400).json({ error: "Invalid storage key" });
+  const result = await getConvertedFile(storageKey);
+  if (!result) return void res.status(404).json({ error: "Converted file not found" });
+
+  res.set("Content-Type", result.mimeType);
+  res.set("Cache-Control", "public, max-age=86400");
+  res.send(result.buffer);
+});
+
+router.post("/cleanup", async (req: AuthRequest, res: Response) => {
+  await requireOrgMembership(req.user!.userId, req.user!.orgId!, req.user!.email, req.user!.orgId!);
+  if (req.user!.role !== "admin") throw new AppError(403, "Admin access required");
+
+  const result = await runFullCleanup();
+  res.json({ success: true, data: result });
+});
+
+// ─── Legacy: keep old route paths working ───────────────────────────────
+
+router.get("/:id/thumbnail", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
+  if (!file) return void res.status(404).json({ error: "File not found" });
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  const result = await getThumbnail(req.params.id, "medium");
+  if (!result) return void res.status(404).json({ error: "Thumbnail not available" });
+
+  res.set("Content-Type", result.mimeType);
+  res.set("Cache-Control", "public, max-age=86400");
+  res.send(result.buffer);
 });
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
@@ -650,6 +816,12 @@ router.post("/:id/restore", async (req: AuthRequest, res: Response) => {
 router.delete("/:id/permanent", async (req: AuthRequest, res: Response) => {
   await permanentDeleteFile(req.params.id, req.user!.userId);
   res.json({ success: true });
+});
+
+// ─── Archive Content Listing ────────────────────────────────────────────────────
+
+router.get("/archive/:id", async (req: AuthRequest, res: Response) => {
+  res.json({ success: true, data: [] });
 });
 
 // ─── R2 Presigned Upload ──────────────────────────────────────────────────────

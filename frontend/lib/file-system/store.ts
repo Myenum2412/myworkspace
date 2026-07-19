@@ -28,6 +28,7 @@ interface FileSystemState {
 
   // ── UI State ──
   previewFile: FileItem | null;
+  previewPaneFile: FileItem | null;
   shareFile: FileItem | null;
   propertiesTarget: { type: "file" | "folder"; id: string } | null;
   renameTarget: { type: "file" | "folder"; id: string; name: string } | null;
@@ -56,6 +57,7 @@ interface FileSystemState {
   removeUploadItem: (id: string) => void;
   clearUploadQueue: () => void;
   setPreviewFile: (f: FileItem | null) => void;
+  setPreviewPaneFile: (f: FileItem | null) => void;
   setShareFile: (f: FileItem | null) => void;
   setPropertiesTarget: (t: { type: "file" | "folder"; id: string } | null) => void;
   setRenameTarget: (t: { type: "file" | "folder"; id: string; name: string } | null) => void;
@@ -88,6 +90,7 @@ export const useFileSystemStore = create<FileSystemState>((set) => ({
   isLoading: false,
   uploadQueue: [],
   previewFile: null,
+  previewPaneFile: null,
   shareFile: null,
   propertiesTarget: null,
   renameTarget: null,
@@ -126,6 +129,7 @@ export const useFileSystemStore = create<FileSystemState>((set) => ({
   })),
   clearUploadQueue: () => set({ uploadQueue: [] }),
   setPreviewFile: (f) => set({ previewFile: f }),
+  setPreviewPaneFile: (f) => set({ previewPaneFile: f }),
   setShareFile: (f) => set({ shareFile: f }),
   setPropertiesTarget: (t) => set({ propertiesTarget: t }),
   setRenameTarget: (t) => set({ renameTarget: t }),

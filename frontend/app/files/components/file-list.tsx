@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
-import { getFileIcon } from "@/components/files/utils";
+import { getFileIcon, getFileTypeColor } from "@/components/files/utils";
 import { formatSize } from "@/lib/file-system/types";
 import { cn } from "@/lib/utils";
 import {
@@ -28,6 +29,24 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as api from "@/lib/file-system/api";
 
+function ListThumbnail({ file }: { file: { id: string; mimeType: string; originalName: string } }) {
+  const [error, setError] = useState(false);
+
+  if (file.mimeType.startsWith("image/") && !error) {
+    return (
+      <img
+        src={`/api/files/thumbnail/${file.id}?size=small`}
+        alt={file.originalName}
+        className="size-8 rounded object-cover shrink-0"
+        loading="lazy"
+        onError={() => setError(true)}
+      />
+    );
+  }
+
+  return <>{getFileIcon(file.mimeType)}</>;
+}
+
 export function FileList() {
   const {
     folders,
@@ -38,6 +57,8 @@ export function FileList() {
     clearSelection,
     setCurrentFolder,
     setPreviewFile,
+    setPreviewPaneFile,
+    previewPaneFile,
     setShareFile,
     setRenameTarget,
     setPropertiesTarget,
@@ -59,10 +80,10 @@ export function FileList() {
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-muted/30">
+          <tr className="border-b">
             <th className="w-10 px-3 py-2.5">
               <Checkbox
                 checked={allSelected}
@@ -155,7 +176,9 @@ export function FileList() {
               className={cn(
                 "group hover:bg-muted/30 cursor-pointer transition-colors",
                 selectedIds.has(file.id) && "bg-primary/5",
+                previewPaneFile?.id === file.id && "bg-blue-50/50 dark:bg-blue-950/20",
               )}
+              onClick={() => setPreviewPaneFile(file)}
               onDoubleClick={() => setPreviewFile(file)}
             >
               <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
@@ -166,7 +189,7 @@ export function FileList() {
               </td>
               <td className="px-3 py-2.5">
                 <div className="flex items-center gap-2.5">
-                  {getFileIcon(file.mimeType)}
+                  <ListThumbnail file={file} />
                   <span className="font-medium truncate">{file.originalName}</span>
                   {file.isFavorite && <StarIcon className="size-3 fill-amber-400 text-amber-400 shrink-0" />}
                   {file.isLocked && <LockIcon className="size-3 text-muted-foreground shrink-0" />}

@@ -42,11 +42,11 @@ registerHandler(QUEUES.THUMBNAIL_GENERATION, async (_msg, data) => {
   const { fileId, orgId } = data as Record<string, any>;
   logger.info({ fileId, orgId }, "Generating thumbnail");
   try {
-    const file = await FileAttachment.findOne({ id: fileId, orgId }).lean();
-    if (!file) return { success: false, error: "File not found" };
-    const preview = await generatePreview(file.storagePath, file.mimeType, fileId);
-    if (preview.thumbnailPath) {
-      await FileAttachment.updateOne({ id: fileId }, { thumbnailPath: preview.thumbnailPath });
+    const { generateThumbnail } = await import("../../services/thumbnail.service.js");
+    const result = await generateThumbnail(fileId, orgId);
+    const primaryPath = result.get("medium") || result.get("small");
+    if (primaryPath) {
+      await FileAttachment.updateOne({ id: fileId }, { thumbnailPath: primaryPath });
     }
     return { success: true };
   } catch (err: any) {

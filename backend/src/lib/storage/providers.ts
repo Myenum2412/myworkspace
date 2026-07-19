@@ -330,6 +330,14 @@ export function getStorageProvider(): IStorageProvider {
   return new LocalStorageProvider();
 }
 
+export function isLocalProvider(): boolean {
+  return !isR2Configured();
+}
+
+export function getStorageType(): "local" | "r2" {
+  return isR2Configured() ? "r2" : "local";
+}
+
 export async function computeChecksum(buffer: Buffer): Promise<string> {
   const { createHash } = await import("crypto");
   return createHash("sha256").update(buffer).digest("hex");

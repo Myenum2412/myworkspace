@@ -12,6 +12,9 @@ import { recordAuditLog } from "./audit.service.js";
 import { cacheManager, CacheKeys } from "../lib/cache.js";
 import { validateFileMagicBytes, validateFileExtension } from "./validation.service.js";
 import { logger } from "../lib/logger/index.js";
+import fs from "fs/promises";
+import { generateThumbnail as generateThumbnailService, deleteThumbnails, getThumbnail } from "./thumbnail.service.js";
+import { extractFileMetadata } from "./metadata.service.js";
 
 export interface FileUploadInput {
   orgId: string;
@@ -128,9 +131,31 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
     description: `File "${originalName}" uploaded (${(size / 1024).toFixed(1)} KB)`,
   });
 
+  generateThumbnailService(fileId, orgId, buffer, actualMimeType).then((thumbResults) => {
+    if (thumbResults.size > 0) {
+      extractFileMetadata(fileId, orgId, buffer, actualMimeType).catch(() => {});
+    }
+  }).catch((err) => {
+    logger.warn({ err, fileId }, "Background thumbnail generation failed");
+  });
+
   invalidateFileCaches(orgId);
 
   return { kind: "created", fileId, isDuplicate: false };
+}
+
+export async function generateThumbnail(
+  fileId: string,
+  orgId: string,
+  buffer?: Buffer,
+  mimeType?: string,
+): Promise<string | null> {
+  const results = await generateThumbnailService(fileId, orgId, buffer, mimeType);
+  return results.get("medium") || results.get("small") || null;
+}
+
+export async function getThumbnailStream(fileId: string): Promise<{ buffer: Buffer; mimeType: string } | null> {
+  return getThumbnail(fileId, "medium");
 }
 
 function categorizeMime(mimeType: string): string {
@@ -206,6 +231,8 @@ export async function permanentDeleteFile(fileId: string, userId: string): Promi
     { orgId: file.orgId },
     { $inc: { usedStorageBytes: -file.size } },
   );
+
+  await deleteThumbnails(fileId);
 
   await recordAuditLog({
     orgId: file.orgId, userId, createdBy: userId,
