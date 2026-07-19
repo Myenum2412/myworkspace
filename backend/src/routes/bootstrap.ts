@@ -163,7 +163,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
         Client.countDocuments({ orgId: effectiveOrgId }).exec().catch(() => 0),
         OrgMember.countDocuments({ orgId: effectiveOrgId }).exec().catch(() => 0),
         FileAttachment.aggregate([
-          { $match: { orgId: effectiveOrgId } },
+          { $match: { orgId: effectiveOrgId, deletedAt: null } },
           { $group: { _id: null, totalSize: { $sum: "$size" } } },
         ]).exec().catch(() => []),
       ])

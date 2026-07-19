@@ -19,5 +19,8 @@ const fileShareSchema = new Schema<IFileShare>({
   createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
+fileShareSchema.index({ orgId: 1, createdAt: -1 });
+fileShareSchema.index({ fileId: 1 });
+fileShareSchema.index({ sharedWithUserId: 1, orgId: 1 });
 
 export const FileShare = model<IFileShare>("FileShare", fileShareSchema);

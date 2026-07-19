@@ -115,5 +115,7 @@ fileAttachmentSchema.index({ orgId: 1, mimeType: 1 });
 fileAttachmentSchema.index({ checksum: 1, orgId: 1 });
 fileAttachmentSchema.index({ category: 1, orgId: 1 });
 fileAttachmentSchema.index({ orgId: 1, approvalStatus: 1 });
+fileAttachmentSchema.index({ orgId: 1, uploaderId: 1, createdAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, deletedAt: 1, createdAt: 1 });
 
 export const FileAttachment = model<IFileAttachment>("FileAttachment", fileAttachmentSchema);
