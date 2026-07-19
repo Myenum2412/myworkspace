@@ -11,6 +11,8 @@ const withSerwist = require("@serwist/next").default({
   disableGoogleAnalytics: true,
 });
 
+const { withSentryConfig } = require("@sentry/nextjs");
+
 const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 const nextConfig = {
@@ -144,4 +146,15 @@ if (process.env.CDN_URL) {
   nextConfig.assetPrefix = process.env.CDN_URL;
 }
 
-module.exports = withSerwist(nextConfig);
+module.exports = withSentryConfig(withSerwist(nextConfig), {
+  org: "my-workspace-w9",
+  project: "javascript-nextjs",
+
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  widenClientFileUpload: true,
+
+  tunnelRoute: "/monitoring",
+
+  silent: !process.env.CI,
+});

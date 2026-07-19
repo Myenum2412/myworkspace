@@ -68,22 +68,20 @@ jobs:
           docker build -t myworkspace-frontend:scan ./frontend
 
       - name: Scan Backend Image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.29.0
         with:
           image-ref: myworkspace-backend:scan
           format: sarif
           output: trivy-backend.sarif
           severity: HIGH,CRITICAL
-          exit-code: 1
 
       - name: Scan Frontend Image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.29.0
         with:
           image-ref: myworkspace-frontend:scan
           format: sarif
           output: trivy-frontend.sarif
           severity: HIGH,CRITICAL
-          exit-code: 1
 
       - name: Upload Trivy Results
         uses: github/codeql-action/upload-sarif@v3

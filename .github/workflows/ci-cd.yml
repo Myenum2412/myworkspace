@@ -9,7 +9,7 @@ on:
 env:
   NODE_VERSION: "22"
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ lower(github.repository) }}
 
 jobs:
   lint-and-type-check:
@@ -76,7 +76,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci --include=dev
         working-directory: backend
-      - run: npx jest --config jest.config.cjs --testPathPatterns="integration"
+      - run: npm run test -- --testPathPatterns="tests/backend/integration" --runInBand
         working-directory: backend
         env:
           NODE_ENV: test
