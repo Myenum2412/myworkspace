@@ -6,6 +6,7 @@ import { env } from "../config/env.js";
 import { JwtPayload } from "../types/index.js";
 import type { AuthRequest } from "../types/index.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { User } from "../lib/db/models/User.js";
 export type { AuthRequest };
 
 // Per-request auth logging is gated behind AUTH_DEBUG=1. The JWE/cookie path
@@ -28,6 +29,7 @@ const CACHE_MAX = 1000;
 
 const jweCache = new Map<string, { payload: JwtPayload; exp: number }>();
 const resolveUserIdCache = new Map<string, { found: boolean; exp: number }>();
+const canonicalIdCache = new Map<string, { id: string; exp: number }>();
 
 function cacheEvictIfNeeded<K>(cache: Map<K, unknown>): void {
   if (cache.size >= CACHE_MAX) {
@@ -61,6 +63,18 @@ function resolveCacheGet(userId: string): boolean | null {
 function resolveCacheSet(userId: string, found: boolean): void {
   cacheEvictIfNeeded(resolveUserIdCache);
   resolveUserIdCache.set(userId, { found, exp: Date.now() + USER_CACHE_TTL });
+}
+
+function canonicalCacheGet(userId: string): string | null {
+  const hit = canonicalIdCache.get(userId);
+  if (!hit) return null;
+  if (Date.now() > hit.exp) { canonicalIdCache.delete(userId); return null; }
+  return hit.id;
+}
+
+function canonicalCacheSet(userId: string, id: string): void {
+  cacheEvictIfNeeded(canonicalIdCache);
+  canonicalIdCache.set(userId, { id, exp: Date.now() + USER_CACHE_TTL });
 }
 // --- End caches ---
 
@@ -227,21 +241,40 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
 }
 
 /**
- * Resolve a stale userId from the JWT by looking up the user by email.
- * Called after authenticate to update req.user.userId if needed.
- * Optimized: parallelized lookups, extended cache TTL.
+ * OAuth logins (JWT strategy, no DB adapter) can carry the provider account id
+ * as the JWT subject instead of our app users.id. Resolve the canonical id
+ * (by id, then email) so every downstream authorization check is consistent.
+ */
+async function resolveCanonicalUserId(userId: string, email?: string): Promise<string> {
+  const cached = canonicalCacheGet(userId);
+  if (cached) return cached;
+
+  const byId = await User.findOne({ id: userId }).select("id").lean();
+  if (byId?.id) { canonicalCacheSet(userId, byId.id); return byId.id; }
+
+  if (email) {
+    const byEmail = await User.findOne({ email }).select("id").lean();
+    if (byEmail?.id) { canonicalCacheSet(userId, byEmail.id); return byEmail.id; }
+  }
+  return userId;
+}
+
+/**
+ * Normalize req.user.userId to the canonical users.id and backfill orgId.
+ * Called after authenticate. Client sessions are left untouched (client_users).
  */
 export async function resolveStaleUserId(req: AuthRequest): Promise<void> {
   if (!req.user) return;
-  const { userId, orgId } = req.user;
 
-  if (orgId) {
+  if (req.user.role !== "client") {
+    req.user.userId = await resolveCanonicalUserId(req.user.userId, req.user.email);
+  }
+
+  const userId = req.user.userId;
+  if (req.user.orgId) {
     resolveCacheSet(userId, true);
     return;
   }
-
-  const cached = resolveCacheGet(userId);
-  if (cached === true) return;
 
   const member = await OrgMember.findOne({ userId }).lean().select("orgId").exec();
   if (member) {
