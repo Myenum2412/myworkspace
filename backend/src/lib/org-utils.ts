@@ -3,6 +3,7 @@ import { OrgMember } from "./db/models/OrgMember.js";
 import { User } from "./db/models/User.js";
 import { ClientUser } from "./db/models/ClientUser.js";
 import { ClientWorkspace } from "./db/models/ClientWorkspace.js";
+import { Organization } from "./db/models/Organization.js";
 import { AuthRequest } from "../types/index.js";
 import { AppError } from "../middleware/error.js";
 import { cacheManager } from "./cache.js";
@@ -143,14 +144,15 @@ export async function verifyOrgAccess(userId: string, orgId: string): Promise<vo
   const cached = cacheManager.get<boolean>(cacheKey);
   if (cached === true) return;
 
-  const [member, user, clientUser, superAdmin] = await Promise.all([
+  const [member, user, clientUser, superAdmin, ownedOrg] = await Promise.all([
     OrgMember.findOne({ userId, orgId }).lean(),
     User.findOne({ id: userId, orgId }).lean(),
     ClientUser.findOne({ id: userId, orgId }).lean(),
     User.findOne({ id: userId, role: "ORG_MENU_ADMIN" }).lean(),
+    Organization.findOne({ id: orgId, ownerId: userId }).select("_id").lean(),
   ]);
 
-  if (member || user || superAdmin) {
+  if (member || user || superAdmin || ownedOrg) {
     cacheManager.set(cacheKey, true, 60);
     return;
   }
