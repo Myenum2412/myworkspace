@@ -37,6 +37,14 @@ export interface FileUploadInput {
   entityId?: string;
 }
 
+export interface FileUploadStreamInput extends Omit<FileUploadInput, "buffer"> {
+  filePath: string;
+}
+
+export async function cleanupTemp(filePath: string): Promise<void> {
+  try { await fs.unlink(filePath); } catch { /* ignore */ }
+}
+
 export interface FileUploadResult {
   kind: "created" | "duplicate";
   fileId: string;
@@ -137,6 +145,115 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
     }
   }).catch((err) => {
     logger.warn({ err, fileId }, "Background thumbnail generation failed");
+  });
+
+  invalidateFileCaches(orgId);
+
+  return { kind: "created", fileId, isDuplicate: false };
+}
+
+export async function uploadFileStream(input: FileUploadStreamInput): Promise<FileUploadResult> {
+  const {
+    orgId, clientId, folderId, taskId, projectId, uploaderId,
+    name, originalName, mimeType, size, filePath, checksum,
+    description, tags, skipDuplicates = true, category,
+    moduleName, entityId,
+  } = input;
+
+  const { createHash } = await import("crypto");
+  const { createReadStream } = await import("fs");
+
+  let sha: string;
+  if (checksum) {
+    sha = checksum;
+  } else {
+    const hash = createHash("sha256");
+    const stream = createReadStream(filePath);
+    for await (const chunk of stream) {
+      hash.update(chunk);
+    }
+    sha = hash.digest("hex");
+  }
+
+  if (skipDuplicates) {
+    const existingDuplicate = await FileAttachment.findOne({
+      orgId, checksum: sha, deletedAt: null,
+      $or: [
+        { folderId: folderId || null },
+        { folderId: { $exists: false }, projectId: { $exists: false }, clientId: { $exists: false } },
+        ...(projectId ? [{ projectId }] : []),
+        ...(clientId ? [{ clientId }] : []),
+      ],
+    }).lean();
+
+    if (existingDuplicate) {
+      return { kind: "duplicate", fileId: existingDuplicate.id, isDuplicate: true };
+    }
+  }
+
+  const quota = await StorageQuota.findOne({ orgId }).lean();
+  if (quota && quota.usedStorageBytes + size > quota.maxStorageBytes) {
+    throw new AppError(413, "Organization storage quota exceeded");
+  }
+
+  await checkUserQuota(orgId, uploaderId, size);
+
+  const provider = getStorageProvider();
+  const storagePath = `${orgId}/${Date.now()}-${uuid()}-${originalName}`;
+
+  const readStream = createReadStream(filePath);
+  if (typeof (provider as any).saveStream === "function") {
+    await (provider as any).saveStream(readStream, storagePath);
+  } else {
+    const chunks: Buffer[] = [];
+    for await (const chunk of readStream) {
+      chunks.push(chunk);
+    }
+    await provider.save(Buffer.concat(chunks), storagePath);
+  }
+
+  const fileId = uuid();
+  const fileCategory = category || categorizeMime(mimeType);
+
+  await FileAttachment.create({
+    id: fileId, orgId, folderId: folderId || null, taskId: taskId || null, clientId: clientId || null, projectId: projectId || null,
+    uploaderId, createdBy: uploaderId, name, originalName,
+    mimeType, size, storagePath,
+    storageProvider: "local",
+    category: fileCategory as any,
+    checksum: sha, currentVersion: 1,
+    description: description || "", tags: tags || [],
+    moduleName: moduleName || null,
+    entityId: entityId || null,
+  });
+
+  if (clientId && moduleName) {
+    try {
+      const { autoRouteFileInClientFolder } = await import("./client-folder.service.js");
+      await autoRouteFileInClientFolder(fileId, {
+        orgId, clientId, moduleName, entityId: entityId || undefined,
+        createdBy: uploaderId,
+      });
+    } catch (err: any) {
+      logger.warn({ err: err.message, fileId, clientId, moduleName }, "Auto-routing failed for file");
+    }
+  }
+
+  await StorageQuota.updateOne(
+    { orgId },
+    { $inc: { usedStorageBytes: size } },
+    { upsert: true },
+  );
+
+  await recordAuditLog({
+    orgId, userId: uploaderId, createdBy: uploaderId,
+    action: "file.uploaded", entityType: "file", entityId: fileId,
+    description: `File "${originalName}" uploaded (${(size / 1024).toFixed(1)} KB)`,
+  });
+
+  const bgBuffer = Buffer.alloc(0);
+  generateThumbnailService(fileId, orgId, bgBuffer, mimeType).catch((err) => {
+    logger.warn({ err, fileId }, "Background thumbnail generation skipped (no buffer for streamed file)");
   });
 
   invalidateFileCaches(orgId);

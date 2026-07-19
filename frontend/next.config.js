@@ -23,9 +23,9 @@ const nextConfig = {
   serverExternalPackages: ["better-sqlite3", "mongodb"],
   experimental: {
     turbopackFileSystemCacheForDev: false,
-    proxyClientMaxBodySize: "100mb",
+    proxyClientMaxBodySize: process.env.NEXT_PUBLIC_MAX_BODY_SIZE || "500mb",
     serverActions: {
-      bodySizeLimit: "100mb",
+      bodySizeLimit: process.env.NEXT_PUBLIC_MAX_BODY_SIZE || "500mb",
     },
     optimizePackageImports: [
       "@mui/material",

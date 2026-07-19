@@ -1,11 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 120_000;
 
-/**
- * Request timeout middleware.
- * Aborts the response if the handler takes too long.
- */
 export function requestTimeout(timeoutMs: number = DEFAULT_TIMEOUT_MS) {
   return (req: Request, res: Response, next: NextFunction) => {
     const timer = setTimeout(() => {

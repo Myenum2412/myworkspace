@@ -120,7 +120,7 @@ app.use(compression({
 app.set("etag", "strong");
 
 // ── Body parsing ──
-app.use(express.json({ limit: "50mb" }));
+app.use(express.json({ limit: env.EXPRESS_JSON_LIMIT }));
 app.use(cookieParser());
 app.use(requestIdMiddleware);
 app.use(requestTimeout());
@@ -307,6 +307,18 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", adminConsentRoutes);
 app.use("/api/bootstrap", bootstrapRoutes);
 app.use("/api/contractors", contractorsRoutes);
+
+// ── Public config endpoint (unauthenticated, exposes safe values) ──
+app.get("/api/config/public", (_req, res) => {
+  res.json({
+    maxFileSize: env.MAX_FILE_SIZE,
+    maxFilesPerUpload: env.MAX_FILES_PER_UPLOAD,
+    tusMaxSize: env.TUS_MAX_SIZE,
+    chunkSize: 5 * 1024 * 1024,
+    maxConcurrency: 4,
+    directUploadThreshold: 50 * 1024 * 1024,
+  });
+});
 
 // ── 404 catch-all ──
 app.use((req, res) => {

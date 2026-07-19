@@ -27,6 +27,11 @@ export const env = {
   TUS_MAX_SIZE: Number(process.env.TUS_MAX_SIZE || 10 * 1024 * 1024 * 1024),
   TUS_TTL_MS: Number(process.env.TUS_TTL_MS || 24 * 60 * 60 * 1000),
 
+  // Upload limits (env-configurable, default 5 GB)
+  MAX_FILE_SIZE: Number(process.env.MAX_FILE_SIZE || 5 * 1024 * 1024 * 1024),
+  MAX_FILES_PER_UPLOAD: Number(process.env.MAX_FILES_PER_UPLOAD || 50),
+  EXPRESS_JSON_LIMIT: process.env.EXPRESS_JSON_LIMIT || "50mb",
+
   // "1" enables per-request stage timing logs (PERF_LOG) and auth debug logs.
   // Off by default — zero cost in production.
   PERF_LOG: process.env.PERF_LOG || "0",

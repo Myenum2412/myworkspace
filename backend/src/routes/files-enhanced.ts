@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { v4 as uuid } from "uuid";
 import multer from "multer";
+import fs from "fs/promises";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { FileVersion } from "../lib/db/models/FileVersion.js";
 import { FileShare } from "../lib/db/models/FileShare.js";
@@ -10,10 +11,11 @@ import { verifyOrgAccess, requireOrgMembership } from "../lib/org-utils.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { cacheManager, CacheKeys } from "../lib/cache.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
+import { env } from "../config/env.js";
 import {
-  uploadFile, softDeleteFile, restoreFile, permanentDeleteFile,
+  uploadFile, uploadFileStream, softDeleteFile, restoreFile, permanentDeleteFile,
   createFileVersion, toggleFileLock, getFileStream, duplicateFile,
-  getThumbnailStream,
+  getThumbnailStream, cleanupTemp,
 } from "../services/file.service.js";
 import { getThumbnail } from "../services/thumbnail.service.js";
 import { getFileMetadata } from "../services/metadata.service.js";
@@ -89,7 +91,7 @@ function isAllowedExtension(ext: string): boolean {
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 500 * 1024 * 1024 },
+  limits: { fileSize: env.MAX_FILE_SIZE },
   fileFilter: (_req, file, cb) => {
     const ext = "." + file.originalname.split(".").pop()?.toLowerCase();
     if (isAllowedMimeType(file.mimetype) || isAllowedExtension(ext)) {
@@ -600,7 +602,7 @@ router.delete("/:id/share", async (req: AuthRequest, res: Response) => {
   res.json({ success: true });
 });
 
-router.post("/upload", upload.fields([{ name: "files", maxCount: 50 }, { name: "file", maxCount: 50 }]), async (req: AuthRequest, res: Response) => {
+router.post("/upload", upload.fields([{ name: "files", maxCount: env.MAX_FILES_PER_UPLOAD }, { name: "file", maxCount: env.MAX_FILES_PER_UPLOAD }]), async (req: AuthRequest, res: Response) => {
   const uploadStart = Date.now();
   const orgId = req.body.orgId as string;
   if (!orgId) throw new AppError(400, "orgId is required");
@@ -611,26 +613,50 @@ router.post("/upload", upload.fields([{ name: "files", maxCount: 50 }, { name: "
 
   const results: { originalName: string; fileId: string; error?: string }[] = [];
 
+  const STREAM_THRESHOLD = 100 * 1024 * 1024;
+
   for (const file of files) {
     try {
-      const result = await uploadFile({
-        orgId,
-        folderId: req.body.folderId as string | undefined,
-        taskId: req.body.taskId as string | undefined,
-        clientId: req.body.clientId as string | undefined,
-        projectId: req.body.projectId as string | undefined,
-        uploaderId: req.user!.userId,
-        name: file.originalname,
-        originalName: file.originalname,
-        mimeType: file.mimetype || "application/octet-stream",
-        size: file.size,
-        buffer: file.buffer,
-        description: req.body.description as string || "",
-        tags: req.body.tags ? (typeof req.body.tags === "string" ? JSON.parse(req.body.tags) : req.body.tags) : [],
-        skipDuplicates: req.body.skipDuplicates !== "false",
-        moduleName: req.body.moduleName as string | undefined,
-        entityId: req.body.entityId as string | undefined,
-      });
+      let result;
+      if (file.size > STREAM_THRESHOLD && file.path) {
+        result = await uploadFileStream({
+          orgId,
+          folderId: req.body.folderId as string | undefined,
+          taskId: req.body.taskId as string | undefined,
+          clientId: req.body.clientId as string | undefined,
+          projectId: req.body.projectId as string | undefined,
+          uploaderId: req.user!.userId,
+          name: file.originalname,
+          originalName: file.originalname,
+          mimeType: file.mimetype || "application/octet-stream",
+          size: file.size,
+          filePath: file.path,
+          description: req.body.description as string || "",
+          tags: req.body.tags ? (typeof req.body.tags === "string" ? JSON.parse(req.body.tags) : req.body.tags) : [],
+          skipDuplicates: req.body.skipDuplicates !== "false",
+          moduleName: req.body.moduleName as string | undefined,
+          entityId: req.body.entityId as string | undefined,
+        });
+      } else {
+        result = await uploadFile({
+          orgId,
+          folderId: req.body.folderId as string | undefined,
+          taskId: req.body.taskId as string | undefined,
+          clientId: req.body.clientId as string | undefined,
+          projectId: req.body.projectId as string | undefined,
+          uploaderId: req.user!.userId,
+          name: file.originalname,
+          originalName: file.originalname,
+          mimeType: file.mimetype || "application/octet-stream",
+          size: file.size,
+          buffer: file.buffer || (file.path ? await fs.readFile(file.path) : Buffer.alloc(0)),
+          description: req.body.description as string || "",
+          tags: req.body.tags ? (typeof req.body.tags === "string" ? JSON.parse(req.body.tags) : req.body.tags) : [],
+          skipDuplicates: req.body.skipDuplicates !== "false",
+          moduleName: req.body.moduleName as string | undefined,
+          entityId: req.body.entityId as string | undefined,
+        });
+      }
 
       if (result.kind === "duplicate") {
         results.push({ originalName: file.originalname, fileId: result.fileId, error: "duplicate_skipped" });
@@ -639,6 +665,8 @@ router.post("/upload", upload.fields([{ name: "files", maxCount: 50 }, { name: "
       }
     } catch (err: any) {
       results.push({ originalName: file.originalname, fileId: "", error: err.message });
+    } finally {
+      if (file.path) cleanupTemp(file.path).catch(() => {});
     }
   }
 

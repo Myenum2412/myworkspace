@@ -25,6 +25,7 @@ export type StorageProviderType = "local" | "r2";
 
 export interface IStorageProvider {
   save(buffer: Buffer, key: string): Promise<void>;
+  saveStream(stream: Readable, key: string): Promise<void>;
   get(key: string): Promise<Buffer | null>;
   getStream(key: string): Promise<Readable | null>;
   delete(key: string): Promise<void>;
@@ -69,6 +70,18 @@ export class LocalStorageProvider implements IStorageProvider {
     const fp = this.fullPath(key);
     await this.ensureDir(fp);
     await fs.writeFile(fp, buffer);
+  }
+
+  async saveStream(stream: Readable, key: string): Promise<void> {
+    const fp = this.fullPath(key);
+    await this.ensureDir(fp);
+    const ws = (await import("fs")).createWriteStream(fp);
+    await new Promise<void>((resolve, reject) => {
+      stream.pipe(ws);
+      ws.on("finish", resolve);
+      ws.on("error", reject);
+      stream.on("error", reject);
+    });
   }
 
   async get(key: string): Promise<Buffer | null> {
@@ -164,6 +177,21 @@ export class R2StorageProvider implements IStorageProvider {
       Bucket: bucket,
       Key: key,
       Body: buffer,
+    });
+    await client.send(command);
+  }
+
+  async saveStream(stream: Readable, key: string): Promise<void> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: Buffer.concat(chunks),
     });
     await client.send(command);
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { cn } from "@/lib/utils";
@@ -24,9 +24,29 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { apiFetch } from "@/lib/api";
 
-const MAX_SIZE = 50 * 1024 * 1024;
-const R2_CHUNK_SIZE = 5 * 1024 * 1024;
-const R2_MAX_CONCURRENCY = 4;
+// Sensible defaults (overridden by server config)
+let uploadConfig = {
+  maxFileSize: 500 * 1024 * 1024,
+  chunkSize: 5 * 1024 * 1024,
+  maxConcurrency: 4,
+  directUploadThreshold: 50 * 1024 * 1024,
+};
+let configPromise: Promise<void> | null = null;
+function ensureConfig() {
+  if (!configPromise) {
+    configPromise = fetch("/api/config/public", { credentials: "omit" })
+      .then((r) => r.json().catch(() => ({})))
+      .then((cfg) => {
+        if (cfg.maxFileSize) uploadConfig.maxFileSize = cfg.maxFileSize;
+        if (cfg.chunkSize) uploadConfig.chunkSize = cfg.chunkSize;
+        if (cfg.maxConcurrency) uploadConfig.maxConcurrency = cfg.maxConcurrency;
+        if (cfg.directUploadThreshold) uploadConfig.directUploadThreshold = cfg.directUploadThreshold;
+      })
+      .catch(() => { /* use defaults */ });
+  }
+  return configPromise;
+}
+ensureConfig();
 
 function getCsrfToken(): string | null {
   if (typeof document === "undefined") return null;
@@ -75,7 +95,7 @@ export function UploadZone() {
   const uploadViaPresigned = useCallback(
     async (item: UploadItem, file: File) => {
       try {
-        const totalChunks = Math.ceil(file.size / R2_CHUNK_SIZE);
+        const totalChunks = Math.ceil(file.size / uploadConfig.chunkSize);
         setItems((prev) =>
           prev.map((i) => (i.id === item.id ? { ...i, progress: 0 } : i))
         );
@@ -110,29 +130,52 @@ export function UploadZone() {
         const uploadedParts: { PartNumber: number; ETag: string }[] = [];
         let aborted = false;
 
-        const uploadChunk = async (partNumber: number): Promise<void> => {
-          const start = (partNumber - 1) * R2_CHUNK_SIZE;
-          const end = Math.min(start + R2_CHUNK_SIZE, file.size);
+        const uploadChunk = async (partNumber: number, retries = 3): Promise<void> => {
+          const start = (partNumber - 1) * uploadConfig.chunkSize;
+          const end = Math.min(start + uploadConfig.chunkSize, file.size);
           const blob = file.slice(start, end);
 
-          const res = await fetch(partUrls[partNumber - 1], {
-            method: "PUT",
-            body: blob,
-          });
-          if (!res.ok) throw new Error(`Part ${partNumber} upload failed: ${res.status}`);
-          const etag = res.headers.get("ETag") || "";
-          uploadedParts.push({ PartNumber: partNumber, ETag: etag.replace(/^"/, "").replace(/"$/, "") });
-
-          const pct = Math.round((uploadedParts.length / totalChunks) * 100);
-          setItems((prev) =>
-            prev.map((i) => (i.id === item.id ? { ...i, progress: pct } : i))
-          );
+          for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+              const res = await fetch(partUrls[partNumber - 1], {
+                method: "PUT",
+                body: blob,
+              });
+              if (!res.ok && attempt < retries) {
+                await new Promise((r) => setTimeout(r, Math.min(1000 * attempt, 5000)));
+                continue;
+              }
+              if (!res.ok) throw new Error(`Part ${partNumber} upload failed after ${retries} retries: ${res.status}`);
+              const etag = res.headers.get("ETag") || "";
+              uploadedParts.push({ PartNumber: partNumber, ETag: etag.replace(/^"/, "").replace(/"$/, "") });
+              return;
+            } catch (err) {
+              if (attempt < retries) {
+                await new Promise((r) => setTimeout(r, Math.min(1000 * attempt, 5000)));
+                continue;
+              }
+              throw err;
+            }
+          }
         };
 
         const queue = Array.from({ length: totalChunks }, (_, i) => i + 1);
-        while (queue.length > 0 && !aborted) {
-          const batch = queue.splice(0, R2_MAX_CONCURRENCY);
-          await Promise.all(batch.map(uploadChunk));
+        const checkpointKey = `upload-cp-${file.name}-${file.size}`;
+        const savedState = sessionStorage.getItem(checkpointKey);
+        let completedParts = new Set<number>();
+        if (savedState) {
+          try {
+            const parsed = JSON.parse(savedState);
+            if (Array.isArray(parsed)) completedParts = new Set(parsed);
+          } catch { /* ignore */ }
+        }
+
+        const remaining = queue.filter((p) => !completedParts.has(p));
+        while (remaining.length > 0 && !aborted) {
+          const batch = remaining.splice(0, uploadConfig.maxConcurrency);
+          await Promise.all(batch.map((p) => uploadChunk(p)));
+          batch.forEach((p) => completedParts.add(p));
+          sessionStorage.setItem(checkpointKey, JSON.stringify([...completedParts]));
         }
 
         if (!aborted) {
@@ -262,7 +305,7 @@ export function UploadZone() {
 
   const uploadFile = useCallback(
     async (item: UploadItem, file: File) => {
-      if (file.size > MAX_SIZE) {
+      if (file.size > uploadConfig.directUploadThreshold) {
         await uploadViaPresigned(item, file);
       } else {
         await uploadViaDirect(item, file);
@@ -373,7 +416,7 @@ export function UploadZone() {
             : "Drag & drop files or click to browse"}
         </p>
         <p className="text-xs text-muted-foreground">
-          Max file size: 50 MB
+          Max file size: {formatSize(uploadConfig.maxFileSize)}
         </p>
       </div>
 
