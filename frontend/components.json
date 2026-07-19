@@ -30,6 +30,8 @@
     "@elements": "https://www.tryelements.dev/r/{name}.json",
     "@7ovr": "https://7ovr.com/r/{name}.json",
     "@tailark": "https://tailark.com/r/{name}.json",
-    "@motion-primitives": "https://motion-primitives.com/r/{name}.json"
+    "@motion-primitives": "https://motion-primitives.com/r/{name}.json",
+    "@animate-ui": "https://animate-ui.com/r/{name}.json",
+    "@kibo-ui": "https://www.kibo-ui.com/r/{name}.json"
   }
 }

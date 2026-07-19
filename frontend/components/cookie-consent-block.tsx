@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { usePathname } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 
@@ -23,21 +24,23 @@ function storeConsent(value: ConsentValue) {
 }
 
 export default function CookieConsentBlock() {
+  const pathname = usePathname()
   const [visible, setVisible] = React.useState(false)
 
   React.useEffect(() => {
+    if (pathname.startsWith("/addons")) return
     const consent = getStoredConsent()
     if (!consent) {
       setVisible(true)
     }
-  }, [])
+  }, [pathname])
 
   const handleConsent = (value: "accepted" | "declined") => {
     storeConsent(value)
     setVisible(false)
   }
 
-  if (!visible) return null
+  if (!visible || pathname.startsWith("/addons")) return null
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background">

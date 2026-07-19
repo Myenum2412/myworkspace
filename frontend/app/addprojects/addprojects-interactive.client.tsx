@@ -118,19 +118,19 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
             )}
 
             <div className="grid gap-2">
-              <Label htmlFor="name">Project Name</Label>
+              <Label className="text-xs text-muted-foreground">Project Name</Label>
               <Input id="name" placeholder="" value={name} onChange={(e) => setName(e.target.value)} required disabled={submitting} />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="client">Client</Label>
+              <Label className="text-xs text-muted-foreground">Client</Label>
               <select
                 id="client"
                 value={client}
                 onChange={(e) => setClient(e.target.value)}
                 required
                 disabled={submitting}
-                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">Select a client</option>
                 {clientList.map((c) => (
@@ -140,7 +140,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label className="text-xs text-muted-foreground">Description</Label>
               <textarea
                 id="description"
                 placeholder=""
@@ -153,12 +153,12 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="deadline">Deadline</Label>
+              <Label className="text-xs text-muted-foreground">Deadline</Label>
               <Input id="deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} disabled={submitting} />
             </div>
 
             <div className="grid gap-2">
-              <Label>Color</Label>
+              <Label className="text-xs text-muted-foreground">Color</Label>
               <div className="flex items-center gap-3">
                 <div className="flex gap-2 flex-wrap">
                   {colors.map((c) => (

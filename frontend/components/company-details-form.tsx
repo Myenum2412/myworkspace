@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { INDUSTRIES } from "@/lib/industries";
-import { ArrowRight, ArrowLeft, Building2, MapPin, User, Phone, Globe } from "lucide-react";
+import { ArrowRight, ArrowLeft, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CompanyDetailsFormProps {
@@ -136,20 +136,17 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-3xl mx-auto space-y-8">
+    <form onSubmit={handleSubmit} className="w-full space-y-8">
       {Object.keys(errors).length > 0 && (
         <div className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
           Fix {Object.keys(errors).length} field{Object.keys(errors).length === 1 ? "" : "s"} above.
         </div>
       )}
-      <div className="space-y-6">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <Building2 className="size-5 text-primary" />
-          Business Information
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
+      <fieldset className="rounded-xl border p-4 space-y-4">
+        <legend className="text-sm font-semibold px-2">Business Information</legend>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="businessType">Business Type *</Label>
+            <Label className="text-xs text-muted-foreground">Business Type *</Label>
             <Select value={form.businessType} onValueChange={(v) => update("businessType", v)}>
               <SelectTrigger className={cn(errors.businessType && "border-destructive")}>
                 <SelectValue placeholder="" />
@@ -162,7 +159,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
             </Select>
             {errors.businessType && <p className="text-xs text-destructive mt-1">{errors.businessType}</p>}
           </div>
-  <div className="space-y-1.5">
+          <div className="space-y-1.5">
             <SearchableSelect
               id="industry"
               label="Industry"
@@ -175,120 +172,114 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="gstNumber">GST Number</Label>
+            <Label className="text-xs text-muted-foreground">GST Number</Label>
             <Input id="gstNumber" value={form.gstNumber} onChange={(e) => update("gstNumber", e.target.value)} placeholder="" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="panNumber">PAN Number</Label>
+            <Label className="text-xs text-muted-foreground">PAN Number</Label>
             <Input id="panNumber" value={form.panNumber} onChange={(e) => update("panNumber", e.target.value.toUpperCase())} placeholder="" />
             {errors.panNumber && <p className="text-xs text-destructive mt-1">{errors.panNumber}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cinNumber">CIN Number</Label>
+            <Label className="text-xs text-muted-foreground">CIN Number</Label>
             <Input id="cinNumber" value={form.cinNumber} onChange={(e) => update("cinNumber", e.target.value)} placeholder="" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="numberOfEmployees">Number of Employees</Label>
+            <Label className="text-xs text-muted-foreground">Number of Employees</Label>
             <Input id="numberOfEmployees" type="number" value={form.numberOfEmployees} onChange={(e) => update("numberOfEmployees", e.target.value)} placeholder="" />
           </div>
         </div>
-      </div>
+      </fieldset>
 
-      <div className="space-y-6">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <Phone className="size-5 text-primary" />
-          Contact Information
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
+      <fieldset className="rounded-xl border p-4 space-y-4">
+        <legend className="text-sm font-semibold px-2">Contact Information</legend>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="companyEmail">Company Email *</Label>
+            <Label className="text-xs text-muted-foreground">Company Email *</Label>
             <Input id="companyEmail" type="email" value={form.companyEmail} onChange={(e) => update("companyEmail", e.target.value)} placeholder="" className={cn(errors.companyEmail && "border-destructive")} />
             {errors.companyEmail && <p className="text-xs text-destructive mt-1">{errors.companyEmail}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="mobileNumber">Mobile Number *</Label>
+            <Label className="text-xs text-muted-foreground">Mobile Number *</Label>
             <PhoneInput id="mobileNumber" value={form.mobileNumber} onChange={(value) => update("mobileNumber", value)} placeholder="" className={cn(errors.mobileNumber && "border-destructive")} />
             {errors.mobileNumber && <p className="text-xs text-destructive mt-1">{errors.mobileNumber}</p>}
           </div>
           <div className="space-y-1.5 md:col-span-2">
-            <Label htmlFor="website">Website</Label>
+            <Label className="text-xs text-muted-foreground">Website</Label>
             <div className="relative">
               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input id="website" value={form.website} onChange={(e) => update("website", e.target.value)} placeholder="" className="pl-9" />
             </div>
           </div>
         </div>
-      </div>
+      </fieldset>
 
-      <div className="space-y-6">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <MapPin className="size-5 text-primary" />
-          Address
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
+      <fieldset className="rounded-xl border p-4 space-y-4">
+        <legend className="text-sm font-semibold px-2">Address</legend>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5 md:col-span-2">
-            <Label htmlFor="addressLine1">Address Line 1 *</Label>
+            <Label className="text-xs text-muted-foreground">Address Line 1 *</Label>
             <Input id="addressLine1" value={form.addressLine1} onChange={(e) => update("addressLine1", e.target.value)} placeholder="" className={cn(errors.addressLine1 && "border-destructive")} />
             {errors.addressLine1 && <p className="text-xs text-destructive mt-1">{errors.addressLine1}</p>}
           </div>
           <div className="space-y-1.5 md:col-span-2">
-            <Label htmlFor="addressLine2">Address Line 2</Label>
+            <Label className="text-xs text-muted-foreground">Address Line 2</Label>
             <Input id="addressLine2" value={form.addressLine2} onChange={(e) => update("addressLine2", e.target.value)} placeholder="" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="city">City *</Label>
+            <Label className="text-xs text-muted-foreground">City *</Label>
             <LocationSelect options={pincodeResult?.cities || []} value={form.city} onChange={(v) => update("city", v)} placeholder="" className={cn(errors.city && "border-destructive")} />
             {errors.city && <p className="text-xs text-destructive mt-1">{errors.city}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="state">State *</Label>
+            <Label className="text-xs text-muted-foreground">State *</Label>
             <LocationSelect options={pincodeResult?.states || []} value={form.state} onChange={(v) => update("state", v)} placeholder="" className={cn(errors.state && "border-destructive")} />
             {errors.state && <p className="text-xs text-destructive mt-1">{errors.state}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="pincode">Pincode *</Label>
+            <Label className="text-xs text-muted-foreground">Pincode *</Label>
             <PincodeInput value={form.pincode} onChange={(v) => update("pincode", v)} onResult={setPincodeResult} className={cn(errors.pincode && "border-destructive")} />
             {errors.pincode && <p className="text-xs text-destructive mt-1">{errors.pincode}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="country">Country</Label>
+            <Label className="text-xs text-muted-foreground">Country</Label>
             <LocationSelect options={pincodeResult?.countries || []} value={form.country} onChange={(v) => update("country", v)} placeholder="" />
           </div>
         </div>
-      </div>
+      </fieldset>
 
-      <div className="space-y-6">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <User className="size-5 text-primary" />
-          Authorized Person
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
+      <fieldset className="rounded-xl border p-4 space-y-4">
+        <legend className="text-sm font-semibold px-2">Authorized Person</legend>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="authorizedPersonName">Name *</Label>
+            <Label className="text-xs text-muted-foreground">Name *</Label>
             <Input id="authorizedPersonName" value={form.authorizedPersonName} onChange={(e) => update("authorizedPersonName", e.target.value)} placeholder="" className={cn(errors.authorizedPersonName && "border-destructive")} />
             {errors.authorizedPersonName && <p className="text-xs text-destructive mt-1">{errors.authorizedPersonName}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="designation">Designation</Label>
+            <Label className="text-xs text-muted-foreground">Designation</Label>
             <Input id="designation" value={form.designation} onChange={(e) => update("designation", e.target.value)} placeholder="" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="authorizedPersonEmail">Email *</Label>
+            <Label className="text-xs text-muted-foreground">Email *</Label>
             <Input id="authorizedPersonEmail" type="email" value={form.authorizedPersonEmail} onChange={(e) => update("authorizedPersonEmail", e.target.value)} placeholder="" className={cn(errors.authorizedPersonEmail && "border-destructive")} />
             {errors.authorizedPersonEmail && <p className="text-xs text-destructive mt-1">{errors.authorizedPersonEmail}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="authorizedPersonMobile">Mobile</Label>
+            <Label className="text-xs text-muted-foreground">Mobile</Label>
             <PhoneInput id="authorizedPersonMobile" value={form.authorizedPersonMobile} onChange={(value) => update("authorizedPersonMobile", value)} placeholder="" />
             {errors.authorizedPersonMobile && <p className="text-xs text-destructive mt-1">{errors.authorizedPersonMobile}</p>}
           </div>
         </div>
-      </div>
+      </fieldset>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="companyDescription">Company Description</Label>
-        <Textarea id="companyDescription" value={form.companyDescription} onChange={(e) => update("companyDescription", e.target.value)} placeholder="" rows={3} />
-      </div>
+      <fieldset className="rounded-xl border p-4 space-y-4">
+        <legend className="text-sm font-semibold px-2">Company Description</legend>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Company Description</Label>
+          <Textarea id="companyDescription" value={form.companyDescription} onChange={(e) => update("companyDescription", e.target.value)} placeholder="" rows={3} />
+        </div>
+      </fieldset>
 
       <div className="flex items-center justify-between pt-4 border-t">
         <Button type="button" variant="outline" onClick={onBack}>

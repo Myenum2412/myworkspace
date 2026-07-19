@@ -260,8 +260,8 @@ export function SetupWizard() {
             <Separator />
 
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="storage-path">Storage Path</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Storage Path</Label>
                 <div className="flex gap-2">
                   <Input
                     ref={inputRef}

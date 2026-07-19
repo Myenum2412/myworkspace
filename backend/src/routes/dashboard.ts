@@ -58,11 +58,21 @@ async function fetchDashboardMetrics(orgId: string) {
   return { totalTasks, completedTasks, inProgressTasks, overdueTasks, activeMembers, recentActivity };
 }
 
-router.get("/metrics", async (req: AuthRequest, res: Response) => {
-  const orgId = req.orgId || await resolveOrgId(req);
-  const cacheKey = CacheKeys.dashboardMetrics(orgId);
-  const data = await cacheManager.getOrSet(cacheKey, () => fetchDashboardMetrics(orgId), 30);
-  res.json({ success: true, data });
+router.get("/metrics", async (req: AuthRequest, res: Response, next) => {
+  try {
+    const orgId = req.orgId || await resolveOrgId(req);
+    const cacheKey = CacheKeys.dashboardMetrics(orgId);
+    const data = await cacheManager.getOrSet(cacheKey, () => fetchDashboardMetrics(orgId), 30);
+    res.json({ success: true, data });
+  } catch (err: any) {
+    if (err.statusCode === 400) {
+      return res.json({
+        success: true,
+        data: { totalTasks: 0, completedTasks: 0, inProgressTasks: 0, overdueTasks: 0, activeMembers: 0, recentActivity: 0 }
+      });
+    }
+    next(err);
+  }
 });
 
 function buildMonthlyRange() {
@@ -102,11 +112,18 @@ async function fetchProfitLossData(orgId: string) {
   return results;
 }
 
-router.get("/profit-loss", async (req: AuthRequest, res: Response) => {
-  const orgId = (req.query.orgId as string) || req.orgId || await resolveOrgId(req);
-  const cacheKey = `dashboard:${orgId}:profit-loss`;
-  const data = await cacheManager.getOrSet(cacheKey, () => fetchProfitLossData(orgId), 120);
-  res.json({ success: true, data });
+router.get("/profit-loss", async (req: AuthRequest, res: Response, next) => {
+  try {
+    const orgId = (req.query.orgId as string) || req.orgId || await resolveOrgId(req);
+    const cacheKey = `dashboard:${orgId}:profit-loss`;
+    const data = await cacheManager.getOrSet(cacheKey, () => fetchProfitLossData(orgId), 120);
+    res.json({ success: true, data });
+  } catch (err: any) {
+    if (err.statusCode === 400) {
+      return res.json({ success: true, data: [] });
+    }
+    next(err);
+  }
 });
 
 export default router;

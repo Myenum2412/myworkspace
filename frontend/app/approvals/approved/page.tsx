@@ -4,7 +4,7 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import Approved from "./approved";
-import type { ApprovalTask } from "../columns";
+import type { ApprovalItem } from "../columns";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +14,23 @@ export default async function ApprovedPage() {
 
   const orgId = await getUserOrgId(session.user.id, session.user.email);
   if (!orgId) {
-    return <Approved initialTasks={[]} />;
+    return <Approved initialItems={[]} />;
   }
 
-  const raw = await db.collection(collections.tasks)
-    .find({ orgId, status: "done" })
-    .sort({ createdAt: -1 })
-    .toArray();
+  const [rawTasks, rawFiles] = await Promise.all([
+    db.collection(collections.tasks)
+      .find({ orgId, status: { $in: ["approved", "done"] } })
+      .sort({ createdAt: -1 })
+      .toArray(),
+    db.collection(collections.uploadApprovals)
+      .find({ orgId, status: "approved" })
+      .sort({ createdAt: -1 })
+      .toArray(),
+  ]);
 
-  const tasks: ApprovalTask[] = (raw as unknown as Record<string, unknown>[]).map((t) => ({
+  const tasks: ApprovalItem[] = (rawTasks as unknown as Record<string, unknown>[]).map((t) => ({
     _id: (t._id as { toString: () => string }).toString(),
+    itemType: "task" as const,
     title: (t.title as string) || "",
     status: (t.status as string) || "",
     priority: (t.priority as string) || "medium",
@@ -43,5 +50,36 @@ export default async function ApprovedPage() {
     rejectionReason: (t.rejectionReason as string) || undefined,
   }));
 
-  return <Approved initialTasks={tasks} />;
+  const files: ApprovalItem[] = (rawFiles as unknown as Record<string, unknown>[]).map((f) => {
+    const uploader = f.uploader as Record<string, string> | undefined;
+    return {
+      _id: (f._id as { toString: () => string }).toString(),
+      itemType: "file" as const,
+      title: (f.fileName as string) || "Untitled file",
+      status: (f.status as string) || "approved",
+      priority: "medium",
+      createdAt: (f.createdAt as string) || undefined,
+      uploaderId: (f.uploaderId as string) || undefined,
+      uploaderName: uploader?.name || (f.uploaderId as string) || undefined,
+      assigneeId: (f.uploaderId as string) || undefined,
+      assigneeName: uploader?.name || undefined,
+      fileName: (f.fileName as string) || undefined,
+      fileSize: (f.fileSize as number) || undefined,
+      mimeType: (f.mimeType as string) || undefined,
+      approvedBy: (f.approvedBy as string) || undefined,
+      approvedAt: (f.reviewedAt as string) || undefined,
+      approvalNote: (f.approvalNote as string) || undefined,
+      rejectedBy: (f.approvedBy as string) || undefined,
+      rejectedAt: (f.reviewedAt as string) || undefined,
+      rejectionReason: (f.rejectionReason as string) || undefined,
+    };
+  });
+
+  const items = [...tasks, ...files].sort((a, b) => {
+    const dateA = (a.approvedAt || a.createdAt) ? new Date(a.approvedAt || a.createdAt!).getTime() : 0;
+    const dateB = (b.approvedAt || b.createdAt) ? new Date(b.approvedAt || b.createdAt!).getTime() : 0;
+    return dateB - dateA;
+  });
+
+  return <Approved initialItems={items} />;
 }

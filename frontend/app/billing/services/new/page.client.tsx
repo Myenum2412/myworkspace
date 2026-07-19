@@ -40,28 +40,28 @@ export default function NewServicePage() {
           <div className="grid grid-cols-[150px_1fr] gap-y-6 items-start">
 
             <div className="pt-2">
-              <Label className="text-red-500 font-medium">Service Name*</Label>
+              <Label className="text-xs text-muted-foreground">Service Name*</Label>
             </div>
             <div>
               <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" placeholder="" />
             </div>
 
             <div className="pt-2">
-              <Label className="text-gray-700 font-medium">Description</Label>
+              <Label className="text-xs text-muted-foreground">Description</Label>
             </div>
             <div>
               <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full min-h-[80px] resize-y" placeholder="" />
             </div>
 
             <div className="pt-2">
-              <Label className="text-gray-700 font-medium">Rate*</Label>
+              <Label className="text-xs text-muted-foreground">Rate*</Label>
             </div>
             <div>
               <Input type="number" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} className="w-full" placeholder="" />
             </div>
 
             <div className="pt-2">
-              <Label className="text-gray-700 font-medium">Unit</Label>
+              <Label className="text-xs text-muted-foreground">Unit</Label>
             </div>
             <div>
               <Select value={unit} onValueChange={setUnit}>

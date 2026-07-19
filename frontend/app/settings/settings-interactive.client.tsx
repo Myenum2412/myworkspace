@@ -45,11 +45,9 @@ import {
   SelectItem,
 } from "@/components/ui/select"
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options"
-import { SIDEBAR_FEATURES } from "@/lib/sidebar-features"
 import IntegrationsBlock from "@/components/integrations-block"
 import {
   Loader2Icon,
-  CheckCircle2Icon,
   PlusIcon,
   Trash2Icon,
   MinusIcon,
@@ -218,7 +216,6 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="team">Team</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="integrations">Integrations</TabsTrigger>
           </TabsList>
 
@@ -379,23 +376,10 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>Auto Assign Lead</Label>
-                  <p className="text-xs text-muted-foreground">Auto-assign team lead on creation</p>
-                </div>
-                <Switch checked={formData.team.autoAssignLead ?? false} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, autoAssignLead: v } })} />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
                   <Label>Show Teams as Assignees</Label>
                   <p className="text-xs text-muted-foreground">When ON, show Teams in New Task form; when OFF, show Staffs</p>
                 </div>
                 <Switch checked={formData.team.showTeamAsAssignee ?? false} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, showTeamAsAssignee: v } })} />
-              </div>
-              <Separator />
-              <div className="grid gap-2 max-w-xs">
-                <Label htmlFor="maxTeamSize">Max Team Size</Label>
-                <Input id="maxTeamSize" type="number" value={formData.team.maxTeamSize ?? 50} onChange={(e) => setFormData({ ...formData, team: { ...formData.team, maxTeamSize: parseInt(e.target.value) || 50 } })} />
               </div>
             </div>
           </TabsContent>
@@ -418,16 +402,6 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             </div>
           </TabsContent>
 
-          <TabsContent value="features">
-            <div className="flex flex-col gap-4">
-              <div>
-                <h2 className="text-lg font-semibold">App Sidebar Features</h2>
-                <p className="text-sm text-muted-foreground">Show or hide sidebar navigation items.</p>
-              </div>
-              <FeatureToggleSettings />
-            </div>
-          </TabsContent>
-
           <TabsContent value="integrations">
             <div className="flex flex-col gap-4">
               <div>
@@ -444,87 +418,4 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
   )
 }
 
-
-function FeatureToggleSettings() {
-  const [hidden, setHidden] = useState<string[]>([])
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/sidebar-features", { signal: controller.signal })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.hidden) setHidden(data.hidden)
-      })
-      .catch(() => {})
-    return () => controller.abort();
-  }, [])
-
-  async function handleToggle(feature: string) {
-    const next = hidden.includes(feature)
-      ? hidden.filter((f) => f !== feature)
-      : [...hidden, feature]
-    setHidden(next)
-    setSaving(true)
-    try {
-      await fetch("/api/sidebar-features", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hidden: next }),
-      })
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const featureDescriptions: Record<string, string> = {
-    Dashboard: "Overview and reports at a glance",
-    "Task Allocation": "Assign and track team tasks",
-    Employees: "Manage employees, teams, and attendance",
-    Projects: "Track clients and project progress",
-    Approvals: "Review pending, approved, and rejected requests",
-    "Time Tracker": "Log and monitor work hours",
-    Billing: "View invoices, services, and receipts",
-    Chat: "Workspace messaging and collaboration",
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {SIDEBAR_FEATURES.map((feature) => {
-          const isHidden = hidden.includes(feature)
-          return (
-            <div key={feature} className={`border rounded-lg p-4 ${isHidden ? "opacity-60" : ""}`}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1 min-w-0">
-                  <p className="text-sm font-medium leading-none">{feature}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {featureDescriptions[feature]}
-                  </p>
-                </div>
-                <Button
-                  variant={isHidden ? "default" : "outline"}
-                  size="sm"
-                  className="shrink-0"
-                  onClick={() => handleToggle(feature)}
-                  disabled={saving}
-                >
-                  {isHidden ? "Unhide" : "Hide"}
-                </Button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-      {saved && (
-        <div className="flex items-center gap-1 text-sm text-green-600">
-          <CheckCircle2Icon className="size-4" /> Saved
-        </div>
-      )}
-    </div>
-  )
-}
 

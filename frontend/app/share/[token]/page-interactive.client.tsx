@@ -82,7 +82,7 @@ export function ShareTokenPageInteractive({ token, fileInfo }: { token: string; 
         <CardContent className="space-y-4">
           {needsPassword && (
             <div>
-              <Label htmlFor="password">This file is password-protected</Label>
+              <Label className="text-xs text-muted-foreground">This file is password-protected</Label>
               <Input
                 id="password"
                 type="password"

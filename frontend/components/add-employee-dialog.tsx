@@ -45,20 +45,20 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <Label>Full Name</Label>
+                <Label className="text-xs text-muted-foreground">Full Name</Label>
                 <Input name="name" required placeholder="" />
               </div>
               <div className="space-y-1.5">
-                <Label>Email</Label>
+                <Label className="text-xs text-muted-foreground">Email</Label>
                 <Input name="email" type="email" required placeholder="" />
               </div>
               <div className="space-y-1.5">
-                <Label>Role</Label>
+                <Label className="text-xs text-muted-foreground">Role</Label>
                 <Input name="role" required placeholder="" />
               </div>
               <div className="space-y-1.5">
-                <Label>Department</Label>
-                <select name="department" required className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm">
+                <Label className="text-xs text-muted-foreground">Department</Label>
+                <select name="department" required className="flex w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm">
                   <option value="">Select department</option>
                   <option value="Engineering">Engineering</option>
                   <option value="Creative">Creative</option>
@@ -68,8 +68,8 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label>Status</Label>
-                <select name="status" required className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm">
+                <Label className="text-xs text-muted-foreground">Status</Label>
+                <select name="status" required className="flex w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm">
                   <option value="Active">Active</option>
                   <option value="On Leave">On Leave</option>
                   <option value="Terminated">Terminated</option>

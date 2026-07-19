@@ -37,13 +37,13 @@ function toRow(arr: any[] | undefined, defaults: Record<string, any>): Row[] {
 
 function Section({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) {
   return (
-    <div>
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
+    <fieldset className="rounded-xl border p-4 space-y-4">
+      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
         <Icon className="size-3.5" />
         {title}
-      </h3>
+      </legend>
       {children}
-    </div>
+    </fieldset>
   )
 }
 

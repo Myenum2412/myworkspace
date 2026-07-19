@@ -71,8 +71,8 @@ export default function Verify2FAForm({ email }: { email: string }) {
                 {error}
               </div>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="token">Authentication Code</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Authentication Code</Label>
               <Input
                 id="token"
                 type="text"

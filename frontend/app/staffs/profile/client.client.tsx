@@ -28,9 +28,6 @@ import {
   CalendarIcon,
   ShieldIcon,
   Building2Icon,
-  GlobeIcon,
-  CreditCardIcon,
-  UsersIcon,
   CircleIcon,
   CameraIcon,
   XIcon,
@@ -38,8 +35,6 @@ import {
   UserIcon,
   PencilIcon,
   CheckIcon,
-  LinkIcon,
-  MapPinIcon,
   PhoneIcon,
   AlertCircleIcon,
   CheckCircleIcon,
@@ -641,7 +636,7 @@ export default function ProfileClient({ data }: Props) {
               </div>
             )}
             {saveSuccess && (
-              <div className="flex items-center gap-2 rounded-md bg-red-500/10 px-3 py-2 text-xs text-red-400">
+              <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 <CheckCircleIcon className="size-3.5 shrink-0" />
                 {saveSuccess}
               </div>
@@ -919,11 +914,11 @@ export default function ProfileClient({ data }: Props) {
                   <div className="space-y-6">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Company Name <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Company Name <span className="text-destructive">*</span></Label>
                         <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="text-sm" placeholder="" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Business Type <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Business Type <span className="text-destructive">*</span></Label>
                         <Select value={editBusinessType} onValueChange={setEditBusinessType}>
                           <SelectTrigger className="text-sm">
                             <SelectValue placeholder="" />
@@ -950,15 +945,15 @@ export default function ProfileClient({ data }: Props) {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">GST Number</Label>
+                        <Label className="text-xs text-muted-foreground">GST Number</Label>
                         <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">PAN Number</Label>
+                        <Label className="text-xs text-muted-foreground">PAN Number</Label>
                         <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">CIN Number</Label>
+                        <Label className="text-xs text-muted-foreground">CIN Number</Label>
                         <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="" className="text-sm" />
                       </div>
                     </div>
@@ -967,19 +962,19 @@ export default function ProfileClient({ data }: Props) {
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Contact Information</p>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Company Email <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Company Email <span className="text-destructive">*</span></Label>
                         <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Mobile Number <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Mobile Number <span className="text-destructive">*</span></Label>
                         <PhoneInput value={editMobileNumber} onChange={setEditMobileNumber} placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Alternate Mobile Number</Label>
+                        <Label className="text-xs text-muted-foreground">Alternate Mobile Number</Label>
                         <PhoneInput value={editAltMobile} onChange={setEditAltMobile} placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Website</Label>
+                        <Label className="text-xs text-muted-foreground">Website</Label>
                         <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="" className="text-sm" />
                       </div>
                     </div>
@@ -988,27 +983,27 @@ export default function ProfileClient({ data }: Props) {
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Address</p>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="sm:col-span-2 space-y-1.5">
-                        <Label className="text-xs font-medium">Address Line 1 <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Address Line 1 <span className="text-destructive">*</span></Label>
                         <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="" className="text-sm" />
                       </div>
                       <div className="sm:col-span-2 space-y-1.5">
-                        <Label className="text-xs font-medium">Address Line 2</Label>
+                        <Label className="text-xs text-muted-foreground">Address Line 2</Label>
                         <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">City <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">City <span className="text-destructive">*</span></Label>
                         <LocationSelect options={orgPincodeResult?.cities || []} value={editOrgCity} onChange={setEditOrgCity} placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">State <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">State <span className="text-destructive">*</span></Label>
                         <LocationSelect options={orgPincodeResult?.states || []} value={editOrgState} onChange={setEditOrgState} placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Pincode <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Pincode <span className="text-destructive">*</span></Label>
                         <PincodeInput value={editPincode} onChange={setEditPincode} onResult={setOrgPincodeResult} className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Country</Label>
+                        <Label className="text-xs text-muted-foreground">Country</Label>
                         <LocationSelect options={orgPincodeResult?.countries || []} value={editOrgCountry} onChange={setEditOrgCountry} placeholder="" className="text-sm" />
                       </div>
                     </div>
@@ -1017,19 +1012,19 @@ export default function ProfileClient({ data }: Props) {
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Authorized Person</p>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Authorized Person Name <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Authorized Person Name <span className="text-destructive">*</span></Label>
                         <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Designation <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Designation <span className="text-destructive">*</span></Label>
                         <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Authorized Person Email <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Authorized Person Email <span className="text-destructive">*</span></Label>
                         <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Authorized Person Mobile <span className="text-destructive">*</span></Label>
+                        <Label className="text-xs text-muted-foreground">Authorized Person Mobile <span className="text-destructive">*</span></Label>
                         <PhoneInput value={editAuthorizedMobile} onChange={setEditAuthorizedMobile} placeholder="" className="text-sm" />
                       </div>
                     </div>
@@ -1038,13 +1033,13 @@ export default function ProfileClient({ data }: Props) {
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Additional Information</p>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Number of Employees</Label>
+                        <Label className="text-xs text-muted-foreground">Number of Employees</Label>
                         <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="" className="text-sm" />
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Company Description</Label>
-                      <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="min-h-[80px] text-sm" />
+                      <Label className="text-xs text-muted-foreground">Company Description</Label>
+                      <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
                     </div>
                   </div>
                 ) : (
@@ -1146,125 +1141,125 @@ export default function ProfileClient({ data }: Props) {
                 {editing ? (
                   <div className="space-y-6">
                     {/* Work Info */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                    <fieldset className="rounded-xl border p-4 space-y-4">
+                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <BriefcaseIcon className="size-3.5" />
                         Work Info
-                      </h3>
+                      </legend>
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Employee ID</Label>
+                          <Label className="text-xs text-muted-foreground">Employee ID</Label>
                           <Input value={editDisplayId} onChange={(e) => setEditDisplayId(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Designation</Label>
+                          <Label className="text-xs text-muted-foreground">Designation</Label>
                           <Input value={editEmpDesignation} onChange={(e) => setEditEmpDesignation(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Employment Type</Label>
+                          <Label className="text-xs text-muted-foreground">Employment Type</Label>
                           <Input value={editEmploymentType} onChange={(e) => setEditEmploymentType(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Branch</Label>
+                          <Label className="text-xs text-muted-foreground">Branch</Label>
                           <Input value={editBranchName} onChange={(e) => setEditBranchName(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Location</Label>
+                          <Label className="text-xs text-muted-foreground">Location</Label>
                           <Input value={editUserLocation} onChange={(e) => setEditUserLocation(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Shift</Label>
+                          <Label className="text-xs text-muted-foreground">Shift</Label>
                           <Input value={editShift} onChange={(e) => setEditShift(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Source of Hire</Label>
+                          <Label className="text-xs text-muted-foreground">Source of Hire</Label>
                           <Input value={editSourceOfHire} onChange={(e) => setEditSourceOfHire(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Joining Date</Label>
+                          <Label className="text-xs text-muted-foreground">Joining Date</Label>
                           <Input type="date" value={editJoiningDate} onChange={(e) => setEditJoiningDate(e.target.value)} className="text-sm" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Current Experience</Label>
+                          <Label className="text-xs text-muted-foreground">Current Experience</Label>
                           <Input value={editCurrentExperience} onChange={(e) => setEditCurrentExperience(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Total Experience</Label>
+                          <Label className="text-xs text-muted-foreground">Total Experience</Label>
                           <Input value={editTotalExperience} onChange={(e) => setEditTotalExperience(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                       </div>
-                    </div>
+                    </fieldset>
 
                     <Separator />
 
                     {/* Personal Info */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                    <fieldset className="rounded-xl border p-4 space-y-4">
+                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <UserIcon className="size-3.5" />
                         Personal Info
-                      </h3>
+                      </legend>
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">First Name</Label>
+                          <Label className="text-xs text-muted-foreground">First Name</Label>
                           <Input value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Last Name</Label>
+                          <Label className="text-xs text-muted-foreground">Last Name</Label>
                           <Input value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Nickname</Label>
+                          <Label className="text-xs text-muted-foreground">Nickname</Label>
                           <Input value={editNickname} onChange={(e) => setEditNickname(e.target.value)} className="text-sm" placeholder="" />
                         </div>
                       </div>
-                    </div>
+                    </fieldset>
 
                     <Separator />
 
                     {/* Contact */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                    <fieldset className="rounded-xl border p-4 space-y-4">
+                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <PhoneIcon className="size-3.5" />
                         Contact
-                      </h3>
+                      </legend>
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Alternate Phone</Label>
+                          <Label className="text-xs text-muted-foreground">Alternate Phone</Label>
                           <PhoneInput value={editSecondaryPhone} onChange={setEditSecondaryPhone} className="text-sm" placeholder="" />
                         </div>
                       </div>
-                    </div>
+                    </fieldset>
 
                     <Separator />
 
                     {/* History - Work Experience */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                    <fieldset className="rounded-xl border p-4 space-y-4">
+                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <HistoryIcon className="size-3.5" />
                         Work Experience
-                      </h3>
+                      </legend>
                       <div className="space-y-4">
                         {editWorkExperience.map((row) => (
                           <div key={row.id} className="rounded-lg border p-4">
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Company name</Label>
+                                <Label className="text-xs text-muted-foreground">Company name</Label>
                                 <Input value={row.company || ""} onChange={(e) => updateWorkRow(row.id!, "company", e.target.value)} className="text-sm" placeholder="" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Job Title</Label>
+                                <Label className="text-xs text-muted-foreground">Job Title</Label>
                                 <Input value={row.title || ""} onChange={(e) => updateWorkRow(row.id!, "title", e.target.value)} className="text-sm" placeholder="" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Roles</Label>
+                                <Label className="text-xs text-muted-foreground">Roles</Label>
                                 <Input value={row.roles || ""} onChange={(e) => updateWorkRow(row.id!, "roles", e.target.value)} className="text-sm" placeholder="" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">From Date</Label>
+                                <Label className="text-xs text-muted-foreground">From Date</Label>
                                 <Input type="date" value={row.from || ""} onChange={(e) => updateWorkRow(row.id!, "from", e.target.value)} className="text-sm" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">To Date</Label>
+                                <Label className="text-xs text-muted-foreground">To Date</Label>
                                 <Input type="date" value={row.to || ""} onChange={(e) => updateWorkRow(row.id!, "to", e.target.value)} className="text-sm" />
                               </div>
                               <div className="flex items-center gap-2">
@@ -1272,8 +1267,8 @@ export default function ProfileClient({ data }: Props) {
                                 <label htmlFor={`work-relevant-${row.id}`} className="text-sm font-medium">Relevant</label>
                               </div>
                               <div className="sm:col-span-2 space-y-1.5">
-                                <Label className="text-xs font-medium">Job Description</Label>
-                                <textarea className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring" value={row.description || ""} onChange={(e) => updateWorkRow(row.id!, "description", e.target.value)} placeholder="" />
+                                <Label className="text-xs text-muted-foreground">Job Description</Label>
+                                <textarea className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" value={row.description || ""} onChange={(e) => updateWorkRow(row.id!, "description", e.target.value)} placeholder="" />
                               </div>
                             </div>
                             <Button type="button" variant="ghost" size="sm" className="mt-2 text-destructive" onClick={() => removeRow("work", row.id!)}>
@@ -1285,34 +1280,34 @@ export default function ProfileClient({ data }: Props) {
                           + Add Work Experience
                         </Button>
                       </div>
-                    </div>
+                    </fieldset>
 
                     <Separator />
 
                     {/* History - Education */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                    <fieldset className="rounded-xl border p-4 space-y-4">
+                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <GraduationCapIcon className="size-3.5" />
                         Education
-                      </h3>
+                      </legend>
                       <div className="space-y-4">
                         {editEducationDetails.map((row) => (
                           <div key={row.id} className="rounded-lg border p-4">
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Institute Name</Label>
+                                <Label className="text-xs text-muted-foreground">Institute Name</Label>
                                 <Input value={row.institute || ""} onChange={(e) => updateEduRow(row.id!, "institute", e.target.value)} className="text-sm" placeholder="" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Degree/Diploma</Label>
+                                <Label className="text-xs text-muted-foreground">Degree/Diploma</Label>
                                 <Input value={row.degree || ""} onChange={(e) => updateEduRow(row.id!, "degree", e.target.value)} className="text-sm" placeholder="" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Specialization</Label>
+                                <Label className="text-xs text-muted-foreground">Specialization</Label>
                                 <Input value={row.specialization || ""} onChange={(e) => updateEduRow(row.id!, "specialization", e.target.value)} className="text-sm" placeholder="" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Date of Completion</Label>
+                                <Label className="text-xs text-muted-foreground">Date of Completion</Label>
                                 <Input type="date" value={row.completionDate || ""} onChange={(e) => updateEduRow(row.id!, "completionDate", e.target.value)} className="text-sm" />
                               </div>
                             </div>
@@ -1325,30 +1320,30 @@ export default function ProfileClient({ data }: Props) {
                           + Add Education
                         </Button>
                       </div>
-                    </div>
+                    </fieldset>
 
                     <Separator />
 
                     {/* History - Dependents */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                    <fieldset className="rounded-xl border p-4 space-y-4">
+                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <HeartIcon className="size-3.5" />
                         Dependents
-                      </h3>
+                      </legend>
                       <div className="space-y-4">
                         {editDependentDetails.map((row) => (
                           <div key={row.id} className="rounded-lg border p-4">
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Name</Label>
+                                <Label className="text-xs text-muted-foreground">Name</Label>
                                 <Input value={row.name || ""} onChange={(e) => updateDepRow(row.id!, "name", e.target.value)} className="text-sm" placeholder="" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Relationship</Label>
+                                <Label className="text-xs text-muted-foreground">Relationship</Label>
                                 <Input value={row.relationship || ""} onChange={(e) => updateDepRow(row.id!, "relationship", e.target.value)} className="text-sm" placeholder="" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Date of Birth</Label>
+                                <Label className="text-xs text-muted-foreground">Date of Birth</Label>
                                 <Input type="date" value={row.dob || ""} onChange={(e) => updateDepRow(row.id!, "dob", e.target.value)} className="text-sm" />
                               </div>
                             </div>
@@ -1361,16 +1356,16 @@ export default function ProfileClient({ data }: Props) {
                           + Add Dependent
                         </Button>
                       </div>
-                    </div>
+                    </fieldset>
 
                     <Separator />
 
                     {/* Offer Letter */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                    <fieldset className="rounded-xl border p-4 space-y-4">
+                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <FileTextIcon className="size-3.5" />
                         Documents
-                      </h3>
+                      </legend>
                       {editOfferLetter ? (
                         <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/20">
                           <FileTextIcon className="size-5 text-muted-foreground shrink-0" />
@@ -1388,16 +1383,16 @@ export default function ProfileClient({ data }: Props) {
                           <input type="file" accept=".pdf,image/*" className="hidden" onChange={handleOfferLetterUpload} disabled={offerLetterUploading} />
                         </label>
                       )}
-                    </div>
+                    </fieldset>
                   </div>
                 ) : (
                   <div className="space-y-6">
                     {/* Work Info */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                    <fieldset className="rounded-xl border p-4 space-y-4">
+                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <BriefcaseIcon className="size-3.5" />
                         Work Info
-                      </h3>
+                      </legend>
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div>
                           <p className="text-xs text-muted-foreground">Employee ID</p>
@@ -1444,16 +1439,16 @@ export default function ProfileClient({ data }: Props) {
                           <p className="text-sm font-medium">{dbUser?.totalExperience || "—"}</p>
                         </div>
                       </div>
-                    </div>
+                    </fieldset>
 
                     <Separator />
 
                     {/* Personal Info */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                    <fieldset className="rounded-xl border p-4 space-y-4">
+                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <UserIcon className="size-3.5" />
                         Personal Info
-                      </h3>
+                      </legend>
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div>
                           <p className="text-xs text-muted-foreground">First Name</p>
@@ -1472,17 +1467,17 @@ export default function ProfileClient({ data }: Props) {
                           <p className="text-sm font-medium">{dbUser?.secondaryPhone || "—"}</p>
                         </div>
                       </div>
-                    </div>
+                    </fieldset>
 
                     {/* Work Experience History */}
                     {dbUser?.workExperience && dbUser.workExperience.length > 0 && (
                       <>
                         <Separator />
-                        <div>
-                          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                        <fieldset className="rounded-xl border p-4 space-y-4">
+                          <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                             <HistoryIcon className="size-3.5" />
                             Work Experience
-                          </h3>
+                          </legend>
                           <div className="space-y-4">
                             {dbUser.workExperience.map((exp, i) => (
                               <div key={exp.id || i} className="rounded-lg border p-4">
@@ -1521,7 +1516,7 @@ export default function ProfileClient({ data }: Props) {
                               </div>
                             ))}
                           </div>
-                        </div>
+                        </fieldset>
                       </>
                     )}
 
@@ -1529,11 +1524,11 @@ export default function ProfileClient({ data }: Props) {
                     {dbUser?.educationDetails && dbUser.educationDetails.length > 0 && (
                       <>
                         <Separator />
-                        <div>
-                          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                        <fieldset className="rounded-xl border p-4 space-y-4">
+                          <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                             <GraduationCapIcon className="size-3.5" />
                             Education
-                          </h3>
+                          </legend>
                           <div className="space-y-4">
                             {dbUser.educationDetails.map((edu, i) => (
                               <div key={edu.id || i} className="rounded-lg border p-4">
@@ -1562,7 +1557,7 @@ export default function ProfileClient({ data }: Props) {
                               </div>
                             ))}
                           </div>
-                        </div>
+                        </fieldset>
                       </>
                     )}
 
@@ -1570,11 +1565,11 @@ export default function ProfileClient({ data }: Props) {
                     {dbUser?.dependentDetails && dbUser.dependentDetails.length > 0 && (
                       <>
                         <Separator />
-                        <div>
-                          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-3">
+                        <fieldset className="rounded-xl border p-4 space-y-4">
+                          <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                             <HeartIcon className="size-3.5" />
                             Dependents
-                          </h3>
+                          </legend>
                           <div className="space-y-4">
                             {dbUser.dependentDetails.map((dep, i) => (
                               <div key={dep.id || i} className="rounded-lg border p-4">
@@ -1599,7 +1594,7 @@ export default function ProfileClient({ data }: Props) {
                               </div>
                             ))}
                           </div>
-                        </div>
+                        </fieldset>
                       </>
                     )}
                   </div>

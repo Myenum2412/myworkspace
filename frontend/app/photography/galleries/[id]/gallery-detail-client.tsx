@@ -140,7 +140,7 @@ export function GalleryDetailClient({
 
         <TabsContent value="images" className="space-y-4">
           <div className="flex items-center gap-2">
-            <Label htmlFor="image-upload" className="cursor-pointer">
+            <Label className="text-xs text-muted-foreground cursor-pointer">
               <div className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
                 {uploading ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <PlusIcon className="size-4 mr-1" />}
                 {uploading ? "Uploading..." : "Upload Image"}

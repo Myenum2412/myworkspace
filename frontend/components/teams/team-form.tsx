@@ -80,15 +80,15 @@ export function TeamForm({
         )}
 
         <div className="flex-1 overflow-y-auto px-6 py-3 space-y-5">
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2"><UsersIcon className="size-3.5" />Team Information</h3>
-            <div className="grid grid-cols-2 gap-3">
+          <fieldset className="rounded-xl border p-4 space-y-4">
+            <legend className="text-sm font-semibold px-2">Team Information</legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="teamName" className="text-sm">Team Name *</Label>
+                <Label className="text-xs text-muted-foreground">Team Name *</Label>
                 <Input id="teamName" placeholder="" value={teamName} onChange={(e) => onTeamNameChange(e.target.value)} disabled={submitting} className="mt-1" />
               </div>
               <div>
-                <Label htmlFor="teamHead" className="text-sm">Team Head</Label>
+                <Label className="text-xs text-muted-foreground">Team Head</Label>
                 <Select value={teamHeadId} onValueChange={(v) => { const m = members.find((x) => x.userId === v); onTeamHeadChange(v, m?.name || ""); }} disabled={submitting}>
                   <SelectTrigger className="mt-1 border-black"><SelectValue placeholder="" /></SelectTrigger>
                   <SelectContent>
@@ -105,10 +105,10 @@ export function TeamForm({
               </div>
             </div>
             <div>
-              <Label htmlFor="teamDescription" className="text-sm">Description</Label>
+              <Label className="text-xs text-muted-foreground">Description</Label>
               <Textarea id="teamDescription" placeholder="" value={teamDescription} onChange={(e) => onTeamDescriptionChange(e.target.value)} disabled={submitting} rows={2} className="mt-1" />
             </div>
-          </div>
+          </fieldset>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">

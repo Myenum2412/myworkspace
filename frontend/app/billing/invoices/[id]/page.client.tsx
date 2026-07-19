@@ -235,7 +235,7 @@ export default function InvoiceFormPage() {
             <h1 className="text-base sm:text-xl font-semibold text-white-800 truncate">{isEditing ? "Edit Invoice" : "New Invoice"}</h1>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <Label htmlFor="simplified" className="text-gray-500 text-[10px] sm:text-xs font-medium cursor-pointer whitespace-nowrap">Simplified</Label>
+            <Label htmlFor="simplified" className="text-xs text-muted-foreground cursor-pointer whitespace-nowrap">Simplified</Label>
             <div className="scale-75 sm:scale-100 origin-right"><Switch id="simplified" checked={isSimplifiedView} onCheckedChange={setIsSimplifiedView} /></div>
           </div>
         </div>
@@ -255,9 +255,9 @@ export default function InvoiceFormPage() {
           {/* Customer Name & Salesperson */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
             <div className="flex items-center gap-3">
-              <Label className="text-red-500 font-medium text-xs sm:text-sm whitespace-nowrap">Customer Name*</Label>
+              <Label className="text-xs text-muted-foreground whitespace-nowrap">Customer Name*</Label>
               <Select value={selectedClient} onValueChange={setSelectedClient}>
-                <SelectTrigger className="w-full sm:w-[300px] h-10 sm:h-9 text-gray-500 bg-white border-black">
+                <SelectTrigger className="w-full sm:w-[300px] sm:h-9 text-gray-500 bg-white border-black">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -270,9 +270,9 @@ export default function InvoiceFormPage() {
             </div>
             {!isSimplifiedView && (
               <div className="flex items-center gap-3">
-                <Label className="text-gray-700 font-medium text-xs sm:text-sm whitespace-nowrap">Salesperson</Label>
+                <Label className="text-xs text-muted-foreground whitespace-nowrap">Salesperson</Label>
                 <Select>
-                  <SelectTrigger className="w-full sm:w-[250px] h-10 sm:h-9 text-gray-500 border-black">
+                  <SelectTrigger className="w-full sm:w-[250px] sm:h-9 text-gray-500 border-black">
                     <SelectValue placeholder="" />
                   </SelectTrigger>
                   <SelectContent>
@@ -290,23 +290,23 @@ export default function InvoiceFormPage() {
 
           {/* Invoice# */}
           <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-y-1.5 sm:gap-y-6 sm:gap-x-4 items-start">
-            <Label className="text-red-500 font-medium text-xs sm:text-sm pt-2">Invoice#*</Label>
+            <Label className="text-xs text-muted-foreground pt-2">Invoice#*</Label>
             <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className="w-full sm:max-w-xs border-black" />
 
             {/* Order Number */}
             {!isSimplifiedView && (
               <>
-                <Label className="text-gray-700 font-medium text-xs sm:text-sm pt-2">Order Number</Label>
+                <Label className="text-xs text-muted-foreground pt-2">Order Number</Label>
                 <Input className="w-full sm:max-w-xs border-black" />
               </>
             )}
 
             {/* Invoice Date & Due Date */}
-            <Label className="text-red-500 font-medium text-xs sm:text-sm pt-2">Invoice Date*</Label>
+            <Label className="text-xs text-muted-foreground pt-2">Invoice Date*</Label>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-8">
               <Input type="date" value={currentDate} onChange={(e) => setCurrentDate(e.target.value)} className="w-full sm:w-[200px] text-gray-700 border-black" />
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                <Label className="text-gray-700 font-medium text-xs sm:text-sm whitespace-nowrap">Due Date</Label>
+                <Label className="text-xs text-muted-foreground whitespace-nowrap">Due Date</Label>
                 <Input type="date" value={currentDate} className="flex-1 sm:w-[160px] border-dashed border-black text-gray-500" readOnly />
               </div>
             </div>
@@ -314,7 +314,7 @@ export default function InvoiceFormPage() {
             {/* Subject */}
             {!isSimplifiedView && (
               <>
-                <Label className="text-gray-700 font-medium text-xs sm:text-sm pt-2 flex items-center gap-1.5">
+                <Label className="text-xs text-muted-foreground pt-2 flex items-center gap-1.5">
                   Subject <Info className="size-3.5 sm:size-4 text-gray-400" />
                 </Label>
                 <Textarea placeholder="" className="w-full min-h-[40px] resize-y text-sm" />
@@ -334,7 +334,7 @@ export default function InvoiceFormPage() {
               {items.map((item) => {
                 const amount = item.quantity * item.rate;
                 return (
-                  <div key={item.id} className="border border-gray-200 rounded-lg p-3 bg-white space-y-2">
+                  <div key={item.id} className="border border-gray-200 rounded-lg p-3 bg-white space-y-1.5">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelectItem(item.id)} className="size-4 accent-blue-600 mt-0.5 shrink-0" />
@@ -518,14 +518,14 @@ export default function InvoiceFormPage() {
             <div className="flex-1 w-full lg:max-w-[500px]">
               {/* Customer Notes */}
               <div className="mb-6 sm:mb-8">
-                <Label className="text-white-800 font-medium mb-2 block text-sm">Customer Notes</Label>
+                <Label className="text-xs text-muted-foreground mb-2 block">Customer Notes</Label>
                 <Textarea defaultValue="" className="min-h-[80px] text-sm text-gray-700 w-full" />
                 <p className="text-[11px] text-gray-500 mt-1.5">Will be displayed on the invoice</p>
               </div>
 
               {/* Terms & Conditions */}
               <div>
-                <Label className="text-white-800 font-medium mb-2 block text-sm">Terms & Conditions</Label>
+                <Label className="text-xs text-muted-foreground mb-2 block">Terms & Conditions</Label>
                 <Textarea
                   placeholder=""
                   className="min-h-[100px] text-sm w-full"
@@ -563,15 +563,15 @@ export default function InvoiceFormPage() {
                       <RadioGroup value={tdsTcsType} onValueChange={setTdsTcsType} className="flex items-center gap-2 sm:gap-3">
                         <div className="flex items-center space-x-1.5">
                           <RadioGroupItem value="tds" id="tds" className="size-3.5" />
-                          <Label htmlFor="tds" className="text-xs font-medium text-gray-700">TDS</Label>
+                          <Label htmlFor="tds" className="text-xs text-muted-foreground">TDS</Label>
                         </div>
                         <div className="flex items-center space-x-1.5">
                           <RadioGroupItem value="tcs" id="tcs" className="size-3.5" />
-                          <Label htmlFor="tcs" className="text-xs font-medium text-gray-700">TCS</Label>
+                          <Label htmlFor="tcs" className="text-xs text-muted-foreground">TCS</Label>
                         </div>
                       </RadioGroup>
                       <Select value={tdsTcsRate} onValueChange={setTdsTcsRate}>
-                        <SelectTrigger className="w-full sm:w-[140px] h-10 sm:h-8 bg-white border-gray-200">
+                        <SelectTrigger className="w-full sm:w-[140px] sm:h-8 bg-white border-gray-200">
                           <SelectValue placeholder="" />
                         </SelectTrigger>
                         <SelectContent>

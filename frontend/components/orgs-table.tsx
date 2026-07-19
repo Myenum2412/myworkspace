@@ -138,7 +138,7 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
 
         <form action={formAction} className="flex flex-col">
           {state?.error && (
-            <div className="mx-6 mt-4 flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
+            <div className="mx-6 mt-4 flex items-center gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3">
               <AlertCircleIcon className="size-4 shrink-0" />
               {state.error}
             </div>
@@ -146,17 +146,15 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
 
           <div className="px-6 py-5 space-y-5">
             <div className="space-y-1.5">
-              <Label htmlFor="edit-name" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+              <Label className="text-xs text-muted-foreground">
                 <Building2Icon className="size-3.5 text-muted-foreground" />
                 Organization Name
               </Label>
               <Input
-                id="edit-name"
                 name="name"
                 defaultValue={org.name}
                 required
                 placeholder=""
-                className="h-10"
               />
             </div>
 
@@ -164,12 +162,12 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-plan" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                <Label className="text-xs text-muted-foreground">
                   <TagIcon className="size-3.5 text-muted-foreground" />
                   Plan
                 </Label>
                 <Select name="plan" defaultValue={org.plan === "starter" ? "free" : org.plan === "pro" ? "growth" : org.plan || "free"}>
-                  <SelectTrigger id="edit-plan" className="h-10">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -180,31 +178,27 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-domain" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                <Label className="text-xs text-muted-foreground">
                   <GlobeIcon className="size-3.5 text-muted-foreground" />
                   Domain
                 </Label>
                 <Input
-                  id="edit-domain"
                   name="domain"
                   defaultValue={org.domain || ""}
                   placeholder=""
-                  className="h-10"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="edit-slug" className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+              <Label className="text-xs text-muted-foreground">
                 <HashIcon className="size-3.5 text-muted-foreground" />
                 Slug
               </Label>
               <Input
-                id="edit-slug"
                 name="slug"
                 defaultValue={org.slug || ""}
                 placeholder=""
-                className="h-10"
               />
             </div>
           </div>

@@ -39,7 +39,7 @@ export function ClientForgotPasswordForm() {
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email">Email address</Label>
+            <Label className="text-xs text-muted-foreground">Email address</Label>
             <Input id="email" name="email" type="email" required autoComplete="email" />
           </div>
           <Button type="submit" className="w-full font-semibold" disabled={loading}>

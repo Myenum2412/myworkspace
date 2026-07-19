@@ -51,12 +51,12 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
           </div>
         )}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email">Email address</Label>
+          <Label className="text-xs text-muted-foreground">Email address</Label>
           <Input id="email" name="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
         </div>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label className="text-xs text-muted-foreground">Password</Label>
             <Link href="/forgot-password" className="text-xs text-muted-foreground underline-offset-4 hover:underline hover:text-foreground transition-colors">
               Forgot password?
             </Link>

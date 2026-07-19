@@ -79,7 +79,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
             <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
           )}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="signup-otp">Verification code</Label>
+            <Label className="text-xs text-muted-foreground">Verification code</Label>
             <Input
               id="signup-otp"
               value={otp}
@@ -139,15 +139,15 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
           <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
         )}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="signup-name">Full name</Label>
+          <Label className="text-xs text-muted-foreground">Full name</Label>
           <Input id="signup-name" value={name} onChange={(e) => setName(e.target.value)} type="text" required autoComplete="name" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="signup-company">Company name</Label>
+          <Label className="text-xs text-muted-foreground">Company name</Label>
           <Input id="signup-company" value={company} onChange={(e) => setCompany(e.target.value)} type="text" autoComplete="organization" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="signup-email">Email address</Label>
+          <Label className="text-xs text-muted-foreground">Email address</Label>
           <Input id="signup-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required autoComplete="email" />
         </div>
         <Button type="submit" className="w-full mt-1 font-semibold" disabled={loading}>

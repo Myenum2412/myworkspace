@@ -76,7 +76,7 @@ export function InviteMemberFormInteractive() {
       {emails.map((email, index) => (
         <div key={index} className="flex items-center gap-2">
           <div className="flex-1">
-            <Label htmlFor={`email-${index}`} className="sr-only">Email address</Label>
+            <Label className="sr-only text-xs text-muted-foreground">Email address</Label>
             <Input
               id={`email-${index}`}
               type="email"
@@ -96,7 +96,7 @@ export function InviteMemberFormInteractive() {
       <Button type="button" variant="outline" size="sm" onClick={addEmail}>
         <PlusIcon className="size-4 mr-1" /> Add another
       </Button>
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="pt-2">
         <Button type="submit" disabled={sending || emails.every((e) => !e)}>
           {sending ? <Loader2Icon className="size-4 animate-spin mr-1" /> : null}

@@ -134,20 +134,20 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
           <div className="space-y-4 py-2">
             <div className="flex items-center gap-2">
               <Switch checked={allowDownload} onCheckedChange={setAllowDownload} />
-              <Label htmlFor="allow-dl">Allow download</Label>
+              <Label className="text-xs text-muted-foreground">Allow download</Label>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Password (optional)</Label>
+                <Label className="text-xs text-muted-foreground">Password (optional)</Label>
                 <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="" className="mt-1" />
               </div>
               <div>
-                <Label>Expires in (hours)</Label>
+                <Label className="text-xs text-muted-foreground">Expires in (hours)</Label>
                 <Input type="number" value={expiresIn} onChange={e => setExpiresIn(e.target.value)} placeholder="" className="mt-1" min="1" />
               </div>
             </div>
             <div>
-              <Label>Max downloads</Label>
+              <Label className="text-xs text-muted-foreground">Max downloads</Label>
               <Input type="number" value={maxDownloads} onChange={e => setMaxDownloads(e.target.value)} placeholder="" className="mt-1" min="1" />
             </div>
 

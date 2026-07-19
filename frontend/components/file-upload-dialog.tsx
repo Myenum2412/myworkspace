@@ -192,7 +192,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="desc" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description (optional)</Label>
+              <Label className="text-xs text-muted-foreground">Description (optional)</Label>
               <Textarea
                 id="desc"
                 value={description}
@@ -203,7 +203,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="tags" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tags (comma separated)</Label>
+              <Label className="text-xs text-muted-foreground">Tags (comma separated)</Label>
               <Input
                 id="tags"
                 value={tags}
@@ -244,7 +244,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
           )}
 
           {hasError && (
-            <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 p-3 rounded-lg dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
               <AlertCircleIcon className="size-4 shrink-0" /> 
               <span>Some files failed to upload. Hover over the error icon for details.</span>
             </div>

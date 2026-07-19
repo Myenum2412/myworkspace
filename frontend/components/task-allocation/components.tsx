@@ -29,7 +29,7 @@ export function PrioritySelector({
   return (
     <div className="space-y-2">
       <Select value={selectedPriority} onValueChange={onSelect}>
-        <SelectTrigger className="h-9 bg-background/50">
+        <SelectTrigger className="bg-background/50">
           <SelectValue placeholder="" />
         </SelectTrigger>
         <SelectContent>
@@ -93,7 +93,7 @@ export function AssigneeSelector({
             const id = val.replace(/^(team_|staff_)/, "");
             onSelect(id, type);
           }}>
-            <SelectTrigger className="h-9 bg-background/50">
+            <SelectTrigger className="bg-background/50">
               <SelectValue placeholder="" />
             </SelectTrigger>
             <SelectContent>

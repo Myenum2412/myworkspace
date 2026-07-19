@@ -35,7 +35,7 @@ const colors = [
 
 function FormField({ label, required, className, children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
   return (
-    <div className={`space-y-1 ${className || ""}`}>
+    <div className={`space-y-1.5 ${className || ""}`}>
       <Label className="text-xs font-medium text-muted-foreground">
         {label}
         {required && <span className="text-destructive">*</span>}
@@ -148,13 +148,13 @@ export function CreateProjectPageInteractive() {
                 placeholder=""
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-9 text-sm"
+                className="text-sm"
               />
             </FormField>
 
             <FormField label="Client" required>
               <Select value={client} onValueChange={setClient}>
-                <SelectTrigger className="h-9 text-sm">
+                <SelectTrigger className="text-sm">
                   <SelectValue placeholder="Select a client" />
                 </SelectTrigger>
                 <SelectContent>
@@ -172,7 +172,7 @@ export function CreateProjectPageInteractive() {
             <FormField label="Deadline">
               <Popover open={deadlineOpen} onOpenChange={setDeadlineOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                  <Button variant="outline" className="w-full justify-between text-sm font-normal">
                     {deadline ? (
                       <span>{deadline.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                     ) : (
@@ -215,19 +215,15 @@ export function CreateProjectPageInteractive() {
           </div>
         </ScrollArea>
 
-        <div className="flex flex-col h-full">
-          <div className="px-5 py-3 border-b shrink-0">
-            <Label className="text-xs font-medium text-muted-foreground">
-              Description
-            </Label>
-          </div>
+        <fieldset className="rounded-xl border p-4 space-y-4 flex flex-col h-full">
+          <legend className="text-sm font-semibold px-2">Description</legend>
           <div className="flex-1 min-h-0">
             <GoogleDocsEditor
               value={description}
               onChange={setDescription}
             />
           </div>
-        </div>
+        </fieldset>
       </div>
 
       <div className="flex items-center justify-between gap-3 px-6 py-4 border-t shrink-0">

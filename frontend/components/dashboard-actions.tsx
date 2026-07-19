@@ -57,23 +57,23 @@ export function EditSignupDialog({
         </DialogHeader>
         <form action={formAction} className="space-y-4">
           {state?.error && (
-            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950 rounded-md px-3 py-2">
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">
               <AlertCircleIcon className="size-4 shrink-0" />
               {state.error}
             </div>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="ds-name">Name</Label>
-            <Input id="ds-name" name="name" defaultValue={user.name} required />
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Name</Label>
+            <Input name="name" defaultValue={user.name} required />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="ds-email">Email</Label>
-            <Input id="ds-email" name="email" defaultValue={user.email} type="email" required />
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Email</Label>
+            <Input name="email" defaultValue={user.email} type="email" required />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="ds-role">Role</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Role</Label>
             <Select name="role" defaultValue={user.role}>
-              <SelectTrigger id="ds-role">
+              <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -83,10 +83,10 @@ export function EditSignupDialog({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="ds-status">Status</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Status</Label>
             <Select name="status" defaultValue={user.status}>
-              <SelectTrigger id="ds-status">
+              <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

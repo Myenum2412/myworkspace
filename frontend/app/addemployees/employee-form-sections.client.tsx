@@ -446,8 +446,8 @@ interface DynamicRowSectionProps {
 
 export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: DynamicRowSectionProps) {
   return (
-    <div className="space-y-4">
-      <h3 className="font-medium text-lg">{title}</h3>
+    <fieldset className="rounded-xl border p-4 space-y-4">
+      <legend className="text-sm font-semibold px-2">{title}</legend>
       {rows.map((row, index) => (
         <div key={row.id} className="relative border rounded-md p-4 bg-muted/20">
           <button
@@ -467,7 +467,7 @@ export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: D
       >
         + Add Another
       </button>
-    </div>
+    </fieldset>
   );
 }
 

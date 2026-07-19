@@ -130,7 +130,7 @@ export function payloadFromValues(values: ClientValues): Record<string, unknown>
 }
 
 export function fieldClass(errors: Record<string, string>, name: string): string {
-  return errors[name] ? "border-red-500 focus-visible:ring-red-400" : "";
+  return errors[name] ? "border-destructive focus-visible:ring-destructive/40" : "";
 }
 
 export function fieldError(errors: Record<string, string>, name: string): string | null {
@@ -159,17 +159,17 @@ export function EditClientFormFields(props: {
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Client Name *</Label>
             <Input placeholder="" value={v.name} onChange={(e) => set("name", e.target.value)} className={fc("name")} />
-            {fe("name") && <p className="text-xs text-red-500 mt-1">{fe("name")}</p>}
+            {fe("name") && <p className="text-xs text-destructive mt-1">{fe("name")}</p>}
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
             <Input placeholder="" value={v.company} onChange={(e) => set("company", e.target.value)} className={fc("company")} />
-            {fe("company") && <p className="text-xs text-red-500 mt-1">{fe("company")}</p>}
+            {fe("company") && <p className="text-xs text-destructive mt-1">{fe("company")}</p>}
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
             <Input placeholder="" type="email" value={v.email} onChange={(e) => set("email", e.target.value)} className={fc("email")} />
-            {fe("email") && <p className="text-xs text-red-500 mt-1">{fe("email")}</p>}
+            {fe("email") && <p className="text-xs text-destructive mt-1">{fe("email")}</p>}
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Password</Label>
@@ -179,7 +179,7 @@ export function EditClientFormFields(props: {
                 {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
-            {fe("password") && <p className="text-xs text-red-500 mt-1">{fe("password")}</p>}
+            {fe("password") && <p className="text-xs text-destructive mt-1">{fe("password")}</p>}
           </Field>
         </div>
       </FieldSet>
@@ -191,7 +191,7 @@ export function EditClientFormFields(props: {
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Primary Contact Person *</Label>
             <Input placeholder="" value={v.primaryContact} onChange={(e) => set("primaryContact", e.target.value)} className={fc("primaryContact")} />
-            {fe("primaryContact") && <p className="text-xs text-red-500 mt-1">{fe("primaryContact")}</p>}
+            {fe("primaryContact") && <p className="text-xs text-destructive mt-1">{fe("primaryContact")}</p>}
           </Field>
           <Field>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Designation</Label>

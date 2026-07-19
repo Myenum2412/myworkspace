@@ -76,7 +76,7 @@ const priorities = [
 
 function FormField({ label, required, className, children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
   return (
-    <div className={`space-y-1 ${className || ""}`}>
+    <div className={`space-y-1.5 ${className || ""}`}>
       <Label className="text-xs font-medium text-muted-foreground">
         {label}
         {required && <span className="text-destructive">*</span>}
@@ -267,7 +267,7 @@ export function CreateTaskPageInteractive() {
               const selected = localTaskDefs.find((d) => d.id === val);
               if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
             }}>
-              <SelectTrigger className="h-7 w-fit gap-1 border text-xs font-medium text-muted-foreground shadow-none">
+              <SelectTrigger className="w-fit gap-1 border text-xs font-medium text-muted-foreground shadow-none">
                 <FileTextIcon className="size-3" />
                 <span className="max-w-[100px] truncate">Template</span>
               </SelectTrigger>
@@ -321,14 +321,14 @@ export function CreateTaskPageInteractive() {
                 placeholder=""
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="h-9 text-sm"
+                className="text-sm"
               />
             </FormField>
 
             <div className="grid grid-cols-3 gap-3">
               <FormField label="Client">
                 <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
-                  <SelectTrigger className="h-9 text-sm shadow-none">
+                  <SelectTrigger className="text-sm shadow-none">
                     <SelectValue placeholder="" />
                   </SelectTrigger>
                   <SelectContent className="shadow-none">
@@ -341,7 +341,7 @@ export function CreateTaskPageInteractive() {
 
               <FormField label="Project">
                 <Select value={projectName} onValueChange={setProjectName}>
-                  <SelectTrigger className="h-9 text-sm shadow-none">
+                  <SelectTrigger className="text-sm shadow-none">
                     <SelectValue placeholder="" />
                   </SelectTrigger>
                   <SelectContent className="shadow-none">
@@ -357,7 +357,6 @@ export function CreateTaskPageInteractive() {
               </FormField>
 
               <FormField label="Priority" required>
-                <div className="h-9">
                   <PrioritySelector
                     selectedPriority={priority}
                     priorities={priorities}
@@ -365,7 +364,6 @@ export function CreateTaskPageInteractive() {
                       if (val !== "quick-add") setPriority(val);
                     }}
                   />
-                </div>
               </FormField>
             </div>
 
@@ -376,7 +374,7 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Due Date">
                   <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
                         {dueDate ? (
                           <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
@@ -416,7 +414,7 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Due Date">
                   <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
                         {dueDate ? (
                           <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
@@ -433,7 +431,7 @@ export function CreateTaskPageInteractive() {
 
                 <FormField label="Assign Team" required>
                   <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                    <SelectTrigger className="h-9 text-sm shadow-none">
+                    <SelectTrigger className="text-sm shadow-none">
                       <SelectValue placeholder="Select a team" />
                     </SelectTrigger>
                     <SelectContent className="shadow-none">
@@ -455,7 +453,7 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Due Date">
                   <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
                         {dueDate ? (
                           <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
@@ -481,7 +479,7 @@ export function CreateTaskPageInteractive() {
                       }
                     }}
                   >
-                    <SelectTrigger className="h-9 text-sm shadow-none">
+                    <SelectTrigger className="text-sm shadow-none">
                       <SelectValue placeholder={selectedUsers.length > 0 ? `${selectedUsers.length} user(s) selected` : "Select users"} />
                     </SelectTrigger>
                     <SelectContent className="shadow-none">
@@ -516,11 +514,11 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Scheduled Date" required>
                   <Popover open={scheduledDateOpen} onOpenChange={setScheduledDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
-                        {scheduledDate ? (
-                          <span>{scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
+                        {dueDate ? (
+                          <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
-                          <span className="text-muted-foreground">Pick start date</span>
+                          <span className="text-muted-foreground">Due date</span>
                         )}
                         <CalendarIcon className="size-3.5 text-muted-foreground" />
                       </Button>
@@ -534,7 +532,7 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Due Date">
                   <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
                         {dueDate ? (
                           <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
@@ -556,7 +554,7 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Due Date">
                   <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
                         {dueDate ? (
                           <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
@@ -593,11 +591,11 @@ export function CreateTaskPageInteractive() {
 
             <Separator />
 
-            <div>
-              <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-1">
+            <fieldset className="rounded-xl border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2 flex items-center gap-1">
                 <PaperclipIcon className="size-3" />
                 Attachments
-              </Label>
+              </legend>
               <div className="border border-dashed p-3">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
@@ -608,7 +606,7 @@ export function CreateTaskPageInteractive() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-8 text-xs"
+                    className="text-xs"
                     onClick={() => {
                       const el = document.querySelector<HTMLInputElement>('[data-file-trigger]');
                       if (el) el.click();
@@ -621,16 +619,12 @@ export function CreateTaskPageInteractive() {
                   <TableUpload onFilesChange={setUploadedFiles} compactImage={true} />
                 </div>
               </div>
-            </div>
+            </fieldset>
           </div>
         </ScrollArea>
 
-        <div className="flex flex-col h-full">
-          <div className="px-5 py-3 border-b shrink-0">
-            <Label className="text-xs font-medium text-muted-foreground">
-              Description <span className="text-destructive">*</span>
-            </Label>
-          </div>
+        <fieldset className="rounded-xl border p-4 space-y-4 flex flex-col h-full">
+          <legend className="text-sm font-semibold px-2">Description <span className="text-destructive">*</span></legend>
           <div className="flex-1 min-h-0">
             <TiptapEditor
               value={description}
@@ -638,7 +632,7 @@ export function CreateTaskPageInteractive() {
               placeholder="Write your task description here..."
             />
           </div>
-        </div>
+        </fieldset>
       </div>
 
       <div className="flex items-center justify-between gap-3 px-6 py-4 border-t bg-muted/10 shrink-0">

@@ -15,11 +15,6 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
-import {
-  Field,
-  FieldSet,
-  FieldLegend,
-} from "@/components/ui/field";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { apiFetch } from "@/lib/api";
 import { Loader2, Plus, Trash2, Upload, X } from "lucide-react";
@@ -246,117 +241,107 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
       <div className="relative flex-1 overflow-hidden px-1">
         <ScrollArea className="h-full px-5">
           <div className="space-y-8 py-6 max-w-4xl mx-auto">
-            <FieldSet>
-              <FieldLegend>Customer Information</FieldLegend>
-              <div className="space-y-6">
-                <FieldSet>
-                  <FieldLegend>Customer Type</FieldLegend>
-                  <div className="flex items-center gap-6">
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input
-                        type="radio"
-                        name="customerType"
-                        value="Business"
-                        checked={customerType === "Business"}
-                        onChange={(e) => setCustomerType(e.target.value)}
-                        className="size-4 accent-primary"
-                      />
-                      Business
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input
-                        type="radio"
-                        name="customerType"
-                        value="Individual"
-                        checked={customerType === "Individual"}
-                        onChange={(e) => setCustomerType(e.target.value)}
-                        className="size-4 accent-primary"
-                      />
-                      Individual
-                    </label>
+            <fieldset className="rounded-xl border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2">Customer Information</legend>
+              <fieldset className="space-y-3 border-0 p-0">
+                <legend className="text-xs font-medium text-muted-foreground px-0">Customer Type</legend>
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="radio"
+                      name="customerType"
+                      value="Business"
+                      checked={customerType === "Business"}
+                      onChange={(e) => setCustomerType(e.target.value)}
+                      className="size-4 accent-primary"
+                    />
+                    Business
+                  </label>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="radio"
+                      name="customerType"
+                      value="Individual"
+                      checked={customerType === "Individual"}
+                      onChange={(e) => setCustomerType(e.target.value)}
+                      className="size-4 accent-primary"
+                    />
+                    Individual
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset className="rounded-xl border p-4 space-y-4">
+                <legend className="text-sm font-semibold px-2">Primary Contact</legend>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Salutation</Label>
+                    <Select value={salutation} onValueChange={setSalutation}>
+                      <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
+                      <SelectContent>
+                        {SALUTATIONS.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Primary Contact</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Salutation</Label>
-                      <Select value={salutation} onValueChange={setSalutation}>
-                        <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
-                        <SelectContent>
-                          {SALUTATIONS.map((s) => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">First Name</Label>
-                      <Input placeholder="" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Last Name</Label>
-                      <Input placeholder="" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                    </Field>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">First Name</Label>
+                    <Input placeholder="" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                   </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Company Details</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Company Name *</Label>
-                      <Input placeholder="" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={fieldClass("companyName")} />
-                      {fieldError("companyName") && <p className="text-xs text-red-500 mt-1">{fieldError("companyName")}</p>}
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Display Name *</Label>
-                      <Input placeholder="" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={fieldClass("displayName")} />
-                      {fieldError("displayName") && <p className="text-xs text-red-500 mt-1">{fieldError("displayName")}</p>}
-                    </Field>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Last Name</Label>
+                    <Input placeholder="" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   </div>
-                </FieldSet>
+                </div>
+              </fieldset>
 
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Financial Details</FieldLegend>
-                  <Field>
-                    <Label className="text-xs text-muted-foreground mb-1.5 block">Currency</Label>
-                    <Input value="INR - Indian Rupee" disabled className="text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Note: Currency cannot be edited as multi-currency handling is unavailable in MyworkSpace Invoice.
-                    </p>
-                  </Field>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Contact Information</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address *</Label>
-                      <Input placeholder="" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass("email")} />
-                      {fieldError("email") && <p className="text-xs text-red-500 mt-1">{fieldError("email")}</p>}
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Work Phone</Label>
-                      <PhoneInput value={workPhone} onChange={setWorkPhone} placeholder="" />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile</Label>
-                      <PhoneInput value={mobile} onChange={setMobile} placeholder="" />
-                    </Field>
+              <fieldset className="rounded-xl border p-4 space-y-4">
+                <legend className="text-sm font-semibold px-2">Company Details</legend>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Company Name *</Label>
+                    <Input placeholder="" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={fieldClass("companyName")} />
+                    {fieldError("companyName") && <p className="text-xs text-red-500">{fieldError("companyName")}</p>}
                   </div>
-                </FieldSet>
-              </div>
-            </FieldSet>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Display Name *</Label>
+                    <Input placeholder="" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={fieldClass("displayName")} />
+                    {fieldError("displayName") && <p className="text-xs text-red-500">{fieldError("displayName")}</p>}
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset className="rounded-xl border p-4 space-y-4">
+                <legend className="text-sm font-semibold px-2">Financial Details</legend>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Currency</Label>
+                  <Input value="INR - Indian Rupee" disabled className="text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Note: Currency cannot be edited as multi-currency handling is unavailable in MyworkSpace Invoice.
+                  </p>
+                </div>
+              </fieldset>
+
+              <fieldset className="rounded-xl border p-4 space-y-4">
+                <legend className="text-sm font-semibold px-2">Contact Information</legend>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Email Address *</Label>
+                    <Input placeholder="" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass("email")} />
+                    {fieldError("email") && <p className="text-xs text-red-500">{fieldError("email")}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Work Phone</Label>
+                    <PhoneInput value={workPhone} onChange={setWorkPhone} placeholder="" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Mobile</Label>
+                    <PhoneInput value={mobile} onChange={setMobile} placeholder="" />
+                  </div>
+                </div>
+              </fieldset>
+            </fieldset>
 
             <Separator />
 
@@ -370,179 +355,171 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
               </TabsList>
 
               <TabsContent value="other-details" className="space-y-6 pt-4">
-                <FieldSet>
-                  <FieldLegend>Tax Information</FieldLegend>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">GST Treatment *</Label>
-                      <Select value={gstTreatment} onValueChange={setGstTreatment}>
-                        <SelectTrigger className={fieldClass("gstTreatment")}><SelectValue placeholder="" /></SelectTrigger>
-                        <SelectContent>
-                          {GST_TREATMENTS.map((t) => (
-                            <SelectItem key={t} value={t}>{t}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldError("gstTreatment") && <p className="text-xs text-red-500 mt-1">{fieldError("gstTreatment")}</p>}
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Place of Supply *</Label>
-                      <Select value={placeOfSupply} onValueChange={setPlaceOfSupply}>
-                        <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
-                        <SelectContent>
-                          {INDIAN_STATES.map((s) => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">PAN #</Label>
-                      <Input placeholder="" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Tax Preference *</Label>
-                      <div className="flex items-center gap-6 mt-1">
-                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                          <input
-                            type="radio"
-                            name="taxPreference"
-                            value="Taxable"
-                            checked={taxPreference === "Taxable"}
-                            onChange={(e) => setTaxPreference(e.target.value)}
-                            className="size-4 accent-primary"
-                          />
-                          Taxable
-                        </label>
-                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                          <input
-                            type="radio"
-                            name="taxPreference"
-                            value="Tax Exempt"
-                            checked={taxPreference === "Tax Exempt"}
-                            onChange={(e) => setTaxPreference(e.target.value)}
-                            className="size-4 accent-primary"
-                          />
-                          Tax Exempt
-                        </label>
-                      </div>
-                    </Field>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Payment</FieldLegend>
-                  <Field>
-                    <Label className="text-xs text-muted-foreground mb-1.5 block">Payment Terms</Label>
-                    <Input value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
-                  </Field>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Portal Access</FieldLegend>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="portalAccess"
-                      checked={portalAccess}
-                      onCheckedChange={(checked) => setPortalAccess(checked === true)}
-                    />
-                    <Label htmlFor="portalAccess" className="text-sm font-normal cursor-pointer">
-                      Allow portal access for this customer
-                    </Label>
-                  </div>
-                </FieldSet>
-
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Documents</FieldLegend>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Button type="button" variant="outline" size="sm" className="relative" disabled={documents.length >= 3}>
-                        <Upload className="size-4 mr-2" />
-                        Upload File
-                        <input
-                          type="file"
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          onChange={handleFileUpload}
-                          disabled={documents.length >= 3}
-                          multiple
-                        />
-                      </Button>
-                    </div>
-                    {documents.length > 0 && (
-                      <div className="space-y-1">
-                        {documents.map((file, i) => (
-                          <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span className="flex-1 truncate">{file.name}</span>
-                            <button onClick={() => removeFile(i)} className="text-destructive hover:text-destructive/80">
-                              <X className="size-4" />
-                            </button>
-                          </div>
+                <fieldset className="rounded-xl border p-4 space-y-4">
+                <legend className="text-sm font-semibold px-2">Tax Information</legend>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">GST Treatment *</Label>
+                    <Select value={gstTreatment} onValueChange={setGstTreatment}>
+                      <SelectTrigger className={fieldClass("gstTreatment")}><SelectValue placeholder="" /></SelectTrigger>
+                      <SelectContent>
+                        {GST_TREATMENTS.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
                         ))}
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      Maximum: 3 files. Maximum size: 10 MB each.
-                    </p>
+                      </SelectContent>
+                    </Select>
+                    {fieldError("gstTreatment") && <p className="text-xs text-red-500">{fieldError("gstTreatment")}</p>}
                   </div>
-                </FieldSet>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Place of Supply *</Label>
+                    <Select value={placeOfSupply} onValueChange={setPlaceOfSupply}>
+                      <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
+                      <SelectContent>
+                        {INDIAN_STATES.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">PAN #</Label>
+                    <Input placeholder="" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Tax Preference *</Label>
+                    <div className="flex items-center gap-6 mt-1">
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="radio"
+                          name="taxPreference"
+                          value="Taxable"
+                          checked={taxPreference === "Taxable"}
+                          onChange={(e) => setTaxPreference(e.target.value)}
+                          className="size-4 accent-primary"
+                        />
+                        Taxable
+                      </label>
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="radio"
+                          name="taxPreference"
+                          value="Tax Exempt"
+                          checked={taxPreference === "Tax Exempt"}
+                          onChange={(e) => setTaxPreference(e.target.value)}
+                          className="size-4 accent-primary"
+                        />
+                        Tax Exempt
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset className="rounded-xl border p-4 space-y-4">
+                <legend className="text-sm font-semibold px-2">Payment</legend>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Payment Terms</Label>
+                  <Input value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
+                </div>
+              </fieldset>
+
+              <fieldset className="rounded-xl border p-4 space-y-4">
+                <legend className="text-sm font-semibold px-2">Portal Access</legend>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="portalAccess"
+                    checked={portalAccess}
+                    onCheckedChange={(checked) => setPortalAccess(checked === true)}
+                  />
+                  <Label htmlFor="portalAccess" className="text-sm font-normal cursor-pointer">
+                    Allow portal access for this customer
+                  </Label>
+                </div>
+              </fieldset>
+
+              <fieldset className="rounded-xl border p-4 space-y-4">
+                <legend className="text-sm font-semibold px-2">Documents</legend>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Button type="button" variant="outline" size="sm" className="relative" disabled={documents.length >= 3}>
+                      <Upload className="size-4 mr-2" />
+                      Upload File
+                      <input
+                        type="file"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={handleFileUpload}
+                        disabled={documents.length >= 3}
+                        multiple
+                      />
+                    </Button>
+                  </div>
+                  {documents.length > 0 && (
+                    <div className="space-y-1">
+                      {documents.map((file, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span className="flex-1 truncate">{file.name}</span>
+                          <button onClick={() => removeFile(i)} className="text-destructive hover:text-destructive/80">
+                            <X className="size-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Maximum: 3 files. Maximum size: 10 MB each.
+                  </p>
+                </div>
+              </fieldset>
               </TabsContent>
 
               <TabsContent value="address" className="space-y-6 pt-4">
-                <FieldSet>
-                  <FieldLegend>Billing Address</FieldLegend>
+                <fieldset className="rounded-xl border p-4 space-y-4">
+                  <legend className="text-sm font-semibold px-2">Billing Address</legend>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Attention</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Attention</Label>
                       <Input placeholder="" value={billingAttention} onChange={(e) => setBillingAttention(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Country / Region</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Country / Region</Label>
                       <LocationSelect options={pincodeResult?.countries || []} value={billingCountry} onChange={setBillingCountry} placeholder="" />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Street 1</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Street 1</Label>
                       <Input placeholder="" value={billingStreet1} onChange={(e) => setBillingStreet1(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Street 2</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Street 2</Label>
                       <Input placeholder="" value={billingStreet2} onChange={(e) => setBillingStreet2(e.target.value)} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">City</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">City</Label>
                       <LocationSelect options={pincodeResult?.cities || []} value={billingCity} onChange={setBillingCity} placeholder="" />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">State</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">State</Label>
                       <LocationSelect options={pincodeResult?.states || []} value={billingState} onChange={setBillingState} placeholder="" />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Pin Code</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Pin Code</Label>
                       <PincodeInput value={billingPinCode} onChange={setBillingPinCode} onResult={setPincodeResult} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Phone</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Phone</Label>
                       <div className="grid grid-cols-3 gap-2">
                         <Input placeholder="" value={billingPhoneCode} onChange={(e) => setBillingPhoneCode(e.target.value)} />
                         <Input placeholder="" className="col-span-2" value={billingPhone} onChange={(e) => setBillingPhone(e.target.value)} />
                       </div>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Fax Number</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Fax Number</Label>
                       <Input placeholder="" value={billingFax} onChange={(e) => setBillingFax(e.target.value)} />
-                    </Field>
+                    </div>
                   </div>
-                </FieldSet>
+                </fieldset>
 
-                <Separator />
-
-                <FieldSet>
-                  <FieldLegend>Shipping Address</FieldLegend>
+                <fieldset className="rounded-xl border p-4 space-y-4">
+                  <legend className="text-sm font-semibold px-2">Shipping Address</legend>
                   <div className="flex items-center gap-2 mb-4">
                     <Checkbox
                       id="copyBilling"
@@ -569,51 +546,51 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     </Label>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Attention</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Attention</Label>
                       <Input placeholder="" value={shippingAttention} onChange={(e) => setShippingAttention(e.target.value)} disabled={copyBilling} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Country / Region</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Country / Region</Label>
                       <LocationSelect options={pincodeResult?.countries || []} value={shippingCountry} onChange={setShippingCountry} placeholder="" />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Street 1</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Street 1</Label>
                       <Input placeholder="" value={shippingStreet1} onChange={(e) => setShippingStreet1(e.target.value)} disabled={copyBilling} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Street 2</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Street 2</Label>
                       <Input placeholder="" value={shippingStreet2} onChange={(e) => setShippingStreet2(e.target.value)} disabled={copyBilling} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">City</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">City</Label>
                       <LocationSelect options={pincodeResult?.cities || []} value={shippingCity} onChange={setShippingCity} placeholder="" />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">State</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">State</Label>
                       <LocationSelect options={pincodeResult?.states || []} value={shippingState} onChange={setShippingState} placeholder="" />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Pin Code</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Pin Code</Label>
                       <PincodeInput value={shippingPinCode} onChange={setShippingPinCode} onResult={setPincodeResult} />
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Phone</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Phone</Label>
                       <div className="grid grid-cols-3 gap-2">
                         <Input placeholder="" value={shippingPhoneCode} onChange={(e) => setShippingPhoneCode(e.target.value)} disabled={copyBilling} />
                         <Input placeholder="" className="col-span-2" value={shippingPhone} onChange={(e) => setShippingPhone(e.target.value)} disabled={copyBilling} />
                       </div>
-                    </Field>
-                    <Field>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Fax Number</Label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Fax Number</Label>
                       <Input placeholder="" value={shippingFax} onChange={(e) => setShippingFax(e.target.value)} disabled={copyBilling} />
-                    </Field>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-4">
                     You can customize how customer addresses are displayed in transaction PDFs. Navigate to:
                     Settings → Preferences → Customers → Address Format
                   </p>
-                </FieldSet>
+                </fieldset>
               </TabsContent>
 
               <TabsContent value="contact-persons" className="space-y-4 pt-4">
@@ -627,8 +604,8 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                         </Button>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <Field>
-                          <Label className="text-xs text-muted-foreground mb-1.5 block">Salutation</Label>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground">Salutation</Label>
                           <Select value={cp.salutation} onValueChange={(v) => updateContactPerson(cp.id, "salutation", v)}>
                             <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
                             <SelectContent>
@@ -637,27 +614,27 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                               ))}
                             </SelectContent>
                           </Select>
-                        </Field>
-                        <Field>
-                          <Label className="text-xs text-muted-foreground mb-1.5 block">First Name</Label>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground">First Name</Label>
                           <Input placeholder="" value={cp.firstName} onChange={(e) => updateContactPerson(cp.id, "firstName", e.target.value)} />
-                        </Field>
-                        <Field>
-                          <Label className="text-xs text-muted-foreground mb-1.5 block">Last Name</Label>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground">Last Name</Label>
                           <Input placeholder="" value={cp.lastName} onChange={(e) => updateContactPerson(cp.id, "lastName", e.target.value)} />
-                        </Field>
-                        <Field>
-                          <Label className="text-xs text-muted-foreground mb-1.5 block">Email Address</Label>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground">Email Address</Label>
                           <Input placeholder="" type="email" value={cp.email} onChange={(e) => updateContactPerson(cp.id, "email", e.target.value)} />
-                        </Field>
-                        <Field>
-                          <Label className="text-xs text-muted-foreground mb-1.5 block">Work Phone</Label>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground">Work Phone</Label>
                           <PhoneInput value={cp.workPhone} onChange={(value) => updateContactPerson(cp.id, "workPhone", value)} placeholder="" />
-                        </Field>
-                        <Field>
-                          <Label className="text-xs text-muted-foreground mb-1.5 block">Mobile</Label>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground">Mobile</Label>
                           <PhoneInput value={cp.mobile} onChange={(value) => updateContactPerson(cp.id, "mobile", value)} placeholder="" />
-                        </Field>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -697,15 +674,18 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
               </TabsContent>
 
               <TabsContent value="remarks" className="pt-4">
-                <Field>
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Remarks</Label>
-                  <textarea
-                    className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px]"
-                    placeholder=""
-                    value={remarks}
-                    onChange={(e) => setRemarks(e.target.value)}
-                  />
-                </Field>
+                <fieldset className="rounded-xl border p-4 space-y-4">
+                  <legend className="text-sm font-semibold px-2">Remarks</legend>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Remarks</Label>
+                    <textarea
+                      className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px]"
+                      placeholder=""
+                      value={remarks}
+                      onChange={(e) => setRemarks(e.target.value)}
+                    />
+                  </div>
+                </fieldset>
               </TabsContent>
             </Tabs>
           </div>

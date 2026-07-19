@@ -142,7 +142,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
             </div>
           )}
           {saveSuccess && (
-            <div className="flex items-center gap-2 rounded-md bg-red-500/10 px-3 py-2 text-xs text-red-400">
+            <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <CheckCircleIcon className="size-3.5 shrink-0" />
               {saveSuccess}
             </div>
@@ -365,11 +365,11 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                 <div className="space-y-6">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Company Name <span className="text-destructive">*</span></Label>
+                      <Label className="text-xs text-muted-foreground">Company Name <span className="text-destructive">*</span></Label>
                       <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="text-sm" placeholder="" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Business Type <span className="text-destructive">*</span></Label>
+                      <Label className="text-xs text-muted-foreground">Business Type <span className="text-destructive">*</span></Label>
                       <Select value={editBusinessType} onValueChange={setEditBusinessType}>
                         <SelectTrigger className="text-sm">
                           <SelectValue placeholder="" />
@@ -396,102 +396,106 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">GST Number</Label>
+                      <Label className="text-xs text-muted-foreground">GST Number</Label>
                       <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">PAN Number</Label>
+                      <Label className="text-xs text-muted-foreground">PAN Number</Label>
                       <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">CIN Number</Label>
+                      <Label className="text-xs text-muted-foreground">CIN Number</Label>
                       <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="" className="text-sm" />
                     </div>
                   </div>
 
-                  <Separator />
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Contact Information</p>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Company Email <span className="text-destructive">*</span></Label>
-                      <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
+                  <fieldset className="rounded-xl border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2">Contact Information</legend>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Company Email <span className="text-destructive">*</span></Label>
+                        <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Mobile Number <span className="text-destructive">*</span></Label>
+                        <PhoneInput value={editMobileNumber} onChange={setEditMobileNumber} placeholder="" className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Alternate Mobile Number</Label>
+                        <PhoneInput value={editAltMobile} onChange={setEditAltMobile} placeholder="" className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Website</Label>
+                        <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="" className="text-sm" />
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Mobile Number <span className="text-destructive">*</span></Label>
-                      <PhoneInput value={editMobileNumber} onChange={setEditMobileNumber} placeholder="" className="text-sm" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Alternate Mobile Number</Label>
-                      <PhoneInput value={editAltMobile} onChange={setEditAltMobile} placeholder="" className="text-sm" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Website</Label>
-                      <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="" className="text-sm" />
-                    </div>
-                  </div>
+                  </fieldset>
 
-                  <Separator />
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Address</p>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="sm:col-span-2 space-y-1.5">
-                      <Label className="text-xs font-medium">Address Line 1 <span className="text-destructive">*</span></Label>
-                      <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="" className="text-sm" />
+                  <fieldset className="rounded-xl border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2">Address</legend>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2 space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Address Line 1 <span className="text-destructive">*</span></Label>
+                        <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="" className="text-sm" />
+                      </div>
+                      <div className="sm:col-span-2 space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Address Line 2</Label>
+                        <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="" className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">City <span className="text-destructive">*</span></Label>
+                        <LocationSelect options={orgPincodeResult?.cities || []} value={editOrgCity} onChange={setEditOrgCity} placeholder="" className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">State <span className="text-destructive">*</span></Label>
+                        <LocationSelect options={orgPincodeResult?.states || []} value={editOrgState} onChange={setEditOrgState} placeholder="" className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Pincode <span className="text-destructive">*</span></Label>
+                        <PincodeInput value={editPincode} onChange={setEditPincode} onResult={setOrgPincodeResult} className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Country</Label>
+                        <LocationSelect options={orgPincodeResult?.countries || []} value={editOrgCountry} onChange={setEditOrgCountry} placeholder="" className="text-sm" />
+                      </div>
                     </div>
-                    <div className="sm:col-span-2 space-y-1.5">
-                      <Label className="text-xs font-medium">Address Line 2</Label>
-                      <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="" className="text-sm" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">City <span className="text-destructive">*</span></Label>
-                      <LocationSelect options={orgPincodeResult?.cities || []} value={editOrgCity} onChange={setEditOrgCity} placeholder="" className="text-sm" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">State <span className="text-destructive">*</span></Label>
-                      <LocationSelect options={orgPincodeResult?.states || []} value={editOrgState} onChange={setEditOrgState} placeholder="" className="text-sm" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Pincode <span className="text-destructive">*</span></Label>
-                      <PincodeInput value={editPincode} onChange={setEditPincode} onResult={setOrgPincodeResult} className="text-sm" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Country</Label>
-                      <LocationSelect options={orgPincodeResult?.countries || []} value={editOrgCountry} onChange={setEditOrgCountry} placeholder="" className="text-sm" />
-                    </div>
-                  </div>
+                  </fieldset>
 
-                  <Separator />
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Authorized Person</p>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Authorized Person Name <span className="text-destructive">*</span></Label>
-                      <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="" className="text-sm" />
+                  <fieldset className="rounded-xl border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2">Authorized Person</legend>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Authorized Person Name <span className="text-destructive">*</span></Label>
+                        <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="" className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Designation <span className="text-destructive">*</span></Label>
+                        <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="" className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Authorized Person Email <span className="text-destructive">*</span></Label>
+                        <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Authorized Person Mobile <span className="text-destructive">*</span></Label>
+                        <PhoneInput value={editAuthorizedMobile} onChange={setEditAuthorizedMobile} placeholder="" className="text-sm" />
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Designation <span className="text-destructive">*</span></Label>
-                      <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="" className="text-sm" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Authorized Person Email <span className="text-destructive">*</span></Label>
-                      <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Authorized Person Mobile <span className="text-destructive">*</span></Label>
-                      <PhoneInput value={editAuthorizedMobile} onChange={setEditAuthorizedMobile} placeholder="" className="text-sm" />
-                    </div>
-                  </div>
+                  </fieldset>
 
-                  <Separator />
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Additional Information</p>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Number of Employees</Label>
-                      <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="" className="text-sm" />
+                  <fieldset className="rounded-xl border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2">Additional Information</legend>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Number of Employees</Label>
+                        <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="" className="text-sm" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Company Description</Label>
-                    <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="min-h-[80px] text-sm" />
-                  </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Company Description</Label>
+                      <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                    </div>
+                  </fieldset>
                 </div>
               ) : (
                 <div className="space-y-5">

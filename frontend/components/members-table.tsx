@@ -123,35 +123,35 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
 
         <form action={formAction} className="space-y-5">
           {state?.error && (
-            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950 rounded-md px-3 py-2">
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">
               <AlertCircleIcon className="size-4 shrink-0" />
               {state.error}
             </div>
           )}
 
           {/* Personal info */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Personal</h3>
+          <fieldset className="rounded-xl border p-4 space-y-4">
+            <legend className="text-sm font-semibold px-2">Personal</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-name">Full Name</Label>
-                <Input id="edit-name" name="name" defaultValue={member.name} required />
+                <Label className="text-xs text-muted-foreground">Full Name</Label>
+                <Input name="name" defaultValue={member.name} required />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-email">Email</Label>
-                <Input id="edit-email" name="email" defaultValue={member.email} type="email" required />
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <Input name="email" defaultValue={member.email} type="email" required />
               </div>
             </div>
-          </div>
+          </fieldset>
 
           {/* Work info */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Work</h3>
+          <fieldset className="rounded-xl border p-4 space-y-4">
+            <legend className="text-sm font-semibold px-2">Work</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-role">Role</Label>
+                <Label className="text-xs text-muted-foreground">Role</Label>
                 <Select name="role" defaultValue={member.role}>
-                  <SelectTrigger id="edit-role">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -162,9 +162,9 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-status">Status</Label>
+                <Label className="text-xs text-muted-foreground">Status</Label>
                 <Select name="status" defaultValue={member.status}>
-                  <SelectTrigger id="edit-status">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -175,30 +175,30 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-department">Department</Label>
-                <Input id="edit-department" name="department" defaultValue={member.department || ""} placeholder="" />
+                <Label className="text-xs text-muted-foreground">Department</Label>
+                <Input name="department" defaultValue={member.department || ""} placeholder="" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-designation">Designation</Label>
-                <Input id="edit-designation" name="designation" defaultValue={member.designation || ""} placeholder="" />
+                <Label className="text-xs text-muted-foreground">Designation</Label>
+                <Input name="designation" defaultValue={member.designation || ""} placeholder="" />
               </div>
             </div>
-          </div>
+          </fieldset>
 
           {/* Contact info */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contact</h3>
+          <fieldset className="rounded-xl border p-4 space-y-4">
+            <legend className="text-sm font-semibold px-2">Contact</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-phone">Phone</Label>
-                <PhoneInput id="edit-phone" name="phone" value={member.phone || ""} placeholder="" />
+                <Label className="text-xs text-muted-foreground">Phone</Label>
+                <PhoneInput name="phone" value={member.phone || ""} placeholder="" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-location">Location</Label>
-                <Input id="edit-location" name="location" defaultValue={member.location || ""} placeholder="" />
+                <Label className="text-xs text-muted-foreground">Location</Label>
+                <Input name="location" defaultValue={member.location || ""} placeholder="" />
               </div>
             </div>
-          </div>
+          </fieldset>
 
           {/* Meta info (read-only) */}
           <div className="rounded-lg border bg-muted/20 px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">

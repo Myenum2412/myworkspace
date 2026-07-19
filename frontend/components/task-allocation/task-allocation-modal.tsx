@@ -79,7 +79,7 @@ const priorities = [
 function FormField({ label, required, className, children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
   return (
     <div className={`space-y-1 ${className || ""}`}>
-      <Label className="text-xs font-medium text-muted-foreground">
+      <Label className="text-xs text-muted-foreground">
         {label}
         {required && <span className="text-destructive">*</span>}
       </Label>
@@ -340,7 +340,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               placeholder=""
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-9 text-sm"
+              className="text-sm"
             />
           </FormField>
 
@@ -348,7 +348,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
           <div className="grid grid-cols-3 gap-3">
             <FormField label="Client">
               <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
-                <SelectTrigger className="h-9 text-sm">
+                <SelectTrigger className="text-sm">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -361,7 +361,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
             <FormField label="Project">
               <Select value={projectName} onValueChange={setProjectName}>
-                <SelectTrigger className="h-9 text-sm">
+                <SelectTrigger className="text-sm">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -452,7 +452,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
               <FormField label="Assign Team" required>
                 <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                  <SelectTrigger className="h-9 text-sm">
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Select a team" />
                   </SelectTrigger>
                   <SelectContent>
@@ -500,7 +500,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                     }
                   }}
                 >
-                  <SelectTrigger className="h-9 text-sm">
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder={selectedUsers.length > 0 ? `${selectedUsers.length} user(s) selected` : "Select users"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -612,7 +612,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
           {/* Attachments */}
           <div>
-            <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-1">
+            <Label className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
               <PaperclipIcon className="size-3" />
               Attachments
             </Label>

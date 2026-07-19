@@ -27,17 +27,13 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import FolderIcon from "@mui/icons-material/Folder";
 import {
   PlusIcon,
   AlertCircleIcon,
   UsersIcon,
   XIcon,
-  CalendarIcon,
-  FlagIcon,
   FileIcon,
   UploadIcon,
-  UserIcon,
 } from "lucide-react";
 import type { ProjectCreateFormProps, ProjectEditFormProps } from "./project-types";
 
@@ -106,17 +102,12 @@ export function ProjectCreateForm({
 
       <div className="px-4 sm:px-6 py-5 space-y-6">
 
-        {/* Basic Information */}
-        <div className="rounded-xl border bg-card p-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <UserIcon className="size-4 text-muted-foreground" />
-            Basic Information
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <fieldset className="rounded-xl border p-4 space-y-4">
+          <legend className="text-sm font-semibold px-2">Basic Information</legend>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="projectName" className="text-sm font-medium">Project Name <span className="text-destructive">*</span></Label>
+              <Label className="text-xs text-muted-foreground">Project Name <span className="text-destructive">*</span></Label>
               <Input
-                id="projectName"
                 placeholder=""
                 value={projectName}
                 onChange={(e) => onProjectNameChange(e.target.value)}
@@ -124,9 +115,9 @@ export function ProjectCreateForm({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="client" className="text-sm font-medium">Client <span className="text-destructive">*</span></Label>
+              <Label className="text-xs text-muted-foreground">Client <span className="text-destructive">*</span></Label>
               <Select value={selectedClient} onValueChange={onSelectedClientChange} disabled={submitting}>
-                <SelectTrigger id="client">
+                <SelectTrigger>
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -138,9 +129,8 @@ export function ProjectCreateForm({
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+            <Label className="text-xs text-muted-foreground">Description</Label>
             <Textarea
-              id="description"
               placeholder=""
               value={projectDescription}
               onChange={(e) => onProjectDescriptionChange(e.target.value)}
@@ -148,19 +138,14 @@ export function ProjectCreateForm({
               rows={2}
             />
           </div>
-        </div>
+        </fieldset>
 
-        {/* Timeline & Team */}
-        <div className="rounded-xl border bg-card p-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <CalendarIcon className="size-4 text-muted-foreground" />
-            Timeline & Team
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <fieldset className="rounded-xl border p-4 space-y-4">
+          <legend className="text-sm font-semibold px-2">Timeline & Team</legend>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="startDate" className="text-sm font-medium">Start Date</Label>
+              <Label className="text-xs text-muted-foreground">Start Date</Label>
               <Input
-                id="startDate"
                 type="date"
                 value={projectStartDate}
                 onChange={(e) => onProjectStartDateChange(e.target.value)}
@@ -168,9 +153,8 @@ export function ProjectCreateForm({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="deadline" className="text-sm font-medium">Deadline</Label>
+              <Label className="text-xs text-muted-foreground">Deadline</Label>
               <Input
-                id="deadline"
                 type="date"
                 value={projectDeadline}
                 onChange={(e) => onProjectDeadlineChange(e.target.value)}
@@ -179,7 +163,7 @@ export function ProjectCreateForm({
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-sm font-medium">Team Members</Label>
+            <Label className="text-xs text-muted-foreground">Team Members</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-start font-normal" disabled={submitting}>
@@ -241,17 +225,13 @@ export function ProjectCreateForm({
               </PopoverContent>
             </Popover>
           </div>
-        </div>
+        </fieldset>
 
-        {/* Classification */}
-        <div className="rounded-xl border bg-card p-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <FlagIcon className="size-4 text-muted-foreground" />
-            Classification
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <fieldset className="rounded-xl border p-4 space-y-4">
+          <legend className="text-sm font-semibold px-2">Classification</legend>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">Priority</Label>
+              <Label className="text-xs text-muted-foreground">Priority</Label>
               <Select value={projectPriority} onValueChange={onProjectPriorityChange} disabled={submitting}>
                 <SelectTrigger>
                   <SelectValue placeholder="" />
@@ -265,7 +245,7 @@ export function ProjectCreateForm({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">Category</Label>
+              <Label className="text-xs text-muted-foreground">Category</Label>
               <Select value={projectCategory} onValueChange={onProjectCategoryChange} disabled={submitting}>
                 <SelectTrigger>
                   <SelectValue placeholder="" />
@@ -281,17 +261,13 @@ export function ProjectCreateForm({
               </Select>
             </div>
           </div>
-        </div>
+        </fieldset>
 
-        {/* Budget & Planning */}
-        <div className="rounded-xl border bg-card p-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <FolderIcon className="size-4 text-muted-foreground" />
-            Budget & Planning
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <fieldset className="rounded-xl border p-4 space-y-4">
+          <legend className="text-sm font-semibold px-2">Budget & Planning</legend>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">Budget ($)</Label>
+              <Label className="text-xs text-muted-foreground">Budget ($)</Label>
               <Input
                 type="number"
                 min="0"
@@ -302,16 +278,12 @@ export function ProjectCreateForm({
               />
             </div>
           </div>
-        </div>
+        </fieldset>
 
-        {/* Branding */}
-        <div className="rounded-xl border bg-card p-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <div className="size-4 rounded-full border border-muted-foreground/30" style={{ backgroundColor: projectColor }} />
-            Branding
-          </div>
+        <fieldset className="rounded-xl border p-4 space-y-4">
+          <legend className="text-sm font-semibold px-2">Branding</legend>
           <div className="space-y-1.5">
-            <Label className="text-sm font-medium">Project Color</Label>
+            <Label className="text-xs text-muted-foreground">Project Color</Label>
             <div className="flex items-center gap-3 mt-1">
               <div className="flex gap-2 flex-wrap">
                 {colors.map((c) => (
@@ -336,16 +308,12 @@ export function ProjectCreateForm({
               />
             </div>
           </div>
-        </div>
+        </fieldset>
 
-        {/* Attachments */}
-        <div className="rounded-xl border bg-card p-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <FileIcon className="size-4 text-muted-foreground" />
-            Attachments
-          </div>
+        <fieldset className="rounded-xl border p-4 space-y-4">
+          <legend className="text-sm font-semibold px-2">Attachments</legend>
           <div className="space-y-1.5">
-            <Label className="text-sm font-medium">Project File</Label>
+            <Label className="text-xs text-muted-foreground">Project File</Label>
             <div
               onClick={() => fileInputRef.current?.click()}
               onDrop={(e) => {
@@ -397,7 +365,7 @@ export function ProjectCreateForm({
               disabled={submitting}
             />
           </div>
-        </div>
+        </fieldset>
 
       </div>
 
@@ -454,77 +422,83 @@ export function ProjectEditForm({
         </DialogHeader>
         <ScrollArea className="flex-1 px-6 py-3">
           <div className="space-y-4">
-            <div>
-              <Label className="text-sm">Project Name</Label>
-              <Input value={editName} onChange={(e) => onEditNameChange(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label className="text-sm">Client</Label>
-              <Input value={editClient} onChange={(e) => onEditClientChange(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label className="text-sm">Description</Label>
-              <textarea
-                value={editDescription}
-                onChange={(e) => onEditDescriptionChange(e.target.value)}
-                rows={2}
-                className="mt-1 flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
-              />
-            </div>
-            <div>
-              <Label className="text-sm">Deadline</Label>
-              <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="mt-1" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm">Access</Label>
-                <Select value={editAccess} onValueChange={(v) => onEditAccessChange(v as "Public" | "Private")}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Public">Public</SelectItem>
-                    <SelectItem value="Private">Private</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-sm">Status</Label>
-                <Select value={editStatus} onValueChange={(v) => onEditStatusChange(v as "Active" | "Inactive")}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm">Color</Label>
-              <div className="flex items-center gap-3 mt-1">
-                <div className="flex gap-2 flex-wrap">
-                  {colors.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => onEditColorChange(c)}
-                      className={`size-7 rounded-full ring-offset-2 ring-offset-background transition-all ${
-                        editColor === c ? "ring-2 ring-foreground scale-110" : ""
-                      }`}
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
+            <fieldset className="rounded-xl border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2">General</legend>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Project Name</Label>
+                  <Input value={editName} onChange={(e) => onEditNameChange(e.target.value)} />
                 </div>
-                <input
-                  type="color"
-                  value={editColor}
-                  onChange={(e) => onEditColorChange(e.target.value)}
-                  className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
-                />
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Client</Label>
+                  <Input value={editClient} onChange={(e) => onEditClientChange(e.target.value)} />
+                </div>
+                <div className="space-y-1.5 md:col-span-2">
+                  <Label className="text-xs text-muted-foreground">Description</Label>
+                  <textarea
+                    value={editDescription}
+                    onChange={(e) => onEditDescriptionChange(e.target.value)}
+                    rows={2}
+                    className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Deadline</Label>
+                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Access</Label>
+                  <Select value={editAccess} onValueChange={(v) => onEditAccessChange(v as "Public" | "Private")}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Public">Public</SelectItem>
+                      <SelectItem value="Private">Private</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <Select value={editStatus} onValueChange={(v) => onEditStatusChange(v as "Active" | "Inactive")}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
+            </fieldset>
+            <fieldset className="rounded-xl border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2">Branding</legend>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Color</Label>
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="flex gap-2 flex-wrap">
+                    {colors.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => onEditColorChange(c)}
+                        className={`size-7 rounded-full ring-offset-2 ring-offset-background transition-all ${
+                          editColor === c ? "ring-2 ring-foreground scale-110" : ""
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                  <input
+                    type="color"
+                    value={editColor}
+                    onChange={(e) => onEditColorChange(e.target.value)}
+                    className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
+                  />
+                </div>
+              </div>
+            </fieldset>
           </div>
         </ScrollArea>
         <DialogFooter className="px-6 pb-6 pt-2 shrink-0 flex flex-col sm:flex-row gap-2">

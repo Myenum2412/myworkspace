@@ -256,10 +256,10 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
               </div>
             </div>
 
-            <div className="space-y-2 px-2">
-              <Label className="text-sm font-medium">Reason for reactivation <span className="text-destructive">*</span></Label>
+            <div className="space-y-1.5 px-2">
+              <Label className="text-xs text-muted-foreground">Reason for reactivation <span className="text-destructive">*</span></Label>
               <Textarea
-                className="min-h-[120px] resize-none p-4"
+                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Enter the reason for reactivating this employee..."
                 value={reactivateReason}
                 onChange={(e) => setReactivateReason(e.target.value)}

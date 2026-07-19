@@ -29,7 +29,7 @@ export function NewNav() {
     <header className="fixed top-0 left-0 right-0 z-50 flex h-16 w-full items-center border-b border-border bg-background/80 backdrop-blur-md px-6 safe-paddings">
       <Link href="/" className="flex shrink-0 items-center gap-2.5">
         <div className="flex h-8 w-8 items-center justify-center rounded-none bg-brand-800">
-          <Image src="/logo.png" alt="Logo" width={24} height={24} className="h-6 w-6 object-contain" />
+          <Image src="/logo.jpeg" alt="Logo" width={24} height={24} className="h-6 w-6 object-contain" />
         </div>
         <span className="text-base font-bold tracking-tight text-brand-900">MyWorkSpace</span>
       </Link>
@@ -64,7 +64,7 @@ export function NewNav() {
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2.5">
                 <div className="flex h-7 w-7 items-center justify-center rounded-none bg-brand-800">
-                  <Image src="/logo.png" alt="Logo" width={20} height={20} className="h-5 w-5 object-contain" />
+                  <Image src="/logo.jpeg" alt="Logo" width={20} height={20} className="h-5 w-5 object-contain" />
                 </div>
                 MyWorkSpace
               </SheetTitle>

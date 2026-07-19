@@ -18,6 +18,7 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (status !== "authenticated" || prefetched.current) return;
+    if (!bootstrap?.orgId) return;
     prefetched.current = true;
 
     for (const { queryKey, url } of CRITICAL_QUERIES) {

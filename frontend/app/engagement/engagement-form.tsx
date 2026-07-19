@@ -77,58 +77,61 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-        <div className="space-y-1.5">
-          <Label htmlFor="date" className="text-sm font-medium">Date</Label>
-          <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-10" />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="customerName" className="text-sm font-medium">Customer Name *</Label>
-          <Input id="customerName" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Enter customer name" required className="h-10" />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="contact" className="text-sm font-medium">Contact</Label>
-          <Input id="contact" value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Phone or email" className="h-10" />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="source" className="text-sm font-medium">Source</Label>
-          <Select value={source} onValueChange={setSource}>
-            <SelectTrigger id="source" className="h-10">
-              <SelectValue placeholder="Select source" />
-            </SelectTrigger>
-            <SelectContent>
-              {SOURCES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="assignedTo" className="text-sm font-medium">Assigned To</Label>
-          <Select value={assignedTo} onValueChange={setAssignedTo}>
-            <SelectTrigger id="assignedTo" className="h-10">
-              <SelectValue placeholder="Select employee" />
-            </SelectTrigger>
-            <SelectContent>
-              {employees.map((emp) => (
-                <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="followUpDate" className="text-sm font-medium">Follow-up Date</Label>
-          <Input id="followUpDate" type="date" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} className="h-10" />
-        </div>
-      </div>
-
-      <div className="border-t pt-5">
-        <h4 className="text-sm font-semibold mb-4 text-muted-foreground">Status & Remarks</h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+      <fieldset className="rounded-xl border p-4 space-y-4">
+        <legend className="text-sm font-semibold px-2">Customer Details</legend>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+            <Label className="text-xs text-muted-foreground">Date</Label>
+            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Customer Name *</Label>
+            <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Enter customer name" required />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Contact</Label>
+            <Input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Phone or email" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Source</Label>
+            <Select value={source} onValueChange={setSource}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select source" />
+              </SelectTrigger>
+              <SelectContent>
+                {SOURCES.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Assigned To</Label>
+            <Select value={assignedTo} onValueChange={setAssignedTo}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select employee" />
+              </SelectTrigger>
+              <SelectContent>
+                {employees.map((emp) => (
+                  <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Follow-up Date</Label>
+            <Input type="date" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset className="rounded-xl border p-4 space-y-4">
+        <legend className="text-sm font-semibold px-2">Status & Remarks</legend>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Status</Label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger id="status" className="h-10">
+              <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
@@ -139,17 +142,16 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
             </Select>
           </div>
         </div>
-        <div className="mt-5 space-y-1.5">
-          <Label htmlFor="remarks" className="text-sm font-medium">Notes</Label>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Notes</Label>
           <textarea
-            id="remarks"
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
             placeholder="Any notes or remarks..."
-            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
+            className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
           />
         </div>
-      </div>
+      </fieldset>
 
       <div className="flex justify-end gap-3 pt-2 border-t">
         <Button type="button" variant="outline" onClick={onCancel} className="h-10 px-5">Cancel</Button>

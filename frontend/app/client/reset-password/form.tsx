@@ -90,7 +90,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
             </div>
           )}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="new-password">New password</Label>
+            <Label className="text-xs text-muted-foreground">New password</Label>
             <Input
               id="new-password"
               type="password"
@@ -99,11 +99,10 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
               placeholder=""
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-10"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="confirm-password">Confirm password</Label>
+            <Label className="text-xs text-muted-foreground">Confirm password</Label>
             <Input
               id="confirm-password"
               type="password"
@@ -111,7 +110,6 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
               placeholder=""
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              className="h-10"
             />
           </div>
           <Button type="submit" className="w-full font-semibold" disabled={loading}>

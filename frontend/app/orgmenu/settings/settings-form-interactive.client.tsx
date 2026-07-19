@@ -50,8 +50,8 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Timezone</Label>
               <Select name="timezone" defaultValue={initial.timezone}>
                 <SelectTrigger id="timezone">
                   <SelectValue placeholder="" />
@@ -70,8 +70,8 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="dateFormat">Date format</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Date format</Label>
               <Select name="dateFormat" defaultValue={initial.dateFormat}>
                 <SelectTrigger id="dateFormat">
                   <SelectValue placeholder="" />
@@ -93,8 +93,8 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="brandName">Organization display name</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Organization display name</Label>
               <Input
                 id="brandName"
                 name="brandName"

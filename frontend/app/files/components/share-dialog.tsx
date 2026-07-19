@@ -132,8 +132,8 @@ export function ShareDialog() {
               <Switch checked={allowDownload} onCheckedChange={setAllowDownload} />
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs">Password (optional)</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Password (optional)</Label>
               <Input
                 type="password"
                 placeholder="Leave empty for no password"
@@ -143,12 +143,12 @@ export function ShareDialog() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-xs">Expires at (optional)</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Expires at (optional)</Label>
                 <Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Max downloads (optional)</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Max downloads (optional)</Label>
                 <Input
                   type="number"
                   placeholder="Unlimited"
@@ -174,8 +174,8 @@ export function ShareDialog() {
           </TabsContent>
 
           <TabsContent value="internal" className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label className="text-xs">Share with (email or user ID)</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Share with (email or user ID)</Label>
               <div className="flex gap-2">
                 <Input
                   placeholder="user@example.com"

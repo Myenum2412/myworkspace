@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { NotificationBell } from "@/components/notification-bell";
 import { Badge } from "@/components/ui/badge";
 import {
   Popover,
@@ -20,7 +21,6 @@ import {
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import { CalendarIcon, Search } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { NotificationBell } from "@/components/notification-bell";
 import { usePathname } from "next/navigation";
 import { useUserStatus } from "@/hooks/use-user-status";
 import { SessionTracker } from "@/components/session-tracker";
@@ -131,6 +131,7 @@ export function Header({ context }: { context?: AppContextType }) {
             )}
           </BreadcrumbList>
         </Breadcrumb>
+        <NotificationBell />
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2 md:gap-4 text-sm pr-1 sm:pr-2 shrink-0">
@@ -163,8 +164,6 @@ export function Header({ context }: { context?: AppContextType }) {
         </div>
 
         <Separator orientation="vertical" className="hidden lg:block h-6" />
-
-        <NotificationBell />
 
         <SessionTracker />
 

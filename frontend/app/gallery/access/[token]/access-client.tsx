@@ -200,7 +200,7 @@ export function GalleryAccessClient({
           {step === "form" && (
             <form onSubmit={handleFormSubmit} className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="fullName">Full Name *</Label>
+                <Label className="text-xs text-muted-foreground">Full Name *</Label>
                 <Input
                   id="fullName"
                   placeholder=""
@@ -211,7 +211,7 @@ export function GalleryAccessClient({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="email">Email Address *</Label>
+                <Label className="text-xs text-muted-foreground">Email Address *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -223,7 +223,7 @@ export function GalleryAccessClient({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="phone">Phone Number *</Label>
+                <Label className="text-xs text-muted-foreground">Phone Number *</Label>
                 <PhoneInput
                   id="phone"
                   placeholder=""

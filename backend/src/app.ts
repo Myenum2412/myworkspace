@@ -52,6 +52,7 @@ import consentRoutes from "./routes/consent.js";
 import analyticsRoutes from "./routes/analytics.js";
 import adminConsentRoutes from "./routes/admin-consent.js";
 import bootstrapRoutes from "./routes/bootstrap.js";
+import contractorsRoutes from "./routes/contractors.js";
 
 const app = express();
 
@@ -304,6 +305,7 @@ app.use("/api/consent", consentRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", adminConsentRoutes);
 app.use("/api/bootstrap", bootstrapRoutes);
+app.use("/api/contractors", contractorsRoutes);
 
 // ── 404 catch-all ──
 app.use((req, res) => {

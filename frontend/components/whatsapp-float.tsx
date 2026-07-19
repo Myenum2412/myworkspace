@@ -109,7 +109,7 @@ export function WhatsAppFloat() {
       case "qr":
         return <Loader2 className="size-5 animate-spin text-amber-500" />;
       case "error":
-        return <XCircleIcon className="size-5 text-red-500" />;
+        return <XCircleIcon className="size-5 text-destructive" />;
       default:
         return <SmartphoneIcon className="size-5 text-muted-foreground" />;
     }
@@ -215,8 +215,8 @@ export function WhatsAppFloat() {
             {/* Error state */}
             {clientState.status === "error" && (
               <div className="flex flex-col items-center gap-4 py-4">
-                <XCircleIcon className="size-16 text-red-500" />
-                <p className="text-sm text-red-500 text-center max-w-xs">
+                <XCircleIcon className="size-16 text-destructive" />
+                <p className="text-sm text-destructive text-center max-w-xs">
                   {clientState.error || "Failed to connect."}
                 </p>
                 <Button size="sm" onClick={handleStart}>Retry</Button>

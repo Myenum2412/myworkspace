@@ -103,8 +103,8 @@ export default function LoginInteractive() {
                   {error}
                 </div>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -114,8 +114,8 @@ export default function LoginInteractive() {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"

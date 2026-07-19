@@ -59,7 +59,7 @@ export function CreateFolderDialog() {
         </DialogHeader>
         <div className="space-y-3 py-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">Folder Name</Label>
+            <Label className="text-xs text-muted-foreground">Folder Name</Label>
             <Input
               placeholder="e.g., Documents, Reports, Projects"
               value={name}
@@ -69,7 +69,7 @@ export function CreateFolderDialog() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Description (optional)</Label>
+            <Label className="text-xs text-muted-foreground">Description (optional)</Label>
             <Input
               placeholder="Brief description of this folder"
               value={description}
@@ -119,7 +119,7 @@ export function RenameDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="py-2">
-          <Label className="text-xs">New Name</Label>
+          <Label className="text-xs text-muted-foreground">New Name</Label>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}

@@ -173,7 +173,7 @@ export function StaffStatusForm({
           value={statusNote}
           onChange={(e) => setStatusNote(e.target.value)}
           placeholder=""
-          className="min-h-[60px] resize-none text-sm"
+          className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           maxLength={200}
         />
       </div>

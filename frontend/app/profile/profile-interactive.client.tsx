@@ -29,7 +29,6 @@ import {
   ShieldIcon,
   Building2Icon,
   GlobeIcon,
-  CircleIcon,
   CameraIcon,
   XIcon,
   Loader2Icon,
@@ -37,7 +36,6 @@ import {
   PencilIcon,
   CheckIcon,
   PhoneIcon,
-  AlertCircleIcon,
   CheckCircleIcon,
   HardDrive as HardDriveIcon,
   MapPinIcon,
@@ -454,15 +452,15 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
               {editing ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Legal Company Name <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Legal Company Name <span className="text-destructive">*</span></Label>
                     <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="text-sm" placeholder="" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Trade Name / Brand Name</Label>
+                    <Label className="text-xs text-muted-foreground">Trade Name / Brand Name</Label>
                     <Input value={editTradeName} onChange={(e) => setEditTradeName(e.target.value)} className="text-sm" placeholder="" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Business Type <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Business Type <span className="text-destructive">*</span></Label>
                     <Select value={editBusinessType} onValueChange={setEditBusinessType}>
                       <SelectTrigger className="text-sm">
                         <SelectValue placeholder="" />
@@ -496,15 +494,15 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     />
                   </div>
                   <div className="sm:col-span-2 space-y-1.5">
-                    <Label className="text-xs font-medium">Company Description</Label>
-                    <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="min-h-[80px] text-sm" />
+                    <Label className="text-xs text-muted-foreground">Company Description</Label>
+                    <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Year Established</Label>
+                    <Label className="text-xs text-muted-foreground">Year Established</Label>
                     <Input value={editYearEstablished} onChange={(e) => setEditYearEstablished(e.target.value)} placeholder="e.g. 2020" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Company Size</Label>
+                    <Label className="text-xs text-muted-foreground">Company Size</Label>
                     <Select value={editCompanySize} onValueChange={setEditCompanySize}>
                       <SelectTrigger className="text-sm">
                         <SelectValue placeholder="Select size" />
@@ -520,11 +518,11 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Number of Employees</Label>
+                    <Label className="text-xs text-muted-foreground">Number of Employees</Label>
                     <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Website</Label>
+                    <Label className="text-xs text-muted-foreground">Website</Label>
                     <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="https://" className="text-sm" />
                   </div>
                 </div>
@@ -585,27 +583,27 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
               {editing ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Country <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Country <span className="text-destructive">*</span></Label>
                     <LocationSelect options={orgPincodeResult?.countries || []} value={editOrgCountry} onChange={setEditOrgCountry} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Business Registration Number <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Business Registration Number <span className="text-destructive">*</span></Label>
                     <Input value={editRegistrationNumber} onChange={(e) => setEditRegistrationNumber(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Registration Authority</Label>
+                    <Label className="text-xs text-muted-foreground">Registration Authority</Label>
                     <Input value={editRegistrationAuthority} onChange={(e) => setEditRegistrationAuthority(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Tax Identification Number (Optional)</Label>
+                    <Label className="text-xs text-muted-foreground">Tax Identification Number (Optional)</Label>
                     <Input value={editTaxId} onChange={(e) => setEditTaxId(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Registration Date</Label>
+                    <Label className="text-xs text-muted-foreground">Registration Date</Label>
                     <Input value={editRegistrationDate} onChange={(e) => setEditRegistrationDate(e.target.value)} type="date" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Business Status</Label>
+                    <Label className="text-xs text-muted-foreground">Business Status</Label>
                     <Select value={editBusinessStatus} onValueChange={setEditBusinessStatus}>
                       <SelectTrigger className="text-sm">
                         <SelectValue placeholder="" />
@@ -619,15 +617,15 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">GST Number</Label>
+                    <Label className="text-xs text-muted-foreground">GST Number</Label>
                     <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">PAN Number</Label>
+                    <Label className="text-xs text-muted-foreground">PAN Number</Label>
                     <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">CIN Number</Label>
+                    <Label className="text-xs text-muted-foreground">CIN Number</Label>
                     <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                 </div>
@@ -678,23 +676,23 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
               {editing ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Official Email <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Official Email <span className="text-destructive">*</span></Label>
                     <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Phone Number <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Phone Number <span className="text-destructive">*</span></Label>
                     <PhoneInput value={editMobileNumber} onChange={setEditMobileNumber} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Alternate Phone</Label>
+                    <Label className="text-xs text-muted-foreground">Alternate Phone</Label>
                     <PhoneInput value={editAltMobile} onChange={setEditAltMobile} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Support Email</Label>
+                    <Label className="text-xs text-muted-foreground">Support Email</Label>
                     <Input value={editSupportEmail} onChange={(e) => setEditSupportEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Support Phone</Label>
+                    <Label className="text-xs text-muted-foreground">Support Phone</Label>
                     <PhoneInput value={editSupportPhone} onChange={setEditSupportPhone} placeholder="" className="text-sm" />
                   </div>
                 </div>
@@ -737,27 +735,27 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
               {editing ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="sm:col-span-2 space-y-1.5">
-                    <Label className="text-xs font-medium">Registered Address Line 1 <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Registered Address Line 1 <span className="text-destructive">*</span></Label>
                     <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="sm:col-span-2 space-y-1.5">
-                    <Label className="text-xs font-medium">Address Line 2</Label>
+                    <Label className="text-xs text-muted-foreground">Address Line 2</Label>
                     <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">City <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">City <span className="text-destructive">*</span></Label>
                     <LocationSelect options={orgPincodeResult?.cities || []} value={editOrgCity} onChange={setEditOrgCity} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">State / Province / Region <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">State / Province / Region <span className="text-destructive">*</span></Label>
                     <LocationSelect options={orgPincodeResult?.states || []} value={editOrgState} onChange={setEditOrgState} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Postal / ZIP Code <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Postal / ZIP Code <span className="text-destructive">*</span></Label>
                     <PincodeInput value={editPincode} onChange={setEditPincode} onResult={setOrgPincodeResult} className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Country <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Country <span className="text-destructive">*</span></Label>
                     <LocationSelect options={orgPincodeResult?.countries || []} value={editOrgCountry} onChange={setEditOrgCountry} placeholder="" className="text-sm" />
                   </div>
                 </div>
@@ -786,19 +784,19 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
               {editing ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Full Name <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Full Name <span className="text-destructive">*</span></Label>
                     <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Designation <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Designation <span className="text-destructive">*</span></Label>
                     <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Email <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Email <span className="text-destructive">*</span></Label>
                     <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Phone Number <span className="text-destructive">*</span></Label>
+                    <Label className="text-xs text-muted-foreground">Phone Number <span className="text-destructive">*</span></Label>
                     <PhoneInput value={editAuthorizedMobile} onChange={setEditAuthorizedMobile} placeholder="" className="text-sm" />
                   </div>
                 </div>
@@ -837,23 +835,23 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
               {editing ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Primary Business Activity</Label>
+                    <Label className="text-xs text-muted-foreground">Primary Business Activity</Label>
                     <Input value={editPrimaryActivity} onChange={(e) => setEditPrimaryActivity(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Secondary Business Activity</Label>
+                    <Label className="text-xs text-muted-foreground">Secondary Business Activity</Label>
                     <Input value={editSecondaryActivity} onChange={(e) => setEditSecondaryActivity(e.target.value)} placeholder="" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Operating Countries</Label>
+                    <Label className="text-xs text-muted-foreground">Operating Countries</Label>
                     <Input value={editOperatingCountries} onChange={(e) => setEditOperatingCountries(e.target.value)} placeholder="e.g. India, USA, UK" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Time Zone</Label>
+                    <Label className="text-xs text-muted-foreground">Time Zone</Label>
                     <Input value={editTimeZone} onChange={(e) => setEditTimeZone(e.target.value)} placeholder="e.g. UTC+5:30" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Preferred Currency</Label>
+                    <Label className="text-xs text-muted-foreground">Preferred Currency</Label>
                     <Select value={editCurrency} onValueChange={setEditCurrency}>
                       <SelectTrigger className="text-sm">
                         <SelectValue placeholder="Select currency" />
@@ -912,27 +910,27 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
               {editing ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Website</Label>
+                    <Label className="text-xs text-muted-foreground">Website</Label>
                     <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="https://" className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">LinkedIn</Label>
+                    <Label className="text-xs text-muted-foreground">LinkedIn</Label>
                     <Input value={editLinkedin} onChange={(e) => setEditLinkedin(e.target.value)} placeholder="https://linkedin.com/company/..." className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Facebook</Label>
+                    <Label className="text-xs text-muted-foreground">Facebook</Label>
                     <Input value={editFacebook} onChange={(e) => setEditFacebook(e.target.value)} placeholder="https://facebook.com/..." className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Instagram</Label>
+                    <Label className="text-xs text-muted-foreground">Instagram</Label>
                     <Input value={editInstagram} onChange={(e) => setEditInstagram(e.target.value)} placeholder="https://instagram.com/..." className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">X (Twitter)</Label>
+                    <Label className="text-xs text-muted-foreground">X (Twitter)</Label>
                     <Input value={editTwitterHandle} onChange={(e) => setEditTwitterHandle(e.target.value)} placeholder="https://x.com/..." className="text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">YouTube</Label>
+                    <Label className="text-xs text-muted-foreground">YouTube</Label>
                     <Input value={editYoutube} onChange={(e) => setEditYoutube(e.target.value)} placeholder="https://youtube.com/..." className="text-sm" />
                   </div>
                 </div>

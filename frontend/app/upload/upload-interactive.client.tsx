@@ -161,7 +161,7 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
 
               {/* Project selector */}
               <div className="space-y-1.5">
-                <Label htmlFor="project" className="text-sm flex items-center gap-1.5">
+                <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <FolderIcon className="size-3.5" />
                   Associate with Project
                 </Label>

@@ -94,38 +94,36 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Patient Information</h3>
+      <fieldset className="rounded-xl border p-4 space-y-4">
+        <legend className="text-sm font-semibold px-2">Patient Information</legend>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="patientName">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">
               Full Name <span className="text-destructive">*</span>
             </Label>
             <Input
-              id="patientName"
               value={patientName}
               onChange={(e) => setPatientName(e.target.value)}
-              className={errors.patientName ? "border-red-500" : ""}
+              className={errors.patientName ? "border-destructive" : ""}
               placeholder=""
             />
-            {errors.patientName && <p className="text-xs text-red-500">{errors.patientName}</p>}
+            {errors.patientName && <p className="text-xs text-destructive">{errors.patientName}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="mobileNumber">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">
               Mobile Number <span className="text-destructive">*</span>
             </Label>
             <PhoneInput
               value={mobileNumber}
               onChange={setMobileNumber}
-              className={errors.mobileNumber ? "border-red-500" : ""}
+              className={errors.mobileNumber ? "border-destructive" : ""}
               placeholder=""
             />
-            {errors.mobileNumber && <p className="text-xs text-red-500">{errors.mobileNumber}</p>}
+            {errors.mobileNumber && <p className="text-xs text-destructive">{errors.mobileNumber}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Email</Label>
             <Input
-              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -133,17 +131,17 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
             />
           </div>
         </div>
-      </div>
+      </fieldset>
 
-      <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Appointment Information</h3>
+      <fieldset className="rounded-xl border p-4 space-y-4">
+        <legend className="text-sm font-semibold px-2">Appointment Information</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="doctorId">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">
               Select Doctor <span className="text-destructive">*</span>
             </Label>
             <Select value={doctorId} onValueChange={setDoctorId}>
-              <SelectTrigger className={errors.doctorId ? "border-red-500" : ""}>
+              <SelectTrigger className={errors.doctorId ? "border-destructive" : ""}>
                 <SelectValue placeholder="" />
               </SelectTrigger>
               <SelectContent>
@@ -154,28 +152,27 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
                 ))}
               </SelectContent>
             </Select>
-            {errors.doctorId && <p className="text-xs text-red-500">{errors.doctorId}</p>}
+            {errors.doctorId && <p className="text-xs text-destructive">{errors.doctorId}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="appointmentDate">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">
               Appointment Date <span className="text-destructive">*</span>
             </Label>
             <Input
-              id="appointmentDate"
               type="date"
               value={appointmentDate}
               onChange={(e) => setAppointmentDate(e.target.value)}
               min={getTodayString()}
-              className={errors.appointmentDate ? "border-red-500" : ""}
+              className={errors.appointmentDate ? "border-destructive" : ""}
             />
-            {errors.appointmentDate && <p className="text-xs text-red-500">{errors.appointmentDate}</p>}
+            {errors.appointmentDate && <p className="text-xs text-destructive">{errors.appointmentDate}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="preferredTime">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">
               Preferred Time <span className="text-destructive">*</span>
             </Label>
             <Select value={preferredTime} onValueChange={setPreferredTime}>
-              <SelectTrigger className={errors.preferredTime ? "border-red-500" : ""}>
+              <SelectTrigger className={errors.preferredTime ? "border-destructive" : ""}>
                 <SelectValue placeholder="" />
               </SelectTrigger>
               <SelectContent>
@@ -184,26 +181,24 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
                 ))}
               </SelectContent>
             </Select>
-            {errors.preferredTime && <p className="text-xs text-red-500">{errors.preferredTime}</p>}
+            {errors.preferredTime && <p className="text-xs text-destructive">{errors.preferredTime}</p>}
           </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="reasonForVisit">
+          <div className="space-y-1.5 md:col-span-2">
+            <Label className="text-xs text-muted-foreground">
               Reason for Visit <span className="text-destructive">*</span>
             </Label>
             <Textarea
-              id="reasonForVisit"
               value={reasonForVisit}
               onChange={(e) => setReasonForVisit(e.target.value)}
-              className={errors.reasonForVisit ? "border-red-500" : ""}
+              className={errors.reasonForVisit ? "border-destructive" : ""}
               placeholder=""
               rows={3}
             />
-            {errors.reasonForVisit && <p className="text-xs text-red-500">{errors.reasonForVisit}</p>}
+            {errors.reasonForVisit && <p className="text-xs text-destructive">{errors.reasonForVisit}</p>}
           </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
+          <div className="space-y-1.5 md:col-span-2">
+            <Label className="text-xs text-muted-foreground">Notes (Optional)</Label>
             <Textarea
-              id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder=""
@@ -211,7 +206,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
             />
           </div>
         </div>
-      </div>
+      </fieldset>
 
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" disabled={submitting}>
