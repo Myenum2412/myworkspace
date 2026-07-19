@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { useFileData } from "@/hooks/file-system/use-file-data";
 import { useKeyboardShortcuts } from "@/hooks/file-system/use-keyboard";
@@ -31,7 +31,7 @@ interface FileManagerClientProps {
   userRole: string;
 }
 
-export function FileManagerClient({ orgId, userId, userRole }: FileManagerClientProps) {
+export const FileManagerClient = React.memo(function FileManagerClient({ orgId, userId, userRole }: FileManagerClientProps) {
   const currentNav = useFileSystemStore((s) => s.currentNav);
   const viewMode = useFileSystemStore((s) => s.viewMode);
   const previewFile = useFileSystemStore((s) => s.previewFile);
@@ -126,4 +126,4 @@ export function FileManagerClient({ orgId, userId, userRole }: FileManagerClient
       )}
     </div>
   );
-}
+});

@@ -1,13 +1,16 @@
 import path from "path";
 import fs from "fs/promises";
+import { existsSync, readdirSync, unlinkSync } from "fs";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { FileMetadata } from "../lib/db/models/FileMetadata.js";
+import { UploadSession } from "../lib/db/models/UploadSession.js";
 import { logger } from "../lib/logger/index.js";
 import { metricsRegistry } from "../lib/monitoring/index.js";
 
 const THUMB_DIR = path.resolve(process.cwd(), "data", "thumbnails");
 const PREVIEW_DIR = path.resolve(process.cwd(), "data", "previews");
 const CONVERSION_DIR = path.resolve(process.cwd(), "data", "conversions");
+const TMP_DIR = path.resolve(process.cwd(), "data", "tmp-uploads");
 
 export interface CleanupResult {
   orphanedThumbnails: number;
@@ -113,18 +116,57 @@ export async function runFullCleanup(): Promise<CleanupResult> {
   const startTime = Date.now();
   logger.info("Starting full cleanup cycle");
 
-  const [orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches] = await Promise.all([
+  const [orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, staleTempUploads, staleSessions] = await Promise.all([
     cleanupOrphanedThumbnails(),
     cleanupOrphanedPreviews(),
     cleanupTempConversions(),
     cleanupStaleMetadata(),
     cleanupExpiredCache(),
+    cleanupStaleTempUploads(),
+    cleanupStaleUploadSessions(),
   ]);
+
+export async function cleanupStaleTempUploads(): Promise<number> {
+  let removed = 0;
+  try {
+    const entries = await fs.readdir(TMP_DIR, { withFileTypes: true });
+    const now = Date.now();
+    for (const entry of entries) {
+      if (entry.isFile()) {
+        const fullPath = path.join(TMP_DIR, entry.name);
+        try {
+          const stat = await fs.stat(fullPath);
+          if (now - stat.mtimeMs > 3600000) {
+            await fs.unlink(fullPath);
+            removed++;
+          }
+        } catch { /* skip */ }
+      }
+    }
+  } catch { /* dir may not exist */ }
+  if (removed > 0) {
+    logger.info({ removed }, "Cleaned stale temp uploads");
+    metricsRegistry.incrementCounter("cleanup_files_removed", { type: "temp_upload" }, removed);
+  }
+  return removed;
+}
+
+export async function cleanupStaleUploadSessions(): Promise<number> {
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const result = await UploadSession.deleteMany({
+    status: { $in: ["pending", "uploading"] },
+    createdAt: { $lt: cutoff },
+  }).lean();
+  if (result.deletedCount > 0) {
+    logger.info({ removed: result.deletedCount }, "Cleaned stale upload sessions");
+  }
+  return result.deletedCount || 0;
+}
 
   const duration = Date.now() - startTime;
   logger.info({ orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, durationMs: duration }, "Cleanup cycle complete");
 
   metricsRegistry.observeHistogram("cleanup_duration_ms", {}, duration);
 
-  return { orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches };
+  return { orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, staleTempUploads, staleSessions };
 }

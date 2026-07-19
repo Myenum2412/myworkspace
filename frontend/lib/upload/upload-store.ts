@@ -3,12 +3,12 @@ import type { UploadFile, UploadStats, UploadOptions, SocketUploadEvent, Network
 import { networkDetector } from "./network-detector";
 
 interface UploadState {
-  uploads: Map<string, UploadFile>;
+  uploads: Record<string, UploadFile>;
   activeUploads: string[];
   completedUploads: string[];
   failedUploads: string[];
   stats: UploadStats;
-  folderStructure: Map<string, { name: string; files: string[] }>;
+  folderStructure: Record<string, { name: string; files: string[] }>;
   networkQuality: NetworkQuality;
   isOnline: boolean;
 
@@ -27,8 +27,38 @@ interface UploadState {
   recalculateStats: () => void;
 }
 
+function recalc(uploads: Record<string, UploadFile>, activeUploads: string[]): UploadStats {
+  let totalBytes = 0;
+  let uploadedBytes = 0;
+  let speedSum = 0;
+  let speedCount = 0;
+  let completed = 0;
+  let failed = 0;
+
+  for (const file of Object.values(uploads)) {
+    totalBytes += file.size;
+    uploadedBytes += Math.round((file.size * file.progress) / 100);
+    if (file.status === "completed") completed++;
+    if (file.status === "failed") failed++;
+    if (file.speed > 0) {
+      speedSum += file.speed;
+      speedCount++;
+    }
+  }
+
+  return {
+    totalUploads: Object.keys(uploads).length,
+    activeUploads: activeUploads.length,
+    completedUploads: completed,
+    failedUploads: failed,
+    totalBytes,
+    uploadedBytes,
+    averageSpeed: speedCount > 0 ? speedSum / speedCount : 0,
+  };
+}
+
 export const useUploadStore = create<UploadState>((set, get) => ({
-  uploads: new Map(),
+  uploads: {},
   activeUploads: [],
   completedUploads: [],
   failedUploads: [],
@@ -41,28 +71,28 @@ export const useUploadStore = create<UploadState>((set, get) => ({
     uploadedBytes: 0,
     averageSpeed: 0,
   },
-  folderStructure: new Map(),
+  folderStructure: {},
   networkQuality: "unknown",
   isOnline: typeof navigator === "undefined" ? true : navigator.onLine !== false,
 
   addUpload: (file) => {
     set((state) => {
-      const newUploads = new Map(state.uploads);
-      newUploads.set(file.id, file);
       const newActive = [...state.activeUploads, file.id];
-      const newStats = calculateStats(newUploads, newActive);
-      return { uploads: newUploads, activeUploads: newActive, stats: newStats };
+      return {
+        uploads: { ...state.uploads, [file.id]: file },
+        activeUploads: newActive,
+        stats: recalc({ ...state.uploads, [file.id]: file }, newActive),
+      };
     });
   },
 
   updateUpload: (id, update) => {
     set((state) => {
-      const newUploads = new Map(state.uploads);
-      const existing = newUploads.get(id);
+      const existing = state.uploads[id];
       if (!existing) return state;
 
-      const updated = { ...existing, ...update };
-      newUploads.set(id, updated);
+      const updated = { ...existing, ...update } as UploadFile;
+      const newUploads = { ...state.uploads, [id]: updated };
 
       let newActive = state.activeUploads;
       let newCompleted = state.completedUploads;
@@ -78,26 +108,24 @@ export const useUploadStore = create<UploadState>((set, get) => ({
       }
       if (update.status === "cancelled") {
         newActive = state.activeUploads.filter((a) => a !== id);
-        newUploads.delete(id);
+        delete newUploads[id];
       }
 
-      const newStats = calculateStats(newUploads, newActive);
       return {
         uploads: newUploads,
         activeUploads: newActive,
         completedUploads: newCompleted,
         failedUploads: newFailed,
-        stats: newStats,
+        stats: recalc(newUploads, newActive),
       };
     });
   },
 
   removeUpload: (id) => {
     set((state) => {
-      const newUploads = new Map(state.uploads);
-      newUploads.delete(id);
+      const { [id]: removed, ...rest } = state.uploads;
       return {
-        uploads: newUploads,
+        uploads: rest,
         activeUploads: state.activeUploads.filter((a) => a !== id),
         completedUploads: state.completedUploads.filter((c) => c !== id),
         failedUploads: state.failedUploads.filter((f) => f !== id),
@@ -107,25 +135,25 @@ export const useUploadStore = create<UploadState>((set, get) => ({
 
   clearCompleted: () => {
     set((state) => {
-      const newUploads = new Map(state.uploads);
-      for (const id of state.completedUploads) {
-        newUploads.delete(id);
+      const rest: Record<string, UploadFile> = {};
+      for (const [key, val] of Object.entries(state.uploads)) {
+        if (!state.completedUploads.includes(key)) {
+          rest[key] = val;
+        }
       }
       return {
-        uploads: newUploads,
+        uploads: rest,
         completedUploads: [],
-        stats: calculateStats(newUploads, state.activeUploads),
+        stats: recalc(rest, state.activeUploads),
       };
     });
   },
 
   retryUpload: (id) => {
     const state = get();
-    const file = state.uploads.get(id);
+    const file = state.uploads[id];
     if (!file) return;
-
-    const updated: UploadFile = { ...file, status: "pending", progress: 0, error: undefined, retryCount: 0 };
-    state.updateUpload(id, updated);
+    state.updateUpload(id, { status: "pending", progress: 0, error: undefined, retryCount: 0 });
   },
 
   retryAllFailed: () => {
@@ -144,7 +172,7 @@ export const useUploadStore = create<UploadState>((set, get) => ({
       case "upload:started":
         break;
       case "upload:pending_approval": {
-        for (const [id, file] of state.uploads) {
+        for (const [id, file] of Object.entries(state.uploads)) {
           if (file.tusId === data.tusId || file.name === data.fileName) {
             state.updateUpload(id, { status: "pending_approval", progress: 100, tusId: data.tusId });
             break;
@@ -153,7 +181,7 @@ export const useUploadStore = create<UploadState>((set, get) => ({
         break;
       }
       case "upload:approved": {
-        for (const [id, file] of state.uploads) {
+        for (const [id, file] of Object.entries(state.uploads)) {
           if (file.tusId === data.tusId || file.name === data.fileName || id === data.uploadId) {
             state.updateUpload(id, { status: "completed", progress: 100, fileId: data.fileId });
             break;
@@ -162,7 +190,7 @@ export const useUploadStore = create<UploadState>((set, get) => ({
         break;
       }
       case "upload:rejected": {
-        for (const [id, file] of state.uploads) {
+        for (const [id, file] of Object.entries(state.uploads)) {
           if (file.tusId === data.tusId || file.name === data.fileName || id === data.uploadId) {
             state.updateUpload(id, { status: "failed", error: data.reason || "Upload rejected by approver" });
             break;
@@ -172,7 +200,7 @@ export const useUploadStore = create<UploadState>((set, get) => ({
       }
       case "upload:completed": {
         if (data.fileId) {
-          for (const [id, file] of state.uploads) {
+          for (const [id, file] of Object.entries(state.uploads)) {
             if (file.tusId === data.tusId || file.name === data.fileName) {
               state.updateUpload(id, { status: "completed", progress: 100, fileId: data.fileId });
               break;
@@ -183,7 +211,7 @@ export const useUploadStore = create<UploadState>((set, get) => ({
       }
       case "upload:failed": {
         if (data.tusId) {
-          for (const [id, file] of state.uploads) {
+          for (const [id, file] of Object.entries(state.uploads)) {
             if (file.tusId === data.tusId) {
               state.updateUpload(id, {
                 status: "failed",
@@ -200,41 +228,6 @@ export const useUploadStore = create<UploadState>((set, get) => ({
 
   recalculateStats: () => {
     const state = get();
-    const newStats = calculateStats(state.uploads, state.activeUploads);
-    set({ stats: newStats });
+    set({ stats: recalc(state.uploads, state.activeUploads) });
   },
 }));
-
-function calculateStats(
-  uploads: Map<string, UploadFile>,
-  activeUploads: string[],
-): UploadStats {
-  let totalBytes = 0;
-  let uploadedBytes = 0;
-  let speedSum = 0;
-  let speedCount = 0;
-  let completed = 0;
-  let failed = 0;
-  let active = activeUploads.length;
-
-  for (const [, file] of uploads) {
-    totalBytes += file.size;
-    uploadedBytes += Math.round((file.size * file.progress) / 100);
-    if (file.status === "completed") completed++;
-    if (file.status === "failed") failed++;
-    if (file.speed > 0) {
-      speedSum += file.speed;
-      speedCount++;
-    }
-  }
-
-  return {
-    totalUploads: uploads.size,
-    activeUploads: active,
-    completedUploads: completed,
-    failedUploads: failed,
-    totalBytes,
-    uploadedBytes,
-    averageSpeed: speedCount > 0 ? speedSum / speedCount : 0,
-  };
-}

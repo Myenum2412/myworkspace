@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { cn } from "@/lib/utils";
@@ -72,7 +72,7 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function UploadZone() {
+export const UploadZone = React.memo(function UploadZone() {
   const queryClient = useQueryClient();
   const {
     showUpload,
@@ -214,12 +214,8 @@ export function UploadZone() {
   const uploadViaDirect = useCallback(
     async (item: UploadItem, file: File) => {
       try {
-        // Ensure CSRF cookie exists (file list often hits Next-local routes that never set it)
         if (!getCsrfToken()) {
           await fetch("/api/auth/session", { credentials: "include" }).catch(() => null);
-          await fetch(`/api/folders/tree?orgId=${encodeURIComponent(orgId || "")}`, {
-            credentials: "include",
-          }).catch(() => null);
         }
 
         const formData = new FormData();
@@ -478,4 +474,4 @@ export function UploadZone() {
       )}
     </div>
   );
-}
+});
