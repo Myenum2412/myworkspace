@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { cn } from "@/lib/utils";
 import {
@@ -52,6 +53,7 @@ function formatSize(bytes: number) {
 }
 
 export function UploadZone() {
+  const queryClient = useQueryClient();
   const {
     showUpload,
     setShowUpload,
@@ -63,6 +65,12 @@ export function UploadZone() {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
+
+  const refreshFiles = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["files"] });
+    queryClient.invalidateQueries({ queryKey: ["folders"] });
+    queryClient.invalidateQueries({ queryKey: ["stats"] });
+  }, [queryClient]);
 
   const uploadViaPresigned = useCallback(
     async (item: UploadItem, file: File) => {
@@ -145,6 +153,7 @@ export function UploadZone() {
             )
           );
           toast.success(`${file.name} uploaded`);
+          refreshFiles();
         }
       } catch (err) {
         setItems((prev) =>
@@ -156,7 +165,7 @@ export function UploadZone() {
         );
       }
     },
-    [orgId, currentFolderId]
+    [orgId, currentFolderId, refreshFiles]
   );
 
   const uploadViaDirect = useCallback(
@@ -190,22 +199,46 @@ export function UploadZone() {
             }
           };
           xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              setItems((prev) =>
-                prev.map((i) =>
-                  i.id === item.id ? { ...i, progress: 100, status: "done" } : i
-                )
-              );
-              toast.success(`${file.name} uploaded`);
-              resolve();
-            } else {
+            if (xhr.status < 200 || xhr.status >= 300) {
               let detail = `Upload failed: ${xhr.status}`;
               try {
                 const body = JSON.parse(xhr.responseText);
                 if (body?.error) detail = `Upload failed: ${body.error}`;
               } catch { /* ignore */ }
               reject(new Error(detail));
+              return;
             }
+
+            try {
+              const body = JSON.parse(xhr.responseText || "{}");
+              const results = Array.isArray(body.results) ? body.results : [];
+              const failed = results.filter(
+                (r: { fileId?: string; error?: string }) =>
+                  !r.fileId || (r.error && r.error !== "duplicate_skipped"),
+              );
+              const onlyDupes =
+                results.length > 0 &&
+                results.every((r: { error?: string }) => r.error === "duplicate_skipped");
+              if (failed.length > 0) {
+                reject(new Error(failed[0].error || "Upload failed"));
+                return;
+              }
+              if (onlyDupes) {
+                toast.message(`${file.name} already exists`);
+              } else {
+                toast.success(`${file.name} uploaded`);
+              }
+            } catch {
+              toast.success(`${file.name} uploaded`);
+            }
+
+            setItems((prev) =>
+              prev.map((i) =>
+                i.id === item.id ? { ...i, progress: 100, status: "done" } : i
+              )
+            );
+            refreshFiles();
+            resolve();
           };
           xhr.onerror = () => reject(new Error("Network error"));
           xhr.open("POST", "/api/files/upload");
@@ -224,7 +257,7 @@ export function UploadZone() {
         );
       }
     },
-    [orgId, currentFolderId]
+    [orgId, currentFolderId, refreshFiles]
   );
 
   const uploadFile = useCallback(
