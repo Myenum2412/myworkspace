@@ -33,24 +33,26 @@ const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
   const cursor = await db.collection(collections.orgMembers).find({ orgId });
   const members = await cursor.sort({ joinedAt: -1 }).toArray();
 
-  const orgOwnerIds = await db.collection(collections.organizations)
-    .find({}, { projection: { ownerId: 1 } })
-    .toArray();
-  const ownerUserIds = new Set(orgOwnerIds.map((o: Record<string, unknown>) => o.ownerId).filter(Boolean));
+  const userIds = members.map((m: Record<string, unknown>) => m.userId as string);
 
-  const signupMembers = members.filter((m: Record<string, unknown>) =>
-    ownerUserIds.has(m.userId as string)
-  );
-
-  const userIds = signupMembers.map((m: Record<string, unknown>) => m.userId as string);
+  // Fetch users and exclude client panel users and ORG_MENU_ADMIN (origin) users
   const users = userIds.length > 0
     ? await (await db.collection(collections.users).find({ id: { $in: userIds } }))
-        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1, phone: 1, location: 1, department: 1, designation: 1 })
+        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1, phone: 1, location: 1, department: 1, designation: 1, role: 1 })
         .toArray()
     : [];
   const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
 
-  return signupMembers.map((m: Record<string, unknown>) => {
+  // Filter out ORG_MENU_ADMIN users (origin context, not workspace users)
+  const workspaceMembers = members.filter((m: Record<string, unknown>) => {
+    const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
+    if (!user) return false;
+    const userRole = (user.role as string) || "";
+    // Exclude ORG_MENU_ADMIN (origin users) and client role users
+    return userRole !== "ORG_MENU_ADMIN" && userRole !== "client";
+  });
+
+  return workspaceMembers.map((m: Record<string, unknown>) => {
     const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
     return {
       id: String(m._id || m.id || ""),
@@ -77,24 +79,16 @@ const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
 });
 
 const getAllMembers = cache(async (): Promise<MemberData[]> => {
-  const orgOwnerIds = await db.collection(collections.organizations)
-    .find({}, { projection: { ownerId: 1 } })
-    .toArray();
-  const ownerUserIds = new Set(orgOwnerIds.map((o: Record<string, unknown>) => o.ownerId).filter(Boolean));
-
   const cursor = await db.collection(collections.orgMembers).find({});
   const members = await cursor.sort({ joinedAt: -1 }).toArray();
 
-  const signupMembers = members.filter((m: Record<string, unknown>) =>
-    ownerUserIds.has(m.userId as string)
-  );
+  const userIds = [...new Set(members.map((m: Record<string, unknown>) => m.userId as string))];
+  const orgIds = [...new Set(members.map((m: Record<string, unknown>) => m.orgId as string))];
 
-  const userIds = [...new Set(signupMembers.map((m: Record<string, unknown>) => m.userId as string))];
-  const orgIds = [...new Set(signupMembers.map((m: Record<string, unknown>) => m.orgId as string))];
-
+  // Fetch users and exclude client panel users and ORG_MENU_ADMIN (origin) users
   const users = userIds.length > 0
     ? await (await db.collection(collections.users).find({ id: { $in: userIds } }))
-        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1, phone: 1, location: 1, department: 1, designation: 1 })
+        .project({ id: 1, name: 1, email: 1, image: 1, status: 1, createdAt: 1, emailVerified: 1, isActive: 1, lastLogin: 1, provider: 1, phone: 1, location: 1, department: 1, designation: 1, role: 1 })
         .toArray()
     : [];
   const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
@@ -104,7 +98,15 @@ const getAllMembers = cache(async (): Promise<MemberData[]> => {
     : [];
   const orgMap = new Map(orgs.map((o: Record<string, unknown>) => [o.id, o]));
 
-  return signupMembers.map((m: Record<string, unknown>) => {
+  // Filter out ORG_MENU_ADMIN users (origin context) and client role users
+  const workspaceMembers = members.filter((m: Record<string, unknown>) => {
+    const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
+    if (!user) return false;
+    const userRole = (user.role as string) || "";
+    return userRole !== "ORG_MENU_ADMIN" && userRole !== "client";
+  });
+
+  return workspaceMembers.map((m: Record<string, unknown>) => {
     const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
     const org = orgMap.get(m.orgId as string) as Record<string, unknown> | undefined;
     return {

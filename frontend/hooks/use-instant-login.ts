@@ -31,7 +31,14 @@ export function useInstantLogin() {
 
     try {
       const csrfRes = await fetch("/api/auth/csrf");
-      const { csrfToken } = await csrfRes.json();
+      const csrfBody = await csrfRes.text();
+      let csrfToken: string;
+      try {
+        csrfToken = JSON.parse(csrfBody).csrfToken;
+      } catch {
+        setState({ loading: false, error: "Authentication service unavailable. Check your connection.", step: "idle" });
+        return;
+      }
 
       setState((s) => ({ ...s, step: "fetching-data" }));
 
@@ -46,7 +53,14 @@ export function useInstantLogin() {
         }),
       });
 
-      const signInData = await signInRes.json();
+      const signInBody = await signInRes.text();
+      let signInData: any;
+      try {
+        signInData = JSON.parse(signInBody);
+      } catch {
+        setState({ loading: false, error: "Authentication service unavailable. Try again.", step: "idle" });
+        return;
+      }
 
       if (!signInData.ok || signInData.error) {
         setState({ loading: false, error: signInData.error || "Invalid credentials", step: "idle" });

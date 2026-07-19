@@ -9,7 +9,7 @@ import ReceiptsPageClient from "./receipts/page.client"
 export default function BillingClient() {
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
+      <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 *:flex-none">
         <TabsTrigger value="overview" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Overview</TabsTrigger>
         <TabsTrigger value="services" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Services</TabsTrigger>
         <TabsTrigger value="invoices" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Invoices</TabsTrigger>

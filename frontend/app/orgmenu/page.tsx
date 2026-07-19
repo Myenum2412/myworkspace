@@ -4,7 +4,7 @@ import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
 import { unstable_cache } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MonthlyRevenueChart, NewUsersChart } from "@/components/dynamic-charts";
+import { MonthlyRevenueChart } from "@/components/dynamic-charts";
 import { DashboardSignupsTable } from "@/components/dashboard-signups";
 import { UsersIcon, ActivityIcon, Building2Icon, UserXIcon } from "lucide-react";
 
@@ -27,59 +27,11 @@ const getOrgMetrics = unstable_cache(async (orgId: string) => {
 
 const getAllMetrics = unstable_cache(async () => {
   const orgCount = await db.collection(collections.organizations).countDocuments({});
-  const memberCount = await db.collection(collections.orgMembers).countDocuments({});
+  const memberCount = await db.collection(collections.users).countDocuments({});
   const activityCount = await db.collection(collections.activityLogs).countDocuments({});
-  const inactiveMembers = await db.collection(collections.orgMembers).aggregate<{ count: number }>([
-    { $lookup: { from: "users", localField: "userId", foreignField: "id", as: "user" } },
-    { $unwind: "$user" },
-    { $match: { "user.isActive": false } },
-    { $count: "count" },
-  ]).toArray();
-  const inactiveMemberCount = inactiveMembers[0]?.count ?? 0;
+  const inactiveMemberCount = await db.collection(collections.users).countDocuments({ isActive: false });
   return { orgCount, memberCount, activityCount, inactiveMemberCount };
 }, ["all-metrics"], { revalidate: 30, tags: ["dashboard"] });
-
-const getUsersByState = unstable_cache(async (orgId?: string | null) => {
-  const pipeline = orgId
-    ? [
-        { $match: { orgId } },
-        {
-          $lookup: {
-            from: "users",
-            localField: "userId",
-            foreignField: "id",
-            as: "user",
-          },
-        },
-        { $unwind: "$user" },
-        { $match: { "user.state": { $exists: true, $nin: [null, ""] } } },
-        {
-          $group: {
-            _id: "$user.state",
-            users: { $sum: 1 },
-          },
-        },
-        { $sort: { users: -1 } },
-      ]
-    : [
-        { $match: { state: { $exists: true, $nin: [null, ""] } } },
-        {
-          $group: {
-            _id: "$state",
-            users: { $sum: 1 },
-          },
-        },
-        { $sort: { users: -1 } },
-      ];
-  const cursor = await db
-    .collection(orgId ? collections.orgMembers : collections.users)
-    .aggregate(pipeline);
-  const raw = await cursor.toArray();
-  return raw.map((r) => ({
-    state: r._id as string,
-    users: r.users as number,
-  }));
-}, ["users-by-state"], { revalidate: 60, tags: ["dashboard"] });
 
 const getMonthlyRevenue = unstable_cache(async (orgId?: string | null) => {
   const match = orgId ? { orgId } : {};
@@ -189,18 +141,15 @@ export default async function OrgDashboardPage() {
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
   let metrics: Awaited<ReturnType<typeof getOrgMetrics>>;
-  let newUsersData: { state: string; users: number }[] = [];
   let recentUsers: { userId: string; name: string; email: string; role: string; status: string; provider: string; avatar: string; emailVerified: boolean; createdAt: string; lastLogin?: string; orgName?: string; orgId?: string }[] = [];
   let revenueData: { month: string; revenue: number }[] = [];
 
   if (isSuperAdmin) {
     metrics = await getAllMetrics();
-    newUsersData = await getUsersByState();
     recentUsers = await getRecentUsers();
     revenueData = await getMonthlyRevenue();
   } else {
     metrics = await getOrgMetrics(orgId || "null");
-    newUsersData = await getUsersByState(orgId);
     recentUsers = await getRecentUsers(orgId);
     revenueData = await getMonthlyRevenue(orgId);
   }
@@ -259,7 +208,6 @@ export default async function OrgDashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {revenueData.length > 0 && <MonthlyRevenueChart data={revenueData} />}
-        {newUsersData.length > 0 && <NewUsersChart data={newUsersData} />}
       </div>
 
       {recentUsers.length > 0 && (

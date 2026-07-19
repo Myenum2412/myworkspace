@@ -96,31 +96,27 @@ export function DashboardSignupsTable({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="flex flex-row items-center gap-4">
+        <CardTitle className="flex items-center gap-2 shrink-0">
           <UserPlusIcon className="size-5" />
           Recent Signups
-          {selected.size > 0 && (
-            <span className="text-sm font-normal text-muted-foreground ml-auto">
-              {selected.size} selected
-            </span>
-          )}
         </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex">
-          <div className="flex-1" />
-          <div className="relative w-full max-w-sm">
-            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              placeholder=""
-              className="pl-9 h-9 w-full"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="flex-1" />
+        {selected.size > 0 && (
+          <span className="text-sm font-normal text-muted-foreground">
+            {selected.size} selected
+          </span>
+        )}
+        <div className="relative w-full max-w-sm mx-auto">
+          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder=""
+            className="pl-9 h-9 w-full"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
+      </CardHeader>
+      <CardContent>
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
           <table className="table-premium w-full text-sm text-left">
             <thead className="sticky top-0 z-10">

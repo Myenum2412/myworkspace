@@ -42,7 +42,7 @@ export default function BillingPage() {
   const orgId = useBootstrapStore((s) => s.data?.orgId);
 
   useEffect(() => {
-    if (!orgId) return;
+    if (!orgId) { setLoading(false); return; }
     const controller = new AbortController();
 
     (async () => {
