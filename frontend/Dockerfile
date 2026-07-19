@@ -2,11 +2,11 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY frontend/package.json frontend/package-lock.json* ./
-COPY frontend/.npmrc .npmrc
+COPY package.json package-lock.json* ./
+COPY .npmrc .npmrc
 RUN npm ci --include=dev
 
-COPY frontend/ ./
+COPY . ./
 RUN npm run build
 
 FROM node:22-alpine AS runner
