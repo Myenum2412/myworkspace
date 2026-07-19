@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { UsersIcon, PlusIcon } from "lucide-react";
+import { UsersIcon, PlusIcon, LayoutGridIcon, CalendarIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import { TaskDataTable } from "@/components/task-data-table";
+import TaskGanttView from "@/components/task-gantt-view";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -38,6 +39,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TeamTask | null>(null);
+  const [viewMode, setViewMode] = useState<"table" | "gantt">("table");
 
   const [localTasks, setLocalTasks] = useState<TeamTask[]>(tasks);
 
@@ -75,16 +77,48 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
             </CardContent>
           </Card>
         ) : (
-          <TaskDataTable
-            data={localTasks}
-            onView={(t) => { setSelectedTask(t as TeamTask); setViewOpen(true); }}
-            onEdit={(t) => { setSelectedTask(t as TeamTask); setViewOpen(true); setEditMode(true); }}
-            onDelete={(t) => handleDelete(t as TeamTask)}
-            searchPlaceholder="Search team tasks..."
-            emptyMessage="No team tasks found."
-            label="task"
-            showTeamHead
-          />
+          <>
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                variant={viewMode === "table" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("table")}
+              >
+                <LayoutGridIcon className="mr-2 size-4" />
+                Table
+              </Button>
+              <Button
+                variant={viewMode === "gantt" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("gantt")}
+              >
+                <CalendarIcon className="mr-2 size-4" />
+                Gantt
+              </Button>
+            </div>
+            <div className="flex-1 min-h-0">
+              {viewMode === "table"
+                ? (
+                  <TaskDataTable
+                    data={localTasks}
+                    onView={(t) => { setSelectedTask(t as TeamTask); setViewOpen(true); }}
+                    onEdit={(t) => { setSelectedTask(t as TeamTask); setViewOpen(true); setEditMode(true); }}
+                    onDelete={(t) => handleDelete(t as TeamTask)}
+                    searchPlaceholder="Search team tasks..."
+                    emptyMessage="No team tasks found."
+                    label="task"
+                    showTeamHead
+                  />
+                )
+                : (
+                  <TaskGanttView
+                    tasks={localTasks}
+                    onViewTask={(t) => { setSelectedTask(t as unknown as TeamTask); setViewOpen(true); setEditMode(false); }}
+                  />
+                )
+              }
+            </div>
+          </>
         )}
       </main>
 

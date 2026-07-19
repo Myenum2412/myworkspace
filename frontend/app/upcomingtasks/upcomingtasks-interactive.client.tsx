@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, CalendarClockIcon, SearchIcon } from "lucide-react";
+import { PlusIcon, CalendarClockIcon, SearchIcon, LayoutGridIcon, CalendarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { TaskDataTable } from "@/components/task-data-table";
+import TaskGanttView from "@/components/task-gantt-view";
 import { apiFetch } from "@/lib/api";
 
 export type UpcomingTask = {
@@ -39,6 +40,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UpcomingTask | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"table" | "gantt">("table");
 
   return (
     <>
@@ -77,20 +79,45 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
                   />
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === "table" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("table")}
+                >
+                  <LayoutGridIcon className="mr-2 size-4" />
+                  Table
+                </Button>
+                <Button
+                  variant={viewMode === "gantt" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("gantt")}
+                >
+                  <CalendarIcon className="mr-2 size-4" />
+                  Gantt
+                </Button>
+              </div>
               <span className="text-sm text-muted-foreground shrink-0">{tasks.length} tasks</span>
             </div>
             <div className="flex-1 min-h-0">
-              <TaskDataTable
-                data={tasks}
-                onView={(t) => { setSelectedTask(t as unknown as UpcomingTask); setViewOpen(true); }}
-                onEdit={(t) => { setSelectedTask(t as unknown as UpcomingTask); setViewOpen(true); setEditMode(true); }}
-                searchPlaceholder="Search upcoming tasks..."
-                emptyMessage="No upcoming tasks."
-                label="task"
-                hideSearchBar
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-              />
+              {viewMode === "table" ? (
+                <TaskDataTable
+                  data={tasks}
+                  onView={(t) => { setSelectedTask(t as unknown as UpcomingTask); setViewOpen(true); }}
+                  onEdit={(t) => { setSelectedTask(t as unknown as UpcomingTask); setViewOpen(true); setEditMode(true); }}
+                  searchPlaceholder="Search upcoming tasks..."
+                  emptyMessage="No upcoming tasks."
+                  label="task"
+                  hideSearchBar
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                />
+              ) : (
+                <TaskGanttView
+                  tasks={tasks}
+                  onViewTask={(t) => { setSelectedTask(t as unknown as UpcomingTask); setViewOpen(true); setEditMode(false); }}
+                />
+              )}
             </div>
           </div>
         )}

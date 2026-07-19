@@ -1,8 +1,6 @@
 "use client";
 
-import { faker } from "@faker-js/faker";
 import {
-  GanttCreateMarkerTrigger,
   GanttFeatureItem,
   GanttFeatureList,
   GanttFeatureListGroup,
@@ -15,10 +13,10 @@ import {
   GanttTimeline,
   GanttToday,
 } from "@/components/kibo-ui/gantt";
+import type { GanttFeature, GanttStatus } from "@/components/kibo-ui/gantt";
 import groupBy from "lodash.groupby";
-import { EyeIcon, LinkIcon, TrashIcon } from "lucide-react";
-import { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EyeIcon, TrashIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -27,80 +25,49 @@ import {
 } from "@/components/ui/context-menu";
 import { TaskRow } from "./task-data-table";
 
-const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+const statusStyles: Record<string, { name: string; color: string }> = {
+  draft: { name: "Draft", color: "#6B7280" },
+  todo: { name: "Todo", color: "#9CA3AF" },
+  assigned: { name: "Assigned", color: "#3B82F6" },
+  pending: { name: "Pending", color: "#EAB308" },
+  in_progress: { name: "In Progress", color: "#F59E0B" },
+  review: { name: "Review", color: "#A855F7" },
+  submitted: { name: "Submitted", color: "#8B5CF6" },
+  approved: { name: "Approved", color: "#10B981" },
+  rejected: { name: "Rejected", color: "#EF4444" },
+  completed: { name: "Completed", color: "#22C55E" },
+  done: { name: "Done", color: "#10B981" },
+  hold: { name: "Hold", color: "#F97316" },
+  cancelled: { name: "Cancelled", color: "#6B7280" },
+  reopened: { name: "Reopened", color: "#A855F7" },
+  published: { name: "Published", color: "#14B8A6" },
+  accepted: { name: "Accepted", color: "#22C55E" },
+  scheduled: { name: "Scheduled", color: "#3B82F6" },
+  activated: { name: "Activated", color: "#10B981" },
+};
 
-const statuses = [
-  { id: faker.string.uuid(), name: "Planned", color: "#6B7280" },
-  { id: faker.string.uuid(), name: "In Progress", color: "#F59E0B" },
-  { id: faker.string.uuid(), name: "Done", color: "#10B981" },
-];
+const defaultStatus: GanttStatus = { id: "default", name: "Unknown", color: "#6B7280" };
 
-const users = Array.from({ length: 4 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: faker.person.fullName(),
-    image: faker.image.avatar(),
-  }));
+function getStatus(task: TaskRow): GanttStatus {
+  const key = task.status?.toLowerCase() || "default";
+  const found = statusStyles[key];
+  if (found) return { id: key, name: found.name, color: found.color };
+  return { ...defaultStatus, id: key, name: task.status || "Unknown" };
+}
 
-const exampleGroups = Array.from({ length: 6 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: capitalize(faker.company.buzzPhrase()),
-  }));
-
-const exampleProducts = Array.from({ length: 4 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: capitalize(faker.company.buzzPhrase()),
-  }));
-
-const exampleInitiatives = Array.from({ length: 2 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: capitalize(faker.company.buzzPhrase()),
-  }));
-
-const exampleReleases = Array.from({ length: 3 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: capitalize(faker.company.buzzPhrase()),
-  }));
-
-const exampleFeatures = Array.from({ length: 20 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: capitalize(faker.company.buzzPhrase()),
-    startAt: faker.date.past({ years: 1, refDate: new Date() }),
-    endAt: faker.date.future({ years: 1, refDate: new Date() }),
-    status: faker.helpers.arrayElement(statuses),
-    owner: faker.helpers.arrayElement(users),
-    group: faker.helpers.arrayElement(exampleGroups),
-    product: faker.helpers.arrayElement(exampleProducts),
-    initiative: faker.helpers.arrayElement(exampleInitiatives),
-    release: faker.helpers.arrayElement(exampleReleases),
-  }));
-
-const exampleMarkers = Array.from({ length: 6 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    date: faker.date.past({ years: 1, refDate: new Date() }),
-    label: capitalize(faker.company.buzzPhrase()),
-    className: faker.helpers.arrayElement([
-      "bg-blue-100 text-blue-900",
-      "bg-green-100 text-green-900",
-      "bg-purple-100 text-purple-900",
-      "bg-red-100 text-red-900",
-      "bg-orange-100 text-orange-900",
-      "bg-teal-100 text-teal-900",
-    ]),
-  }));
+function toGanttFeature(task: TaskRow): GanttFeature {
+  const startAt = task.createdAt ? new Date(task.createdAt) : new Date();
+  const endAt = task.dueDate
+    ? new Date(task.dueDate)
+    : new Date(startAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+  return {
+    id: task._id,
+    name: task.title,
+    startAt,
+    endAt,
+    status: getStatus(task),
+  };
+}
 
 interface TaskGanttViewProps {
   tasks: TaskRow[];
@@ -108,52 +75,39 @@ interface TaskGanttViewProps {
 }
 
 const TaskGanttView = ({ tasks, onViewTask }: TaskGanttViewProps) => {
-  const [features, setFeatures] = useState(exampleFeatures);
-  const groupedFeatures = groupBy(features, "group.name");
+  const features = useMemo(() => tasks.map(toGanttFeature), [tasks]);
+  const [localFeatures, setLocalFeatures] = useState(features);
+
+  useEffect(() => {
+    setLocalFeatures(features);
+  }, [features]);
+
+  const groupedFeatures = groupBy(localFeatures, "status.name");
   const sortedGroupedFeatures = Object.fromEntries(
     Object.entries(groupedFeatures).sort(([nameA], [nameB]) =>
       nameA.localeCompare(nameB)
     )
   );
 
-  const handleViewFeature = (id: string) =>
-    console.log(`Feature selected: ${id}`);
-
-  const handleCopyLink = (id: string) => console.log(`Copy link: ${id}`);
+  const handleViewFeature = (id: string) => {
+    const task = tasks.find((t) => t._id === id);
+    if (task && onViewTask) onViewTask(task);
+  };
 
   const handleRemoveFeature = (id: string) =>
-    setFeatures((prev) => prev.filter((feature) => feature.id !== id));
-
-  const handleRemoveMarker = (id: string) =>
-    console.log(`Remove marker: ${id}`);
-
-  const handleCreateMarker = (date: Date) =>
-    console.log(`Create marker: ${date.toISOString()}`);
+    setLocalFeatures((prev) => prev.filter((feature) => feature.id !== id));
 
   const handleMoveFeature = (id: string, startAt: Date, endAt: Date | null) => {
-    if (!endAt) {
-      return;
-    }
-
-    setFeatures((prev) =>
+    if (!endAt) return;
+    setLocalFeatures((prev) =>
       prev.map((feature) =>
         feature.id === id ? { ...feature, startAt, endAt } : feature
       )
     );
-
-    console.log(`Move feature: ${id} from ${startAt} to ${endAt}`);
   };
 
-  const handleAddFeature = (date: Date) =>
-    console.log(`Add feature: ${date.toISOString()}`);
-
   return (
-    <GanttProvider
-      className="border"
-      onAddItem={handleAddFeature}
-      range="monthly"
-      zoom={100}
-    >
+    <GanttProvider className="border" range="monthly" zoom={100}>
       <GanttSidebar>
         {Object.entries(sortedGroupedFeatures).map(([group, features]) => (
           <GanttSidebarGroup key={group} name={group}>
@@ -187,14 +141,6 @@ const TaskGanttView = ({ tasks, onViewTask }: TaskGanttViewProps) => {
                           <p className="flex-1 truncate text-xs">
                             {feature.name}
                           </p>
-                          {feature.owner && (
-                            <Avatar className="h-4 w-4">
-                              <AvatarImage src={feature.owner.image} />
-                              <AvatarFallback>
-                                {feature.owner.name?.slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
                         </GanttFeatureItem>
                       </button>
                     </ContextMenuTrigger>
@@ -204,21 +150,14 @@ const TaskGanttView = ({ tasks, onViewTask }: TaskGanttViewProps) => {
                         onClick={() => handleViewFeature(feature.id)}
                       >
                         <EyeIcon className="text-muted-foreground" size={16} />
-                        View feature
-                      </ContextMenuItem>
-                      <ContextMenuItem
-                        className="flex items-center gap-2"
-                        onClick={() => handleCopyLink(feature.id)}
-                      >
-                        <LinkIcon className="text-muted-foreground" size={16} />
-                        Copy link
+                        View task
                       </ContextMenuItem>
                       <ContextMenuItem
                         className="flex items-center gap-2 text-destructive"
                         onClick={() => handleRemoveFeature(feature.id)}
                       >
                         <TrashIcon size={16} />
-                        Remove from roadmap
+                        Remove
                       </ContextMenuItem>
                     </ContextMenuContent>
                   </ContextMenu>
@@ -227,15 +166,7 @@ const TaskGanttView = ({ tasks, onViewTask }: TaskGanttViewProps) => {
             </GanttFeatureListGroup>
           ))}
         </GanttFeatureList>
-        {exampleMarkers.map((marker) => (
-          <GanttMarker
-            key={marker.id}
-            {...marker}
-            onRemove={handleRemoveMarker}
-          />
-        ))}
         <GanttToday />
-        <GanttCreateMarkerTrigger onCreateMarker={handleCreateMarker} />
       </GanttTimeline>
     </GanttProvider>
   );

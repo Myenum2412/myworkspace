@@ -1,13 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   RiCheckLine,
-  RiMailLine,
-  RiWhatsappLine,
-  RiTelegramLine,
-  RiFacebookLine,
-  RiInstagramLine,
+  RiMicLine,
+  RiHardDrive3Line,
   RiStackLine,
 } from "@remixicon/react"
 
@@ -29,92 +26,45 @@ type Integration = {
   id: string
   name: string
   description: string
-  icon: typeof RiWhatsappLine
+  icon: typeof RiMicLine
   category: string
-  defaultConnected?: boolean
-  oauthUrl?: string
 }
 
 const integrations: Integration[] = [
   {
-    id: "gmail",
-    name: "Gmail",
-    description: "Send and receive emails through your Gmail account.",
-    icon: RiMailLine,
-    category: "Email",
-    oauthUrl: "/api/email/gmail",
+    id: "ai-voice",
+    name: "AI Voice",
+    description: "Voice-powered task management and dictation.",
+    icon: RiMicLine,
+    category: "AI",
   },
   {
-    id: "whatsapp",
-    name: "WhatsApp",
-    description: "Send messages and notifications via WhatsApp.",
-    icon: RiWhatsappLine,
-    category: "Messaging",
-  },
-  {
-    id: "telegram",
-    name: "Telegram",
-    description: "Send alerts and updates to Telegram channels.",
-    icon: RiTelegramLine,
-    category: "Messaging",
-  },
-  {
-    id: "facebook",
-    name: "Facebook",
-    description: "Connect your Facebook page for notifications.",
-    icon: RiFacebookLine,
-    category: "Social",
-  },
-  {
-    id: "instagram",
-    name: "Instagram",
-    description: "Manage Instagram messages and notifications.",
-    icon: RiInstagramLine,
-    category: "Social",
+    id: "ai-construction",
+    name: "AI Construction",
+    description: "AI-assisted construction planning and estimation.",
+    icon: RiHardDrive3Line,
+    category: "AI",
   },
 ]
 
 export default function IntegrationsBlock() {
   const [connected, setConnected] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState<Record<string, boolean>>({})
-  const [gmailEmail, setGmailEmail] = useState("")
-
-  useEffect(() => {
-    fetch("/api/email/connections")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.data?.length) {
-          setConnected((prev) => ({ ...prev, gmail: true }))
-          setGmailEmail(data.data[0].email || "")
-        }
-      })
-      .catch(() => {})
-  }, [])
 
   const handleConnect = async (integration: Integration) => {
-    if (integration.id === "gmail") {
-      setLoading((prev) => ({ ...prev, gmail: true }))
-      window.location.href = integration.oauthUrl!
-      return
-    }
-    setConnected((prev) => ({ ...prev, [integration.id]: true }))
+    setLoading((prev) => ({ ...prev, [integration.id]: true }))
+    setTimeout(() => {
+      setConnected((prev) => ({ ...prev, [integration.id]: true }))
+      setLoading((prev) => ({ ...prev, [integration.id]: false }))
+    }, 1000)
   }
 
   const handleDisconnect = async (integration: Integration) => {
-    if (integration.id === "gmail") {
-      setLoading((prev) => ({ ...prev, gmail: true }))
-      try {
-        await fetch("/api/email/connections", { method: "DELETE" })
-        setConnected((prev) => ({ ...prev, gmail: false }))
-        setGmailEmail("")
-      } catch {
-        // silent
-      } finally {
-        setLoading((prev) => ({ ...prev, gmail: false }))
-      }
-      return
-    }
-    setConnected((prev) => ({ ...prev, [integration.id]: false }))
+    setLoading((prev) => ({ ...prev, [integration.id]: true }))
+    setTimeout(() => {
+      setConnected((prev) => ({ ...prev, [integration.id]: false }))
+      setLoading((prev) => ({ ...prev, [integration.id]: false }))
+    }, 500)
   }
 
   return (
@@ -127,7 +77,7 @@ export default function IntegrationsBlock() {
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {integrations.map((integration) => {
             const isOn = Boolean(connected[integration.id])
             const isLoading = Boolean(loading[integration.id])
@@ -159,26 +109,19 @@ export default function IntegrationsBlock() {
                       </CardDescription>
                     </div>
                   </div>
-                  {integration.id !== "gmail" && (
-                    <Switch
-                      checked={isOn}
-                      onCheckedChange={() =>
-                        isOn ? handleDisconnect(integration) : handleConnect(integration)
-                      }
-                      aria-label={`Toggle ${integration.name}`}
-                    />
-                  )}
+                  <Switch
+                    checked={isOn}
+                    onCheckedChange={() =>
+                      isOn ? handleDisconnect(integration) : handleConnect(integration)
+                    }
+                    aria-label={`Toggle ${integration.name}`}
+                  />
                 </CardHeader>
 
                 <CardContent className="flex-1 py-4">
                   <p className="text-sm text-muted-foreground">
                     {integration.description}
                   </p>
-                  {isOn && gmailEmail && integration.id === "gmail" && (
-                    <p className="mt-1 text-xs text-primary font-medium truncate">
-                      {gmailEmail}
-                    </p>
-                  )}
                 </CardContent>
 
                 <CardFooter className="items-center justify-between">

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, ListTodoIcon, UsersIcon, CheckCircle2Icon, BookmarkIcon, CalendarClockIcon } from "lucide-react";
+import { PlusIcon, ListTodoIcon, UsersIcon, CheckCircle2Icon, BookmarkIcon, CalendarClockIcon, LayoutGridIcon, CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { TaskDetailedView } from "@/components/task-detailed-view";
 import { EyeIcon, PencilIcon, Trash2Icon, MoreHorizontalIcon } from "lucide-react";
 import { DataTable } from "@/components/data-table";
 import { columns as baseColumns, type Task } from "./columns";
+import TaskGanttView from "@/components/task-gantt-view";
 
 export interface OverviewInteractiveProps {
   tasks: Task[];
@@ -29,6 +30,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "gantt">("table");
 
   const total = tasks.length;
   const myTasks = currentUserId ? tasks.filter((t) => t.assigneeId === currentUserId).length : 0;
@@ -150,36 +152,67 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
           </Card>
         </div>
 
-        <DataTable
-          columns={baseColumns.map((col) => ({
-            ...col,
-            cell: col.id === "actions"
-              ? ({ row }: { row: { original: Task } }) => {
-                  const t = row.original;
-                  return (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive" disabled={deleting} onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDeleteTask(t._id); }}><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  );
-                }
-              : col.cell,
-          }))}
-          data={recentTasks}
-          onRowClick={(t) => { setSelectedTask(t); setViewOpen(true); }}
-          searchPlaceholder="Search tasks..."
-          title="Recent Tasks"
-          label="task(s)"
-          emptyMessage="No tasks yet."
-          emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
-        />
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold">Recent Tasks</h2>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === "table" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("table")}
+            >
+              <LayoutGridIcon className="mr-2 size-4" />
+              Table
+            </Button>
+            <Button
+              variant={viewMode === "gantt" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("gantt")}
+            >
+              <CalendarIcon className="mr-2 size-4" />
+              Gantt
+            </Button>
+          </div>
+        </div>
+
+        {viewMode === "table" ? (
+          <DataTable
+            columns={baseColumns.map((col) => ({
+              ...col,
+              cell: col.id === "actions"
+                ? ({ row }: { row: { original: Task } }) => {
+                    const t = row.original;
+                    return (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive" disabled={deleting} onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDeleteTask(t._id); }}><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    );
+                  }
+                : col.cell,
+            }))}
+            data={recentTasks}
+            onRowClick={(t) => { setSelectedTask(t); setViewOpen(true); }}
+            searchPlaceholder="Search tasks..."
+            title="Recent Tasks"
+            label="task(s)"
+            emptyMessage="No tasks yet."
+            emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
+          />
+        ) : (
+          <div className="flex-1 min-h-0">
+            <TaskGanttView
+              tasks={tasks}
+              onViewTask={(t) => { setSelectedTask(t as unknown as Task); setViewOpen(true); setEditMode(false); }}
+            />
+          </div>
+        )}
       </main>
 
       {viewOpen && selectedTask && (

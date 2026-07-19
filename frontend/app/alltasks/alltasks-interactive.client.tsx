@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   PlusIcon, ListTodoIcon, SearchIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon,
-  UserIcon, UsersIcon, GlobeIcon, FileEditIcon, UserCheckIcon,
+  UserIcon, UsersIcon, GlobeIcon, FileEditIcon, UserCheckIcon, LayoutGridIcon, CalendarIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { TaskDataTable } from "@/components/task-data-table";
+import TaskGanttView from "@/components/task-gantt-view";
 import { toast } from "sonner";
 import { perfLog, perfNow } from "@/lib/perf";
 import { apiFetch } from "@/lib/api";
@@ -81,6 +82,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
   const [activeTypeTab, setActiveTypeTab] = useState("all");
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"table" | "gantt">("table");
 
   // Seed React Query with the SSR payload.
   const queryKey = useMemo(() => ["tasks", "all", orgId] as const, [orgId]);
@@ -232,21 +234,46 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
                   />
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === "table" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("table")}
+                >
+                  <LayoutGridIcon className="mr-2 size-4" />
+                  Table
+                </Button>
+                <Button
+                  variant={viewMode === "gantt" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("gantt")}
+                >
+                  <CalendarIcon className="mr-2 size-4" />
+                  Gantt
+                </Button>
+              </div>
               <span className="text-sm text-muted-foreground shrink-0">{filteredTasks.length} tasks</span>
             </div>
             <div className="flex-1 min-h-0">
-              <TaskDataTable
-                data={filteredTasks}
-                onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-                onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-                onDelete={(t) => handleDelete(t as UiTask)}
-                searchPlaceholder={`Search ${activeTypeTab} tasks...`}
-                emptyMessage={`No ${activeTypeTab} tasks found.`}
-                label="task"
-                hideSearchBar
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-              />
+              {viewMode === "table" ? (
+                <TaskDataTable
+                  data={filteredTasks}
+                  onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+                  onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+                  onDelete={(t) => handleDelete(t as UiTask)}
+                  searchPlaceholder={`Search ${activeTypeTab} tasks...`}
+                  emptyMessage={`No ${activeTypeTab} tasks found.`}
+                  label="task"
+                  hideSearchBar
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                />
+              ) : (
+                <TaskGanttView
+                  tasks={filteredTasks}
+                  onViewTask={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+                />
+              )}
             </div>
           </div>
 

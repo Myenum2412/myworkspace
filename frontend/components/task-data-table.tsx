@@ -22,13 +22,16 @@ import { DataTable } from "@/components/data-table";
 
 export interface TaskRow {
   _id: string;
+  id?: string;
   title: string;
   type?: string;
   status: string;
   priority: string;
   dueDate?: string | null;
+  createdAt?: string;
   assigneeName?: string;
   assigneeAvatar?: string;
+  assigneeId?: string;
   creatorName?: string;
   teamHeadName?: string;
 }
