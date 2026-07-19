@@ -28,6 +28,7 @@ export default async function OverviewPage() {
   let upcomingTasks: UpcomingTask[] = [];
 
   if (orgId) {
+    try {
     const coll = db.collection(collections.tasks);
 
     const [
@@ -275,6 +276,9 @@ export default async function OverviewPage() {
         createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
       };
     });
+    } catch (e) {
+      console.error("[OverviewPage] data fetch error:", e);
+    }
   }
 
   return (

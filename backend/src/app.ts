@@ -63,6 +63,7 @@ app.disable("x-powered-by");
 app.use((req, _res, next) => {
   if (req.url.includes("//")) {
     req.url = req.url.replace(/\/+/g, "/");
+    req.originalUrl = req.originalUrl.replace(/\/+/g, "/");
   }
   next();
 });

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 export async function GET(req: Request) {
   const session = await auth();

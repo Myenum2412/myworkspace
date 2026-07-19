@@ -46,14 +46,11 @@ type StockFormProps = {
 };
 
 export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
-  const [itemCode, setItemCode] = useState(stock?.itemCode || "");
   const [productName, setProductName] = useState(stock?.productName || "");
   const [category, setCategory] = useState(stock?.category || "");
   const [brand, setBrand] = useState(stock?.brand || "");
   const [unit, setUnit] = useState(stock?.unit || "");
   const [openingStock, setOpeningStock] = useState(String(stock?.openingStock ?? ""));
-  const [stockIn, setStockIn] = useState(String(stock?.stockIn ?? ""));
-  const [stockOut, setStockOut] = useState(String(stock?.stockOut ?? ""));
   const [reorderLevel, setReorderLevel] = useState(String(stock?.reorderLevel ?? ""));
   const [purchasePrice, setPurchasePrice] = useState(String(stock?.purchasePrice ?? ""));
   const [sellingPrice, setSellingPrice] = useState(String(stock?.sellingPrice ?? ""));
@@ -83,9 +80,6 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
   }, []);
 
   const opening = Number(openingStock) || 0;
-  const stockInNum = Number(stockIn) || 0;
-  const stockOutNum = Number(stockOut) || 0;
-  const autoAvailable = opening + stockInNum - stockOutNum;
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -113,15 +107,15 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
     setSaving(true);
     try {
       onSave({
-        itemCode: itemCode.trim(),
+        itemCode: "",
         productName: productName.trim(),
         category,
         brand,
         unit,
         openingStock: opening,
-        stockIn: stockInNum,
-        stockOut: stockOutNum,
-        availableStock: autoAvailable,
+        stockIn: 0,
+        stockOut: 0,
+        availableStock: opening,
         reorderLevel: Number(reorderLevel) || 0,
         purchasePrice: Number(purchasePrice) || 0,
         sellingPrice: Number(sellingPrice) || 0,
@@ -162,11 +156,6 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
             )}
           </div>
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Item Code (Auto)</Label>
-              <Input value={itemCode} onChange={(e) => setItemCode(e.target.value)} placeholder="e.g. STK0001" />
-              <p className="text-xs text-muted-foreground">Auto-generated if left blank</p>
-            </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Product Name *</Label>
               <Input value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="Enter product name" required />
@@ -241,21 +230,6 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Opening Stock</Label>
             <Input type="number" min="0" value={openingStock} onChange={(e) => setOpeningStock(e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Stock In (Auto)</Label>
-            <Input type="number" min="0" value={stockIn} onChange={(e) => setStockIn(e.target.value)} className="bg-muted/30" />
-            <p className="text-xs text-muted-foreground">Updated from Purchase GRN</p>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Stock Out (Auto)</Label>
-            <Input type="number" min="0" value={stockOut} onChange={(e) => setStockOut(e.target.value)} className="bg-muted/30" />
-            <p className="text-xs text-muted-foreground">Updated from Sales/Damage</p>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Available Stock (Auto)</Label>
-            <Input type="number" value={autoAvailable} disabled className="bg-muted/30 font-semibold" />
-            <p className="text-xs text-muted-foreground">Opening + Stock In - Stock Out</p>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Reorder Level</Label>

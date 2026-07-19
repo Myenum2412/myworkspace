@@ -20,6 +20,7 @@ const nextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ["better-sqlite3", "mongodb"],
   experimental: {
+    turbopackFileSystemCacheForDev: false,
     serverActions: {
       bodySizeLimit: "50mb",
     },
@@ -56,6 +57,9 @@ const nextConfig = {
         hostname: "**",
       },
     ],
+  },
+  turbopack: {
+    root: process.cwd(),
   },
   async rewrites() {
     return {
@@ -132,9 +136,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-  turbopack: {
-    root: process.cwd(),
   },
 };
 

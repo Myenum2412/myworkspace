@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 async function proxy(request: NextRequest, method: string, id: string, body?: unknown) {
   const cookie = request.headers.get("cookie") || "";
