@@ -68,7 +68,7 @@ jobs:
           docker build -t myworkspace-frontend:scan ./frontend
 
       - name: Scan Backend Image
-        uses: aquasecurity/trivy-action@v0.29.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: myworkspace-backend:scan
           format: sarif
@@ -76,7 +76,7 @@ jobs:
           severity: HIGH,CRITICAL
 
       - name: Scan Frontend Image
-        uses: aquasecurity/trivy-action@v0.29.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: myworkspace-frontend:scan
           format: sarif
