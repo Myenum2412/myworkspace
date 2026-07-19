@@ -20,11 +20,11 @@ const getBillingData = cache(async (orgId: string) => {
 });
 
 const getAllBillingData = cache(async () => {
-  const [invoices, subscriptions] = await Promise.all([
+  const [invoices, subs] = await Promise.all([
     db.collection(collections.invoices).find({}).sort({ createdAt: -1 }).limit(10).toArray(),
-    db.collection(collections.subscriptions).find({}).toArray(),
+    db.collection(collections.subscriptions).findOne({}),
   ]);
-  return { invoices, subscriptions, plan: "all" };
+  return { invoices, subscription: subs, plan: "all" };
 });
 
 export default async function BillingPage() {
