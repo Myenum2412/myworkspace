@@ -101,7 +101,12 @@ export const proxy = auth((req) => {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
+    // Org-menu admins may use file manager (and upload) for support/ops.
+    // Other workspace routes still redirect to /orgmenu.
     if (isOrgAdmin) {
+      if (pathname === "/files" || pathname.startsWith("/files/") || pathname === "/upload") {
+        return;
+      }
       return NextResponse.redirect(new URL("/orgmenu", req.url));
     }
     // Block non-admin users (employees with member, staff, or custom roles) from workspace routes

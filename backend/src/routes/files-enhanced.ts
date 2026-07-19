@@ -54,6 +54,14 @@ const upload = multer({
   },
 });
 
+function collectedUploadFiles(req: AuthRequest): Express.Multer.File[] {
+  const raw = req.files;
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  const byField = raw as { [fieldname: string]: Express.Multer.File[] };
+  return [...(byField.files || []), ...(byField.file || [])];
+}
+
 router.use(authenticate);
 
 async function verifyAccess(userId: string, orgId: string): Promise<void> {
@@ -426,15 +434,15 @@ router.delete("/:id/share", async (req: AuthRequest, res: Response) => {
   res.json({ success: true });
 });
 
-router.post("/upload", upload.array("files", 50), async (req: AuthRequest, res: Response) => {
+router.post("/upload", upload.fields([{ name: "files", maxCount: 50 }, { name: "file", maxCount: 50 }]), async (req: AuthRequest, res: Response) => {
   const uploadStart = Date.now();
   const orgId = req.body.orgId as string;
   if (!orgId) throw new AppError(400, "orgId is required");
-  if (!req.files || !(req.files as Express.Multer.File[]).length) throw new AppError(400, "No files provided");
+  const files = collectedUploadFiles(req);
+  if (!files.length) throw new AppError(400, "No files provided");
 
   await verifyAccess(req.user!.userId, orgId);
 
-  const files = req.files as Express.Multer.File[];
   const results: { originalName: string; fileId: string; error?: string }[] = [];
 
   for (const file of files) {

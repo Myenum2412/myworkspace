@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import * as api from "@/lib/file-system/api";
 
 export function FileList() {
   const {
@@ -137,7 +138,7 @@ export function FileList() {
                       onSelect={() => {
                         if (confirm(`Delete folder "${folder.name}"?`)) {
                           useFileSystemStore.getState().removeFolder(folder.id);
-                          fetch(`/api/folders/${folder.id}`, { method: "DELETE", credentials: "include" });
+                          api.deleteFolder(folder.id).catch(console.error);
                         }
                       }}
                     >
@@ -200,7 +201,7 @@ export function FileList() {
                       <PencilIcon className="size-3.5 mr-2" /> Rename
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => {
-                      fetch(`/api/files/${file.id}/duplicate`, { method: "POST", credentials: "include" });
+                      api.duplicateFile(file.id).catch(console.error);
                     }}>
                       <CopyIcon className="size-3.5 mr-2" /> Duplicate
                     </DropdownMenuItem>
@@ -214,7 +215,7 @@ export function FileList() {
                       onSelect={() => {
                         if (confirm(`Delete "${file.originalName}"?`)) {
                           useFileSystemStore.getState().removeFile(file.id);
-                          fetch(`/api/files/${file.id}`, { method: "DELETE", credentials: "include" });
+                          api.deleteFile(file.id).catch(console.error);
                         }
                       }}
                     >

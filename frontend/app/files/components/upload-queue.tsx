@@ -21,10 +21,17 @@ import {
 } from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { apiFetch } from "@/lib/api";
 
 const MAX_SIZE = 50 * 1024 * 1024;
 const R2_CHUNK_SIZE = 5 * 1024 * 1024;
 const R2_MAX_CONCURRENCY = 4;
+
+function getCsrfToken(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|;\s*)csrf-token=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
 type UploadStatus = "uploading" | "done" | "error";
 
@@ -65,10 +72,9 @@ export function UploadZone() {
           prev.map((i) => (i.id === item.id ? { ...i, progress: 0 } : i))
         );
 
-        const initRes = await fetch("/api/files/presigned/multipart/init", {
+        const initRes = await apiFetch("/api/files/presigned/multipart/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             fileName: file.name,
             fileSize: file.size,
@@ -83,10 +89,9 @@ export function UploadZone() {
 
         const partUrls: string[] = [];
         for (let i = 0; i < totalChunks; i++) {
-          const urlRes = await fetch("/api/files/presigned/multipart/part-url", {
+          const urlRes = await apiFetch("/api/files/presigned/multipart/part-url", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify({ uploadId, partNumber: i + 1, fileName: file.name }),
           });
           const urlData = await urlRes.json();
@@ -124,10 +129,9 @@ export function UploadZone() {
 
         if (!aborted) {
           uploadedParts.sort((a, b) => a.PartNumber - b.PartNumber);
-          const completeRes = await fetch("/api/files/presigned/multipart/complete", {
+          const completeRes = await apiFetch("/api/files/presigned/multipart/complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify({
               uploadId,
               fileName: file.name,
@@ -159,7 +163,7 @@ export function UploadZone() {
     async (item: UploadItem, file: File) => {
       try {
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("files", file);
         if (currentFolderId) formData.append("folderId", currentFolderId);
         if (orgId) formData.append("orgId", orgId);
 
@@ -193,6 +197,8 @@ export function UploadZone() {
           xhr.onerror = () => reject(new Error("Network error"));
           xhr.open("POST", "/api/files/upload");
           xhr.withCredentials = true;
+          const csrf = getCsrfToken();
+          if (csrf) xhr.setRequestHeader("x-csrf-token", csrf);
           xhr.send(formData);
         });
       } catch (err) {

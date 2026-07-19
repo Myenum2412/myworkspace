@@ -10,11 +10,32 @@ const API = {
   recent: "/api/files/recent",
 };
 
+const CSRF_COOKIE = "csrf-token";
+const CSRF_HEADER = "x-csrf-token";
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers = new Headers(options?.headers);
+  const isFormData = typeof FormData !== "undefined" && options?.body instanceof FormData;
+
+  if (!isFormData && !headers.has("Content-Type") && options?.body) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  if (!headers.has(CSRF_HEADER)) {
+    const token = getCookie(CSRF_COOKIE);
+    if (token) headers.set(CSRF_HEADER, token);
+  }
+
   const res = await fetch(url, {
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
+    credentials: "include",
+    headers,
   });
   if (!res.ok) {
     const body = await res.text();

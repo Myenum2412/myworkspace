@@ -68,7 +68,7 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
       }
       if (maxDownloads) body.maxDownloads = parseInt(maxDownloads);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/shares/links`, {
+      const res = await fetch("/api/shares/links", {
         method: "POST", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify(body),
       });

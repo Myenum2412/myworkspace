@@ -32,6 +32,8 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import * as api from "@/lib/file-system/api";
+import { apiFetch } from "@/lib/api";
 
 function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleClick: () => void }) {
   const { selectedIds, toggleSelection, setCurrentFolder, setRenameTarget, setPropertiesTarget, setMoveTarget, currentFolderId } = useFileSystemStore();
@@ -85,7 +87,7 @@ function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleCli
           onClick={() => {
             if (confirm(`Delete folder "${folder.name}"?`)) {
               useFileSystemStore.getState().removeFolder(folder.id);
-              fetch(`/api/folders/${folder.id}`, { method: "DELETE", credentials: "include" });
+              api.deleteFolder(folder.id).catch(console.error);
             }
           }}
         >
@@ -134,7 +136,7 @@ function FileCard({ file }: { file: FileItem }) {
         </ContextMenuItem>
         <ContextMenuItem onClick={async () => {
           try {
-            const res = await fetch(`/api/files/presigned/download/${file.id}`, { credentials: "include" });
+            const res = await apiFetch(`/api/files/presigned/download/${file.id}`);
             const data = await res.json();
             window.open(data.data?.url || `/api/files/${file.id}/download`, "_blank");
           } catch {
@@ -150,7 +152,7 @@ function FileCard({ file }: { file: FileItem }) {
           <Share2Icon className="size-3.5 mr-2" /> Share
         </ContextMenuItem>
         <ContextMenuItem onClick={() => {
-          fetch(`/api/files/${file.id}/duplicate`, { method: "POST", credentials: "include" })
+          api.duplicateFile(file.id).catch(console.error)
             .then(() => useFileSystemStore.getState().removeFile(file.id));
         }}>
           <CopyIcon className="size-3.5 mr-2" /> Duplicate
@@ -165,7 +167,7 @@ function FileCard({ file }: { file: FileItem }) {
           onClick={() => {
             if (confirm(`Delete "${file.originalName}"?`)) {
               useFileSystemStore.getState().removeFile(file.id);
-              fetch(`/api/files/${file.id}`, { method: "DELETE", credentials: "include" });
+              api.deleteFile(file.id).catch(console.error);
             }
           }}
         >

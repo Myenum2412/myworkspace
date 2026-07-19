@@ -60,7 +60,7 @@
     "qrcode": "^1.5.4",
     "rate-limit-redis": "^5.0.0",
     "resend": "^6.17.1",
-    "sharp": "^0.35.3",
+    "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
     "tus-node-server": "^0.9.0",
     "uuid": "^14.0.0",
