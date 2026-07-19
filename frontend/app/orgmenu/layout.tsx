@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@example.com").toLowerCase().trim();
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
 
 export default async function OrgLayout({
   children,
@@ -54,7 +54,7 @@ export default async function OrgLayout({
   }
 
   const userName = session.user.name || "User";
-  const userEmailDisplay = session.user.email || "user@example.com";
+  const userEmailDisplay = session.user.email || "";
   const userAvatar = session.user.image || "";
 
   const user = {

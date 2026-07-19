@@ -77,9 +77,6 @@ export default async function AnalyticsPage() {
           </Card>
         ))}
       </div>
-      <div className="min-h-[300px] flex-1 rounded-xl bg-muted/50 flex items-center justify-center">
-        <p className="text-muted-foreground">Analytics charts and visualizations</p>
-      </div>
     </div>
   );
 }

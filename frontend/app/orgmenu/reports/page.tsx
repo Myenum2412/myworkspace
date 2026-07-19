@@ -71,9 +71,6 @@ export default async function ReportsPage() {
           </Card>
         ))}
       </div>
-      <div className="min-h-[200px] flex-1 rounded-xl bg-muted/50 flex items-center justify-center">
-        <p className="text-muted-foreground">Report visualizations</p>
-      </div>
     </div>
   );
 }

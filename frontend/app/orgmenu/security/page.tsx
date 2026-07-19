@@ -10,17 +10,23 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Security" };
 
 const getSecurityData = cache(async (orgId: string) => {
-  const activeSessions = await db.collection(collections.users).countDocuments({ status: "online" });
-  const totalMembers = await db.collection(collections.orgMembers).countDocuments({ orgId });
-  const adminCount = await db.collection(collections.orgMembers).countDocuments({ orgId, role: "admin" });
-  return { activeSessions, totalMembers, adminCount };
+  const [activeSessions, totalMembers, adminCount, apiKeyCount] = await Promise.all([
+    db.collection(collections.users).countDocuments({ status: "online" }),
+    db.collection(collections.orgMembers).countDocuments({ orgId }),
+    db.collection(collections.orgMembers).countDocuments({ orgId, role: "admin" }),
+    db.collection(collections.apiKeys).countDocuments({ orgId }),
+  ]);
+  return { activeSessions, totalMembers, adminCount, apiKeyCount };
 });
 
 const getAllSecurityData = cache(async () => {
-  const activeSessions = await db.collection(collections.users).countDocuments({ status: "online" });
-  const totalMembers = await db.collection(collections.orgMembers).countDocuments({});
-  const adminCount = await db.collection(collections.orgMembers).countDocuments({ role: "admin" });
-  return { activeSessions, totalMembers, adminCount };
+  const [activeSessions, totalMembers, adminCount, apiKeyCount] = await Promise.all([
+    db.collection(collections.users).countDocuments({ status: "online" }),
+    db.collection(collections.orgMembers).countDocuments({}),
+    db.collection(collections.orgMembers).countDocuments({ role: "admin" }),
+    db.collection(collections.apiKeys).countDocuments({}),
+  ]);
+  return { activeSessions, totalMembers, adminCount, apiKeyCount };
 });
 
 export default async function SecurityPage() {
@@ -35,7 +41,7 @@ export default async function SecurityPage() {
     { label: "Active Sessions", value: String(data.activeSessions), color: "text-primary", icon: ShieldIcon },
     { label: "Total Members", value: String(data.totalMembers), color: "text-primary", icon: UsersIcon },
     { label: "Admins", value: String(data.adminCount), color: "text-primary", icon: ShieldCheckIcon },
-    { label: "API Keys", value: "0", color: "text-primary", icon: KeyIcon },
+    { label: "API Keys", value: String(data.apiKeyCount), color: "text-primary", icon: KeyIcon },
   ];
 
   return (
