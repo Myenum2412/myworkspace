@@ -13,12 +13,15 @@ export async function GET(req: NextRequest) {
       cache: "no-store",
     });
     const text = await res.text();
-    return new NextResponse(text, {
+    const out = new NextResponse(text, {
       status: res.status,
       headers: {
         "Content-Type": res.headers.get("content-type") || "application/json",
       },
     });
+    const setCookies = typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : [];
+    for (const c of setCookies) out.headers.append("Set-Cookie", c);
+    return out;
   } catch (err) {
     console.error("[api/folders/tree] proxy error:", err);
     return NextResponse.json({ success: false, error: "Backend unavailable" }, { status: 502 });

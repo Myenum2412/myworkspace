@@ -162,6 +162,14 @@ export function UploadZone() {
   const uploadViaDirect = useCallback(
     async (item: UploadItem, file: File) => {
       try {
+        // Ensure CSRF cookie exists (file list often hits Next-local routes that never set it)
+        if (!getCsrfToken()) {
+          await fetch("/api/auth/session", { credentials: "include" }).catch(() => null);
+          await fetch(`/api/folders/tree?orgId=${encodeURIComponent(orgId || "")}`, {
+            credentials: "include",
+          }).catch(() => null);
+        }
+
         const formData = new FormData();
         formData.append("files", file);
         if (currentFolderId) formData.append("folderId", currentFolderId);
@@ -191,7 +199,12 @@ export function UploadZone() {
               toast.success(`${file.name} uploaded`);
               resolve();
             } else {
-              reject(new Error(`Upload failed: ${xhr.status}`));
+              let detail = `Upload failed: ${xhr.status}`;
+              try {
+                const body = JSON.parse(xhr.responseText);
+                if (body?.error) detail = `Upload failed: ${body.error}`;
+              } catch { /* ignore */ }
+              reject(new Error(detail));
             }
           };
           xhr.onerror = () => reject(new Error("Network error"));
