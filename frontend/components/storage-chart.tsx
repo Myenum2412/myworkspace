@@ -76,7 +76,7 @@ export function StorageChart({ orgPlan: rawOrgPlan }: StorageChartProps) {
   } satisfies ChartConfig;
 
   const renderShape = useCallback(
-    (props: PieSectorShapeProps, index: number) => {
+    (props: PieSectorShapeProps, index?: string | number) => {
       const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, isActive } = props;
       if (isActive) {
         return (
