@@ -146,6 +146,9 @@ export const metadata: Metadata = {
     "msapplication-TileColor": "#000000",
     "msapplication-TileImage": "/web-app-manifest-192x192.png",
   },
+  verification: {
+    google: "IOMw7-gXRWLgu6vPpkJkPNR0a2x7cZuQWd1enWR0kI4",
+  },
 };
 
 export default function RootLayout({
