@@ -102,7 +102,8 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="fixed inset-0 top-0 left-0 translate-none w-full h-full max-w-full max-h-full rounded-none p-0 overflow-y-auto">
+        <div className="mx-auto w-full max-w-4xl p-6 space-y-5">
         <DialogHeader>
           <DialogTitle>Edit Member</DialogTitle>
         </DialogHeader>
@@ -235,6 +236,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
             <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save Changes"}</Button>
           </div>
         </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

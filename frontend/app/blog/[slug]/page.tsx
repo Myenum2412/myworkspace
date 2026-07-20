@@ -111,26 +111,33 @@ function TableOfContents({ headings }: { headings: { level: number; text: string
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const post = await getBlogPost(slug);
-  if (!post) return { title: "Article Not Found" };
+  if (!post) return { title: "Article Not Found — MyWorkSpace" };
+
+  // Enforce character limits: title max 60, description max 160
+  const title = (post.seoTitle || post.title).substring(0, 60);
+  const description = (post.seoDescription || post.excerpt || "").substring(0, 160);
 
   return {
-    title: post.seoTitle || post.title,
-    description: post.seoDescription || post.excerpt,
-    keywords: post.seoKeywords || post.tags,
+    title: `${title} — MyWorkSpace Blog`,
+    description,
+    keywords: post.seoKeywords || post.tags || [],
     openGraph: {
-      title: post.title,
-      description: post.excerpt,
+      title,
+      description,
       type: "article",
       publishedTime: post.publishedAt instanceof Date ? post.publishedAt.toISOString() : String(post.publishedAt),
       authors: [post.authorName],
-      images: post.featuredImage ? [{ url: post.featuredImage, alt: post.title }] : [],
+      siteName: "MyWorkSpace",
+      images: post.featuredImage ? [{ url: post.featuredImage, alt: post.title, width: 1200, height: 630 }] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title: post.title,
-      description: post.excerpt,
+      title,
+      description,
       images: post.featuredImage ? [post.featuredImage] : [],
     },
+    robots: { index: true, follow: true },
+    alternates: { canonical: `https://myworkspace.myenum.in/blog/${slug}` },
   };
 }
 

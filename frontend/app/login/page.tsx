@@ -1,7 +1,19 @@
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { LoginForm } from "@/components/login-form";
 import { loginPageJsonLd } from "@/lib/seo/seo-config";
+
+export const metadata: Metadata = {
+  title: "Sign In to MyWorkSpace",
+  description: "Sign in to your MyWorkSpace account to access project management, team collaboration, task tracking, and business automation tools.",
+  robots: { index: false, follow: false },
+  openGraph: {
+    title: "Sign In — MyWorkSpace",
+    description: "Access your workspace management dashboard.",
+    type: "website",
+  },
+};
 
 export default async function LoginPage(props: {
   searchParams: Promise<Record<string, string>>;

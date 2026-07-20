@@ -10,8 +10,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const revalidate = 30;
 export const metadata: Metadata = {
-  title: "Blog",
-  description: "Read the latest articles, insights, and updates from our team.",
+  title: "Blog — MyWorkSpace Insights, Tutorials & Updates",
+  description: "Read the latest articles on project management, team collaboration, workspace productivity, rebar detailing, and business automation from the MyWorkSpace team.",
+  keywords: ["blog", "project management tips", "team collaboration", "workspace productivity", "rebar detailing tutorials", "business automation"],
+  openGraph: {
+    title: "Blog — MyWorkSpace Insights & Updates",
+    description: "Latest articles on project management, team collaboration, and business automation.",
+    type: "website",
+    siteName: "MyWorkSpace",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog — MyWorkSpace Insights & Updates",
+    description: "Latest articles on project management, team collaboration, and business automation.",
+  },
+  robots: { index: true, follow: true },
 };
 
 interface BlogPost {

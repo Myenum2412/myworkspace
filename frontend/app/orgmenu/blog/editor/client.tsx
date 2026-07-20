@@ -281,16 +281,53 @@ export function BlogEditorClient({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="featuredImage">Featured Image URL</Label>
+              <Label>Featured Image</Label>
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const formData = new FormData();
+                      formData.append("files", file);
+                      try {
+                        const res = await fetch("/api/files/upload", {
+                          method: "POST",
+                          body: formData,
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          const url = data.data?.[0]?.url || data.data?.url;
+                          if (url) setFeaturedImage(url);
+                        }
+                      } catch (err) {
+                        console.error("Upload failed:", err);
+                      }
+                    }}
+                    className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                  />
+                </div>
+                {featuredImage && (
+                  <div className="relative">
+                    <img src={featuredImage} alt="Preview" className="w-32 h-20 object-cover rounded" />
+                    <button
+                      type="button"
+                      onClick={() => setFeaturedImage("")}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+                    >
+                      x
+                    </button>
+                  </div>
+                )}
+              </div>
               <Input
-                id="featuredImage"
                 value={featuredImage}
                 onChange={(e) => setFeaturedImage(e.target.value)}
-                placeholder="https://example.com/image.jpg"
+                placeholder="Or paste image URL..."
+                className="text-sm"
               />
-              {featuredImage && (
-                <img src={featuredImage} alt="Preview" className="w-32 h-20 object-cover rounded" />
-              )}
             </div>
           </CardContent>
         </Card>

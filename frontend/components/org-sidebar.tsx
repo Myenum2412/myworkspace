@@ -74,7 +74,23 @@ export const defaultOrgNavData = [
     items: [
       { title: "Policies", url: "/orgmenu/security/policies" },
       { title: "SSO", url: "/orgmenu/security/sso" },
-
+    ],
+  },
+  {
+    title: "Plans",
+    url: "/orgmenu/plans",
+    icon: <CreditCardIcon className="size-6" />,
+    items: [
+      { title: "All Plans", url: "/orgmenu/plans" },
+    ],
+  },
+  {
+    title: "Blog",
+    url: "/orgmenu/blog",
+    icon: <BookOpenIcon className="size-6" />,
+    items: [
+      { title: "All Posts", url: "/orgmenu/blog" },
+      { title: "New Post", url: "/orgmenu/blog/editor" },
     ],
   },
   {

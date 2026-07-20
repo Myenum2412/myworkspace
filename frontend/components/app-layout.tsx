@@ -14,6 +14,8 @@ import { SubscriptionGuard } from "@/components/subscription-guard";
 const Header = lazy(() => import("@/components/header").then(m => ({ default: m.Header })));
 const MobileBottomNav = lazy(() => import("@/components/mobile-bottom-nav").then(m => ({ default: m.MobileBottomNav })));
 const SubscriptionStatusBanner = lazy(() => import("@/components/subscription-status-banner").then(m => ({ default: m.SubscriptionStatusBanner })));
+const NewNav = lazy(() => import("@/components/landing/new-nav").then(m => ({ default: m.NewNav })));
+const NewFooter = lazy(() => import("@/components/landing/new-footer").then(m => ({ default: m.NewFooter })));
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -80,7 +82,21 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   if (!isApp) {
-    return <SubscriptionGuard>{children}</SubscriptionGuard>;
+    return (
+      <SubscriptionGuard>
+        <div className="flex min-h-screen flex-col">
+          <Suspense fallback={null}>
+            <NewNav />
+          </Suspense>
+          <main className="flex-1 pt-16">
+            {children}
+          </main>
+          <Suspense fallback={null}>
+            <NewFooter />
+          </Suspense>
+        </div>
+      </SubscriptionGuard>
+    );
   }
 
   if (status === "loading") {

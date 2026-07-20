@@ -1,7 +1,20 @@
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { SignupForm } from "@/components/signup-form";
 import { signupPageJsonLd } from "@/lib/seo/seo-config";
+
+export const metadata: Metadata = {
+  title: "Create Free Account — MyWorkSpace",
+  description: "Create your free MyWorkSpace account and start managing projects, collaborating with your team, and automating your business workflows today.",
+  keywords: ["free signup", "create account", "workspace management", "project management", "team collaboration"],
+  robots: { index: true, follow: true },
+  openGraph: {
+    title: "Create Free Account — MyWorkSpace",
+    description: "Start your free workspace management account today.",
+    type: "website",
+  },
+};
 
 export default async function SignupPage(props: {
   searchParams: Promise<Record<string, string>>;
