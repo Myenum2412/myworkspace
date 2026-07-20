@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import {
   listTasks,
@@ -59,6 +60,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create tasks");
     const orgId = await requireOrgMembership(req.user!.userId);
 
     const result = await createTask({
@@ -91,6 +93,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update tasks");
     await updateTask(req.params.id, req.user!.userId, req.body, req.query.scope as string | undefined);
     res.json({ success: true });
   } catch (err: any) {
@@ -104,6 +107,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete tasks");
     await deleteTask(req.params.id, req.user!.userId, req.query.scope as string | undefined);
     res.json({ success: true });
   } catch (err: any) {
@@ -117,6 +121,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can batch update task status");
     const { taskIds, status } = req.body;
     if (!status) throw new AppError(400, "Status is required");
     if (!Array.isArray(taskIds) || taskIds.length === 0) throw new AppError(400, "taskIds must be a non-empty array");
@@ -134,6 +139,7 @@ router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update task status");
     const { status } = req.body;
     if (!status) throw new AppError(400, "Status is required");
     await updateTaskStatus(req.params.id, status, req.user!.userId);
@@ -149,6 +155,7 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can assign tasks");
     const { assigneeId } = req.body;
     if (!assigneeId) throw new AppError(400, "assigneeId is required");
     await assignIndividualTask(req.params.id, assigneeId, req.user!.userId);
@@ -164,6 +171,7 @@ router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can submit tasks for verification");
     await submitForVerification(req.params.id, req.user!.userId);
     res.json({ success: true });
   } catch (err: any) {
@@ -177,6 +185,7 @@ router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) 
 // ─────────────────────────────────────────────
 router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can approve tasks");
     await approveTeamTask(req.params.id, req.user!.userId, req.body.note);
     res.json({ success: true });
   } catch (err: any) {
@@ -190,6 +199,7 @@ router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can reject tasks");
     const { reason } = req.body;
     if (!reason) throw new AppError(400, "Rejection reason is required");
     await rejectTeamTask(req.params.id, req.user!.userId, reason);
@@ -205,6 +215,7 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can publish tasks");
     await publishCommonTask(req.params.id, req.user!.userId);
     res.json({ success: true });
   } catch (err: any) {
@@ -218,6 +229,7 @@ router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/activate", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can activate tasks");
     await activateUpcomingTask(req.params.id, req.user!.userId);
     res.json({ success: true });
   } catch (err: any) {
@@ -231,6 +243,7 @@ router.post("/:id/activate", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/publish-draft", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can publish draft tasks");
     const { targetType, assigneeId, teamId, selectedUserIds, scheduledDate } = req.body;
     if (!targetType) throw new AppError(400, "targetType is required");
     await publishDraft(req.params.id, req.user!.userId, targetType, {

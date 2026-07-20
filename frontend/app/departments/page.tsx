@@ -30,7 +30,7 @@ export default async function DepartmentsPage() {
         : [];
       const userMap = new Map(usersData.map((u: Record<string, unknown>) => [u.id, u]));
 
-      const adminMember = members.find((m: Record<string, unknown>) => m.role === "admin" || m.role === "manager");
+      const adminMember = members.find((m: Record<string, unknown>) => m.role === "members");
       const headUser = adminMember ? userMap.get(adminMember.userId as string) as Record<string, unknown> | undefined : undefined;
 
       departments = teamsData.map((t: Record<string, unknown>, i: number) => ({

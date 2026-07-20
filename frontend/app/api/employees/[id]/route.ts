@@ -5,6 +5,7 @@ import { v4 as uuid } from "uuid";
 import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { ensureUserOrg } from "@/lib/org";
+import { isAdminRole } from "@/lib/rbac";
 
 export async function GET(
   _request: Request,
@@ -62,7 +63,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     // Block employee users from modifying employees
-    if (session.user.role === "member" || session.user.role === "staff") {
+    if (!isAdminRole(session.user.role || "")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

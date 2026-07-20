@@ -13,7 +13,7 @@
 
 ### Authorization
 - Role-Based Access Control (RBAC) via Casbin
-- Roles: super_admin, org_menu_admin, workspace, admin, manager, member, client
+- Roles: org_admin, members, staffs, hr, clients
 - Organization-scoped data isolation
 - File access verification on every request
 - API endpoint authorization checks

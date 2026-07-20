@@ -11,7 +11,7 @@ export interface ConsentInput {
   orgId?: string;
   anonymousId?: string;
   categories: ConsentCategories;
-  source: "banner" | "preferences-center" | "account-settings" | "api" | "admin";
+  source: "banner" | "preferences-center" | "account-settings" | "api" | "system";
   ipAddress?: string;
   userAgent?: string;
   region: string;

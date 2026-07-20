@@ -143,7 +143,7 @@ router.get("/links", authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/links/:id", authenticate, async (req: AuthRequest, res: Response) => {
-  const link = await ShareLink.findOne({ id: req.params.id }).select("createdBy orgId").lean();
+  const link = await ShareLink.findOne({ id: req.params.id, orgId: req.user!.orgId }).select("createdBy orgId").lean();
   if (!link) throw new AppError(404, "Share link not found");
   if (link.createdBy !== req.user!.userId) {
     await verifyOrgAccess(req.user!.userId, link.orgId);

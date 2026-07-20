@@ -5,6 +5,7 @@ import { v4 as uuid } from "uuid";
 import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { ensureUserOrg } from "@/lib/org";
+import { ROLES, isAdminRole } from "@/lib/rbac";
 
 // Mirrors backend workspace-provision template so client folders are always
 // created from the file-management side, even if the backend proxy is unreachable.
@@ -62,6 +63,9 @@ export async function POST(request: NextRequest) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!isAdminRole(session.user.role || "")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
@@ -211,6 +215,9 @@ export async function PUT(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (!isAdminRole(session.user.role || "")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
     const id = request.nextUrl.searchParams.get("id");
@@ -241,6 +248,9 @@ export async function DELETE(request: NextRequest) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!isAdminRole(session.user.role || "")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);

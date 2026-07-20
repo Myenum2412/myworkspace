@@ -43,5 +43,5 @@ export async function checkUploadPermission(params: UploadAuthParams): Promise<U
 
 export function isRoleApprover(role: string): boolean {
   const normalizedRole = role.toLowerCase();
-  return ["super_admin", "org_admin", "gen_admin", "hr", "branch_manager", "project_manager"].includes(normalizedRole);
+  return ["org_admin", "members", "hr"].includes(normalizedRole);
 }

@@ -117,7 +117,7 @@ export default async function EmployeesPage() {
               id: uuid(),
               orgId,
               userId: mainUserId,
-              role: "admin",
+              role: "members",
               joinedAt: new Date(),
             });
           }
@@ -162,7 +162,7 @@ export default async function EmployeesPage() {
       const hasCurrentUser = allOrgMembers.some((m) => uniqueIds.includes(m.userId as string));
       if (!hasCurrentUser) {
         const mainUserId = (currentUserDoc?.id as string) || sessionUserIdStr;
-        allOrgMembers.push({ userId: mainUserId, role: "admin" });
+        allOrgMembers.push({ userId: mainUserId, role: "members" });
       }
 
       const userIds = [...new Set(allOrgMembers.map((m) => m.userId as string).filter(Boolean))];
@@ -208,7 +208,7 @@ export default async function EmployeesPage() {
                   $filter: {
                     input: "$members",
                     as: "m",
-                    cond: { $eq: ["$$m.role", "lead"] },
+                    cond: { $eq: ["$m.role", "team_lead"] },
                   },
                 },
               },
@@ -278,7 +278,7 @@ export default async function EmployeesPage() {
               displayId: (u.displayId as string) || "",
               name: (u.name as string) || "Unknown",
               email: (u.email as string) || "",
-              role: (m.role as string) || (u.role as string) || "member",
+              role: (m.role as string) || (u.role as string) || "staffs",
               status: (u.status as string) || "offline",
               department: (u.department as string) || "",
               designation: (u.designation as string) || "",
@@ -373,7 +373,7 @@ export default async function EmployeesPage() {
             name: u?.name || (m.name as string) || "",
             email: u?.email || (m.email as string) || "",
             avatar: u?.avatar || "",
-            role: (m.role as string) || "member",
+            role: (m.role as string) || "staffs",
             designation: u?.designation || (m.designation as string) || "",
             department: u?.department || (m.department as string) || "",
           };
@@ -385,7 +385,7 @@ export default async function EmployeesPage() {
             id: (u.id as string) || (u._id as ObjectId)?.toString() || "",
             name: (u.name as string) || "Unknown",
             email: (u.email as string) || "",
-            role: (u.role as string) || "member",
+            role: (u.role as string) || "staffs",
             status: "terminated",
             department: (u.department as string) || "",
             designation: (u.designation as string) || "",

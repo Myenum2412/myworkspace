@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import { whatsappService } from "../services/whatsapp.service.js";
 import { logger } from "../lib/logger/index.js";
 import { authenticate } from "../middleware/auth.js";
+import type { AuthRequest } from "../types/index.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 
 const router = Router();
 router.use(authenticate);
@@ -17,15 +19,20 @@ router.get("/status", (_req: Request, res: Response) => {
   res.json({ success: true, data: { ...state, info } });
 });
 
-router.post("/start", async (_req: Request, res: Response) => {
+router.post("/start", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) {
+    res.status(403).json({ success: false, error: "Only admins can start WhatsApp client" });
+    return;
+  }
   try {
     const state = whatsappService.getState();
     if (state.status === "ready") {
-      return res.json({
+      res.json({
         success: true,
         message: "WhatsApp client is already connected",
         data: state,
       });
+      return;
     }
 
     whatsappService.start().catch((err) => {
@@ -43,7 +50,11 @@ router.post("/start", async (_req: Request, res: Response) => {
   }
 });
 
-router.post("/stop", async (_req: Request, res: Response) => {
+router.post("/stop", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) {
+    res.status(403).json({ success: false, error: "Only admins can stop WhatsApp client" });
+    return;
+  }
   try {
     await whatsappService.stop();
     res.json({
@@ -57,7 +68,11 @@ router.post("/stop", async (_req: Request, res: Response) => {
   }
 });
 
-router.post("/logout", async (_req: Request, res: Response) => {
+router.post("/logout", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) {
+    res.status(403).json({ success: false, error: "Only admins can logout WhatsApp client" });
+    return;
+  }
   try {
     await whatsappService.logout();
     res.json({
@@ -71,10 +86,15 @@ router.post("/logout", async (_req: Request, res: Response) => {
   }
 });
 
-router.post("/send", async (req: Request, res: Response) => {
+router.post("/send", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) {
+    res.status(403).json({ success: false, error: "Only admins can send WhatsApp messages" });
+    return;
+  }
   const { to, message } = req.body;
   if (!to || !message) {
-    return res.status(400).json({ success: false, error: "Both 'to' and 'message' are required" });
+    res.status(400).json({ success: false, error: "Both 'to' and 'message' are required" });
+    return;
   }
 
   try {

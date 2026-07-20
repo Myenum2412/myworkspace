@@ -163,7 +163,7 @@ export async function ensureUserOrg(userId: string, email?: string): Promise<str
       id: uuid(),
       orgId: existingOrg.id,
       userId: mainUserId,
-      role: "admin",
+      role: "members",
       joinedAt: new Date(),
     });
     return existingOrg.id;
@@ -190,7 +190,7 @@ export async function ensureUserOrg(userId: string, email?: string): Promise<str
     id: uuid(),
     orgId: newOrgId,
     userId: mainUserId,
-    role: "admin",
+    role: "members",
     joinedAt: new Date(),
   });
 

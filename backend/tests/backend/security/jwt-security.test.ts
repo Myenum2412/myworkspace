@@ -39,7 +39,7 @@ describe("JWT security", () => {
     });
 
     it("rejects expired token", async () => {
-      const token = expiredJWT({ userId: "u1", email: "test@example.com", role: "admin" });
+      const token = expiredJWT({ userId: "u1", email: "test@example.com", role: "members" });
       const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${token}`);
       expect(res.status).toBe(401);
     });
@@ -52,7 +52,7 @@ describe("JWT security", () => {
 
     it("rejects token signed with different secret", async () => {
       const token = jwt.sign(
-        { userId: "u1", email: "test@example.com", role: "admin" },
+        { userId: "u1", email: "test@example.com", role: "members" },
         "wrong-secret",
       );
       const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${token}`);
@@ -66,7 +66,7 @@ describe("JWT security", () => {
 
     it("rejects token with invalid user ID type", async () => {
       const token = jwt.sign(
-        { userId: null, email: "test@example.com", role: "admin" },
+        { userId: null, email: "test@example.com", role: "members" },
         process.env.JWT_SECRET || "test-secret",
       );
       const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${token}`);
@@ -77,7 +77,7 @@ describe("JWT security", () => {
   describe("token scope and isolation", () => {
     it("token with missing orgId gets 403 on org-scoped routes", async () => {
       const token = jwt.sign(
-        { userId: "u1", email: "test@example.com", role: "admin", permissions: [] },
+        { userId: "u1", email: "test@example.com", role: "members", permissions: [] },
         process.env.JWT_SECRET || "test-secret",
       );
       const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${token}`);

@@ -51,7 +51,7 @@ export default async function TeamTasksPage() {
           from: "teammembers",
           let: { taskTeamId: "$teamId" },
           pipeline: [
-            { $match: { $expr: { $eq: ["$teamId", "$$taskTeamId"] }, role: "lead" } },
+            { $match: { $expr: { $eq: ["$teamId", "$$taskTeamId"] }, role: "team_lead" } },
             { $limit: 1 },
           ],
           as: "teamLead",

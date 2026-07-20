@@ -129,7 +129,7 @@ export function TeamMembers({
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-gray-900">{m.name}</span>
-                              {m.role === "lead" && <Badge className="bg-gray-700 text-gray-700 text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5" /> Lead</Badge>}
+                              {m.role === "team_lead" && <Badge className="bg-gray-700 text-gray-700 text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5" /> Lead</Badge>}
                             </div>
                             <span className="text-xs text-gray-500 block mt-0.5">{m.email}</span>
                           </div>
@@ -140,7 +140,7 @@ export function TeamMembers({
                       <td className="px-4 py-3 text-gray-600">{m.designation || "—"}</td>
                       <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-2">
-                          {m.role !== "lead" && (
+                          {m.role !== "team_lead" && (
                             <Button variant="outline" size="sm" className="text-xs" onClick={() => onSetLead(m.userId)}>
                               <CrownIcon className="size-3 mr-1" /> Set Lead
                             </Button>
@@ -175,13 +175,13 @@ export function TeamMembers({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-sm">{m.name}</span>
-                          {m.role === "lead" && <Badge className="bg-gray-700 text-gray-700 text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5" /> Lead</Badge>}
+                          {m.role === "team_lead" && <Badge className="bg-gray-700 text-gray-700 text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5" /> Lead</Badge>}
                         </div>
                         <p className="text-xs text-muted-foreground">{m.email}{m.department ? ` · ${m.department}` : ""}{m.designation ? ` · ${m.designation}` : ""}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      {m.role !== "lead" && (
+                      {m.role !== "team_lead" && (
                         <Button variant="ghost" size="sm" className="text-xs" onClick={(e) => { e.stopPropagation(); onSetLead(m.userId); }}><CrownIcon className="size-3 mr-1" />Set Lead</Button>
                       )}
                       <Button variant="ghost" size="sm" className="text-xs text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); onRemoveMember(m.userId); }}><Trash2Icon className="size-3" /></Button>

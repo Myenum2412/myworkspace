@@ -88,7 +88,7 @@ export function TeamTreeView({ team }: TeamTreeViewProps) {
     const result: Node[] = [];
     const edgeList: Edge[] = [];
     const centerX = 350;
-    const lead = team.members.find((m) => m.role === "lead");
+    const lead = team.members.find((m) => m.role === "team_lead");
 
     result.push({
       id: "team",
@@ -114,7 +114,7 @@ export function TeamTreeView({ team }: TeamTreeViewProps) {
       });
     }
 
-    const members = team.members.filter((m) => m.role !== "lead");
+    const members = team.members.filter((m) => m.role !== "team_lead");
     const memberStartY = lead ? 350 : 250;
     const memberWidth = 170;
     const gap = 20;

@@ -36,7 +36,7 @@ export default async function FilesPage() {
     <FileManagerClient
       orgId={orgId}
       userId={session.user.id}
-      userRole={session.user.role || "workspace"}
+      userRole={session.user.role || "staffs"}
     />
   );
 }

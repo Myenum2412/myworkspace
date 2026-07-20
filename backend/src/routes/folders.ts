@@ -5,6 +5,7 @@ import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { cacheManager } from "../lib/cache.js";
 import { verifyOrgAccess } from "../lib/org-utils.js";
 
@@ -49,6 +50,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create folders");
   const { orgId, parentId, name, clientId } = req.body;
   if (!orgId || !name) throw new AppError(400, "orgId and name are required");
   await verifyMembership(req.user!.userId, orgId);
@@ -74,6 +76,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.patch("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can rename folders");
   const { name } = req.body;
   if (!name) throw new AppError(400, "name is required");
 
@@ -108,6 +111,7 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/:id/move", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can move folders");
   const { targetParentId } = req.body;
   const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).select("id orgId name path parentId").lean();
   if (!folder) throw new AppError(404, "Source folder not found");
@@ -140,6 +144,7 @@ router.post("/:id/move", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/:id/copy", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can copy folders");
   const { targetParentId } = req.body;
   const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).select("id orgId name path parentId").lean();
   if (!folder) throw new AppError(404, "Folder not found");
@@ -186,6 +191,7 @@ router.post("/:id/copy", async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete folders");
   const folder = await Folder.findOne({ id: req.params.id, deletedAt: null }).select("id orgId name path").lean();
   if (!folder) throw new AppError(404, "Folder not found");
   await verifyMembership(req.user!.userId, folder.orgId);

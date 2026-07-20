@@ -22,7 +22,7 @@ describe("RBAC enforcement", () => {
   it("non-admin user cannot reach /api/admin/users", async () => {
     // Regular role is "workspace" (non-admin) via the admin-email gate
     const other = await seedOrgWithAdmin({ email: `rb-${Date.now()}@ex.seeded` });
-    // seedOrgWithAdmin always creates role "admin" in its own org; the
+    // seedOrgWithAdmin always creates role "members" in its own org; the
     // admin.ts routes additionally require ADMIN_EMAIL match for orgmenu areas.
     // For /api/admin/users we test authorizePermission("MANAGE_USERS"): a regular
     // user has no permissions and is rejected.

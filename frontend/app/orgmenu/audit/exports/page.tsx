@@ -48,7 +48,7 @@ const getAllAuditExports = cache(async () => {
 export default async function AuditExportsPage() {
   const session = await auth();
   const role = session?.user?.role;
-  const isSuperAdmin = role === "SUPER_ADMIN" || role === "ORG_MENU_ADMIN";
+  const isSuperAdmin = role === "org_admin";
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
   const exports = isSuperAdmin ? await getAllAuditExports() : await getAuditExports(orgId || "null");

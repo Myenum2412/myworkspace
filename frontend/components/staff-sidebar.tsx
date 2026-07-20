@@ -11,6 +11,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { ROLES } from "@/lib/rbac";
 import FolderIcon from "@mui/icons-material/Folder";
 import {
   LayoutDashboardIcon,
@@ -69,6 +70,10 @@ export function StaffSidebar({
   user: NavUserData;
 }) {
   const { data: session } = useSession();
+  const currentRole = (session?.user as Record<string, unknown>)?.role as string || "";
+  if (currentRole !== ROLES.STAFFS) {
+    return null;
+  }
   const navItems = buildStaffNavData();
 
   return (

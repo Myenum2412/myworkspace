@@ -9,6 +9,9 @@ export interface JwtPayload {
   projectId?: string;
   clientId?: string;
   tokenVersion?: number;
+  jti?: string;
+  iat?: number;
+  exp?: number;
 }
 
 export interface AuthRequest extends Omit<Request, "params"> {
@@ -27,16 +30,6 @@ export interface ApiResponse<T = unknown> {
 export type TaskStatus = "todo" | "in_progress" | "review" | "done" | "cancelled";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
 export type UserStatus = "online" | "offline" | "break";
-export type UserRole = "admin" | "manager" | "member" | "ORG_MENU_ADMIN";
-export type AdminPermission =
-  | "VIEW_ORGMENU"
-  | "MANAGE_USERS"
-  | "MANAGE_WORKSPACES"
-  | "MANAGE_COMPANIES"
-  | "MANAGE_BILLING"
-  | "VIEW_SYSTEM_LOGS"
-  | "MANAGE_ROLES"
-  | "MANAGE_SETTINGS"
-  | "MANAGE_SUBSCRIPTIONS";
+export type UserRole = "org_admin" | "members" | "manager" | "team_leader" | "staffs" | "hr" | "finance" | "contractors" | "clients" | "guest" | "api_token" | "service_account" | "automation_bot";
 export type NotificationType = "task_assigned" | "task_updated" | "mention" | "invite" | "system" | "comment" | "status_change";
 export type OrgPlan = "free" | "growth" | "enterprise" | string;

@@ -7,6 +7,7 @@ import { useBootstrapStore } from "@/stores/bootstrap-store";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchBootstrapData, invalidateBootstrapCache } from "@/lib/api/bootstrap";
 import { recordLoginTime } from "@/lib/performance";
+import { ROLES } from "@/lib/rbac";
 
 type LoginState = {
   loading: boolean;
@@ -79,11 +80,11 @@ export function useInstantLogin() {
 
       const role = bootstrapData?.user?.role?.toLowerCase() || "";
       const redirectPath =
-        role === "org_menu_admin" || role === "super_admin"
+        role === ROLES.ORG_ADMIN
           ? "/orgmenu"
-          : role === "client" || role === "client_user"
+          : role === ROLES.CLIENTS
             ? "/client/dashboard"
-            : ["workspace", "admin", "manager"].includes(role)
+            : role === ROLES.MEMBERS
               ? "/dashboard"
               : "/staffs";
 

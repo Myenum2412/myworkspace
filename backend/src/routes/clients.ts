@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, requireEmail } from "../lib/validate.js";
 import {
@@ -36,6 +37,7 @@ router.get("/:id/workspace", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create clients");
   const orgId = req.user!.orgId!;
   const name = requireString(req.body.name, "name", { min: 1, max: 300 });
   const email = requireEmail(req.body.email, "email");
@@ -56,12 +58,14 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update clients");
   const orgId = req.user!.orgId!;
   const data = await updateClient(orgId, req.params.id, req.user!.userId, req.user!.email!, req.body);
   res.json({ success: true, data });
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete clients");
   const orgId = req.user!.orgId!;
   await deleteClient(orgId, req.params.id, req.user!.userId);
   res.json({ success: true, message: "Client deleted" });

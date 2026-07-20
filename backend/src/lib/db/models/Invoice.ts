@@ -32,6 +32,8 @@ export interface IInvoice extends Document {
   adjustmentValue: number;
   total: number;
   isSimplifiedView: boolean;
+  createdBy: string;
+  updatedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -74,6 +76,8 @@ const invoiceSchema = new Schema<IInvoice>(
     adjustmentValue: { type: Number, default: 0 },
     total: { type: Number, default: 0 },
     isSimplifiedView: { type: Boolean, default: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
   },
   { timestamps: true }
 );

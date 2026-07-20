@@ -28,14 +28,14 @@ export async function seedOrgWithAdmin(opts: {
     email,
     password: await hash(password, 10),
     status: "online",
-    role: "admin",
+    role: "members",
     orgId,
     userNumber: Math.floor(Math.random() * 900000) + 100000,
   });
   await Organization.create({ id: orgId, name: `${name}'s Org`, slug: `slug-${userId.slice(0, 8)}`, plan: "free", ownerId: userId });
-  await OrgMember.create({ orgId, userId, role: "admin" });
+  await OrgMember.create({ orgId, userId, role: "members" });
 
-  const token = signToken({ userId, email, role: "admin", permissions: [], orgId });
+  const token = signToken({ userId, email, role: "members", permissions: [], orgId });
   return { userId, orgId, email, headers: { Authorization: `Bearer ${token}` } };
 }
 

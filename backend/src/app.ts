@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
@@ -13,6 +13,7 @@ import { inputSanitizer } from "./middleware/sanitize.js";
 import { csrfProtection } from "./lib/csrf.js";
 import { requestTimeout } from "./middleware/timeout.js";
 import { perfLogger } from "./middleware/perf-logger.js";
+import { resolveOrgContext } from "./middleware/org-context.js";
 import mongoose from "mongoose";
 import { isRedisConnected } from "./lib/redis.js";
 import { metricsRegistry } from "./lib/monitoring/index.js";
@@ -144,15 +145,35 @@ app.use("/api", (req, res, next) => {
   apiLimiter(req, res, next);
 });
 
-// ── Static files with caching headers ──
+// ── Static files with caching headers and path traversal protection ──
 const oneYear = 365 * 24 * 60 * 60 * 1000;
 const oneDay = 24 * 60 * 60 * 1000;
 
-app.use("/uploads", express.static(path.resolve("data", "uploads"), {
+// Path traversal protection middleware for static files
+function staticPathGuard(baseDir: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    // Decode URL-encoded characters and normalize path
+    const decodedPath = decodeURIComponent(req.path);
+    // Block path traversal attempts
+    if (decodedPath.includes("..") || decodedPath.includes("%2e%2e") || decodedPath.includes("%252e%252e")) {
+      res.status(403).json({ success: false, error: "Forbidden" });
+      return;
+    }
+    // Block null bytes
+    if (decodedPath.includes("\0") || decodedPath.includes("%00")) {
+      res.status(403).json({ success: false, error: "Forbidden" });
+      return;
+    }
+    next();
+  };
+}
+
+app.use("/uploads", staticPathGuard("data/uploads"), express.static(path.resolve("data", "uploads"), {
   maxAge: oneDay,
   immutable: false,
   etag: true,
   lastModified: true,
+  dotfiles: "deny",
   setHeaders: (res, filePath) => {
     if (/\.(jpg|jpeg|png|gif|webp|avif|svg|ico)$/i.test(filePath)) {
       res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
@@ -160,11 +181,12 @@ app.use("/uploads", express.static(path.resolve("data", "uploads"), {
   },
 }));
 
-app.use("/banners", express.static(path.resolve("public", "banners"), {
+app.use("/banners", staticPathGuard("public/banners"), express.static(path.resolve("public", "banners"), {
   maxAge: oneDay,
   immutable: false,
   etag: true,
   lastModified: true,
+  dotfiles: "deny",
 }));
 
 // ── Cache-Control for all API responses ──
@@ -173,6 +195,24 @@ app.use("/api", (req, res, next) => {
     res.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate");
   }
   next();
+});
+
+// ── Resolve org context for all authenticated API routes ──
+// Applied globally; routes that don't need org context (health, config, auth, client-auth)
+// will simply skip resolution since req.user won't be set yet
+app.use("/api", (req, res, next) => {
+  // Skip org context for public/unauthenticated routes
+  const publicPaths = ["/api/health", "/api/config/public", "/api/metrics"];
+  const skipPaths = ["/api/auth", "/api/client-auth"];
+  const path = req.path;
+
+  if (publicPaths.some(p => path.startsWith(p)) || skipPaths.some(p => path.startsWith(p))) {
+    next();
+    return;
+  }
+
+  // Apply org context resolution (will skip if no req.user)
+  resolveOrgContext(req as any, res, next);
 });
 
 // ── Request logging and metrics middleware ──

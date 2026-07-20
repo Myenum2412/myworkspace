@@ -7,6 +7,7 @@ import { v4 as uuid } from "uuid";
 import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { getNextSequence, getNextEmployeeDisplayId } from "@/lib/db/counter";
+import { ROLES } from "@/lib/rbac";
 
 export async function addEmployeeAction(formData: FormData) {
   const session = await auth();
@@ -43,7 +44,7 @@ export async function addEmployeeAction(formData: FormData) {
       id: uuid(),
       orgId: newOrgId,
       userId: session.user.id,
-      role: "admin",
+      role: ROLES.MEMBERS,
       joinedAt: new Date(),
     });
   }
@@ -64,7 +65,7 @@ export async function addEmployeeAction(formData: FormData) {
     name,
     email,
     password: defaultPassword,
-    role: role?.toLowerCase() || "member",
+    role: role?.toLowerCase() || "staffs",
     department,
     status: status?.toLowerCase() || "active",
     createdAt: new Date(),
@@ -75,7 +76,7 @@ export async function addEmployeeAction(formData: FormData) {
     id: uuid(),
     orgId: refreshedMember.orgId,
     userId,
-    role: role?.toLowerCase() || "member",
+    role: role?.toLowerCase() || "staffs",
   });
 
   const { sendEmailDirect, buildEmployeeOnboardedHtml } = await import("@/lib/email");
@@ -107,7 +108,7 @@ export async function addEmployeeAction(formData: FormData) {
     createdAt: now,
   });
 
-  const adminMembers = await (await db.collection(collections.orgMembers).find({ orgId: refreshedMember.orgId, role: { $in: ["admin", "manager"] } })).toArray();
+  const adminMembers = await (await db.collection(collections.orgMembers).find({ orgId: refreshedMember.orgId, role: { $in: [ROLES.MEMBERS] } })).toArray();
   const adminIds = [...new Set(adminMembers.map((m: any) => m.userId))].filter((id: string) => id !== userId);
   if (adminIds.length > 0) {
     const adminNotifs = adminIds.map((adminId: string) => ({

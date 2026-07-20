@@ -148,7 +148,7 @@ export async function verifyOrgAccess(userId: string, orgId: string): Promise<vo
     OrgMember.findOne({ userId, orgId }).lean(),
     User.findOne({ id: userId, orgId }).lean(),
     ClientUser.findOne({ id: userId, orgId }).lean(),
-    User.findOne({ id: userId, role: "ORG_MENU_ADMIN" }).lean(),
+    User.findOne({ id: userId, role: "org_admin" }).lean(),
     Organization.findOne({ id: orgId, ownerId: userId }).select("_id").lean(),
   ]);
 

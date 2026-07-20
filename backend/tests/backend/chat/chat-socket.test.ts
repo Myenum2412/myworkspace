@@ -8,7 +8,7 @@ import { connectTestDb } from "../../__helpers__/db.js";
 const JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 
 function makeToken(userId: string, orgId: string): string {
-  return jwt.sign({ userId, email: "t@e.com", role: "admin", permissions: [], orgId }, JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign({ userId, email: "t@e.com", role: "members", permissions: [], orgId }, JWT_SECRET, { expiresIn: "10m" });
 }
 
 describe("Chat Socket.IO events", () => {

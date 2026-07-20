@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { v4 as uuid } from "uuid";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { Contractor, type IEmergencyContact } from "../lib/db/models/Contractor.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
@@ -25,6 +26,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create contractors");
   const orgId = await requireOrgMembership(req.user!.userId);
   const fullName = requireString(req.body.fullName, "fullName", { min: 1, max: 300 });
   const mobileNumber = requireString(req.body.mobileNumber, "mobileNumber", { min: 1, max: 50 });
@@ -99,6 +101,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update contractors");
   const orgId = await requireOrgMembership(req.user!.userId);
   const existing = await Contractor.findOne({ orgId, id: req.params.id });
   if (!existing) throw new AppError(404, "Contractor not found");
@@ -125,6 +128,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete contractors");
   const orgId = await requireOrgMembership(req.user!.userId);
   const result = await Contractor.deleteOne({ orgId, id: req.params.id });
   if (result.deletedCount === 0) throw new AppError(404, "Contractor not found");

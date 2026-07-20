@@ -36,7 +36,7 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
     });
 
     it("rejects expired Bearer token", async () => {
-      const expired = expiredJWT({ userId: ctx.userId, email: ctx.email, role: "admin", orgId: ctx.orgId });
+      const expired = expiredJWT({ userId: ctx.userId, email: ctx.email, role: "members", orgId: ctx.orgId });
       const res = await request(server)
         .get("/api/tasks")
         .set("Authorization", `Bearer ${expired}`);
@@ -54,7 +54,7 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
 
   describe("Simultaneous invalid tokens", () => {
     it("rejects request with both tokens invalid", async () => {
-      const badBearer = expiredJWT({ userId: "u1", email: "t@t.com", role: "admin", orgId: "o1" });
+      const badBearer = expiredJWT({ userId: "u1", email: "t@t.com", role: "members", orgId: "o1" });
       const res = await request(server)
         .get("/api/tasks")
         .set("Authorization", `Bearer ${badBearer}`)
@@ -70,7 +70,7 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
       const newToken = signToken({
         userId: ctx.userId,
         email: ctx.email,
-        role: "admin",
+        role: "members",
         permissions: [],
         orgId: ctx.orgId,
       });
@@ -83,7 +83,7 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
 
     it("revoked token is rejected", async () => {
       const revokedToken = jwt.sign(
-        { userId: ctx.userId, email: ctx.email, role: "admin", orgId: ctx.orgId, revoked: true },
+        { userId: ctx.userId, email: ctx.email, role: "members", orgId: ctx.orgId, revoked: true },
         process.env.JWT_SECRET || "test-secret",
         { expiresIn: "5m" },
       );
@@ -98,8 +98,8 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
 
   describe("Simultaneous valid tokens", () => {
     it("two valid tokens for same user both work", async () => {
-      const token1 = signToken({ userId: ctx.userId, email: ctx.email, role: "admin", permissions: [], orgId: ctx.orgId });
-      const token2 = signToken({ userId: ctx.userId, email: ctx.email, role: "admin", permissions: [], orgId: ctx.orgId });
+      const token1 = signToken({ userId: ctx.userId, email: ctx.email, role: "members", permissions: [], orgId: ctx.orgId });
+      const token2 = signToken({ userId: ctx.userId, email: ctx.email, role: "members", permissions: [], orgId: ctx.orgId });
 
       const [r1, r2] = await Promise.all([
         request(server).get("/api/tasks").set("Authorization", `Bearer ${token1}`),

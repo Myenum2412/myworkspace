@@ -2,6 +2,7 @@
 
 import { signIn, signOut } from "./config";
 import { db } from "@/lib/db";
+import { ROLES } from "@/lib/rbac";
 import { collections } from "@/lib/db/schema";
 import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
@@ -12,10 +13,9 @@ import { getNextSequence } from "@/lib/db/counter";
 
 function getRedirectPath(role?: string): string {
   const r = role?.toLowerCase() || "";
-  if (r === "org_menu_admin" || r === "super_admin") return "/orgmenu";
-  if (r === "client" || r === "client_user") return "/client/dashboard";
-  const isWorkspaceAdmin = ["workspace", "admin", "manager"].includes(r);
-  if (isWorkspaceAdmin) return "/dashboard";
+  if (r === ROLES.ORG_ADMIN) return "/orgmenu";
+  if (r === ROLES.CLIENTS) return "/client/dashboard";
+  if (r === ROLES.MEMBERS) return "/dashboard";
   return "/staffs";
 }
 
@@ -134,7 +134,7 @@ export async function loginAction(formData: FormData) {
           {
             $setOnInsert: {
               id: uuid(), orgId: orgIdToUse, userId,
-              role: "admin", joinedAt: new Date(),
+              role: ROLES.MEMBERS, joinedAt: new Date(),
             },
           },
           { upsert: true }
@@ -153,7 +153,7 @@ export async function loginAction(formData: FormData) {
 
   }
 
-  const role = isClient ? "client" : user?.role;
+  const role = isClient ? ROLES.CLIENTS : user?.role;
   const redirectPath = getRedirectPath(role);
 
 
@@ -214,7 +214,7 @@ export async function signupAction(formData: FormData) {
     email,
     password: hashedPassword,
     status: "online",
-    role: "admin",
+    role: ROLES.MEMBERS,
     emailVerified: true,
     isActive: true,
     permissions: [],
@@ -247,7 +247,7 @@ export async function signupAction(formData: FormData) {
     id: uuid(),
     orgId,
     userId,
-    role: "admin",
+    role: ROLES.MEMBERS,
     joinedAt: new Date(),
   });
 

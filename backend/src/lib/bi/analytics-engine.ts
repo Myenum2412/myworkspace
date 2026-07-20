@@ -1,6 +1,7 @@
 import { Schema, model, Document } from "mongoose";
 import { v4 as uuid } from "uuid";
 import { logger } from "../logger/index.js";
+import { ROLES } from "../rbac/index.js";
 import { Organization } from "../db/models/Organization.js";
 import { Project } from "../db/models/Project.js";
 import { Task } from "../db/models/Task.js";
@@ -71,7 +72,7 @@ export class BusinessIntelligenceEngine {
       widgets,
       createdBy,
       isDefault: false,
-      roles: ["admin", "manager"],
+      roles: [ROLES.MEMBERS],
     });
   }
 

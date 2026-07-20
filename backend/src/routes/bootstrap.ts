@@ -12,6 +12,8 @@ import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { cacheManager, CacheKeys } from "../lib/cache.js";
+import { isAdminRole, isPlatformRole, getEffectivePermissions, hasAnyRole, ROLES } from "../lib/rbac/index.js";
+import { permissionCache } from "../lib/permission-cache.js";
 
 const router = Router();
 router.use(authenticate);
@@ -134,15 +136,19 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   perfLog("bootstrap:user+org", Date.now() - t0);
 
   const { orgId, org } = orgInfo;
-  const effectiveRole = role || userDoc?.role || memberDoc?.role || "member";
+  const effectiveRole = role || userDoc?.role || memberDoc?.role || "staffs";
   const effectiveOrgId = orgId || jwtOrgId || userDoc?.orgId || "";
+
+  // Use permission cache for effective permissions
+  const rolePermissions = permissionCache.resolvePermissions(userId, effectiveRole, effectiveOrgId);
   const allPermissions: string[] = [...new Set([
     ...(userDoc?.permissions || []),
     ...(req.user?.permissions || []),
+    ...rolePermissions,
   ])] as string[];
 
-  const isAdmin = ["admin", "super_admin", "ORG_MENU_ADMIN"].includes(effectiveRole);
-  const isOrgAdmin = ["admin", "manager", "ORG_MENU_ADMIN"].includes(effectiveRole);
+  const isAdmin = isAdminRole(effectiveRole);
+  const isOrgAdmin = isAdminRole(effectiveRole);
 
   const t1 = Date.now();
 
@@ -240,7 +246,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
       allPermissions,
       isAdmin,
       isOrgAdmin,
-      isManager: effectiveRole === "manager",
+      isManager: hasAnyRole(effectiveRole, [ROLES.MEMBERS, ROLES.HR]),
     },
     dashboard: {
       totalTasks: tc.total as number,
@@ -254,7 +260,21 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     },
     features: isAdmin
       ? ["dashboard", "projects", "tasks", "clients", "employees", "files", "billing", "settings", "approvals", "reports", "calendar", "time"]
-      : ["dashboard", "tasks", "files", "calendar", "time"],
+      : effectiveRole === ROLES.HR
+        ? ["dashboard", "employees", "attendance", "leave", "payroll", "recruitment", "onboarding", "documents", "performance", "reports"]
+        : effectiveRole === ROLES.FINANCE
+          ? ["dashboard", "billing", "invoices", "expenses", "reports", "files"]
+          : effectiveRole === ROLES.MANAGER
+            ? ["dashboard", "projects", "tasks", "teams", "approvals", "reports", "files", "calendar"]
+            : effectiveRole === ROLES.TEAM_LEADER
+              ? ["dashboard", "tasks", "teams", "approvals", "files"]
+              : effectiveRole === ROLES.CONTRACTORS
+                ? ["dashboard", "tasks", "files", "communications"]
+                : effectiveRole === ROLES.CLIENTS
+                  ? ["portal", "projects", "files", "invoices", "messages", "approvals"]
+                  : effectiveRole === ROLES.GUEST
+                    ? ["shared"]
+                    : ["dashboard", "tasks", "files", "calendar", "time"],
     serverTime: new Date().toISOString(),
   };
 

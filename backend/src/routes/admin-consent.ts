@@ -1,6 +1,6 @@
 import { Router, Response } from "express";
 import { authenticate } from "../middleware/auth.js";
-import { orgMenuAdminOnly } from "../middleware/authorize.js";
+import { platformAdminOnly } from "../middleware/authorize.js";
 import { AuthRequest } from "../types/index.js";
 import { AppError } from "../middleware/error.js";
 import { consentService } from "../services/consent/consent.service.js";
@@ -12,7 +12,7 @@ import { logger } from "../lib/logger/index.js";
 const router = Router();
 
 router.use(authenticate);
-router.use(orgMenuAdminOnly());
+router.use(platformAdminOnly());
 
 // ── Consent Dashboard ──
 

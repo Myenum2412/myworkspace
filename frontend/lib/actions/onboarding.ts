@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { ROLES } from "@/lib/rbac";
 
 export interface OnboardingData {
   plan: string;
@@ -42,7 +43,7 @@ export async function completeOnboarding(data: OnboardingData) {
 
   const userId = session.user.id;
   const userRole = session.user.role;
-  const isOrgAdmin = userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN";
+  const isOrgAdmin = userRole === ROLES.ORG_ADMIN;
   if (isOrgAdmin) {
     redirect("/orgmenu");
   }
@@ -62,7 +63,7 @@ export async function completeOnboarding(data: OnboardingData) {
       id: crypto.randomUUID(),
       orgId: org.id,
       userId,
-      role: "admin",
+      role: ROLES.MEMBERS,
       joinedAt: new Date(),
     });
   

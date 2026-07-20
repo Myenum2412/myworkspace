@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { Appointment, IAppointment } from "../lib/db/models/Appointment.js";
 import { socketIOManager } from "../lib/socketio/index.js";
@@ -100,6 +101,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create appointments");
   const orgId = req.user!.orgId || await requireOrgMembership(req.user!.userId);
   const userId = req.user!.userId;
   const body = req.body;
@@ -159,6 +161,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update appointments");
   const orgId = req.user!.orgId || await requireOrgMembership(req.user!.userId);
   const userId = req.user!.userId;
 
@@ -188,6 +191,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete appointments");
   const orgId = req.user!.orgId || await requireOrgMembership(req.user!.userId);
   const userId = req.user!.userId;
 

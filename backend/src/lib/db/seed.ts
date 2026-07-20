@@ -50,7 +50,7 @@ async function seed() {
         emailVerified: true,
         password: hashedPassword,
         status: "offline",
-        role: "admin",
+        role: "members",
       }], { session });
       demoUser = createdUser;
 
@@ -66,7 +66,7 @@ async function seed() {
       await OrgMember.create([{
         orgId,
         userId,
-        role: "admin",
+        role: "members",
         joinedAt: new Date("2026-01-15"),
       }], { session });
     }, {
@@ -90,7 +90,7 @@ async function seed() {
     orgId,
     teamId: team._id,
     userId,
-    role: "lead",
+    role: "team_lead",
   });
 
   const tasks = await Task.insertMany([

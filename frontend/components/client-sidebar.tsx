@@ -11,6 +11,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { ROLES } from "@/lib/rbac";
 import FolderIcon from "@mui/icons-material/Folder";
 import {
   LayoutDashboardIcon,
@@ -51,6 +52,10 @@ export function ClientSidebar({
   user: NavUserData;
 }) {
   const { data: session } = useSession();
+  const currentRole = (session?.user as Record<string, unknown>)?.role as string || "";
+  if (currentRole !== ROLES.CLIENTS) {
+    return null;
+  }
   const orgId = (session?.user as Record<string, unknown>)?.orgId as string || "";
   const navItems = buildClientNavData(orgId);
 

@@ -39,7 +39,7 @@ export default async function StaffListPage() {
           return {
             name: (user?.name as string) || "Unknown",
             email: (user?.email as string) || "",
-            role: (m.role as string) || "member",
+            role: (m.role as string) || "staffs",
             department: (user?.role as string) || "",
             status: (user?.status as string) || "active",
             avatar: (user?.image as string) || "",

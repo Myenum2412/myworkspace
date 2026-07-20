@@ -69,9 +69,11 @@ const statusColors: Record<string, string> = {
 };
 
 const roleBadge: Record<string, "default" | "secondary" | "outline"> = {
-  admin: "default",
-  manager: "secondary",
-  member: "outline",
+  org_admin: "default",
+  members: "default",
+  staffs: "outline",
+  hr: "secondary",
+  clients: "secondary",
 };
 
 type ExperienceRow = {
@@ -622,7 +624,7 @@ export default function ProfileClient({ data }: Props) {
                 {dbUser?.status ? dbUser.status.charAt(0).toUpperCase() + dbUser.status.slice(1) : "Offline"}
               </span>
               <span aria-hidden>&middot;</span>
-              <Badge variant={roleBadge[dbUser?.role || "member"]}>
+              <Badge variant={roleBadge[dbUser?.role || "staffs"]}>
                 {dbUser?.role ? dbUser.role.charAt(0).toUpperCase() + dbUser.role.slice(1) : "Member"}
               </Badge>
             </div>

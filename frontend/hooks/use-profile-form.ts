@@ -97,9 +97,11 @@ export const statusColors: Record<string, string> = {
 };
 
 export const roleBadge: Record<string, "default" | "secondary" | "outline"> = {
-  admin: "default",
-  manager: "secondary",
-  member: "outline",
+  org_admin: "default",
+  members: "default",
+  staffs: "outline",
+  hr: "secondary",
+  clients: "secondary",
 };
 
 export function useProfileForm(initialData: ProfileData) {

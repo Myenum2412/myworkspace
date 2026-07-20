@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { signIn } from "./config";
 import { db } from "@/lib/db";
 import { createUserWorkspace } from "@/actions/user-folder";
+import { ROLES } from "@/lib/rbac";
 
 export async function signupActionMongo(formData: FormData) {
   const name = formData.get("name") as string;
@@ -45,7 +46,7 @@ export async function signupActionMongo(formData: FormData) {
     password: hashedPassword,
     company: company || null,
     status: "online",
-    role: "admin",
+    role: ROLES.MEMBERS,
     emailVerified: false,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -73,7 +74,7 @@ export async function signupActionMongo(formData: FormData) {
     id: uuid(),
     orgId,
     userId,
-    role: "admin",
+    role: ROLES.MEMBERS,
     joinedAt: new Date(),
   });
 

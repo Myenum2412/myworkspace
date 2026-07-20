@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ROLES } from "@/lib/rbac";
 import { UserPlusIcon, PencilIcon, Trash2Icon, SearchIcon, CheckCircle2Icon, XCircleIcon } from "lucide-react";
 import { EditSignupDialog, DeleteSignupForm } from "@/components/dashboard-actions";
 
@@ -173,7 +174,7 @@ export function DashboardSignupsTable({
                     </td>
                     <td className="px-4 py-3 text-sm">{u.email}</td>
                     <td className="px-4 py-3">
-                      <Badge variant={u.role === "admin" ? "default" : u.role === "manager" ? "secondary" : "outline"} className="text-xs">
+                      <Badge variant={u.role === ROLES.MEMBERS ? "default" : "outline"} className="text-xs">
                         {u.role}
                       </Badge>
                     </td>

@@ -128,7 +128,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
               {dbUser?.status ? dbUser.status.charAt(0).toUpperCase() + dbUser.status.slice(1) : "Offline"}
             </span>
             <span aria-hidden>&middot;</span>
-            <Badge variant={roleBadge[dbUser?.role || "member"]}>
+            <Badge variant={roleBadge[dbUser?.role || "staffs"]}>
               {dbUser?.role ? dbUser.role.charAt(0).toUpperCase() + dbUser.role.slice(1) : "Member"}
             </Badge>
           </div>

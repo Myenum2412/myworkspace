@@ -73,5 +73,5 @@ export async function closeAll(sockets: ClientSocket[], server: TestServer) {
 }
 
 export function issueToken(userId: string, orgId: string): string {
-  return jwt.sign({ userId, email: "t@e.com", role: "admin", permissions: [], orgId, purpose: "socket" }, env.JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign({ userId, email: "t@e.com", role: "members", permissions: [], orgId, purpose: "socket" }, env.JWT_SECRET, { expiresIn: "10m" });
 }

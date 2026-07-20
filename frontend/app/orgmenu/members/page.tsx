@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 import { collections } from "@/lib/db/schema";
-import { MembersTable } from "@/components/members-table";
+import { MembersList } from "@/components/members/members-list";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Members" };
@@ -43,13 +43,13 @@ const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
     : [];
   const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
 
-  // Filter out ORG_MENU_ADMIN users (origin context, not workspace users)
+  // Filter out org_admin users (origin context, not workspace users)
   const workspaceMembers = members.filter((m: Record<string, unknown>) => {
     const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
     if (!user) return false;
     const userRole = (user.role as string) || "";
-    // Exclude ORG_MENU_ADMIN (origin users) and client role users
-    return userRole !== "ORG_MENU_ADMIN" && userRole !== "client";
+    // Exclude org_admin (origin) users and client role users
+    return userRole !== "org_admin";
   });
 
   return workspaceMembers.map((m: Record<string, unknown>) => {
@@ -57,7 +57,7 @@ const getMembers = cache(async (orgId: string): Promise<MemberData[]> => {
     return {
       id: String(m._id || m.id || ""),
       userId: String(m.userId || ""),
-      role: String(m.role || "member"),
+      role: String(m.role || "staffs"),
       orgId,
       joinedAt: m.joinedAt as Date | undefined,
       name: (user?.name as string) || "Unknown",
@@ -98,12 +98,12 @@ const getAllMembers = cache(async (): Promise<MemberData[]> => {
     : [];
   const orgMap = new Map(orgs.map((o: Record<string, unknown>) => [o.id, o]));
 
-  // Filter out ORG_MENU_ADMIN users (origin context) and client role users
+  // Filter out org_admin users (origin context) and client role users
   const workspaceMembers = members.filter((m: Record<string, unknown>) => {
     const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
     if (!user) return false;
     const userRole = (user.role as string) || "";
-    return userRole !== "ORG_MENU_ADMIN" && userRole !== "client";
+    return userRole !== "org_admin";
   });
 
   return workspaceMembers.map((m: Record<string, unknown>) => {
@@ -112,7 +112,7 @@ const getAllMembers = cache(async (): Promise<MemberData[]> => {
     return {
       id: String(m._id || m.id || ""),
       userId: String(m.userId || ""),
-      role: String(m.role || "member"),
+      role: String(m.role || "staffs"),
       orgId: String(m.orgId || ""),
       joinedAt: m.joinedAt as Date | undefined,
       name: (user?.name as string) || "Unknown",
@@ -136,23 +136,10 @@ const getAllMembers = cache(async (): Promise<MemberData[]> => {
 export default async function MembersPage() {
   const session = await auth();
   const role = session?.user?.role;
-  const isSuperAdmin = role === "SUPER_ADMIN" || role === "ORG_MENU_ADMIN";
+  const isSuperAdmin = role === "org_admin";
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
   const members = await (isSuperAdmin ? getAllMembers() : getMembers(orgId || "null"));
 
-  return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">All Members</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {isSuperAdmin ? `${members.length} registered members across all organizations` : `${members.length} registered members in your organization`}
-          </p>
-        </div>
-      </div>
-
-      <MembersTable members={members} isSuperAdmin={isSuperAdmin} />
-    </div>
-  );
+  return <MembersList members={members} isSuperAdmin={isSuperAdmin} />;
 }

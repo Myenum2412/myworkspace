@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
+import { ROLES } from "@/lib/rbac";
 
 export type ProjectData = {
   id: string;
@@ -38,7 +39,7 @@ export async function getProjects() {
       id: uuid(),
       orgId: newOrgId,
       userId: session.user.id,
-      role: "admin",
+      role: ROLES.MEMBERS,
       joinedAt: new Date(),
     });
     orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
@@ -79,7 +80,7 @@ export async function createProjectAction(formData: FormData) {
       id: uuid(),
       orgId: newOrgId,
       userId: session.user.id,
-      role: "admin",
+      role: ROLES.MEMBERS,
       joinedAt: new Date(),
     });
     orgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });

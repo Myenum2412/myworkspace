@@ -1,18 +1,31 @@
 import { auth } from "@/lib/auth/config";
 import { NextResponse } from "next/server";
+import { ROLES, isAdminRole, isPlatformRole } from "@/lib/rbac";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "developer@myenum.in";
+/**
+ * Next.js Proxy (Middleware replacement in Next.js 16)
+ * Enforces role-based access control at the proxy level.
+ * This is the LAST LINE OF DEFENSE - backend authorization is always authoritative.
+ */
+
+// ── Route Definitions ──
 
 const ORIGIN_PREFIXES = ["/orgmenu"];
 const STAFF_PREFIXES = ["/staffs"];
+const CLIENT_PREFIXES = ["/client"];
+
 const PUBLIC_PATHS = new Set([
   "/login", "/login/verify-2fa", "/signup", "/signup-mongo", "/forgot-password",
+  "/reset-password", "/verify-email",
   "/pricing", "/client/login", "/auth/not-found", "/",
   "/features", "/solutions", "/platform", "/about", "/blog", "/contact",
-  "/careers", "/changelog", "/docs", "/guides", "/new-update", "/notifications",
+  "/careers", "/changelog", "/docs", "/guides", "/new-update",
 ]);
+
 const PUBLIC_PREFIXES = new Set(["/share"]);
-const CLIENT_PREFIXES = ["/client"];
+
+// ── Role-Based Route Access Control ──
+
 const WORKSPACE_PREFIXES = [
   "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
   "/projects", "/teams", "/clients", "/approvals", "/reports",
@@ -23,25 +36,86 @@ const WORKSPACE_PREFIXES = [
   "/createtask", "/createproject",
   "/upload", "/billing", "/files",
   "/attendance", "/appointments",
-  "/ai", "/engagement", "/stocks", "/addons"
+  "/ai", "/engagement", "/stocks", "/addons",
+  "/chat", "/notifications",
 ];
 
-// Pre-compile startsWith prefixes into a structure for faster matching
+// Route patterns with required roles
+const ROLE_ROUTE_ACCESS: Record<string, string[]> = {
+  // Platform Admin only
+  "/platform": [ROLES.ORG_ADMIN],
+  "/admin/users": [ROLES.ORG_ADMIN],
+  "/admin/settings": [ROLES.ORG_ADMIN],
+
+  // Org Admin / Members / Manager
+  "/orgmenu": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+  "/employees": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR],
+  "/clients": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+  "/billing": [ROLES.ORG_ADMIN, ROLES.MEMBERS],
+  "/departments": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+  "/contractors": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+  "/terminated": [ROLES.ORG_ADMIN, ROLES.MEMBERS],
+  "/addemployees": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR],
+  "/addprojects": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+  "/createproject": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+
+  // Manager / Team Leader
+  "/approvals": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
+  "/reports": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR, ROLES.FINANCE],
+  "/time-reports": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+
+  // Staff routes (broader access)
+  "/dashboard": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR, ROLES.FINANCE],
+  "/tasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS],
+  "/mytasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS],
+  "/teamtasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
+  "/savedtasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS],
+  "/alltasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
+  "/upcomingtasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS],
+  "/createtask": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
+  "/projects": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR],
+  "/teams": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS],
+  "/files": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR, ROLES.FINANCE],
+  "/upload": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR],
+  "/calendar": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR],
+  "/chat": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR],
+  "/notifications": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR, ROLES.FINANCE, ROLES.CLIENTS],
+  "/profile": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR, ROLES.FINANCE, ROLES.CLIENTS],
+  "/settings": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+  "/overview": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+  "/engagement": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
+  "/stocks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.FINANCE],
+
+  // HR specific
+  "/attendance": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR],
+  "/time-off": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR, ROLES.STAFFS],
+  "/my-time": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR],
+  "/time-tracker": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR],
+  "/team-time": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
+
+  // Staff profile
+  "/staffs": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.HR],
+
+  // Appointments
+  "/appointments": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR],
+};
+
+// Build sets for quick lookup
 const WORKSPACE_SET = new Set(WORKSPACE_PREFIXES);
 const CLIENT_SET = new Set(CLIENT_PREFIXES);
 const ORIGIN_SET = new Set(ORIGIN_PREFIXES);
 const STAFF_SET = new Set(STAFF_PREFIXES);
 
+// ── Helper Functions ──
+
 function getHomePath(role?: string): string {
   const roleLower = role?.toLowerCase() || "";
-  
-  if (roleLower === "client") {
+
+  if (roleLower === ROLES.CLIENTS) {
     return "/client/dashboard";
   }
-  
-  const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(roleLower);
-  
-  if (isWorkspaceAdmin) {
+
+  if (isAdminRole(roleLower)) {
     return "/dashboard";
   }
   return "/staffs";
@@ -64,17 +138,40 @@ function getRouteContext(pathname: string): "origin" | "staff" | "workspace" | "
   return "unknown";
 }
 
+/**
+ * Check if a role can access a specific path based on ROLE_ROUTE_ACCESS.
+ */
+function canAccessRoute(pathname: string, role: string): boolean {
+  // Platform admins can access everything
+  if (isPlatformRole(role)) return true;
+
+  // Check exact path match
+  const requiredRoles = ROLE_ROUTE_ACCESS[pathname];
+  if (requiredRoles) {
+    return requiredRoles.includes(role);
+  }
+
+  // Check prefix match (longest match first)
+  const sortedPaths = Object.keys(ROLE_ROUTE_ACCESS).sort((a, b) => b.length - a.length);
+  for (const routePath of sortedPaths) {
+    if (pathname.startsWith(routePath + "/") || pathname === routePath) {
+      return ROLE_ROUTE_ACCESS[routePath].includes(role);
+    }
+  }
+
+  // Default: allow access (public or unconfigured route)
+  return true;
+}
+
+// ── Main Proxy Handler ──
+
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
-  const userEmail = req.auth?.user?.email?.toLowerCase().trim();
   const userRole = req.auth?.user?.role;
   const routeContext = getRouteContext(pathname);
 
-  const isPublic = routeContext === "public";
-  const isOrgAdmin = userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL;
-  const isWorkspaceUser = !isOrgAdmin;
-
+  // ── Skip static files and internal routes ──
   if (pathname.startsWith("/_next/static") || pathname === "/favicon.ico") {
     const response = NextResponse.next();
     response.headers.set("Cache-Control", "public, max-age=31536000, immutable");
@@ -85,49 +182,54 @@ export const proxy = auth((req) => {
     return;
   }
 
-  if (isLoggedIn && isPublic) {
-    if (isOrgAdmin) {
+  // ── Public routes ──
+  if (isLoggedIn && routeContext === "public") {
+    if (isPlatformRole(userRole || "")) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
     }
     const home = getHomePath(userRole);
     return NextResponse.redirect(new URL(home, req.url));
   }
 
-  if (!isLoggedIn && !isPublic) {
+  if (!isLoggedIn && routeContext !== "public") {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
+  // ── Role-based access control ──
+  if (isLoggedIn && userRole && !canAccessRoute(pathname, userRole)) {
+    // Redirect to appropriate dashboard based on role
+    const home = getHomePath(userRole);
+    return NextResponse.redirect(new URL(home, req.url));
+  }
+
+  // ── Workspace routes ──
   if (routeContext === "workspace") {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
-    // Org-menu admins may use file manager (and upload) for support/ops.
-    // Other workspace routes still redirect to /orgmenu.
-    if (isOrgAdmin) {
+    if (isPlatformRole(userRole || "")) {
       if (pathname === "/files" || pathname.startsWith("/files/") || pathname === "/upload") {
         return;
       }
       return NextResponse.redirect(new URL("/orgmenu", req.url));
     }
-    // Block non-admin users (employees with member, staff, or custom roles) from workspace routes
     const roleLower = userRole?.toLowerCase() || "";
-    const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(roleLower);
-    
-    if (!isWorkspaceAdmin) {
-      if (roleLower === "client" || roleLower === "client_user") {
+    const isCompanyOwner = roleLower === ROLES.MEMBERS;
+
+    if (!isCompanyOwner) {
+      if (roleLower === ROLES.CLIENTS) {
         return NextResponse.redirect(new URL("/client/dashboard", req.url));
       }
+      // staffs and hr are redirected to /staffs
       return NextResponse.redirect(new URL("/staffs", req.url));
     }
 
-    // Check subscription status for workspace routes
-    if (isLoggedIn && !isPublic) {
+    if (isLoggedIn) {
       const subStatus = (req.auth?.user as Record<string, unknown>)?.subscriptionStatus as string;
       const trialEnd = (req.auth?.user as Record<string, unknown>)?.trialEnd as string | null;
       const plan = (req.auth?.user as Record<string, unknown>)?.plan as string;
 
       if (plan !== "enterprise") {
-        // Trial expired check
         if (subStatus === "trialing" && trialEnd) {
           const now = Date.now();
           const trialEndMs = new Date(trialEnd).getTime();
@@ -136,7 +238,6 @@ export const proxy = auth((req) => {
           }
         }
 
-        // Non-trialing, non-active = blocked
         if (subStatus && !["active", "trialing"].includes(subStatus)) {
           return NextResponse.redirect(new URL("/pricing?expired=subscription", req.url));
         }
@@ -146,34 +247,36 @@ export const proxy = auth((req) => {
     return;
   }
 
+  // ── Client routes ──
   if (routeContext === "client") {
     return;
   }
 
+  // ── Origin (orgmenu) routes ──
   if (routeContext === "origin") {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login?error=Please+sign+in+to+access+this+area", req.url));
     }
-    if (userRole === "ORG_MENU_ADMIN" || userRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL) {
+    if (isPlatformRole(userRole || "")) {
       return;
     }
     return NextResponse.redirect(new URL("/login?error=Access+denied.+You+do+not+have+permission+to+view+this+page", req.url));
   }
 
+  // ── Staff routes ──
   if (routeContext === "staff") {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login?error=Please+sign+in+to+access+this+area", req.url));
     }
-    if (isOrgAdmin) {
+    if (isPlatformRole(userRole || "")) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
     }
 
     const roleLower = userRole?.toLowerCase() || "";
-    if (roleLower === "client" || roleLower === "client_user") {
+    if (roleLower === ROLES.CLIENTS) {
       return NextResponse.redirect(new URL("/client/dashboard", req.url));
     }
 
-    // Check subscription for staff routes
     const subStatus = (req.auth?.user as Record<string, unknown>)?.subscriptionStatus as string;
     const trialEnd = (req.auth?.user as Record<string, unknown>)?.trialEnd as string | null;
     if (subStatus === "trialing" && trialEnd) {
@@ -186,10 +289,10 @@ export const proxy = auth((req) => {
       return NextResponse.redirect(new URL("/pricing?expired=subscription", req.url));
     }
 
-    // Allow all other users (workspace admins, custom roles, members, staff) to view the staff panel
     return;
   }
 
+  // ── Unknown routes ──
   if (routeContext === "unknown") {
     return NextResponse.rewrite(new URL("/not-found", req.url));
   }

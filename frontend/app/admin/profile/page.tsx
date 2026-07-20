@@ -199,7 +199,7 @@ export default async function ProfilePage() {
     twitter: (userDoc.twitter as string) || "",
     website: (userDoc.website as string) || "",
     status: (userDoc.status as string) || "offline",
-    role: (userDoc.role as string) || "member",
+    role: (userDoc.role as string) || "staffs",
     image: (userDoc.image as string) || "",
     bannerUrl: (userDoc.bannerUrl as string) || "",
     createdAt: userDoc.createdAt ? String(userDoc.createdAt) : new Date().toISOString(),

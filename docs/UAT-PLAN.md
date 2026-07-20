@@ -12,28 +12,31 @@ Validate all application functionality across every role, permission level, and 
 
 | Role | Abbreviation | Permissions | Test User |
 |------|-------------|-------------|-----------|
-| Super Admin | SA | Full system access | `superadmin@test.com` |
-| Org Admin | OA | Org-level management | `orgadmin@test.com` |
-| Manager | MGR | Team/project management | `manager@test.com` |
-| Staff | STF | Task execution | `staff@test.com` |
-| Client | CLT | Limited client portal | `client@test.com` |
+| Org Admin | OA | Full system access | `orgadmin@test.com` |
+| Members | MBR | Org-level management | `member@test.com` |
+| Staffs | STF | Task execution | `staff@test.com` |
+| HR | HR | Employee management | `hr@test.com` |
+| Clients | CLT | Limited client portal | `client@test.com` |
 
 ### 1.2 Permission Matrix Validation
 
-| Page/Feature | SA | OA | MGR | STF | CLT |
-|-------------|-----|-----|------|------|------|
+| Page/Feature | org_admin | members | staffs | hr | clients |
+|-------------|-----------|---------|--------|----|---------|
 | System Settings | ✓ | ✗ | ✗ | ✗ | ✗ |
 | Organization Settings | ✓ | ✓ | ✗ | ✗ | ✗ |
 | User Management | ✓ | ✓ | ✗ | ✗ | ✗ |
-| Team Management | ✓ | ✓ | ✓ | ✗ | ✗ |
-| Projects | ✓ | ✓ | ✓ | ✓ | ✗ |
-| Tasks | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Time Tracking | ✓ | ✓ | ✓ | ✓ | ✗ |
+| Team Management | ✓ | ✓ | ✗ | ✗ | ✗ |
+| Projects | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Tasks | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Time Tracking | ✓ | ✓ | ✗ | ✗ | ✗ |
 | File Manager | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Billing | ✓ | ✓ | ✗ | ✗ | ✓ |
-| Reports | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Reports | ✓ | ✓ | ✗ | ✓ | ✗ |
+| HR / Employees | ✓ | ✓ | ✗ | ✓ | ✗ |
+| Attendance & Leave | ✓ | ✓ | ✗ | ✓ | ✗ |
+| Payroll | ✓ | ✓ | ✗ | ✓ | ✗ |
 | Client Portal | ✓ | ✓ | ✗ | ✗ | ✓ |
-| Admin Dashboard | ✓ | ✓ | ✗ | ✗ | ✗ |
+| Admin Dashboard | ✓ | ✗ | ✗ | ✗ | ✗ |
 
 **Test scenarios:**
 - Each role attempts to access every route
@@ -92,7 +95,7 @@ Validate all application functionality across every role, permission level, and 
 | USER-02 | Invite user (existing platform) | Invite existing user | Added to org, notification sent |
 | USER-03 | Accept invitation | Click invitation link | Account activated, redirected to org |
 | USER-04 | Deactivate user | Deactivate active user | User can't login, active sessions terminated |
-| USER-05 | Change user role | Promote Staff → Manager | Permissions updated immediately |
+| USER-05 | Change user role | Promote Staff → Staffs | Permissions updated immediately |
 | USER-06 | Password reset | Request reset email | Email sent, token valid for 1 hour |
 | USER-07 | Update profile | Change name, avatar, preferences | Profile updated across system |
 

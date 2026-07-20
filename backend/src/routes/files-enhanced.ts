@@ -12,6 +12,7 @@ import { recordAuditLog } from "../services/audit.service.js";
 import { cacheManager, CacheKeys } from "../lib/cache.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { env } from "../config/env.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import {
   uploadFile, uploadFileStream, softDeleteFile, restoreFile, permanentDeleteFile,
   createFileVersion, toggleFileLock, getFileStream, duplicateFile,
@@ -469,7 +470,7 @@ router.get("/conversion/:orgId/*storageKey", async (req: AuthRequest, res: Respo
 
 router.post("/cleanup", async (req: AuthRequest, res: Response) => {
   await requireOrgMembership(req.user!.userId, req.user!.orgId!, req.user!.email, req.user!.orgId!);
-  if (req.user!.role !== "admin") throw new AppError(403, "Admin access required");
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Admin access required");
 
   const result = await runFullCleanup();
   res.json({ success: true, data: result });
@@ -533,6 +534,9 @@ router.get("/:id/versions", async (req: AuthRequest, res: Response) => {
 
 router.post("/:id/versions", upload.single("file"), async (req: AuthRequest, res: Response) => {
   if (!req.file) throw new AppError(400, "No file provided");
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
+  if (!file) throw new AppError(404, "File not found");
+  await verifyAccess(req.user!.userId, file.orgId);
   const result = await createFileVersion(req.params.id, req.user!.userId, req.file.buffer, req.file.originalname, req.body.comment);
   res.status(201).json({ success: true, ...result });
 });
@@ -565,11 +569,17 @@ router.post("/:id/rollback", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/:id/lock", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
+  if (!file) throw new AppError(404, "File not found");
+  await verifyAccess(req.user!.userId, file.orgId);
   const locked = await toggleFileLock(req.params.id, req.user!.userId, true);
   res.json({ success: true, locked });
 });
 
 router.post("/:id/unlock", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
+  if (!file) throw new AppError(404, "File not found");
+  await verifyAccess(req.user!.userId, file.orgId);
   const locked = await toggleFileLock(req.params.id, req.user!.userId, false);
   res.json({ success: true, locked: false });
 });
@@ -676,6 +686,9 @@ router.post("/upload", upload.fields([{ name: "files", maxCount: env.MAX_FILES_P
 });
 
 router.post("/:id/duplicate", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
+  if (!file) throw new AppError(404, "File not found");
+  await verifyAccess(req.user!.userId, file.orgId);
   const newId = await duplicateFile(req.params.id, req.user!.userId);
   res.status(201).json({ success: true, fileId: newId });
 });

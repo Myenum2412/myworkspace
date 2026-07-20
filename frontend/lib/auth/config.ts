@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import LinkedIn from "next-auth/providers/linkedin";
 import GitHub from "next-auth/providers/github";
 import { compare } from "bcryptjs";
+import { ROLES } from "@/lib/rbac";
 
 declare module "next-auth" {
   interface Session {
@@ -37,7 +38,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: string }).role || "workspace";
+        token.role = (user as { role?: string }).role || ROLES.STAFFS;
         token.permissions = (user as { permissions?: string[] }).permissions;
         token.orgId = (user as { orgId?: string }).orgId;
         token.onboardingCompleted = (user as { onboardingCompleted?: boolean }).onboardingCompleted;
@@ -65,6 +66,11 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
           if (dbUser?.role && dbUser.role !== "USER" && token.role !== "client") {
             token.role = dbUser.role;
+          }
+
+          // Sync tokenVersion for backend revocation checks
+          if (dbUser?.tokenVersion !== undefined) {
+            (token as any).tokenVersion = dbUser.tokenVersion;
           }
 
           if (!token.orgId && dbUser?.orgId) {
@@ -155,7 +161,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             db.collection("users").insertOne({
               id: userId, userNumber, email: user.email, name: userName,
               image: user.image || null, provider: account.provider,
-              providerAccountId: account.providerAccountId, role: "workspace",
+              providerAccountId: account.providerAccountId, role: ROLES.MEMBERS,
               status: "online", lastLogin: now, createdAt: now, updatedAt: now,
             }),
             db.collection("organizations").insertOne({
@@ -163,14 +169,14 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
               plan: "trial", trialEnd, subscriptionStatus: "trialing",
               ownerId: userId, onboardingCompleted: true, createdAt: now, updatedAt: now,
             }),
-            db.collection("org_members").insertOne({
-              id: uuid(), orgId: newOrgId, userId, role: "admin", joinedAt: now,
+              db.collection("org_members").insertOne({
+                id: uuid(), orgId: newOrgId, userId, role: ROLES.MEMBERS, joinedAt: now,
             }),
           ]);
 
           user.id = userId;
           (user as { orgId?: string }).orgId = newOrgId;
-          (user as { role?: string }).role = "workspace";
+          (user as { role?: string }).role = ROLES.MEMBERS;
           return true;
         }
 
@@ -280,7 +286,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
                   id: cu.id || cu._id?.toString(),
                   email: cu.email,
                   name: cu.name,
-                  role: "client",
+                  role: ROLES.CLIENTS,
                   permissions: [],
                   orgId: cu.orgId,
                   onboardingCompleted: true,
@@ -339,7 +345,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
                 id: clientUser.id || clientUser._id?.toString(),
                 email: clientUser.email,
                 name: clientUser.name,
-                role: "client",
+                role: ROLES.CLIENTS,
                 permissions: [],
                 orgId: clientUser.orgId,
                 onboardingCompleted: true,

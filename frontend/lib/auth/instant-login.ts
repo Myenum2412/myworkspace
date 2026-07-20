@@ -4,12 +4,13 @@ import { signIn } from "./config";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import type { BootstrapData } from "@/lib/api/bootstrap";
+import { ROLES } from "@/lib/rbac";
 
 function getRedirectPath(role?: string): string {
   const r = role?.toLowerCase() || "";
-  if (r === "org_menu_admin" || r === "super_admin") return "/orgmenu";
-  if (r === "client" || r === "client_user") return "/client/dashboard";
-  if (["workspace", "admin", "manager"].includes(r)) return "/dashboard";
+  if (r === ROLES.ORG_ADMIN) return "/orgmenu";
+  if (r === ROLES.CLIENTS) return "/client/dashboard";
+  if (r === ROLES.MEMBERS) return "/dashboard";
   return "/staffs";
 }
 

@@ -31,7 +31,7 @@ export async function seedOrgWithAdmin(opts: {
   const name = opts.name || "Tester";
   const email = (opts.email || `admin-${Date.now()}@example.com`).toLowerCase();
   const password = opts.password || "SecurePass123";
-  const role = opts.role || "admin";
+  const role = opts.role || "members";
 
   await User.create({
     id: userId,
@@ -50,7 +50,7 @@ export async function seedOrgWithAdmin(opts: {
   return { userId, orgId, email, headers: { Authorization: `Bearer ${token}` }, token };
 }
 
-export async function seedSecondUser(orgId: string, role: string = "member"): Promise<{ userId: string; headers: Record<string, string> }> {
+export async function seedSecondUser(orgId: string, role: string = "staffs"): Promise<{ userId: string; headers: Record<string, string> }> {
   const userId = uuid();
   const email = `user-${Date.now()}@example.com`;
   await User.create({
@@ -166,7 +166,7 @@ export async function seedUploadSession(orgId: string, uploaderId: string, overr
 
 export function expiredJWT(payload: Record<string, unknown> = {}): string {
   return jwt.sign(
-    { userId: uuid(), email: "test@example.com", role: "admin", ...payload },
+    { userId: uuid(), email: "test@example.com", role: "members", ...payload },
     process.env.JWT_SECRET || "test-secret",
     { expiresIn: "0s" },
   );
@@ -181,7 +181,7 @@ export function tamperedJWT(token: string): string {
 
 export function algorithmNoneJWT(payload: Record<string, unknown> = {}): string {
   const header = Buffer.from(JSON.stringify({ alg: "none", typ: "JWT" })).toString("base64url");
-  const body = Buffer.from(JSON.stringify({ userId: uuid(), email: "admin@example.com", role: "super_admin", ...payload })).toString("base64url");
+  const body = Buffer.from(JSON.stringify({ userId: uuid(), email: "admin@example.com", role: "org_admin", ...payload })).toString("base64url");
   return `${header}.${body}.`;
 }
 

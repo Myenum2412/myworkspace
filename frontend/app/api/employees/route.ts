@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth/config";
 import { ensureUserOrg, validateOrgMembership } from "@/lib/org";
 import { getNextSequence, getNextEmployeeDisplayId } from "@/lib/db/counter";
 import { sendEmailDirect, buildEmployeeOnboardedHtml } from "@/lib/email";
+import { ROLES, isAdminRole } from "@/lib/rbac";
 
 export async function GET() {
   try {
@@ -16,8 +17,7 @@ export async function GET() {
     }
     // Block employee users from listing all employees
     const role = session.user.role?.toLowerCase() || "";
-    const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(role);
-    if (!isWorkspaceAdmin) {
+    if (!isAdminRole(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -54,7 +54,7 @@ export async function GET() {
         ...u,
         _id: uObjIdStr,
         id: uIdStr || uObjIdStr,
-        orgRole: member?.role || "member",
+        orgRole: member?.role || "staffs",
       };
     });
 
@@ -78,8 +78,7 @@ export async function POST(request: Request) {
     }
     // Block employee users from creating employees
     const role = session.user.role?.toLowerCase() || "";
-    const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(role);
-    if (!isWorkspaceAdmin) {
+    if (!isAdminRole(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -114,7 +113,7 @@ export async function POST(request: Request) {
       email,
       password: hashedPassword,
       avatar: avatar || "",
-      role: roleName?.toLowerCase() || "member",
+      role: roleName?.toLowerCase() || "staffs",
       department: department || null,
       designation: designation || null,
       location: location || null,
@@ -147,7 +146,7 @@ export async function POST(request: Request) {
       id: uuid(),
       orgId,
       userId,
-      role: roleName?.toLowerCase() || "member",
+      role: roleName?.toLowerCase() || "staffs",
     });
 
     if (workExperience?.length) {
@@ -233,7 +232,7 @@ export async function POST(request: Request) {
     };
     await notificationsCol.insertOne(newUserNotif);
 
-    const adminMembers = await (await db.collection(collections.orgMembers).find({ orgId, role: { $in: ["admin", "manager"] } })).toArray();
+    const adminMembers = await (await db.collection(collections.orgMembers).find({ orgId, role: { $in: [ROLES.MEMBERS] } })).toArray();
     const adminIds = [...new Set(adminMembers.map((m: any) => m.userId))].filter((id: string) => id !== userId);
     if (adminIds.length > 0) {
       const adminNotifs = adminIds.map((adminId: string) => ({

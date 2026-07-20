@@ -43,7 +43,7 @@ const settingsSchema = new Schema<ISettings>(
       monthlyProjectLimit: { type: Number, default: 10 },
     },
     team: {
-      defaultTeamRole: { type: String, default: "member" },
+      defaultTeamRole: { type: String, default: "team_staff" },
       allowSelfAssign: { type: Boolean, default: true },
       maxTeamSize: { type: Number, default: 20 },
       autoAssignLead: { type: Boolean, default: false },

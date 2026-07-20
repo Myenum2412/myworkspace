@@ -15,6 +15,8 @@ router.post("/:id/favorite", async (req: AuthRequest, res: Response) => {
   const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("id orgId originalName").lean();
   if (!file) throw new AppError(404, "File not found");
 
+  await verifyOrgAccess(req.user!.userId, file.orgId);
+
   const userId = req.user!.userId;
   const existing = await Favorite.findOne({ userId, fileId: req.params.id }).select("_id").lean();
 

@@ -14,7 +14,7 @@ export interface IConsentRecord {
     personalization: boolean;
     marketing: boolean;
   };
-  source: "banner" | "preferences-center" | "account-settings" | "api" | "admin";
+  source: "banner" | "preferences-center" | "account-settings" | "api" | "system";
   ipAddress?: string;
   userAgent?: string;
   region: string;
@@ -48,7 +48,7 @@ const consentRecordSchema = new Schema<IConsentRecord>(
     source: {
       type: String,
       required: true,
-      enum: ["banner", "preferences-center", "account-settings", "api", "admin"],
+      enum: ["banner", "preferences-center", "account-settings", "api", "system"],
     },
     ipAddress: String,
     userAgent: String,

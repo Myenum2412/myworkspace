@@ -3,6 +3,7 @@ import { v4 as uuid } from "uuid";
 import multer from "multer";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
 import { Project } from "../lib/db/models/Project.js";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
@@ -24,6 +25,7 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["projects"] }),
 });
 
 router.post("/", upload.single("attachment"), async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create projects");
   // Enforce workspace isolation: resolve orgId from membership, not from request body
   const orgId = await requireOrgMembership(req.user!.userId, req.body.orgId || undefined, req.user!.email, req.user!.orgId);
   const name = requireString(req.body.name, "name", { min: 1, max: 200 });
@@ -106,6 +108,7 @@ router.post("/", upload.single("attachment"), async (req: AuthRequest, res: Resp
 });
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update projects");
   const userOrgId = await requireOrgMembershipFromRequest(req);
   const existing = await Project.findOne({ id: req.params.id }).lean();
   if (!existing) throw new AppError(404, "Project not found");
@@ -154,6 +157,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete projects");
   const userOrgId = await requireOrgMembershipFromRequest(req);
   const existing = await Project.findOne({ id: req.params.id }).lean();
   if (!existing) throw new AppError(404, "Project not found");

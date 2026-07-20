@@ -98,7 +98,7 @@ function fmt(d?: string): string {
 export default async function AuditPage() {
   const session = await auth();
   const role = session?.user?.role;
-  const isSuperAdmin = role === "SUPER_ADMIN" || role === "ORG_MENU_ADMIN";
+  const isSuperAdmin = role === "org_admin";
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
   const logs = isSuperAdmin ? await getAllLogs() : await getLogs(orgId || "null");

@@ -38,7 +38,7 @@ export default async function TerminatedPage() {
       id: (u.id as string) || (u._id as ObjectId)?.toString() || "",
       name: (u.name as string) || "Unknown",
       email: (u.email as string) || "",
-      role: (u.role as string) || "member",
+      role: (u.role as string) || "staffs",
       status: "terminated",
       department: (u.department as string) || "",
       designation: (u.designation as string) || "",

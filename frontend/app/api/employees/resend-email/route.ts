@@ -4,6 +4,7 @@ import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
 import { hash } from "bcryptjs";
 import { sendEmailDirect, buildEmployeeOnboardedHtml } from "@/lib/email";
+import { isAdminRole } from "@/lib/rbac";
 
 export async function POST(request: Request) {
   try {
@@ -13,8 +14,7 @@ export async function POST(request: Request) {
     }
 
     const role = session.user.role?.toLowerCase() || "";
-    const isWorkspaceAdmin = ["workspace", "admin", "manager", "org_menu_admin", "super_admin"].includes(role);
-    if (!isWorkspaceAdmin) {
+    if (!isAdminRole(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

@@ -126,7 +126,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ role: "lead" }),
+                body: JSON.stringify({ role: "team_lead" }),
               });
             } catch (_) {}
           }
@@ -205,7 +205,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ userId, role: "member" }),
+        body: JSON.stringify({ userId, role: "team_staff" }),
       });
       if (res.ok) {
         await openTeamDetail(selectedTeam);
@@ -231,7 +231,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ role: "lead" }),
+        body: JSON.stringify({ role: "team_lead" }),
       });
       if (res.ok) await openTeamDetail(selectedTeam);
     } catch (_) {}

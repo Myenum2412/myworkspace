@@ -33,6 +33,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { ROLES } from "@/lib/rbac";
 import * as api from "@/lib/file-system/api";
 import { apiFetch } from "@/lib/api";
 
@@ -64,6 +65,8 @@ function FileThumbnail({ file, className }: { file: FileItem; className?: string
 
 function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleClick: () => void }) {
   const { selectedIds, toggleSelection, setCurrentFolder, setRenameTarget, setPropertiesTarget, setMoveTarget, currentFolderId } = useFileSystemStore();
+  const userRole = useFileSystemStore((s) => s.userRole);
+  const readonly = userRole === ROLES.CLIENTS;
   const selected = selectedIds.has(folder.id);
 
   return (
@@ -98,28 +101,34 @@ function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleCli
         <ContextMenuItem onClick={onDoubleClick}>
           <EyeIcon className="size-3.5 mr-2" /> Open
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => setRenameTarget({ type: "folder", id: folder.id, name: folder.name })}>
-          <PencilIcon className="size-3.5 mr-2" /> Rename
-        </ContextMenuItem>
-        <ContextMenuItem onClick={() => setMoveTarget({ type: "folder", id: folder.id })}>
-          <ArrowRightIcon className="size-3.5 mr-2" /> Move
-        </ContextMenuItem>
-        <ContextMenuSeparator />
+        {!readonly && (
+          <ContextMenuItem onClick={() => setRenameTarget({ type: "folder", id: folder.id, name: folder.name })}>
+            <PencilIcon className="size-3.5 mr-2" /> Rename
+          </ContextMenuItem>
+        )}
+        {!readonly && (
+          <ContextMenuItem onClick={() => setMoveTarget({ type: "folder", id: folder.id })}>
+            <ArrowRightIcon className="size-3.5 mr-2" /> Move
+          </ContextMenuItem>
+        )}
+        {!readonly && <ContextMenuSeparator />}
         <ContextMenuItem onClick={() => setPropertiesTarget({ type: "folder", id: folder.id })}>
           <FolderIcon className="size-3.5 mr-2" /> Properties
         </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem
-          className="text-destructive"
-          onClick={() => {
-            if (confirm(`Delete folder "${folder.name}"?`)) {
-              useFileSystemStore.getState().removeFolder(folder.id);
-              api.deleteFolder(folder.id).catch(console.error);
-            }
-          }}
-        >
-          <Trash2Icon className="size-3.5 mr-2" /> Delete
-        </ContextMenuItem>
+        {!readonly && <ContextMenuSeparator />}
+        {!readonly && (
+          <ContextMenuItem
+            className="text-destructive"
+            onClick={() => {
+              if (confirm(`Delete folder "${folder.name}"?`)) {
+                useFileSystemStore.getState().removeFolder(folder.id);
+                api.deleteFolder(folder.id).catch(console.error);
+              }
+            }}
+          >
+            <Trash2Icon className="size-3.5 mr-2" /> Delete
+          </ContextMenuItem>
+        )}
       </ContextMenuContent>
     </ContextMenu>
   );
@@ -127,6 +136,8 @@ function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleCli
 
 function FileCard({ file }: { file: FileItem }) {
   const { selectedIds, toggleSelection, setPreviewFile, setPreviewPaneFile, previewPaneFile, setShareFile, setRenameTarget, setPropertiesTarget } = useFileSystemStore();
+  const userRole = useFileSystemStore((s) => s.userRole);
+  const readonly = userRole === ROLES.CLIENTS;
   const selected = selectedIds.has(file.id);
   const isPaneActive = previewPaneFile?.id === file.id;
 
@@ -175,34 +186,42 @@ function FileCard({ file }: { file: FileItem }) {
         }}>
           <DownloadIcon className="size-3.5 mr-2" /> Download
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => setRenameTarget({ type: "file", id: file.id, name: file.originalName })}>
-          <PencilIcon className="size-3.5 mr-2" /> Rename
-        </ContextMenuItem>
-        <ContextMenuItem onClick={() => setShareFile(file)}>
-          <Share2Icon className="size-3.5 mr-2" /> Share
-        </ContextMenuItem>
-        <ContextMenuItem onClick={() => {
-          api.duplicateFile(file.id).catch(console.error)
-            .then(() => useFileSystemStore.getState().removeFile(file.id));
-        }}>
-          <CopyIcon className="size-3.5 mr-2" /> Duplicate
-        </ContextMenuItem>
-        <ContextMenuSeparator />
+        {!readonly && (
+          <ContextMenuItem onClick={() => setRenameTarget({ type: "file", id: file.id, name: file.originalName })}>
+            <PencilIcon className="size-3.5 mr-2" /> Rename
+          </ContextMenuItem>
+        )}
+        {!readonly && (
+          <ContextMenuItem onClick={() => setShareFile(file)}>
+            <Share2Icon className="size-3.5 mr-2" /> Share
+          </ContextMenuItem>
+        )}
+        {!readonly && (
+          <ContextMenuItem onClick={() => {
+            api.duplicateFile(file.id).catch(console.error)
+              .then(() => useFileSystemStore.getState().removeFile(file.id));
+          }}>
+            <CopyIcon className="size-3.5 mr-2" /> Duplicate
+          </ContextMenuItem>
+        )}
+        {!readonly && <ContextMenuSeparator />}
         <ContextMenuItem onClick={() => setPropertiesTarget({ type: "file", id: file.id })}>
           <FolderIcon className="size-3.5 mr-2" /> Properties
         </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem
-          className="text-destructive"
-          onClick={() => {
-            if (confirm(`Delete "${file.originalName}"?`)) {
-              useFileSystemStore.getState().removeFile(file.id);
-              api.deleteFile(file.id).catch(console.error);
-            }
-          }}
-        >
-          <Trash2Icon className="size-3.5 mr-2" /> Delete
-        </ContextMenuItem>
+        {!readonly && <ContextMenuSeparator />}
+        {!readonly && (
+          <ContextMenuItem
+            className="text-destructive"
+            onClick={() => {
+              if (confirm(`Delete "${file.originalName}"?`)) {
+                useFileSystemStore.getState().removeFile(file.id);
+                api.deleteFile(file.id).catch(console.error);
+              }
+            }}
+          >
+            <Trash2Icon className="size-3.5 mr-2" /> Delete
+          </ContextMenuItem>
+        )}
       </ContextMenuContent>
     </ContextMenu>
   );
@@ -211,7 +230,7 @@ function FileCard({ file }: { file: FileItem }) {
 export function FileGrid() {
   const { folders, files, setCurrentFolder, breadcrumbs, setIsCreatingFolder } = useFileSystemStore();
   const userRole = useFileSystemStore((s) => s.userRole);
-  const readonly = userRole === "client";
+  const readonly = userRole === ROLES.CLIENTS;
 
   const content = folders.length === 0 && files.length === 0 ? (
     <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">

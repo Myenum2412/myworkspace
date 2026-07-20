@@ -6,6 +6,7 @@ import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
+import { ROLES } from "@/lib/rbac";
 
 async function requireOrgId(): Promise<string> {
   const session = await auth();
@@ -27,7 +28,7 @@ async function requireOrgId(): Promise<string> {
       id: uuid(),
       orgId: newOrgId,
       userId: session.user.id,
-      role: "admin",
+      role: ROLES.MEMBERS,
       joinedAt: new Date(),
     });
     orgId = newOrgId;

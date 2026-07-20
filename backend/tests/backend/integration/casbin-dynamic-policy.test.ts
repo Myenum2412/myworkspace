@@ -15,11 +15,11 @@ describe("Casbin dynamic policy changes", () => {
   });
 
   it("policy changes take effect without restart (via loadPolicy)", async () => {
-    const role = "staff";
+    const role = "staffs";
     expect(await enforcer.enforce(role, ":project_file", "delete")).toBe(false);
 
     // Add temporary policy directly to enforcer
-    await enforcer.addPolicy("staff", ":project_file", "delete", "allow");
+    await enforcer.addPolicy("staffs", ":project_file", "delete", "allow");
     expect(await enforcer.enforce(role, ":project_file", "delete")).toBe(true);
 
     // Reload from file reverts the change
@@ -60,9 +60,9 @@ describe("Casbin dynamic policy changes", () => {
   });
 
   it("tenant/role escalation attempts are rejected", async () => {
-    // A staff member should not be able to perform admin actions
+    // A staffs member should not be able to perform admin actions
     const staffUser = "staff_user_escalation";
-    await enforcer.addRoleForUser(staffUser, "staff");
+    await enforcer.addRoleForUser(staffUser, "staffs");
 
     expect(await enforcer.enforce(staffUser, "*:file", "delete")).toBe(false);
     expect(await enforcer.enforce(staffUser, ":org_file", "delete")).toBe(false);
@@ -72,9 +72,9 @@ describe("Casbin dynamic policy changes", () => {
 
   it("cross-org access is denied", async () => {
     const user = "user_from_org_a";
-    await enforcer.addRoleForUser(user, "gen_admin");
+    await enforcer.addRoleForUser(user, "members");
 
-    // gen_admin can access :org_file for their own org
+    // members can access :org_file for their own org
     expect(await enforcer.enforce(user, ":org_file", "view")).toBe(true);
 
     // But not client-scoped files

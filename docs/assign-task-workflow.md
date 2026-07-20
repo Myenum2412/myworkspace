@@ -225,7 +225,7 @@ Create → Save Draft (type="draft") → Publish → [individual|team|common|upc
 
 ## Visibility Matrix
 
-| Task Type | Employee | Assigned User | Team | Team Head | HR/Admin | Super Admin |
+| Task Type | Employee | Assigned User | Team | Team Head | HR/Admin | org_admin |
 |-----------|----------|---------------|------|-----------|----------|-------------|
 | Individual | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ |
 | Team | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |

@@ -79,17 +79,8 @@ export async function checkPermission(
   act: string,
 ): Promise<PermissionCheck> {
   const e = await getEnforcer();
-  const roles = await e.getRolesForUser(sub);
-  const allRoles = [sub, ...roles];
-
-  for (const role of allRoles) {
-    const allowed = await e.enforce(role, obj, act);
-    if (allowed) {
-      return { allowed: true, role };
-    }
-  }
-
-  return { allowed: false, role: sub };
+  const allowed = await e.enforce(sub, obj, act);
+  return { allowed, role: sub };
 }
 
 export async function enforce(

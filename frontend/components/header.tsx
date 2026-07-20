@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ROLES } from "@/lib/rbac";
 import { NotificationBell } from "@/components/notification-bell";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -167,30 +168,32 @@ export function Header({ context }: { context?: AppContextType }) {
 
         <SessionTracker />
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <Badge
-              variant="secondary"
-              className="gap-1 sm:gap-2 min-w-0 h-8 sm:h-9 justify-start px-2 sm:px-3 text-xs sm:text-sm font-normal cursor-pointer hover:bg-muted transition-colors"
-            >
-              <span className="relative flex size-2 shrink-0">
-                {status === "online" && (
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
-                )}
-                <span
-                  className={`relative inline-flex size-2 rounded-full ${STATUS_COLORS[status] || "bg-gray-400"}`}
-                />
-              </span>
-              <span className="hidden sm:inline">{STATUS_LABELS[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span>
-            </Badge>
-          </PopoverTrigger>
-          <PopoverContent align="end" sideOffset={8} className="w-[280px] sm:w-[320px] p-0">
-            <StaffStatusForm
-              userId={session?.user?.id}
-              onStatusUpdate={handleStatusUpdateFromForm}
-            />
-          </PopoverContent>
-        </Popover>
+        {session?.user?.role === ROLES.STAFFS || session?.user?.role === ROLES.HR ? (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Badge
+                variant="secondary"
+                className="gap-1 sm:gap-2 min-w-0 h-8 sm:h-9 justify-start px-2 sm:px-3 text-xs sm:text-sm font-normal cursor-pointer hover:bg-muted transition-colors"
+              >
+                <span className="relative flex size-2 shrink-0">
+                  {status === "online" && (
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
+                  )}
+                  <span
+                    className={`relative inline-flex size-2 rounded-full ${STATUS_COLORS[status] || "bg-gray-400"}`}
+                  />
+                </span>
+                <span className="hidden sm:inline">{STATUS_LABELS[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span>
+              </Badge>
+            </PopoverTrigger>
+            <PopoverContent align="end" sideOffset={8} className="w-[280px] sm:w-[320px] p-0">
+              <StaffStatusForm
+                userId={session?.user?.id}
+                onStatusUpdate={handleStatusUpdateFromForm}
+              />
+            </PopoverContent>
+          </Popover>
+        ) : null}
       </div>
     </header>
   );

@@ -21,6 +21,7 @@ import { FavoritesView } from "./components/favorites-view";
 import { RecentView } from "./components/recent-view";
 import { ClientFilesView } from "./components/client-files-view";
 import { StaffFilesView } from "./components/staff-files-view";
+import { ROLES } from "@/lib/rbac";
 import { CreateFolderDialog, RenameDialog, MoveDialog } from "./components/dialogs";
 import { FileSearch } from "./components/file-search";
 import { StorageDashboard } from "./components/storage-dashboard";
@@ -75,8 +76,8 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
                   <div className="flex items-center justify-between">
                     <BreadcrumbNav />
                   </div>
-                  <Toolbar readonly={userRole === "client"} />
-                  {userRole !== "client" && <UploadZone />}
+                  <Toolbar readonly={userRole === ROLES.CLIENTS} />
+                  {userRole !== ROLES.CLIENTS && <UploadZone />}
                   {loading ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                       {Array.from({ length: 8 }).map((_, i) => (

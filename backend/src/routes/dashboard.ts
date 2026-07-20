@@ -23,7 +23,7 @@ async function resolveOrgId(req: AuthRequest): Promise<string> {
   const anyOrg = await Organization.findOne({}).sort({ createdAt: 1 }).select("id").lean();
   if (anyOrg) {
     const { v4: uuid } = await import("uuid");
-    await OrgMember.create({ id: uuid(), orgId: anyOrg.id, userId, role: "admin", joinedAt: new Date() });
+    await OrgMember.create({ id: uuid(), orgId: anyOrg.id, userId, role: "members", joinedAt: new Date() });
     return anyOrg.id;
   }
   throw new AppError(400, "No organization found. Please set up company details first.");

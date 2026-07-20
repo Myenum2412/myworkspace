@@ -18,6 +18,8 @@ export interface IProject extends Document {
   budget: number;
   spent: number;
   startDate: Date | null;
+  createdBy: string;
+  updatedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +43,8 @@ const projectSchema = new Schema<IProject>(
     budget: { type: Number, default: 0 },
     spent: { type: Number, default: 0 },
     startDate: { type: Date, default: null },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
   },
   { timestamps: true }
 );

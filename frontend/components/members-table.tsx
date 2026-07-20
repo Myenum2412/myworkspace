@@ -24,6 +24,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ROLES, isAdminRole } from "@/lib/rbac";
 import { SearchIcon, CheckCircle2Icon, XCircleIcon, PencilIcon, Trash2Icon, AlertCircleIcon, EyeIcon, Building2, Briefcase, Phone, MapPin, CalendarDays, ShieldCheck, LogIn, Globe, BadgeCheck } from "lucide-react";
 import { updateMember, deleteMember } from "@/actions/admin";
 
@@ -116,7 +117,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
             <div className="font-semibold truncate">{member.name}</div>
             <div className="text-sm text-muted-foreground truncate">{member.email}</div>
           </div>
-          <Badge variant={member.role === "admin" ? "default" : member.role === "manager" ? "secondary" : "outline"} className="capitalize">
+          <Badge variant={member.role === ROLES.MEMBERS ? "default" : "outline"} className="capitalize">
             {member.role}
           </Badge>
         </div>
@@ -155,9 +156,8 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="member">Member</SelectItem>
+                    <SelectItem value={ROLES.MEMBERS}>Members</SelectItem>
+                    <SelectItem value={ROLES.STAFFS}>Staffs</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -335,7 +335,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
     });
   };
 
-  const colSpan = 11;
+  const colSpan = isSuperAdmin ? 11 : 10;
 
   return (
     <>
@@ -387,7 +387,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Verified</th>
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Joined</th>
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Last Login</th>
-              <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Organization</th>
+              {isSuperAdmin && <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Organization</th>}
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
             </tr>
           </thead>
@@ -421,7 +421,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                   </td>
                   <td className="px-4 py-3 text-sm">{member.email}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={member.role === "admin" ? "default" : member.role === "manager" ? "secondary" : "outline"} className="text-xs">
+                    <Badge variant={member.role === ROLES.MEMBERS ? "default" : "outline"} className="text-xs">
                       {member.role}
                     </Badge>
                   </td>
@@ -444,9 +444,11 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.createdAt || member.joinedAt)}</td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.lastLogin)}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant="outline" className="text-xs">{member.orgName}</Badge>
-                  </td>
+                  {isSuperAdmin && (
+                    <td className="px-4 py-3">
+                      <Badge variant="outline" className="text-xs">{member.orgName}</Badge>
+                    </td>
+                  )}
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="icon" className="size-8" onClick={() => setEditingMember(member)}>

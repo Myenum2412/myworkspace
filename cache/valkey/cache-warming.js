@@ -142,10 +142,10 @@ const PREDEFINED_DATA: Record<string, unknown[]> = {
     { auth: { window: 900, max: 20 }, api: { window: 900, max: 600 }, upload: { window: 900, max: 50 }, search: { window: 60, max: 100 } },
   ],
   "permissions": [
-    { admin: ["*"], manager: ["read", "write", "delete"], member: ["read", "write"], client: ["read"] },
+    { org_admin: ["*"], members: ["read", "write", "delete"], staffs: ["read", "write"], hr: ["read", "write"], clients: ["read"] },
   ],
   "rbac": [
-    { roles: { admin: { parent: null, permissions: ["*"] }, manager: { parent: "member", permissions: ["manage_team", "manage_projects"] }, member: { parent: null, permissions: ["read_tasks", "write_tasks", "read_projects"] }, client: { parent: null, permissions: ["read_tasks"] } } },
+    { roles: { org_admin: { parent: null, permissions: ["*"] }, members: { parent: null, permissions: ["manage_org", "manage_projects", "manage_team", "manage_billing"] }, staffs: { parent: null, permissions: ["read_tasks", "write_tasks", "read_projects"] }, hr: { parent: null, permissions: ["read_employees", "write_employees", "read_attendance", "write_attendance"] }, clients: { parent: null, permissions: ["read_tasks"] } } },
   ],
 };
 

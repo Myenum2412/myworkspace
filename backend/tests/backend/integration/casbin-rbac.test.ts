@@ -47,18 +47,18 @@ describe("Casbin RBAC", () => {
   });
 
   describe("enforce", () => {
-    it("super_admin can view any file", async () => {
-      const allowed = await enforce("super_admin", "*:file", "view");
+    it("org_admin can view any file", async () => {
+      const allowed = await enforce("org_admin", "*:file", "view");
       expect(allowed).toBe(true);
     });
 
-    it("super_admin can upload any file", async () => {
-      const allowed = await enforce("super_admin", "*:file", "upload");
+    it("org_admin can upload any file", async () => {
+      const allowed = await enforce("org_admin", "*:file", "upload");
       expect(allowed).toBe(true);
     });
 
-    it("super_admin can delete any file", async () => {
-      const allowed = await enforce("super_admin", "*:file", "delete");
+    it("org_admin can delete any file", async () => {
+      const allowed = await enforce("org_admin", "*:file", "delete");
       expect(allowed).toBe(true);
     });
 
@@ -72,38 +72,38 @@ describe("Casbin RBAC", () => {
       expect(allowed).toBe(true);
     });
 
-    it("gen_admin can view org files", async () => {
-      const allowed = await enforce("gen_admin", ":org_file", "view");
+    it("members can view org files", async () => {
+      const allowed = await enforce("members", ":org_file", "view");
       expect(allowed).toBe(true);
     });
 
-    it("gen_admin can view project files via role hierarchy", async () => {
-      const allowed = await enforce("gen_admin", ":project_file", "view");
+    it("members can view project files via role hierarchy", async () => {
+      const allowed = await enforce("members", ":project_file", "view");
       expect(allowed).toBe(true);
     });
 
-    it("staff can view project files", async () => {
-      const allowed = await enforce("staff", ":project_file", "view");
+    it("staffs can view project files", async () => {
+      const allowed = await enforce("staffs", ":project_file", "view");
       expect(allowed).toBe(true);
     });
 
-    it("staff cannot delete project files", async () => {
-      const allowed = await enforce("staff", ":project_file", "delete");
+    it("staffs cannot delete project files", async () => {
+      const allowed = await enforce("staffs", ":project_file", "delete");
       expect(allowed).toBe(false);
     });
 
-    it("staff cannot view org files", async () => {
-      const allowed = await enforce("staff", ":org_file", "view");
+    it("staffs cannot view org files", async () => {
+      const allowed = await enforce("staffs", ":org_file", "view");
       expect(allowed).toBe(false);
     });
 
-    it("client can view client files", async () => {
-      const allowed = await enforce("client", ":client_file", "view");
+    it("clients can view client files", async () => {
+      const allowed = await enforce("clients", ":client_file", "view");
       expect(allowed).toBe(true);
     });
 
-    it("client cannot view project files", async () => {
-      const allowed = await enforce("client", ":project_file", "view");
+    it("clients cannot view project files", async () => {
+      const allowed = await enforce("clients", ":project_file", "view");
       expect(allowed).toBe(false);
     });
 
@@ -117,23 +117,23 @@ describe("Casbin RBAC", () => {
       expect(allowed).toBe(false);
     });
 
-    it("team_leader inherits staff permissions via role hierarchy", async () => {
-      const allowed = await enforce("team_leader", ":project_file", "view");
+    it("staffs inherits staffs permissions via role hierarchy", async () => {
+      const allowed = await enforce("staffs", ":project_file", "view");
       expect(allowed).toBe(true);
     });
 
-    it("project_manager can share files", async () => {
-      const allowed = await enforce("project_manager", ":project_file", "share");
+    it("members can share files", async () => {
+      const allowed = await enforce("members", ":project_file", "share");
       expect(allowed).toBe(true);
     });
 
-    it("staff cannot share files", async () => {
-      const allowed = await enforce("staff", ":project_file", "share");
+    it("staffs cannot share files", async () => {
+      const allowed = await enforce("staffs", ":project_file", "share");
       expect(allowed).toBe(false);
     });
 
-    it("branch_manager can delete project files", async () => {
-      const allowed = await enforce("branch_manager", ":project_file", "delete");
+    it("members can delete project files", async () => {
+      const allowed = await enforce("members", ":project_file", "delete");
       expect(allowed).toBe(true);
     });
 
@@ -147,18 +147,18 @@ describe("Casbin RBAC", () => {
       expect(allowed).toBe(true);
     });
 
-    it("gen_admin can view org folders", async () => {
-      const allowed = await enforce("gen_admin", ":org_folder", "view");
+    it("members can view org folders", async () => {
+      const allowed = await enforce("members", ":org_folder", "view");
       expect(allowed).toBe(true);
     });
 
-    it("staff can view project folders", async () => {
-      const allowed = await enforce("staff", ":project_folder", "view");
+    it("staffs can view project folders", async () => {
+      const allowed = await enforce("staffs", ":project_folder", "view");
       expect(allowed).toBe(true);
     });
 
-    it("staff cannot create org folders", async () => {
-      const allowed = await enforce("staff", ":org_folder", "create");
+    it("staffs cannot create org folders", async () => {
+      const allowed = await enforce("staffs", ":org_folder", "create");
       expect(allowed).toBe(false);
     });
 
@@ -167,8 +167,8 @@ describe("Casbin RBAC", () => {
       expect(allowed).toBe(false);
     });
 
-    it("super_admin inherits org_admin and gen_admin permissions", async () => {
-      const allowed = await enforce("super_admin", ":org_file", "view");
+    it("org_admin inherits org_admin permissions", async () => {
+      const allowed = await enforce("org_admin", ":org_file", "view");
       expect(allowed).toBe(true);
     });
   });

@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ROLES } from "@/lib/rbac";
 import { PencilIcon, Trash2Icon, AlertCircleIcon } from "lucide-react";
 import { updateRecentUser, deleteRecentUser, deleteOrganization } from "@/actions/admin";
 
@@ -77,9 +78,8 @@ export function EditSignupDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-                <SelectItem value="member">Member</SelectItem>
+                <SelectItem value={ROLES.MEMBERS}>Members</SelectItem>
+                <SelectItem value={ROLES.STAFFS}>Staffs</SelectItem>
               </SelectContent>
             </Select>
           </div>

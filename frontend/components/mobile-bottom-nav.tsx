@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ROLES, isAdminRole } from "@/lib/rbac";
 import {
   LayoutDashboardIcon,
   ListChecksIcon,
@@ -13,7 +15,6 @@ import {
   ListTodoIcon,
   ReceiptIcon,
   Settings2Icon,
-  BriefcaseIcon,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -48,19 +49,28 @@ const orgNav: NavItem[] = [
   { href: "/orgmenu", label: "Home", icon: LayoutDashboardIcon },
   { href: "/orgmenu/members", label: "Members", icon: UsersIcon },
   { href: "/orgmenu/org", label: "Org", icon: Building2Icon },
-  { href: "/orgmenu/reports", label: "Reports", icon: BriefcaseIcon },
   { href: "/orgmenu/settings", label: "Settings", icon: Settings2Icon },
 ];
 
 export function MobileBottomNav({ context }: { context?: string }) {
   const pathname = usePathname();
   const isMobile = useIsMobile();
+  const { data: session } = useSession();
+  const role = (session?.user as Record<string, unknown>)?.role as string || "";
 
   let navItems: NavItem[] = [];
   if (context === "origin") navItems = orgNav;
   else if (context === "staff") navItems = staffNav;
   else if (context === "client") navItems = clientNav;
-  else navItems = workspaceNav;
+  else {
+    navItems = workspaceNav.filter((item) => {
+      if (isAdminRole(role)) return true;
+      if (item.href === "/billing/invoices" || item.href === "/employees") {
+        return false;
+      }
+      return true;
+    });
+  }
 
   if (!isMobile) return null;
 

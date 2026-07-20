@@ -10,7 +10,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import MuiFolderIcon from "@mui/icons-material/Folder";
+import { ROLES, isAdminRole } from "@/lib/rbac";
 import {
   Building2Icon,
   LayoutDashboardIcon,
@@ -46,7 +46,6 @@ export const defaultOrgNavData = [
     icon: <Building2Icon className="size-6" />,
     items: [
       { title: "Details", url: "/orgmenu/org" },
-      { title: "Billing", url: "/orgmenu/org/billing" },
     ],
   },
   {
@@ -69,15 +68,6 @@ export const defaultOrgNavData = [
     ],
   },
   {
-    title: "Reports",
-    url: "/orgmenu/reports",
-    icon: <BarChart3Icon className="size-6" />,
-    items: [
-      { title: "Usage", url: "/orgmenu/reports/usage" },
-      { title: "Activity", url: "/orgmenu/reports/activity" },
-    ],
-  },
-  {
     title: "Security",
     url: "/orgmenu/security",
     icon: <ShieldIcon className="size-6" />,
@@ -85,34 +75,6 @@ export const defaultOrgNavData = [
       { title: "Policies", url: "/orgmenu/security/policies" },
       { title: "SSO", url: "/orgmenu/security/sso" },
 
-    ],
-  },
-  {
-    title: "Enterprise",
-    url: "/enterprise",
-    icon: <Building2Icon className="size-6" />,
-    items: [
-      { title: "Overview", url: "/enterprise" },
-      { title: "BI Analytics", url: "/enterprise/bi" },
-      { title: "AI Assistant", url: "/enterprise/ai" },
-      { title: "Automation", url: "/enterprise/automation" },
-      { title: "Governance", url: "/enterprise/governance" },
-      { title: "Knowledge", url: "/enterprise/knowledge" },
-      { title: "Developer Portal", url: "/enterprise/developer" },
-      { title: "Admin Center", url: "/enterprise/admin" },
-      { title: "Marketplace", url: "/enterprise/marketplace" },
-      { title: "Operations", url: "/enterprise/operations" },
-      { title: "Customer Success", url: "/enterprise/success" },
-      { title: "Billing", url: "/enterprise/billing" },
-      { title: "Collaboration", url: "/enterprise/collaboration" },
-    ],
-  },
-  {
-    title: "File Manager",
-    url: "/files",
-    icon: <MuiFolderIcon className="size-6" />,
-    items: [
-      { title: "All Files", url: "/files" },
     ],
   },
   {
@@ -141,6 +103,9 @@ export function OrgSidebar({
   navItems?: typeof defaultOrgNavData;
   user: NavUserData;
 }) {
+  if (!isAdminRole(user.role || "")) {
+    return null;
+  }
 
   return (
     <Sidebar collapsible="icon" {...props}>

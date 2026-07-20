@@ -58,7 +58,7 @@ export default async function TeamsPage() {
               $filter: {
                 input: "$members",
                 as: "m",
-                cond: { $eq: ["$$m.role", "lead"] },
+                cond: { $eq: ["$$m.role", "team_lead"] },
               },
             },
           },
@@ -140,7 +140,7 @@ export default async function TeamsPage() {
           name: u?.name || (m.name as string) || "",
           email: u?.email || (m.email as string) || "",
           avatar: u?.avatar || "",
-          role: (m.role as string) || "member",
+          role: (m.role as string) || "staffs",
           designation: u?.designation || (m.designation as string) || "",
           department: u?.department || (m.department as string) || "",
         };

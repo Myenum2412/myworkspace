@@ -8,6 +8,8 @@ export interface ApiClientOptions {
   dedupKey?: string;
   signal?: AbortSignal;
   headers?: Record<string, string>;
+  skipCsrf?: boolean;
+  skipAuth?: boolean;
 }
 
 export class ApiError extends Error {
@@ -21,28 +23,107 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Get CSRF token from cookie.
+ */
+function getCsrfToken(): string | null {
+  if (typeof document === "undefined") return null;
+
+  const cookies = document.cookie.split(";");
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split("=");
+    if (name === "csrf-token") {
+      return value;
+    }
+  }
+  return null;
+}
+
+/**
+ * Check if the error is a 401 (unauthorized).
+ */
+function isUnauthorizedError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 401;
+}
+
+/**
+ * Attempt to refresh the session by calling NextAuth's signIn endpoint.
+ * Returns true if refresh was successful.
+ */
+async function attemptSessionRefresh(): Promise<boolean> {
+  try {
+    // Call NextAuth's session endpoint to trigger token refresh
+    const response = await fetch("/api/auth/session", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const session = await response.json();
+      return !!session?.user;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 async function request<T>(
   url: string,
   options: RequestInit & ApiClientOptions = {},
 ): Promise<T> {
-  const { timeout = 15000, retries = 1, dedupKey, signal, headers: extraHeaders, ...fetchOptions } = options;
+  const {
+    timeout = 15000,
+    retries = 1,
+    dedupKey,
+    signal,
+    headers: extraHeaders,
+    skipCsrf = false,
+    skipAuth = false,
+    ...fetchOptions
+  } = options;
+
+  const isUnsafeMethod = ["POST", "PUT", "PATCH", "DELETE"].includes(
+    (fetchOptions.method || "GET").toUpperCase(),
+  );
+
+  // Build headers with CSRF token for unsafe methods
+  const baseHeaders: Record<string, string> = {
+    Accept: "application/json",
+  };
+
+  if (fetchOptions.body && typeof fetchOptions.body === "string") {
+    baseHeaders["Content-Type"] = "application/json";
+  }
+
+  if (extraHeaders) {
+    Object.assign(baseHeaders, extraHeaders);
+  }
+
+  const headers = baseHeaders;
+
+  // Add CSRF token for unsafe methods
+  if (isUnsafeMethod && !skipCsrf) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      headers["x-csrf-token"] = csrfToken;
+    }
+  }
 
   const fetchFn = (abortSignal: AbortSignal) =>
     fetch(url, {
       ...fetchOptions,
       signal: abortSignal,
       credentials: "include",
-      headers: {
-        Accept: "application/json",
-        ...(fetchOptions.body && typeof fetchOptions.body === "string"
-          ? { "Content-Type": "application/json" }
-          : {}),
-        ...extraHeaders,
-      },
+      headers,
     }).then(async (res) => {
       if (!res.ok) {
         let body: unknown;
-        try { body = await res.json(); } catch { body = await res.text().catch(() => null); }
+        try {
+          body = await res.json();
+        } catch {
+          body = await res.text().catch(() => null);
+        }
         throw new ApiError(
           `API error: ${res.status} ${res.statusText}`,
           res.status,
@@ -57,13 +138,33 @@ async function request<T>(
       return json as unknown as T;
     });
 
-  if (dedupKey) {
-    return deduplicateRequest(dedupKey, () =>
-      withRetry(fetchFn, { maxRetries: retries, baseDelay: 300 }),
-    );
-  }
+  const executeWithRetry = () =>
+    withRetry(fetchFn, { maxRetries: retries, baseDelay: 300 });
 
-  return withRetry(fetchFn, { maxRetries: retries, baseDelay: 300 });
+  try {
+    if (dedupKey) {
+      return await deduplicateRequest(dedupKey, executeWithRetry);
+    }
+    return await executeWithRetry();
+  } catch (error) {
+    // If unauthorized and not already refreshing, attempt session refresh
+    if (isUnauthorizedError(error) && !skipAuth) {
+      const refreshSuccessful = await attemptSessionRefresh();
+      if (refreshSuccessful) {
+        // Retry the original request after successful refresh
+        try {
+          if (dedupKey) {
+            return await deduplicateRequest(dedupKey, executeWithRetry);
+          }
+          return await executeWithRetry();
+        } catch {
+          // If retry also fails, throw the original error
+          throw error;
+        }
+      }
+    }
+    throw error;
+  }
 }
 
 export const api = {

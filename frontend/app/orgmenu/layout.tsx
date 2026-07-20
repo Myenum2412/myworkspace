@@ -1,11 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ShieldAlertIcon, HomeIcon } from "lucide-react";
 import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
 
 export default async function OrgLayout({
   children,
@@ -15,19 +12,8 @@ export default async function OrgLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const userEmail = session.user.email?.toLowerCase().trim();
   const sessionRole = session.user.role;
-  let authorized = sessionRole === "ORG_MENU_ADMIN" || sessionRole === "SUPER_ADMIN" || userEmail === ADMIN_EMAIL;
-
-  // Fallback: query DB if session doesn't carry email or role
-  if (!authorized && userEmail) {
-    try {
-      const dbUser = await db.collection("users").findOne({ email: userEmail });
-      if (dbUser) {
-        authorized = dbUser.role === "ORG_MENU_ADMIN" || dbUser.role === "SUPER_ADMIN" || (dbUser.email?.toLowerCase().trim() === ADMIN_EMAIL);
-      }
-    } catch {}
-  }
+  const authorized = sessionRole === "org_admin";
 
   if (!authorized) {
     return (
@@ -61,7 +47,7 @@ export default async function OrgLayout({
     name: userName,
     email: userEmailDisplay,
     avatar: userAvatar,
-    role: sessionRole || "ORG_MENU_ADMIN",
+    role: sessionRole || "org_admin",
     permissions: session.user.permissions || [],
   };
 

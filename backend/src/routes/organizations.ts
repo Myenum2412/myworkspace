@@ -10,6 +10,7 @@ import { signToken } from "../config/auth.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { env } from "../config/env.js";
 import { sendOrganizationInviteEmail } from "../lib/mail/index.js";
+import { ROLES, isAdminRole } from "../lib/rbac/index.js";
 
 const router = Router();
 
@@ -25,7 +26,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   const membershipMap = new Map(memberships.map(m => [m.orgId.toString(), m.role]));
   const result = orgs.map(org => ({
     ...org,
-    userRole: membershipMap.get(org._id.toString()) || "member",
+    userRole: membershipMap.get(org._id.toString()) || "staffs",
   }));
 
   res.json({ success: true, data: result });
@@ -79,7 +80,7 @@ router.post("/invite", async (req: AuthRequest, res: Response) => {
 
   // Verify sender is an admin of the target org
   const membership = await OrgMember.findOne({ orgId: targetOrgId, userId: req.user!.userId }).select("role").lean();
-  if (!membership || membership.role !== "admin") {
+  if (!membership || !isAdminRole(membership.role)) {
     throw new AppError(403, "Only organization admins can invite members");
   }
 
@@ -126,7 +127,7 @@ router.post("/invite", async (req: AuthRequest, res: Response) => {
       continue;
     }
 
-    toCreate.push({ orgId: targetOrgId, userId, role: "member" });
+    toCreate.push({ orgId: targetOrgId, userId, role: "staffs" });
     results.push({ email, status: "invited", userId });
   }
 
@@ -181,7 +182,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   await OrgMember.create({
     orgId: org._id,
     userId: req.user!.userId,
-    role: "admin",
+    role: "members",
   });
 
   const limits = getPlanLimits(orgPlan);
@@ -224,7 +225,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
     adminFilter.push({ orgId: org._id, userId: new mongoose.Types.ObjectId(req.user!.userId) });
   }
   const membership = await OrgMember.findOne({ $or: adminFilter }).select("role").lean();
-  if (!membership || membership.role !== "admin") {
+  if (!membership || !isAdminRole(membership.role)) {
     throw new AppError(403, "Only organization admins can update organization details");
   }
 

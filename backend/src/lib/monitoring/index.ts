@@ -222,3 +222,182 @@ export function trackProcessMetrics() {
   metricsRegistry.setGauge("process_memory_external_bytes", {}, mem.external || 0);
   metricsRegistry.setGauge("process_uptime_seconds", {}, process.uptime());
 }
+
+// ── Security Metrics ──
+
+/**
+ * Track authentication event.
+ */
+export function trackAuthEvent(event: "success" | "failure" | "mfa_challenge" | "mfa_success" | "mfa_failure", method: string, orgId?: string) {
+  metricsRegistry.incrementCounter("auth_events_total", { event, method, orgId: orgId || "unknown" });
+  if (event === "failure") {
+    metricsRegistry.incrementCounter("auth_failures_total", { method, orgId: orgId || "unknown" });
+  }
+}
+
+/**
+ * Track authorization decision.
+ */
+export function trackAuthDecision(decision: "allowed" | "denied", role: string, resource: string, action: string) {
+  metricsRegistry.incrementCounter("authorization_decisions_total", { decision, role, resource, action });
+  if (decision === "denied") {
+    metricsRegistry.incrementCounter("authorization_denials_total", { role, resource, action });
+  }
+}
+
+/**
+ * Track authorization latency.
+ */
+export function trackAuthLatency(durationMs: number, role?: string) {
+  metricsRegistry.observeHistogram("authorization_latency_ms", { role: role || "unknown" }, durationMs);
+}
+
+/**
+ * Track permission cache performance.
+ */
+export function trackPermissionCache(hit: boolean) {
+  metricsRegistry.incrementCounter("permission_cache_total", { hit: hit ? "hit" : "miss" });
+}
+
+/**
+ * Track tenant isolation events.
+ */
+export function trackTenantIsolation(event: "violation" | "enforced", orgId?: string) {
+  metricsRegistry.incrementCounter("tenant_isolation_events_total", { event, orgId: orgId || "unknown" });
+  if (event === "violation") {
+    metricsRegistry.incrementCounter("tenant_isolation_violations_total", { orgId: orgId || "unknown" });
+  }
+}
+
+/**
+ * Track suspicious activity.
+ */
+export function trackSuspiciousActivity(type: string, orgId?: string) {
+  metricsRegistry.incrementCounter("suspicious_activity_total", { type, orgId: orgId || "unknown" });
+}
+
+/**
+ * Track session events.
+ */
+export function trackSessionEvent(event: "created" | "expired" | "terminated" | "concurrent_limit") {
+  metricsRegistry.incrementCounter("session_events_total", { event });
+}
+
+/**
+ * Track device trust events.
+ */
+export function trackDeviceTrust(event: "new_device" | "trusted" | "revoked" | "suspicious") {
+  metricsRegistry.incrementCounter("device_trust_events_total", { event });
+}
+
+/**
+ * Track rate limiting events.
+ */
+export function trackRateLimitExceeded(endpoint: string, orgId?: string) {
+  metricsRegistry.incrementCounter("rate_limit_exceeded_total", { endpoint, orgId: orgId || "unknown" });
+}
+
+/**
+ * Track audit log events.
+ */
+export function trackAuditLog(event: "written" | "failed" | "chain_broken") {
+  metricsRegistry.incrementCounter("audit_log_events_total", { event });
+}
+
+/**
+ * Track CASBIN policy evaluation.
+ */
+export function trackCasbinEvaluation(durationMs: number, allowed: boolean) {
+  metricsRegistry.observeHistogram("casbin_evaluation_duration_ms", {}, durationMs);
+  metricsRegistry.incrementCounter("casbin_evaluations_total", { allowed: allowed ? "allowed" : "denied" });
+}
+
+/**
+ * Get security health score (0-100).
+ * Based on recent security events.
+ */
+export function getSecurityHealthScore(): {
+  score: number;
+  factors: Array<{ factor: string; impact: number; description: string }>;
+} {
+  const factors: Array<{ factor: string; impact: number; description: string }> = [];
+  let score = 100;
+
+  // Check authorization denials
+  const denialMetrics = metricsRegistry.getMetrics().filter(m =>
+    m.name === "authorization_denials_total"
+  );
+  const totalDenials = denialMetrics.reduce((sum, m) => sum + m.value, 0);
+  if (totalDenials > 100) {
+    const impact = Math.min(30, totalDenials / 100);
+    score -= impact;
+    factors.push({
+      factor: "high_auth_denials",
+      impact: -impact,
+      description: `${totalDenials} authorization denials recorded`,
+    });
+  }
+
+  // Check tenant isolation violations
+  const violationMetrics = metricsRegistry.getMetrics().filter(m =>
+    m.name === "tenant_isolation_violations_total"
+  );
+  const totalViolations = violationMetrics.reduce((sum, m) => sum + m.value, 0);
+  if (totalViolations > 0) {
+    const impact = Math.min(40, totalViolations * 10);
+    score -= impact;
+    factors.push({
+      factor: "tenant_isolation_violations",
+      impact: -impact,
+      description: `${totalViolations} tenant isolation violations detected`,
+    });
+  }
+
+  // Check suspicious activity
+  const suspiciousMetrics = metricsRegistry.getMetrics().filter(m =>
+    m.name === "suspicious_activity_total"
+  );
+  const totalSuspicious = suspiciousMetrics.reduce((sum, m) => sum + m.value, 0);
+  if (totalSuspicious > 0) {
+    const impact = Math.min(25, totalSuspicious * 5);
+    score -= impact;
+    factors.push({
+      factor: "suspicious_activity",
+      impact: -impact,
+      description: `${totalSuspicious} suspicious activity events`,
+    });
+  }
+
+  // Check rate limit hits
+  const rateLimitMetrics = metricsRegistry.getMetrics().filter(m =>
+    m.name === "rate_limit_exceeded_total"
+  );
+  const totalRateLimits = rateLimitMetrics.reduce((sum, m) => sum + m.value, 0);
+  if (totalRateLimits > 50) {
+    const impact = Math.min(15, totalRateLimits / 50);
+    score -= impact;
+    factors.push({
+      factor: "rate_limit_exceeded",
+      impact: -impact,
+      description: `${totalRateLimits} rate limit exceeded events`,
+    });
+  }
+
+  // Positive factors
+  const cacheHitRate = metricsRegistry.getMetrics().find(m =>
+    m.name === "permission_cache_total" && m.labels.hit === "hit"
+  );
+  if (cacheHitRate && cacheHitRate.value > 1000) {
+    factors.push({
+      factor: "high_cache_hit_rate",
+      impact: 5,
+      description: "Permission cache performing well",
+    });
+    score += 5;
+  }
+
+  return {
+    score: Math.max(0, Math.min(100, Math.round(score))),
+    factors,
+  };
+}

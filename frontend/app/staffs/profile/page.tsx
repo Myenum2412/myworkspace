@@ -167,7 +167,7 @@ export default async function ProfilePage() {
       twitter: (user.twitter as string) || "",
       website: (user.website as string) || "",
       status: (user.status as string) || "offline",
-      role: (user.role as string) || "member",
+      role: (user.role as string) || "staffs",
       image: (user.image as string) || "",
       bannerUrl: (user.bannerUrl as string) || "",
       displayId: (user.displayId as string) || "",

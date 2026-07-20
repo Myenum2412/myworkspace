@@ -70,7 +70,7 @@ export default async function StaffsPage() {
         _id: (u._id as { toString: () => string }).toString(),
         name: (u.name as string) || "",
         email: (u.email as string) || "",
-        role: ((member?.role as string) || "member"),
+        role: ((member?.role as string) || "staffs"),
         department: (u.department as string) || "",
         status: (u.status as string) || "offline",
         image: (u.image as string) || "",

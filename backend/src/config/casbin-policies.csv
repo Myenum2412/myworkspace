@@ -1,100 +1,121 @@
-p, super_admin, *:file, view
-p, super_admin, *:file, upload
-p, super_admin, *:file, download
-p, super_admin, *:file, edit
-p, super_admin, *:file, delete
-p, super_admin, *:file, share
-p, super_admin, *:file, restore
-p, super_admin, *:file, archive
-p, super_admin, *:folder, view
-p, super_admin, *:folder, create
-p, super_admin, *:folder, edit
-p, super_admin, *:folder, delete
-p, super_admin, *:upload, view
-p, super_admin, *:upload, resume
-p, super_admin, *:upload, cancel
-p, super_admin, *:upload, pause
+# Role Hierarchy (via g assignments)
+# org_admin -> members -> manager -> team_leader -> staffs
+# members -> hr, finance
+g, org_admin, members
+g, members, manager
+g, members, hr
+g, members, finance
+g, manager, team_leader
+g, team_leader, staffs
 
-p, org_admin, *:file, view
-p, org_admin, *:file, upload
-p, org_admin, *:file, download
-p, org_admin, *:file, edit
-p, org_admin, *:file, delete
-p, org_admin, *:file, share
-p, org_admin, *:file, restore
-p, org_admin, *:file, archive
-p, org_admin, *:folder, view
-p, org_admin, *:folder, create
-p, org_admin, *:folder, edit
-p, org_admin, *:folder, delete
-p, org_admin, *:upload, view
-p, org_admin, *:upload, resume
-p, org_admin, *:upload, cancel
-p, org_admin, *:upload, pause
+# ── Members (Organization Owner) ──
+p, members, :org_file, view
+p, members, :org_file, upload
+p, members, :org_file, download
+p, members, :org_file, edit
+p, members, :org_file, delete
+p, members, :org_file, share
+p, members, :org_file, restore
+p, members, :org_file, archive
+p, members, :org_folder, view
+p, members, :org_folder, create
+p, members, :org_folder, edit
+p, members, :org_folder, delete
+p, members, :org_upload, view
+p, members, :org_upload, resume
+p, members, :org_upload, cancel
+p, members, :org_upload, pause
 
-p, gen_admin, :org_file, view
-p, gen_admin, :org_file, upload
-p, gen_admin, :org_file, download
-p, gen_admin, :org_file, edit
-p, gen_admin, :org_file, delete
-p, gen_admin, :org_file, share
-p, gen_admin, :org_folder, view
-p, gen_admin, :org_folder, create
-p, gen_admin, :org_folder, edit
-p, gen_admin, :org_folder, delete
-p, gen_admin, :org_upload, view
-p, gen_admin, :org_upload, resume
-p, gen_admin, :org_upload, cancel
+# ── Manager ──
+p, manager, :org_file, view
+p, manager, :org_file, upload
+p, manager, :org_file, download
+p, manager, :org_file, edit
+p, manager, :org_folder, view
+p, manager, :org_folder, create
+p, manager, :org_folder, edit
+p, manager, :project_file, view
+p, manager, :project_file, upload
+p, manager, :project_file, download
+p, manager, :project_file, edit
+p, manager, :project_file, delete
+p, manager, :project_folder, view
+p, manager, :project_folder, create
+p, manager, :project_folder, edit
+p, manager, :project_folder, delete
+p, manager, :org_upload, view
+p, manager, :org_upload, resume
+p, manager, :org_upload, cancel
+p, manager, :org_upload, pause
 
-p, hr, *:file, view
-p, hr, *:file, upload
-p, hr, *:file, download
-p, hr, *:file, edit
-p, hr, *:file, share
-p, hr, *:folder, view
-p, hr, *:folder, create
-
-p, branch_manager, :org_file, view
-p, branch_manager, :org_file, upload
-p, branch_manager, :org_file, download
-p, branch_manager, :project_file, view
-p, branch_manager, :project_file, upload
-p, branch_manager, :project_file, download
-p, branch_manager, :project_file, delete
-p, branch_manager, :project_folder, view
-p, branch_manager, :project_folder, create
-
-p, project_manager, :project_file, view
-p, project_manager, :project_file, upload
-p, project_manager, :project_file, download
-p, project_manager, :project_file, edit
-p, project_manager, :project_file, delete
-p, project_manager, :project_file, share
-p, project_manager, :project_folder, view
-p, project_manager, :project_folder, create
-
+# ── Team Leader ──
 p, team_leader, :project_file, view
 p, team_leader, :project_file, upload
 p, team_leader, :project_file, download
 p, team_leader, :project_file, edit
 p, team_leader, :project_folder, view
+p, team_leader, :project_folder, create
+p, team_leader, :project_upload, view
+p, team_leader, :project_upload, resume
+p, team_leader, :project_upload, cancel
 
-p, staff, :project_file, view
-p, staff, :project_file, upload
-p, staff, :project_file, download
-p, staff, :project_folder, view
+# ── Staffs ──
+p, staffs, :project_file, view
+p, staffs, :project_file, upload
+p, staffs, :project_file, download
+p, staffs, :project_file, edit
+p, staffs, :project_file, delete
+p, staffs, :project_folder, view
+p, staffs, :project_folder, create
+p, staffs, :project_upload, view
+p, staffs, :project_upload, resume
 
-p, client, :client_file, view
-p, client, :client_file, upload
-p, client, :client_file, download
-p, client, :client_folder, view
+# ── HR ──
+p, hr, :org_file, view
+p, hr, :org_file, upload
+p, hr, :org_file, download
+p, hr, :org_file, edit
+p, hr, :org_file, share
+p, hr, :org_folder, view
+p, hr, :org_folder, create
+p, hr, :hr_file, view
+p, hr, :hr_file, upload
+p, hr, :hr_file, download
+p, hr, :hr_file, edit
+p, hr, :hr_folder, view
+p, hr, :hr_folder, create
 
+# ── Finance ──
+p, finance, :org_file, view
+p, finance, :org_file, download
+p, finance, :finance_file, view
+p, finance, :finance_file, upload
+p, finance, :finance_file, download
+p, finance, :finance_file, edit
+p, finance, :finance_folder, view
+p, finance, :finance_folder, create
+
+# ── Contractors ──
+p, contractors, :project_file, view
+p, contractors, :project_file, upload
+p, contractors, :project_file, download
+p, contractors, :project_folder, view
+
+# ── Clients ──
+p, clients, :client_file, view
+p, clients, :client_file, upload
+p, clients, :client_file, download
+p, clients, :client_folder, view
+
+# ── Guest ──
 p, guest, :shared_file, view
 p, guest, :shared_file, download
 
-g, super_admin, org_admin
-g, org_admin, gen_admin
-g, gen_admin, branch_manager
-g, branch_manager, project_manager
-g, project_manager, team_leader
-g, team_leader, staff
+# ── API Token (minimal default scope) ──
+p, api_token, :api_resource, view
+
+# ── Service Account (internal system access) ──
+p, service_account, :system_resource, manage
+
+# ── Automation Bot ──
+p, automation_bot, :automation_resource, manage

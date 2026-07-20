@@ -12,6 +12,7 @@ import {
 import type { TaskStatus, TaskPriority, TaskType } from "../lib/validate.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { logger } from "../lib/logger/index.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import {
   notifyTaskAssigned,
   notifyTaskUpdated,
@@ -131,7 +132,7 @@ const TYPE_INITIAL_STATUS: Record<string, string> = {
 async function buildVisibilityFilter(orgId: string, userId: string, type?: string): Promise<Record<string, any>> {
   // Admins see everything
   const userRecord = await User.findOne({ id: userId }).lean();
-  const isAdmin = userRecord?.role === "admin" || userRecord?.role === "ORG_MENU_ADMIN";
+  const isAdmin = isAdminRole(userRecord?.role || "");
   if (isAdmin) return { orgId };
 
   const userTeams = await TeamMember.find({ userId }).lean();
@@ -178,7 +179,7 @@ async function lookupUser(id: string) {
 }
 
 async function getTeamHeadUserId(teamId: string): Promise<string | null> {
-  const lead = await TeamMember.findOne({ teamId, role: "lead" }).lean();
+  const lead = await TeamMember.findOne({ teamId, role: "team_lead" }).lean();
   return lead?.userId || null;
 }
 
@@ -768,7 +769,7 @@ export async function approveTeamTask(id: string, userId: string, note?: string)
   if (headUserId && headUserId !== userId) {
     // Check admin override
     const userRecord = await User.findOne({ id: userId }).lean();
-    const isAdmin = userRecord?.role === "admin" || userRecord?.role === "ORG_MENU_ADMIN";
+    const isAdmin = isAdminRole(userRecord?.role || "");
     if (!isAdmin) {
       throw new AppError(403, "Only the team head can approve team tasks");
     }
@@ -809,7 +810,7 @@ export async function rejectTeamTask(id: string, userId: string, reason: string)
   const headUserId = await getTeamHeadUserId(existing.teamId);
   if (headUserId && headUserId !== userId) {
     const userRecord = await User.findOne({ id: userId }).lean();
-    const isAdmin = userRecord?.role === "admin" || userRecord?.role === "ORG_MENU_ADMIN";
+    const isAdmin = isAdminRole(userRecord?.role || "");
     if (!isAdmin) {
       throw new AppError(403, "Only the team head can reject team tasks");
     }
@@ -982,7 +983,7 @@ export async function autoActivateScheduledTasks(): Promise<number> {
 // ─────────────────────────────────────────────
 
 async function checkModifyPermission(task: any, userId: string, scope?: string): Promise<void> {
-  if (scope === "staff" || scope === "member") {
+  if (scope === "staffs") {
     const userTeams = await TeamMember.find({ userId }).lean();
     const teamIds = userTeams.map(t => t.teamId);
     const isOwnTask = task.assigneeId?.toString() === userId;

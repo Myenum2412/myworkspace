@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { requireString } from "../lib/validate.js";
 import { collections } from "../lib/db/collections.js";
 import mongoose from "mongoose";
@@ -31,6 +32,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create stock items");
   const orgId = await resolveOrgId(req.user!.userId, req.user!.email, req.user!.orgId);
   const productName = requireString(req.body.productName, "productName", { min: 1, max: 300 });
   const db = mongoose.connection.db;
@@ -65,6 +67,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update stock items");
   const orgId = await resolveOrgId(req.user!.userId, req.user!.email, req.user!.orgId);
   const db = mongoose.connection.db;
   if (!db) throw new AppError(500, "Database connection unavailable");
@@ -85,6 +88,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete stock items");
   const orgId = await resolveOrgId(req.user!.userId, req.user!.email, req.user!.orgId);
   const db = mongoose.connection.db;
   if (!db) throw new AppError(500, "Database connection unavailable");

@@ -5,6 +5,8 @@ import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { UploadApproval } from "../lib/db/models/UploadApproval.js";
 import { verifyOrgAccess } from "../lib/org-utils.js";
 import { recordAuditLog } from "../services/audit.service.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { User } from "../lib/db/models/User.js";
 
 const router = Router();
 
@@ -27,6 +29,14 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
   const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName").lean();
   if (!approval) throw new AppError(404, "Pending approval not found");
+
+  await verifyOrgAccess(req.user!.userId, approval.orgId);
+
+  // Only admins can approve file uploads
+  const userDoc = await User.findOne({ id: req.user!.userId }).select("role").lean();
+  if (!userDoc || !isAdminRole(userDoc.role)) {
+    throw new AppError(403, "Only organization admins can approve file uploads");
+  }
 
   await Promise.all([
     UploadApproval.updateOne(
@@ -57,6 +67,14 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
   const { reason } = req.body;
   const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName").lean();
   if (!approval) throw new AppError(404, "Pending approval not found");
+
+  await verifyOrgAccess(req.user!.userId, approval.orgId);
+
+  // Only admins can reject file uploads
+  const userDoc = await User.findOne({ id: req.user!.userId }).select("role").lean();
+  if (!userDoc || !isAdminRole(userDoc.role)) {
+    throw new AppError(403, "Only organization admins can reject file uploads");
+  }
 
   await Promise.all([
     UploadApproval.updateOne(

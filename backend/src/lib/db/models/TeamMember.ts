@@ -5,16 +5,21 @@ export interface ITeamMember extends Document {
   teamId: string;
   userId: string;
   createdBy: string;
-  role: "lead" | "member";
+  updatedBy?: string;
+  role: "team_lead" | "team_staff";
 }
 
-const teamMemberSchema = new Schema<ITeamMember>({
-  orgId: { type: String, required: true },
-  teamId: { type: String, required: true },
-  userId: { type: String, required: true },
-  createdBy: { type: String, required: true },
-  role: { type: String, enum: ["lead", "member"], default: "member" },
-});
+const teamMemberSchema = new Schema<ITeamMember>(
+  {
+    orgId: { type: String, required: true },
+    teamId: { type: String, required: true },
+    userId: { type: String, required: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
+    role: { type: String, enum: ["team_lead", "team_staff"], default: "team_staff" },
+  },
+  { timestamps: true }
+);
 
 teamMemberSchema.index({ orgId: 1, teamId: 1, userId: 1 }, { unique: true });
 

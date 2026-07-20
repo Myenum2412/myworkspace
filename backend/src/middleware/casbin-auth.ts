@@ -29,7 +29,7 @@ export function casbinAuthorize(resourceType: ResourceType, action: ActionType) 
         throw new AppError(401, "Authentication required");
       }
 
-      const role = req.user.role?.toLowerCase() || "guest";
+      const role = req.user.role || "guest";
       let resource: string;
 
       if (resourceType === "file") {
@@ -48,8 +48,14 @@ export function casbinAuthorize(resourceType: ResourceType, action: ActionType) 
         };
         resource = buildFolderResource(params);
       } else {
-        const scope = req.body?.scope || req.query?.scope as string || `:org_upload`;
-        resource = scope;
+        // Upload scope is NEVER taken from client input - always derive from auth context
+        if (req.user.role === "org_admin") {
+          resource = ":org_upload";
+        } else if (req.user.orgId) {
+          resource = ":org_upload";
+        } else {
+          resource = ":project_upload";
+        }
       }
 
       const allowed = await enforce(role, resource, action);

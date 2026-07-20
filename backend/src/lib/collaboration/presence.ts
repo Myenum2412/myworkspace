@@ -27,7 +27,7 @@ export interface ISharedWorkspace extends Document {
   orgId: string;
   name: string;
   description?: string;
-  members: { userId: string; role: "viewer" | "editor" | "admin"; joinedAt: Date }[];
+  members: { userId: string; role: "workspace_owner" | "workspace_editor" | "workspace_viewer"; joinedAt: Date }[];
   resources: { type: string; id: string; addedAt: Date }[];
   isActive: boolean;
   createdBy: string;
@@ -65,7 +65,7 @@ const sharedWorkspaceSchema = new Schema<ISharedWorkspace>({
   orgId: { type: String, required: true, index: true },
   name: { type: String, required: true },
   description: String,
-  members: [{ userId: String, role: { type: String, enum: ["viewer", "editor", "admin"] }, joinedAt: { type: Date, default: Date.now } }],
+  members: [{ userId: String, role: { type: String, enum: ["workspace_owner", "workspace_editor", "workspace_viewer"] }, joinedAt: { type: Date, default: Date.now } }],
   resources: [{ type: String, id: String, addedAt: { type: Date, default: Date.now } }],
   isActive: { type: Boolean, default: true },
   createdBy: { type: String, required: true },
@@ -106,18 +106,18 @@ export class CollaborationEngine {
 
   async createWorkspace(params: {
     orgId: string; name: string; description?: string;
-    members?: { userId: string; role: "viewer" | "editor" | "admin" }[];
+    members?: { userId: string; role: "workspace_owner" | "workspace_editor" | "workspace_viewer" }[];
     createdBy: string;
   }): Promise<ISharedWorkspace> {
     return SharedWorkspace.create({
       id: uuid(), ...params,
-      members: params.members || [{ userId: params.createdBy, role: "admin", joinedAt: new Date() }],
+      members: params.members || [{ userId: params.createdBy, role: "workspace_owner", joinedAt: new Date() }],
       resources: [],
       isActive: true,
     });
   }
 
-  async addWorkspaceMembers(workspaceId: string, members: { userId: string; role: "viewer" | "editor" | "admin" }[]): Promise<void> {
+  async addWorkspaceMembers(workspaceId: string, members: { userId: string; role: "workspace_owner" | "workspace_editor" | "workspace_viewer" }[]): Promise<void> {
     await SharedWorkspace.updateOne(
       { id: workspaceId },
       { $push: { members: { $each: members.map(m => ({ ...m, joinedAt: new Date() })) } } },

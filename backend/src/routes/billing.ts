@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { Invoice } from "../lib/db/models/Invoice.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { Counter } from "../lib/db/models/Counter.js";
 import { v4 as uuid } from "uuid";
@@ -69,6 +70,7 @@ router.get("/invoices/:id", async (req: AuthRequest, res: Response) => {
 // POST /api/billing/invoices — Create invoice
 router.post("/invoices", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create invoices");
     const orgId = req.user!.orgId!;
 
     const number = req.body.number && (req.body.number as string).trim() ? req.body.number : await nextInvoiceNumber(orgId);
@@ -108,6 +110,7 @@ router.post("/invoices", async (req: AuthRequest, res: Response) => {
 // PUT /api/billing/invoices/:id — Update invoice (full replace)
 router.put("/invoices/:id", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update invoices");
     const invoice = await Invoice.findOne({ id: req.params.id, orgId: req.user!.orgId });
     if (!invoice) throw new AppError(404, "Invoice not found");
 
@@ -126,6 +129,7 @@ router.put("/invoices/:id", async (req: AuthRequest, res: Response) => {
 // PATCH /api/billing/invoices/:id — Partial update
 router.patch("/invoices/:id", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update invoices");
     const { orgId, ...safeBody } = req.body;
     const invoice = await Invoice.findOneAndUpdate(
       { id: req.params.id, orgId: req.user!.orgId },
@@ -143,6 +147,7 @@ router.patch("/invoices/:id", async (req: AuthRequest, res: Response) => {
 // DELETE /api/billing/invoices/:id — Delete invoice
 router.delete("/invoices/:id", async (req: AuthRequest, res: Response) => {
   try {
+    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete invoices");
     const invoice = await Invoice.findOneAndDelete({ id: req.params.id, orgId: req.user!.orgId });
     if (!invoice) throw new AppError(404, "Invoice not found");
     res.json({ success: true, message: "Invoice deleted" });

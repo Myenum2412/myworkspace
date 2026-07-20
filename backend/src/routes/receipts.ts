@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { Receipt, RECEIPT_STATUSES } from "../lib/db/models/Receipt.js";
 import { Counter } from "../lib/db/models/Counter.js";
 
@@ -49,6 +50,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 
 // Create receipt
 router.post("/", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create receipts");
   const orgId = req.user!.orgId;
   if (!orgId) throw new AppError(400, "Organization ID required");
 
@@ -80,6 +82,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 
 // Update receipt status
 router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update receipt status");
   const { status } = req.body;
   if (!status || !RECEIPT_STATUSES.includes(status)) {
     throw new AppError(400, `Invalid status. Must be one of: ${RECEIPT_STATUSES.join(", ")}`);
@@ -102,6 +105,7 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
 
 // Update receipt
 router.put("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update receipts");
   const { customerName, customerEmail, amount, currency, paymentMethod, paidAt, notes, status } = req.body;
   const receipt = await Receipt.findOne({ _id: req.params.id, orgId: req.user!.orgId });
   if (!receipt) throw new AppError(404, "Receipt not found");
@@ -123,6 +127,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 
 // Delete receipt
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete receipts");
   const orgId = req.user!.orgId;
   const receipt = await Receipt.findOne({ _id: req.params.id, orgId });
   if (!receipt) throw new AppError(404, "Receipt not found");

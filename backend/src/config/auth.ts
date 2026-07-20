@@ -1,12 +1,17 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { env } from "./env.js";
 import { JwtPayload } from "../types/index.js";
 
 export function signToken(payload: JwtPayload): string {
-  return jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRES_IN,
-    issuer: env.JWT_ISSUER,
-  } as jwt.SignOptions);
+  return jwt.sign(
+    { ...payload, jti: crypto.randomUUID() },
+    env.JWT_SECRET,
+    {
+      expiresIn: env.JWT_EXPIRES_IN,
+      issuer: env.JWT_ISSUER,
+    } as jwt.SignOptions,
+  );
 }
 
 export function verifyToken(token: string): JwtPayload {

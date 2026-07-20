@@ -37,18 +37,8 @@ async function seedAdmin() {
     emailVerified: true,
     password: hashedPassword,
     status: "offline",
-    role: "ORG_MENU_ADMIN",
-    permissions: [
-      "VIEW_ORGMENU",
-      "MANAGE_USERS",
-      "MANAGE_WORKSPACES",
-      "MANAGE_COMPANIES",
-      "MANAGE_BILLING",
-      "VIEW_SYSTEM_LOGS",
-      "MANAGE_ROLES",
-      "MANAGE_SETTINGS",
-      "MANAGE_SUBSCRIPTIONS",
-    ],
+    role: "org_admin",
+    permissions: [],
     isActive: true,
     failedLoginAttempts: 0,
     twoFactorEnabled: false,
@@ -65,7 +55,7 @@ async function seedAdmin() {
   await OrgMember.create({
     orgId,
     userId,
-    role: "admin",
+    role: "members",
     joinedAt: new Date(),
   });
 
@@ -83,7 +73,7 @@ async function seedAdmin() {
 
   console.log("Super Admin seeded successfully!");
   console.log(`Email: ${email}`);
-  console.log(`Role: ORG_MENU_ADMIN`);
+  console.log(`Role: org_admin`);
   console.log(`Permissions: ${admin.permissions.join(", ")}`);
 
   await mongoose.disconnect();

@@ -33,6 +33,7 @@ import {
 import { logoutAction } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
 import { getAppContext } from "@/lib/app-context";
+import { ROLES } from "@/lib/rbac";
 
 export function NavUser({
   user,
@@ -49,11 +50,9 @@ export function NavUser({
   const pathname = usePathname();
 
   const profileHref = (() => {
-    const context = getAppContext(pathname);
-    if (context === "origin") return "/orgmenu/profile";
-    if (context === "staff") return "/staffs/profile";
-    if (user.role === "member") return "/staffs/profile";
-    if (user.role === "admin" || user.role === "manager") return "/admin/profile";
+    if (user.role === ROLES.STAFFS || user.role === ROLES.HR || user.role === ROLES.CLIENTS) return "/staffs/profile";
+    if (user.role === ROLES.MEMBERS) return "/admin/profile";
+    if (user.role === ROLES.ORG_ADMIN) return "/orgmenu/profile";
     return "/profile";
   })();
 

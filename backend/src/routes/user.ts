@@ -70,7 +70,7 @@ router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => 
       twitter: (user as any).twitter || "",
       website: (user as any).website || "",
       status: user.status || "offline",
-      role: user.role || "member",
+      role: user.role || "staffs",
       image: user.image || "",
       bannerUrl: user.bannerUrl || "",
       createdAt: user.createdAt || new Date().toISOString(),
@@ -147,7 +147,7 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   if (!member) {
     const legacyMember = await (await mongoose.connection.db!.collection("orgmembers").findOne({ userId: user.id }, { projection: { orgId: 1 } })) as Record<string, unknown> | null;
     if (legacyMember) {
-      member = { orgId: String(legacyMember.orgId), userId: user.id, role: "member" } as any;
+      member = { orgId: String(legacyMember.orgId), userId: user.id, role: "staffs" } as any;
     }
   }
   const orgId = member?.orgId as string | undefined;
@@ -209,7 +209,7 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
           twitter: (updatedUser as any).twitter || "",
           website: (updatedUser as any).website || "",
           status: updatedUser.status || "offline",
-          role: updatedUser.role || "member",
+          role: updatedUser.role || "staffs",
           image: updatedUser.image || "",
           bannerUrl: updatedUser.bannerUrl || "",
           createdAt: updatedUser.createdAt || new Date().toISOString(),

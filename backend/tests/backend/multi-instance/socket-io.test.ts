@@ -7,7 +7,7 @@ import type { AddressInfo } from "net";
 const JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 
 function createToken(userId: string, orgId: string): string {
-  return jwt.sign({ userId, email: "t@e.com", role: "admin", orgId }, JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign({ userId, email: "t@e.com", role: "members", orgId }, JWT_SECRET, { expiresIn: "10m" });
 }
 
 async function startInstance(): Promise<{ httpServer: http.Server; io: IOServer; port: number; url: string }> {

@@ -14,7 +14,7 @@ interface TestServer {
 }
 
 function createToken(userId: string, orgId: string): string {
-  return jwt.sign({ userId, email: "t@e.com", role: "admin", permissions: [], orgId }, JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign({ userId, email: "t@e.com", role: "members", permissions: [], orgId }, JWT_SECRET, { expiresIn: "10m" });
 }
 
 async function startServer(): Promise<TestServer> {

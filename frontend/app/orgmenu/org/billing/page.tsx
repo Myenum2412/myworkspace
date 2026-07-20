@@ -30,7 +30,7 @@ const getAllBillingData = cache(async () => {
 export default async function BillingPage() {
   const session = await auth();
   const role = session?.user?.role;
-  const isSuperAdmin = role === "SUPER_ADMIN" || role === "ORG_MENU_ADMIN";
+  const isSuperAdmin = role === "org_admin";
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
   const billing = isSuperAdmin ? await getAllBillingData() : await getBillingData(orgId || "null");

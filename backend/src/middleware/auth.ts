@@ -7,6 +7,7 @@ import { JwtPayload } from "../types/index.js";
 import type { AuthRequest } from "../types/index.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
+import { permissionCache } from "../lib/permission-cache.js";
 export type { AuthRequest };
 
 // Per-request auth logging is gated behind AUTH_DEBUG=1. The JWE/cookie path
@@ -112,9 +113,10 @@ async function decryptSessionToken(token: string, salt: string, source: string):
     const result = {
       userId: (payload.sub || payload.id || payload.userId) as string,
       email: (payload.email || "") as string,
-      role: (payload.role || "member") as string,
+      role: (payload.role || "staffs") as string,
       permissions: (payload.permissions || []) as string[],
       orgId: (payload.orgId || undefined) as string | undefined,
+      tokenVersion: (payload as any).tokenVersion as number | undefined,
     };
     dbg(`[BACKEND AUTH] Decrypted payload (${source}):`, JSON.stringify(result));
     jweCacheSet(cacheKey, result);
@@ -131,7 +133,17 @@ async function tryNextAuthCookie(req: AuthRequest): Promise<JwtPayload | null> {
   if (headerToken) {
     dbg(`[BACKEND AUTH] Found x-session-token header, length: ${headerToken.length}`);
     const result = await decryptSessionToken(headerToken, "authjs.session-token", "header");
-    if (result) return result;
+    if (result) {
+      // Validate tokenVersion against DB to detect revoked sessions
+      if (result.tokenVersion !== undefined && result.userId) {
+        const user = await User.findOne({ id: result.userId }).select("tokenVersion").lean();
+        if (!user || (user.tokenVersion ?? 0) > (result.tokenVersion ?? 0)) {
+          dbg(`[BACKEND AUTH] JWE tokenVersion revoked for user ${result.userId}`);
+          return null;
+        }
+      }
+      return result;
+    }
     dbg(`[BACKEND AUTH] Header token decryption failed, falling back to cookie`);
   }
 
@@ -168,7 +180,17 @@ async function tryNextAuthCookie(req: AuthRequest): Promise<JwtPayload | null> {
     dbg(`[BACKEND AUTH] Found NextAuth session token (${chunks.length} chunk(s)), total length: ${token.length}`);
 
     const result = await decryptSessionToken(token, prefix, `cookie:${prefix}`);
-    if (result) return result;
+    if (result) {
+      // Validate tokenVersion against DB to detect revoked sessions
+      if (result.tokenVersion !== undefined && result.userId) {
+        const user = await User.findOne({ id: result.userId }).select("tokenVersion").lean();
+        if (!user || (user.tokenVersion ?? 0) > (result.tokenVersion ?? 0)) {
+          dbg(`[BACKEND AUTH] JWE tokenVersion revoked for user ${result.userId}`);
+          continue;
+        }
+      }
+      return result;
+    }
   }
 
   dbg(`[BACKEND AUTH] No valid NextAuth session token cookie found`);
@@ -275,7 +297,7 @@ async function resolveCanonicalUserId(userId: string, email?: string): Promise<s
 export async function resolveStaleUserId(req: AuthRequest): Promise<void> {
   if (!req.user) return;
 
-  if (req.user.role !== "client") {
+  if (req.user.role !== "clients") {
     req.user.userId = await resolveCanonicalUserId(req.user.userId, req.user.email);
   }
 

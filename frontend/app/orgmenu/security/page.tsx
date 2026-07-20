@@ -13,7 +13,7 @@ const getSecurityData = cache(async (orgId: string) => {
   const [activeSessions, totalMembers, adminCount, apiKeyCount] = await Promise.all([
     db.collection(collections.users).countDocuments({ status: "online" }),
     db.collection(collections.orgMembers).countDocuments({ orgId }),
-    db.collection(collections.orgMembers).countDocuments({ orgId, role: "admin" }),
+    db.collection(collections.orgMembers).countDocuments({ orgId, role: "members" }),
     db.collection(collections.apiKeys).countDocuments({ orgId }),
   ]);
   return { activeSessions, totalMembers, adminCount, apiKeyCount };
@@ -23,7 +23,7 @@ const getAllSecurityData = cache(async () => {
   const [activeSessions, totalMembers, adminCount, apiKeyCount] = await Promise.all([
     db.collection(collections.users).countDocuments({ status: "online" }),
     db.collection(collections.orgMembers).countDocuments({}),
-    db.collection(collections.orgMembers).countDocuments({ role: "admin" }),
+    db.collection(collections.orgMembers).countDocuments({ role: "members" }),
     db.collection(collections.apiKeys).countDocuments({}),
   ]);
   return { activeSessions, totalMembers, adminCount, apiKeyCount };
@@ -32,7 +32,7 @@ const getAllSecurityData = cache(async () => {
 export default async function SecurityPage() {
   const session = await auth();
   const role = session?.user?.role;
-  const isSuperAdmin = role === "SUPER_ADMIN" || role === "ORG_MENU_ADMIN";
+  const isSuperAdmin = role === "org_admin";
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
   const data = isSuperAdmin ? await getAllSecurityData() : await getSecurityData(orgId || "null");

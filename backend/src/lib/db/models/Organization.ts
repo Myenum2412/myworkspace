@@ -30,6 +30,8 @@ export interface IOrganization extends Document {
   companyDescription?: string;
   plan: "free" | "growth" | "enterprise" | string;
   ownerId: string;
+  createdBy: string;
+  updatedBy?: string;
   subscriptionStatus?: "active" | "past_due" | "canceled" | "trialing" | "expired";
   currentPeriodEnd?: Date;
   trialEnd?: Date;
@@ -67,6 +69,8 @@ const organizationSchema = new Schema<IOrganization>(
     companyDescription: String,
     plan: { type: String, enum: ["free", "trial", "starter", "professional", "enterprise"], default: "free" },
     ownerId: { type: String, required: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
     subscriptionStatus: { type: String, enum: ["active", "past_due", "canceled", "trialing", "expired"] },
     currentPeriodEnd: Date,
     trialEnd: Date,

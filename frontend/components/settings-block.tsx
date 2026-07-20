@@ -45,7 +45,7 @@ const teamMembers = [
     email: "ada@acme.com",
     initials: "AL",
     avatar: "https://i.pravatar.cc/150?img=47",
-    role: "Owner",
+    role: "Company Owner",
     roleVariant: "default" as const,
   },
   {
@@ -53,7 +53,7 @@ const teamMembers = [
     email: "grace@acme.com",
     initials: "GH",
     avatar: "https://i.pravatar.cc/150?img=45",
-    role: "Admin",
+    role: "HR",
     roleVariant: "secondary" as const,
   },
   {
@@ -61,7 +61,7 @@ const teamMembers = [
     email: "alan@acme.com",
     initials: "AT",
     avatar: "https://i.pravatar.cc/150?img=12",
-    role: "Member",
+    role: "Staff",
     roleVariant: "outline" as const,
   },
   {
@@ -69,7 +69,7 @@ const teamMembers = [
     email: "katherine@acme.com",
     initials: "KJ",
     avatar: "https://i.pravatar.cc/150?img=49",
-    role: "Member",
+    role: "Staff",
     roleVariant: "outline" as const,
   },
 ]

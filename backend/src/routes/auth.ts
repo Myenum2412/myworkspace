@@ -295,7 +295,7 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
         email,
         password: hashedPassword,
         status: "online",
-        role: "admin",
+        role: "members",
         emailVerified: false,
         emailVerificationToken: null,
         emailVerificationExpires: null,
@@ -317,7 +317,7 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
       await OrgMember.create([{
         orgId,
         userId,
-        role: "admin",
+        role: "members",
       }], { session });
     }, {
       readPreference: "primary",
@@ -331,7 +331,7 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
   const token = signToken({
     userId: user.id,
     email,
-    role: "admin",
+    role: "members",
     permissions: [],
     orgId: org.id,
     tokenVersion: user.tokenVersion || 0,
@@ -366,7 +366,7 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
         userNumber: user.userNumber,
         name,
         email,
-        role: "admin",
+        role: "members",
         status: "online",
         orgId: org.id,
         emailVerified: false,
@@ -486,17 +486,62 @@ router.post("/logout", authenticate, async (req: AuthRequest, res: Response) => 
 router.post("/forgot-password", async (req: AuthRequest, res: Response) => {
   const email = requireString(req.body.email || "", "email", { min: 1, max: 254 }).toLowerCase();
 
+  // Rate limit: max 3 reset requests per email per hour
+  const recentResets = await User.findOne({
+    email,
+    resetTokenExpires: { $gt: new Date(Date.now() - 3600000) },
+  }).select("_id").lean();
+
+  if (recentResets) {
+    // Check how many tokens were generated recently (rate limit)
+    const resetCount = await User.countDocuments({
+      email,
+      resetTokenExpires: { $gt: new Date(Date.now() - 3600000) },
+    });
+
+    if (resetCount >= 3) {
+      // Still return success to prevent email enumeration
+      res.json({
+        success: true,
+        message: "If an account exists with that email, a reset link has been sent.",
+      });
+      return;
+    }
+  }
+
   const user = await User.findOne({ email }).select("_id name").lean();
   if (user) {
+    // Generate one-time use token with shorter expiry (15 minutes)
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpires = new Date(Date.now() + 3600000);
-    await User.updateOne({ _id: user._id }, { $set: { resetToken, resetTokenExpires } });
+    const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+    const resetTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    await User.updateOne(
+      { _id: user._id },
+      { $set: { resetToken: resetTokenHash, resetTokenExpires } },
+    );
 
     const resetLink = `${env.APP_URL}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+
+    // Audit log for password reset request
+    await recordAuditLog({
+      orgId: "system",
+      userId: user._id.toString(),
+      action: "password.reset.requested",
+      entityType: "user",
+      entityId: user._id.toString(),
+      description: `Password reset requested for ${email}`,
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"] as string,
+      success: true,
+    });
+
     sendPasswordResetEmail(email, user.name, resetLink).catch((err) => {
       console.error("[auth] Failed to send password reset email:", err?.message || err);
     });
   }
+
+  // Always return success to prevent email enumeration
   res.json({
     success: true,
     message: "If an account exists with that email, a reset link has been sent.",
@@ -511,16 +556,59 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
 
   validatePasswordStrength(password);
 
-  const user = await User.findOne({ email, resetToken: token, resetTokenExpires: { $gt: new Date() } }).select("_id").lean();
+  // Hash the token to compare with stored hash
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    email,
+    resetToken: tokenHash,
+    resetTokenExpires: { $gt: new Date() },
+  }).select("_id").lean();
+
   if (!user) {
+    // Audit log for failed reset attempt
+    await recordAuditLog({
+      orgId: "system",
+      userId: "unknown",
+      action: "password.reset.failed",
+      entityType: "user",
+      entityId: email,
+      description: `Password reset failed for ${email} - invalid or expired token`,
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"] as string,
+      success: false,
+    });
+
     throw new AppError(400, "Invalid or expired reset token");
   }
 
   const hashedPassword = await hash(password, 12);
+
+  // Increment tokenVersion to revoke all existing sessions
   await User.updateOne(
     { _id: user._id },
-    { $set: { password: hashedPassword, resetToken: null, resetTokenExpires: null } }
+    {
+      $set: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpires: null,
+      },
+      $inc: { tokenVersion: 1 },
+    },
   );
+
+  // Audit log for successful reset
+  await recordAuditLog({
+    orgId: "system",
+    userId: user._id.toString(),
+    action: "password.reset.completed",
+    entityType: "user",
+    entityId: user._id.toString(),
+    description: `Password reset completed for ${email}`,
+    ipAddress: req.ip,
+    userAgent: req.headers["user-agent"] as string,
+    success: true,
+  });
 
   res.json({ success: true, message: "Password has been reset successfully." });
 });
@@ -629,7 +717,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
         email,
         password: hashedPassword,
         status: "online",
-        role: "admin",
+        role: "members",
         emailVerified: true,
       }], { session: mongoSession });
       user = createdUser;
@@ -649,7 +737,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
       await OrgMember.create([{
         orgId,
         userId,
-        role: "admin",
+        role: "members",
       }], { session: mongoSession });
     }, {
       readPreference: "primary",
@@ -674,7 +762,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
   const token = signToken({
     userId: user.id,
     email,
-    role: "admin",
+    role: "members",
     permissions: [],
     orgId: org.id,
     tokenVersion: user.tokenVersion || 0,
@@ -691,7 +779,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
         userNumber: user.userNumber,
         name,
         email,
-        role: "admin",
+        role: "members",
         status: "online",
         orgId: org.id,
       },
@@ -699,8 +787,6 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
     },
   });
 });
-
-// Send welcome email endpoint (for frontend to call)
 router.post("/send-welcome-email", async (req: AuthRequest, res: Response) => {
   try {
     const { email, name } = req.body;

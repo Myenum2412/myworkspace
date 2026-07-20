@@ -270,13 +270,12 @@ export function WorkInfoSection({ formData, onChange, options }: WorkInfoSection
         </Field>
         <Field>
           <FieldLabel>Role Name</FieldLabel>
-          <Select value={formData.roleName || "member"} onValueChange={(v) => onChange("roleName", v)}>
+          <Select value={formData.roleName || "staffs"} onValueChange={(v) => onChange("roleName", v)}>
             <SelectTrigger>
               <SelectValue placeholder="" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="member">Member</SelectItem>
-              <SelectItem value="staff">Staff</SelectItem>
+              <SelectItem value="team_staff">Team Staff</SelectItem>
               <OptionList options={[]} value={formData.roleName || undefined} />
             </SelectContent>
           </Select>

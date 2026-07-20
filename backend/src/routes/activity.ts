@@ -4,6 +4,7 @@ import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
+import { isPlatformRole } from "../lib/rbac/index.js";
 
 const router = Router();
 
@@ -43,7 +44,7 @@ router.get("/", cacheEnhanced({ ttl: 20, varyByUser: true, varyByQuery: true, ta
   const { User } = await import("../lib/db/models/User.js");
   const currentUser = await User.findOne({ id: req.user!.userId }).select("role").lean() as Record<string, unknown> | null;
   const userRole = currentUser?.role as string || "";
-  const isAdmin = userRole === "super_admin" || userRole === "org_admin" || userRole === "ORG_MENU_ADMIN";
+  const isAdmin = isPlatformRole(userRole);
   if (!isAdmin && !userIdFilter) {
     queryFilter.userId = req.user!.userId;
   }

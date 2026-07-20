@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { ROLES } from "@/lib/rbac";
 
 export default async function RoleRedirectPage() {
   const session = await auth();
@@ -10,15 +11,12 @@ export default async function RoleRedirectPage() {
   }
 
   const role = session.user.role?.toLowerCase() || "";
-  const isOrgAdmin = role === "org_menu_admin" || role === "super_admin";
 
-  if (isOrgAdmin) {
+  if (role === ROLES.ORG_ADMIN) {
     redirect("/orgmenu");
   }
 
-  const isWorkspaceAdmin = ["workspace", "admin", "manager"].includes(role);
-
-  if (isWorkspaceAdmin) {
+  if (role === ROLES.MEMBERS) {
     redirect("/dashboard");
   }
 

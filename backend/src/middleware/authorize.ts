@@ -1,142 +1,260 @@
 import { Response, NextFunction } from "express";
-import { User } from "../lib/db/models/User.js";
+import crypto from "crypto";
 import { AuthRequest } from "./auth.js";
 import { AppError } from "./error.js";
-import { env } from "../config/env.js";
+import { ROLES, isPlatformRole, isAdminRole } from "../lib/rbac/index.js";
 import { recordAuditLog } from "../services/audit.service.js";
 
-const permCache = new Map<string, { permissions: string[]; expiresAt: number }>();
-const PERM_CACHE_TTL = 60_000;
-
-function getCachedPermissions(userId: string): string[] | null {
-  const cached = permCache.get(`perm:${userId}`);
-  if (cached && cached.expiresAt > Date.now()) return cached.permissions;
-  permCache.delete(`perm:${userId}`);
-  return null;
+/**
+ * Extract correlation ID from request headers or generate one.
+ */
+function getCorrelationId(req: AuthRequest): string {
+  return (req.headers["x-correlation-id"] as string) ||
+    (req.headers["x-request-id"] as string) ||
+    crypto.randomUUID();
 }
 
-function setCachedPermissions(userId: string, permissions: string[]): void {
-  permCache.set(`perm:${userId}`, { permissions, expiresAt: Date.now() + PERM_CACHE_TTL });
+/**
+ * Extract trace ID from request headers.
+ */
+function getTraceId(req: AuthRequest): string | undefined {
+  return (req.headers["x-trace-id"] as string) ||
+    (req.headers["x-b3-traceid"] as string) ||
+    undefined;
 }
 
+/**
+ * Role-based authorization middleware with comprehensive audit logging.
+ */
 export function authorizeRole(...roles: string[]) {
   return async (req: AuthRequest, _res: Response, next: NextFunction) => {
     if (!req.user) {
       throw new AppError(401, "Authentication required");
     }
-    if (!roles.includes(req.user.role)) {
+
+    const allowed = roles.includes(req.user.role);
+
+    await recordAuditLog({
+      orgId: req.user?.orgId || "system",
+      userId: req.user?.userId || "system",
+      action: allowed ? "authorization.role.granted" : "authorization.role.denied",
+      entityType: "access",
+      entityId: req.user?.userId || "unknown",
+      description: allowed
+        ? `Role-based access granted: ${req.user?.role} for ${req.method} ${req.originalUrl}`
+        : `Role-based access denied: ${req.user?.role} not in [${roles.join(", ")}] for ${req.method} ${req.originalUrl}`,
+      correlationId: getCorrelationId(req),
+      traceId: getTraceId(req),
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"] as string | undefined,
+      success: allowed,
+      failureReason: allowed ? undefined : `Role ${req.user?.role} not authorized`,
+      riskScore: allowed ? 0 : 20,
+      riskFactors: allowed ? [] : ["authorization_failure"],
+      metadata: {
+        method: req.method,
+        path: req.originalUrl,
+        requiredRoles: roles,
+        userRole: req.user?.role,
+      },
+      tags: ["authorization", "role-based"],
+    });
+
+    if (!allowed) {
       throw new AppError(403, "Forbidden: insufficient role permissions");
     }
-    recordAuditLog({
-      orgId: req.user?.orgId || "system",
-      userId: req.user?.userId || "system",
-      createdBy: req.user?.userId || "system",
-      action: "authorization.role",
-      entityType: "access",
-      entityId: req.user?.userId || "unknown",
-      description: `Role-based access granted: ${req.user?.role} for ${req.method} ${req.originalUrl}`,
-      metadata: JSON.stringify({ roles, ip: req.ip, userAgent: req.headers["user-agent"] }),
-    });
+
     next();
   };
 }
 
-export function authorizePermission(...permissions: string[]) {
+/**
+ * Platform admin only middleware with audit logging.
+ */
+export function orgAdminOnly() {
   return async (req: AuthRequest, _res: Response, next: NextFunction) => {
     if (!req.user) {
       throw new AppError(401, "Authentication required");
     }
 
-    if (req.user.role === "ORG_MENU_ADMIN") {
-      const cached = getCachedPermissions(req.user.userId);
-      if (cached) {
-        req.user.permissions = cached;
-      } else {
-        try {
-          const user = await User.findById(req.user.userId);
-          if (user) {
-            req.user.permissions = user.permissions;
-            setCachedPermissions(req.user.userId, user.permissions || []);
-          }
-        } catch {
-          // proceed with token permissions
-        }
-      }
+    const allowed = isPlatformRole(req.user.role);
+
+    await recordAuditLog({
+      orgId: req.user?.orgId || "system",
+      userId: req.user?.userId,
+      action: allowed ? "authorization.platform.granted" : "authorization.platform.denied",
+      entityType: "access",
+      entityId: req.ip || "unknown",
+      description: allowed
+        ? `Platform admin access granted for ${req.method} ${req.originalUrl}`
+        : `Unauthorized platform admin access attempt by ${req.user?.email || "unknown"}`,
+      correlationId: getCorrelationId(req),
+      traceId: getTraceId(req),
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"] as string | undefined,
+      success: allowed,
+      failureReason: allowed ? undefined : `Role ${req.user?.role} is not platform admin`,
+      riskScore: allowed ? 0 : 30,
+      riskFactors: allowed ? [] : ["privilege_escalation", "unauthorized_admin_access"],
+      metadata: {
+        method: req.method,
+        path: req.originalUrl,
+        userRole: req.user?.role,
+      },
+      tags: ["authorization", "platform-admin"],
+    });
+
+    if (!allowed) {
+      throw new AppError(403, "Forbidden: only org_admin can access this area");
     }
 
-    const userPermissions = req.user.permissions || [];
-    const hasAll = permissions.every((p) => userPermissions.includes(p));
-    if (!hasAll) {
-      throw new AppError(403, "Forbidden: missing required permissions");
-    }
-    recordAuditLog({
-      orgId: req.user?.orgId || "system",
-      userId: req.user?.userId || "system",
-      createdBy: req.user?.userId || "system",
-      action: "authorization.permission",
-      entityType: "access",
-      entityId: req.user?.userId || "unknown",
-      description: `Permission-based access granted for ${req.method} ${req.originalUrl}`,
-      metadata: JSON.stringify({ permissions, ip: req.ip, userAgent: req.headers["user-agent"] }),
-    });
     next();
   };
 }
 
-export function orgMenuAdminOnly() {
+export function platformAdminOnly() {
+  return orgAdminOnly();
+}
+
+/**
+ * Members only middleware with audit logging.
+ */
+export function membersOnly() {
   return async (req: AuthRequest, _res: Response, next: NextFunction) => {
     if (!req.user) {
       throw new AppError(401, "Authentication required");
     }
 
-    const userEmail = req.user.email?.toLowerCase().trim();
-    const adminEmail = env.ADMIN_EMAIL.toLowerCase().trim();
+    const allowed = isAdminRole(req.user.role);
 
-    if (userEmail !== adminEmail) {
-      await recordAuditLog({
-        orgId: req.user?.orgId || "system",
-        userId: req.user?.userId,
-        createdBy: req.user?.userId || "system",
-        action: "orgmenu.unauthorized",
-        entityType: "access",
-        entityId: req.ip || "unknown",
-        description: `Unauthorized orgmenu access attempt by ${req.user?.email || "unknown"}`,
-        metadata: JSON.stringify({
-          ip: req.ip,
-          userAgent: req.headers["user-agent"],
-          method: req.method,
-          path: req.originalUrl,
-        }),
-      });
-      throw new AppError(403, "Forbidden: only the authorized administrator can access this area");
+    await recordAuditLog({
+      orgId: req.user?.orgId || "system",
+      userId: req.user?.userId,
+      action: allowed ? "authorization.members.granted" : "authorization.members.denied",
+      entityType: "access",
+      entityId: req.user?.userId,
+      description: allowed
+        ? `Members access granted for ${req.method} ${req.originalUrl}`
+        : `Unauthorized members access attempt by ${req.user?.email || "unknown"}`,
+      correlationId: getCorrelationId(req),
+      traceId: getTraceId(req),
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"] as string | undefined,
+      success: allowed,
+      failureReason: allowed ? undefined : `Role ${req.user?.role} is not a member`,
+      riskScore: allowed ? 0 : 20,
+      riskFactors: allowed ? [] : ["authorization_failure"],
+      metadata: {
+        method: req.method,
+        path: req.originalUrl,
+        userRole: req.user?.role,
+      },
+      tags: ["authorization", "members-only"],
+    });
+
+    if (!allowed) {
+      throw new AppError(403, "Forbidden: only company owners can perform this action");
     }
+
     next();
   };
 }
 
+/**
+ * Audit log middleware for tracking endpoint usage.
+ * Records both successful and failed operations.
+ */
 export function auditLog(action: string, entityType: string) {
   return async (req: AuthRequest, _res: Response, next: NextFunction) => {
+    const startTime = Date.now();
+    const correlationId = getCorrelationId(req);
+
     const originalSend = _res.json.bind(_res);
     _res.json = function (body: any) {
-      if (_res.statusCode < 400) {
-        recordAuditLog({
-          orgId: req.user?.orgId || "system",
-          userId: req.user?.userId || "system",
-          createdBy: req.user?.userId || "system",
-          action,
-          entityType,
-          entityId: req.params?.id || req.body?.id || "unknown",
-          description: `${action} performed by ${req.user?.email || "unknown"}`,
-          metadata: JSON.stringify({
-            ip: req.ip,
-            userAgent: req.headers["user-agent"],
-            method: req.method,
-            path: req.originalUrl,
-          }),
-        });
-      }
+      const duration = Date.now() - startTime;
+      const success = _res.statusCode < 400;
+
+      recordAuditLog({
+        orgId: req.user?.orgId || "system",
+        userId: req.user?.userId || "system",
+        createdBy: req.user?.userId,
+        action,
+        entityType,
+        entityId: req.params?.id || req.body?.id || "unknown",
+        description: `${action} ${success ? "completed" : "failed"} by ${req.user?.email || "unknown"}`,
+        correlationId,
+        traceId: getTraceId(req),
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"] as string | undefined,
+        success,
+        failureReason: success ? undefined : `HTTP ${_res.statusCode}`,
+        riskScore: success ? 0 : 10,
+        riskFactors: success ? [] : ["operation_failed"],
+        metadata: {
+          method: req.method,
+          path: req.originalUrl,
+          statusCode: _res.statusCode,
+          duration,
+        },
+        tags: ["endpoint", action],
+      });
+
       return originalSend(body);
     };
+
+    next();
+  };
+}
+
+/**
+ * Data mutation audit middleware.
+ * Captures previous and new values for update operations.
+ */
+export function auditDataMutation(action: string, entityType: string) {
+  return async (req: AuthRequest, _res: Response, next: NextFunction) => {
+    const startTime = Date.now();
+    const correlationId = getCorrelationId(req);
+
+    // Store request body for change tracking
+    const requestBody = { ...req.body };
+
+    const originalSend = _res.json.bind(_res);
+    _res.json = function (body: any) {
+      const duration = Date.now() - startTime;
+      const success = _res.statusCode < 400;
+
+      // Extract previous values from response if available
+      const previousValues = (body as any)?.data?.previousValues;
+      const newValues = success ? requestBody : undefined;
+
+      recordAuditLog({
+        orgId: req.user?.orgId || "system",
+        userId: req.user?.userId || "system",
+        createdBy: req.user?.userId,
+        action,
+        entityType,
+        entityId: req.params?.id || req.body?.id || "unknown",
+        description: `${action} ${success ? "completed" : "failed"} by ${req.user?.email || "unknown"}`,
+        correlationId,
+        traceId: getTraceId(req),
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"] as string | undefined,
+        previousValues,
+        newValues,
+        success,
+        failureReason: success ? undefined : `HTTP ${_res.statusCode}`,
+        metadata: {
+          method: req.method,
+          path: req.originalUrl,
+          statusCode: _res.statusCode,
+          duration,
+        },
+        tags: ["data-mutation", action],
+      });
+
+      return originalSend(body);
+    };
+
     next();
   };
 }

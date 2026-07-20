@@ -5,6 +5,7 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { ObjectId } from "mongodb";
 import { v4 as uuid } from "uuid";
+import { ROLES } from "@/lib/rbac";
 
 export async function GET() {
   let session;
@@ -54,7 +55,7 @@ export async function GET() {
     let org: Record<string, unknown> | null = null;
     let memberCount = 0;
 
-    if (role === "SUPER_ADMIN" || role === "ORG_MENU_ADMIN") {
+    if (role === ROLES.ORG_ADMIN) {
       const firstOrg = await db.collection(collections.organizations).findOne({});
       if (firstOrg) {
         orgId = (firstOrg.id || firstOrg._id) as string;
@@ -81,7 +82,7 @@ export async function GET() {
           id: uuid(),
           orgId: newOrgId,
           userId: dbUserId,
-          role: "admin",
+          role: ROLES.MEMBERS,
           joinedAt: new Date(),
         });
         orgId = newOrgId;
@@ -120,7 +121,7 @@ export async function GET() {
           twitter: user.twitter || "",
           website: user.website || "",
           status: user.status || "offline",
-          role: user.role || "member",
+          role: user.role || "staffs",
           image: user.image || "",
           bannerUrl: user.bannerUrl || "",
           createdAt: user.createdAt || new Date().toISOString(),
@@ -282,7 +283,7 @@ export async function PATCH(req: NextRequest) {
 
     // Resolve orgId for update
     let orgId: string | null = null;
-    if (role === "SUPER_ADMIN" || role === "ORG_MENU_ADMIN") {
+    if (role === ROLES.ORG_ADMIN) {
       const firstOrg = await db.collection(collections.organizations).findOne({});
       if (firstOrg) orgId = (firstOrg.id || firstOrg._id) as string;
     } else {
@@ -391,7 +392,7 @@ export async function PATCH(req: NextRequest) {
         twitter: updatedUser.twitter || "",
         website: updatedUser.website || "",
         status: updatedUser.status || "offline",
-        role: updatedUser.role || "member",
+        role: updatedUser.role || "staffs",
         image: updatedUser.image || "",
         bannerUrl: updatedUser.bannerUrl || "",
         createdAt: updatedUser.createdAt || new Date().toISOString(),

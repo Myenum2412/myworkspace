@@ -9,7 +9,7 @@ describe("JWT auth unit", () => {
   const validPayload: JwtPayload = {
     userId: "user-123",
     email: "admin@example.com",
-    role: "admin",
+    role: "members",
     permissions: ["VIEW_ORGMENU"],
     orgId: "org-456",
   };
@@ -20,7 +20,7 @@ describe("JWT auth unit", () => {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
       expect(decoded.userId).toBe("user-123");
       expect(decoded.email).toBe("admin@example.com");
-      expect(decoded.role).toBe("admin");
+      expect(decoded.role).toBe("members");
       expect(decoded.orgId).toBe("org-456");
     });
 
@@ -38,7 +38,7 @@ describe("JWT auth unit", () => {
     });
 
     it("handles minimal payload without orgId", () => {
-      const minimal: JwtPayload = { userId: "u1", email: "u@e.com", role: "member" };
+      const minimal: JwtPayload = { userId: "u1", email: "u@e.com", role: "staffs" };
       const token = signToken(minimal);
       const decoded = jwt.verify(token, JWT_SECRET) as any;
       expect(decoded.orgId).toBeUndefined();
@@ -59,7 +59,7 @@ describe("JWT auth unit", () => {
     });
 
     it("throws on expired token", () => {
-      const token = expiredJWT({ userId: "u1", email: "test@example.com", role: "admin" });
+      const token = expiredJWT({ userId: "u1", email: "test@example.com", role: "members" });
       expect(() => verifyToken(token)).toThrow(/expired/i);
     });
 

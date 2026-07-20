@@ -5,6 +5,7 @@ import { TeamMember } from "../lib/db/models/TeamMember.js";
 import { User } from "../lib/db/models/User.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, optionalString } from "../lib/validate.js";
@@ -59,7 +60,7 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tag
             $filter: {
               input: "$members",
               as: "m",
-              cond: { $eq: ["$$m.role", "lead"] },
+              cond: { $eq: ["$$m.role", "team_lead"] },
             },
           },
         },
@@ -242,6 +243,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 
 // Create a team
 router.post("/", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create teams");
   const name = requireString(req.body.name, "name", { min: 1, max: 200 });
   const description = optionalString(req.body.description, "description", { max: 5000 }) ?? "";
   // Enforce workspace isolation: resolve orgId from membership, not from request body
@@ -259,6 +261,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 
 // Update a team
 router.put("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update teams");
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
@@ -276,6 +279,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 
 // Delete a team
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete teams");
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
@@ -291,6 +295,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 
 // Add member to team
 router.post("/:id/members", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can manage team members");
   const team = await Team.findById(req.params.id).lean();
   if (!team) throw new AppError(404, "Team not found");
 
@@ -310,7 +315,7 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
     orgId: team.orgId,
     teamId: team._id,
     userId,
-    role: role || "member",
+    role: role || "team_staff",
   });
 
   res.status(201).json({ success: true, data: { id: teamMember._id.toString() } });
@@ -318,6 +323,7 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
 
 // Remove member from team
 router.delete("/:teamId/members/:userId", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can remove team members");
   const team = await Team.findById(req.params.teamId).lean();
   if (!team) throw new AppError(404, "Team not found");
 
@@ -329,13 +335,14 @@ router.delete("/:teamId/members/:userId", async (req: AuthRequest, res: Response
 
 // Update member role
 router.patch("/:teamId/members/:userId/role", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can change member roles");
   const team = await Team.findById(req.params.teamId).lean();
   if (!team) throw new AppError(404, "Team not found");
 
   await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   const { role } = req.body;
-  if (!role || !["lead", "member"].includes(role)) throw new AppError(400, "Valid role required (lead or member)");
+  if (!role || !["team_lead", "team_staff"].includes(role)) throw new AppError(400, "Valid role required (team_lead or team_staff)");
 
   await TeamMember.updateOne({ teamId: team._id, userId: req.params.userId }, { role });
   res.json({ success: true });

@@ -5,11 +5,12 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
 import { deleteFile } from "@/lib/storage";
+import { isPlatformRole } from "@/lib/rbac";
 
 async function requireAdmin() {
   const session = await auth();
   const role = session?.user?.role;
-  if (role !== "SUPER_ADMIN" && role !== "ORG_MENU_ADMIN") {
+  if (!isPlatformRole(role || "")) {
     throw new Error("Unauthorized");
   }
   return session;

@@ -3,6 +3,8 @@ import { Folder } from "../lib/db/models/Folder.js";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { verifyOrgAccess } from "../lib/org-utils.js";
 import { ensureClientFolders } from "../services/client-folder.service.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { CLIENT_SUBFOLDERS } from "../lib/uploads/folder-mapper.js";
@@ -15,6 +17,8 @@ router.get("/:clientId/tree", async (req: AuthRequest, res: Response) => {
   const orgId = req.query.orgId as string;
   if (!orgId || !clientId) throw new AppError(400, "orgId and clientId are required");
 
+  await verifyOrgAccess(req.user!.userId, orgId);
+
   const folders = await Folder.find({ orgId, clientId, deletedAt: null }).sort({ path: 1 }).select("id name path parentId clientId orgId deletedAt createdAt").lean();
   res.json({ success: true, data: folders });
 });
@@ -23,6 +27,8 @@ router.get("/:clientId/stats", async (req: AuthRequest, res: Response) => {
   const { clientId } = req.params;
   const orgId = req.query.orgId as string;
   if (!orgId || !clientId) throw new AppError(400, "orgId and clientId are required");
+
+  await verifyOrgAccess(req.user!.userId, orgId);
 
   const [folderCount, fileCount, totalSizeAgg] = await Promise.all([
     Folder.countDocuments({ orgId, clientId, deletedAt: null }),
@@ -55,9 +61,12 @@ router.get("/:clientId/subfolders", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/:clientId/sync", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can sync client folders");
   const { clientId } = req.params;
   const orgId = req.body.orgId as string;
   if (!orgId || !clientId) throw new AppError(400, "orgId and clientId are required");
+
+  await verifyOrgAccess(req.user!.userId, orgId);
 
   const { rootFolderId, subfolderIds } = await ensureClientFolders({
     orgId,

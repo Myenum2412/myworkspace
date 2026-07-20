@@ -81,7 +81,7 @@ const getCachedDashboardData = unstable_cache(
       return {
         name: u?.name || "Unknown",
         email: u?.email || "",
-        role: m.role || "member",
+        role: m.role || "staffs",
         status: u?.status || "offline",
         avatar: u?.image || "",
       };

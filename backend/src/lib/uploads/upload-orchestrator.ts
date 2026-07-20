@@ -119,7 +119,7 @@ export async function finalizeUpload(input: FinalizeInput): Promise<Orchestrator
       tusId: fileId,
       orgId,
       uploaderId,
-      uploaderRole: "member",
+      uploaderRole: "staffs",
       approvedBy: null,
       status: "pending",
       fileName: originalName,

@@ -33,7 +33,7 @@ describe("MongoDB connection resilience", () => {
       email: `wc-${Date.now()}@example.com`,
       password: "hashed",
       status: "online",
-      role: "admin",
+      role: "members",
       orgId: uuid(),
       userNumber: 1001,
     });
@@ -50,7 +50,7 @@ describe("MongoDB connection resilience", () => {
       email: `wc1-${Date.now()}@example.com`,
       password: "hashed",
       status: "online",
-      role: "member",
+      role: "staffs",
       orgId: uuid(),
       userNumber: 1002,
     });
@@ -67,7 +67,7 @@ describe("MongoDB connection resilience", () => {
         email: `pool-${i}-${Date.now()}@example.com`,
         password: "hashed",
         status: "online",
-        role: "member",
+        role: "staffs",
         orgId: uuid(),
         userNumber: 2000 + i,
       }),
@@ -93,7 +93,7 @@ describe("MongoDB connection resilience", () => {
       email: `bulk-${i}-${Date.now()}@example.com`,
       password: "hashed",
       status: "online",
-      role: "member",
+      role: "staffs",
       orgId: uuid(),
       userNumber: 3000 + i,
     }));

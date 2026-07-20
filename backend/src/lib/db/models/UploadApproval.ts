@@ -5,7 +5,7 @@ export interface IUploadApproval extends Document {
   tusId: string;
   orgId: string;
   uploaderId: string;
-  uploaderRole: string;
+  uploaderRole: "org_admin" | "members" | "staffs" | "hr" | "clients";
   approvedBy: string | null;
   status: "pending" | "approved" | "rejected";
   fileName: string;
@@ -17,6 +17,8 @@ export interface IUploadApproval extends Document {
   clientId: string | null;
   reviewedAt: Date | null;
   rejectionReason: string;
+  createdBy: string;
+  updatedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,7 +29,7 @@ const uploadApprovalSchema = new Schema<IUploadApproval>(
     tusId: { type: String, required: true, index: true },
     orgId: { type: String, required: true, index: true },
     uploaderId: { type: String, required: true, index: true },
-    uploaderRole: { type: String, required: true },
+    uploaderRole: { type: String, enum: ["org_admin", "members", "staffs", "hr", "clients"], required: true },
     approvedBy: { type: String, default: null },
     status: {
       type: String,
@@ -44,6 +46,8 @@ const uploadApprovalSchema = new Schema<IUploadApproval>(
     clientId: { type: String, default: null },
     reviewedAt: { type: Date, default: null },
     rejectionReason: { type: String, default: "" },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
   },
   { timestamps: true },
 );

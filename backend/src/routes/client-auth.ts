@@ -88,7 +88,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   const token = signToken({
     userId: clientUser.id,
     email: clientUser.email,
-    role: "client",
+    role: "clients",
     permissions: [],
     orgId: clientUser.orgId,
   });
@@ -101,7 +101,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
         id: clientUser.id,
         name: clientUser.name,
         email: clientUser.email,
-        role: "client",
+        role: "clients",
         mustChangePassword: clientUser.mustChangePassword,
         emailVerified: clientUser.emailVerified,
       },
