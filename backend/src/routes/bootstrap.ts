@@ -87,7 +87,7 @@ async function resolveOrgInfo(orgId?: string, userId?: string): Promise<{ orgId:
   if (userId && !orgId) {
     const member = await OrgMember.findOne({ userId }).lean().select("orgId").exec();
     if (member) {
-      const org = await Organization.findById(member.orgId).lean()
+      const org = await Organization.findOne({ id: member.orgId }).lean()
         .select("id name slug plan logo subscriptionStatus trialEnd currentPeriodEnd ownerId onboardingCompleted")
         .exec();
       if (org) return { orgId: member.orgId, org: org as unknown as Record<string, unknown> };
@@ -96,7 +96,7 @@ async function resolveOrgInfo(orgId?: string, userId?: string): Promise<{ orgId:
   }
 
   if (orgId) {
-    const org = await Organization.findById(orgId).lean()
+    const org = await Organization.findOne({ id: orgId }).lean()
       .select("id name slug plan logo subscriptionStatus trialEnd currentPeriodEnd ownerId onboardingCompleted")
       .exec();
     if (org) return { orgId, org: org as unknown as Record<string, unknown> };
@@ -105,7 +105,7 @@ async function resolveOrgInfo(orgId?: string, userId?: string): Promise<{ orgId:
   if (userId) {
     const member = await OrgMember.findOne({ userId }).lean().select("orgId").exec();
     if (member) {
-      const org = await Organization.findById(member.orgId).lean()
+      const org = await Organization.findOne({ id: member.orgId }).lean()
         .select("id name slug plan logo subscriptionStatus trialEnd currentPeriodEnd ownerId onboardingCompleted")
         .exec();
       if (org) return { orgId: member.orgId, org: org as unknown as Record<string, unknown> };

@@ -31,7 +31,7 @@ export function useInstantLogin() {
     setState({ loading: true, error: null, step: "authenticating" });
 
     try {
-      const csrfRes = await fetch("/api/auth/csrf");
+      const csrfRes = await fetch("/api/auth/csrf", { credentials: "include" });
       const csrfBody = await csrfRes.text();
       let csrfToken: string;
       try {
@@ -45,6 +45,7 @@ export function useInstantLogin() {
 
       const signInRes = await fetch("/api/auth/callback/credentials", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           csrfToken,

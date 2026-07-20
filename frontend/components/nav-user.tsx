@@ -51,8 +51,6 @@ export function NavUser({
 
   const profileHref = (() => {
     if (user.role === ROLES.STAFFS || user.role === ROLES.HR || user.role === ROLES.CLIENTS) return "/staffs/profile";
-    if (user.role === ROLES.MEMBERS) return "/admin/profile";
-    if (user.role === ROLES.ORG_ADMIN) return "/orgmenu/profile";
     return "/profile";
   })();
 
