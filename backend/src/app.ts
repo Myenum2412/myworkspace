@@ -55,6 +55,7 @@ import adminConsentRoutes from "./routes/admin-consent.js";
 import bootstrapRoutes from "./routes/bootstrap.js";
 import contractorsRoutes from "./routes/contractors.js";
 import fileFavoritesRoutes from "./routes/file-favorites.js";
+import blogRoutes from "./routes/blog.js";
 
 const app = express();
 
@@ -348,6 +349,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", adminConsentRoutes);
 app.use("/api/bootstrap", bootstrapRoutes);
 app.use("/api/contractors", contractorsRoutes);
+app.use("/api/blog", blogRoutes);
 
 // ── Public config endpoint (unauthenticated, exposes safe values) ──
 app.get("/api/config/public", (_req, res) => {

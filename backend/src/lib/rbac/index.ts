@@ -102,7 +102,7 @@ export function getEffectivePermissions(role: string): string[] {
         "manage:workspaces", "manage:projects", "manage:staff", "manage:hr",
         "manage:clients", "manage:billing", "manage:settings", "manage:files",
         "manage:teams", "manage:approvals", "manage:reports", "manage:ai",
-        "manage:departments", "manage:permissions", "manage:calendar",
+        "manage:departments", "manage:permissions", "manage:calendar", "manage:blog",
         // Platform-level permissions
         "manage:organizations", "manage:subscriptions", "manage:audit-logs",
         "manage:platform-users", "manage:platform-settings", "manage:security",
@@ -113,13 +113,13 @@ export function getEffectivePermissions(role: string): string[] {
         "manage:workspaces", "manage:projects", "manage:staff", "manage:hr",
         "manage:clients", "manage:billing", "manage:settings", "manage:files",
         "manage:teams", "manage:approvals", "manage:reports", "manage:ai",
-        "manage:departments", "manage:permissions", "manage:calendar",
+        "manage:departments", "manage:permissions", "manage:calendar", "manage:blog",
       ];
     case ROLES.MANAGER:
       return [
         "manage:projects", "manage:teams", "manage:tasks", "manage:approvals",
         "view:reports", "manage:files", "access:calendar", "access:communications",
-        "access:ai",
+        "access:ai", "manage:blog",
       ];
     case ROLES.TEAM_LEADER:
       return [

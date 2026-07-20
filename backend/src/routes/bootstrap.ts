@@ -259,7 +259,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
       storageUsed: totalStorage ? `${(totalStorage / (1024 * 1024)).toFixed(1)}MB` : undefined,
     },
     features: isAdmin
-      ? ["dashboard", "projects", "tasks", "clients", "employees", "files", "billing", "settings", "approvals", "reports", "calendar", "time"]
+      ? ["dashboard", "projects", "tasks", "clients", "employees", "files", "billing", "settings", "approvals", "reports", "calendar", "time", "blog"]
       : effectiveRole === ROLES.HR
         ? ["dashboard", "employees", "attendance", "leave", "payroll", "recruitment", "onboarding", "documents", "performance", "reports"]
         : effectiveRole === ROLES.FINANCE

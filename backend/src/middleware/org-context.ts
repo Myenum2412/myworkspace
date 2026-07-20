@@ -24,7 +24,9 @@ function orgCacheSet(userId: string, orgId: string | null): void {
  */
 export async function resolveOrgContext(req: AuthRequest, _res: Response, next: NextFunction): Promise<void> {
   if (!req.user) {
-    throw new AppError(401, "Authentication required");
+    // Skip org context for unauthenticated routes (public endpoints)
+    next();
+    return;
   }
 
   // Use orgId from token if available
