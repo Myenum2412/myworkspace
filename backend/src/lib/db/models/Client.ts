@@ -120,4 +120,5 @@ const clientSchema = new Schema<IClient>(
   { timestamps: true }
 );
 
+clientSchema.index({ name: "text", email: "text", company: "text" });
 export const Client = model<IClient>("Client", clientSchema);

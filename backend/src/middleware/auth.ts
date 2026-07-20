@@ -206,6 +206,15 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
       dbg(`[BACKEND AUTH] Bearer token verified:`, JSON.stringify(decoded));
       dbg(`[BACKEND AUTH] User ID from token: ${decoded.userId}`);
       dbg(`[BACKEND AUTH] Org ID from token: ${decoded.orgId}`);
+
+      if (decoded.tokenVersion !== undefined) {
+        const user = await User.findOne({ id: decoded.userId }).select("tokenVersion").lean();
+        if (!user || (user.tokenVersion ?? 0) > (decoded.tokenVersion ?? 0)) {
+          res.status(401).json({ success: false, error: "Token revoked. Please log in again." });
+          return;
+        }
+      }
+
       req.user = decoded;
       await resolveStaleUserId(req);
       dbg(`[BACKEND AUTH] ========== AUTHENTICATE SUCCESS (Bearer) ==========`);

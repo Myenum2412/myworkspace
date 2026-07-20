@@ -28,6 +28,7 @@ export interface IStorageProvider {
   saveStream(stream: Readable, key: string): Promise<void>;
   get(key: string): Promise<Buffer | null>;
   getStream(key: string): Promise<Readable | null>;
+  getStreamRange(key: string, start: number, end: number): Promise<{ stream: Readable; contentLength: number } | null>;
   delete(key: string): Promise<void>;
   exists(key: string): Promise<boolean>;
   getUrl(key: string): string;
@@ -100,6 +101,20 @@ export class LocalStorageProvider implements IStorageProvider {
       await fs.access(fp, fsConstants.F_OK);
       const { createReadStream } = await import("fs");
       return createReadStream(fp) as Readable;
+    } catch {
+      return null;
+    }
+  }
+
+  async getStreamRange(key: string, start: number, end: number): Promise<{ stream: Readable; contentLength: number } | null> {
+    const fp = this.fullPath(key);
+    try {
+      await fs.access(fp, fsConstants.F_OK);
+      const { createReadStream } = await import("fs");
+      const stat = (await import("fs")).statSync(fp);
+      const safeEnd = Math.min(end, stat.size - 1);
+      const stream = createReadStream(fp, { start, end: safeEnd }) as Readable;
+      return { stream, contentLength: safeEnd - start + 1 };
     } catch {
       return null;
     }
@@ -184,16 +199,36 @@ export class R2StorageProvider implements IStorageProvider {
   async saveStream(stream: Readable, key: string): Promise<void> {
     const client = getR2Client();
     const { bucket } = getR2Config();
-    const chunks: Buffer[] = [];
+
+    const uploadId = await this.initMultipartUpload(key);
+    const parts: { ETag: string; PartNumber: number }[] = [];
+    let partNumber = 1;
+    const minPartSize = 5 * 1024 * 1024;
+    let buffer = Buffer.alloc(0);
+
     for await (const chunk of stream) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      const chunkBuf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      buffer = Buffer.concat([buffer, chunkBuf]);
+      if (buffer.length >= minPartSize) {
+        const command = new UploadPartCommand({
+          Bucket: bucket, Key: key, UploadId: uploadId, PartNumber: partNumber, Body: buffer,
+        });
+        const response = await client.send(command);
+        parts.push({ ETag: response.ETag || "", PartNumber: partNumber });
+        partNumber++;
+        buffer = Buffer.alloc(0);
+      }
     }
-    const command = new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-      Body: Buffer.concat(chunks),
-    });
-    await client.send(command);
+
+    if (buffer.length > 0) {
+      const command = new UploadPartCommand({
+        Bucket: bucket, Key: key, UploadId: uploadId, PartNumber: partNumber, Body: buffer,
+      });
+      const response = await client.send(command);
+      parts.push({ ETag: response.ETag || "", PartNumber: partNumber });
+    }
+
+    await this.completeMultipartUpload(key, uploadId, parts);
   }
 
   async get(key: string): Promise<Buffer | null> {
@@ -223,6 +258,25 @@ export class R2StorageProvider implements IStorageProvider {
       const response = await client.send(command);
       if (!response.Body) return null;
       return response.Body as Readable;
+    } catch (err: any) {
+      if (err.name === "NoSuchKey") return null;
+      throw err;
+    }
+  }
+
+  async getStreamRange(key: string, start: number, end: number): Promise<{ stream: Readable; contentLength: number } | null> {
+    const client = getR2Client();
+    const { bucket } = getR2Config();
+    try {
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Range: `bytes=${start}-${end}`,
+      });
+      const response = await client.send(command);
+      if (!response.Body) return null;
+      const contentLength = parseInt(response.ContentRange?.split("/")[1] || "0", 10) || (end - start + 1);
+      return { stream: response.Body as Readable, contentLength };
     } catch (err: any) {
       if (err.name === "NoSuchKey") return null;
       throw err;

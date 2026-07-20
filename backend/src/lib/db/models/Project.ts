@@ -48,4 +48,5 @@ const projectSchema = new Schema<IProject>(
 projectSchema.index({ orgId: 1, createdAt: -1 });
 projectSchema.index({ orgId: 1, status: 1 });
 
+projectSchema.index({ name: "text", description: "text" });
 export const Project = model<IProject>("Project", projectSchema);

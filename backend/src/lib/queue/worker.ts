@@ -1,5 +1,5 @@
 import { ConsumeMessage } from "amqplib";
-import { registerHandler, startConsumers } from "./consumer.js";
+import { registerHandler, startConsumers, MAX_RETRIES } from "./consumer.js";
 import { QUEUES, isRabbitMQConfigured } from "./connection.js";
 import { logger } from "../logger/index.js";
 import { FileAttachment } from "../db/models/FileAttachment.js";
@@ -11,15 +11,9 @@ import { scanFile } from "../../services/virus-scan.service.js";
 import path from "path";
 import fs from "fs";
 
-async function delay(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
 registerHandler(QUEUES.UPLOAD_PROCESSING, async (_msg, data) => {
   const { uploadId, orgId, userId, fileName, fileSize, mimeType, checksum } = data as Record<string, any>;
   logger.info({ uploadId, orgId, fileName }, "Processing upload completion");
-  // Upload processing is handled by the TUS completion handler.
-  // This consumer handles post-processing like notifications.
   try {
     const { eventProducer } = await import("./producer.js");
     await eventProducer.fileProcessingRequired({
@@ -61,14 +55,19 @@ registerHandler(QUEUES.FILE_PROCESSING, async (_msg, data) => {
     switch (processingType) {
       case "virus-scan": {
         const file = await FileAttachment.findOne({ id: fileId, orgId }).lean();
-        if (!file) return { success: false, error: "File not found" };
+        if (!file) return { success: false, error: "File not found", skipRetry: true };
         const { getStorageProvider } = await import("../storage/providers.js");
         const provider = getStorageProvider();
         const filePath = path.join("/tmp", `virus-scan-${fileId}`);
         try {
-          const buffer = await provider.get(file.storagePath);
-          if (!buffer) return { success: false, error: "File data not found" };
-          await fs.promises.writeFile(filePath, buffer);
+          const stream = await provider.getStream(file.storagePath);
+          if (!stream) return { success: false, error: "File data not found", skipRetry: true };
+          const writeStream = fs.createWriteStream(filePath);
+          await new Promise<void>((resolve, reject) => {
+            stream.pipe(writeStream);
+            writeStream.on("finish", resolve);
+            writeStream.on("error", reject);
+          });
           const result = await scanFile(filePath);
           await FileAttachment.updateOne(
             { id: fileId },
@@ -80,11 +79,11 @@ registerHandler(QUEUES.FILE_PROCESSING, async (_msg, data) => {
         break;
       }
       case "compress": {
-        await delay(100);
+        await new Promise((r) => setTimeout(r, 100));
         break;
       }
       case "ocr": {
-        await delay(500);
+        await new Promise((r) => setTimeout(r, 500));
         break;
       }
     }
@@ -106,15 +105,7 @@ registerHandler(QUEUES.FILE_PROCESSING, async (_msg, data) => {
 registerHandler(QUEUES.NOTIFICATIONS, async (_msg, data) => {
   const { userId, orgId, type, title, message, link } = data as Record<string, any>;
   try {
-    await Notification.create({
-      userId,
-      orgId,
-      type,
-      title,
-      message,
-      link: link || null,
-      read: false,
-    });
+    await Notification.create({ userId, orgId, type, title, message, link: link || null, read: false });
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -128,10 +119,7 @@ registerHandler(QUEUES.AUDIT_LOG, async (_msg, data) => {
       orgId,
       userId: userId || "system",
       createdBy: userId || "system",
-      action,
-      entityType,
-      entityId,
-      description,
+      action, entityType, entityId, description,
       metadata: metadata || "",
     });
     return { success: true };
@@ -146,11 +134,11 @@ registerHandler(QUEUES.CLEANUP, async (_msg, data) => {
   logger.info({ orgId, olderThan }, "Running cleanup");
   try {
     const olderThanDate = new Date(olderThan);
-    const staleSessions = await FileAttachment.find({
+    const staleFiles = await FileAttachment.find({
       orgId,
       deletedAt: { $ne: null, $lt: olderThanDate },
     }).lean();
-    logger.info({ count: staleSessions.length }, "Cleanup candidates found");
+    logger.info({ count: staleFiles.length }, "Cleanup candidates found");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };

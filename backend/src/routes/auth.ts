@@ -8,8 +8,9 @@ import { PendingSignup } from "../lib/db/models/PendingSignup.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { Session } from "../lib/db/models/Session.js";
+import { RefreshToken } from "../lib/db/models/RefreshToken.js";
 import { getNextSequence } from "../lib/db/models/Counter.js";
-import { signToken } from "../config/auth.js";
+import { signToken, signRefreshToken, verifyRefreshToken } from "../config/auth.js";
 import { getUserOrgId } from "../lib/org-utils.js";
 import { env } from "../config/env.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
@@ -57,9 +58,10 @@ async function getUserPrimaryOrgId(userId: string): Promise<string | null> {
 router.post("/login", async (req: AuthRequest, res: Response) => {
   const email = requireString(req.body.email || "", "email", { min: 1, max: 254 }).toLowerCase();
   const password = requireString(req.body.password || "", "password", { min: 1, max: 1000 });
+  const deviceFingerprint = optionalString(req.body.deviceFingerprint, "deviceFingerprint", { max: 256 });
 
   const user = await User.findOne({ email })
-    .select("id email password name role permissions status isActive lockedUntil failedLoginAttempts twoFactorEnabled orgId emailVerified image userNumber lastLogin");
+    .select("id email password name role permissions status isActive lockedUntil failedLoginAttempts twoFactorEnabled orgId emailVerified image userNumber lastLogin tokenVersion");
   if (!user || !user.password) {
     throw new AppError(401, "Invalid email or password");
   }
@@ -89,6 +91,8 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   await user.save();
 
   const resolvedOrgId = user.orgId || await getUserPrimaryOrgId(user.id) || "";
+  const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
+  const userAgent = req.headers["user-agent"] || "unknown";
 
   if (user.twoFactorEnabled) {
     const tempToken = jwt.sign(
@@ -115,70 +119,140 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     action: "user.login",
     entityType: "user",
     entityId: user.id,
-    description: `${user.name} logged in`,
+    description: `${user.name} logged in from ${ipAddress}`,
+    metadata: JSON.stringify({ ipAddress, userAgent }),
   });
 
-  // Close any prior active sessions
   await Session.updateMany(
     { userId: user.id, logoutTime: { $exists: false } },
     {
-      $set: {
-        logoutTime: new Date(),
-        currentStatus: "offline",
-      },
+      $set: { logoutTime: new Date(), currentStatus: "offline" },
       $push: { statusTransitions: { status: "offline", timestamp: new Date() } },
     },
   );
 
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const session = await Session.create({
-    userId: user.id,
-    orgId: resolvedOrgId,
-    loginTime: new Date(),
-    currentStatus: "online",
+    userId: user.id, orgId: resolvedOrgId,
+    loginTime: new Date(), currentStatus: "online",
     statusTransitions: [{ status: "online", timestamp: new Date() }],
-    totalBreakDuration: 0,
-    expiresAt,
+    totalBreakDuration: 0, expiresAt,
+    deviceFingerprint: deviceFingerprint || undefined,
+    ipAddress, userAgent,
   });
 
   await recordAuditLog({
-    orgId: resolvedOrgId,
-    userId: user.id,
-    createdBy: user.id,
-    action: "session.start",
-    entityType: "session",
+    orgId: resolvedOrgId, userId: user.id, createdBy: user.id,
+    action: "session.start", entityType: "session",
     entityId: session._id.toString(),
     description: `Session started for ${user.name}`,
   });
 
-  const token = signToken({
+  const refreshFamily = uuid();
+  const refreshTokenStr = signRefreshToken({
     userId: user.id,
-    email: user.email,
-    role: user.role,
-    permissions: user.permissions || [],
     orgId: resolvedOrgId,
+    tokenVersion: user.tokenVersion || 0,
+    family: refreshFamily,
+  });
+
+  await RefreshToken.create({
+    token: crypto.createHash("sha256").update(refreshTokenStr).digest("hex"),
+    userId: user.id, orgId: resolvedOrgId,
+    family: refreshFamily,
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    deviceFingerprint: deviceFingerprint || undefined,
+    ipAddress, userAgent,
+  });
+
+  const token = signToken({
+    userId: user.id, email: user.email, role: user.role,
+    permissions: user.permissions || [], orgId: resolvedOrgId,
+    tokenVersion: user.tokenVersion || 0,
   });
 
   res.json({
     success: true,
     data: {
       token,
+      refreshToken: refreshTokenStr,
       sessionId: session._id.toString(),
       user: {
-        id: user.id,
-        userNumber: user.userNumber,
-        name: user.name,
-        email: user.email,
-        image: user.image,
-        role: user.role,
-        permissions: user.permissions || [],
-        status: "online",
-        orgId: resolvedOrgId,
-        emailVerified: user.emailVerified || false,
+        id: user.id, userNumber: user.userNumber, name: user.name,
+        email: user.email, image: user.image, role: user.role,
+        permissions: user.permissions || [], status: "online",
+        orgId: resolvedOrgId, emailVerified: user.emailVerified || false,
       },
       orgId: resolvedOrgId,
     },
   });
+});
+
+router.post("/refresh", async (req: AuthRequest, res: Response) => {
+  const refreshTokenStr = requireString(req.body.refreshToken || "", "refreshToken", { min: 1, max: 2000 });
+  const deviceFingerprint = optionalString(req.body.deviceFingerprint, "deviceFingerprint", { max: 256 });
+
+  let payload: { userId: string; orgId: string; tokenVersion: number; family: string };
+  try {
+    payload = verifyRefreshToken(refreshTokenStr);
+  } catch {
+    throw new AppError(401, "Invalid or expired refresh token");
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(refreshTokenStr).digest("hex");
+  const storedToken = await RefreshToken.findOne({ token: hashedToken });
+  if (!storedToken || storedToken.revokedAt) {
+    if (storedToken?.revokedAt) {
+      await RefreshToken.updateMany(
+        { family: storedToken.family },
+        { revokedAt: new Date() },
+      );
+      await User.updateOne({ id: payload.userId }, { $inc: { tokenVersion: 1 } });
+    }
+    throw new AppError(401, "Refresh token has been revoked");
+  }
+
+  const user = await User.findOne({ id: payload.userId }).select("id email role permissions tokenVersion orgId").lean();
+  if (!user) throw new AppError(401, "User not found");
+
+  const currentVersion = user.tokenVersion || 0;
+  if (currentVersion > payload.tokenVersion) {
+    throw new AppError(401, "Token version invalid, please login again");
+  }
+
+  await RefreshToken.updateOne(
+    { _id: storedToken._id },
+    { revokedAt: new Date(), replacedBy: hashedToken },
+  );
+
+  const newRefreshFamily = uuid();
+  const newRefreshToken = signRefreshToken({
+    userId: payload.userId,
+    orgId: payload.orgId,
+    tokenVersion: currentVersion,
+    family: newRefreshFamily,
+  });
+
+  await RefreshToken.create({
+    token: crypto.createHash("sha256").update(newRefreshToken).digest("hex"),
+    userId: payload.userId, orgId: payload.orgId,
+    family: newRefreshFamily,
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    deviceFingerprint: deviceFingerprint || storedToken.deviceFingerprint,
+    ipAddress: req.ip || "unknown",
+    userAgent: req.headers["user-agent"] || storedToken.userAgent,
+  });
+
+  const newToken = signToken({
+    userId: payload.userId,
+    email: user.email,
+    role: user.role,
+    permissions: user.permissions || [],
+    orgId: payload.orgId || user.orgId,
+    tokenVersion: currentVersion,
+  });
+
+  res.json({ success: true, data: { token: newToken, refreshToken: newRefreshToken } });
 });
 
 router.post("/signup", async (req: AuthRequest, res: Response) => {
@@ -260,6 +334,7 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
     role: "admin",
     permissions: [],
     orgId: org.id,
+    tokenVersion: user.tokenVersion || 0,
   });
 
   sendWelcomeEmail(email, name).catch((err) => {
@@ -357,9 +432,25 @@ router.post("/resend-verification", authenticate, async (req: AuthRequest, res: 
   res.json({ success: true, message: "Verification email sent" });
 });
 
+router.post("/logout-all", authenticate, async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.userId;
+  await User.updateOne({ id: userId }, { $inc: { tokenVersion: 1 } });
+  await RefreshToken.updateMany({ userId, revokedAt: { $exists: false } }, { revokedAt: new Date() });
+  await Session.updateMany(
+    { userId, logoutTime: { $exists: false } },
+    { $set: { logoutTime: new Date(), currentStatus: "offline" } },
+  );
+  res.json({ success: true, message: "All sessions revoked" });
+});
+
 router.post("/logout", authenticate, async (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
   const orgId = req.user!.orgId;
+
+  await RefreshToken.updateMany(
+    { userId, revokedAt: { $exists: false } },
+    { revokedAt: new Date() },
+  );
 
   const activeSession = await Session.findOne({ userId, logoutTime: { $exists: false } }).sort({ loginTime: -1 }).select("_id currentStatus statusTransitions loginTime totalBreakDuration duration logoutTime");
   if (activeSession) {
@@ -586,6 +677,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
     role: "admin",
     permissions: [],
     orgId: org.id,
+    tokenVersion: user.tokenVersion || 0,
   });
 
   res.status(201).json({
@@ -694,19 +786,6 @@ router.post("/send-password-reset-email", async (req: AuthRequest, res: Response
   } catch (err) {
     console.error("[auth] send-password-reset-email error:", err);
     res.status(500).json({ success: false, message: "Failed to send password reset email" });
-  }
-});
-
-router.post("/test-mail", async (req: AuthRequest, res: Response) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: "Email is required" });
-    const { sendWelcomeEmail } = await import("../lib/mail/index.js");
-    await sendWelcomeEmail(email, "Test User");
-    res.json({ success: true, message: "Test email sent" });
-  } catch (err: any) {
-    console.error("[auth] test-mail error:", err);
-    res.status(500).json({ success: false, message: err?.message || "Failed to send test email" });
   }
 });
 

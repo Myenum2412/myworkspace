@@ -18,6 +18,8 @@ export interface CleanupResult {
   tempConversions: number;
   staleMetadata: number;
   expiredCaches: number;
+  staleTempUploads: number;
+  staleSessions: number;
 }
 
 async function listDir(dir: string): Promise<string[]> {
@@ -112,20 +114,6 @@ export async function cleanupExpiredCache(): Promise<number> {
   return removed;
 }
 
-export async function runFullCleanup(): Promise<CleanupResult> {
-  const startTime = Date.now();
-  logger.info("Starting full cleanup cycle");
-
-  const [orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, staleTempUploads, staleSessions] = await Promise.all([
-    cleanupOrphanedThumbnails(),
-    cleanupOrphanedPreviews(),
-    cleanupTempConversions(),
-    cleanupStaleMetadata(),
-    cleanupExpiredCache(),
-    cleanupStaleTempUploads(),
-    cleanupStaleUploadSessions(),
-  ]);
-
 export async function cleanupStaleTempUploads(): Promise<number> {
   let removed = 0;
   try {
@@ -156,15 +144,29 @@ export async function cleanupStaleUploadSessions(): Promise<number> {
   const result = await UploadSession.deleteMany({
     status: { $in: ["pending", "uploading"] },
     createdAt: { $lt: cutoff },
-  }).lean();
+  });
   if (result.deletedCount > 0) {
     logger.info({ removed: result.deletedCount }, "Cleaned stale upload sessions");
   }
   return result.deletedCount || 0;
 }
 
+export async function runFullCleanup(): Promise<CleanupResult> {
+  const startTime = Date.now();
+  logger.info("Starting full cleanup cycle");
+
+  const [orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, staleTempUploads, staleSessions] = await Promise.all([
+    cleanupOrphanedThumbnails(),
+    cleanupOrphanedPreviews(),
+    cleanupTempConversions(),
+    cleanupStaleMetadata(),
+    cleanupExpiredCache(),
+    cleanupStaleTempUploads(),
+    cleanupStaleUploadSessions(),
+  ]);
+
   const duration = Date.now() - startTime;
-  logger.info({ orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, durationMs: duration }, "Cleanup cycle complete");
+  logger.info({ orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, staleTempUploads, staleSessions, durationMs: duration }, "Cleanup cycle complete");
 
   metricsRegistry.observeHistogram("cleanup_duration_ms", {}, duration);
 

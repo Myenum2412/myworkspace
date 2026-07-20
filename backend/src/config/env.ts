@@ -7,6 +7,11 @@ export const env = {
     throw new Error("JWT_SECRET environment variable is required");
   })(),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || (() => {
+    throw new Error("JWT_REFRESH_SECRET or JWT_SECRET environment variable is required");
+  })(),
+  JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || "30d",
+  JWT_ISSUER: process.env.JWT_ISSUER || "myworkspace",
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || "developer@myenum.in",
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || "",
   CORS_ORIGIN: (process.env.CORS_ORIGIN || "http://localhost:3000,https://myworkspace.myenum.in").split(",").map(s => s.trim()),
@@ -50,6 +55,9 @@ export const env = {
   REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
 
   TRIAL_DAYS: parseInt(process.env.TRIAL_DAYS || "15", 10),
+
+  RABBITMQ_URL: process.env.RABBITMQ_URL || "",
+  RABBITMQ_PREFETCH: process.env.RABBITMQ_PREFETCH || "10",
 
   SENTRY_DSN: process.env.SENTRY_DSN || "",
 

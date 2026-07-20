@@ -79,11 +79,17 @@ router.post("/links/:token/verify", async (req: AuthRequest, res: Response) => {
   const valid = await compare(password, link.password);
   if (!valid) throw new AppError(401, "Invalid password");
 
+  res.cookie(`share_${req.params.token}`, "verified", {
+    httpOnly: true,
+    sameSite: "strict",
+    maxAge: 30 * 60 * 1000,
+    secure: true,
+  });
   res.json({ verified: true });
 });
 
 router.get("/links/:token/download", async (req: AuthRequest, res: Response) => {
-  const link = await ShareLink.findOne({ token: req.params.token, isActive: true }).select("fileId allowDownload maxDownloads downloadCount expiresAt storagePath").lean();
+  const link = await ShareLink.findOne({ token: req.params.token, isActive: true }).select("fileId allowDownload maxDownloads downloadCount expiresAt password").lean();
   if (!link) throw new AppError(404, "Share link not found or expired");
 
   if (link.expiresAt && new Date() > link.expiresAt) {
@@ -97,6 +103,11 @@ router.get("/links/:token/download", async (req: AuthRequest, res: Response) => 
     throw new AppError(429, "Download limit reached for this share link");
   }
 
+  if (link.password) {
+    const verified = req.cookies?.[`share_${req.params.token}`] === "verified";
+    if (!verified) throw new AppError(401, "Password required to download");
+  }
+
   const file = await FileAttachment.findOne({ id: link.fileId, deletedAt: null }).select("id originalName mimeType size storagePath").lean();
   if (!file) throw new AppError(404, "File not found");
 
@@ -104,12 +115,17 @@ router.get("/links/:token/download", async (req: AuthRequest, res: Response) => 
 
   const { getStorageProvider } = await import("../lib/storage/providers.js");
   const provider = getStorageProvider();
-  const buf = await provider.get(file.storagePath);
-  if (!buf) throw new AppError(404, "File not found in storage");
 
   res.set("Content-Type", file.mimeType || "application/octet-stream");
   res.set("Content-Disposition", `attachment; filename="${file.originalName}"`);
-  res.send(buf);
+  res.set("Content-Length", String(file.size));
+
+  const stream = await provider.getStream(file.storagePath);
+  if (!stream) {
+    res.status(404).json({ error: "File not found in storage" });
+    return;
+  }
+  stream.pipe(res);
 });
 
 router.get("/links", authenticate, async (req: AuthRequest, res: Response) => {

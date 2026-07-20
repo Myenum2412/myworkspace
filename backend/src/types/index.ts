@@ -8,6 +8,7 @@ export interface JwtPayload {
   orgId?: string;
   projectId?: string;
   clientId?: string;
+  tokenVersion?: number;
 }
 
 export interface AuthRequest extends Omit<Request, "params"> {

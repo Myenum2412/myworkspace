@@ -141,7 +141,7 @@ router.post("/login", async (req, res: Response) => {
   const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
   const token = requireString(req.body.token, "token", { min: 6, max: 6 });
 
-  const user = await User.findOne({ email }).select("id email name role permissions status isActive lockedUntil failedLoginAttempts twoFactorEnabled twoFactorSecret orgId emailVerified image userNumber lastLogin");
+  const user = await User.findOne({ email }).select("id email name role permissions status isActive lockedUntil failedLoginAttempts twoFactorEnabled twoFactorSecret orgId emailVerified image userNumber lastLogin tokenVersion");
   if (!user) throw new AppError(401, "Invalid email or token");
   if (!user.twoFactorEnabled) throw new AppError(400, "2FA is not enabled for this account");
   if (!user.twoFactorSecret) throw new AppError(400, "2FA not configured");
@@ -205,6 +205,7 @@ router.post("/login", async (req, res: Response) => {
     role: user.role,
     permissions: user.permissions || [],
     orgId: resolvedOrgId,
+    tokenVersion: user.tokenVersion || 0,
   });
 
   res.json({

@@ -115,4 +115,5 @@ taskSchema.index({ creatorId: 1, createdAt: -1 });
 taskSchema.index({ teamId: 1, createdAt: -1 });
 taskSchema.index({ "selectedUserIds": 1 });
 
+taskSchema.index({ title: "text", description: "text" });
 export const Task = model<ITask>("Task", taskSchema);

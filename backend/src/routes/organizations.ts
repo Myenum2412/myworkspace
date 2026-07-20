@@ -46,12 +46,14 @@ router.post("/switch", async (req: AuthRequest, res: Response) => {
   if (!org) throw new AppError(404, "Organization not found");
 
   // Issue new token with updated orgId
+  const userRecord = await User.findOne({ id: req.user!.userId }).select("tokenVersion").lean();
   const token = signToken({
     userId: req.user!.userId,
     email: req.user!.email,
     role: req.user!.role,
     permissions: req.user!.permissions || [],
     orgId,
+    tokenVersion: userRecord?.tokenVersion ?? 0,
   });
 
   res.json({

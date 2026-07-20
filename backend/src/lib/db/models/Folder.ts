@@ -42,5 +42,6 @@ const folderSchema = new Schema<IFolder>(
 folderSchema.index({ orgId: 1, parentId: 1 });
 folderSchema.index({ orgId: 1, clientId: 1 });
 folderSchema.index({ orgId: 1, clientId: 1, path: 1 }, { unique: true });
+folderSchema.index({ name: "text" });
 
 export const Folder = model<IFolder>("Folder", folderSchema);

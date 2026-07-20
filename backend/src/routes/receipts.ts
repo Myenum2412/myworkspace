@@ -42,7 +42,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
 // Get single receipt
 router.get("/:id", async (req: AuthRequest, res: Response) => {
-  const receipt = await Receipt.findById(req.params.id).lean();
+  const receipt = await Receipt.findOne({ _id: req.params.id, orgId: req.user!.orgId }).lean();
   if (!receipt) throw new AppError(404, "Receipt not found");
   res.json({ success: true, data: { ...receipt, id: receipt._id.toString() } });
 });
@@ -85,7 +85,7 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
     throw new AppError(400, `Invalid status. Must be one of: ${RECEIPT_STATUSES.join(", ")}`);
   }
 
-  const receipt = await Receipt.findById(req.params.id);
+  const receipt = await Receipt.findOne({ _id: req.params.id, orgId: req.user!.orgId });
   if (!receipt) throw new AppError(404, "Receipt not found");
 
   receipt.status = status;
@@ -103,7 +103,7 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
 // Update receipt
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   const { customerName, customerEmail, amount, currency, paymentMethod, paidAt, notes, status } = req.body;
-  const receipt = await Receipt.findById(req.params.id);
+  const receipt = await Receipt.findOne({ _id: req.params.id, orgId: req.user!.orgId });
   if (!receipt) throw new AppError(404, "Receipt not found");
 
   if (customerName !== undefined) receipt.customerName = customerName;
@@ -123,9 +123,10 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 
 // Delete receipt
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
-  const receipt = await Receipt.findById(req.params.id);
+  const orgId = req.user!.orgId;
+  const receipt = await Receipt.findOne({ _id: req.params.id, orgId });
   if (!receipt) throw new AppError(404, "Receipt not found");
-  await Receipt.findByIdAndDelete(req.params.id);
+  await Receipt.deleteOne({ _id: req.params.id, orgId });
   res.json({ success: true });
 });
 

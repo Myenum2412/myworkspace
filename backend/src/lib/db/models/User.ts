@@ -17,6 +17,7 @@ export interface IUser extends Document {
   lastLogin?: Date;
   failedLoginAttempts: number;
   lockedUntil?: Date;
+  tokenVersion: number;
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
   phone?: string;
@@ -56,6 +57,7 @@ const userSchema = new Schema<IUser>(
     permissions: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
     lastLogin: Date,
+    tokenVersion: { type: Number, default: 0 },
     failedLoginAttempts: { type: Number, default: 0 },
     lockedUntil: Date,
     twoFactorEnabled: { type: Boolean, default: false },
@@ -84,5 +86,6 @@ const userSchema = new Schema<IUser>(
 
 userSchema.index({ status: 1 });
 userSchema.index({ role: 1 });
+userSchema.index({ name: "text", email: "text" });
 
 export const User = model<IUser>("User", userSchema);

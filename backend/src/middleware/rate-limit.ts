@@ -55,6 +55,24 @@ export const searchLimiter = rateLimit({
   keyGenerator: (req) => `search:${ipKeyGenerator(req.ip || "unknown")}`,
 });
 
+export const downloadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many download requests. Try again later." },
+  keyGenerator: (req) => `download:${ipKeyGenerator(req.ip || "unknown")}`,
+});
+
+export const publicInfoLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests. Try again later." },
+  keyGenerator: (req) => `public_info:${ipKeyGenerator(req.ip || "unknown")}`,
+});
+
 export function promoteRateLimitersToRedis() {
   try {
     const { getRedis, isRedisConnected } = require("../lib/redis.js");
@@ -74,6 +92,8 @@ export function promoteRateLimitersToRedis() {
         (uploadLimiter as any).store = store;
         (shareDownloadLimiter as any).store = store;
         (searchLimiter as any).store = store;
+        (downloadLimiter as any).store = store;
+        (publicInfoLimiter as any).store = store;
         logger.info("Rate limiters promoted to Redis-backed store");
         return;
       }

@@ -162,7 +162,7 @@ export function useUpload(options: UploadOptions) {
   }, [store]);
 
   const retryUpload = useCallback((uploadId: string) => {
-    const file = store.uploads.get(uploadId);
+    const file = store.uploads[uploadId];
     if (!file) return;
     uploadFile(file.file);
   }, [store, uploadFile]);
@@ -173,10 +173,10 @@ export function useUpload(options: UploadOptions) {
   }, [store]);
 
   return {
-    uploads: Array.from(store.uploads.values()) as UploadFile[],
-    activeUploads: store.activeUploads.map((id) => store.uploads.get(id)).filter(Boolean) as UploadFile[],
-    completedUploads: store.completedUploads.map((id) => store.uploads.get(id)).filter(Boolean) as UploadFile[],
-    failedUploads: store.failedUploads.map((id) => store.uploads.get(id)).filter(Boolean) as UploadFile[],
+    uploads: Object.values(store.uploads) as UploadFile[],
+    activeUploads: store.activeUploads.map((id) => store.uploads[id]).filter(Boolean) as UploadFile[],
+    completedUploads: store.completedUploads.map((id) => store.uploads[id]).filter(Boolean) as UploadFile[],
+    failedUploads: store.failedUploads.map((id) => store.uploads[id]).filter(Boolean) as UploadFile[],
     stats: store.stats,
     networkQuality: store.networkQuality,
     isOnline: store.isOnline,

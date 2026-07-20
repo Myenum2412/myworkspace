@@ -22,7 +22,7 @@ async function nextInvoiceNumber(orgId: string): Promise<string> {
 // GET /api/billing/invoices — List invoices for the organization
 router.get("/invoices", async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = req.query.orgId as string || await requireOrgMembership(req.user!.userId, undefined, req.user!.email, req.user!.orgId);
+    const orgId = req.user!.orgId;
 
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
@@ -57,7 +57,7 @@ router.get("/invoices", async (req: AuthRequest, res: Response) => {
 // GET /api/billing/invoices/:id — Get single invoice
 router.get("/invoices/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const invoice = await Invoice.findOne({ id: req.params.id }).select("id orgId number customerId customerName customerEmail amountPaid currency status pdfUrl hostedUrl periodStart periodEnd items subTotal discountPercent discountAmount tdsTcsType tdsTcsRate tdsTcsAmount adjustmentValue total isSimplifiedView createdAt updatedAt").lean();
+    const invoice = await Invoice.findOne({ id: req.params.id, orgId: req.user!.orgId }).select("id orgId number customerId customerName customerEmail amountPaid currency status pdfUrl hostedUrl periodStart periodEnd items subTotal discountPercent discountAmount tdsTcsType tdsTcsRate tdsTcsAmount adjustmentValue total isSimplifiedView createdAt updatedAt").lean();
     if (!invoice) throw new AppError(404, "Invoice not found");
     res.json({ success: true, data: invoice });
   } catch (err: any) {
@@ -69,9 +69,9 @@ router.get("/invoices/:id", async (req: AuthRequest, res: Response) => {
 // POST /api/billing/invoices — Create invoice
 router.post("/invoices", async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = req.body.orgId || await requireOrgMembership(req.user!.userId, undefined, req.user!.email, req.user!.orgId);
+    const orgId = req.user!.orgId!;
 
-    const number = req.body.number && req.body.number.trim() ? req.body.number : await nextInvoiceNumber(orgId);
+    const number = req.body.number && (req.body.number as string).trim() ? req.body.number : await nextInvoiceNumber(orgId);
     const invoice = await Invoice.create({
       id: uuid(),
       orgId,
@@ -108,11 +108,12 @@ router.post("/invoices", async (req: AuthRequest, res: Response) => {
 // PUT /api/billing/invoices/:id — Update invoice (full replace)
 router.put("/invoices/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const invoice = await Invoice.findOne({ id: req.params.id });
+    const invoice = await Invoice.findOne({ id: req.params.id, orgId: req.user!.orgId });
     if (!invoice) throw new AppError(404, "Invoice not found");
 
-    const updates = req.body;
+    const { orgId, id, ...updates } = req.body;
     Object.assign(invoice, updates);
+    invoice.orgId = req.user!.orgId!;
     await invoice.save();
 
     res.json({ success: true, data: invoice });
@@ -125,9 +126,10 @@ router.put("/invoices/:id", async (req: AuthRequest, res: Response) => {
 // PATCH /api/billing/invoices/:id — Partial update
 router.patch("/invoices/:id", async (req: AuthRequest, res: Response) => {
   try {
+    const { orgId, ...safeBody } = req.body;
     const invoice = await Invoice.findOneAndUpdate(
-      { id: req.params.id },
-      { $set: req.body },
+      { id: req.params.id, orgId: req.user!.orgId },
+      { $set: safeBody },
       { new: true }
     ).lean();
     if (!invoice) throw new AppError(404, "Invoice not found");
@@ -141,7 +143,7 @@ router.patch("/invoices/:id", async (req: AuthRequest, res: Response) => {
 // DELETE /api/billing/invoices/:id — Delete invoice
 router.delete("/invoices/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const invoice = await Invoice.findOneAndDelete({ id: req.params.id });
+    const invoice = await Invoice.findOneAndDelete({ id: req.params.id, orgId: req.user!.orgId });
     if (!invoice) throw new AppError(404, "Invoice not found");
     res.json({ success: true, message: "Invoice deleted" });
   } catch (err: any) {

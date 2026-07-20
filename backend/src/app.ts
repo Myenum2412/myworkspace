@@ -53,6 +53,7 @@ import analyticsRoutes from "./routes/analytics.js";
 import adminConsentRoutes from "./routes/admin-consent.js";
 import bootstrapRoutes from "./routes/bootstrap.js";
 import contractorsRoutes from "./routes/contractors.js";
+import fileFavoritesRoutes from "./routes/file-favorites.js";
 
 const app = express();
 
@@ -300,7 +301,7 @@ app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/stocks", stocksRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/receipts", receiptRoutes);
-app.use("/api/file-favorites", (await import("./routes/file-favorites.js")).default);
+app.use("/api/file-favorites", fileFavoritesRoutes);
 app.use("/api/client-folders", clientFoldersRoutes);
 app.use("/api/consent", consentRoutes);
 app.use("/api/analytics", analyticsRoutes);

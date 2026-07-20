@@ -62,7 +62,7 @@ services:
       MONGODB_URI: mongodb://${MONGO_USER:-myworkspace}:${MONGO_PASS:-myworkspace123}@mongodb:27017/myworkspace?authSource=admin
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-myworkspace}:${RABBITMQ_PASS:-myworkspace123}@rabbitmq:5672
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       APP_URL: ${APP_URL:-http://localhost:3000}
     depends_on:

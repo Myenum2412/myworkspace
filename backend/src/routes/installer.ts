@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { env } from "../config/env.js";
+import { downloadLimiter, publicInfoLimiter } from "../middleware/rate-limit.js";
 
 const router = Router();
 
@@ -40,7 +41,7 @@ function getInstallerSize(): number {
 
 // ── GET /api/installer/info ──
 // Returns metadata about the latest available installer
-router.get("/info", (_req: Request, res: Response) => {
+router.get("/info", publicInfoLimiter, (_req: Request, res: Response) => {
   const installerPath = getLatestInstallerPath();
   const installerSize = getInstallerSize();
   const installerExists = installerPath !== null;
@@ -94,7 +95,7 @@ router.get("/info", (_req: Request, res: Response) => {
 
 // ── GET /api/installer/download ──
 // Downloads the latest installer executable
-router.get("/download", (req: Request, res: Response) => {
+router.get("/download", downloadLimiter, (req: Request, res: Response) => {
   const installerPath = getLatestInstallerPath();
 
   if (!installerPath) {
@@ -136,7 +137,7 @@ router.get("/download", (req: Request, res: Response) => {
 
 // ── GET /api/installer/updates ──
 // electron-updater compatible update feed
-router.get("/updates", (_req: Request, res: Response) => {
+router.get("/updates", publicInfoLimiter, (_req: Request, res: Response) => {
   const installerPath = getLatestInstallerPath();
   const installerSize = getInstallerSize();
 
@@ -162,7 +163,7 @@ router.get("/updates", (_req: Request, res: Response) => {
 
 // ── GET /api/installer/checksum ──
 // Returns SHA-512 checksum of the installer for verification
-router.get("/checksum", (_req: Request, res: Response) => {
+router.get("/checksum", publicInfoLimiter, (_req: Request, res: Response) => {
   const installerPath = getLatestInstallerPath();
 
   if (!installerPath) {

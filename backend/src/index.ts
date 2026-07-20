@@ -12,13 +12,22 @@ import { getChannel, isRabbitMQConfigured } from "./lib/queue/connection.js";
 import { promoteRateLimitersToRedis } from "./middleware/rate-limit.js";
 import { initSentry } from "./lib/sentry.js";
 import { metricsRegistry } from "./lib/monitoring/index.js";
+import { Server } from "http";
+
+let server: Server;
 
 process.on("unhandledRejection", (reason: unknown) => {
-  logger.warn({ err: reason instanceof Error ? reason.message : String(reason) }, "Unhandled rejection — suppressed to prevent crash");
+  logger.error({ err: reason instanceof Error ? { message: reason.message, stack: reason.stack } : String(reason) }, "Unhandled rejection");
 });
 
 process.on("uncaughtException", (err: Error) => {
-  logger.error({ err: err.message, stack: err.stack }, "Uncaught exception — suppressing to keep server alive");
+  logger.fatal({ err: err.message, stack: err.stack }, "Uncaught exception — initiating graceful shutdown");
+  if (server) {
+    server.close(() => process.exit(1));
+    setTimeout(() => process.exit(1), 10000).unref();
+  } else {
+    process.exit(1);
+  }
 });
 
 async function start() {
@@ -58,7 +67,7 @@ async function start() {
 
   promoteRateLimitersToRedis();
 
-  const server = createServer(app);
+  server = createServer(app);
   server.keepAliveTimeout = 65000;
   server.headersTimeout = 66000;
   server.requestTimeout = 30000;

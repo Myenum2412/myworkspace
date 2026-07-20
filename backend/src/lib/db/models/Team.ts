@@ -21,4 +21,5 @@ const teamSchema = new Schema<ITeam>(
   { timestamps: true }
 );
 
+teamSchema.index({ name: "text", description: "text" });
 export const Team = model<ITeam>("Team", teamSchema);

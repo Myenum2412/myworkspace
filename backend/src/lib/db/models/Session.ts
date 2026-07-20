@@ -15,6 +15,9 @@ export interface ISession extends Document {
   totalBreakDuration: number;
   duration?: number;
   expiresAt: Date;
+  deviceFingerprint?: string;
+  ipAddress?: string;
+  userAgent?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +37,9 @@ const sessionSchema = new Schema<ISession>({
   totalBreakDuration: { type: Number, default: 0 },
   duration: { type: Number },
   expiresAt: { type: Date, required: true },
+  deviceFingerprint: { type: String },
+  ipAddress: { type: String },
+  userAgent: { type: String },
 }, { timestamps: true });
 
 sessionSchema.index({ userId: 1, loginTime: -1 });

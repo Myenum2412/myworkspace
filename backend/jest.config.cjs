@@ -11,6 +11,8 @@ module.exports = {
     "^uuid$": "<rootDir>/tests/__mocks__/uuid.cjs",
     "^jose$": "<rootDir>/tests/__mocks__/jose.cjs",
     "^file-type$": "<rootDir>/tests/__mocks__/file-type.cjs",
+    "^agenda$": "<rootDir>/tests/__mocks__/agenda.cjs",
+    "^@agendajs/mongo-backend$": "<rootDir>/tests/__mocks__/agenda-backend.cjs",
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
   transform: {
