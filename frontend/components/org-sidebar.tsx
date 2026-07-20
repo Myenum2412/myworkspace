@@ -18,7 +18,6 @@ import {
   Settings2Icon,
   ShieldIcon,
   ClipboardListIcon,
-  BarChart3Icon,
   BrainIcon,
   WorkflowIcon,
   BookOpenIcon,
@@ -37,7 +36,6 @@ export const defaultOrgNavData = [
     isActive: true,
     items: [
       { title: "Overview", url: "/orgmenu" },
-      { title: "Analytics", url: "/orgmenu/analytics" },
     ],
   },
   {

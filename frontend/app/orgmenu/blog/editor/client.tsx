@@ -19,6 +19,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, Eye, Send, ArrowLeft, X, Plus } from "lucide-react";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 
 interface InitialPost {
   id: string;
@@ -86,6 +87,7 @@ export function BlogEditorClient({
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const readingTime = calculateReadingTime(content);
 
@@ -181,12 +183,26 @@ export function BlogEditorClient({
         </div>
         <Card>
           <CardContent className="p-8">
-            <h1 className="text-3xl font-bold mb-2">{title}</h1>
+            <h1 className="text-3xl font-bold mb-2">{title || "Untitled"}</h1>
             {subtitle && <p className="text-xl text-muted-foreground mb-4">{subtitle}</p>}
             {featuredImage && (
-              <img src={featuredImage} alt={title} className="w-full rounded-lg mb-6" />
+              <img
+                src={featuredImage}
+                alt={title}
+                className="w-full rounded-lg mb-6 object-cover max-h-[400px]"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             )}
-            <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+            {content ? (
+              <div
+                className="prose max-w-none"
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
+            ) : (
+              <p className="text-muted-foreground italic">No content yet</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -256,13 +272,11 @@ export function BlogEditorClient({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">Content * (HTML supported)</Label>
-              <textarea
-                id="content"
+              <Label htmlFor="content">Content *</Label>
+              <TiptapEditor
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your blog post content here... (HTML supported)"
-                className="w-full min-h-[400px] p-3 border rounded-md font-mono text-sm"
+                onChange={setContent}
+                placeholder="Write your blog post content here..."
               />
               <p className="text-xs text-muted-foreground">
                 {readingTime} min read · {content.replace(/<[^>]*>/g, "").split(/\s+/).filter(Boolean).length} words
@@ -287,9 +301,11 @@ export function BlogEditorClient({
                   <input
                     type="file"
                     accept="image/*"
+                    disabled={uploadingImage}
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
+                      setUploadingImage(true);
                       const formData = new FormData();
                       formData.append("files", file);
                       try {
@@ -304,14 +320,23 @@ export function BlogEditorClient({
                         }
                       } catch (err) {
                         console.error("Upload failed:", err);
+                      } finally {
+                        setUploadingImage(false);
                       }
                     }}
-                    className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                    className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 disabled:opacity-50"
                   />
                 </div>
                 {featuredImage && (
                   <div className="relative">
-                    <img src={featuredImage} alt="Preview" className="w-32 h-20 object-cover rounded" />
+                    <img
+                      src={featuredImage}
+                      alt="Preview"
+                      className="w-32 h-20 object-cover rounded"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
                     <button
                       type="button"
                       onClick={() => setFeaturedImage("")}
@@ -319,6 +344,11 @@ export function BlogEditorClient({
                     >
                       x
                     </button>
+                  </div>
+                )}
+                {uploadingImage && (
+                  <div className="w-32 h-20 bg-muted rounded flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   </div>
                 )}
               </div>

@@ -17,6 +17,12 @@ const SubscriptionStatusBanner = lazy(() => import("@/components/subscription-st
 const NewNav = lazy(() => import("@/components/landing/new-nav").then(m => ({ default: m.NewNav })));
 const NewFooter = lazy(() => import("@/components/landing/new-footer").then(m => ({ default: m.NewFooter })));
 
+const AUTH_ROUTES_WITHOUT_HEADER = [
+  "/login", "/signup", "/signup-mongo", "/forgot-password", "/auth/not-found",
+  "/client/login", "/client/forgot-password", "/client/reset-password",
+  "/reset-password", "/verify-email",
+];
+
 interface AppLayoutProps {
   children: ReactNode;
 }
@@ -82,6 +88,18 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   if (!isApp) {
+    const isAuthRouteWithoutHeader = AUTH_ROUTES_WITHOUT_HEADER.some((p) => pathname === p || pathname.startsWith(p + "/"));
+
+    if (isAuthRouteWithoutHeader) {
+      return (
+        <div className="flex min-h-screen flex-col">
+          <main className="flex-1">
+            {children}
+          </main>
+        </div>
+      );
+    }
+
     return (
       <SubscriptionGuard>
         <div className="flex min-h-screen flex-col">
