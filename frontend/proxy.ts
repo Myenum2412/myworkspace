@@ -184,6 +184,9 @@ export const proxy = auth((req) => {
 
   // ── Public routes ──
   if (isLoggedIn && routeContext === "public") {
+    if (pathname === "/") {
+      return;
+    }
     if (isPlatformRole(userRole || "")) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
     }
