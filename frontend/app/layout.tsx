@@ -7,6 +7,7 @@ import { OfflineBanner } from "@/components/offline-banner";
 import { OfflineSyncManager } from "@/components/offline-sync-manager";
 import { Toaster } from "sonner";
 import { NotificationInitializer } from "@/components/notification-initializer";
+import { CsrfInterceptor } from "@/components/csrf-interceptor";
 import { DataPreloader } from "@/hooks/use-data-preloader";
 import { PerformanceMonitor } from "@/components/performance-monitor";
 import CookieConsentBlock from "@/components/cookie-consent-block";
@@ -213,6 +214,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <Providers>
+          <CsrfInterceptor />
           <ContextMenuProvider />
           <NotificationInitializer />
           <PerformanceMonitor />

@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2Icon, SaveIcon, BellIcon, BellOffIcon, MailIcon, SmartphoneIcon, GlobeIcon, ClockIcon } from "lucide-react";
+import { Loader2Icon, SaveIcon, BellIcon, GlobeIcon } from "lucide-react";
 
 interface ChannelSettings {
   inApp: boolean;
@@ -73,8 +73,8 @@ const TIMEZONES = [
   "Asia/Kolkata", "Australia/Sydney", "Pacific/Auckland",
 ];
 
-const defaultChannel = (emailDefault = false): ChannelSettings => ({
-  inApp: true, email: emailDefault, push: true, sms: false, webhook: false,
+const defaultChannel = (): ChannelSettings => ({
+  inApp: true, email: true, push: true, sms: false, webhook: false,
 });
 
 export default function NotificationSettingsPage() {
@@ -121,7 +121,7 @@ export default function NotificationSettingsPage() {
         ...prev,
         categorySettings: {
           ...prev.categorySettings,
-          [cat]: { ...(prev.categorySettings[cat] || defaultChannel()), [key]: value },
+          [cat]: { ...(prev.categorySettings[cat] || defaultChannel()), [key]: value, email: true },
         },
       };
     });
@@ -215,55 +215,12 @@ export default function NotificationSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ClockIcon className="size-4" />
-            Quiet Hours & Do Not Disturb
+            <BellIcon className="size-4" />
+            Notification Behavior
           </CardTitle>
-          <CardDescription>Mute notifications during specific times</CardDescription>
+          <CardDescription>Configure how notifications behave</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Do Not Disturb</Label>
-              <p className="text-xs text-muted-foreground">Temporarily mute all non-critical notifications</p>
-            </div>
-            <Switch checked={settings?.doNotDisturb || false}
-              onCheckedChange={(v) => setSettings((p) => p ? { ...p, doNotDisturb: v } : p)} />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Quiet Hours</Label>
-              <p className="text-xs text-muted-foreground">Mute notifications during specified hours</p>
-            </div>
-            <Switch checked={settings?.quietHoursEnabled || false}
-              onCheckedChange={(v) => setSettings((p) => p ? { ...p, quietHoursEnabled: v } : p)} />
-          </div>
-
-          {settings?.quietHoursEnabled && (
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label>Start Time</Label>
-                <Input type="time" value={settings.quietHoursStart}
-                  onChange={(e) => setSettings((p) => p ? { ...p, quietHoursStart: e.target.value } : p)} />
-              </div>
-              <div className="space-y-2">
-                <Label>End Time</Label>
-                <Input type="time" value={settings.quietHoursEnd}
-                  onChange={(e) => setSettings((p) => p ? { ...p, quietHoursEnd: e.target.value } : p)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Timezone</Label>
-                <Select value={settings.quietHoursTimezone}
-                  onValueChange={(v) => setSettings((p) => p ? { ...p, quietHoursTimezone: v } : p)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {TIMEZONES.map((tz) => (<SelectItem key={tz} value={tz}>{tz}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-
           <div className="flex items-center justify-between">
             <div>
               <Label>Desktop Notifications</Label>
@@ -303,27 +260,20 @@ export default function NotificationSettingsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="grid grid-cols-5 gap-4 text-xs font-medium text-muted-foreground pb-2 px-1">
+            <div className="grid grid-cols-4 gap-4 text-xs font-medium text-muted-foreground pb-2 px-1">
               <div>Category</div>
               <div className="text-center">In-App</div>
-              <div className="text-center">Email</div>
               <div className="text-center">Push</div>
               <div className="text-center">SMS</div>
             </div>
             {CATEGORIES.map((cat) => {
-              const channels = settings?.categorySettings?.[cat.id] || defaultChannel(
-                ["auth", "security", "billing"].includes(cat.id)
-              );
+              const channels = settings?.categorySettings?.[cat.id] || defaultChannel();
               return (
-                <div key={cat.id} className="grid grid-cols-5 gap-4 items-center py-2 border-b last:border-0">
+                <div key={cat.id} className="grid grid-cols-4 gap-4 items-center py-2 border-b last:border-0">
                   <Label className="text-sm font-medium">{cat.label}</Label>
                   <div className="flex justify-center">
                     <Switch checked={channels.inApp}
                       onCheckedChange={(v) => updateCategory(cat.id, "inApp", v)} />
-                  </div>
-                  <div className="flex justify-center">
-                    <Switch checked={channels.email}
-                      onCheckedChange={(v) => updateCategory(cat.id, "email", v)} />
                   </div>
                   <div className="flex justify-center">
                     <Switch checked={channels.push}

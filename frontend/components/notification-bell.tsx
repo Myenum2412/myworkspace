@@ -206,11 +206,6 @@ export function NotificationBell() {
               Close
             </Button>
           </SheetClose>
-          <Link href="/settings/notifications">
-            <Button variant="ghost" size="sm">
-              Settings
-            </Button>
-          </Link>
           <Button
             size="sm"
             className="flex-1"

@@ -23,6 +23,8 @@ import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { INDUSTRIES } from "@/lib/industries";
 import { StorageDashboard } from "@/components/storage-dashboard";
 import { WhatsAppStats } from "@/components/whatsapp-stats";
+import { ChartPieDonutText } from "@/components/chart-pie-donut-text";
+
 import {
   MailIcon,
   CalendarIcon,
@@ -1049,6 +1051,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
         <div className="flex-1 p-3 sm:p-4 md:p-6 w-full min-w-0 max-w-full overflow-auto space-y-6">
           <StorageDashboard orgId={initialData.org?.id || ""} />
           <WhatsAppStats />
+          <ChartPieDonutText />
         </div>
       )}
 
