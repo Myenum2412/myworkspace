@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useBootstrapStore } from "@/stores/bootstrap-store";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchBootstrapData, invalidateBootstrapCache } from "@/lib/api/bootstrap";
@@ -50,36 +50,17 @@ export function useInstantLogin() {
         return;
       }
 
-      const csrfRes = await fetch("/api/auth/csrf", { credentials: "include" });
-      const csrfBody = await csrfRes.text();
-      let csrfToken: string;
-      try {
-        csrfToken = JSON.parse(csrfBody).csrfToken;
-      } catch {
-        setState({ loading: false, error: "Authentication service unavailable. Check your connection.", step: "idle" });
-        return;
-      }
-
       setState((s) => ({ ...s, step: "authenticating" }));
 
-      const signInRes = await fetch("/api/auth/callback/credentials", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          csrfToken,
-          email,
-          password,
-          json: "true",
-        }),
-      });
-
-      const signInBody = await signInRes.text();
       let signInData: any;
       try {
-        signInData = JSON.parse(signInBody);
+        signInData = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
       } catch {
-        setState({ loading: false, error: "Authentication service unavailable. Try again.", step: "idle" });
+        setState({ loading: false, error: "Authentication service unavailable. Check your connection.", step: "idle" });
         return;
       }
 
@@ -112,7 +93,7 @@ export function useInstantLogin() {
             ? "/client/dashboard"
             : role === ROLES.MEMBERS
               ? "/dashboard"
-              : role === ROLES.STAFFS
+              : role === ROLES.STAFFS || role === ROLES.TEAM_STAFF
                 ? "/staffs"
                 : "/dashboard";
 
@@ -128,11 +109,8 @@ export function useInstantLogin() {
       setState({ loading: false, error: null, step: "done" });
     } catch (err) {
       console.error("[INSTANT_LOGIN] Failed:", err);
-      setState({
-        loading: false,
-        error: err instanceof Error ? err.message : "Something went wrong",
-        step: "idle",
-      });
+      const msg = err instanceof TypeError ? "Could not connect to server. Check your connection and try again." : err instanceof Error ? err.message : "Something went wrong";
+      setState({ loading: false, error: msg, step: "idle" });
     }
   }, [router, updateSession, setBootstrapData, queryClient]);
 

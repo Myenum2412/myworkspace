@@ -3,7 +3,6 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import LinkedIn from "next-auth/providers/linkedin";
 import GitHub from "next-auth/providers/github";
-import { compare } from "bcryptjs";
 import { ROLES } from "@/lib/rbac";
 
 declare module "next-auth" {
@@ -271,107 +270,43 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
         const loginSource = credentials?.loginSource as string | undefined;
 
-        let db: any;
-        try {
-          db = (await import("@/lib/db")).db;
-        } catch {
-          console.error("[AUTH authorize] DB module unavailable");
-          return null;
-        }
-        console.log("[AUTH authorize] looking up", email);
+        // Delegate authentication to the backend API
+        const apiUrl = process.env.API_URL || "http://localhost:4000";
+        const endpoint = loginSource === "client" ? "/api/client-auth/login" : "/api/auth/login";
 
-        // Client-source login: check client_users ONLY — ensures "client" role
-        if (loginSource === "client") {
-          try {
-            const cu = await db.collection("client_users").findOne({ email });
-            if (cu && cu.password && cu.isActive) {
-              const valid = await compare(password, cu.password);
-              if (valid) {
-                if (cu.twoFactorEnabled && !twoFactorToken) {
-                  return null;
-                }
-                return {
-                  id: cu.id || cu._id?.toString(),
-                  email: cu.email,
-                  name: cu.name,
-                  role: ROLES.CLIENTS,
-                  permissions: [],
-                  orgId: cu.orgId,
-                  onboardingCompleted: true,
-                };
-              }
-            }
-          } catch (e) {
-            console.error("[AUTH authorize] DB error (client):", e);
+        try {
+          const res = await fetch(`${apiUrl}${endpoint}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await res.json();
+
+          if (!data.success || !data.data) {
+            return null;
           }
-          return null;
-        }
 
-        // Parallel lookup: check both users and client_users simultaneously
-        let user: any, clientUser: any;
-        try {
-          [user, clientUser] = await Promise.all([
-            db.collection("users").findOne({ email }).catch(() => null),
-            db.collection("client_users").findOne({ email }).catch(() => null),
-          ]);
+          // 2FA required — auth incomplete
+          if (data.data.requiresTwoFactor) {
+            return null;
+          }
+
+          const userData = data.data.user;
+          return {
+            id: userData.id,
+            email: userData.email,
+            name: userData.name,
+            image: userData.image,
+            role: userData.role,
+            permissions: userData.permissions || [],
+            orgId: data.data.orgId || userData.orgId,
+            onboardingCompleted: true,
+          };
         } catch (e) {
-          console.error("[AUTH authorize] DB error (lookup):", e);
+          console.error("[AUTH authorize] Backend API error:", e);
           return null;
         }
-
-        // Staff / default login: check users first
-        if (user && user.password) {
-          try {
-            const valid = await compare(password, user.password);
-            if (valid) {
-              if (user.twoFactorEnabled && !twoFactorToken) {
-                console.log("[AUTH authorize] 2FA required for user, refusing session without 2FA token");
-                return null;
-              }
-              const userId = user.id || user._id?.toString();
-              const [memberDoc, orgByUserId] = await Promise.all([
-                db.collection("org_members").findOne({ userId }).catch(() => null),
-                db.collection("organizations").findOne({ ownerId: userId }).catch(() => null),
-              ]);
-              const orgId = memberDoc?.orgId?.toString() || orgByUserId?.id || "";
-              let onboardingCompleted = true;
-              if (orgId && !orgByUserId) {
-                const org = await db.collection("organizations").findOne({ id: orgId }).catch(() => null);
-                onboardingCompleted = org?.onboardingCompleted === true;
-              } else if (orgByUserId) {
-                onboardingCompleted = orgByUserId.onboardingCompleted === true;
-              }
-              return { id: userId, email: user.email, name: user.name, image: user.image, role: user.role, permissions: user.permissions || [], orgId, onboardingCompleted };
-            }
-          } catch (e) {
-            console.error("[AUTH authorize] DB error (staff login):", e);
-          }
-        }
-
-        // Client login fallback
-        if (clientUser && clientUser.password && clientUser.isActive) {
-          try {
-            const valid = await compare(password, clientUser.password);
-            if (valid) {
-              if (clientUser.twoFactorEnabled && !twoFactorToken) {
-                return null;
-              }
-              return {
-                id: clientUser.id || clientUser._id?.toString(),
-                email: clientUser.email,
-                name: clientUser.name,
-                role: ROLES.CLIENTS,
-                permissions: [],
-                orgId: clientUser.orgId,
-                onboardingCompleted: true,
-              };
-            }
-          } catch (e) {
-            console.error("[AUTH authorize] DB error (client fallback):", e);
-          }
-        }
-
-        return null;
       },
     }),
   ],

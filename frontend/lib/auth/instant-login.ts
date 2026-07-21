@@ -11,7 +11,7 @@ function getRedirectPath(role?: string): string {
   if (r === ROLES.ORG_ADMIN) return "/orgmenu";
   if (r === ROLES.CLIENTS) return "/client/dashboard";
   if (r === ROLES.MEMBERS) return "/dashboard";
-  if (r === ROLES.STAFFS) return "/staffs";
+  if (r === ROLES.STAFFS || r === ROLES.TEAM_STAFF) return "/staffs";
   return "/dashboard";
 }
 

@@ -71,7 +71,7 @@ export function StaffSidebar({
 }) {
   const { data: session } = useSession();
   const currentRole = (session?.user as Record<string, unknown>)?.role as string || "";
-  if (currentRole !== ROLES.STAFFS) {
+  if (currentRole !== ROLES.STAFFS && currentRole !== ROLES.TEAM_STAFF) {
     return null;
   }
   const navItems = buildStaffNavData();

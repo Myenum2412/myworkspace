@@ -4,6 +4,7 @@ export const ROLES = {
   MANAGER: "manager",
   TEAM_LEADER: "team_leader",
   STAFFS: "staffs",
+  TEAM_STAFF: "team_staff",
   HR: "hr",
   FINANCE: "finance",
   CONTRACTORS: "contractors",
@@ -22,6 +23,7 @@ export const ROLE_HIERARCHY: Record<Role, Role[]> = {
   [ROLES.MANAGER]: [ROLES.TEAM_LEADER, ROLES.STAFFS],
   [ROLES.TEAM_LEADER]: [ROLES.STAFFS],
   [ROLES.STAFFS]: [],
+  [ROLES.TEAM_STAFF]: [],
   [ROLES.HR]: [],
   [ROLES.FINANCE]: [],
   [ROLES.CONTRACTORS]: [],
@@ -38,6 +40,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   [ROLES.MANAGER]: "Manager",
   [ROLES.TEAM_LEADER]: "Team Leader",
   [ROLES.STAFFS]: "Staff",
+  [ROLES.TEAM_STAFF]: "Team Staff",
   [ROLES.HR]: "Human Resources",
   [ROLES.FINANCE]: "Finance",
   [ROLES.CONTRACTORS]: "Contractor",
@@ -54,6 +57,7 @@ export const ROLE_DESCRIPTIONS: Record<Role, string> = {
   [ROLES.MANAGER]: "Department or project management access.",
   [ROLES.TEAM_LEADER]: "Team leadership access.",
   [ROLES.STAFFS]: "Standard staff access.",
+  [ROLES.TEAM_STAFF]: "Team staff access.",
   [ROLES.HR]: "Human resources access.",
   [ROLES.FINANCE]: "Finance access.",
   [ROLES.CONTRACTORS]: "External contractor access.",
@@ -67,7 +71,7 @@ export const ROLE_DESCRIPTIONS: Record<Role, string> = {
 export const ADMIN_ROLES: Role[] = [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER];
 export const PLATFORM_ROLES: Role[] = [ROLES.ORG_ADMIN];
 export const TENANT_ROLES: Role[] = [
-  ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS,
+  ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF,
   ROLES.HR, ROLES.FINANCE, ROLES.CONTRACTORS, ROLES.CLIENTS,
 ];
 export const SYSTEM_ROLES: Role[] = [ROLES.API_TOKEN, ROLES.SERVICE_ACCOUNT, ROLES.AUTOMATION_BOT];
