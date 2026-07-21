@@ -7,6 +7,7 @@ import { requireOrgMembership } from "../lib/org-utils.js";
 import { Contractor, type IEmergencyContact } from "../lib/db/models/Contractor.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, requireEnum } from "../lib/validate.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 
@@ -97,6 +98,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   });
 
   await contractor.save();
+  processEvent({ type: "employee_onboarded", category: "hr", userId: req.user!.userId, orgId, createdBy: req.user!.userId, title: "Employee onboarded" }).catch(() => {});
   res.status(201).json({ success: true, data: contractor.toObject() });
 });
 
@@ -124,6 +126,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   }
 
   await existing.save();
+  processEvent({ type: "profile_updated", category: "hr", userId: req.user!.userId, orgId, createdBy: req.user!.userId, title: "Contractor updated" }).catch(() => {});
   res.json({ success: true, data: existing.toObject() });
 });
 
@@ -132,6 +135,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   const orgId = await requireOrgMembership(req.user!.userId);
   const result = await Contractor.deleteOne({ orgId, id: req.params.id });
   if (result.deletedCount === 0) throw new AppError(404, "Contractor not found");
+  processEvent({ type: "employee_terminated", category: "hr", userId: req.user!.userId, orgId, createdBy: req.user!.userId, title: "Employee terminated" }).catch(() => {});
   res.json({ success: true, message: "Contractor deleted" });
 });
 

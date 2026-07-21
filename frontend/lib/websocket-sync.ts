@@ -69,6 +69,7 @@ export const wsSync = new WebSocketSync();
  * Initialize cross-tab notification sync.
  * Call once in a layout or provider component.
  */
-export function initNotificationSync() {
+export function initNotificationSync(): () => void {
   wsSync.init();
+  return () => wsSync.destroy();
 }

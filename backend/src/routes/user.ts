@@ -10,6 +10,7 @@ import { Organization } from "../lib/db/models/Organization.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { cacheManager } from "../lib/cache.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -176,6 +177,7 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   }
 
   cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
+  processEvent({ type: "profile_updated", category: "auth", userId: req.user!.userId, orgId: orgId!, createdBy: req.user!.userId, title: "Profile updated" }).catch(() => {});
 
   // Fetch updated data and return it
   const updatedUser = await User.findOne({ id: req.user!.userId }).select("id name email image role status phone secondaryPhone department company address city state country zipCode linkedin github twitter website bannerUrl createdAt").lean();
@@ -301,6 +303,8 @@ router.post("/status", authenticate, async (req: AuthRequest, res: Response) => 
   }
 
   cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
+  const statusMember = await OrgMember.findOne({ userId: req.user!.userId }).select("orgId").lean();
+  processEvent({ type: "profile_updated", category: "auth", userId: req.user!.userId, orgId: statusMember!.orgId, createdBy: req.user!.userId, title: "Profile updated" }).catch(() => {});
 
   res.json({ success: true });
 });
@@ -329,6 +333,8 @@ router.post("/banner", authenticate, upload.single("banner"), async (req: AuthRe
   }
 
   cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
+  const bannerMember = await OrgMember.findOne({ userId: req.user!.userId }).select("orgId").lean();
+  processEvent({ type: "profile_updated", category: "auth", userId: req.user!.userId, orgId: bannerMember!.orgId, createdBy: req.user!.userId, title: "Profile updated" }).catch(() => {});
 
   res.json({ bannerUrl });
 });

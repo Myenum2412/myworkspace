@@ -4,6 +4,7 @@ import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { authenticate } from "../middleware/auth.js";
+import { processEvent } from "../services/notification-engine.service.js";
 import { platformAdminOnly, auditLog } from "../middleware/authorize.js";
 import { AuthRequest } from "../types/index.js";
 import { AppError } from "../middleware/error.js";
@@ -85,6 +86,17 @@ router.patch("/users/:id/toggle-status", auditLog("user.status.toggle", "user"),
   user.isActive = !user.isActive;
   await user.save();
   cacheManager.invalidatePattern(`user:${req.params.id}:profile`);
+
+  processEvent({
+    userId: req.params.id,
+    orgId: req.user!.orgId || req.user!.userId,
+    createdBy: req.user!.userId,
+    type: user.isActive ? "account_reactivated" : "account_suspended",
+    category: "auth",
+    title: user.isActive ? "Account reactivated" : "Account suspended",
+    message: `User account has been ${user.isActive ? "reactivated" : "suspended"}`,
+  }).catch(() => {});
+
   res.json({ success: true, data: { isActive: user.isActive } });
 });
 
@@ -166,6 +178,16 @@ router.post("/policies/reload", async (req: AuthRequest, res: Response) => {
   );
 
   if (result.success) {
+    processEvent({
+      userId: req.user!.userId,
+      orgId: req.user!.orgId || req.user!.userId,
+      createdBy: req.user!.userId,
+      type: "platform_update",
+      category: "system",
+      title: "Policies reloaded",
+      message: "Authorization policies have been reloaded",
+    }).catch(() => {});
+
     res.json({
       success: true,
       data: {

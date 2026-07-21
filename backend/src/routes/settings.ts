@@ -3,6 +3,7 @@ import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { Settings } from "../lib/db/models/Settings.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 
@@ -37,6 +38,8 @@ router.put("/", async (req: AuthRequest, res: Response) => {
   if (!settings) throw new AppError(500, "Failed to save settings");
 
   const { _id, ...rest } = settings as any;
+  processEvent({ type: "profile_updated", category: "auth", userId: req.user!.userId, orgId: orgId as string, createdBy: req.user!.userId, title: "Settings updated" }).catch(() => {});
+
   res.json({ success: true, data: rest });
 });
 

@@ -4,6 +4,7 @@ import { AppError } from "../middleware/error.js";
 import { platformAdminOnly } from "../middleware/authorize.js";
 import { requireString, optionalString, optionalArray } from "../lib/validate.js";
 import * as planService from "../services/plan.service.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 router.use(authenticate);
@@ -38,6 +39,16 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     name, description, priceMonthly, priceYearly, currency, limits, features,
   }, req.user!.userId);
 
+  processEvent({
+    userId: req.user!.userId,
+    orgId: req.user!.orgId || "",
+    createdBy: req.user!.userId,
+    type: "platform_update",
+    category: "system",
+    title: `Plan created: ${plan.name}`,
+    metadata: { planId: plan.id },
+  }).catch(() => {});
+
   res.status(201).json({ success: true, data: plan });
 });
 
@@ -52,6 +63,16 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
     features: req.body.features,
     status: req.body.status,
   }, req.user!.userId);
+
+  processEvent({
+    userId: req.user!.userId,
+    orgId: req.user!.orgId || "",
+    createdBy: req.user!.userId,
+    type: "subscription_upgraded",
+    category: "billing",
+    title: `Plan updated: ${plan.name}`,
+    metadata: { planId: plan.id },
+  }).catch(() => {});
 
   res.json({ success: true, data: plan });
 });
@@ -75,6 +96,16 @@ router.post("/:planId/assign", async (req: AuthRequest, res: Response) => {
     reason,
   );
 
+  processEvent({
+    userId: req.user!.userId,
+    orgId,
+    createdBy: req.user!.userId,
+    type: "subscription_activated",
+    category: "billing",
+    title: `Plan assigned to org`,
+    metadata: { planId: req.params.planId, orgId, subscriptionId: sub.id },
+  }).catch(() => {});
+
   res.json({ success: true, data: sub });
 });
 
@@ -89,6 +120,16 @@ router.post("/:planId/upgrade", async (req: AuthRequest, res: Response) => {
     reason,
   );
 
+  processEvent({
+    userId: req.user!.userId,
+    orgId,
+    createdBy: req.user!.userId,
+    type: "subscription_upgraded",
+    category: "billing",
+    title: `Plan upgraded`,
+    metadata: { planId: req.params.planId, orgId, subscriptionId: sub.id },
+  }).catch(() => {});
+
   res.json({ success: true, data: sub });
 });
 
@@ -97,6 +138,17 @@ router.post("/:planId/cancel", async (req: AuthRequest, res: Response) => {
   if (!orgId) throw new AppError(400, "orgId is required");
 
   await planService.cancelOrgSubscription(orgId, req.user!.userId, reason);
+
+  processEvent({
+    userId: req.user!.userId,
+    orgId,
+    createdBy: req.user!.userId,
+    type: "subscription_cancelled",
+    category: "billing",
+    title: `Subscription canceled`,
+    metadata: { orgId, planId: req.params.planId, reason },
+  }).catch(() => {});
+
   res.json({ success: true, message: "Subscription canceled" });
 });
 

@@ -5,6 +5,7 @@ import { AuthRequest } from "../types/index.js";
 import { AppError } from "../middleware/error.js";
 import { OrgMfaPolicy } from "../lib/db/models/OrgMfaPolicy.js";
 import { recordAuditLog } from "../services/audit.service.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 
@@ -74,6 +75,16 @@ router.put("/", async (req: AuthRequest, res: Response) => {
     tags: ["mfa", "org-policy"],
   });
 
+  processEvent({
+    userId: req.user!.userId,
+    orgId,
+    createdBy: req.user!.userId,
+    type: "permission_updated",
+    category: "permissions",
+    title: "MFA policy updated",
+    message: "Organization MFA policy has been updated",
+  }).catch(() => {});
+
   res.json({ success: true, data: policy });
 });
 
@@ -101,6 +112,16 @@ router.delete("/exempt/:userId", async (req: AuthRequest, res: Response) => {
     success: true,
     tags: ["mfa", "exemption"],
   });
+
+  processEvent({
+    userId: targetUserId,
+    orgId,
+    createdBy: req.user!.userId,
+    type: "permission_revoked",
+    category: "permissions",
+    title: "MFA exemption revoked",
+    message: `MFA exemption has been revoked for user ${targetUserId}`,
+  }).catch(() => {});
 
   res.json({ success: true });
 });
@@ -133,6 +154,16 @@ router.post("/exempt/:userId", async (req: AuthRequest, res: Response) => {
     success: true,
     tags: ["mfa", "exemption"],
   });
+
+  processEvent({
+    userId: targetUserId,
+    orgId,
+    createdBy: req.user!.userId,
+    type: "permission_granted",
+    category: "permissions",
+    title: "MFA exemption granted",
+    message: `MFA exemption has been granted to user ${targetUserId}`,
+  }).catch(() => {});
 
   res.json({ success: true });
 });

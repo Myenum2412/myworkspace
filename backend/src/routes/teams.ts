@@ -9,6 +9,7 @@ import { isAdminRole } from "../lib/rbac/index.js";
 import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, optionalString } from "../lib/validate.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 
@@ -256,6 +257,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     createdBy: req.user!.userId,
   });
 
+  processEvent({ type: "team_announcement", category: "messages", userId: req.user!.userId, orgId, createdBy: req.user!.userId, title: "Team created" }).catch(() => {});
   res.status(201).json({ success: true, data: { id: team._id.toString(), name: team.name } });
 });
 
@@ -274,6 +276,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (Object.keys(updates).length > 0) updates.updatedBy = req.user!.userId;
 
   await Team.findByIdAndUpdate(req.params.id, updates);
+  processEvent({ type: "team_update", category: "messages", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team updated" }).catch(() => {});
   res.json({ success: true });
 });
 
@@ -318,6 +321,7 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
     role: role || "team_staff",
   });
 
+  processEvent({ type: "department_access_changed", category: "permissions", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team member added" }).catch(() => {});
   res.status(201).json({ success: true, data: { id: teamMember._id.toString() } });
 });
 
@@ -330,6 +334,7 @@ router.delete("/:teamId/members/:userId", async (req: AuthRequest, res: Response
   await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   await TeamMember.deleteOne({ teamId: team._id, userId: req.params.userId });
+  processEvent({ type: "permission_revoked", category: "permissions", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team member removed" }).catch(() => {});
   res.json({ success: true });
 });
 
@@ -345,6 +350,7 @@ router.patch("/:teamId/members/:userId/role", async (req: AuthRequest, res: Resp
   if (!role || !["team_lead", "team_staff"].includes(role)) throw new AppError(400, "Valid role required (team_lead or team_staff)");
 
   await TeamMember.updateOne({ teamId: team._id, userId: req.params.userId }, { role });
+  processEvent({ type: "role_changed", category: "permissions", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team role changed" }).catch(() => {});
   res.json({ success: true });
 });
 

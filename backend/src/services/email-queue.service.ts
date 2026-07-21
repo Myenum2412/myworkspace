@@ -7,6 +7,7 @@ import * as TemplateFactory from "../lib/mail/templates/factory.js";
 import { sendEmail } from "../lib/mail/sender.js";
 import { logger } from "../lib/logger/index.js";
 import { v4 as uuid } from "uuid";
+import type { EmailData } from "../lib/mail/templates/types.js";
 
 const TEMPLATE_MAP: Record<string, string> = {
   task_assigned: "Task Assigned",
@@ -159,7 +160,7 @@ async function deliverEmail(emailId: string): Promise<void> {
   await email.save();
 }
 
-function buildEmailDataForNotification(template: string, firstName: string, subject: string, dataStr?: string, notificationId?: string) {
+function buildEmailDataForNotification(template: string, firstName: string, subject: string, dataStr?: string, notificationId?: string): EmailData | null {
   try {
     const data = dataStr ? JSON.parse(dataStr) : {};
 
@@ -212,10 +213,158 @@ function buildEmailDataForNotification(template: string, firstName: string, subj
       case "new_device_login":
         return TemplateFactory.buildNewDeviceLogin(firstName, data.deviceName || "Unknown device", data.location || "Unknown location");
 
+      case "task_reopened":
+        return TemplateFactory.buildTaskReopened(firstName, data.taskTitle, data.projectName, data.reopenedBy, data.reason, data.link);
+
+      case "task_priority_changed":
+        return TemplateFactory.buildTaskPriorityChanged(firstName, data.taskTitle, data.projectName, data.changedBy, data.oldPriority, data.newPriority, data.link);
+
+      case "project_updated":
+        return TemplateFactory.buildProjectUpdated(firstName, data.projectName, data.updatedBy, data.changes, data.link);
+
+      case "file_downloaded":
+        return TemplateFactory.buildFileDownloaded(firstName, data.fileName, data.downloadedBy, data.projectName, data.ipAddress, data.link);
+
+      case "file_deleted":
+        return TemplateFactory.buildFileDeleted(firstName, data.fileName, data.deletedBy, data.projectName, data.permanentlyDeleted, data.link);
+
+      case "account_locked":
+      case "account_suspended":
+        return TemplateFactory.buildAccountDeactivated(firstName);
+
+      case "leave_request_submitted":
+        return TemplateFactory.buildLeaveRequestSubmitted(firstName, data.leaveType, data.startDate, data.endDate, data.duration, data.reason, data.link);
+
+      case "leave_approved":
+        return TemplateFactory.buildLeaveRequestApproved(firstName, data.leaveType, data.startDate, data.endDate, data.duration, data.approvedBy, data.link);
+
+      case "leave_rejected":
+        return TemplateFactory.buildLeaveRequestRejected(firstName, data.leaveType, data.startDate, data.endDate, data.rejectedBy, data.reason, data.link);
+
+      case "contract_signed":
+        return TemplateFactory.buildFileShared(firstName, data.contractName || "Contract", data.signedBy, data.projectName, data.userId, "view", data.link);
+
+      case "meeting_scheduled":
+      case "meeting_reminder":
+        return {
+          subject: TEMPLATE_MAP[template] || "Meeting Notification",
+          previewText: data.message || `Meeting: ${data.title}`,
+          greeting: `Hello ${firstName},`,
+          intro: [data.message || `You have a meeting: ${data.title}`],
+          details: data.details ? data.details : undefined,
+          button: data.link ? { text: "View Meeting", url: data.link } : undefined,
+          metadata: { module: "Meetings", timestamp: new Date().toISOString(), action: template },
+          supportEmail: "support@workspace.com",
+        };
+
+      case "system_outage":
+        return {
+          subject: "System Outage Notice",
+          previewText: data.message || "We are experiencing a system outage",
+          greeting: `Hello ${firstName},`,
+          intro: [data.message || "A system outage has been detected. Our team is working on it."],
+          statusIndicator: { type: "error", label: "Outage Detected" },
+          warning: data.message || "Some services may be unavailable during this time.",
+          metadata: { module: "System", timestamp: new Date().toISOString(), action: "system_outage" },
+          supportEmail: "support@workspace.com",
+        };
+
+      case "scheduled_maintenance":
+        return {
+          subject: "Scheduled Maintenance",
+          previewText: data.message || "Scheduled maintenance upcoming",
+          greeting: `Hello ${firstName},`,
+          intro: [data.message || "We will be performing scheduled maintenance."],
+          statusIndicator: { type: "info", label: "Maintenance Scheduled" },
+          details: data.details ? data.details : undefined,
+          metadata: { module: "System", timestamp: new Date().toISOString(), action: "scheduled_maintenance" },
+          supportEmail: "support@workspace.com",
+        };
+
       case "invoice_generated":
+        return {
+          subject: `Invoice ${data.invoiceNumber || ""}`,
+          previewText: `Invoice for ${data.amount || ""}`,
+          greeting: `Hello ${firstName},`,
+          intro: [`Invoice ${data.invoiceNumber || ""} for ${data.amount || ""} has been generated.`],
+          details: data.details ? data.details : undefined,
+          button: data.link ? { text: "View Invoice", url: data.link } : undefined,
+          metadata: { module: "Billing", timestamp: new Date().toISOString(), action: "invoice_generated" },
+          supportEmail: "support@workspace.com",
+        };
+
       case "invoice_paid":
+        return {
+          subject: "Payment Received",
+          previewText: `Payment of ${data.amount || ""} received`,
+          greeting: `Hello ${firstName},`,
+          intro: [`Thank you! Your payment of ${data.amount || ""} has been received.`],
+          statusIndicator: { type: "success", label: "Payment Received" },
+          button: data.link ? { text: "View Receipt", url: data.link } : undefined,
+          metadata: { module: "Billing", timestamp: new Date().toISOString(), action: "invoice_paid" },
+          supportEmail: "support@workspace.com",
+        };
+
       case "payment_failed":
-        return null;
+        return {
+          subject: "Payment Failed",
+          previewText: `Payment of ${data.amount || ""} failed`,
+          greeting: `Hello ${firstName},`,
+          intro: [`Your payment of ${data.amount || ""} could not be processed.`],
+          statusIndicator: { type: "error", label: "Payment Failed" },
+          warning: data.reason || "Please check your payment method and try again.",
+          button: data.link ? { text: "Update Payment", url: data.link } : undefined,
+          metadata: { module: "Billing", timestamp: new Date().toISOString(), action: "payment_failed" },
+          supportEmail: "support@workspace.com",
+        };
+
+      case "mention":
+        return {
+          subject: "You were mentioned",
+          previewText: data.message || "Someone mentioned you",
+          greeting: `Hello ${firstName},`,
+          intro: [data.message || "You were mentioned in a conversation."],
+          button: data.link ? { text: "View", url: data.link } : undefined,
+          metadata: { module: "Messages", timestamp: new Date().toISOString(), action: "mention" },
+          supportEmail: "support@workspace.com",
+        };
+
+      case "chat_message":
+        return {
+          subject: "New Message",
+          previewText: data.message || "You have a new message",
+          greeting: `Hello ${firstName},`,
+          intro: [data.message || "You received a new message."],
+          button: data.link ? { text: "View Message", url: data.link } : undefined,
+          metadata: { module: "Messages", timestamp: new Date().toISOString(), action: "chat_message" },
+          supportEmail: "support@workspace.com",
+        };
+
+      case "subscription_nearing_expiration":
+        return {
+          subject: "Subscription Expiring",
+          previewText: "Your subscription is expiring soon",
+          greeting: `Hello ${firstName},`,
+          intro: ["Your subscription will expire soon. Renew to continue enjoying all features."],
+          statusIndicator: { type: "warning", label: "Expiring Soon" },
+          button: data.link ? { text: "Renew Now", url: data.link } : undefined,
+          metadata: { module: "Billing", timestamp: new Date().toISOString(), action: "subscription_nearing_expiration" },
+          supportEmail: "support@workspace.com",
+        };
+
+      case "client_invitation_sent":
+        return TemplateFactory.buildEmployeeInvited(firstName, data.inviterName || "Admin", data.workspaceName || "Workspace", "Client", data.link);
+
+      case "training_assigned":
+        return {
+          subject: "Training Assigned",
+          previewText: data.trainingName || "New training assigned",
+          greeting: `Hello ${firstName},`,
+          intro: [`You have been assigned training: ${data.trainingName || "Training"}`],
+          button: data.link ? { text: "Start Training", url: data.link } : undefined,
+          metadata: { module: "Employee Management", timestamp: new Date().toISOString(), action: "training_assigned" },
+          supportEmail: "support@workspace.com",
+        };
 
       default:
         return null;

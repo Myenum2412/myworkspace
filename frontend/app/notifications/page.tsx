@@ -83,7 +83,7 @@ export default function NotificationsPage() {
   const {
     notifications, unreadCount, total, loading, hasMore, loadMore,
     markAsRead, markAllAsRead, archiveNotification, deleteNotification,
-    bulkArchive, bulkDelete, refresh,
+    bulkArchive, bulkDelete, snoozeNotification, refresh,
   } = useNotifications(userId);
 
   const [filterCategory, setFilterCategory] = useState("all");
@@ -267,6 +267,22 @@ export default function NotificationsPage() {
                     </div>
                     {!selectMode && (
                       <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button onClick={(e) => e.stopPropagation()}
+                              className="p-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors" title="Snooze">
+                              <ClockIcon className="size-3.5" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-28 p-1" align="end">
+                            <button onClick={(e) => { e.stopPropagation(); snoozeNotification(n.id, new Date(Date.now() + 3600000)).catch(() => {}); }}
+                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm">Snooze 1h</button>
+                            <button onClick={(e) => { e.stopPropagation(); snoozeNotification(n.id, new Date(Date.now() + 14400000)).catch(() => {}); }}
+                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm">Snooze 4h</button>
+                            <button onClick={(e) => { e.stopPropagation(); snoozeNotification(n.id, new Date(Date.now() + 86400000)).catch(() => {}); }}
+                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm">Snooze 24h</button>
+                          </PopoverContent>
+                        </Popover>
                         <button onClick={(e) => { e.stopPropagation(); archiveNotification(n.id); }}
                           className="p-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors" title="Archive">
                           <ArchiveIcon className="size-3.5" />

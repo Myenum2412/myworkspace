@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { getSocketIO } from "@/lib/socketio-client";
 import { useNotificationPermission } from "./use-notification-permission";
 import { subscribeToPush } from "@/lib/push-subscription";
+import { useNotificationStore } from "../stores/notification-store";
 
 export interface NotificationAction {
   label: string;
@@ -47,6 +48,7 @@ export function useNotifications(userId?: string) {
   const [total, setTotal] = useState(0);
   const offsetRef = useRef(0);
   const [hasMore, setHasMore] = useState(true);
+  const store = useNotificationStore();
   const { permission, requestPermission } = useNotificationPermission();
   const notifiedRef = useRef<Set<string>>(new Set());
   const userIdRef = useRef(userId);
@@ -78,18 +80,22 @@ export function useNotifications(userId?: string) {
         }));
         if (reset) {
           setNotifications(list);
+          store.setNotifications(list);
           offsetRef.current = list.length;
         } else {
-          setNotifications((prev) => {
-            const existing = new Map(prev.map((n) => [n.id, n]));
-            for (const n of list) existing.set(n.id, n);
-            return Array.from(existing.values());
-          });
+          const current = useNotificationStore.getState().notifications;
+          const map = new Map(current.map((n) => [n.id, n]));
+          for (const n of list) map.set(n.id, n);
+          const merged = Array.from(map.values());
+          setNotifications(merged);
+          store.setNotifications(merged);
           offsetRef.current += list.length;
         }
         setHasMore(list.length >= 50);
         setTotal(d.total || list.length);
-        setUnreadCount(d.unread ?? list.filter((n: NotificationItem) => !n.read).length);
+        const unread = d.unread ?? list.filter((n: NotificationItem) => !n.read).length;
+        setUnreadCount(unread);
+        store.setUnreadCount(unread);
       }
     } catch {}
     setLoading(false);
@@ -113,6 +119,7 @@ export function useNotifications(userId?: string) {
       if (!id) return;
       const notif = { ...n, id } as NotificationItem;
 
+      store.addNotification(notif);
       setNotifications((prev) => {
         if (prev.some((existing) => existing.id === notif.id)) return prev;
         return [notif, ...prev];
@@ -167,6 +174,7 @@ export function useNotifications(userId?: string) {
     socket.on("unread_count", (data: any) => {
       if (typeof data?.count === "number") {
         setUnreadCount(data.count);
+        store.setUnreadCount(data.count);
       }
     });
 
@@ -188,6 +196,8 @@ export function useNotifications(userId?: string) {
     try {
       await fetch(`/api/notifications/${id}/read`, { method: "POST", credentials: "include" });
     } catch {}
+    store.updateNotification(id, { read: true });
+    store.decrementUnread();
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
@@ -198,6 +208,7 @@ export function useNotifications(userId?: string) {
     try {
       await fetch("/api/notifications/read-all", { method: "POST", credentials: "include" });
     } catch {}
+    store.setUnreadCount(0);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
   }, []);
@@ -206,6 +217,8 @@ export function useNotifications(userId?: string) {
     try {
       await fetch(`/api/notifications/${id}/archive`, { method: "POST", credentials: "include" });
     } catch {}
+    store.removeNotification(id);
+    store.decrementUnread();
     setNotifications((prev) => prev.filter((n) => n.id !== id));
     setUnreadCount((c) => Math.max(0, c - 1));
   }, []);
@@ -214,6 +227,7 @@ export function useNotifications(userId?: string) {
     try {
       await fetch(`/api/notifications/${id}`, { method: "DELETE", credentials: "include" });
     } catch {}
+    store.removeNotification(id);
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
@@ -226,6 +240,7 @@ export function useNotifications(userId?: string) {
         body: JSON.stringify({ ids }),
       });
     } catch {}
+    for (const id of ids) store.removeNotification(id);
     setNotifications((prev) => prev.filter((n) => !ids.includes(n.id)));
   }, []);
 
@@ -238,6 +253,7 @@ export function useNotifications(userId?: string) {
         body: JSON.stringify({ ids }),
       });
     } catch {}
+    for (const id of ids) store.removeNotification(id);
     setNotifications((prev) => prev.filter((n) => !ids.includes(n.id)));
   }, []);
 
@@ -250,6 +266,7 @@ export function useNotifications(userId?: string) {
         body: JSON.stringify({ until: until.toISOString() }),
       });
     } catch {}
+    store.updateNotification(id, { snoozedUntil: until.toISOString() });
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, snoozedUntil: until.toISOString() } : n))
     );

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { initNotificationSync } from "../lib/websocket-sync";
 
 export function NotificationInitializer() {
   const { data: session, status } = useSession();
@@ -56,6 +57,11 @@ export function NotificationInitializer() {
       }).catch(() => {});
     }
   }, [status]);
+
+  useEffect(() => {
+    const cleanup = initNotificationSync();
+    return () => cleanup();
+  }, []);
 
   return null;
 }

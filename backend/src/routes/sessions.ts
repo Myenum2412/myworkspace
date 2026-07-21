@@ -4,6 +4,7 @@ import { User } from "../lib/db/models/User.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
+import { processEvent } from "../services/notification-engine.service.js";
 import { cacheManager } from "../lib/cache.js";
 
 const router = Router();
@@ -54,6 +55,8 @@ router.post("/start", authenticate, async (req: AuthRequest, res: Response) => {
 
   cacheManager.invalidatePattern(`sessions:${userId}`);
   cacheManager.invalidatePattern(`users:${orgId || userId}:sessions`);
+
+  processEvent({ type: "new_device_login", category: "auth", userId, orgId: orgId || userId, createdBy: userId, title: "New device login" }).catch(() => {});
 
   res.status(201).json({
     success: true,
@@ -109,6 +112,10 @@ router.patch("/:id/status", authenticate, async (req: AuthRequest, res: Response
 
   cacheManager.invalidatePattern(`sessions:${userId}`);
 
+  if (req.body.status === "suspicious") {
+    processEvent({ type: "suspicious_login", category: "security", userId, orgId: req.user!.orgId || userId, createdBy: userId, title: "Suspicious login detected" }).catch(() => {});
+  }
+
   res.json({
     success: true,
     data: {
@@ -163,6 +170,8 @@ router.patch("/:id/close", authenticate, async (req: AuthRequest, res: Response)
   });
 
   cacheManager.invalidatePattern(`sessions:${userId}`);
+
+  processEvent({ type: "system", category: "auth", userId, orgId: req.user!.orgId || userId, createdBy: userId, title: "Session closed" }).catch(() => {});
 
   res.json({
     success: true,

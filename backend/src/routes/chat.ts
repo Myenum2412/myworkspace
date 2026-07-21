@@ -7,6 +7,7 @@ import {
   markConversationRead,
   getConversations,
 } from "../services/chat.service.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 
@@ -26,6 +27,32 @@ router.post("/messages", authenticate, async (req: AuthRequest, res: Response) =
     replyTo,
     teamId,
   });
+
+  processEvent({
+    userId: req.user.userId,
+    orgId: req.user.orgId,
+    createdBy: req.user.userId,
+    type: "chat_message",
+    category: "messages",
+    title: `New message in conversation`,
+    metadata: { conversationId, messageId: message.id, content },
+  }).catch(() => {});
+
+  const mentionPattern = /@(\w+)/g;
+  let mentionMatch: RegExpExecArray | null;
+  while ((mentionMatch = mentionPattern.exec(content)) !== null) {
+    const mentionedUsername = mentionMatch[1];
+    processEvent({
+      userId: req.user.userId,
+      orgId: req.user.orgId,
+      createdBy: req.user.userId,
+      type: "mention",
+      category: "messages",
+      title: `${req.user.userId} mentioned you`,
+      metadata: { mentionedUsername, conversationId, messageId: message.id, content },
+    }).catch(() => {});
+  }
+
   res.status(201).json({ success: true, data: message });
 });
 

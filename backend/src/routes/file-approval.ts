@@ -7,6 +7,7 @@ import { verifyOrgAccess } from "../lib/org-utils.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { isAdminRole } from "../lib/rbac/index.js";
 import { User } from "../lib/db/models/User.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 
@@ -27,7 +28,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
 // Approve a file upload
 router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
-  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName").lean();
+  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName uploadedBy").lean();
   if (!approval) throw new AppError(404, "Pending approval not found");
 
   await verifyOrgAccess(req.user!.userId, approval.orgId);
@@ -59,13 +60,15 @@ router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
     description: `File "${approval.fileName}" approved for upload`,
   });
 
+  processEvent({ type: "file_approved", category: "files", userId: (approval as any).uploadedBy, orgId: approval.orgId, createdBy: req.user!.userId, title: "File approved" }).catch(() => {});
+
   res.json({ success: true, message: "File approved" });
 });
 
 // Reject a file upload
 router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
   const { reason } = req.body;
-  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName").lean();
+  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName uploadedBy").lean();
   if (!approval) throw new AppError(404, "Pending approval not found");
 
   await verifyOrgAccess(req.user!.userId, approval.orgId);
@@ -96,6 +99,8 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
     entityId: req.params.id,
     description: `File "${approval.fileName}" rejected: ${reason || "No reason given"}`,
   });
+
+  processEvent({ type: "file_rejected", category: "files", userId: (approval as any).uploadedBy, orgId: approval.orgId, createdBy: req.user!.userId, title: "File rejected" }).catch(() => {});
 
   res.json({ success: true, message: "File rejected" });
 });

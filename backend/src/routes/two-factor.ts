@@ -15,6 +15,7 @@ import { requireString, optionalString } from "../lib/validate.js";
 import { env } from "../config/env.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import * as totpService from "../services/totp.service.js";
+import { processEvent } from "../services/notification-engine.service.js";
 import { MfaSession } from "../lib/db/models/MfaSession.js";
 
 const router = Router();
@@ -48,6 +49,16 @@ router.post("/setup", authenticate, async (req: AuthRequest, res: Response) => {
     getAuditContext(req),
   );
 
+  processEvent({
+    userId: req.user!.userId,
+    orgId: user.orgId || req.user!.userId,
+    createdBy: req.user!.userId,
+    type: "mfa_enabled",
+    category: "auth",
+    title: "Two-factor authentication setup initiated",
+    message: "Two-factor authentication setup has been initiated",
+  }).catch(() => {});
+
   res.json({
     success: true,
     data: {
@@ -77,6 +88,16 @@ router.post("/verify", authenticate, async (req: AuthRequest, res: Response) => 
     userAgent: req.headers["user-agent"] as string,
     expiresAt: new Date(Date.now() + 60 * 60 * 1000),
   });
+
+  processEvent({
+    userId: req.user!.userId,
+    orgId: req.user!.orgId || req.user!.userId,
+    createdBy: req.user!.userId,
+    type: "mfa_enabled",
+    category: "auth",
+    title: "Two-factor authentication enabled",
+    message: "Two-factor authentication has been enabled",
+  }).catch(() => {});
 
   res.json({
     success: true,
@@ -120,6 +141,16 @@ router.post("/disable", authenticate, async (req: AuthRequest, res: Response) =>
   }
 
   await totpService.disableTOTP(req.user!.userId, getAuditContext(req));
+
+  processEvent({
+    userId: req.user!.userId,
+    orgId: req.user!.orgId || req.user!.userId,
+    createdBy: req.user!.userId,
+    type: "mfa_disabled",
+    category: "auth",
+    title: "Two-factor authentication disabled",
+    message: "Two-factor authentication has been disabled",
+  }).catch(() => {});
 
   res.json({ success: true });
 });
@@ -285,6 +316,16 @@ router.post("/login", async (req, res: Response) => {
     orgId: resolvedOrgId,
     tokenVersion: user.tokenVersion || 0,
   });
+
+  processEvent({
+    userId: user.id,
+    orgId: resolvedOrgId,
+    createdBy: user.id,
+    type: "new_device_login",
+    category: "auth",
+    title: "New MFA login",
+    message: `${user.name} logged in with two-factor authentication`,
+  }).catch(() => {});
 
   res.json({
     success: true,
@@ -520,6 +561,16 @@ router.post("/recovery-codes", authenticate, async (req: AuthRequest, res: Respo
     getAuditContext(req),
   );
 
+  processEvent({
+    userId: req.user!.userId,
+    orgId: req.user!.orgId || req.user!.userId,
+    createdBy: req.user!.userId,
+    type: "backup_codes_generated",
+    category: "security",
+    title: "Backup codes generated",
+    message: "New backup recovery codes have been generated",
+  }).catch(() => {});
+
   res.json({
     success: true,
     data: { recoveryCodes: codes },
@@ -563,6 +614,16 @@ router.post("/admin/reset/:userId", authenticate, orgAdminOnly(), async (req: Au
     userAgent: req.headers["user-agent"] as string,
     correlationId: getCorrelationId(req),
   });
+
+  processEvent({
+    userId: targetUserId,
+    orgId: req.user!.orgId || req.user!.userId,
+    createdBy: req.user!.userId,
+    type: "mfa_disabled",
+    category: "auth",
+    title: "MFA reset by admin",
+    message: `MFA has been reset for user ${targetUserId} by admin`,
+  }).catch(() => {});
 
   res.json({ success: true, message: "MFA has been reset for the user" });
 });

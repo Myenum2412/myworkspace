@@ -11,6 +11,7 @@ import { requireOrgMembership } from "../lib/org-utils.js";
 import { env } from "../config/env.js";
 import { sendOrganizationInviteEmail } from "../lib/mail/index.js";
 import { ROLES, isAdminRole } from "../lib/rbac/index.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 
@@ -146,6 +147,7 @@ router.post("/invite", async (req: AuthRequest, res: Response) => {
     );
   }
 
+  processEvent({ type: "user_invited", category: "auth", userId: req.user!.userId, orgId: targetOrgId, createdBy: req.user!.userId, title: "User invited" }).catch(() => {});
   console.log(`[INVITE] ${req.user!.email} invited ${normalizedEmails.length} users to org ${targetOrgId}:`, results);
   res.status(201).json({ success: true, data: { results } });
 });
@@ -202,6 +204,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     { upsert: true }
   );
 
+  processEvent({ type: "organization_created", category: "auth", userId: req.user!.userId, orgId: org._id.toString(), createdBy: req.user!.userId, title: "Organization created" }).catch(() => {});
   res.status(201).json({ success: true, data: { orgId: org._id } });
 });
 
@@ -250,6 +253,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   }
 
   await org.save();
+  processEvent({ type: "permission_updated", category: "permissions", userId: req.user!.userId, orgId: org._id.toString(), createdBy: req.user!.userId, title: "Organization updated" }).catch(() => {});
   res.json({ success: true, data: org });
 });
 
@@ -263,6 +267,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
     throw new AppError(403, "Only the organization owner can delete the organization");
   }
 
+  processEvent({ type: "account_deleted", category: "auth", userId: req.user!.userId, orgId: org._id.toString(), createdBy: req.user!.userId, title: "Organization deleted" }).catch(() => {});
   // Clean up related data
   await OrgMember.deleteMany({ orgId: org._id });
   await org.deleteOne();

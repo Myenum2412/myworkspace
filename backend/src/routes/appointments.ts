@@ -7,6 +7,7 @@ import { Appointment, IAppointment } from "../lib/db/models/Appointment.js";
 import { socketIOManager } from "../lib/socketio/index.js";
 import { v4 as uuid } from "uuid";
 import { logger } from "../lib/logger/index.js";
+import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
 
@@ -155,6 +156,16 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 
   socketIOManager.getIO()?.to(`org:${orgId}`).emit("appointment:created", { ...rest, id: rest.id });
 
+  processEvent({
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "meeting_scheduled",
+    category: "messages",
+    title: `Appointment scheduled for ${rest.patientName}`,
+    metadata: { appointmentId: rest.appointmentId, doctorId: rest.doctorId },
+  }).catch(() => {});
+
   logger.info({ appointmentId: rest.appointmentId, orgId }, "Appointment created");
 
   res.status(201).json({ success: true, data: { ...rest, id: rest.id } });
@@ -187,6 +198,16 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   socketIOManager.emitToUser(userId, "appointment:updated", { ...rest, id: rest.id });
   socketIOManager.getIO()?.to(`org:${orgId}`).emit("appointment:updated", { ...rest, id: rest.id });
 
+  processEvent({
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "meeting_scheduled",
+    category: "messages",
+    title: `Appointment updated for ${rest.patientName}`,
+    metadata: { appointmentId: rest.appointmentId, doctorId: rest.doctorId },
+  }).catch(() => {});
+
   res.json({ success: true, data: { ...rest, id: rest.id } });
 });
 
@@ -200,6 +221,16 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 
   socketIOManager.emitToUser(userId, "appointment:deleted", { id: req.params.id });
   socketIOManager.getIO()?.to(`org:${orgId}`).emit("appointment:deleted", { id: req.params.id });
+
+  processEvent({
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "meeting_cancelled",
+    category: "messages",
+    title: `Appointment cancelled`,
+    metadata: { appointmentId: deleted.appointmentId, doctorId: deleted.doctorId },
+  }).catch(() => {});
 
   res.json({ success: true, data: { id: req.params.id } });
 });
