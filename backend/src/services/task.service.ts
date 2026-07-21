@@ -458,7 +458,7 @@ export async function createTask(data: {
     throw new AppError(400, "Upcoming task requires a scheduledDate or dueDate");
   }
 
-  const initialStatus = TYPE_INITIAL_STATUS[taskType];
+  const initialStatus = (taskType === "individual" && assigneeId) ? "assigned" : TYPE_INITIAL_STATUS[taskType];
 
   const resolvedAssigneeId = (taskType === "individual" && assigneeId) ? assigneeId : undefined;
 

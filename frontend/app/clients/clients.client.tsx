@@ -25,12 +25,14 @@ type ClientsProps = {
   user: SessionUser;
 };
 
-const CSRF_HEADERS = (() => {
+function getCsrfHeaders(): Record<string, string> {
   if (typeof document === "undefined") return {};
   const match = document.cookie.match(new RegExp("(?:^|;\\s*)csrf-token=([^;]*)"));
   const token = match ? decodeURIComponent(match[1]) : undefined;
-  return token ? { "x-csrf-token": token } : {};
-})();
+  if (token) return { "x-csrf-token": token };
+  return {};
+}
+const CSRF_HEADERS = getCsrfHeaders();
 
 export default function Clients({ initialClients, user: sessionUser }: ClientsProps) {
   const [user, setUser] = useState(sessionUser);
