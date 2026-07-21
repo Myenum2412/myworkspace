@@ -64,6 +64,24 @@ export const downloadLimiter = rateLimit({
   keyGenerator: (req) => `download:${ipKeyGenerator(req.ip || "unknown")}`,
 });
 
+export const totpLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many authentication attempts. Try again in a minute." },
+  keyGenerator: (req) => `totp:${(req as any).user?.userId || ipKeyGenerator(req.ip || "unknown")}`,
+});
+
+export const recoveryCodeLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many recovery code attempts. Try again in a minute." },
+  keyGenerator: (req) => `recovery:${(req as any).user?.userId || ipKeyGenerator(req.ip || "unknown")}`,
+});
+
 export const publicInfoLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,

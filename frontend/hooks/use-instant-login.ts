@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useBootstrapStore } from "@/stores/bootstrap-store";
@@ -8,11 +8,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { fetchBootstrapData, invalidateBootstrapCache } from "@/lib/api/bootstrap";
 import { recordLoginTime } from "@/lib/performance";
 import { ROLES } from "@/lib/rbac";
+import { apiUrl } from "@/lib/api";
 
 type LoginState = {
   loading: boolean;
   error: string | null;
-  step: "idle" | "authenticating" | "fetching-data" | "hydrating" | "redirecting" | "done";
+  step: "idle" | "challenging" | "authenticating" | "fetching-data" | "hydrating" | "redirecting" | "done";
 };
 
 export function useInstantLogin() {
@@ -28,9 +29,21 @@ export function useInstantLogin() {
 
   const instantLogin = useCallback(async (email: string, password: string) => {
     const loginStart = performance.now();
-    setState({ loading: true, error: null, step: "authenticating" });
+    setState({ loading: true, error: null, step: "challenging" });
 
     try {
+      const challengeRes = await fetch(apiUrl("/api/two-factor/challenge"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }).then(r => r.json());
+
+      if (challengeRes?.data?.requiresTwoFactor) {
+        router.replace(`/login/verify-2fa?email=${encodeURIComponent(email)}`);
+        setState({ loading: false, error: null, step: "idle" });
+        return;
+      }
+
       const csrfRes = await fetch("/api/auth/csrf", { credentials: "include" });
       const csrfBody = await csrfRes.text();
       let csrfToken: string;
@@ -41,7 +54,7 @@ export function useInstantLogin() {
         return;
       }
 
-      setState((s) => ({ ...s, step: "fetching-data" }));
+      setState((s) => ({ ...s, step: "authenticating" }));
 
       const signInRes = await fetch("/api/auth/callback/credentials", {
         method: "POST",
@@ -65,11 +78,17 @@ export function useInstantLogin() {
       }
 
       if (!signInData.ok || signInData.error) {
-        setState({ loading: false, error: signInData.error || "Invalid credentials", step: "idle" });
+        const errMsg = signInData.error || "Invalid credentials";
+        if (errMsg === "2fa_required" || errMsg === "CredentialsSignin") {
+          router.replace(`/login/verify-2fa?email=${encodeURIComponent(email)}`);
+          setState({ loading: false, error: null, step: "idle" });
+          return;
+        }
+        setState({ loading: false, error: errMsg, step: "idle" });
         return;
       }
 
-      setState((s) => ({ ...s, step: "hydrating" }));
+      setState((s) => ({ ...s, step: "fetching-data" }));
 
       const [bootstrapData] = await Promise.all([
         fetchBootstrapData(true),

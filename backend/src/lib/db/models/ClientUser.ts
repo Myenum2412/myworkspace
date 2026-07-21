@@ -16,6 +16,13 @@ export interface IClientUser extends Document {
   lastLogin?: Date;
   resetToken?: string;
   resetTokenExpires?: Date;
+  twoFactorEnabled: boolean;
+  twoFactorSecret?: string;
+  twoFactorPendingSecret?: string;
+  twoFactorMethod: "totp" | "none";
+  twoFactorEnabledAt?: Date;
+  twoFactorLastVerifiedAt?: Date;
+  tokenVersion: number;
   createdByAdminId: string;
   createdBy: string;
   updatedBy?: string;
@@ -38,6 +45,13 @@ const clientUserSchema = new Schema<IClientUser>(
     failedLoginAttempts: { type: Number, default: 0 },
     lockedUntil: Date,
     lastLogin: Date,
+    twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorSecret: String,
+    twoFactorPendingSecret: String,
+    twoFactorMethod: { type: String, enum: ["totp", "none"], default: "none" },
+    twoFactorEnabledAt: Date,
+    twoFactorLastVerifiedAt: Date,
+    tokenVersion: { type: Number, default: 0 },
     resetToken: { type: String, index: true },
     resetTokenExpires: Date,
     createdByAdminId: { type: String, required: true },

@@ -22,91 +22,64 @@ const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 
 router.post("/login", async (req: AuthRequest, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, token: totpToken, recoveryCode, trustDevice } = req.body;
   if (!email || !password) {
     throw new AppError(400, "Email and password are required");
   }
 
-  const normalizedEmail = (email as string).toLowerCase();
-  const escapedEmail = normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  let clientUser = await ClientUser.findOne({ email: normalizedEmail }).select("id email password name isActive lockedUntil failedLoginAttempts mustChangePassword emailVerified lastLogin orgId clientId");
-  if (!clientUser) {
-    clientUser = await ClientUser.findOne({
-      email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') }
-    }).select("id email password name isActive lockedUntil failedLoginAttempts mustChangePassword emailVerified lastLogin orgId clientId") as typeof clientUser;
-  }
-  if (!clientUser) {
-    throw new AppError(401, "Invalid email or password");
-  }
+  const { executeAuthPipeline } = await import("../services/auth-pipeline.service.js");
 
-  if (!clientUser.isActive) {
-    throw new AppError(403, "Account is deactivated. Contact your administrator.");
-  }
-
-  if (clientUser.lockedUntil && clientUser.lockedUntil > new Date()) {
-    throw new AppError(423, "Account is temporarily locked. Try again later.");
-  }
-
-  const valid = await compare(password, clientUser.password);
-  if (!valid) {
-    clientUser.failedLoginAttempts += 1;
-    if (clientUser.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
-      clientUser.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
-    }
-    await clientUser.save();
-
-    await ClientAuditLog.create({
-      orgId: clientUser.orgId,
-      clientId: clientUser.clientId,
-      clientUserId: clientUser.id,
-      action: "client.login.failed",
-      entityType: "client_user",
-      entityId: clientUser.id,
-      description: `Failed login attempt for ${email}`,
-      ipAddress: req.ip,
-    });
-
-    throw new AppError(401, "Invalid email or password");
-  }
-
-  clientUser.failedLoginAttempts = 0;
-  clientUser.lockedUntil = undefined;
-  clientUser.lastLogin = new Date();
-  await clientUser.save();
-
-  await ClientAuditLog.create({
-    orgId: clientUser.orgId,
-    clientId: clientUser.clientId,
-    clientUserId: clientUser.id,
-    action: "client.login.success",
-    entityType: "client_user",
-    entityId: clientUser.id,
-    description: `${clientUser.name} logged in`,
+  const result = await executeAuthPipeline({
+    email: (email as string).toLowerCase(),
+    password: password as string,
+    totpToken: totpToken as string | undefined,
+    recoveryCode: recoveryCode as string | undefined,
+    deviceFingerprint: req.body.deviceFingerprint as string | undefined,
+    trustDevice: trustDevice === true,
+    authMethod: "password",
     ipAddress: req.ip,
+    userAgent: req.headers["user-agent"] as string,
   });
 
-  const token = signToken({
-    userId: clientUser.id,
-    email: clientUser.email,
-    role: "clients",
-    permissions: [],
-    orgId: clientUser.orgId,
+  if (result.requiresTwoFactor) {
+    res.json({
+      success: true,
+      data: {
+        requiresTwoFactor: true,
+        twoFactorMethod: result.twoFactorMethod,
+        tempToken: result.tempToken,
+      },
+    });
+    return;
+  }
+
+  await ClientAuditLog.create({
+    orgId: result.orgId || "",
+    clientId: result.user?.id || "",
+    clientUserId: result.user?.id || "",
+    action: "client.login.success",
+    entityType: "client_user",
+    entityId: result.user?.id || "",
+    description: `${result.user?.name || email} logged in`,
+    ipAddress: req.ip,
   });
 
   res.json({
     success: true,
     data: {
-      token,
+      token: result.token,
+      refreshToken: result.refreshToken,
+      sessionId: result.sessionId,
       user: {
-        id: clientUser.id,
-        name: clientUser.name,
-        email: clientUser.email,
+        id: result.user?.id,
+        name: result.user?.name,
+        email: result.user?.email,
         role: "clients",
-        mustChangePassword: clientUser.mustChangePassword,
-        emailVerified: clientUser.emailVerified,
+        mustChangePassword: false,
+        emailVerified: result.user?.emailVerified || false,
       },
-      clientId: clientUser.clientId,
-      orgId: clientUser.orgId,
+      clientId: req.body.clientId || result.orgId,
+      orgId: result.orgId,
     },
   });
 });

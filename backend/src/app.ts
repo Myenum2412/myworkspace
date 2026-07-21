@@ -8,7 +8,7 @@ import path from "path";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error.js";
 import { requestIdMiddleware } from "./lib/request-id.js";
-import { authLimiter, socketTokenLimiter, apiLimiter, uploadLimiter, shareDownloadLimiter, searchLimiter } from "./middleware/rate-limit.js";
+import { authLimiter, socketTokenLimiter, apiLimiter, uploadLimiter, shareDownloadLimiter, searchLimiter, totpLimiter, recoveryCodeLimiter } from "./middleware/rate-limit.js";
 import { inputSanitizer } from "./middleware/sanitize.js";
 import { csrfProtection } from "./lib/csrf.js";
 import { requestTimeout } from "./middleware/timeout.js";
@@ -57,6 +57,8 @@ import contractorsRoutes from "./routes/contractors.js";
 import fileFavoritesRoutes from "./routes/file-favorites.js";
 import blogRoutes from "./routes/blog.js";
 import plansRoutes from "./routes/plans.js";
+import adminSecurityRoutes from "./routes/admin-security.js";
+import orgMfaPolicyRoutes from "./routes/org-mfa-policy.js";
 
 const app = express();
 
@@ -139,6 +141,10 @@ app.use("/api/auth", authLimiter, (req, _res, next) => {
   else next();
 });
 app.use("/api/client-auth", authLimiter);
+app.use("/api/two-factor/verify", totpLimiter);
+app.use("/api/two-factor/login", totpLimiter);
+app.use("/api/two-factor/login-recovery", recoveryCodeLimiter);
+app.use("/api/two-factor/disable", totpLimiter);
 app.use("/api/files", uploadLimiter);
 app.use("/api/files-tus", uploadLimiter);
 app.use("/api/shares", shareDownloadLimiter);
@@ -352,6 +358,8 @@ app.use("/api/bootstrap", bootstrapRoutes);
 app.use("/api/contractors", contractorsRoutes);
 app.use("/api/blog", blogRoutes);
 app.use("/api/plans", plansRoutes);
+app.use("/api/admin/security", adminSecurityRoutes);
+app.use("/api/org/mfa-policy", orgMfaPolicyRoutes);
 
 // ── Public config endpoint (unauthenticated, exposes safe values) ──
 app.get("/api/config/public", (_req, res) => {

@@ -12,6 +12,7 @@ import {
   RiNotification3Line,
   RiLayout2Line,
   RiLink,
+  RiShieldCheckLine,
 } from "@remixicon/react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -46,6 +47,7 @@ import {
 } from "@/components/ui/select"
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options"
 import IntegrationsBlock from "@/components/integrations-block"
+import AuthenticatorSettings from "@/components/authenticator-settings"
 import {
   Loader2Icon,
   PlusIcon,
@@ -217,6 +219,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             <TabsTrigger value="team">Team</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="integrations">Integrations</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
 
           <TabsContent value="account">
@@ -409,6 +412,16 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 <p className="text-sm text-muted-foreground">Connect external services and manage integrations.</p>
               </div>
               <IntegrationsBlock />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="security">
+            <div className="flex flex-col gap-4">
+              <div>
+                <h2 className="text-lg font-semibold">Security</h2>
+                <p className="text-sm text-muted-foreground">Manage your account security and authentication methods.</p>
+              </div>
+              <AuthenticatorSettings />
             </div>
           </TabsContent>
         </Tabs>

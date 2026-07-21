@@ -20,6 +20,11 @@ export interface IUser extends Document {
   tokenVersion: number;
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
+  twoFactorPendingSecret?: string;
+  twoFactorEnabledAt?: Date;
+  twoFactorLastVerifiedAt?: Date;
+  twoFactorMethod: "totp" | "none";
+  backupCodesGeneratedAt?: Date;
   phone?: string;
   secondaryPhone?: string;
   department?: string;
@@ -64,6 +69,11 @@ const userSchema = new Schema<IUser>(
     lockedUntil: Date,
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorSecret: String,
+    twoFactorPendingSecret: String,
+    twoFactorEnabledAt: Date,
+    twoFactorLastVerifiedAt: Date,
+    twoFactorMethod: { type: String, enum: ["totp", "none"], default: "none" },
+    backupCodesGeneratedAt: Date,
     phone: String,
     secondaryPhone: String,
     department: String,

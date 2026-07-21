@@ -161,7 +161,8 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             db.collection("users").insertOne({
               id: userId, userNumber, email: user.email, name: userName,
               image: user.image || null, provider: account.provider,
-              providerAccountId: account.providerAccountId, role: ROLES.MEMBERS,
+              providerAccountId: account.providerAccountId,
+              orgId: newOrgId, role: ROLES.MEMBERS,
               status: "online", lastLogin: now, createdAt: now, updatedAt: now,
             }),
             db.collection("organizations").insertOne({
@@ -180,6 +181,10 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           return true;
         }
 
+        const uid = existing.id || existing._id?.toString();
+        if (uid) user.id = uid;
+        if (existing.orgId) (user as { orgId?: string }).orgId = existing.orgId;
+        if (existing.role) (user as { role?: string }).role = existing.role;
         return true;
       } catch (err) {
         console.error("[AUTH] Failed to check/create user in database:", err);
@@ -282,6 +287,9 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             if (cu && cu.password && cu.isActive) {
               const valid = await compare(password, cu.password);
               if (valid) {
+                if (cu.twoFactorEnabled && !twoFactorToken) {
+                  return null;
+                }
                 return {
                   id: cu.id || cu._id?.toString(),
                   email: cu.email,
@@ -316,6 +324,10 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           try {
             const valid = await compare(password, user.password);
             if (valid) {
+              if (user.twoFactorEnabled && !twoFactorToken) {
+                console.log("[AUTH authorize] 2FA required for user, refusing session without 2FA token");
+                return null;
+              }
               const userId = user.id || user._id?.toString();
               const [memberDoc, orgByUserId] = await Promise.all([
                 db.collection("org_members").findOne({ userId }).catch(() => null),
@@ -341,6 +353,9 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           try {
             const valid = await compare(password, clientUser.password);
             if (valid) {
+              if (clientUser.twoFactorEnabled && !twoFactorToken) {
+                return null;
+              }
               return {
                 id: clientUser.id || clientUser._id?.toString(),
                 email: clientUser.email,

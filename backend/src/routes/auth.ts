@@ -192,67 +192,33 @@ router.post("/refresh", async (req: AuthRequest, res: Response) => {
   const refreshTokenStr = requireString(req.body.refreshToken || "", "refreshToken", { min: 1, max: 2000 });
   const deviceFingerprint = optionalString(req.body.deviceFingerprint, "deviceFingerprint", { max: 256 });
 
-  let payload: { userId: string; orgId: string; tokenVersion: number; family: string };
-  try {
-    payload = verifyRefreshToken(refreshTokenStr);
-  } catch {
-    throw new AppError(401, "Invalid or expired refresh token");
-  }
-
-  const hashedToken = crypto.createHash("sha256").update(refreshTokenStr).digest("hex");
-  const storedToken = await RefreshToken.findOne({ token: hashedToken });
-  if (!storedToken || storedToken.revokedAt) {
-    if (storedToken?.revokedAt) {
-      await RefreshToken.updateMany(
-        { family: storedToken.family },
-        { revokedAt: new Date() },
-      );
-      await User.updateOne({ id: payload.userId }, { $inc: { tokenVersion: 1 } });
-    }
-    throw new AppError(401, "Refresh token has been revoked");
-  }
-
-  const user = await User.findOne({ id: payload.userId }).select("id email role permissions tokenVersion orgId").lean();
-  if (!user) throw new AppError(401, "User not found");
-
-  const currentVersion = user.tokenVersion || 0;
-  if (currentVersion > payload.tokenVersion) {
-    throw new AppError(401, "Token version invalid, please login again");
-  }
-
-  await RefreshToken.updateOne(
-    { _id: storedToken._id },
-    { revokedAt: new Date(), replacedBy: hashedToken },
+  const { verifyRefreshTokenPipeline } = await import("../services/auth-pipeline.service.js");
+  const result = await verifyRefreshTokenPipeline(
+    refreshTokenStr,
+    deviceFingerprint,
+    req.ip || "unknown",
+    req.headers["user-agent"] as string,
   );
 
-  const newRefreshFamily = uuid();
-  const newRefreshToken = signRefreshToken({
-    userId: payload.userId,
-    orgId: payload.orgId,
-    tokenVersion: currentVersion,
-    family: newRefreshFamily,
-  });
+  if ("requiresTwoFactor" in result) {
+    res.json({
+      success: true,
+      data: {
+        requiresTwoFactor: true,
+        message: result.message,
+      },
+    });
+    return;
+  }
 
-  await RefreshToken.create({
-    token: crypto.createHash("sha256").update(newRefreshToken).digest("hex"),
-    userId: payload.userId, orgId: payload.orgId,
-    family: newRefreshFamily,
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    deviceFingerprint: deviceFingerprint || storedToken.deviceFingerprint,
-    ipAddress: req.ip || "unknown",
-    userAgent: req.headers["user-agent"] || storedToken.userAgent,
+  res.json({
+    success: true,
+    data: {
+      token: result.token,
+      refreshToken: result.refreshToken,
+      sessionId: result.sessionId,
+    },
   });
-
-  const newToken = signToken({
-    userId: payload.userId,
-    email: user.email,
-    role: user.role,
-    permissions: user.permissions || [],
-    orgId: payload.orgId || user.orgId,
-    tokenVersion: currentVersion,
-  });
-
-  res.json({ success: true, data: { token: newToken, refreshToken: newRefreshToken } });
 });
 
 router.post("/signup", async (req: AuthRequest, res: Response) => {
