@@ -1,6 +1,4 @@
 import { Metadata } from "next";
-import { NewNav } from "@/components/landing/new-nav";
-import { NewFooter } from "@/components/landing/new-footer";
 import ComingSoonBlock from "@/components/coming-soon-block";
 
 export const metadata: Metadata = {
@@ -17,12 +15,8 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <>
-      <NewNav />
-      <main className="flex min-h-screen flex-col">
-        <ComingSoonBlock />
-      </main>
-      <NewFooter />
-    </>
+    <main className="flex min-h-screen flex-col">
+      <ComingSoonBlock />
+    </main>
   );
 }
