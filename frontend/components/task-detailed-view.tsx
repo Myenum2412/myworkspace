@@ -369,7 +369,7 @@ export function TaskDetailedView({
           <Section icon={AlignLeftIcon} title="Description">
             <div className="border p-4">
               {task.description ? (
-                <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">{task.description}</p>
+                <div className="text-sm leading-relaxed text-gray-700" dangerouslySetInnerHTML={{ __html: task.description }} />
               ) : (
                 <div className="flex flex-col items-center justify-center py-4 text-muted-foreground opacity-60">
                   <AlignLeftIcon className="size-6 mb-2" />
@@ -389,14 +389,6 @@ export function TaskDetailedView({
               {task.teamHeadName && (
                 <PersonBadge name={task.teamHeadName} avatar="" role="Team Head" />
               )}
-            </div>
-          </Section>
-
-          <Section icon={PaperclipIcon} title="Attachments">
-            <div className="border border-dashed border-gray-300 bg-gray-50/50 p-4 flex flex-col items-center justify-center text-center h-full min-h-[100px]">
-              <FileTextIcon className="size-6 text-gray-400 mb-2" />
-              <p className="text-sm font-medium text-gray-600">No attachments yet</p>
-              <p className="text-xs text-gray-500 mt-1">Attachments are not available in this view.</p>
             </div>
           </Section>
 

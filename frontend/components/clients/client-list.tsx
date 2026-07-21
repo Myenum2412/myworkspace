@@ -58,7 +58,6 @@ export function ClientList({ clients, onView, onEdit, onDelete }: ClientListProp
         <DataTable
           columns={[...columns, makeActionsCell(onView, onDelete, onEdit)]}
           data={clients}
-          onRowClick={onView}
         />
       </div>
     </>
