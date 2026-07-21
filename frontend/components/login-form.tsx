@@ -104,7 +104,7 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
         <Separator className="flex-1" />
       </div>
 
-      <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign in with Google" onClick={() => signIn("google", { callbackUrl: "/" })} disabled={loading}>
+      <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign in with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })} disabled={loading}>
         <GoogleIcon /><span>Google</span>
       </Button>
 
