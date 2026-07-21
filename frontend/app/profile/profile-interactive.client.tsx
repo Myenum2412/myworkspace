@@ -21,7 +21,6 @@ import { Label } from "@/components/ui/label";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { INDUSTRIES } from "@/lib/industries";
-import { StorageDashboard } from "@/components/storage-dashboard";
 import { WhatsAppStats } from "@/components/whatsapp-stats";
 import {
   MailIcon,
@@ -62,6 +61,10 @@ const ProfileImageUpload = nextDynamic(
 );
 const ChartPieDonutText = nextDynamic(
   () => import("@/components/chart-pie-donut-text").then((m) => m.ChartPieDonutText),
+  { ssr: false }
+);
+const StorageDashboard = nextDynamic(
+  () => import("@/components/storage-dashboard").then((m) => m.StorageDashboard),
   { ssr: false }
 );
 
