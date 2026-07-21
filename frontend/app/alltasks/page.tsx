@@ -62,8 +62,8 @@ export default async function AllTasksPage() {
       const creator = (t.creator as Record<string, unknown> | null) || null;
       const team = (t.team as Record<string, unknown> | null) || null;
       return {
-        id: (t._id as { toString: () => string }).toString(),
-        _id: (t._id as { toString: () => string }).toString(),
+        id: String(t._id ?? ""),
+        _id: String(t._id ?? ""),
         title: (t.title as string) || "",
         description: (t.description as string) || "",
         type: (t.type as string) || "individual",

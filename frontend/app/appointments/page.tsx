@@ -21,17 +21,17 @@ export default async function AppointmentsPage() {
     .toArray() as unknown as Record<string, unknown>[];
 
   const doctors: Doctor[] = doctorDocs.map((d) => ({
-    id: d.id as string,
-    orgId: d.orgId as string,
-    doctorName: d.doctorName as string,
-    specialization: d.specialization as string,
-    department: d.department as string,
-    consultationFee: d.consultationFee as number,
-    phone: d.phone as string,
-    email: d.email as string,
-    status: d.status as "active" | "inactive",
-    createdAt: d.createdAt as string,
-    updatedAt: d.updatedAt as string,
+    id: (d.id as string) || "",
+    orgId: (d.orgId as string) || "",
+    doctorName: (d.doctorName as string) || "",
+    specialization: (d.specialization as string) || "",
+    department: (d.department as string) || "",
+    consultationFee: (d.consultationFee as number) || 0,
+    phone: (d.phone as string) || "",
+    email: (d.email as string) || "",
+    status: (d.status as "active" | "inactive") || "active",
+    createdAt: (d.createdAt as string) || "",
+    updatedAt: (d.updatedAt as string) || "",
   }));
 
   return <Appointments initialDoctors={doctors} />;

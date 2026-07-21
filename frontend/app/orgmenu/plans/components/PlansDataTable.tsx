@@ -322,7 +322,7 @@ export function PlansDataTable({ initialPlans }: { initialPlans: Plan[] }) {
           placeholder="Search plans..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-64"
+          className="w-64 bg-white"
         />
         <CreatePlanDialog onCreated={handleRefresh} />
       </div>

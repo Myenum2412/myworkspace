@@ -23,8 +23,6 @@ import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { INDUSTRIES } from "@/lib/industries";
 import { StorageDashboard } from "@/components/storage-dashboard";
 import { WhatsAppStats } from "@/components/whatsapp-stats";
-import { ChartPieDonutText } from "@/components/chart-pie-donut-text";
-
 import {
   MailIcon,
   CalendarIcon,
@@ -60,6 +58,10 @@ const BannerUpload = nextDynamic(
 );
 const ProfileImageUpload = nextDynamic(
   () => import("@/components/ui/profile-image-upload").then((m) => m.ProfileImageUpload),
+  { ssr: false }
+);
+const ChartPieDonutText = nextDynamic(
+  () => import("@/components/chart-pie-donut-text").then((m) => m.ChartPieDonutText),
   { ssr: false }
 );
 

@@ -128,7 +128,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
                     placeholder="Search my tasks..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-9"
+                    className="pl-9 h-9 bg-white"
                   />
                 </div>
               </div>

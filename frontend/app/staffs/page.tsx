@@ -67,7 +67,7 @@ export default async function StaffsPage() {
     staff = users.map((u) => {
       const member = orgMembers.find((m) => m.userId === (u.id as string));
       return {
-        _id: (u._id as { toString: () => string }).toString(),
+        _id: String(u._id ?? ""),
         name: (u.name as string) || "",
         email: (u.email as string) || "",
         role: ((member?.role as string) || "staffs"),
@@ -99,7 +99,7 @@ export default async function StaffsPage() {
     tasks = rawTasks.map((t) => {
       const assignee = t.assignee as Record<string, unknown> | null;
       return {
-        _id: (t._id as { toString: () => string }).toString(),
+        _id: String(t._id ?? ""),
         title: (t.title as string) || "",
         priority: (t.priority as string) || "medium",
         status: (t.status as string) || "todo",

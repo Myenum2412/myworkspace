@@ -138,7 +138,7 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                 placeholder="Search employees..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
-                className="pl-9 h-9"
+                className="pl-9 h-9 bg-white"
               />
               {searchQuery && (
                 <button onClick={() => { setSearchQuery(""); setPage(0); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">

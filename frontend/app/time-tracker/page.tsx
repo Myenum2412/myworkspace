@@ -69,7 +69,7 @@ export default async function TimeTrackerPage() {
   ]);
 
   const myTimeEntries = (myTimeRaw as unknown as Record<string, unknown>[]).map((e) => ({
-    id: (e.id as string) || (e._id as { toString: () => string }).toString(),
+    id: (e.id as string) || String(e._id ?? ""),
     userId: (e.userId as string) || "",
     date: (e.date as string) || "",
     startTime: (e.startTime as string) || undefined,

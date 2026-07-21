@@ -60,7 +60,7 @@ export function FileSearch({ orgId, onSelectFile, onClose }: FileSearchProps) {
             value={query}
             onChange={e => handleChange(e.target.value)}
             placeholder="Search files..."
-            className="flex-1 bg-transparent outline-none text-sm"
+            className="flex-1 bg-white outline-none text-sm"
           />
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
             <X className="w-4 h-4" />

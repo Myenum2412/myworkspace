@@ -154,7 +154,7 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
             placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-8 text-sm flex-1"
+            className="h-8 text-sm flex-1 bg-white"
             autoFocus
           />
           {searchMatches.length > 0 && (

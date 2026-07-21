@@ -243,7 +243,7 @@ export default async function BlogPage({
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <form className="flex-1" action="/blog" method="get">
             {params.category && <input type="hidden" name="category" value={params.category} />}
-            <Input type="search" name="search" placeholder="Search articles..." defaultValue={params.search} />
+            <Input type="search" name="search" placeholder="Search articles..." defaultValue={params.search} className="bg-white" />
           </form>
         </div>
 

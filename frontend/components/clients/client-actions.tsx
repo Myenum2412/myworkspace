@@ -88,10 +88,10 @@ export function ClientEditDialog({ client, open, onOpenChange, onClientUpdated, 
 
         {editApiError && (
           <div className="px-6">
-            <div className="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 p-4">
-              <AlertCircle className="size-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 rounded-lg border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 p-4 shadow-sm">
+              <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-red-800">{editApiError}</p>
+                <p className="text-sm font-semibold text-red-800">{editApiError}</p>
                 {Object.keys(editErrors).length > 0 && (
                   <ul className="mt-1 text-xs text-red-600 list-disc list-inside">
                     {Object.entries(editErrors).map(([key, msg]) => (

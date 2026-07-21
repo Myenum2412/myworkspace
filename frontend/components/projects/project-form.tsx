@@ -553,7 +553,7 @@ export function ProjectEditForm({
                         <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                         <Input
                           placeholder="Search members..."
-                          className="pl-8 h-8 text-sm"
+                          className="pl-8 h-8 text-sm bg-white"
                           value={editMemberSearch}
                           onChange={(e) => onEditMemberSearchChange(e.target.value)}
                         />

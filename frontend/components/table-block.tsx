@@ -561,7 +561,7 @@ export default function TableBlock() {
                 table.getColumn("client")?.setFilterValue(event.target.value)
               }
               placeholder="Filter by client..."
-              className="w-52 pl-8 text-sm"
+              className="w-52 pl-8 text-sm bg-white"
               aria-label="Filter invoices by client"
             />
           </div>

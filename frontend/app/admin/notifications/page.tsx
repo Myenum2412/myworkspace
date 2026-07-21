@@ -516,7 +516,7 @@ export default function AdminNotificationsPage() {
                     value={emailLogSearch}
                     onChange={(e) => setEmailLogSearch(e.target.value)}
                     onKeyDown={handleSearchKeyDown}
-                    className="pl-8"
+                    className="pl-8 bg-white"
                   />
                 </div>
                 <div className="flex gap-3 flex-wrap">

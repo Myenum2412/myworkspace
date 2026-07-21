@@ -362,7 +362,7 @@ export default function ChatPage() {
             </div>
             <div className="relative">
               <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input placeholder="" className="pl-9 h-9" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              <Input placeholder="" className="pl-9 h-9 bg-white" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
           </div>
 
@@ -524,7 +524,7 @@ export default function ChatPage() {
 
               {showMsgSearch && (
                 <div className="px-4 py-2 border-b shrink-0">
-                  <Input placeholder="" value={msgSearch} onChange={(e) => setMsgSearch(e.target.value)} className="h-8" />
+                  <Input placeholder="" value={msgSearch} onChange={(e) => setMsgSearch(e.target.value)} className="h-8 bg-white" />
                 </div>
               )}
 

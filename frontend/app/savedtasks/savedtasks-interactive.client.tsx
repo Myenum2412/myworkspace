@@ -67,7 +67,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
                     placeholder="Search saved tasks..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-9"
+                    className="pl-9 h-9 bg-white"
                   />
                 </div>
               </div>

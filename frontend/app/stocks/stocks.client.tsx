@@ -119,7 +119,7 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
                 placeholder="Search inventory..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-9 w-full text-sm"
+                className="pl-8 h-9 w-full text-sm bg-white"
               />
             </div>
           </div>

@@ -136,7 +136,7 @@ export function BlogDataTable({ initialPosts, categories, orgId }: BlogDataTable
           placeholder="Search posts..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="sm:w-64"
+          className="sm:w-64 bg-white"
         />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="sm:w-40">

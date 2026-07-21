@@ -73,7 +73,7 @@ export function RecycleBin() {
         <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
         <Input
           placeholder="Search deleted files..."
-          className="pl-8 h-9"
+          className="pl-8 h-9 bg-white"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

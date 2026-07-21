@@ -104,7 +104,7 @@ export function PDFViewer({ src, fileName }: PDFViewerProps) {
             placeholder="Search in PDF..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 text-sm"
+            className="h-8 text-sm bg-white"
           />
           <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setShowSearch(false)}>
             <XIcon className="size-3.5" />

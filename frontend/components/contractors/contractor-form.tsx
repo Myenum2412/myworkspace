@@ -12,7 +12,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { apiFetch } from "@/lib/api";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Loader2, Plus, Trash2 } from "lucide-react";
 
 const CONTRACTOR_TYPES = ["Individual", "Company", "Subcontractor"];
 const MAIN_TRADES = [
@@ -205,8 +205,9 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
   return (
     <div className="flex flex-1 flex-col gap-6 overflow-hidden">
       {apiError && (
-        <div className="mx-6 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-          {apiError}
+        <div className="mx-6 mt-4 flex items-start gap-3 rounded-lg border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 px-4 py-3 shadow-sm">
+          <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
+          <p className="text-sm font-semibold text-red-800">{apiError}</p>
         </div>
       )}
 

@@ -128,7 +128,7 @@ export function DataTable<TData, TValue>({
                   placeholder={searchPlaceholder}
                   value={globalFilter}
                   onChange={(e) => setGlobalFilter(e.target.value)}
-                  className="pl-9 w-full h-9 text-sm"
+                  className="pl-9 w-full h-9 text-sm bg-white"
                   aria-label={searchPlaceholder}
                 />
               </div>

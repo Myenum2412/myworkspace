@@ -268,42 +268,45 @@ export default function ProjectsDashboard({ projects, onView }: DashboardProps) 
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">Top Progress Projects</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <span className="size-2 rounded-full bg-blue-500" />
+              Top Progress Projects
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {topProjects.length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">No projects yet</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {topProjects.map((p) => {
                   const health = getHealth(p);
+                  const healthColor =
+                    health === "on-track" ? "bg-green-100 text-green-700 border-green-300" :
+                    health === "at-risk" ? "bg-amber-100 text-amber-700 border-amber-300" :
+                    "bg-red-100 text-red-700 border-red-300";
                   return (
                     <button
                       key={p.id}
                       onClick={() => onView(p)}
-                      className="w-full text-left"
+                      className="w-full text-left group"
                     >
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-sm font-medium truncate">{p.name}</span>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-sm font-medium truncate group-hover:text-blue-600 transition-colors">{p.name}</span>
+                        <div className="flex items-center gap-2 shrink-0 ml-3">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${
-                              health === "on-track" ? "border-green-500 text-green-600" :
-                              health === "at-risk" ? "border-amber-500 text-amber-600" :
-                              "border-red-500 text-red-600"
-                            }`}
+                            className={`text-[10px] font-semibold px-2 py-0.5 ${healthColor}`}
                           >
-                            {health === "on-track" ? <ArrowUpIcon className="size-2.5 inline mr-0.5" /> :
-                             health === "at-risk" ? <AlertCircleIcon className="size-2.5 inline mr-0.5" /> :
-                             <ArrowDownIcon className="size-2.5 inline mr-0.5" />}
+                            {health === "on-track" ? <ArrowUpIcon className="size-3 mr-0.5" /> :
+                             health === "at-risk" ? <AlertCircleIcon className="size-3 mr-0.5" /> :
+                             <ArrowDownIcon className="size-3 mr-0.5" />}
                             {health}
                           </Badge>
+                          <span className="text-xs font-semibold text-muted-foreground">{p.progress}%</span>
                         </div>
-                        <span className="text-xs text-muted-foreground shrink-0 ml-2">{p.progress}%</span>
                       </div>
-                      <Progress value={p.progress} className="h-1.5" />
+                      <Progress value={p.progress} className="h-2" />
                     </button>
                   );
                 })}

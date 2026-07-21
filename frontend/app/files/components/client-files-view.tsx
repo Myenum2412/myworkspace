@@ -185,7 +185,7 @@ export function ClientFilesView() {
         </div>
         <div className="relative w-64">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-          <Input placeholder="Search clients..." className="pl-8 h-9 text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder="Search clients..." className="pl-8 h-9 text-sm bg-white" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
 

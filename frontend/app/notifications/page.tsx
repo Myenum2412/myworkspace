@@ -182,7 +182,7 @@ export default function NotificationsPage() {
             placeholder="Search notifications..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-9 text-sm"
+            className="pl-8 h-9 text-sm bg-white"
           />
         </div>
         <div className="flex items-center gap-2 flex-wrap">
