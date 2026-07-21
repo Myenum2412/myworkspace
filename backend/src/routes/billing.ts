@@ -6,6 +6,7 @@ import { isAdminRole } from "../lib/rbac/index.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import { Counter } from "../lib/db/models/Counter.js";
 import { v4 as uuid } from "uuid";
+import { notifyBilling } from "../lib/notifications/notification-wiring.js";
 
 const router = Router();
 
@@ -99,6 +100,8 @@ router.post("/invoices", async (req: AuthRequest, res: Response) => {
       total: req.body.total || 0,
       isSimplifiedView: req.body.isSimplifiedView !== false,
     });
+
+    notifyBilling.invoiceGenerated(req.user!.userId, orgId, invoice.number, String(invoice.total)).catch(() => {});
 
     res.status(201).json({ success: true, data: invoice });
   } catch (err: any) {

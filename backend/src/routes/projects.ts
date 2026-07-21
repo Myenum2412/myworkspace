@@ -12,6 +12,8 @@ import { uploadFile } from "../services/file.service.js";
 import { cacheManager } from "../lib/cache.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { requireString, optionalString, requireEnum, optionalArray, PROJECT_STATUSES, PROJECT_ACCESS } from "../lib/validate.js";
+import { logger } from "../lib/logger/index.js";
+import { notifyProject } from "../lib/notifications/notification-wiring.js";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
@@ -103,6 +105,16 @@ router.post("/", upload.single("attachment"), async (req: AuthRequest, res: Resp
 
   cacheManager.invalidatePattern(`projects:${orgId}`);
 
+  notifyProject.created(req.user!.userId, orgId, req.user!.userId, name, project.id).catch(() => {});
+  for (const memberId of members) {
+    if (memberId !== req.user!.userId) {
+      notifyProject.created(memberId, orgId, req.user!.userId, name, project.id).catch(() => {});
+    }
+  }
+  for (const memberId of members) {
+    notifyProject.assigned(memberId, orgId, req.user!.userId, name, project.id).catch(() => {});
+  }
+
   const data = normalize(project);
   res.status(201).json({ success: true, data: { ...data, attachmentFileId } });
 });
@@ -150,6 +162,47 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   ]);
   if (!result) throw new AppError(404, "Project not found");
 
+  const existingMembers: string[] = (existing.members || []) as string[];
+  const actorId = req.user!.userId;
+  const projectName = existing.name;
+
+  for (const memberId of existingMembers) {
+    if (memberId !== actorId) {
+      notifyProject.updated(memberId, existing.orgId, actorId, projectName, result.id).catch(() => {});
+    }
+  }
+
+  if (updates.status !== undefined && existing.status !== updates.status) {
+    for (const memberId of existingMembers) {
+      if (memberId !== actorId) {
+        notifyProject.statusChanged(memberId, existing.orgId, actorId, projectName, result.id, existing.status as string, updates.status as string).catch(() => {});
+      }
+    }
+  }
+
+  if (updates.deadline !== undefined && String(existing.deadline) !== String(updates.deadline)) {
+    for (const memberId of existingMembers) {
+      if (memberId !== actorId) {
+        notifyProject.deadlineChanged(memberId, existing.orgId, actorId, projectName, result.id, String(existing.deadline), String(updates.deadline)).catch(() => {});
+      }
+    }
+  }
+
+  if (updates.budget !== undefined && existing.budget !== updates.budget) {
+    for (const memberId of existingMembers) {
+      if (memberId !== actorId) {
+        notifyProject.budgetUpdated(memberId, existing.orgId, actorId, projectName, result.id, updates.budget as number).catch(() => {});
+      }
+    }
+  }
+
+  if (updates.members !== undefined) {
+    const newMembers = (updates.members as string[]).filter((m: string) => !existingMembers.includes(m));
+    for (const memberId of newMembers) {
+      notifyProject.assigned(memberId, existing.orgId, actorId, projectName, result.id).catch(() => {});
+    }
+  }
+
   cacheManager.invalidatePattern(`projects:${existing.orgId}`);
   cacheManager.invalidatePattern(`project:${req.params.id}`);
 
@@ -178,6 +231,10 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 
   cacheManager.invalidatePattern(`projects:${existing.orgId}`);
   cacheManager.invalidatePattern(`project:${req.params.id}`);
+
+  for (const memberId of (existing.members || []) as string[]) {
+    notifyProject.deleted(memberId, existing.orgId, req.user!.userId, existing.name, req.params.id).catch(() => {});
+  }
 
   res.json({ success: true });
 });

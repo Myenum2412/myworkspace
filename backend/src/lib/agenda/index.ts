@@ -6,6 +6,7 @@ import { Task } from "../db/models/Task.js";
 import { User } from "../db/models/User.js";
 import { notifyTaskDueSoon } from "../notifications/index.js";
 import { sendTaskDueSoon, sendTaskOverdue } from "../mail/index.js";
+import { setupNotificationJobs } from "./notification-jobs.js";
 
 let agenda: Agenda | null = null;
 
@@ -201,6 +202,9 @@ export async function initializeAgenda() {
   await agenda.every("0 0 * * *", "session-daily-report");
   await agenda.every("*/30 * * * *", "task-due-reminders");
   await agenda.every("0 */6 * * *", "cleanup-files");
+
+  // Register notification jobs
+  setupNotificationJobs(agenda);
 
   console.log("✦ Agenda.js scheduler initialized");
   return agenda;

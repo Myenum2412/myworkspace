@@ -2,26 +2,16 @@
 
 import * as React from "react"
 import {
-  RiBellLine,
-  RiCheckLine,
-  RiErrorWarningLine,
-  RiFileTextLine,
-  RiGitMergeLine,
-  RiMegaphoneLine,
-  RiShieldCheckLine,
-  RiUserAddLine,
+  RiBellLine, RiCheckLine, RiErrorWarningLine, RiFileTextLine,
+  RiGitMergeLine, RiMegaphoneLine, RiShieldCheckLine, RiUserAddLine,
+  RiFileLine, RiLockLine, RiGlobalLine,
 } from "@remixicon/react"
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+  Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { useNotifications, type NotificationItem } from "@/hooks/use-notifications"
@@ -29,13 +19,26 @@ import { useSession } from "next-auth/react"
 import Link from "next/link"
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  auth: RiShieldCheckLine,
   tasks: RiFileTextLine,
   projects: RiGitMergeLine,
+  files: RiFileLine,
+  approvals: RiErrorWarningLine,
+  permissions: RiLockLine,
+  hr: RiUserAddLine,
+  clients: RiUserAddLine,
   messages: RiMegaphoneLine,
   billing: RiFileTextLine,
-  approvals: RiErrorWarningLine,
-  team: RiUserAddLine,
+  security: RiShieldCheckLine,
   system: RiShieldCheckLine,
+  team: RiUserAddLine,
+}
+
+const priorityColors: Record<string, string> = {
+  critical: "bg-red-500",
+  high: "bg-orange-500",
+  medium: "bg-primary",
+  low: "bg-slate-300",
 }
 
 function timeAgo(dateStr: string) {
@@ -53,15 +56,8 @@ export function NotificationBell() {
   const { data: session } = useSession()
   const userId = session?.user?.id
   const {
-    notifications,
-    unreadCount,
-    markAsRead,
-    markAllAsRead,
-    archiveNotification,
-    deleteNotification,
-    loading,
-    loadMore,
-    hasMore,
+    notifications, unreadCount, markAsRead, markAllAsRead,
+    archiveNotification, deleteNotification, loading, loadMore, hasMore,
   } = useNotifications(userId)
 
   const handleMarkAllRead = React.useCallback(() => {
@@ -71,9 +67,7 @@ export function NotificationBell() {
   const handleNotificationClick = React.useCallback(
     async (n: NotificationItem) => {
       if (!n.read) await markAsRead(n.id)
-      if (n.link) {
-        window.location.href = n.link
-      }
+      if (n.link) window.location.href = n.link
     },
     [markAsRead]
   )
@@ -101,6 +95,9 @@ export function NotificationBell() {
               </span>
             )}
           </SheetTitle>
+          <Link href="/notifications" className="ml-auto text-xs text-primary hover:underline">
+            View All
+          </Link>
         </SheetHeader>
 
         <Separator />
@@ -118,17 +115,25 @@ export function NotificationBell() {
             </div>
           ) : (
             <ul className="flex flex-col">
-              {notifications.map((item, index) => {
+              {notifications.slice(0, 20).map((item, index) => {
                 const Icon = categoryIcons[item.category] || RiBellLine
                 return (
                   <li key={item.id}>
                     <button
                       onClick={() => handleNotificationClick(item)}
                       className={cn(
-                        "w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/50",
+                        "w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/50 relative",
                         !item.read && "bg-muted/30"
                       )}
                     >
+                      {/* Priority indicator */}
+                      <span
+                        className={cn(
+                          "absolute left-0 top-0 bottom-0 w-0.5",
+                          priorityColors[item.priority] || "bg-transparent"
+                        )}
+                      />
+
                       <span
                         className={cn(
                           "mt-0.5 flex size-8 shrink-0 items-center justify-center bg-muted text-muted-foreground",
@@ -153,28 +158,40 @@ export function NotificationBell() {
                           </span>
                         </div>
                         {item.message && (
-                          <p className="text-xs/relaxed text-muted-foreground">
+                          <p className="text-xs/relaxed text-muted-foreground line-clamp-2">
                             {item.message}
                           </p>
+                        )}
+
+                        {item.actions && item.actions.length > 0 && (
+                          <div className="flex gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
+                            {item.actions.slice(0, 2).map((a) => (
+                              <span key={a.action}
+                                onClick={() => { if (a.url) window.location.href = a.url; }}
+                                className="text-[10px] text-primary font-medium hover:underline cursor-pointer"
+                              >
+                                {a.label}
+                              </span>
+                            ))}
+                          </div>
                         )}
                       </div>
 
                       {!item.read && (
-                        <span
-                          className="mt-1.5 size-1.5 shrink-0 bg-primary"
-                          aria-label="Unread"
-                        />
+                        <span className="mt-1.5 size-1.5 shrink-0 bg-primary rounded-full" aria-label="Unread" />
                       )}
                     </button>
-                    {index < notifications.length - 1 && <Separator />}
+                    {index < notifications.length - 1 && index < 19 && <Separator />}
                   </li>
                 )
               })}
               {hasMore && (
                 <div className="px-4 py-2 text-center">
-                  <Button variant="ghost" size="sm" className="text-xs" onClick={loadMore} disabled={loading}>
-                    Load more
-                  </Button>
+                  <Link href="/notifications">
+                    <Button variant="ghost" size="sm" className="text-xs">
+                      View all notifications
+                    </Button>
+                  </Link>
                 </div>
               )}
             </ul>
@@ -189,6 +206,11 @@ export function NotificationBell() {
               Close
             </Button>
           </SheetClose>
+          <Link href="/settings/notifications">
+            <Button variant="ghost" size="sm">
+              Settings
+            </Button>
+          </Link>
           <Button
             size="sm"
             className="flex-1"

@@ -27,6 +27,7 @@ import { runFullCleanup } from "../services/cleanup.service.js";
 import { getStorageProvider } from "../lib/storage/providers.js";
 import { SignedUrlService } from "../lib/storage/signed-urls.js";
 import { logger } from "../lib/logger/index.js";
+import { notifyFile } from "../lib/notifications/notification-wiring.js";
 
 const router = Router();
 
@@ -599,6 +600,12 @@ router.post("/:id/share", async (req: AuthRequest, res: Response) => {
     orgId,
     createdBy: req.user!.userId,
   });
+  if (sharedWithUserId) {
+    const shareFile = await FileAttachment.findOne({ id: req.params.id }).select("originalName").lean();
+    if (shareFile) {
+      notifyFile.shared(sharedWithUserId, orgId, req.user!.userId, shareFile.originalName, req.params.id, sharedWithUserId).catch(() => {});
+    }
+  }
   res.json({ success: true });
 });
 
@@ -672,6 +679,7 @@ router.post("/upload", upload.fields([{ name: "files", maxCount: env.MAX_FILES_P
         results.push({ originalName: file.originalname, fileId: result.fileId, error: "duplicate_skipped" });
       } else {
         results.push({ originalName: file.originalname, fileId: result.fileId });
+        notifyFile.uploaded(req.user!.userId, orgId, req.user!.userId, file.originalname, result.fileId).catch(() => {});
       }
     } catch (err: any) {
       results.push({ originalName: file.originalname, fileId: "", error: err.message });
@@ -721,6 +729,8 @@ router.patch("/:id", async (req: AuthRequest, res: Response) => {
 
   invalidateFileCaches(file.orgId);
 
+  notifyFile.renamed(req.user!.userId, file.orgId, req.user!.userId, file.originalName, name || file.originalName, req.params.id).catch(() => {});
+
   res.json({ success: true });
 });
 
@@ -728,7 +738,7 @@ router.post("/bulk/delete", async (req: AuthRequest, res: Response) => {
   const { fileIds } = req.body;
   if (!fileIds?.length) throw new AppError(400, "fileIds is required");
 
-  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("orgId").lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).select("orgId originalName id").lean();
   const orgIds = [...new Set(files.map(f => f.orgId))];
   if (orgIds.length !== 1) throw new AppError(400, "All files must be in the same organization");
   await verifyAccess(req.user!.userId, orgIds[0]);
@@ -745,6 +755,10 @@ router.post("/bulk/delete", async (req: AuthRequest, res: Response) => {
     description: `${fileIds.length} files moved to trash`,
   });
 
+  for (const f of files) {
+    notifyFile.deleted(req.user!.userId, orgIds[0], req.user!.userId, f.originalName, f.id).catch(() => {});
+  }
+
   invalidateFileCaches(orgIds[0]);
 
   res.json({ success: true, deleted: fileIds.length });
@@ -754,7 +768,7 @@ router.post("/bulk/restore", async (req: AuthRequest, res: Response) => {
   const { fileIds } = req.body;
   if (!fileIds?.length) throw new AppError(400, "fileIds is required");
 
-  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: { $ne: null } }).select("orgId").lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: { $ne: null } }).select("orgId originalName id").lean();
   if (!files.length) throw new AppError(404, "No files found in trash");
   await verifyAccess(req.user!.userId, files[0].orgId);
 
@@ -762,6 +776,10 @@ router.post("/bulk/restore", async (req: AuthRequest, res: Response) => {
     { id: { $in: fileIds }, deletedAt: { $ne: null } },
     { deletedAt: null, deletedBy: null },
   );
+
+  for (const f of files) {
+    notifyFile.restored(req.user!.userId, files[0].orgId, req.user!.userId, f.originalName, f.id).catch(() => {});
+  }
 
   invalidateFileCaches(files[0].orgId);
 
@@ -828,7 +846,7 @@ router.post("/bulk/permanent", async (req: AuthRequest, res: Response) => {
   const { fileIds } = req.body;
   if (!fileIds?.length) throw new AppError(400, "fileIds is required");
 
-  const files = await FileAttachment.find({ id: { $in: fileIds } }).select("orgId id storagePath size").lean();
+  const files = await FileAttachment.find({ id: { $in: fileIds } }).select("orgId id storagePath size originalName").lean();
   if (!files.length) throw new AppError(404, "No files found");
   await verifyAccess(req.user!.userId, files[0].orgId);
 
@@ -858,6 +876,10 @@ router.post("/bulk/permanent", async (req: AuthRequest, res: Response) => {
     description: `${fileIds.length} files permanently deleted`,
   });
 
+  for (const f of files) {
+    notifyFile.permanentlyDeleted(req.user!.userId, files[0].orgId, req.user!.userId, f.originalName, f.id).catch(() => {});
+  }
+
   invalidateFileCaches(files[0].orgId);
 
   res.json({ success: true, deleted: fileIds.length });
@@ -865,11 +887,19 @@ router.post("/bulk/permanent", async (req: AuthRequest, res: Response) => {
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
   await softDeleteFile(req.params.id, req.user!.userId);
+  const delFile = await FileAttachment.findOne({ id: req.params.id }).select("originalName orgId").lean();
+  if (delFile) {
+    notifyFile.deleted(req.user!.userId, delFile.orgId, req.user!.userId, delFile.originalName, req.params.id).catch(() => {});
+  }
   res.json({ success: true });
 });
 
 router.post("/:id/restore", async (req: AuthRequest, res: Response) => {
   await restoreFile(req.params.id, req.user!.userId);
+  const restoreFileRecord = await FileAttachment.findOne({ id: req.params.id }).select("originalName orgId").lean();
+  if (restoreFileRecord) {
+    notifyFile.restored(req.user!.userId, restoreFileRecord.orgId, req.user!.userId, restoreFileRecord.originalName, req.params.id).catch(() => {});
+  }
   res.json({ success: true });
 });
 

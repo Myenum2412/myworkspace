@@ -12,6 +12,8 @@ import {
   updateClient,
   deleteClient,
 } from "../services/client.service.js";
+import { notifyClient } from "../lib/notifications/notification-wiring.js";
+import { createNotification } from "../services/notification.service.js";
 
 const router = Router();
 
@@ -54,6 +56,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     body: req.body,
   });
 
+  notifyClient.created(req.user!.userId, orgId, req.user!.userId, result.client.name, result.client.id).catch(() => {});
   res.status(201).json({ success: true, data: result });
 });
 
@@ -61,13 +64,27 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update clients");
   const orgId = req.user!.orgId!;
   const data = await updateClient(orgId, req.params.id, req.user!.userId, req.user!.email!, req.body);
+  notifyClient.updated(req.user!.userId, orgId, req.user!.userId, data.name || "Client", req.params.id).catch(() => {});
   res.json({ success: true, data });
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete clients");
   const orgId = req.user!.orgId!;
+  const deletedClient = await getClient(orgId, req.params.id);
+  const deletedName = deletedClient?.name;
   await deleteClient(orgId, req.params.id, req.user!.userId);
+  createNotification({
+    userId: req.user!.userId,
+    orgId,
+    createdBy: req.user!.userId,
+    type: "system",
+    category: "clients",
+    title: "Client Deleted",
+    message: `${deletedName || "Client"} was deleted`,
+    link: "/clients",
+    metadata: { clientId: req.params.id, clientName: deletedName },
+  }).catch(() => {});
   res.json({ success: true, message: "Client deleted" });
 });
 

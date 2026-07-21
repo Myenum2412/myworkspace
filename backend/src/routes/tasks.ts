@@ -19,6 +19,10 @@ import {
   publishDraft,
   autoActivateScheduledTasks,
 } from "../services/task.service.js";
+import { logger } from "../lib/logger/index.js";
+import { Task } from "../lib/db/models/Task.js";
+import { notifyTask, notifyTaskCreatedAndAssignees } from "../lib/notifications/notification-wiring.js";
+import { createNotification } from "../services/notification.service.js";
 
 const router = Router();
 
@@ -81,6 +85,16 @@ router.post("/", async (req: AuthRequest, res: Response) => {
       isActive: req.body.isActive,
     });
 
+    notifyTaskCreatedAndAssignees({
+      id: result.taskId,
+      title: req.body.title,
+      assigneeIds: req.body.selectedUserIds || (req.body.assigneeId ? [req.body.assigneeId] : []),
+      createdBy: req.user!.userId,
+      orgId,
+    }).catch(() => {});
+
+    notifyTask.created(req.user!.userId, orgId, req.user!.userId, req.body.title, result.taskId).catch(() => {});
+
     res.status(201).json({ success: true, data: { taskId: result.taskId, type: result.type, status: result.status } });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -94,7 +108,21 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update tasks");
+    const orgId = await requireOrgMembership(req.user!.userId);
+    const oldTask = await Task.findById(req.params.id).select("assigneeId priority title").lean();
     await updateTask(req.params.id, req.user!.userId, req.body, req.query.scope as string | undefined);
+    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
+
+    if (task?.assigneeId) {
+      notifyTask.updated(task.assigneeId, orgId, req.user!.userId, task.title, req.params.id).catch(() => {});
+      if (oldTask?.priority && req.body.priority && oldTask.priority !== req.body.priority) {
+        notifyTask.priorityChanged(task.assigneeId, orgId, req.user!.userId, task.title, req.params.id, oldTask.priority, req.body.priority).catch(() => {});
+      }
+      if (oldTask?.assigneeId && oldTask.assigneeId !== task.assigneeId) {
+        notifyTask.reassigned(task.assigneeId, orgId, req.user!.userId, task.title, req.params.id).catch(() => {});
+      }
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -108,7 +136,20 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete tasks");
+    const taskForNotification = await Task.findById(req.params.id).select("title assigneeId creatorId orgId").lean();
     await deleteTask(req.params.id, req.user!.userId, req.query.scope as string | undefined);
+
+    if (taskForNotification) {
+      createNotification({
+        type: "system",
+        userId: taskForNotification.assigneeId || taskForNotification.creatorId || "",
+        orgId: taskForNotification.orgId,
+        createdBy: req.user!.userId,
+        title: "Task Deleted",
+        message: `Task "${taskForNotification.title}" has been deleted`,
+      }).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -126,7 +167,17 @@ router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
     if (!status) throw new AppError(400, "Status is required");
     if (!Array.isArray(taskIds) || taskIds.length === 0) throw new AppError(400, "taskIds must be a non-empty array");
 
+    const orgId = await requireOrgMembership(req.user!.userId);
     const result = await batchUpdateStatus(taskIds, status, req.user!.userId);
+
+    Task.find({ _id: { $in: taskIds } }).select("title assigneeId").lean().then(tasks => {
+      (tasks as any[]).forEach(t => {
+        if (t.assigneeId) {
+          notifyTask.updated(t.assigneeId, orgId, req.user!.userId, t.title, t._id.toString()).catch(() => {});
+        }
+      });
+    }).catch(() => {});
+
     res.json({ success: true, data: { matched: result.matched, modified: result.modified } });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -142,7 +193,19 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update task status");
     const { status } = req.body;
     if (!status) throw new AppError(400, "Status is required");
+    const orgId = await requireOrgMembership(req.user!.userId);
     await updateTaskStatus(req.params.id, status, req.user!.userId);
+    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
+
+    if (task?.assigneeId) {
+      const notifyFn = status === "completed" ? notifyTask.completed
+        : status === "in_progress" ? notifyTask.started
+        : status === "hold" ? notifyTask.paused
+        : status === "reopened" ? notifyTask.reopened
+        : notifyTask.updated;
+      notifyFn(task.assigneeId, orgId, req.user!.userId, task.title, req.params.id).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -158,7 +221,14 @@ router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can assign tasks");
     const { assigneeId } = req.body;
     if (!assigneeId) throw new AppError(400, "assigneeId is required");
+    const orgId = await requireOrgMembership(req.user!.userId);
     await assignIndividualTask(req.params.id, assigneeId, req.user!.userId);
+    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
+
+    if (task) {
+      notifyTask.assigned(assigneeId, orgId, req.user!.userId, task.title, req.params.id).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -172,7 +242,22 @@ router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
 router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can submit tasks for verification");
+    const orgId = await requireOrgMembership(req.user!.userId);
     await submitForVerification(req.params.id, req.user!.userId);
+    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
+
+    if (task) {
+      createNotification({
+        type: "task_submitted",
+        userId: task.creatorId || task.assigneeId || "",
+        orgId,
+        createdBy: req.user!.userId,
+        title: "Task Submitted for Verification",
+        message: `Task "${task.title}" has been submitted for verification`,
+        link: `/alltasks?id=${req.params.id}`,
+      }).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -186,7 +271,14 @@ router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) 
 router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can approve tasks");
+    const orgId = await requireOrgMembership(req.user!.userId);
     await approveTeamTask(req.params.id, req.user!.userId, req.body.note);
+    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
+
+    if (task?.assigneeId) {
+      notifyTask.approved(task.assigneeId, orgId, req.user!.userId, task.title, req.params.id).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -202,7 +294,14 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can reject tasks");
     const { reason } = req.body;
     if (!reason) throw new AppError(400, "Rejection reason is required");
+    const orgId = await requireOrgMembership(req.user!.userId);
     await rejectTeamTask(req.params.id, req.user!.userId, reason);
+    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
+
+    if (task?.assigneeId) {
+      notifyTask.rejected(task.assigneeId, orgId, req.user!.userId, task.title, req.params.id, reason).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -216,7 +315,27 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
 router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can publish tasks");
+    const orgId = await requireOrgMembership(req.user!.userId);
     await publishCommonTask(req.params.id, req.user!.userId);
+    const task = await Task.findById(req.params.id).select("title assigneeId creatorId selectedUserIds").lean();
+
+    if (task) {
+      const recipients = (task as any).selectedUserIds?.length
+        ? (task as any).selectedUserIds
+        : task.assigneeId ? [task.assigneeId] : [task.creatorId];
+      recipients.forEach((uid: string) => {
+        createNotification({
+          type: "task_published",
+          userId: uid,
+          orgId,
+          createdBy: req.user!.userId,
+          title: "Task Published",
+          message: `Task "${task.title}" has been published`,
+          link: `/alltasks?id=${req.params.id}`,
+        }).catch(() => {});
+      });
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -230,7 +349,22 @@ router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
 router.post("/:id/activate", async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can activate tasks");
+    const orgId = await requireOrgMembership(req.user!.userId);
     await activateUpcomingTask(req.params.id, req.user!.userId);
+    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
+
+    if (task) {
+      createNotification({
+        type: "task_activated",
+        userId: task.assigneeId || task.creatorId || "",
+        orgId,
+        createdBy: req.user!.userId,
+        title: "Task Activated",
+        message: `Task "${task.title}" has been activated`,
+        link: `/alltasks?id=${req.params.id}`,
+      }).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -246,10 +380,26 @@ router.post("/:id/publish-draft", async (req: AuthRequest, res: Response) => {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can publish draft tasks");
     const { targetType, assigneeId, teamId, selectedUserIds, scheduledDate } = req.body;
     if (!targetType) throw new AppError(400, "targetType is required");
+    const orgId = await requireOrgMembership(req.user!.userId);
     await publishDraft(req.params.id, req.user!.userId, targetType, {
       assigneeId, teamId, selectedUserIds,
       scheduledDate: scheduledDate ? new Date(scheduledDate) : undefined,
     });
+    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
+
+    if (task) {
+      const targetUserId = assigneeId || task.assigneeId || task.creatorId || "";
+      createNotification({
+        type: "draft_published",
+        userId: targetUserId,
+        orgId,
+        createdBy: req.user!.userId,
+        title: "Draft Published",
+        message: `Draft "${task.title}" has been published as ${targetType}`,
+        link: `/alltasks?id=${req.params.id}`,
+      }).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     if (err instanceof AppError) throw err;

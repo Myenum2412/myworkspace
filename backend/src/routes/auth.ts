@@ -22,6 +22,7 @@ import { JwtPayload } from "../types/index.js";
 import { requireString, optionalString } from "../lib/validate.js";
 import { validatePasswordStrength } from "../services/validation.service.js";
 import { recordAuditLog } from "../services/audit.service.js";
+import { notifyAuth } from "../lib/notifications/notification-wiring.js";
 
 const router = Router();
 const MAX_FAILED_ATTEMPTS = 5;
@@ -74,13 +75,18 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     throw new AppError(423, "Account is temporarily locked. Try again later.");
   }
 
+  const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
+  const resolvedOrgId = user.orgId || await getUserPrimaryOrgId(user.id) || "";
+
   const valid = await compare(password, user.password);
   if (!valid) {
     user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
     if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
       user.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
+      notifyAuth.accountLocked(user._id.toString(), resolvedOrgId, "Too many failed login attempts").catch(() => {});
     }
     await user.save();
+    notifyAuth.failedLogin(user._id.toString(), resolvedOrgId, user.failedLoginAttempts, ipAddress).catch(() => {});
     throw new AppError(401, "Invalid email or password");
   }
 
@@ -90,8 +96,6 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   user.status = "online";
   await user.save();
 
-  const resolvedOrgId = user.orgId || await getUserPrimaryOrgId(user.id) || "";
-  const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
   const userAgent = req.headers["user-agent"] || "unknown";
 
   if (user.twoFactorEnabled) {
@@ -122,6 +126,8 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     description: `${user.name} logged in from ${ipAddress}`,
     metadata: JSON.stringify({ ipAddress, userAgent }),
   });
+
+  notifyAuth.newDeviceLogin(user._id.toString(), resolvedOrgId, userAgent || "Unknown device", ipAddress).catch(() => {});
 
   await Session.updateMany(
     { userId: user.id, logoutTime: { $exists: false } },
@@ -294,6 +300,11 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
     await session.endSession();
   }
 
+  notifyAuth.workspaceRegistered(user.id, org.id, orgName).catch(() => {});
+  notifyAuth.organizationCreated(user.id, org.id, orgName).catch(() => {});
+  notifyAuth.workspaceWelcome(user.id, org.id, orgName).catch(() => {});
+  notifyAuth.userAccountCreated(user.id, org.id).catch(() => {});
+
   const token = signToken({
     userId: user.id,
     email,
@@ -352,7 +363,7 @@ router.post("/verify-email", async (req: AuthRequest, res: Response) => {
     email: email.toLowerCase().trim(),
     emailVerificationToken: token,
     emailVerificationExpires: { $gt: new Date() },
-  }).select("_id").lean();
+  }).select("_id orgId").lean();
 
   if (!user) {
     throw new AppError(400, "Invalid or expired verification token");
@@ -368,6 +379,8 @@ router.post("/verify-email", async (req: AuthRequest, res: Response) => {
       },
     },
   );
+
+  notifyAuth.emailVerified(user._id.toString(), user.orgId || "").catch(() => {});
 
   res.json({ success: true, message: "Email verified successfully" });
 });
@@ -502,6 +515,8 @@ router.post("/forgot-password", async (req: AuthRequest, res: Response) => {
       success: true,
     });
 
+    notifyAuth.passwordReset(user._id.toString(), "system").catch(() => {});
+
     sendPasswordResetEmail(email, user.name, resetLink).catch((err) => {
       console.error("[auth] Failed to send password reset email:", err?.message || err);
     });
@@ -575,6 +590,8 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
     userAgent: req.headers["user-agent"] as string,
     success: true,
   });
+
+  notifyAuth.passwordChanged(user._id.toString(), "system").catch(() => {});
 
   res.json({ success: true, message: "Password has been reset successfully." });
 });

@@ -95,6 +95,10 @@ export class SocketIOManager {
     this.io?.to(`org:${orgId}`).emit(event, data);
   }
 
+  emitUnreadCount(userId: string, count: number) {
+    this.io?.to(`user:${userId}`).emit("unread_count", { count });
+  }
+
   emitToAppointmentStakeholders<T = any>(data: T) {
     const record = data as Record<string, unknown>;
     if (record.orgId && typeof record.orgId === "string") {
