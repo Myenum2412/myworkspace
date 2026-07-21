@@ -132,10 +132,10 @@ export function Header({ context }: { context?: AppContextType }) {
             )}
           </BreadcrumbList>
         </Breadcrumb>
-        <NotificationBell />
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2 md:gap-4 text-sm pr-1 sm:pr-2 shrink-0">
+        <NotificationBell />
         <button
           onClick={() => setSearchOpen(true)}
           className="flex md:hidden items-center justify-center size-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer touch-target"
