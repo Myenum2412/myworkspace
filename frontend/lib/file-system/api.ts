@@ -69,7 +69,7 @@ export function listFiles(params: {
   limit?: number;
 }) {
   const sp = new URLSearchParams({ orgId: params.orgId });
-  if (params.folderId) sp.set("folderId", params.folderId);
+  if (params.folderId !== undefined) sp.set("folderId", params.folderId ?? "");
   if (params.clientId) sp.set("clientId", params.clientId);
   if (params.search) sp.set("search", params.search);
   if (params.sort) sp.set("sort", params.sort);
@@ -169,6 +169,17 @@ export function bulkMove(ids: string[], targetFolderId: string) {
     method: "POST",
     body: JSON.stringify({ fileIds: ids, targetFolderId }),
   });
+}
+
+export function bulkCopy(ids: string[], targetFolderId: string) {
+  return request<void>(`${API.files}/bulk/copy`, {
+    method: "POST",
+    body: JSON.stringify({ fileIds: ids, targetFolderId }),
+  });
+}
+
+export function bulkCutPaste(ids: string[], targetFolderId: string) {
+  return bulkMove(ids, targetFolderId);
 }
 
 export function bulkPermanentDelete(ids: string[]) {

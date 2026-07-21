@@ -32,13 +32,19 @@ export function useInstantLogin() {
     setState({ loading: true, error: null, step: "challenging" });
 
     try {
-      const challengeRes = await fetch(apiUrl("/api/two-factor/challenge"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      }).then(r => r.json());
+      let requiresTwoFactor = false;
+      try {
+        const challengeRes = await fetch(apiUrl("/api/two-factor/challenge"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }).then(r => r.json());
+        requiresTwoFactor = challengeRes?.data?.requiresTwoFactor === true;
+      } catch {
+        // Backend not available — skip 2FA pre-check
+      }
 
-      if (challengeRes?.data?.requiresTwoFactor) {
+      if (requiresTwoFactor) {
         router.replace(`/login/verify-2fa?email=${encodeURIComponent(email)}`);
         setState({ loading: false, error: null, step: "idle" });
         return;

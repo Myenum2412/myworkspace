@@ -1,32 +1,22 @@
 import { Metadata } from "next";
-import { NewNav } from "@/components/landing/new-nav";
-import { NewFooter } from "@/components/landing/new-footer";
 import PricingBlock from "@/components/pricing-block";
 
 export const metadata: Metadata = {
-  title: "Pricing — MyWorkSpace Plans & Pricing",
-  description: "Choose the right MyWorkSpace plan for your team. Compare Starter, Professional, and Enterprise plans with flexible pricing for project management, team collaboration, and business automation.",
-  keywords: ["pricing", "plans", "subscription", "starter plan", "professional plan", "enterprise plan", "SaaS pricing", "workspace pricing"],
+  title: "Pricing — India Plans & Pricing",
+  description: "Choose the right pricing plan for your business in India. Compare Starter (₹5,000), Growth (₹15,000), and Enterprise (₹35,000+) plans designed for startups, growing businesses, and enterprises.",
+  keywords: ["pricing", "plans", "India pricing", "starter plan", "growth plan", "enterprise plan", "₹5,000", "₹15,000", "₹35,000", "Indian market pricing"],
   openGraph: {
-    title: "Pricing — MyWorkSpace Plans",
-    description: "Compare MyWorkSpace plans. Find the right plan for your team.",
+    title: "Pricing — India Plans",
+    description: "Choose from Starter (₹5,000), Growth (₹15,000), or Enterprise (₹35,000+) plans. Tailored for the Indian market.",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Pricing — MyWorkSpace Plans",
-    description: "Compare MyWorkSpace plans for your team.",
+    title: "Pricing — India Plans",
+    description: "Choose from Starter (₹5,000), Growth (₹15,000), or Enterprise (₹35,000+) plans.",
   },
 };
 
 export default function PricingPage() {
-  return (
-    <>
-      <NewNav />
-      <main className="flex min-h-screen flex-col">
-        <PricingBlock />
-      </main>
-      <NewFooter />
-    </>
-  );
+  return <PricingBlock />;
 }

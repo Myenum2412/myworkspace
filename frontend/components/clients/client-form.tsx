@@ -175,6 +175,25 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
     const result = await res.json();
     if (res.ok) {
       const created = result.data?.client || result;
+      const clientId = created.id;
+
+      if (documents.length > 0 && clientId) {
+        try {
+          const foldersRes = await fetch(`/api/folders?clientId=${clientId}`, { credentials: "include" });
+          const foldersData = await foldersRes.json();
+          const folders = foldersData?.data || foldersData || [];
+          const docsFolder = Array.isArray(folders) ? folders.find((f: any) => f.name === "Documents") : null;
+          const folderId = docsFolder?.id || "";
+          for (const file of documents) {
+            const fd = new FormData();
+            fd.append("files", file);
+            fd.append("clientId", clientId);
+            if (folderId) fd.append("folderId", folderId);
+            await fetch("/api/files/upload", { method: "POST", body: fd }).catch(() => {});
+          }
+        } catch { /* silent */ }
+      }
+
       resetForm();
       onClientAdded?.(created);
     } else {

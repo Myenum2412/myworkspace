@@ -76,8 +76,6 @@ export interface ProjectCreateFormProps {
 }
 
 export interface ProjectEditFormProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   editName: string;
   onEditNameChange: (value: string) => void;
   editClient: string;
@@ -92,7 +90,27 @@ export interface ProjectEditFormProps {
   onEditDescriptionChange: (value: string) => void;
   editDeadline: string;
   onEditDeadlineChange: (value: string) => void;
+  editPriority: string;
+  onEditPriorityChange: (value: string) => void;
+  editCategory: string;
+  onEditCategoryChange: (value: string) => void;
+  editStartDate: string;
+  onEditStartDateChange: (value: string) => void;
+  editBudget: number;
+  onEditBudgetChange: (value: number) => void;
+  editHealth: string;
+  onEditHealthChange: (value: string) => void;
+  editMembers: string[];
+  onEditMembersChange: (value: string[]) => void;
+  editMemberSearch: string;
+  onEditMemberSearchChange: (value: string) => void;
+  editAttachment: File | null;
+  onEditAttachmentChange: (file: File | null) => void;
+  filteredMembers: { id: string; name: string; email: string; image?: string }[];
+  clientList: string[];
   colors: string[];
+  submitting: boolean;
+  formError: string;
   onSubmit: () => void;
   onCancel: () => void;
 }

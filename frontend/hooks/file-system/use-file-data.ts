@@ -13,7 +13,7 @@ export function useFileData() {
 
   const fileParams = {
     orgId,
-    folderId: currentFolderId ?? undefined,
+    folderId: currentFolderId,
     search: search || undefined,
     sort,
     category: filters.category || undefined,
@@ -118,6 +118,18 @@ export function useFileMutations() {
     onSuccess: invalidate,
   });
 
+  const copyFileMutation = useMutation({
+    mutationFn: ({ ids, targetFolderId }: { ids: string[]; targetFolderId: string }) =>
+      api.bulkCopy(ids, targetFolderId),
+    onSuccess: invalidate,
+  });
+
+  const cutPasteMutation = useMutation({
+    mutationFn: ({ ids, targetFolderId }: { ids: string[]; targetFolderId: string }) =>
+      api.bulkCutPaste(ids, targetFolderId),
+    onSuccess: invalidate,
+  });
+
   const copyFolderMutation = useMutation({
     mutationFn: ({ id, parentId }: { id: string; parentId: string | null }) =>
       api.copyFolder(id, parentId),
@@ -160,6 +172,8 @@ export function useFileMutations() {
     permanentDeleteMutation,
     duplicateFileMutation,
     moveFileMutation,
+    copyFileMutation,
+    cutPasteMutation,
     copyFolderMutation,
     moveFolderMutation,
     deleteFolderMutation,

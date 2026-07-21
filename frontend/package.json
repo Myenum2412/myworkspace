@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "fuser -k 3000/tcp 2>/dev/null; SERWIST_SUPPRESS_TURBOPACK_WARNING=1 next dev",
+    "dev": "fuser -k 3000/tcp 2>/dev/null; SERWIST_SUPPRESS_TURBOPACK_WARNING=1 next dev -H 0.0.0.0",
     "dev:server": "NODE_ENV=development tsx server.ts",
     "build": "SERWIST_SUPPRESS_TURBOPACK_WARNING=1 next build",
     "vercel-build": "SERWIST_SUPPRESS_TURBOPACK_WARNING=1 next build",

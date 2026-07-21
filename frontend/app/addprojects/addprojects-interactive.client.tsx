@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2Icon, AlertCircleIcon } from "lucide-react";
+import { createProjectAction } from "@/actions/projects";
 
 const colors = [
   "#93c5fd", "#fca5a5", "#86efac", "#fcd34d", "#c4b5fd",
@@ -52,26 +53,19 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
     setError("");
 
     try {
-      const res = await fetch("/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          orgId,
-          name,
-          client,
-          description,
-          deadline: deadline || null,
-          color,
-          access: "Public",
-          status: "Active",
-        }),
-      });
-      const d = await res.json();
-      if (d.success) {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("client", client);
+      formData.append("description", description);
+      if (deadline) formData.append("deadline", deadline);
+      formData.append("color", color);
+      formData.append("access", "Public");
+
+      const result = await createProjectAction(formData);
+      if (result.success) {
         router.push("/projects");
       } else {
-        setError(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Failed to create project"));
+        setError(result.error || "Failed to create project");
       }
     } catch {
       setError("Network error. Try again.");

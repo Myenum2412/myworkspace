@@ -16,7 +16,7 @@ export interface IStorageQuota extends Document {
 const storageQuotaSchema = new Schema<IStorageQuota>(
   {
     orgId: { type: String, required: true, unique: true },
-    maxStorageBytes: { type: Number, default: 10 * 1024 * 1024 * 1024 },
+    maxStorageBytes: { type: Number, default: 1 * 1024 * 1024 * 1024 },
     usedStorageBytes: { type: Number, default: 0 },
     maxFileSizeBytes: { type: Number, default: 100 * 1024 * 1024 },
     allowedMimeTypes: { type: [String], default: [] },
@@ -37,14 +37,14 @@ export interface PlanLimits {
 
 const planToStorageLimits: Record<string, PlanLimits> = {
   free: {
-    maxStorageBytes: 10 * 1024 * 1024 * 1024,
+    maxStorageBytes: 1 * 1024 * 1024 * 1024,
     maxFileSizeBytes: 100 * 1024 * 1024,
-    userStorageLimitBytes: 1024 * 1024 * 1024,
+    userStorageLimitBytes: 1 * 1024 * 1024 * 1024,
   },
   trial: {
-    maxStorageBytes: 10 * 1024 * 1024 * 1024,
+    maxStorageBytes: 1 * 1024 * 1024 * 1024,
     maxFileSizeBytes: 100 * 1024 * 1024,
-    userStorageLimitBytes: 1024 * 1024 * 1024,
+    userStorageLimitBytes: 1 * 1024 * 1024 * 1024,
   },
   starter: {
     maxStorageBytes: 100 * 1024 * 1024 * 1024,

@@ -6,6 +6,7 @@ import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { ensureUserOrg } from "@/lib/org";
 import { ROLES, isAdminRole } from "@/lib/rbac";
+import { sendClientWelcomeEmail } from "@/lib/mail";
 
 // Mirrors backend workspace-provision template so client folders are always
 // created from the file-management side, even if the backend proxy is unreachable.
@@ -190,6 +191,17 @@ export async function POST(request: NextRequest) {
 
     const appUrl = process.env.APP_URL || "http://localhost:3000";
 
+    const staffInfo = [body.assignedSalesPerson, body.assignedProjectManager].filter(Boolean) as string[];
+
+    sendClientWelcomeEmail(
+      email,
+      name,
+      username,
+      rawPassword,
+      `${appUrl}/client/login`,
+      staffInfo.length > 0 ? staffInfo : undefined
+    ).catch(() => {});
+
     return NextResponse.json({
       success: true,
       data: {
@@ -271,6 +283,14 @@ export async function DELETE(request: NextRequest) {
     const projectNames = relatedProjectDocs.map((p) => p.name as string);
 
     await Promise.all([
+      db.collection(collections.folders).updateMany(
+        { orgId, clientId: id, deletedAt: null },
+        { $set: { deletedAt: new Date(), updatedBy: session.user.id } }
+      ),
+      db.collection(collections.fileAttachments).updateMany(
+        { orgId, clientId: id, deletedAt: null },
+        { $set: { deletedAt: new Date(), deletedBy: session.user.id } }
+      ),
       db.collection(collections.clients).deleteOne({ id, orgId }),
       db.collection(collections.clientUsers).deleteMany({ clientId: id }),
       ...(projectNames.length > 0

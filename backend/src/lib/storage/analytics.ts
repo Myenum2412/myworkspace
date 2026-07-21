@@ -30,7 +30,7 @@ export class StorageAnalytics {
       byType,
       dailyGrowth: [],
       quotaUsed: totalSize,
-      quotaLimit: (quota?.maxStorageBytes as number) || 5 * 1024 * 1024 * 1024,
+      quotaLimit: (quota?.maxStorageBytes as number) || 1 * 1024 * 1024 * 1024,
     };
   }
 

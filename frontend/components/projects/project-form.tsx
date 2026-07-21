@@ -19,14 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import {
   PlusIcon,
   AlertCircleIcon,
@@ -34,7 +27,10 @@ import {
   XIcon,
   FileIcon,
   UploadIcon,
+  ArrowLeftIcon,
+  SearchIcon,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { ProjectCreateFormProps, ProjectEditFormProps } from "./project-types";
 
 export function ProjectCreateForm({
@@ -389,8 +385,6 @@ export function ProjectCreateForm({
 }
 
 export function ProjectEditForm({
-  open,
-  onOpenChange,
   editName,
   onEditNameChange,
   editClient,
@@ -405,23 +399,53 @@ export function ProjectEditForm({
   onEditDescriptionChange,
   editDeadline,
   onEditDeadlineChange,
+  editPriority,
+  onEditPriorityChange,
+  editCategory,
+  onEditCategoryChange,
+  editStartDate,
+  onEditStartDateChange,
+  editBudget,
+  onEditBudgetChange,
+  editHealth,
+  onEditHealthChange,
+  editMembers,
+  onEditMembersChange,
+  editMemberSearch,
+  onEditMemberSearchChange,
+  editAttachment,
+  onEditAttachmentChange,
+  filteredMembers,
+  clientList,
   colors,
+  submitting,
+  formError,
   onSubmit,
   onCancel,
 }: ProjectEditFormProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onOpenChange(o); }}>
-      <DialogContent className="p-0 flex flex-col">
-        <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            Edit Project
-          </DialogTitle>
-          <DialogDescription>
-            Update project details.
-          </DialogDescription>
-        </DialogHeader>
-        <ScrollArea className="flex-1 px-6 py-3">
-          <div className="space-y-4">
+    <div className="flex flex-1 flex-col gap-6 overflow-hidden">
+      {formError && (
+        <div className="mx-6 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+          {formError}
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 px-6 shrink-0">
+        <Button variant="ghost" size="icon" className="size-8" onClick={onCancel}>
+          <ArrowLeftIcon className="size-4" />
+        </Button>
+        <div>
+          <h2 className="text-lg font-semibold">Edit Project</h2>
+          <p className="text-sm text-muted-foreground">Update project details</p>
+        </div>
+      </div>
+
+      <div className="relative flex-1 overflow-hidden px-1">
+        <ScrollArea className="h-full px-5">
+          <div className="space-y-8 py-6 max-w-4xl mx-auto">
             <fieldset className="rounded-xl border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">General</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -431,32 +455,32 @@ export function ProjectEditForm({
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Client</Label>
-                  <Input value={editClient} onChange={(e) => onEditClientChange(e.target.value)} />
+                  <Select value={editClient} onValueChange={onEditClientChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clientList.length === 0 ? (
+                        <div className="px-2 py-4 text-center text-xs text-muted-foreground">No clients</div>
+                      ) : (
+                        clientList.map((c) => (
+                          <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
                   <Label className="text-xs text-muted-foreground">Description</Label>
-                  <textarea
+                  <Textarea
                     value={editDescription}
                     onChange={(e) => onEditDescriptionChange(e.target.value)}
-                    rows={2}
-                    className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    rows={3}
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Deadline</Label>
                   <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Access</Label>
-                  <Select value={editAccess} onValueChange={(v) => onEditAccessChange(v as "Public" | "Private")}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Public">Public</SelectItem>
-                      <SelectItem value="Private">Private</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Status</Label>
@@ -472,40 +496,246 @@ export function ProjectEditForm({
                 </div>
               </div>
             </fieldset>
+
+            <Separator />
+
             <fieldset className="rounded-xl border p-4 space-y-4">
-              <legend className="text-sm font-semibold px-2">Branding</legend>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Color</Label>
-                <div className="flex items-center gap-3 mt-1">
-                  <div className="flex gap-2 flex-wrap">
-                    {colors.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => onEditColorChange(c)}
-                        className={`size-7 rounded-full ring-offset-2 ring-offset-background transition-all ${
-                          editColor === c ? "ring-2 ring-foreground scale-110" : ""
-                        }`}
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-                  </div>
-                  <input
-                    type="color"
-                    value={editColor}
-                    onChange={(e) => onEditColorChange(e.target.value)}
-                    className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
+              <legend className="text-sm font-semibold px-2">Timeline &amp; Team</legend>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Start Date</Label>
+                  <Input type="date" value={editStartDate} onChange={(e) => onEditStartDateChange(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Deadline</Label>
+                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Health</Label>
+                  <Select value={editHealth} onValueChange={onEditHealthChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="on-track">On Track</SelectItem>
+                      <SelectItem value="at-risk">At Risk</SelectItem>
+                      <SelectItem value="delayed">Delayed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Priority</Label>
+                  <Select value={editPriority} onValueChange={onEditPriorityChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="critical">Critical</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5 md:col-span-2">
+                  <Label className="text-xs text-muted-foreground">Team Members</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-sm font-normal">
+                        <UsersIcon className="size-3.5 mr-2 text-muted-foreground" />
+                        {editMembers.length === 0
+                          ? "Select team members"
+                          : `${editMembers.length} member${editMembers.length > 1 ? "s" : ""} selected`}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-2" align="start">
+                      <div className="relative mb-2">
+                        <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                        <Input
+                          placeholder="Search members..."
+                          className="pl-8 h-8 text-sm"
+                          value={editMemberSearch}
+                          onChange={(e) => onEditMemberSearchChange(e.target.value)}
+                        />
+                      </div>
+                      <div className="max-h-48 overflow-y-auto space-y-1">
+                        {filteredMembers.length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-4">No employees available</p>
+                        ) : (
+                          filteredMembers.map((m) => (
+                            <label
+                              key={m.id}
+                              className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent cursor-pointer text-sm"
+                            >
+                              <Checkbox
+                                checked={editMembers.includes(m.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    onEditMembersChange([...editMembers, m.id]);
+                                  } else {
+                                    onEditMembersChange(editMembers.filter((id) => id !== m.id));
+                                  }
+                                }}
+                              />
+                              <span className="truncate">{m.name}</span>
+                            </label>
+                          ))
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </fieldset>
+
+            <Separator />
+
+            <fieldset className="rounded-xl border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2">Budget &amp; Category</legend>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Category</Label>
+                  <Select value={editCategory} onValueChange={onEditCategoryChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="development">Development</SelectItem>
+                      <SelectItem value="design">Design</SelectItem>
+                      <SelectItem value="marketing">Marketing</SelectItem>
+                      <SelectItem value="research">Research</SelectItem>
+                      <SelectItem value="operations">Operations</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Budget ($)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={editBudget}
+                    onChange={(e) => onEditBudgetChange(Number(e.target.value))}
                   />
                 </div>
               </div>
             </fieldset>
+
+            <Separator />
+
+            <fieldset className="rounded-xl border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2">Access &amp; Branding</legend>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Access</Label>
+                  <Select value={editAccess} onValueChange={(v) => onEditAccessChange(v as "Public" | "Private")}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Public">Public</SelectItem>
+                      <SelectItem value="Private">Private</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Color</Label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-2 flex-wrap">
+                      {colors.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => onEditColorChange(c)}
+                          className={cn(
+                            "size-7 rounded-full ring-offset-2 ring-offset-background transition-all",
+                            editColor === c ? "ring-2 ring-foreground scale-110" : ""
+                          )}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+                    <input
+                      type="color"
+                      value={editColor}
+                      onChange={(e) => onEditColorChange(e.target.value)}
+                      className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
+                    />
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <Separator />
+
+            <fieldset className="rounded-xl border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2">Attachments</legend>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Project File</Label>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files[0];
+                    if (file) onEditAttachmentChange(file);
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  className="mt-1 border-2 border-dashed border-muted-foreground/20 rounded-lg p-5 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all group"
+                >
+                  {editAttachment ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                        <FileIcon className="size-5 text-primary" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium">{editAttachment.name}</p>
+                        <p className="text-xs text-muted-foreground">{(editAttachment.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onEditAttachmentChange(null); }}
+                        className="ml-auto p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <XIcon className="size-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <UploadIcon className="size-8 mx-auto text-muted-foreground/40 group-hover:text-primary/40 transition-colors" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-muted-foreground/60 mt-0.5">PDF, DOC, XLS, PNG, JPG up to 10MB</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) onEditAttachmentChange(file);
+                    e.target.value = "";
+                  }}
+                  disabled={submitting}
+                />
+              </div>
+            </fieldset>
           </div>
         </ScrollArea>
-        <DialogFooter className="px-6 pb-6 pt-2 shrink-0 flex flex-col sm:flex-row gap-2">
-          <Button variant="outline" className="w-full sm:flex-1 touch-target" onClick={onCancel}>Cancel</Button>
-          <Button className="w-full sm:flex-1 touch-target" onClick={onSubmit}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-6 py-4 border-t bg-muted/10">
+        <Button variant="ghost" onClick={onCancel} className="order-2 sm:order-1">
+          Cancel
+        </Button>
+        <Button className="bg-primary hover:bg-primary/80 w-full sm:w-32 touch-target order-1 sm:order-2" onClick={onSubmit} disabled={submitting}>
+          {submitting ? "Saving..." : "Save"}
+        </Button>
+      </div>
+    </div>
   );
 }

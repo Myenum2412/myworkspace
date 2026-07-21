@@ -90,16 +90,27 @@ export async function createProjectAction(formData: FormData) {
   const name = formData.get("name") as string;
   if (!name) return { error: "Name is required" };
 
-  const doc = {
-    id: uuid(),
+  const projId = uuid();
+
+  const doc: Record<string, unknown> = {
+    id: projId,
     orgId: orgMember.orgId,
     name,
     client: (formData.get("client") as string) || "",
     color: (formData.get("color") as string) || "#3b82f6",
+    description: (formData.get("description") as string) || "",
+    deadline: (formData.get("deadline") as string) || null,
+    access: ("Public" as const),
+    status: ("Active" as const),
+    health: (formData.get("health") as string) || "on-track",
+    priority: (formData.get("priority") as string) || "medium",
+    category: (formData.get("category") as string) || "",
+    startDate: (formData.get("startDate") as string) || null,
+    budget: Number(formData.get("budget")) || 0,
+    spent: 0,
     tracked: 0,
     progress: 0,
-    access: "Public" as const,
-    status: "Active" as const,
+    members: formData.getAll("members") as string[],
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -107,7 +118,7 @@ export async function createProjectAction(formData: FormData) {
   await db.collection(collections.projects).insertOne(doc);
   revalidatePath("/projects");
   revalidateTag('dashboard', 'max');
-  return { success: true };
+  return { success: true, data: doc };
 }
 
 export async function updateProjectAction(id: string, formData: FormData) {

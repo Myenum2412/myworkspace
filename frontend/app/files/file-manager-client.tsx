@@ -9,7 +9,6 @@ import { Toolbar } from "./components/toolbar";
 import { BreadcrumbNav } from "./components/breadcrumb-nav";
 import { FileGrid } from "./components/file-grid";
 import { FileList } from "./components/file-list";
-import { UploadZone } from "./components/upload-queue";
 import { PreviewDialog } from "./components/preview-dialog";
 import { PreviewPane } from "./components/preview-pane";
 import { ShareDialog } from "./components/share-dialog";
@@ -23,6 +22,7 @@ import { ClientFilesView } from "./components/client-files-view";
 import { StaffFilesView } from "./components/staff-files-view";
 import { ROLES } from "@/lib/rbac";
 import { CreateFolderDialog, RenameDialog, MoveDialog } from "./components/dialogs";
+import { UploadDialog } from "./components/upload-queue";
 import { FileSearch } from "./components/file-search";
 import { StorageDashboard } from "./components/storage-dashboard";
 
@@ -77,7 +77,6 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
                     <BreadcrumbNav />
                   </div>
                   <Toolbar readonly={userRole === ROLES.CLIENTS} />
-                  {userRole !== ROLES.CLIENTS && <UploadZone />}
                   {loading ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                       {Array.from({ length: 8 }).map((_, i) => (
@@ -109,6 +108,7 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
       <CreateFolderDialog />
       <RenameDialog />
       <MoveDialog />
+      <UploadDialog />
       <PreviewDialog />
       <ShareDialog />
       <PropertiesPanel />

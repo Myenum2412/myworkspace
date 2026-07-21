@@ -18,6 +18,8 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GoogleDocsEditor } from "@/components/ui/google-docs-editor";
 
+import { createProjectAction } from "@/actions/projects";
+
 import {
   Select,
   SelectContent,
@@ -87,28 +89,22 @@ export function CreateProjectPageInteractive() {
     setFormError("");
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name: name.trim(),
-          client: client.trim(),
-          description: description.trim(),
-          deadline: deadline?.toISOString() || null,
-          color,
-          access: "Public",
-          status: "Active",
-        }),
-      });
-      const d = await res.json();
-      if (d.success) {
+      const formData = new FormData();
+      formData.append("name", name.trim());
+      formData.append("client", client.trim());
+      formData.append("description", description.trim());
+      if (deadline) formData.append("deadline", deadline.toISOString());
+      formData.append("color", color);
+      formData.append("access", "Public");
+
+      const result = await createProjectAction(formData);
+      if (result.success) {
         queryClient.invalidateQueries({ queryKey: ["projects"] });
         resetForm();
         router.refresh();
         router.push("/projects");
       } else {
-        setFormError(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Failed to create project"));
+        setFormError(result.error || "Failed to create project");
       }
     } catch {
       setFormError("Network error. Try again.");

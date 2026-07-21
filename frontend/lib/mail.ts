@@ -54,9 +54,19 @@ export async function sendClientWelcomeEmail(
   clientName: string,
   username: string,
   tempPassword: string,
-  loginUrl: string
+  loginUrl: string,
+  staffInfo?: string[],
+  documentsInfo?: string[]
 ): Promise<EmailSendResult> {
-  return callBackendEmailEndpoint("/send-client-welcome-email", { email: to, clientName, username, tempPassword, loginUrl });
+  return callBackendEmailEndpoint("/send-client-welcome-email", {
+    email: to,
+    clientName,
+    username,
+    tempPassword,
+    loginUrl,
+    staffInfo,
+    documentsInfo,
+  });
 }
 
 export async function sendPasswordResetEmail(

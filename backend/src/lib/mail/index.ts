@@ -102,8 +102,8 @@ export async function sendVerificationEmail(to: string, name: string, verificati
   await sendEmail(to, data.subject, buildEmailHtml(data));
 }
 
-export async function sendClientWelcomeEmail(to: string, clientName: string, email: string, tempPassword: string, loginUrl: string): Promise<void> {
-  const data = Factory.buildWelcomeEmail(clientName, email, "MyWorkspace", null, "Client", loginUrl, tempPassword);
+export async function sendClientWelcomeEmail(to: string, clientName: string, email: string, tempPassword: string, loginUrl: string, staffNames?: string[], documentNames?: string[]): Promise<void> {
+  const data = Factory.buildWelcomeEmail(clientName, email, "MyWorkspace", null, "Client", loginUrl, tempPassword, undefined, staffNames, documentNames);
   await sendEmail(to, data.subject, buildEmailHtml(data));
 }
 

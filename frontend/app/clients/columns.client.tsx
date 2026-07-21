@@ -164,8 +164,8 @@ export const columns: ColumnDef<Client>[] = [
  */
 export function makeActionsCell(
   onView: (client: Client) => void,
-  onEdit: (client: Client) => void,
   onDelete: (client: Client) => void,
+  onEdit?: (client: Client) => void,
 ): ColumnDef<Client> {
   return {
     id: "actions",
@@ -184,10 +184,12 @@ export function makeActionsCell(
               <Eye className="mr-2 size-4" />
               View
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onEdit(client)}>
-              <Pencil className="mr-2 size-4" />
-              Edit
-            </DropdownMenuItem>
+            {onEdit && (
+              <DropdownMenuItem onSelect={() => onEdit(client)}>
+                <Pencil className="mr-2 size-4" />
+                Edit
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onSelect={() => onDelete(client)}

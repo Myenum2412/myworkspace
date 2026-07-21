@@ -16,6 +16,8 @@ import {
   StarIcon,
   LockIcon,
   CopyIcon,
+  ScissorsIcon,
+  ClipboardPasteIcon,
   ArrowRightIcon,
 } from "lucide-react";
 import {
@@ -63,6 +65,8 @@ export function FileList() {
     setRenameTarget,
     setPropertiesTarget,
     setMoveTarget,
+    setClipboard,
+    clipboard,
     breadcrumbs,
   } = useFileSystemStore();
 
@@ -146,6 +150,12 @@ export function FileList() {
                     <DropdownMenuItem onSelect={() => setRenameTarget({ type: "folder", id: folder.id, name: folder.name })}>
                       <PencilIcon className="size-3.5 mr-2" /> Rename
                     </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setClipboard({ ids: [folder.id], action: "copy" })}>
+                      <CopyIcon className="size-3.5 mr-2" /> Copy
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setClipboard({ ids: [folder.id], action: "cut" })}>
+                      <ScissorsIcon className="size-3.5 mr-2" /> Cut
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => setMoveTarget({ type: "folder", id: folder.id })}>
                       <ArrowRightIcon className="size-3.5 mr-2" /> Move
                     </DropdownMenuItem>
@@ -222,6 +232,12 @@ export function FileList() {
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => setRenameTarget({ type: "file", id: file.id, name: file.originalName })}>
                       <PencilIcon className="size-3.5 mr-2" /> Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setClipboard({ ids: [file.id], action: "copy" })}>
+                      <CopyIcon className="size-3.5 mr-2" /> Copy
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setClipboard({ ids: [file.id], action: "cut" })}>
+                      <ScissorsIcon className="size-3.5 mr-2" /> Cut
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => {
                       api.duplicateFile(file.id).catch(console.error);

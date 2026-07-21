@@ -9,7 +9,7 @@ export async function getNextSequence(name: string): Promise<number> {
       { $inc: { seq: 1 } },
       { upsert: true, returnDocument: "after" }
     );
-  return result?.value?.seq ?? 1;
+  return result?.seq ?? 1;
 }
 
 export async function getNextEmployeeDisplayId(orgId: string): Promise<string> {

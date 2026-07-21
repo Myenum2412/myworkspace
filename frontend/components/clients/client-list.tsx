@@ -6,7 +6,7 @@ import { columns, makeActionsCell, type Client } from "@/app/clients/columns";
 type ClientListProps = {
   clients: Client[];
   onView: (client: Client) => void;
-  onEdit: (client: Client) => void;
+  onEdit?: (client: Client) => void;
   onDelete: (client: Client) => void;
 };
 
@@ -56,7 +56,7 @@ export function ClientList({ clients, onView, onEdit, onDelete }: ClientListProp
 
       <div className="flex-1 mt-4">
         <DataTable
-          columns={[...columns, makeActionsCell(onView, onEdit, onDelete)]}
+          columns={[...columns, makeActionsCell(onView, onDelete, onEdit)]}
           data={clients}
           onRowClick={onView}
         />

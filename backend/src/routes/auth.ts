@@ -800,11 +800,13 @@ router.post("/send-verification-email", async (req: AuthRequest, res: Response) 
 // Send client welcome email endpoint
 router.post("/send-client-welcome-email", async (req: AuthRequest, res: Response) => {
   try {
-    const { email, clientName, username, tempPassword, loginUrl } = req.body;
+    const { email, clientName, username, tempPassword, loginUrl, staffInfo, documentsInfo } = req.body;
     if (!email || !clientName || !username || !tempPassword || !loginUrl) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
-    await sendClientWelcomeEmail(email, clientName, username, tempPassword, loginUrl);
+    const staffNames: string[] = Array.isArray(staffInfo) ? staffInfo : [];
+    const documentNames: string[] = Array.isArray(documentsInfo) ? documentsInfo : [];
+    await sendClientWelcomeEmail(email, clientName, username, tempPassword, loginUrl, staffNames, documentNames);
     res.json({ success: true, message: "Client welcome email sent" });
   } catch (err) {
     console.error("[auth] send-client-welcome-email error:", err);

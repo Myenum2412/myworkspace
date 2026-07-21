@@ -6,19 +6,15 @@ import { hash } from "bcryptjs";
 import { auth } from "@/lib/auth/config";
 import { ensureUserOrg, validateOrgMembership } from "@/lib/org";
 import { getNextSequence, getNextEmployeeDisplayId } from "@/lib/db/counter";
-import { sendEmailDirect, buildEmployeeOnboardedHtml } from "@/lib/email";
 import { ROLES, isAdminRole } from "@/lib/rbac";
+import path from "path";
+import fs from "fs";
 
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    // Block employee users from listing all employees
-    const role = session.user.role?.toLowerCase() || "";
-    if (!isAdminRole(role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const orgId = await ensureUserOrg(session.user.id, session.user.email);
@@ -85,7 +81,7 @@ export async function POST(request: Request) {
     const orgId = await ensureUserOrg(session.user.id, session.user.email);
 
     const body = await request.json();
-    const { firstName, lastName, nickname, email, password, avatar, department, designation, location, phone, roleName, branchName, shift, employmentType, status, sourceOfHire, joiningDate, currentExperience, totalExperience, alternateEmail, address, city, state, country, zipCode, offerLetter, workExperience, educationDetails, dependentDetails, files } = body;
+    const { firstName, lastName, nickname, email, password, avatar, department, designation, location, phone, roleName, branchName, shift, employmentType, status, sourceOfHire, joiningDate, currentExperience, totalExperience, alternateEmail, address, city, state, country, zipCode, offerLetter, offerLetterName, workExperience, educationDetails, dependentDetails, files } = body;
 
     if (!firstName || !email) {
       return NextResponse.json({ error: "First name and email are required" }, { status: 400 });
@@ -149,6 +145,57 @@ export async function POST(request: Request) {
       role: roleName?.toLowerCase() || "staffs",
     });
 
+    // Save offer letter as file attachment if provided
+    if (offerLetter) {
+      try {
+        const matches = (offerLetter as string).match(/^data:(.+?);base64,(.+)$/);
+        if (matches) {
+          const mimeType = matches[1];
+          const rawBase64 = matches[2];
+          const buffer = Buffer.from(rawBase64, "base64");
+          const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
+          const fileName = offerLetterName || "offer-letter";
+          const storagePath = `${orgId}/${Date.now()}-${uuid()}-${fileName}`;
+          const fullPath = path.join(UPLOADS_DIR, storagePath);
+          fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+          fs.writeFileSync(fullPath, buffer);
+          await db.collection(collections.fileAttachments).insertOne({
+            id: uuid(),
+            orgId,
+            staffId: userId,
+            uploaderId: session.user.id,
+            createdBy: session.user.id,
+            category: "profile",
+            name: fileName,
+            originalName: fileName,
+            mimeType,
+            size: buffer.length,
+            storagePath,
+            storageProvider: "local",
+            description: "",
+            tags: [],
+            isLocked: false,
+            lockedBy: null,
+            currentVersion: 1,
+            checksum: "",
+            isDuplicate: false,
+            duplicateOf: null,
+            virusScanStatus: "pending",
+            virusScanResult: "",
+            thumbnailPath: null,
+            approvalStatus: "none",
+            approvedBy: null,
+            approvalNote: "",
+            lastAccessedAt: null,
+            deletedAt: null,
+            deletedBy: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+      } catch { /* silent */ }
+    }
+
     if (workExperience?.length) {
       await db.collection(collections.workExperience).insertMany(
         workExperience.map((exp: any) => ({
@@ -199,23 +246,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const workspaceName = "MyWorkspace";
-    const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
-
-    let emailStatus: "sent" | "failed" | "skipped" = "skipped";
-    let emailError: string | undefined;
-    try {
-      const htmlBody = buildEmployeeOnboardedHtml(firstName || name, email, workspaceName, loginUrl, defaultPassword);
-      const subject = `Welcome to ${workspaceName} - Your Account is Ready`;
-      const result = await sendEmailDirect(email, subject, htmlBody);
-      emailStatus = result.emailStatus;
-      emailError = result.error;
-    } catch (err: any) {
-      console.error("[employees] Onboarded email failed:", err?.message || err);
-      emailStatus = "failed";
-      emailError = err?.message || "Email delivery failed";
-    }
-
     const notificationsCol = db.collection(collections.notifications);
     const now = new Date();
     const newUserNotif = {
@@ -254,8 +284,6 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ...employee,
       _id: employee?._id ? String(employee._id) : undefined,
-      emailStatus,
-      emailError,
       tempPassword: defaultPassword,
     }, { status: 201 });
   } catch (err: any) {

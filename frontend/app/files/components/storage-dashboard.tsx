@@ -101,7 +101,7 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
             <FileText className="w-4 h-4" />
             <span className="text-xs font-medium uppercase">Files</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.fileCount.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{(stats.fileCount || 0).toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
           <div className="flex items-center gap-2 text-gray-400 mb-1">

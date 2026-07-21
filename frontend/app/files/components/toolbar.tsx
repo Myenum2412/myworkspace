@@ -11,6 +11,9 @@ import {
   ArrowUpIcon,
   SlidersHorizontalIcon,
   XIcon,
+  CopyIcon,
+  ScissorsIcon,
+  ClipboardPasteIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +29,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useFileMutations } from "@/hooks/file-system/use-file-data";
 
 export function Toolbar({ readonly }: { readonly?: boolean }) {
   const {
@@ -46,7 +50,29 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
     setFilters,
     selectedIds,
     clearSelection,
+    clipboard,
+    setClipboard,
   } = useFileSystemStore();
+
+  const { cutPasteMutation, copyFileMutation } = useFileMutations();
+
+  const handlePaste = useCallback(async () => {
+    if (!clipboard || !clipboard.ids.length) return;
+    try {
+      if (clipboard.action === "cut") {
+        await cutPasteMutation.mutateAsync({
+          ids: clipboard.ids,
+          targetFolderId: currentFolderId || "",
+        });
+      } else {
+        await copyFileMutation.mutateAsync({
+          ids: clipboard.ids,
+          targetFolderId: currentFolderId || "",
+        });
+      }
+      setClipboard(null);
+    } catch (e) { console.error(e); }
+  }, [clipboard, currentFolderId, cutPasteMutation, copyFileMutation, setClipboard]);
 
   return (
     <div className="space-y-2">
@@ -170,9 +196,42 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-md text-xs text-muted-foreground">
           <span className="font-medium text-foreground">{selectedIds.size}</span> selected
+          <div className="flex items-center gap-1 ml-2">
+            {!readonly && (
+              <Button size="sm" variant="ghost" className="h-7 text-xs gap-1"
+                onClick={() => setClipboard({ ids: Array.from(selectedIds), action: "copy" })}
+              >
+                <CopyIcon className="size-3" /> Copy
+              </Button>
+            )}
+            {!readonly && (
+              <Button size="sm" variant="ghost" className="h-7 text-xs gap-1"
+                onClick={() => setClipboard({ ids: Array.from(selectedIds), action: "cut" })}
+              >
+                <ScissorsIcon className="size-3" /> Cut
+              </Button>
+            )}
+          </div>
           <button onClick={clearSelection} className="ml-auto text-primary hover:underline">
             Clear selection
           </button>
+        </div>
+      )}
+
+      {/* Clipboard paste bar */}
+      {clipboard && selectedIds.size === 0 && (
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/30 rounded-md text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">{clipboard.ids.length}</span> item{clipboard.ids.length !== 1 ? "s" : ""} on clipboard ({clipboard.action === "cut" ? "Cut" : "Copy"})
+          <div className="flex items-center gap-1 ml-2">
+            {!readonly && (
+              <Button size="sm" variant="secondary" className="h-7 text-xs gap-1" onClick={handlePaste}>
+                <ClipboardPasteIcon className="size-3" /> Paste here
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setClipboard(null)}>
+              Clear
+            </Button>
+          </div>
         </div>
       )}
     </div>

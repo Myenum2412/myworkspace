@@ -35,6 +35,7 @@ type CreateEmployeeInput = {
   website?: string | null;
   files?: string[];
   offerLetter?: string | null;
+  offerLetterName?: string | null;
 };
 
 type UpdateEmployeeInput = Partial<CreateEmployeeInput> & { id: string };

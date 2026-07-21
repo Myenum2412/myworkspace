@@ -229,8 +229,8 @@ export async function signupAction(formData: FormData) {
     slug = `${slug}-${userId.slice(0, 8)}`;
   }
 
-    const trialEnd = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
-    await db.collection(collections.organizations).insertOne({
+  const trialEnd = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
+  await db.collection(collections.organizations).insertOne({
     id: orgId,
     name: company || `${name}'s Organization`,
     slug,

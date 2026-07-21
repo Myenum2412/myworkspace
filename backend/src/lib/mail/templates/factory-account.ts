@@ -1,4 +1,4 @@
-import { EmailData } from "./types.js";
+import { EmailData, EmailCard } from "./types.js";
 
 function ts(): string {
   return new Date().toLocaleString();
@@ -13,8 +13,25 @@ export const buildWelcomeEmail = (
   role: string,
   loginUrl: string,
   tempPassword?: string,
-  providerIcon?: string
-): EmailData => ({
+  providerIcon?: string,
+  staffNames?: string[],
+  documentNames?: string[]
+): EmailData => {
+  const extraCards: EmailCard[] = [];
+  if (staffNames && staffNames.length > 0) {
+    extraCards.push({
+      title: "Assigned Staff",
+      list: staffNames,
+    });
+  }
+  if (documentNames && documentNames.length > 0) {
+    extraCards.push({
+      title: "Uploaded Documents",
+      list: documentNames,
+    });
+  }
+
+  return {
   subject: "Welcome to MyWorkspace",
   previewText: `Your account has been created. Sign in with ${email}${tempPassword ? ' using the password provided below.' : '.'}`,
   greeting: `Hi ${firstName},`,
@@ -49,6 +66,7 @@ export const buildWelcomeEmail = (
     { title: "Calendar & Tasks", description: "Stay on top of deadlines." },
     { title: "File Management", description: "Store and share documents." }
   ],
+  ...(extraCards.length > 0 ? { cards: extraCards } : {}),
   button: {
     text: "Go to Workspace",
     url: loginUrl
@@ -61,7 +79,8 @@ export const buildWelcomeEmail = (
     youtube: "https://youtube.com"
   },
   supportEmail: "support@workspace.com"
-});
+  };
+};
 
 // 2. Email Verification
 export const buildVerificationEmail = (

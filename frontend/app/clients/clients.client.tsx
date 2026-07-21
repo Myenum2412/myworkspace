@@ -7,7 +7,7 @@ import type { Credentials } from "@/components/clients/client-types";
 import { ClientList } from "@/components/clients/client-list";
 import { ClientForm } from "@/components/clients/client-form";
 import { ClientSuccessDialog } from "@/components/clients/client-details";
-import { ClientEditDialog, ClientDeleteDialog } from "@/components/clients/client-actions";
+import { ClientDeleteDialog } from "@/components/clients/client-actions";
 import { ClientViewDialog } from "@/components/clients/client-view-dialog";
 
 type SessionUser = {
@@ -32,7 +32,6 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
   const [showSuccess, setShowSuccess] = useState(false);
   const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [viewingClient, setViewingClient] = useState<Client | null>(null);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
 
   useEffect(() => {
@@ -58,10 +57,6 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
       setCredentials(creds);
       setShowSuccess(true);
     }
-  }
-
-  function handleClientUpdated(client: Client) {
-    setClients((prev) => prev.map((c) => (c.id === client.id ? client : c)));
   }
 
   function handleClientDeleted(id: string) {
@@ -139,7 +134,6 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
         <ClientList
           clients={clients}
           onView={(client) => setViewingClient(client)}
-          onEdit={(client) => setEditingClient(client)}
           onDelete={(client) => { setDeletingClient(client); }}
         />
       </main>
@@ -148,14 +142,6 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
         client={viewingClient}
         open={!!viewingClient}
         onOpenChange={(open) => { if (!open) setViewingClient(null); }}
-      />
-
-      <ClientEditDialog
-        client={editingClient}
-        open={!!editingClient}
-        onOpenChange={(open) => { if (!open) setEditingClient(null); }}
-        onClientUpdated={handleClientUpdated}
-        members={members}
       />
 
       <ClientDeleteDialog

@@ -12,6 +12,7 @@ import ProjectsDashboard from "./projects-dashboard";
 
 import { ProjectCreateForm, ProjectEditForm } from "@/components/projects/project-form";
 import ProjectDeleteDialog from "@/components/projects/project-card";
+import { createProjectAction } from "@/actions/projects";
 
 export interface ProjectsInteractiveProps {
   orgId: string;
@@ -55,11 +56,28 @@ export default function ProjectsInteractive({
   const [projectAccess, setProjectAccess] = useState<"Public" | "Private">("Public");
   const [projectHealth, setProjectHealth] = useState("on-track");
 
+  const [editDescription, setEditDescription] = useState("");
+  const [editDeadline, setEditDeadline] = useState("");
+  const [editPriority, setEditPriority] = useState("medium");
+  const [editCategory, setEditCategory] = useState("");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editBudget, setEditBudget] = useState(0);
+  const [editHealth, setEditHealth] = useState("on-track");
+  const [editMembers, setEditMembers] = useState<string[]>([]);
+  const [editMemberSearch, setEditMemberSearch] = useState("");
+  const [editAttachment, setEditAttachment] = useState<File | null>(null);
+
   const filteredMembers = useMemo(() => {
     if (!memberSearch) return employees;
     const q = memberSearch.toLowerCase();
     return employees.filter((m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q));
   }, [employees, memberSearch]);
+
+  const editFilteredMembers = useMemo(() => {
+    if (!editMemberSearch) return employees;
+    const q = editMemberSearch.toLowerCase();
+    return employees.filter((m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q));
+  }, [employees, editMemberSearch]);
 
   useEffect(() => {
     fetch("/api/user/me", { credentials: "include" })
@@ -103,33 +121,33 @@ export default function ProjectsInteractive({
 
     try {
       const formData = new FormData();
-      formData.append("orgId", orgId);
       formData.append("name", projectName);
       formData.append("client", selectedClient);
       formData.append("color", projectColor);
       formData.append("description", projectDescription);
       if (projectDeadline) formData.append("deadline", projectDeadline);
       formData.append("access", projectAccess);
-      formData.append("status", "Active");
       formData.append("health", projectHealth);
       formData.append("priority", projectPriority);
       formData.append("category", projectCategory);
       if (projectStartDate) formData.append("startDate", projectStartDate);
       formData.append("budget", String(projectBudget || 0));
-      if (projectAttachment) {
-        formData.append("attachment", projectAttachment);
-      }
+      projectMembers.forEach((id) => formData.append("members", id));
 
-      const res = await fetch("/api/projects", {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      const d = await res.json();
-      if (d.success && d.data) {
-        setProjects((prev) => [...prev, d.data]);
+      const result = await createProjectAction(formData);
+      if (result.success && result.data) {
+        const projId = (result.data as Record<string, unknown>).id as string;
+        // Upload attachment if present
+        if (projectAttachment && projId) {
+          const fd = new FormData();
+          fd.append("files", projectAttachment);
+          fd.append("projectId", projId);
+          fd.append("orgId", orgId);
+          await fetch("/api/files/upload", { method: "POST", body: fd }).catch(() => {});
+        }
+        setProjects((prev) => [...prev, result.data as Project]);
       } else {
-        setFormError(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Failed to create project"));
+        setFormError(result.error || "Failed to create project");
         setSubmitting(false);
         return;
       }
@@ -165,8 +183,6 @@ export default function ProjectsInteractive({
     }
   }
 
-  const [editDescription, setEditDescription] = useState("");
-  const [editDeadline, setEditDeadline] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [viewMode, setViewMode] = useState<"dashboard" | "list">("dashboard");
@@ -184,6 +200,13 @@ export default function ProjectsInteractive({
     setEditStatus(project.status);
     setEditDescription(project.description || "");
     setEditDeadline(project.deadline || "");
+    setEditPriority(project.priority || "medium");
+    setEditCategory(project.category || "");
+    setEditStartDate(project.startDate || "");
+    setEditBudget(project.budget || 0);
+    setEditHealth(project.health || "on-track");
+    setEditMembers(project.members || []);
+    setEditMemberSearch("");
     setShowEdit(true);
   }
 
@@ -196,6 +219,13 @@ export default function ProjectsInteractive({
     setEditStatus(project.status);
     setEditDescription(project.description || "");
     setEditDeadline(project.deadline || "");
+    setEditPriority(project.priority || "medium");
+    setEditCategory(project.category || "");
+    setEditStartDate(project.startDate || "");
+    setEditBudget(project.budget || 0);
+    setEditHealth(project.health || "on-track");
+    setEditMembers(project.members || []);
+    setEditMemberSearch("");
     setShowEdit(true);
   }
 
@@ -217,6 +247,7 @@ export default function ProjectsInteractive({
 
   async function handleSave() {
     if (!editingProject) return;
+    setSubmitting(true);
 
     try {
       const res = await fetch(`/api/projects/${editingProject.id}`, {
@@ -232,10 +263,25 @@ export default function ProjectsInteractive({
           status: editStatus,
           description: editDescription,
           deadline: editDeadline || null,
+          priority: editPriority,
+          category: editCategory,
+          startDate: editStartDate || null,
+          budget: editBudget,
+          health: editHealth,
+          members: editMembers,
         }),
       });
       const d = await res.json();
       if (d.success && d.data) {
+        const projId = editingProject.id;
+        // Upload attachment if present
+        if (editAttachment) {
+          const fd = new FormData();
+          fd.append("files", editAttachment);
+          fd.append("projectId", projId);
+          fd.append("orgId", orgId);
+          await fetch("/api/files/upload", { method: "POST", body: fd }).catch(() => {});
+        }
         setProjects((prev) => prev.map((p) => (p.id === editingProject.id ? d.data : p)));
       }
       setShowEdit(false);
@@ -243,6 +289,8 @@ export default function ProjectsInteractive({
     } catch {
       setShowEdit(false);
       setEditingProject(null);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -266,6 +314,14 @@ export default function ProjectsInteractive({
   function resetEdit() {
     setShowEdit(false);
     setEditingProject(null);
+    setEditPriority("medium");
+    setEditCategory("");
+    setEditStartDate("");
+    setEditBudget(0);
+    setEditHealth("on-track");
+    setEditMembers([]);
+    setEditMemberSearch("");
+    setEditAttachment(null);
   }
 
   const VIEW_TABS = [
@@ -276,7 +332,47 @@ export default function ProjectsInteractive({
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-        {viewProject ? (
+        {showEdit && editingProject ? (
+          <ProjectEditForm
+            editName={editName}
+            onEditNameChange={setEditName}
+            editClient={editClient}
+            onEditClientChange={setEditClient}
+            editColor={editColor}
+            onEditColorChange={setEditColor}
+            editAccess={editAccess}
+            onEditAccessChange={setEditAccess}
+            editStatus={editStatus}
+            onEditStatusChange={setEditStatus}
+            editDescription={editDescription}
+            onEditDescriptionChange={setEditDescription}
+            editDeadline={editDeadline}
+            onEditDeadlineChange={setEditDeadline}
+            editPriority={editPriority}
+            onEditPriorityChange={setEditPriority}
+            editCategory={editCategory}
+            onEditCategoryChange={setEditCategory}
+            editStartDate={editStartDate}
+            onEditStartDateChange={setEditStartDate}
+            editBudget={editBudget}
+            onEditBudgetChange={setEditBudget}
+            editHealth={editHealth}
+            onEditHealthChange={setEditHealth}
+            editMembers={editMembers}
+            onEditMembersChange={setEditMembers}
+            editMemberSearch={editMemberSearch}
+            onEditMemberSearchChange={setEditMemberSearch}
+            editAttachment={editAttachment}
+            onEditAttachmentChange={setEditAttachment}
+            filteredMembers={editFilteredMembers}
+            clientList={clientList}
+            colors={PROJECT_COLORS}
+            submitting={submitting}
+            formError={formError}
+            onSubmit={handleSave}
+            onCancel={resetEdit}
+          />
+        ) : viewProject ? (
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-3 min-w-0">
@@ -390,28 +486,6 @@ export default function ProjectsInteractive({
           </div>
         )}
       </main>
-
-      <ProjectEditForm
-        open={showEdit}
-        onOpenChange={(o) => { if (!o) resetEdit(); }}
-        editName={editName}
-        onEditNameChange={setEditName}
-        editClient={editClient}
-        onEditClientChange={setEditClient}
-        editColor={editColor}
-        onEditColorChange={setEditColor}
-        editAccess={editAccess}
-        onEditAccessChange={setEditAccess}
-        editStatus={editStatus}
-        onEditStatusChange={setEditStatus}
-        editDescription={editDescription}
-        onEditDescriptionChange={setEditDescription}
-        editDeadline={editDeadline}
-        onEditDeadlineChange={setEditDeadline}
-        colors={PROJECT_COLORS}
-        onSubmit={handleSave}
-        onCancel={resetEdit}
-      />
 
       <ProjectDeleteDialog
         deleteConfirm={deleteConfirm}

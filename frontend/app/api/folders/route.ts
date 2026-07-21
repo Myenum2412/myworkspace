@@ -12,6 +12,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   let orgId = searchParams.get("orgId");
   const parentId = searchParams.get("parentId");
+  const clientId = searchParams.get("clientId");
 
   // If no orgId provided, resolve it from the user's session
   if (!orgId) {
@@ -23,7 +24,9 @@ export async function GET(req: Request) {
   }
 
   const filter: Record<string, unknown> = { orgId, deletedAt: null };
-  if (parentId) {
+  if (clientId) {
+    filter.clientId = clientId;
+  } else if (parentId) {
     filter.parentId = parentId;
   } else {
     // Root level: show all top-level folders (both org and client-scoped)

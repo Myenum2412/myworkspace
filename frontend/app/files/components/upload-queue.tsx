@@ -21,10 +21,23 @@ import {
   AttachmentTitle,
 } from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { apiFetch } from "@/lib/api";
 
-// Sensible defaults (overridden by server config)
 let uploadConfig = {
   maxFileSize: 500 * 1024 * 1024,
   chunkSize: 5 * 1024 * 1024,
@@ -42,7 +55,7 @@ function ensureConfig() {
         if (cfg.maxConcurrency) uploadConfig.maxConcurrency = cfg.maxConcurrency;
         if (cfg.directUploadThreshold) uploadConfig.directUploadThreshold = cfg.directUploadThreshold;
       })
-      .catch(() => { /* use defaults */ });
+      .catch(() => {});
   }
   return configPromise;
 }
@@ -72,14 +85,9 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export const UploadZone = React.memo(function UploadZone() {
+export function UploadDialog() {
   const queryClient = useQueryClient();
-  const {
-    showUpload,
-    setShowUpload,
-    orgId,
-    currentFolderId,
-  } = useFileSystemStore();
+  const { showUpload, setShowUpload, orgId, currentFolderId } = useFileSystemStore();
 
   const [items, setItems] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -167,7 +175,7 @@ export const UploadZone = React.memo(function UploadZone() {
           try {
             const parsed = JSON.parse(savedState);
             if (Array.isArray(parsed)) completedParts = new Set(parsed);
-          } catch { /* ignore */ }
+          } catch {}
         }
 
         const remaining = queue.filter((p) => !completedParts.has(p));
@@ -243,7 +251,7 @@ export const UploadZone = React.memo(function UploadZone() {
               try {
                 const body = JSON.parse(xhr.responseText);
                 if (body?.error) detail = `Upload failed: ${body.error}`;
-              } catch { /* ignore */ }
+              } catch {}
               reject(new Error(detail));
               return;
             }
@@ -347,131 +355,169 @@ export const UploadZone = React.memo(function UploadZone() {
     [addFiles]
   );
 
-  if (!showUpload) return null;
+  const handleClose = useCallback(() => {
+    setShowUpload(false);
+    setItems([]);
+  }, [setShowUpload]);
+
+  const clearItems = useCallback(() => {
+    setItems([]);
+  }, []);
+
+  const hasActiveUploads = items.some((i) => i.status === "uploading");
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => inputRef.current?.click()}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          inputRef.current?.click();
-        }
-      }}
-      onDragOver={(event) => {
-        event.preventDefault();
-      }}
-      onDragEnter={(event) => {
-        event.preventDefault();
-        dragDepth.current += 1;
-        setIsDragging(true);
-      }}
-      onDragLeave={(event) => {
-        event.preventDefault();
-        dragDepth.current -= 1;
-        if (dragDepth.current <= 0) {
-          dragDepth.current = 0;
-          setIsDragging(false);
-        }
-      }}
-      onDrop={onDrop}
-      className={cn(
-        "relative cursor-pointer flex flex-col items-center justify-center gap-3 border border-dashed px-6 py-8 text-center transition-colors outline-none rounded-lg",
-        "focus-visible:ring-[3px] focus-visible:ring-ring/50",
-        isDragging
-          ? "border-primary bg-primary/5"
-          : "border-muted-foreground/20 hover:bg-muted/40"
-      )}
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        multiple
-        className="sr-only"
-        onChange={(event) => {
-          addFiles(event.target.files);
-          event.target.value = "";
-        }}
-      />
-      <div
-        className={cn(
-          "flex size-10 items-center justify-center border transition-colors",
-          isDragging
-            ? "border-primary bg-background text-primary"
-            : "border-border bg-background text-muted-foreground"
-        )}
-      >
-        <RiUploadCloud2Line className="size-5" aria-hidden="true" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium text-foreground">
-          {isDragging
-            ? "Release to upload"
-            : "Drag & drop files or click to browse"}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Max file size: {formatSize(uploadConfig.maxFileSize)}
-        </p>
-      </div>
+    <Dialog open={showUpload} onOpenChange={(o) => { if (!o) handleClose(); }}>
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Upload assets</DialogTitle>
+          <DialogDescription>
+            Drag and drop your files or browse to attach them.
+          </DialogDescription>
+        </DialogHeader>
 
-      {items.length > 0 && (
-        <div
-          className="mt-4 w-full"
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-muted-foreground tabular-nums">
-              <span className="font-medium text-foreground">{items.length}</span>{" "}
-              {items.length === 1 ? "File" : "Files"}
-            </p>
-            <button
-              type="button"
-              onClick={() => setItems([])}
-              className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+        <div className="flex flex-col gap-5">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => inputRef.current?.click()}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                inputRef.current?.click();
+              }
+            }}
+            onDragOver={(event) => { event.preventDefault(); }}
+            onDragEnter={(event) => {
+              event.preventDefault();
+              dragDepth.current += 1;
+              setIsDragging(true);
+            }}
+            onDragLeave={(event) => {
+              event.preventDefault();
+              dragDepth.current -= 1;
+              if (dragDepth.current <= 0) {
+                dragDepth.current = 0;
+                setIsDragging(false);
+              }
+            }}
+            onDrop={onDrop}
+            className={cn(
+              "flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed px-6 py-8 text-center transition-colors outline-none rounded-lg",
+              "focus-visible:ring-[3px] focus-visible:ring-ring/50",
+              isDragging
+                ? "border-primary bg-primary/5"
+                : "border-border bg-muted/40 hover:bg-muted/60"
+            )}
+          >
+            <input
+              ref={inputRef}
+              type="file"
+              multiple
+              className="sr-only"
+              onChange={(event) => {
+                addFiles(event.target.files);
+                event.target.value = "";
+              }}
+            />
+            <div
+              className={cn(
+                "flex size-12 items-center justify-center border transition-colors rounded-lg",
+                isDragging
+                  ? "border-primary bg-background text-primary"
+                  : "border-border bg-background text-muted-foreground"
+              )}
             >
-              Clear All
-            </button>
+              <RiUploadCloud2Line className="size-6" aria-hidden="true" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium text-foreground">
+                {isDragging ? "Release to upload" : "Drag & drop files or click to browse"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Max file size: {formatSize(uploadConfig.maxFileSize)}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(event) => {
+                event.stopPropagation();
+                inputRef.current?.click();
+              }}
+            >
+              <RiUploadCloud2Line data-icon="inline-start" aria-hidden="true" />
+              Browse Files
+            </Button>
           </div>
-          <ul className="flex flex-col gap-2">
-            {items.map((item) => (
-              <li key={item.id}>
-                <Attachment state={item.status} size="sm" className="w-full">
-                  <AttachmentMedia>
-                    {item.status === "error" ? (
-                      <RiAlertLine aria-hidden="true" />
-                    ) : item.status === "done" ? (
-                      <RiCheckLine className="text-primary" aria-hidden="true" />
-                    ) : (
-                      <Spinner />
-                    )}
-                  </AttachmentMedia>
-                  <AttachmentContent>
-                    <AttachmentTitle>{item.name}</AttachmentTitle>
-                    <AttachmentDescription className="tabular-nums">
-                      {item.status === "error"
-                        ? item.error
-                        : item.status === "done"
-                          ? `Uploaded ${formatSize(item.size)}`
-                          : `Uploading ${Math.round(item.progress)}%`}
-                    </AttachmentDescription>
-                  </AttachmentContent>
-                  <AttachmentActions>
-                    <AttachmentAction
-                      aria-label={`Remove ${item.name}`}
-                      onClick={() => removeItem(item.id)}
-                    >
-                      <RiCloseLine aria-hidden="true" />
-                    </AttachmentAction>
-                  </AttachmentActions>
-                </Attachment>
-              </li>
-            ))}
-          </ul>
+
+          {items.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground tabular-nums">
+                  <span className="font-medium text-foreground">{items.length}</span>{" "}
+                  {items.length === 1 ? "File" : "Files"}
+                </p>
+                <button
+                  type="button"
+                  onClick={clearItems}
+                  className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Clear All
+                </button>
+              </div>
+
+              <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+                {items.map((item) => (
+                  <li key={item.id}>
+                    <Attachment state={item.status} size="sm" className="w-full">
+                      <AttachmentMedia>
+                        {item.status === "error" ? (
+                          <RiAlertLine aria-hidden="true" />
+                        ) : item.status === "done" ? (
+                          <RiCheckLine className="text-primary" aria-hidden="true" />
+                        ) : (
+                          <Spinner />
+                        )}
+                      </AttachmentMedia>
+                      <AttachmentContent>
+                        <AttachmentTitle>{item.name}</AttachmentTitle>
+                        <AttachmentDescription className="tabular-nums">
+                          {item.status === "error"
+                            ? item.error
+                            : item.status === "done"
+                              ? `Uploaded ${formatSize(item.size)}`
+                              : `Uploading ${Math.round(item.progress)}%`}
+                        </AttachmentDescription>
+                      </AttachmentContent>
+                      <AttachmentActions>
+                        <AttachmentAction
+                          aria-label={`Remove ${item.name}`}
+                          onClick={() => removeItem(item.id)}
+                        >
+                          <RiCloseLine aria-hidden="true" />
+                        </AttachmentAction>
+                      </AttachmentActions>
+                    </Attachment>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+
+        <div className="flex items-center justify-end gap-2 mt-2">
+          {items.length > 0 && hasActiveUploads && (
+            <span className="text-xs text-muted-foreground mr-auto">
+              Uploading in progress...
+            </span>
+          )}
+          <Button variant="outline" onClick={handleClose}>
+            {items.length > 0 ? "Close" : "Cancel"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-});
+}

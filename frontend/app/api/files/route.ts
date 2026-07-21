@@ -26,6 +26,7 @@ export async function GET(request: Request) {
   const category = searchParams.get("category");
   const clientId = searchParams.get("clientId");
   const folderId = searchParams.get("folderId");
+  const uploaderId = searchParams.get("uploaderId");
 
   try {
     const filter: Record<string, unknown> = { orgId, deletedAt: null };
@@ -42,6 +43,9 @@ export async function GET(request: Request) {
       filter.folderId = folderId;
     } else if (folderId === "") {
       filter.folderId = null;
+    }
+    if (uploaderId) {
+      filter.uploaderId = uploaderId;
     }
 
     const files = await db.collection(collections.fileAttachments)
@@ -74,8 +78,10 @@ export async function GET(request: Request) {
         mimeType: f.mimeType,
         size: f.size,
         createdAt: f.createdAt,
+        uploaderId: f.uploaderId || null,
         uploaderName: u?.name || "Unknown",
         uploaderAvatar: u?.image || "",
+        clientId: f.clientId || null,
         projectId: f.projectId || null,
         projectName: p?.name || null,
         description: f.description || "",

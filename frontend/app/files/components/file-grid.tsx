@@ -17,6 +17,7 @@ import {
   Share2Icon,
   EyeIcon,
   CopyIcon,
+  ScissorsIcon,
   ArrowRightIcon,
 } from "lucide-react";
 import {
@@ -64,7 +65,7 @@ function FileThumbnail({ file, className }: { file: FileItem; className?: string
 }
 
 function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleClick: () => void }) {
-  const { selectedIds, toggleSelection, setCurrentFolder, setRenameTarget, setPropertiesTarget, setMoveTarget, currentFolderId } = useFileSystemStore();
+  const { selectedIds, toggleSelection, setCurrentFolder, setRenameTarget, setPropertiesTarget, setMoveTarget, setClipboard, currentFolderId } = useFileSystemStore();
   const userRole = useFileSystemStore((s) => s.userRole);
   const readonly = userRole === ROLES.CLIENTS;
   const selected = selectedIds.has(folder.id);
@@ -107,6 +108,16 @@ function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleCli
           </ContextMenuItem>
         )}
         {!readonly && (
+          <ContextMenuItem onClick={() => setClipboard({ ids: [folder.id], action: "copy" })}>
+            <CopyIcon className="size-3.5 mr-2" /> Copy
+          </ContextMenuItem>
+        )}
+        {!readonly && (
+          <ContextMenuItem onClick={() => setClipboard({ ids: [folder.id], action: "cut" })}>
+            <ScissorsIcon className="size-3.5 mr-2" /> Cut
+          </ContextMenuItem>
+        )}
+        {!readonly && (
           <ContextMenuItem onClick={() => setMoveTarget({ type: "folder", id: folder.id })}>
             <ArrowRightIcon className="size-3.5 mr-2" /> Move
           </ContextMenuItem>
@@ -135,7 +146,7 @@ function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleCli
 }
 
 function FileCard({ file }: { file: FileItem }) {
-  const { selectedIds, toggleSelection, setPreviewFile, setPreviewPaneFile, previewPaneFile, setShareFile, setRenameTarget, setPropertiesTarget } = useFileSystemStore();
+  const { selectedIds, toggleSelection, setPreviewFile, setPreviewPaneFile, previewPaneFile, setShareFile, setRenameTarget, setPropertiesTarget, setClipboard } = useFileSystemStore();
   const userRole = useFileSystemStore((s) => s.userRole);
   const readonly = userRole === ROLES.CLIENTS;
   const selected = selectedIds.has(file.id);
@@ -189,6 +200,16 @@ function FileCard({ file }: { file: FileItem }) {
         {!readonly && (
           <ContextMenuItem onClick={() => setRenameTarget({ type: "file", id: file.id, name: file.originalName })}>
             <PencilIcon className="size-3.5 mr-2" /> Rename
+          </ContextMenuItem>
+        )}
+        {!readonly && (
+          <ContextMenuItem onClick={() => setClipboard({ ids: [file.id], action: "copy" })}>
+            <CopyIcon className="size-3.5 mr-2" /> Copy
+          </ContextMenuItem>
+        )}
+        {!readonly && (
+          <ContextMenuItem onClick={() => setClipboard({ ids: [file.id], action: "cut" })}>
+            <ScissorsIcon className="size-3.5 mr-2" /> Cut
           </ContextMenuItem>
         )}
         {!readonly && (

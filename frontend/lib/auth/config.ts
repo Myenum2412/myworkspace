@@ -85,7 +85,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
                 token.onboardingCompleted = fetchedOrg.onboardingCompleted === true;
                 (token as any).plan = fetchedOrg.plan || "trial";
                 (token as any).subscriptionStatus = fetchedOrg.subscriptionStatus || "trialing";
-                (token as any).trialEnd = fetchedOrg.trialEnd?.toISOString() || null;
+                (token as any).trialEnd = fetchedOrg.trialEnd?.toISOString() || (fetchedOrg.createdAt ? new Date(new Date(fetchedOrg.createdAt).getTime() + 15 * 24 * 60 * 60 * 1000).toISOString() : null);
                 (token as any).currentPeriodEnd = fetchedOrg.currentPeriodEnd?.toISOString() || null;
               } else {
                 token.onboardingCompleted = true;
@@ -94,7 +94,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
               token.onboardingCompleted = org.onboardingCompleted === true;
               (token as any).plan = org.plan || "trial";
               (token as any).subscriptionStatus = org.subscriptionStatus || "trialing";
-              (token as any).trialEnd = org.trialEnd?.toISOString() || null;
+              (token as any).trialEnd = org.trialEnd?.toISOString() || (org.createdAt ? new Date(new Date(org.createdAt).getTime() + 15 * 24 * 60 * 60 * 1000).toISOString() : null);
               (token as any).currentPeriodEnd = org.currentPeriodEnd?.toISOString() || null;
             } else {
               token.onboardingCompleted = true;

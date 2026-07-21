@@ -275,7 +275,7 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
       totalFiles,
       totalSize: totalSize[0]?.total || 0,
       usedStorage: quota?.usedStorageBytes || 0,
-      maxStorage: quota?.maxStorageBytes || 10 * 1024 * 1024 * 1024,
+      maxStorage: quota?.maxStorageBytes || 1 * 1024 * 1024 * 1024,
       deletedFiles,
       mimeTypeBreakdown,
       userStorage: {
@@ -784,6 +784,25 @@ router.post("/bulk/move", async (req: AuthRequest, res: Response) => {
   invalidateFileCaches(files[0].orgId);
 
   res.json({ success: true, moved: fileIds.length });
+});
+
+router.post("/bulk/copy", async (req: AuthRequest, res: Response) => {
+  const { fileIds, targetFolderId } = req.body;
+  if (!fileIds?.length) throw new AppError(400, "fileIds is required");
+
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null }).lean();
+  if (!files.length) throw new AppError(404, "No files found");
+  await verifyAccess(req.user!.userId, files[0].orgId);
+
+  const { duplicateFile } = await import("../services/file.service.js");
+  const copied: string[] = [];
+  for (const file of files) {
+    const newId = await duplicateFile(file.id, req.user!.userId);
+    await FileAttachment.updateOne({ id: newId }, { $set: { folderId: targetFolderId || null } });
+    copied.push(newId);
+  }
+
+  res.json({ success: true, copied: copied.length });
 });
 
 router.post("/bulk/tag", async (req: AuthRequest, res: Response) => {
