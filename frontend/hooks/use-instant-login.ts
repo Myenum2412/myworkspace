@@ -106,7 +106,9 @@ export function useInstantLogin() {
             ? "/client/dashboard"
             : role === ROLES.MEMBERS
               ? "/dashboard"
-              : "/staffs";
+              : role === ROLES.STAFFS
+                ? "/staffs"
+                : "/dashboard";
 
       queryClient.setQueryData(["bootstrap", "data"], bootstrapData);
 

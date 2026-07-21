@@ -11,7 +11,8 @@ function getRedirectPath(role?: string): string {
   if (r === ROLES.ORG_ADMIN) return "/orgmenu";
   if (r === ROLES.CLIENTS) return "/client/dashboard";
   if (r === ROLES.MEMBERS) return "/dashboard";
-  return "/staffs";
+  if (r === ROLES.STAFFS) return "/staffs";
+  return "/dashboard";
 }
 
 export async function instantLoginAction(email: string, password: string): Promise<{
