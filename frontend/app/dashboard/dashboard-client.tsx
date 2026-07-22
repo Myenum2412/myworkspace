@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import type { DashboardData, ReportsData } from "./page"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -11,10 +12,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
 import {
   ListTodo, CheckCircle2, Clock, AlertCircle,
   CalendarIcon, HourglassIcon, Users, FolderKanbanIcon, Building2Icon,
   IndianRupeeIcon, ArrowRightIcon, BarChart3Icon, TrendingUpIcon,
+  ArrowUpIcon, ArrowDownIcon,
 } from "lucide-react"
 import Link from "next/link"
 import DashboardCalendarPopup from "@/components/dashboard-calendar-popup"
@@ -65,6 +68,19 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
     { title: "Today Task", value: todayTasks, icon: CalendarIcon, color: "text-purple-600" },
     { title: "Pending Approval", value: pendingApproval, icon: HourglassIcon, color: "text-amber-600" },
   ]
+
+  const upcomingDeadlines = useMemo(() => {
+    return [...projects]
+      .filter((p) => p.deadline && p.progress < 100)
+      .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
+      .slice(0, 5)
+  }, [projects])
+
+  const topProjects = useMemo(() => {
+    return [...projects]
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 5)
+  }, [projects])
 
   const rTotal = reportsData?.total || 0
   const rCompleted = reportsData?.completed || 0
@@ -120,6 +136,78 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          {/* Project Insights */}
+          <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 lg:grid-cols-2">
+            <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px]">
+              <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                  <CalendarIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Upcoming Deadlines</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col min-h-0">
+                {upcomingDeadlines.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">No upcoming deadlines</p>
+                ) : (
+                  <div className="flex-1 overflow-y-auto min-h-0 space-y-2">
+                    {upcomingDeadlines.map((p) => {
+                      const daysLeft = Math.ceil((new Date(p.deadline!).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                      return (
+                        <div key={p.id} className="flex items-center gap-3 rounded-sm border p-3">
+                          <div className="size-8 rounded-sm flex items-center justify-center text-sm font-bold shrink-0 bg-primary/10 text-primary">
+                            {p.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{p.name}</p>
+                            <p className="text-xs text-muted-foreground">{p.client || "—"}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-xs font-medium">{p.deadline ? new Date(p.deadline).toLocaleDateString() : "—"}</p>
+                            <Badge variant={daysLeft < 0 ? "destructive" : daysLeft <= 7 ? "secondary" : "outline"} className="text-[10px] mt-0.5">
+                              {daysLeft < 0 ? "Overdue" : `${daysLeft}d left`}
+                            </Badge>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px]">
+              <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                  <TrendingUpIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Top Progress Projects</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col min-h-0">
+                {topProjects.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">No projects yet</p>
+                ) : (
+                  <div className="flex-1 overflow-y-auto min-h-0 space-y-3">
+                    {topProjects.map((p) => {
+                      const isOnTrack = p.progress > 50
+                      return (
+                        <div key={p.id} className="group">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium truncate">{p.name}</span>
+                            <div className="flex items-center gap-2 shrink-0 ml-3">
+                              <span className={`inline-flex items-center text-xs font-semibold ${isOnTrack ? "text-green-600" : "text-amber-600"}`}>
+                                {isOnTrack ? <ArrowUpIcon className="size-3 mr-0.5" /> : <ArrowDownIcon className="size-3 mr-0.5" />}
+                                {p.progress}%
+                              </span>
+                            </div>
+                          </div>
+                          <Progress value={p.progress} className="h-2" />
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Tables */}
