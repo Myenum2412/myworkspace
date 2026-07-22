@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -12,9 +12,7 @@ import {
   PaperclipIcon,
   UserIcon,
   UsersIcon,
-  GlobeIcon,
   ClockIcon,
-  FileEditIcon,
   ArrowLeftIcon,
 } from "lucide-react";
 
@@ -62,9 +60,7 @@ interface TeamOption {
 const TASK_TYPES = [
   { id: "individual", name: "Individual Task", icon: UserIcon, desc: "Assigned to one person" },
   { id: "team", name: "Team Task", icon: UsersIcon, desc: "Collaborative team work" },
-  { id: "common", name: "Common Task", icon: GlobeIcon, desc: "Shared organizational task" },
   { id: "upcoming", name: "Upcoming Task", icon: ClockIcon, desc: "Future scheduled task" },
-  { id: "draft", name: "Save as Draft", icon: FileEditIcon, desc: "Save and publish later" },
 ];
 
 const priorities = [
@@ -103,11 +99,12 @@ export function CreateTaskPageInteractive() {
   const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
   const [selectedAssigneeType, setSelectedAssigneeType] = useState<AssigneeType | null>(null);
   const [selectedTeam, setSelectedTeam] = useState("");
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
 
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [formError, setFormError] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [isActive, setIsActive] = useState(true);
@@ -189,7 +186,6 @@ export function CreateTaskPageInteractive() {
     setSelectedAssignee(null);
     setSelectedAssigneeType(null);
     setSelectedTeam("");
-    setSelectedUsers([]);
     setUploadedFiles([]);
     setFormError("");
     setIsSaved(false);
@@ -197,11 +193,13 @@ export function CreateTaskPageInteractive() {
   };
 
   const handleSubmit = async () => {
+    if (submittingRef.current) return;
     if (!title.trim() || !description.trim() || !priority) {
       setFormError("Please fill in all required fields: Title, Description, and Priority.");
       return;
     }
     setFormError("");
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       const payload: Record<string, any> = {
@@ -220,16 +218,12 @@ export function CreateTaskPageInteractive() {
         payload.scheduledDate = scheduledDate?.toISOString() || dueDate?.toISOString();
       }
 
-      if (selectedAssignee && (taskType === "individual" || taskType === "draft")) {
+      if (selectedAssignee && taskType === "individual") {
         payload.assigneeId = selectedAssignee;
       }
 
-      if (selectedTeam && (taskType === "team" || taskType === "draft")) {
+      if (selectedTeam && taskType === "team") {
         payload.teamId = selectedTeam;
-      }
-
-      if (selectedUsers.length > 0 && taskType === "common") {
-        payload.selectedUserIds = selectedUsers;
       }
 
       await taskService.createTask(payload as unknown as Partial<Task>);
@@ -241,6 +235,7 @@ export function CreateTaskPageInteractive() {
     } catch (err: any) {
       setFormError(err?.message || "An error occurred while creating the task.");
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -295,7 +290,7 @@ export function CreateTaskPageInteractive() {
         <ScrollArea className="h-full border-r px-5 py-4">
           <div className="space-y-6">
             <FormField label="Task Category" required>
-              <div className="grid grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-3 gap-1.5">
                 {TASK_TYPES.map(({ id, name, icon: Icon }) => (
                   <button
                     key={id}
@@ -448,67 +443,6 @@ export function CreateTaskPageInteractive() {
               </div>
             )}
 
-            {taskType === "common" && (
-              <div className="grid grid-cols-2 gap-3">
-                <FormField label="Due Date">
-                  <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
-                        {dueDate ? (
-                          <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                        ) : (
-                          <span className="text-muted-foreground">Due date</span>
-                        )}
-                        <CalendarIcon className="size-3.5 text-muted-foreground" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-lg" align="start">
-                      <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
-                    </PopoverContent>
-                  </Popover>
-                </FormField>
-
-                <FormField label="Visible To">
-                  <Select
-                    value={selectedUsers.length > 0 ? selectedUsers[0] : ""}
-                    onValueChange={(val) => {
-                      if (selectedUsers.includes(val)) {
-                        setSelectedUsers(selectedUsers.filter(u => u !== val));
-                      } else {
-                        setSelectedUsers([...selectedUsers, val]);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="text-sm shadow-none">
-                      <SelectValue placeholder={selectedUsers.length > 0 ? `${selectedUsers.length} user(s) selected` : "Select users"} />
-                    </SelectTrigger>
-                    <SelectContent className="shadow-none">
-                      {employees.map((e) => (
-                        <SelectItem key={e.id} value={e.id} className="text-sm">
-                          {selectedUsers.includes(e.id) ? "✓ " : ""}{e.name}{e.role ? ` (${e.role})` : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {selectedUsers.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {selectedUsers.map(uid => {
-                        const user = employees.find(e => e.id === uid);
-                        return user ? (
-                          <span key={uid} className="inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-medium">
-                            {user.name}
-                            <button type="button" onClick={() => setSelectedUsers(selectedUsers.filter(u => u !== uid))} className="hover:text-destructive">
-                              <XIcon className="size-2.5" />
-                            </button>
-                          </span>
-                        ) : null;
-                      })}
-                    </div>
-                  )}
-                </FormField>
-              </div>
-            )}
-
             {taskType === "upcoming" && (
               <div className="grid grid-cols-2 gap-3">
                 <FormField label="Scheduled Date" required>
@@ -545,46 +479,6 @@ export function CreateTaskPageInteractive() {
                       <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                     </PopoverContent>
                   </Popover>
-                </FormField>
-              </div>
-            )}
-
-            {taskType === "draft" && (
-              <div className="grid grid-cols-2 gap-3">
-                <FormField label="Due Date">
-                  <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
-                        {dueDate ? (
-                          <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                        ) : (
-                          <span className="text-muted-foreground">Due date</span>
-                        )}
-                        <CalendarIcon className="size-3.5 text-muted-foreground" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-lg" align="start">
-                      <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
-                    </PopoverContent>
-                  </Popover>
-                </FormField>
-
-                <FormField label="Assign To (optional)">
-                  <AssigneeSelector
-                    selectedAssignee={selectedAssignee}
-                    selectedAssigneeType={selectedAssigneeType}
-                    employees={employees}
-                    teams={[]}
-                    showTeamAsAssignee={false}
-                    onSelect={(id: string) => {
-                      setSelectedAssignee(id);
-                      setSelectedAssigneeType("staff");
-                    }}
-                    onRemove={() => {
-                      setSelectedAssignee(null);
-                      setSelectedAssigneeType(null);
-                    }}
-                  />
                 </FormField>
               </div>
             )}
@@ -652,7 +546,7 @@ export function CreateTaskPageInteractive() {
           ) : (
             <>
               <TaskTypeIcon className="size-3.5 mr-1.5" />
-              {taskType === "draft" ? "Save Draft" : `Create ${taskType === "individual" ? "Task" : taskType === "team" ? "Team Task" : taskType === "common" ? "Common Task" : "Upcoming Task"}`}
+              Create {taskType === "individual" ? "Task" : taskType === "team" ? "Team Task" : "Upcoming Task"}
             </>
           )}
         </Button>

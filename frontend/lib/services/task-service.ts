@@ -9,7 +9,7 @@ function csrfHeaders(): Record<string, string> {
   return token ? { "x-csrf-token": token } : {};
 }
 
-export type TaskType = "individual" | "team" | "common" | "upcoming" | "draft";
+export type TaskType = "individual" | "team" | "upcoming";
 
 export type Task = {
   id: string;

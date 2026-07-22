@@ -61,9 +61,7 @@ const TYPE_TABS = [
   { id: "all", label: "All", icon: ListTodoIcon },
   { id: "individual", label: "Individual", icon: UserIcon },
   { id: "team", label: "Team", icon: UsersIcon },
-  { id: "common", label: "Common", icon: GlobeIcon },
   { id: "upcoming", label: "Upcoming", icon: ClockIcon },
-  { id: "draft", label: "Drafts", icon: FileEditIcon },
 ];
 
 const STATUS_ICONS: Record<string, typeof ListTodoIcon> = {

@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import  ComingSoonBlock from "@/components/coming-soon-block";
 import { NewsletterBlock } from "@/components/landing/newsletter-block";
 
 export const metadata: Metadata = {
@@ -24,7 +23,6 @@ export default function Home() {
   return (
     <>
       <main className="flex min-h-screen flex-col items-center justify-center">
-        <ComingSoonBlock />
         <NewsletterBlock />
       </main>
     </>

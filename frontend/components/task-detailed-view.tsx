@@ -24,7 +24,7 @@ import {
   ListTodoIcon, CheckCircleIcon, XCircleIcon, PaperclipIcon,
   ActivityIcon, AlertCircleIcon, ClockIcon, Loader2Icon,
   CircleIcon, CircleDashedIcon, FileTextIcon, UserCheckIcon,
-  SaveIcon, FileEditIcon, GlobeIcon, UsersIcon,
+  SaveIcon, FileEditIcon, UsersIcon,
 } from "lucide-react";
 import FolderIcon from "@mui/icons-material/Folder";
 import { TaskChat } from "@/components/task-chat";
@@ -94,12 +94,6 @@ const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; ico
     { value: "rejected", label: "Rejected", icon: XCircleIcon, color: "text-red-500" },
     { value: "cancelled", label: "Cancelled", icon: XCircleIcon, color: "text-red-500" },
   ],
-  common: [
-    { value: "draft", label: "Draft", icon: FileEditIcon, color: "text-gray-500" },
-    { value: "published", label: "Published", icon: GlobeIcon, color: "text-green-500" },
-    { value: "accepted", label: "Accepted", icon: CheckCircleIcon, color: "text-blue-500" },
-    { value: "completed", label: "Completed", icon: CheckCircleIcon, color: "text-green-500" },
-  ],
   upcoming: [
     { value: "draft", label: "Draft", icon: FileEditIcon, color: "text-gray-500" },
     { value: "scheduled", label: "Scheduled", icon: ClockIcon, color: "text-blue-500" },
@@ -107,9 +101,6 @@ const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; ico
     { value: "in_progress", label: "In Progress", icon: ClockIcon, color: "text-blue-500" },
     { value: "completed", label: "Completed", icon: CheckCircleIcon, color: "text-green-500" },
     { value: "cancelled", label: "Cancelled", icon: XCircleIcon, color: "text-red-500" },
-  ],
-  draft: [
-    { value: "draft", label: "Draft", icon: FileEditIcon, color: "text-gray-500" },
   ],
 };
 
@@ -171,9 +162,7 @@ function PersonBadge({ name, avatar, role }: { name?: string; avatar?: string; r
 const TYPE_BADGES: Record<string, { label: string }> = {
   individual: { label: "Individual" },
   team: { label: "Team" },
-  common: { label: "Common" },
   upcoming: { label: "Upcoming" },
-  draft: { label: "Draft" },
 };
 
 export function TaskDetailedView({
@@ -366,12 +355,6 @@ export function TaskDetailedView({
                     Reject
                   </Button>
                 </>
-              )}
-              {taskType === "common" && task.status === "draft" && (
-                <Button size="sm" variant="default" className="h-8 text-xs" onClick={() => handleAction("publish")} disabled={actionLoading}>
-                  {actionLoading ? <Loader2Icon className="size-3 animate-spin mr-1" /> : <GlobeIcon className="size-3 mr-1" />}
-                  Publish
-                </Button>
               )}
               {taskType === "upcoming" && task.status === "scheduled" && (
                 <Button size="sm" variant="default" className="h-8 text-xs" onClick={() => handleAction("activate")} disabled={actionLoading}>

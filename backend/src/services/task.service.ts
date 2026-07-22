@@ -458,6 +458,17 @@ export async function createTask(data: {
     throw new AppError(400, "Upcoming task requires a scheduledDate or dueDate");
   }
 
+  // Prevent duplicates: same title within 30s by the same creator in the same org
+  const existing = await Task.findOne({
+    orgId,
+    creatorId: userId,
+    title,
+    createdAt: { $gte: new Date(Date.now() - 30000) },
+  }).lean();
+  if (existing) {
+    return { taskId: existing._id, type: existing.type, status: existing.status, restored: true };
+  }
+
   const initialStatus = (taskType === "individual" && assigneeId) ? "assigned" : TYPE_INITIAL_STATUS[taskType];
 
   const resolvedAssigneeId = (taskType === "individual" && assigneeId) ? assigneeId : undefined;

@@ -175,7 +175,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
   const [formData, setFormData] = useState({
     general: initialSettings?.general || { orgName: "", orgSlug: "", timezone: "UTC", language: "en", monthlyProjectLimit: 10 },
     team: initialSettings?.team || { defaultTeamRole: "team_staff", allowSelfAssign: true, maxTeamSize: 50, autoAssignLead: false, showTeamAsAssignee: false },
-    notifications: initialSettings?.notifications || defaultNotifSettings,
+    notifications: { ...defaultNotifSettings, ...initialSettings?.notifications },
   })
 
   const [dropdownOptions, setDropdownOptions] = useState<Record<string, string[]>>({})
