@@ -375,20 +375,6 @@ export default function AdminNotificationsPage() {
                         </div>
                       ))}
                     </div>
-                    <div className="grid grid-cols-3 gap-4 pt-2">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Notifications (1h)</p>
-                        <p className="text-lg font-bold">{health.notificationsInLastHour ?? "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Failed Emails (1h)</p>
-                        <p className="text-lg font-bold text-red-500">{health.failedEmailsInLastHour ?? "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Pending Emails</p>
-                        <p className="text-lg font-bold text-yellow-500">{health.pendingEmails ?? "—"}</p>
-                      </div>
-                    </div>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground py-4 text-center">Unable to load health data</p>

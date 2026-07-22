@@ -155,7 +155,7 @@ export function TeamForm({
                   const isLead = m.userId === teamHeadId;
                   return (
                     <div key={id} className="inline-flex items-center gap-2 rounded-sm border px-2.5 py-1.5 text-xs">
-                      <div className="size-6 rounded-sm bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                      <div className="size-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
                         {m.avatar ? <img src={m.avatar} alt={m.name} className="size-full object-cover" /> : <span className="text-[9px] font-bold text-muted-foreground">{getInitials(m.name)}</span>}
                       </div>
                       <div className="min-w-0">

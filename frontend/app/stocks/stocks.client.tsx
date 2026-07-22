@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusIcon, Loader2, FilterIcon, CheckIcon, XIcon, SearchIcon } from "lucide-react";
@@ -15,7 +15,7 @@ import type { Stock } from "@/app/stocks/columns";
 import { DataTable } from "@/app/stocks/data-table";
 import { columns } from "@/app/stocks/columns";
 import { StockForm } from "@/app/stocks/stock-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Stats07 from "@/components/stats-07";
 
 type StocksPageProps = {
   initialStocks: Stock[];
@@ -97,12 +97,16 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
     );
   }
 
-  const totalItems = stocks.length;
-  const totalStock = stocks.reduce((sum, s) => sum + (s.availableStock || 0), 0);
-  const lowStock = stocks.filter((s) => s.availableStock <= s.reorderLevel).length;
-  const outOfStock = stocks.filter((s) => (s.availableStock || 0) === 0).length;
-  const todayStockIn = stocks.reduce((sum, s) => sum + (s.stockIn || 0), 0);
-  const todayStockOut = stocks.reduce((sum, s) => sum + (s.stockOut || 0), 0);
+  // Stats summary
+  const stats = useMemo(() => {
+    const totalItems = stocks.length;
+    const totalStock = stocks.reduce((sum, s) => sum + (s.availableStock || 0), 0);
+    const lowStock = stocks.filter((s) => s.availableStock <= s.reorderLevel).length;
+    const outOfStock = stocks.filter((s) => (s.availableStock || 0) === 0).length;
+    const stockIn = stocks.reduce((sum, s) => sum + (s.stockIn || 0), 0);
+    const stockOut = stocks.reduce((sum, s) => sum + (s.stockOut || 0), 0);
+    return { totalItems, totalStock, lowStock, outOfStock, stockIn, stockOut };
+  }, [stocks]);
 
   const statuses = [...new Set(stocks.map((s) => s.status).filter(Boolean))];
   const filteredData = statusFilter.length > 0 ? stocks.filter((s) => statusFilter.includes(s.status)) : stocks;
@@ -177,56 +181,17 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
           </div>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-6 shrink-0">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total Products</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalItems}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total Stock</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalStock}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Low Stock</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${lowStock > 0 ? "text-orange-500" : ""}`}>{lowStock}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Out of Stock</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${outOfStock > 0 ? "text-red-500" : ""}`}>{outOfStock}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Today's Stock In</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{todayStockIn}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Today's Stock Out</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{todayStockOut}</div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stats Overview */}
+        <Stats07
+          items={[
+            { name: 'Total Items', value: stats.totalItems, subtitle: 'All inventory' },
+            { name: 'Total Stock', value: stats.totalStock, subtitle: 'Units available' },
+            { name: 'Low Stock', value: stats.lowStock, subtitle: 'Below reorder' },
+            { name: 'Out of Stock', value: stats.outOfStock, subtitle: 'Zero available' },
+            { name: 'Stock In', value: stats.stockIn, subtitle: 'Received today' },
+            { name: 'Stock Out', value: stats.stockOut, subtitle: 'Dispatched today' },
+          ]}
+        />
 
         <DataTable
             columns={columns}

@@ -21,6 +21,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
+import Stats07 from "@/components/stats-07";
 
 export type CalendarTask = {
   _id: string;
@@ -200,29 +201,15 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-4 py-3 border-b">
-        <div className="flex items-center gap-2 text-sm">
-          <ListTodoIcon className="size-4 text-muted-foreground" />
-          <span className="text-muted-foreground">Total:</span>
-          <span className="font-semibold">{totalTasks}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <ClockIcon className="size-4 text-blue-500" />
-          <span className="text-muted-foreground">Pending:</span>
-          <span className="font-semibold text-blue-600">{pendingTasks}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <CheckCircle2Icon className="size-4 text-green-500" />
-          <span className="text-muted-foreground">Done:</span>
-          <span className="font-semibold text-green-600">{completedTasks}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <AlertCircleIcon className="size-4 text-red-500" />
-          <span className="text-muted-foreground">Overdue:</span>
-          <span className="font-semibold text-red-600">{overdueTasks}</span>
-        </div>
-      </div>
+      {/* Stats Overview */}
+      <Stats07
+        items={[
+          { name: 'Total Tasks', value: totalTasks, subtitle: 'All tasks' },
+          { name: 'Completed', value: completedTasks, subtitle: 'Done tasks' },
+          { name: 'Pending', value: pendingTasks, subtitle: 'In progress' },
+          { name: 'Overdue', value: overdueTasks, subtitle: 'Past due date' },
+        ]}
+      />
 
       {/* Calendar + Sidebar */}
       <div className="flex flex-1 min-h-0">

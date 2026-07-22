@@ -80,6 +80,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
   const [taxPreference, setTaxPreference] = useState("Taxable");
   const [paymentTerms, setPaymentTerms] = useState("Due on Receipt");
   const [portalAccess, setPortalAccess] = useState(false);
+  const [clientPassword, setClientPassword] = useState("");
   const [documents, setDocuments] = useState<File[]>([]);
 
   const [billingAttention, setBillingAttention] = useState("");
@@ -115,7 +116,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
     setCustomerType(""); setSalutation(""); setFirstName(""); setLastName("");
     setCompanyName(""); setDisplayName(""); setEmail(""); setWorkPhone(""); setMobile("");
     setGstTreatment(""); setPlaceOfSupply(""); setPanNumber(""); setTaxPreference("Taxable");
-    setPaymentTerms("Due on Receipt"); setPortalAccess(false); setDocuments([]);
+    setPaymentTerms("Due on Receipt"); setPortalAccess(false); setClientPassword(""); setDocuments([]);
     setBillingAttention(""); setBillingCountry(""); setBillingStreet1(""); setBillingStreet2("");
     setBillingCity(""); setBillingState(""); setBillingPinCode(""); setBillingPhoneCode(""); setBillingPhone(""); setBillingFax("");
     setCopyBilling(false);
@@ -134,6 +135,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
     if (!email.trim()) errors.email = "Email address is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Invalid email format";
     if (!gstTreatment) errors.gstTreatment = "GST Treatment is required";
+    if (portalAccess && !clientPassword.trim()) errors.clientPassword = "Password is required when portal access is enabled";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -154,7 +156,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
       displayName,
       workPhone, mobile,
       gstTreatment, placeOfSupply, panNumber, taxPreference,
-      paymentTerms, portalAccess,
+      paymentTerms, portalAccess, clientPassword,
       billingAttention, billingCountry, billingStreet1, billingStreet2,
       billingCity, billingState, billingPinCode,
       billingPhoneCode, billingPhone, billingFax,
@@ -452,9 +454,25 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     onCheckedChange={(checked) => setPortalAccess(checked === true)}
                   />
                   <Label htmlFor="portalAccess" className="text-sm font-normal cursor-pointer">
-                    Allow portal access for this customer
+                    Allow client panel access for this customer
                   </Label>
                 </div>
+                {portalAccess && (
+                  <div className="space-y-1.5 mt-4">
+                    <Label className="text-xs text-muted-foreground">Client Panel Password *</Label>
+                    <Input
+                      type="password"
+                      placeholder="Enter password for client panel"
+                      value={clientPassword}
+                      onChange={(e) => setClientPassword(e.target.value)}
+                      className={fieldClass("clientPassword")}
+                    />
+                    {fieldError("clientPassword") && <p className="text-xs text-red-500">{fieldError("clientPassword")}</p>}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This password will be used by the client to access their panel.
+                    </p>
+                  </div>
+                )}
               </fieldset>
 
               <fieldset className="rounded-sm border p-4 space-y-4">

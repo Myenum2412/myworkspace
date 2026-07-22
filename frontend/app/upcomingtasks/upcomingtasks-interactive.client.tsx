@@ -11,6 +11,8 @@ import { TaskDetailedView } from "@/components/task-detailed-view";
 import { TaskDataTable } from "@/components/task-data-table";
 import TaskGanttView from "@/components/task-gantt-view";
 import { apiFetch } from "@/lib/api";
+import Stats07 from "@/components/stats-07";
+import { useMemo } from "react";
 
 export type UpcomingTask = {
   _id: string;
@@ -36,6 +38,15 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "gantt">("table");
 
+  // Stats summary
+  const stats = useMemo(() => {
+    const summary: Record<string, number> = {};
+    for (const t of tasks) {
+      summary[t.status] = (summary[t.status] || 0) + 1;
+    }
+    return summary;
+  }, [tasks]);
+
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4 min-h-0">
@@ -50,6 +61,18 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
             New Task
           </Button>
         </div>
+
+        {/* Stats Overview */}
+        <Stats07
+          items={[
+            { name: 'Upcoming', value: tasks.length, subtitle: 'Pending due dates' },
+            ...Object.entries(stats).slice(0, 5).map(([status, count]) => ({
+              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              value: count,
+              subtitle: `${status.replace(/_/g, ' ')} tasks`,
+            })),
+          ]}
+        />
 
         {tasks.length === 0 ? (
           <Card>

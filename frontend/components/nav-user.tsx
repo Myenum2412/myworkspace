@@ -67,9 +67,9 @@ export function NavUser({
           <div className="flex items-center">
             <SidebarMenuButton size="lg" asChild className="flex-1">
               <Link href={profileHref} onClick={() => isMobile && setOpenMobile(false)}>
-                <Avatar className="h-8 w-8 rounded-2xl">
+                <Avatar className="h-8 w-8">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-2xl">
+                  <AvatarFallback>
                     {user.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -93,9 +93,9 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-2xl">
+                <Avatar className="h-8 w-8">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-2xl">CN</AvatarFallback>
+                  <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>

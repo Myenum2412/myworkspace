@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, Loader2 } from "lucide-react";
 import type { Engagement } from "@/app/engagement/columns";
 import { DataTable } from "@/app/engagement/data-table";
 import { columns, makeActionsCell } from "@/app/engagement/columns";
 import { EngagementForm } from "@/app/engagement/engagement-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Stats07 from "@/components/stats-07";
 
 type EngagementPageProps = {
   initialEngagements: Engagement[];
@@ -81,6 +81,17 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
   }, []);
   const handleDeleteClick = useCallback((engagement: Engagement) => setDeletingEngagement(engagement), []);
 
+  // Stats summary
+  const stats = useMemo(() => {
+    const total = engagements.length;
+    const won = engagements.filter((e) => e.status === "Won").length;
+    const newCount = engagements.filter((e) => e.status === "New").length;
+    const pending = engagements.filter((e) => e.status === "Pending").length;
+    const followUp = engagements.filter((e) => e.status === "Follow-up").length;
+    const lost = engagements.filter((e) => e.status === "Lost").length;
+    return { total, won, newCount, pending, followUp, lost };
+  }, [engagements]);
+
   if (loading && engagements.length === 0) {
     return (
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
@@ -106,42 +117,17 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
           </Button>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total Interaction Followups</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{total}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">New</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-500">{newCount}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Won</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-500">{won}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Conversion Rate</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {total > 0 ? Math.round((won / total) * 100) : 0}%
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stats Overview */}
+        <Stats07
+          items={[
+            { name: 'Total', value: stats.total, subtitle: 'All interactions' },
+            { name: 'New', value: stats.newCount, subtitle: 'New leads' },
+            { name: 'Won', value: stats.won, subtitle: 'Closed deals' },
+            { name: 'Pending', value: stats.pending, subtitle: 'Awaiting response' },
+            { name: 'Follow-up', value: stats.followUp, subtitle: 'Need follow-up' },
+            { name: 'Lost', value: stats.lost, subtitle: 'Lost deals' },
+          ]}
+        />
 
         <div className="flex-1">
           <DataTable

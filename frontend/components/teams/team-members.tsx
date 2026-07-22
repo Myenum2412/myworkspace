@@ -120,9 +120,9 @@ export function TeamMembers({
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {m.avatar ? (
-                            <img src={m.avatar} alt={m.name} className="size-8 rounded-2xl object-cover ring-2 ring-background" />
+                            <img src={m.avatar} alt={m.name} className="size-8 rounded-full object-cover ring-2 ring-background" />
                           ) : (
-                            <div className="size-8 rounded-2xl flex items-center justify-center text-xs font-semibold bg-gray-100 text-gray-600">
+                            <div className="size-8 rounded-full flex items-center justify-center text-xs font-semibold bg-gray-100 text-gray-600">
                               {getInitials(m.name)}
                             </div>
                           )}
@@ -169,7 +169,7 @@ export function TeamMembers({
                 {team.members.map((m) => (
                   <div key={m.id} className="flex items-center justify-between rounded-sm border p-3 cursor-pointer hover:bg-blue-50/50 transition-colors" onClick={() => { onViewMemberChange(m); onViewMemberOpenChange(true); }}>
                     <div className="flex items-center gap-3">
-                      <div className="size-8 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                      <div className="size-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
                         {m.avatar ? <img src={m.avatar} alt={m.name} className="size-full object-cover" /> : <span className="text-xs font-medium text-muted-foreground">{getInitials(m.name)}</span>}
                       </div>
                       <div>
@@ -207,7 +207,7 @@ export function TeamMembers({
               <div className="space-y-1 max-h-64 overflow-y-auto">
                 {availableMembers.map((m) => (
                   <button key={m.userId} className="w-full flex items-center gap-3 rounded-sm p-2 hover:bg-muted transition-colors text-left" disabled={addingMember} onClick={() => onAddMember(m.userId)}>
-                    <div className="size-7 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                    <div className="size-7 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
                       {m.avatar ? <img src={m.avatar} alt={m.name} className="size-full object-cover" /> : <span className="text-[10px] font-medium text-muted-foreground">{getInitials(m.name)}</span>}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -239,7 +239,7 @@ export function TeamMembers({
 
               <div className="flex-1 overflow-y-auto px-6 py-3 space-y-5">
                 <div className="flex gap-6 items-start">
-                  <div className="size-20 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-border">
+                  <div className="size-20 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-border">
                     {viewMember.avatar ? <img src={viewMember.avatar} alt={viewMember.name} className="size-full object-cover" /> : <span className="text-lg font-bold text-muted-foreground">{getInitials(viewMember.name)}</span>}
                   </div>
                   <div className="flex-1 grid grid-cols-2 gap-3">

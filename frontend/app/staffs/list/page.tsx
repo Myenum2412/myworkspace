@@ -5,6 +5,7 @@ import { getUserOrgId } from "@/lib/org";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import Stats07 from "@/components/stats-07";
 
 export const metadata = {
   title: "Staff Directory",
@@ -51,12 +52,26 @@ export default async function StaffListPage() {
     // staff stays empty on error
   }
 
+  const totalStaff = staff.length;
+  const activeStaff = staff.filter((s) => s.status === "active").length;
+  const onLeave = staff.filter((s) => s.status === "on_leave").length;
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
       <div>
         <h1 className="text-2xl font-bold">Staff Directory</h1>
         <p className="text-sm text-muted-foreground mt-1">{staff.length} staff members</p>
       </div>
+
+      {/* Stats Overview */}
+      <Stats07
+        items={[
+          { name: 'Total Staff', value: totalStaff, subtitle: 'All members' },
+          { name: 'Active', value: activeStaff, subtitle: 'Currently active' },
+          { name: 'On Leave', value: onLeave, subtitle: 'Away from work' },
+        ]}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>All Staff</CardTitle>

@@ -4,6 +4,7 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Stats07 from "@/components/stats-07";
 
 export const metadata = {
   title: "Time Off",
@@ -45,12 +46,26 @@ export default async function StaffTimeOffPage() {
     // requests stays empty on error
   }
 
+  const totalRequests = requests.length;
+  const approvedCount = requests.filter((r) => r.status === "approved").length;
+  const pendingCount = requests.filter((r) => r.status === "pending").length;
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
       <div>
         <h1 className="text-2xl font-bold">Time Off</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage time-off requests</p>
       </div>
+
+      {/* Stats Overview */}
+      <Stats07
+        items={[
+          { name: 'Total Requests', value: totalRequests, subtitle: 'All requests' },
+          { name: 'Approved', value: approvedCount, subtitle: 'Approved requests' },
+          { name: 'Pending', value: pendingCount, subtitle: 'Awaiting approval' },
+        ]}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Requests</CardTitle>

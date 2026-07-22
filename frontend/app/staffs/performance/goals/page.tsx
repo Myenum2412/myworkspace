@@ -4,6 +4,7 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Stats07 from "@/components/stats-07";
 
 export const metadata = {
   title: "Goals",
@@ -59,12 +60,28 @@ export default async function StaffGoalsPage() {
     // goals stays empty on error
   }
 
+  const totalGoals = goals.length;
+  const completedGoals = goals.filter((g) => g.status === "completed").length;
+  const inProgressGoals = goals.filter((g) => g.status === "in_progress").length;
+  const onTrackGoals = goals.filter((g) => g.status === "on_track").length;
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
       <div>
         <h1 className="text-2xl font-bold">Goals</h1>
         <p className="text-sm text-muted-foreground mt-1">Track staff performance goals</p>
       </div>
+
+      {/* Stats Overview */}
+      <Stats07
+        items={[
+          { name: 'Total Goals', value: totalGoals, subtitle: 'All goals' },
+          { name: 'Completed', value: completedGoals, subtitle: 'Done goals' },
+          { name: 'In Progress', value: inProgressGoals, subtitle: 'Active goals' },
+          { name: 'On Track', value: onTrackGoals, subtitle: 'On schedule' },
+        ]}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Active Goals</CardTitle>

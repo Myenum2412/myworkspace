@@ -17,6 +17,7 @@ import { EyeIcon, PencilIcon, Trash2Icon, MoreHorizontalIcon } from "lucide-reac
 import { DataTable } from "@/components/data-table";
 import { columns as baseColumns, type Task } from "./columns";
 import TaskGanttView from "@/components/task-gantt-view";
+import Stats07 from "@/components/stats-07";
 
 export interface OverviewInteractiveProps {
   tasks: Task[];
@@ -80,77 +81,17 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
           </Button>
         </div>
 
-        <div className="grid gap-4 grid-cols-3 sm:grid-cols-6">
-          <Card className="border-border rounded-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total Tasks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{total}</div>
-              <p className="text-xs text-muted-foreground mt-1">{completedCount} completed ({completionRate}%)</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border rounded-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <UsersIcon className="size-3.5" /> My Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{myTasks}</div>
-              <p className="text-xs text-muted-foreground mt-1">Assigned to you</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border rounded-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <UsersIcon className="size-3.5" /> Team Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{teamTasks}</div>
-              <p className="text-xs text-muted-foreground mt-1">Assigned to others</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border rounded-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <BookmarkIcon className="size-3.5" /> Saved
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{savedCount}</div>
-              <p className="text-xs text-muted-foreground mt-1">Bookmarked tasks</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border rounded-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <CalendarClockIcon className="size-3.5" /> Upcoming
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{upcomingCount}</div>
-              <p className="text-xs text-muted-foreground mt-1">Pending due dates</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border rounded-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <CheckCircle2Icon className="size-3.5" /> Completion
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{completionRate}%</div>
-              <div className="mt-2 h-1.5 w-full bg-muted rounded-sm overflow-hidden">
-                <div
-                  className="h-full bg-red-500 rounded-sm transition-all duration-500"
-                  style={{ width: `${completionRate}%` }}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stats Overview */}
+        <Stats07
+          items={[
+            { name: 'Total Tasks', value: total, subtitle: 'All tasks' },
+            { name: 'My Tasks', value: myTasks, subtitle: 'Assigned to you' },
+            { name: 'Team Tasks', value: teamTasks, subtitle: 'Assigned to others' },
+            { name: 'Saved', value: savedCount, subtitle: 'Bookmarked tasks' },
+            { name: 'Upcoming', value: upcomingCount, subtitle: 'Pending due dates' },
+            { name: 'Completion', value: completionRate, subtitle: '% completed' },
+          ]}
+        />
 
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-semibold">Recent Tasks</h2>

@@ -34,9 +34,9 @@ function LeadNode({ data }: { data: { name: string; email: string; avatar?: stri
       <Handle type="source" position={Position.Bottom} className="!bg-amber-500" />
       <div className="flex items-center gap-3">
         {data.avatar ? (
-          <img src={data.avatar} alt={data.name} className="size-9 rounded-2xl object-cover ring-2 ring-amber-200" />
+          <img src={data.avatar} alt={data.name} className="size-9 rounded-full object-cover ring-2 ring-amber-200" />
         ) : (
-          <div className="size-9 rounded-2xl flex items-center justify-center text-xs font-bold bg-amber-200 text-amber-800">
+          <div className="size-9 rounded-full flex items-center justify-center text-xs font-bold bg-amber-200 text-amber-800">
             {getInitials(data.name)}
           </div>
         )}
@@ -58,9 +58,9 @@ function MemberNode({ data }: { data: TeamMember }) {
       <Handle type="target" position={Position.Top} className="!bg-muted-foreground" />
       <div className="flex items-center gap-3">
         {data.avatar ? (
-          <img src={data.avatar} alt={data.name} className="size-8 rounded-2xl object-cover ring-2 ring-background" />
+          <img src={data.avatar} alt={data.name} className="size-8 rounded-full object-cover ring-2 ring-background" />
         ) : (
-          <div className="size-8 rounded-2xl flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground">
+          <div className="size-8 rounded-full flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground">
             {getInitials(data.name)}
           </div>
         )}

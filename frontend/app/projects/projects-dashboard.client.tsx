@@ -1,14 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-
-import FolderIcon from "@mui/icons-material/Folder";
-import {
-  AlertCircleIcon, CheckCircle2Icon, ClockIcon, TrendingUpIcon,
-  UsersIcon,
-} from "lucide-react";
+import Stats07 from "@/components/stats-07";
 import type { Project } from "@/components/projects/project-types";
 
 interface DashboardProps {
@@ -39,76 +32,15 @@ export default function ProjectsDashboard({ projects }: DashboardProps) {
   }, [projects]);
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <FolderIcon className="size-3.5" /> Total Projects
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stats.active} active</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <TrendingUpIcon className="size-3.5" /> In Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-500">{stats.inProgress}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stats.notStarted} not started</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <CheckCircle2Icon className="size-3.5" /> Completed
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">{stats.completed}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stats.total > 0 ? Math.round(stats.completed / stats.total * 100) : 0}% completion rate</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <AlertCircleIcon className="size-3.5" /> At Risk
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-500">{stats.atRisk}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stats.overdue} overdue</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <ClockIcon className="size-3.5" /> Avg Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.avgProgress}%</div>
-            <Progress value={stats.avgProgress} className="mt-2 h-1.5" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <UsersIcon className="size-3.5" /> Team Load
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{projects.reduce((s, p) => s + (p.members?.length || 0), 0)}</div>
-            <p className="text-xs text-muted-foreground mt-1">across {projects.length} projects</p>
-          </CardContent>
-        </Card>
-      </div>
-
-    </div>
+    <Stats07
+      items={[
+        { name: 'Total Projects', value: stats.total, subtitle: 'All projects' },
+        { name: 'Active', value: stats.active, subtitle: 'In progress' },
+        { name: 'Completed', value: stats.completed, subtitle: '100% done' },
+        { name: 'In Progress', value: stats.inProgress, subtitle: 'Partially done' },
+        { name: 'Overdue', value: stats.overdue, subtitle: 'Past deadline' },
+        { name: 'Avg Progress', value: stats.avgProgress, subtitle: 'Overall progress' },
+      ]}
+    />
   );
 }

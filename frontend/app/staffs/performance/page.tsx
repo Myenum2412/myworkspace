@@ -4,6 +4,7 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Stats07 from "@/components/stats-07";
 
 export const metadata = {
   title: "Performance Reviews",
@@ -54,12 +55,26 @@ export default async function StaffPerformancePage() {
     // reviews stays empty on error
   }
 
+  const totalReviews = reviews.length;
+  const avgRating = totalReviews > 0 ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews) * 10) / 10 : 0;
+  const highPerformers = reviews.filter((r) => r.rating >= 4.5).length;
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
       <div>
         <h1 className="text-2xl font-bold">Performance Reviews</h1>
         <p className="text-sm text-muted-foreground mt-1">Staff performance evaluations</p>
       </div>
+
+      {/* Stats Overview */}
+      <Stats07
+        items={[
+          { name: 'Total Reviews', value: totalReviews, subtitle: 'All reviews' },
+          { name: 'Avg Rating', value: Math.round(avgRating * 10), subtitle: 'Out of 5' },
+          { name: 'High Performers', value: highPerformers, subtitle: 'Rating 4.5+' },
+        ]}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Recent Reviews</CardTitle>

@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StaffTasksView } from "@/components/staffs/staff-tasks-view";
+import Stats07 from "@/components/stats-07";
 
 export const dynamic = "force-dynamic";
 
@@ -143,52 +144,17 @@ export default async function StaffsPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <CalendarIcon className="size-3.5" /> Today Task
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{todayTasks}</div>
-            <p className="text-xs text-muted-foreground mt-1">Tasks created today</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <HourglassIcon className="size-3.5" /> Pending Task
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{pendingTasks}</div>
-            <p className="text-xs text-muted-foreground mt-1">Tasks not yet completed</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <CheckCircle2Icon className="size-3.5" /> Completed Task
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{completedTasks}</div>
-            <p className="text-xs text-muted-foreground mt-1">Tasks done</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <ListTodoIcon className="size-3.5" /> Total Task
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{totalTasks}</div>
-            <p className="text-xs text-muted-foreground mt-1">All tasks</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats Overview */}
+      <Stats07
+        items={[
+          { name: 'Total Staff', value: totalStaff, subtitle: 'All members' },
+          { name: 'Active', value: activeStaff, subtitle: 'Currently active' },
+          { name: 'On Leave', value: onLeave, subtitle: 'Away from work' },
+          { name: 'Total Tasks', value: totalTasks, subtitle: 'Recent tasks' },
+          { name: 'Completed', value: completedTasks, subtitle: 'Done tasks' },
+          { name: 'Pending', value: pendingTasks, subtitle: 'In progress' },
+        ]}
+      />
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         <Card>

@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { TaskDetailedView } from "@/components/task-detailed-view";
+import Stats07 from "@/components/stats-07";
 
 type Task = {
   _id: string;
@@ -82,48 +83,15 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
           <Badge variant="secondary" className="ml-auto">{total} tasks</Badge>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <ListTodoIcon className="size-3.5" /> Total
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{total}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <ClockIcon className="size-3.5" /> In Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{inProgress}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <AlertCircleIcon className="size-3.5" /> Pending
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{pending}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <CheckCircle2Icon className="size-3.5" /> Completed
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{completed}</div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stats Overview */}
+        <Stats07
+          items={[
+            { name: 'Total Tasks', value: total, subtitle: 'All tasks' },
+            { name: 'Completed', value: completed, subtitle: 'Done tasks' },
+            { name: 'In Progress', value: inProgress, subtitle: 'Active tasks' },
+            { name: 'Pending', value: pending, subtitle: 'Awaiting completion' },
+          ]}
+        />
 
         <Card>
           <CardHeader><CardTitle>Tasks</CardTitle></CardHeader>

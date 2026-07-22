@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import DashboardCalendarPopup from "@/components/dashboard-calendar-popup"
+import Stats07 from "@/components/stats-07"
 
 const ROWS_PER_CARD = 5
 
@@ -60,14 +61,7 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
     projects = [], members = [], clients = [], pendingInvoices = [],
   } = dashboardData || {}
 
-  const metricCards = [
-    { title: "Total Task", value: totalTasks, icon: ListTodo, color: "text-muted-foreground" },
-    { title: "Completed", value: completedTasks, icon: CheckCircle2, color: "text-green-600" },
-    { title: "In Progress", value: inProgressTasks, icon: Clock, color: "text-blue-600" },
-    { title: "Overdue", value: overdueTasks, icon: AlertCircle, color: "text-red-600" },
-    { title: "Today Task", value: todayTasks, icon: CalendarIcon, color: "text-purple-600" },
-    { title: "Pending Approval", value: pendingApproval, icon: HourglassIcon, color: "text-amber-600" },
-  ]
+
 
   const upcomingDeadlines = useMemo(() => {
     return [...projects]
@@ -123,20 +117,17 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
             </div>
           </div>
 
-          {/* Stat Cards */}
-          <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-3 sm:grid-cols-6">
-            {metricCards.map((c) => (
-              <Card key={c.title}>
-                <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 px-3 sm:px-4 pt-3 sm:pt-4">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{c.title}</CardTitle>
-                  <c.icon className={`size-3.5 sm:size-4 shrink-0 ${c.color}`} />
-                </CardHeader>
-                <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4">
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold truncate">{c.value}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {/* Stats Overview */}
+          <Stats07
+            items={[
+              { name: 'Total Tasks', value: totalTasks, subtitle: `${completedTasks} completed` },
+              { name: 'In Progress', value: inProgressTasks, subtitle: 'Active tasks' },
+              { name: 'Overdue', value: overdueTasks, subtitle: 'Past due date' },
+              { name: 'Today', value: todayTasks, subtitle: 'Created today' },
+              { name: 'Pending Approval', value: pendingApproval, subtitle: 'Awaiting review' },
+              { name: 'Projects', value: projects.length, subtitle: 'Active projects' },
+            ]}
+          />
 
           {/* Project Insights */}
           <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 lg:grid-cols-2">
@@ -494,25 +485,6 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
           <div className="flex items-center gap-2">
             <BarChart3Icon className="size-6 shrink-0" />
             <h1 className="text-xl sm:text-2xl font-bold">Reports</h1>
-          </div>
-
-          <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><BarChart3Icon className="size-4" /> Total Tasks</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold">{rTotal}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><CheckCircle2 className="size-4" /> Completed</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold text-red-500">{rCompleted}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">In Progress</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold text-red-400">{rInProgress}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><TrendingUpIcon className="size-4" /> Completion Rate</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold">{rCompletionRate}%</div></CardContent>
-            </Card>
           </div>
 
           <div className="grid gap-3 sm:gap-4 md:grid-cols-2">

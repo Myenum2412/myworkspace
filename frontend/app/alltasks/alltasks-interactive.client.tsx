@@ -18,6 +18,7 @@ import TaskGanttView from "@/components/task-gantt-view";
 import { toast } from "sonner";
 import { perfLog, perfNow } from "@/lib/perf";
 import { apiFetch } from "@/lib/api";
+import Stats07 from "@/components/stats-07";
 
 type UiTask = {
   _id: string;
@@ -170,6 +171,18 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
             New Task
           </Button>
         </div>
+
+        {/* Stats Overview */}
+        <Stats07
+          items={[
+            { name: 'Total Tasks', value: filteredTasks.length, subtitle: 'All tasks' },
+            ...Object.entries(summary).slice(0, 5).map(([status, count]) => ({
+              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              value: count,
+              subtitle: `${status.replace(/_/g, ' ')} tasks`,
+            })),
+          ]}
+        />
 
         {/* Type tabs */}
         <Tabs value={activeTypeTab} onValueChange={setActiveTypeTab} className="w-full">

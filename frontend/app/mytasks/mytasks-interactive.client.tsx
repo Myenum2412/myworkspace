@@ -11,6 +11,7 @@ import { TaskDataTable } from "@/components/task-data-table";
 import TaskGanttView from "@/components/task-gantt-view";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import Stats07 from "@/components/stats-07";
 
 type UiTask = {
   _id: string;
@@ -95,6 +96,15 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
     [tasks, userId],
   );
 
+  // Stats summary
+  const stats = useMemo(() => {
+    const summary: Record<string, number> = {};
+    for (const t of myTasks) {
+      summary[t.status] = (summary[t.status] || 0) + 1;
+    }
+    return summary;
+  }, [myTasks]);
+
   const handleTaskUpdate = useCallback((updated: UiTask) => {
     setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
   }, [setTasks]);
@@ -111,6 +121,18 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
             New Task
           </Button>
         </div>
+
+        {/* Stats Overview */}
+        <Stats07
+          items={[
+            { name: 'My Tasks', value: myTasks.length, subtitle: 'Assigned to you' },
+            ...Object.entries(stats).slice(0, 5).map(([status, count]) => ({
+              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              value: count,
+              subtitle: `${status.replace(/_/g, ' ')} tasks`,
+            })),
+          ]}
+        />
 
         <div className="flex flex-col flex-1 min-h-0">
             <div className="flex items-center gap-4 mb-4">

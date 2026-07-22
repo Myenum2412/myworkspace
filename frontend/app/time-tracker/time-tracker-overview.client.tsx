@@ -125,52 +125,6 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
         <p className="text-sm text-muted-foreground mt-1">Weekly overview of your tracked time</p>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
-            <Clock className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats.totalHours}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stats.totalEntries} entries this week</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Today</CardTitle>
-            <TimerIcon className="size-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats.todayHours}h</p>
-            <p className="text-xs text-muted-foreground mt-1">{stats.activeDays} active days this week</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Billable Hours</CardTitle>
-            <TrendingUp className="size-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats.billableHours}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stats.utilization}% utilization</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Daily Average</CardTitle>
-            <BarChart3 className="size-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats.avgDaily}h</p>
-            <p className="text-xs text-muted-foreground mt-1">per active day</p>
-          </CardContent>
-        </Card>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>

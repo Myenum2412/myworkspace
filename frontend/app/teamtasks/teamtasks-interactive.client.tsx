@@ -11,6 +11,8 @@ import { TaskDataTable } from "@/components/task-data-table";
 import TaskGanttView from "@/components/task-gantt-view";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
+import Stats07 from "@/components/stats-07";
+import { useMemo } from "react";
 
 export type TeamTask = {
   _id: string;
@@ -39,6 +41,15 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
 
   const [localTasks, setLocalTasks] = useState<TeamTask[]>(tasks);
 
+  // Stats summary
+  const stats = useMemo(() => {
+    const summary: Record<string, number> = {};
+    for (const t of localTasks) {
+      summary[t.status] = (summary[t.status] || 0) + 1;
+    }
+    return summary;
+  }, [localTasks]);
+
   const handleDelete = useCallback(async (t: TeamTask) => {
     if (!confirm("Are you sure you want to delete this task?")) return;
     try {
@@ -64,6 +75,18 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
             New Task
           </Button>
         </div>
+
+        {/* Stats Overview */}
+        <Stats07
+          items={[
+            { name: 'Team Tasks', value: localTasks.length, subtitle: 'Assigned to others' },
+            ...Object.entries(stats).slice(0, 5).map(([status, count]) => ({
+              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              value: count,
+              subtitle: `${status.replace(/_/g, ' ')} tasks`,
+            })),
+          ]}
+        />
 
         {localTasks.length === 0 ? (
           <Card>

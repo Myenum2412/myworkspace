@@ -172,9 +172,9 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {emp.avatar ? (
-                            <img src={emp.avatar} alt={emp.name} className="size-8 rounded-2xl object-cover ring-2 ring-background opacity-60" />
+                            <img src={emp.avatar} alt={emp.name} className="size-8 rounded-full object-cover ring-2 ring-background opacity-60" />
                           ) : (
-                            <div className="size-8 rounded-2xl flex items-center justify-center text-xs font-semibold bg-gray-100 text-gray-600 opacity-60">
+                            <div className="size-8 rounded-full flex items-center justify-center text-xs font-semibold bg-gray-100 text-gray-600 opacity-60">
                               {getInitials(emp.name)}
                             </div>
                           )}
@@ -254,9 +254,9 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
           <div className="py-6 space-y-5">
             <div className="flex items-center gap-3 p-4 rounded-sm bg-muted/50 border">
               {reactivateEmp?.avatar ? (
-                <img src={reactivateEmp.avatar} alt={reactivateEmp.name} className="size-10 rounded-2xl object-cover ring-2 ring-background" />
+                <img src={reactivateEmp.avatar} alt={reactivateEmp.name} className="size-10 rounded-full object-cover ring-2 ring-background" />
               ) : (
-                <div className="size-10 rounded-2xl flex items-center justify-center text-sm font-semibold bg-gray-100 text-gray-600">
+                <div className="size-10 rounded-full flex items-center justify-center text-sm font-semibold bg-gray-100 text-gray-600">
                   {getInitials(reactivateEmp?.name || "")}
                 </div>
               )}

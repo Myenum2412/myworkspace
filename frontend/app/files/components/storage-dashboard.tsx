@@ -88,37 +88,6 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
-          <div className="flex items-center gap-2 text-gray-400 mb-1">
-            <HardDrive className="w-4 h-4" />
-            <span className="text-xs font-medium uppercase">Total Size</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatBytes(stats.totalSize)}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
-          <div className="flex items-center gap-2 text-gray-400 mb-1">
-            <FileText className="w-4 h-4" />
-            <span className="text-xs font-medium uppercase">Files</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{(stats.fileCount || 0).toLocaleString()}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
-          <div className="flex items-center gap-2 text-gray-400 mb-1">
-            <Upload className="w-4 h-4" />
-            <span className="text-xs font-medium uppercase">Quota Used</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatBytes(stats.quotaUsed)}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
-          <div className="flex items-center gap-2 text-gray-400 mb-1">
-            <Download className="w-4 h-4" />
-            <span className="text-xs font-medium uppercase">Quota Limit</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatBytes(stats.quotaLimit)}</p>
-        </div>
-      </div>
-
       <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Storage Quota</span>

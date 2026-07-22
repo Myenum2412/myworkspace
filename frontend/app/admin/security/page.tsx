@@ -152,46 +152,6 @@ export default function AdminSecurityPage() {
         </button>
       </div>
 
-      {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-sm bg-green-500"><ShieldCheck className="size-4 text-white" /></div>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Adoption Rate</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{Math.round(stats.adoptionRate * 100)}%</p>
-            <p className="text-xs text-gray-400 mt-1">{stats.mfaEnabledUsers}/{stats.totalUsers} users enrolled</p>
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-sm bg-amber-500"><ShieldAlert className="size-4 text-white" /></div>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Bypass Users</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.mfaBypassUsers}</p>
-            <p className="text-xs text-gray-400 mt-1">Users without MFA</p>
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-sm bg-blue-500"><Activity className="size-4 text-white" /></div>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Verifications</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.recentVerifications}</p>
-            <p className="text-xs text-gray-400 mt-1">Successful</p>
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-sm bg-red-500"><AlertTriangle className="size-4 text-white" /></div>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Failed</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.recentFailures}</p>
-            <p className="text-xs text-gray-400 mt-1">Failed verifications</p>
-          </div>
-        </div>
-      )}
-
       <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800">
         <div className="border-b border-gray-200 dark:border-gray-800">
           <div className="flex">
