@@ -265,9 +265,29 @@ export function TaskDetailedView({
             <span className="text-xs font-medium text-muted-foreground">Project / {task.project || "General Workspace"}</span>
             <span className="text-xs border rounded px-1.5 py-0.5">{typeBadge.label}</span>
             <span className="text-xs border rounded px-1.5 py-0.5">{task.priority} Priority</span>
-            {task.dueDate && (
-              <span className="text-xs text-muted-foreground">Due {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
-            )}
+            {task.dueDate && (() => {
+              const now = new Date();
+              const due = new Date(task.dueDate!);
+              const diffMs = due.getTime() - now.getTime();
+              const COMPLETED = new Set(["completed", "done", "cancelled", "closed"]);
+              const isOverdue = diffMs < 0 && !COMPLETED.has(task.status);
+              const isDueSoon = diffMs > 0 && diffMs <= 86400000 && !COMPLETED.has(task.status);
+              return (
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  Due {new Date(task.dueDate!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  {isOverdue && (
+                    <Badge className="bg-red-100 text-red-700 border-red-200 text-[9px] px-1.5 py-0 gap-0.5">
+                      <AlertCircleIcon className="size-2.5" /> Overdue
+                    </Badge>
+                  )}
+                  {isDueSoon && (
+                    <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-[9px] px-1.5 py-0 gap-0.5">
+                      <ClockIcon className="size-2.5" /> Due Soon
+                    </Badge>
+                  )}
+                </span>
+              );
+            })()}
           </div>
 
           <h1 className="text-lg font-semibold text-foreground mb-3">

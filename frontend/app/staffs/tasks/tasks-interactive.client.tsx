@@ -51,6 +51,18 @@ const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-600",
 };
 
+const COMPLETED_STATUSES = new Set(["completed", "done", "cancelled", "closed", "rejected"]);
+
+function getDueStatus(dueDate: string | null, status: string): "overdue" | "due-soon" | "normal" {
+  if (!dueDate || COMPLETED_STATUSES.has(status)) return "normal";
+  const now = new Date();
+  const due = new Date(dueDate);
+  const diffMs = due.getTime() - now.getTime();
+  if (diffMs < 0) return "overdue";
+  if (diffMs <= 86400000) return "due-soon";
+  return "normal";
+}
+
 export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task[]; sessionUserId?: string }) {
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -137,8 +149,11 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
                     </tr>
                   </thead>
                   <tbody>
-                    {localTasks.map((t, idx) => (
-                      <tr key={t._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group cursor-pointer" onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
+                    {localTasks.map((t, idx) => {
+                      const dueStatus = getDueStatus(t.dueDate, t.status);
+                      const rowClass = dueStatus === "overdue" ? "bg-red-50 hover:bg-red-100/50" : dueStatus === "due-soon" ? "bg-yellow-50 hover:bg-yellow-100/50" : "bg-white hover:bg-slate-50";
+                      return (
+                      <tr key={t._id} className={`border-b last:border-0 transition-colors group cursor-pointer ${rowClass}`} onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground">#{idx + 1}</td>
                         <td className="px-4 py-3 font-medium">{t.title}</td>
                         <td className="px-4 py-3">
@@ -166,8 +181,20 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
                             {t.priority}
                           </Badge>
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
+                            {dueStatus === "overdue" && (
+                              <Badge className="bg-red-100 text-red-700 border-red-200 text-[9px] px-1.5 py-0 gap-0.5">
+                                <AlertCircleIcon className="size-2.5" /> Overdue
+                              </Badge>
+                            )}
+                            {dueStatus === "due-soon" && (
+                              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-[9px] px-1.5 py-0 gap-0.5">
+                                <ClockIcon className="size-2.5" /> Due Soon
+                              </Badge>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
@@ -183,7 +210,8 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
                           </DropdownMenu>
                         </td>
                       </tr>
-                    ))}
+                    );
+                  })}
                   </tbody>
                 </table>
               </div>

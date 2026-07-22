@@ -4,7 +4,8 @@ import { env } from "./config/env.js";
 import { connectDb } from "./lib/db/index.js";
 import { createIndexes } from "./indexes.js";
 import { socketIOManager } from "./lib/socketio/index.js";
-import { initializeAgenda } from "./lib/agenda/index.js";
+import { initializeScheduler, shutdownScheduler } from "./lib/scheduler/index.js";
+import { registerAllHandlers } from "./lib/scheduler/register-handlers.js";
 import { logger } from "./lib/logger/index.js";
 import { getEnforcer } from "./config/casbin.js";
 import { startWorkers } from "./lib/queue/worker.js";
@@ -60,9 +61,12 @@ async function start() {
     }
   }
 
-  // Fire-and-forget: non-critical initialization
-  initializeAgenda().catch((err) => {
-    logger.error({ err }, "Agenda.js initialization failed");
+  // Register all job type handlers
+  registerAllHandlers();
+
+  // Initialize JobScheduler.NET (Bree) scheduler system
+  initializeScheduler().catch((err) => {
+    logger.error({ err }, "JobScheduler.NET initialization failed");
   });
 
   promoteRateLimitersToRedis();
@@ -124,6 +128,14 @@ async function start() {
       }
       resolve();
     }));
+
+    tasks.push((async () => {
+      try {
+        await shutdownScheduler();
+      } catch (err) {
+        logger.warn({ err }, "Scheduler shutdown error");
+      }
+    })());
 
     tasks.push((async () => {
       try {

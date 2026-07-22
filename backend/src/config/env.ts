@@ -65,6 +65,15 @@ export const env = {
   VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || "",
   VAPID_SUBJECT: process.env.VAPID_SUBJECT || "mailto:admin@myenum.in",
 
+  // Scheduler Configuration (JobScheduler.NET / Bree)
+  SCHEDULER_HEARTBEAT_INTERVAL: process.env.SCHEDULER_HEARTBEAT_INTERVAL || "* * * * *",
+  SCHEDULER_HEALTH_CHECK_INTERVAL_MS: parseInt(process.env.SCHEDULER_HEALTH_CHECK_INTERVAL_MS || "30000", 10),
+  SCHEDULER_METRICS_INTERVAL_MS: parseInt(process.env.SCHEDULER_METRICS_INTERVAL_MS || "60000", 10),
+  SCHEDULER_MAX_CONCURRENT_JOBS: parseInt(process.env.SCHEDULER_MAX_CONCURRENT_JOBS || "50", 10),
+  SCHEDULER_DEFAULT_RETRIES: parseInt(process.env.SCHEDULER_DEFAULT_RETRIES || "3", 10),
+  SCHEDULER_DEFAULT_RETRY_DELAY_MS: parseInt(process.env.SCHEDULER_DEFAULT_RETRY_DELAY_MS || "60000", 10),
+  SCHEDULER_JOB_TTL_DAYS: parseInt(process.env.SCHEDULER_JOB_TTL_DAYS || "90", 10),
+
   // Business Configuration
   BUSINESS_NAME: process.env.BUSINESS_NAME || "MyWorkSpace",
   BUSINESS_TIMEZONE: process.env.BUSINESS_TIMEZONE || "Asia/Kolkata",

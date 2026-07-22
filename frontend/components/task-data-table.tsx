@@ -1,4 +1,5 @@
 "use client"
+import { useMemo } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
   Trash2Icon,
   ListTodoIcon,
   CalendarIcon,
+  AlertCircleIcon,
+  ClockIcon,
 } from "lucide-react";
 import { DataTable } from "@/components/data-table";
 
@@ -34,6 +37,19 @@ export interface TaskRow {
   assigneeId?: string;
   creatorName?: string;
   teamHeadName?: string;
+}
+
+const COMPLETED_STATUSES = new Set(["completed", "done", "cancelled", "closed"]);
+
+function getDueDateStatus(dueDate?: string | null, status?: string): "overdue" | "due-soon" | "normal" {
+  if (!dueDate || COMPLETED_STATUSES.has(status ?? "")) return "normal";
+  const now = new Date();
+  const due = new Date(dueDate);
+  const diffMs = due.getTime() - now.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  if (diffMs < 0) return "overdue";
+  if (diffDays <= 1) return "due-soon";
+  return "normal";
 }
 
 interface TaskDataTableProps {
@@ -101,6 +117,24 @@ export function TaskDataTable({
   searchQuery,
   onSearchChange,
 }: TaskDataTableProps) {
+  const rowProps = useMemo(() => {
+    return data.map((row) => {
+      const status = getDueDateStatus(row.dueDate, row.status);
+      return {
+        status,
+        className:
+          status === "overdue" ? "bg-red-50 hover:bg-red-100/50" :
+          status === "due-soon" ? "bg-yellow-50 hover:bg-yellow-100/50" :
+          "",
+      };
+    });
+  }, [data]);
+
+  const getRowProps = (row: TaskRow) => {
+    const found = rowProps.find((_, i) => data[i] === row);
+    return { className: found?.className ?? "" };
+  };
+
   const columns: ColumnDef<TaskRow>[] = [
     {
       id: "index",
@@ -187,13 +221,27 @@ export function TaskDataTable({
     {
       accessorKey: "dueDate",
       header: "Due Date",
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">
-          {row.original.dueDate
-            ? new Date(row.original.dueDate).toLocaleDateString()
-            : "—"}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const dueDate = row.original.dueDate;
+        const status = getDueDateStatus(dueDate, row.original.status);
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">
+              {dueDate ? new Date(dueDate).toLocaleDateString() : "—"}
+            </span>
+            {status === "overdue" && (
+              <Badge className="bg-red-100 text-red-700 border-red-200 text-[10px] px-1.5 py-0 gap-1">
+                <AlertCircleIcon className="size-3" /> Overdue
+              </Badge>
+            )}
+            {status === "due-soon" && (
+              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-[10px] px-1.5 py-0 gap-1">
+                <ClockIcon className="size-3" /> Due Soon
+              </Badge>
+            )}
+          </div>
+        );
+      },
     },
     {
       id: "actions",
@@ -247,6 +295,7 @@ export function TaskDataTable({
       hideSearchBar={hideSearchBar}
       searchQuery={searchQuery}
       onSearchChange={onSearchChange}
+      getRowProps={getRowProps}
     />
   );
 }

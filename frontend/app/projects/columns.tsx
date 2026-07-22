@@ -7,9 +7,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import FolderIcon from "@mui/icons-material/Folder";
-import { PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon } from "lucide-react";
+import { PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon, ClockIcon } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
+
+function getProjectDueStatus(project: Project): "overdue" | "due-soon" | "normal" {
+  if (!project.deadline) return "normal";
+  if (project.status !== "Active" || project.progress >= 100) return "normal";
+  const now = new Date();
+  const due = new Date(project.deadline);
+  const diffMs = due.getTime() - now.getTime();
+  if (diffMs < 0) return "overdue";
+  if (diffMs <= 24 * 60 * 60 * 1000) return "due-soon";
+  return "normal";
+}
 
 export const columns: ColumnDef<Project>[] = [
   {
@@ -79,10 +91,23 @@ export const columns: ColumnDef<Project>[] = [
     id: "deadline",
     header: () => <span className="flex items-center gap-1"><CalendarIcon className="size-3" /> Deadline</span>,
     cell: ({ row }) => {
-      const deadline = row.original.deadline;
-      return deadline
-        ? <span>{new Date(deadline).toLocaleDateString()}</span>
-        : <span className="text-muted-foreground">—</span>;
+      const project = row.original;
+      const dueStatus = getProjectDueStatus(project);
+      return project.deadline ? (
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground">{new Date(project.deadline).toLocaleDateString()}</span>
+          {dueStatus === "overdue" && (
+            <Badge className="bg-red-100 text-red-700 border-red-200 text-[10px] px-1.5 py-0 gap-1">
+              <AlertCircleIcon className="size-3" /> Overdue
+            </Badge>
+          )}
+          {dueStatus === "due-soon" && (
+            <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-[10px] px-1.5 py-0 gap-1">
+              <ClockIcon className="size-3" /> Due Soon
+            </Badge>
+          )}
+        </div>
+      ) : <span className="text-muted-foreground">—</span>;
     },
   },
   {
