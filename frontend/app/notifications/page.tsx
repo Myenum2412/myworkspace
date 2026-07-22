@@ -232,7 +232,7 @@ export default function NotificationsPage() {
             {filtered.map((n) => (
               <div
                 key={n.id}
-                className={`group relative flex items-start gap-4 rounded-lg border p-4 transition-colors cursor-pointer ${
+                className={`group relative flex items-start gap-4 rounded-sm border p-4 transition-colors cursor-pointer ${
                   selectMode
                     ? selectedIds.has(n.id) ? "ring-2 ring-primary bg-accent/50" : "hover:bg-accent/20"
                     : !n.read ? "bg-accent/20 border-accent hover:bg-accent/30" : "bg-card hover:bg-accent/20"

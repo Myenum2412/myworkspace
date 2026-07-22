@@ -174,13 +174,13 @@ export default function ApprovalsInteractive({ initialItems }: ApprovalsInteract
                 )}
                 <Separator />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Type</p><p className="font-medium capitalize mt-0.5">{selectedItem.itemType}</p></div>
+                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Type</p><p className="font-medium capitalize mt-0.5">{selectedItem.itemType}</p></div>
                   {!isFile && (
-                    <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Priority</p><p className="font-medium capitalize mt-0.5">{selectedItem.priority}</p></div>
+                    <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Priority</p><p className="font-medium capitalize mt-0.5">{selectedItem.priority}</p></div>
                   )}
-                  <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Status</p><p className="font-medium capitalize mt-0.5">Review</p></div>
-                  <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">{isFile ? "Uploaded By" : "Assignee"}</p><p className="font-medium mt-0.5">{(isFile ? selectedItem.uploaderName : selectedItem.assigneeName) || "—"}</p></div>
-                  <div className="rounded-lg border bg-card px-3 py-2">
+                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Status</p><p className="font-medium capitalize mt-0.5">Review</p></div>
+                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">{isFile ? "Uploaded By" : "Assignee"}</p><p className="font-medium mt-0.5">{(isFile ? selectedItem.uploaderName : selectedItem.assigneeName) || "—"}</p></div>
+                  <div className="rounded-sm border bg-card px-3 py-2">
                     <p className="text-[11px] text-muted-foreground">{isFile ? "Uploaded At" : "Due Date"}</p>
                     <p className="font-medium mt-0.5">
                       {(isFile ? selectedItem.createdAt : selectedItem.dueDate)
@@ -189,10 +189,10 @@ export default function ApprovalsInteractive({ initialItems }: ApprovalsInteract
                     </p>
                   </div>
                   {!isFile && selectedItem.creatorName && (
-                    <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Creator</p><p className="font-medium mt-0.5">{selectedItem.creatorName}</p></div>
+                    <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Creator</p><p className="font-medium mt-0.5">{selectedItem.creatorName}</p></div>
                   )}
                   {isFile && selectedItem.mimeType && (
-                    <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">File Type</p><p className="font-medium mt-0.5">{selectedItem.mimeType}</p></div>
+                    <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">File Type</p><p className="font-medium mt-0.5">{selectedItem.mimeType}</p></div>
                   )}
                 </div>
               </div>
@@ -223,7 +223,7 @@ export default function ApprovalsInteractive({ initialItems }: ApprovalsInteract
           </DialogHeader>
 
           {actionError && (
-            <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-sm text-destructive">
               <AlertCircleIcon className="size-4 shrink-0" />{actionError}
             </div>
           )}
@@ -232,13 +232,13 @@ export default function ApprovalsInteractive({ initialItems }: ApprovalsInteract
             {actionType === "reject" && (
               <div>
                 <Label className="text-xs text-muted-foreground">Rejection Reason *</Label>
-                <Textarea id="reason" value={actionNote} onChange={(e) => setActionNote(e.target.value)} placeholder="" rows={3} className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                <Textarea id="reason" value={actionNote} onChange={(e) => setActionNote(e.target.value)} placeholder="" rows={3} className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
               </div>
             )}
             {actionType === "approve" && (
               <div>
                 <Label className="text-xs text-muted-foreground">Approval Note (optional)</Label>
-                <Textarea id="note" value={actionNote} onChange={(e) => setActionNote(e.target.value)} placeholder="" rows={2} className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                <Textarea id="note" value={actionNote} onChange={(e) => setActionNote(e.target.value)} placeholder="" rows={2} className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
               </div>
             )}
           </div>

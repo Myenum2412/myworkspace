@@ -105,7 +105,7 @@ export function NotificationBell() {
         <ScrollArea className="flex-1 [&_[data-slot=scroll-area-viewport]]:scroll-fade-y">
           {loading && notifications.length === 0 ? (
             <div className="flex items-center justify-center py-10">
-              <div className="size-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
+              <div className="size-5 animate-spin rounded-sm border-2 border-muted border-t-primary" />
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
@@ -178,7 +178,7 @@ export function NotificationBell() {
                       </div>
 
                       {!item.read && (
-                        <span className="mt-1.5 size-1.5 shrink-0 bg-primary rounded-full" aria-label="Unread" />
+                        <span className="mt-1.5 size-1.5 shrink-0 bg-primary rounded-sm" aria-label="Unread" />
                       )}
                     </button>
                     {index < notifications.length - 1 && index < 19 && <Separator />}

@@ -52,7 +52,7 @@ export function StaffRecentTasks({ tasks }: { tasks: Task[] }) {
       {tasks.length === 0 ? (
         <p className="text-sm text-muted-foreground">No tasks allocated yet</p>
       ) : (
-        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
           <div className="overflow-x-auto">
             <table className="table-premium w-full text-sm text-left">
               <thead>
@@ -103,7 +103,7 @@ export function StaffRecentTasks({ tasks }: { tasks: Task[] }) {
       )}
 
       <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-xl sm:m-4" showCloseButton={false}>
+        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-sm sm:m-4" showCloseButton={false}>
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask as any}

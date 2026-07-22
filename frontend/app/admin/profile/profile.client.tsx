@@ -114,7 +114,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
             </Avatar>
             <button
               onClick={() => setShowImageEditor(true)}
-              className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+              className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-sm bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
               aria-label="Edit profile photo"
             >
               <CameraIcon className="size-4" />
@@ -136,13 +136,13 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
 
         <div className="flex flex-col gap-2 max-w-4xl mx-auto w-full px-6 pt-4">
           {saveError && (
-            <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <AlertCircleIcon className="size-3.5 shrink-0" />
               {saveError}
             </div>
           )}
           {saveSuccess && (
-            <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <CheckCircleIcon className="size-3.5 shrink-0" />
               {saveSuccess}
             </div>
@@ -409,7 +409,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                   </div>
 
-                  <fieldset className="rounded-xl border p-4 space-y-4">
+                  <fieldset className="rounded-sm border p-4 space-y-4">
                     <legend className="text-sm font-semibold px-2">Contact Information</legend>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
@@ -431,7 +431,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                   </fieldset>
 
-                  <fieldset className="rounded-xl border p-4 space-y-4">
+                  <fieldset className="rounded-sm border p-4 space-y-4">
                     <legend className="text-sm font-semibold px-2">Address</legend>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="sm:col-span-2 space-y-1.5">
@@ -461,7 +461,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                   </fieldset>
 
-                  <fieldset className="rounded-xl border p-4 space-y-4">
+                  <fieldset className="rounded-sm border p-4 space-y-4">
                     <legend className="text-sm font-semibold px-2">Authorized Person</legend>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
@@ -483,7 +483,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                   </fieldset>
 
-                  <fieldset className="rounded-xl border p-4 space-y-4">
+                  <fieldset className="rounded-sm border p-4 space-y-4">
                     <legend className="text-sm font-semibold px-2">Additional Information</legend>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
@@ -493,7 +493,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs text-muted-foreground">Company Description</Label>
-                      <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                      <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
                     </div>
                   </fieldset>
                 </div>
@@ -588,10 +588,10 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
 
       {showBannerEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBannerEditor(false)}>
-          <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">Update banner</h2>
-              <button onClick={() => setShowBannerEditor(false)} className="rounded-md p-1 hover:bg-muted transition-colors">
+              <button onClick={() => setShowBannerEditor(false)} className="rounded-sm p-1 hover:bg-muted transition-colors">
                 <XIcon className="size-3.5" />
               </button>
             </div>
@@ -637,10 +637,10 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
 
       {showImageEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageEditor(false)}>
-          <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">Update profile photo</h2>
-              <button onClick={() => setShowImageEditor(false)} className="rounded-md p-1 hover:bg-muted transition-colors">
+              <button onClick={() => setShowImageEditor(false)} className="rounded-sm p-1 hover:bg-muted transition-colors">
                 <XIcon className="size-3.5" />
               </button>
             </div>

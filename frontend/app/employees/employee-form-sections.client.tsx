@@ -81,7 +81,7 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: ProfileImageUploa
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="relative">
-        <div className="size-24 rounded-full overflow-hidden ring-2 ring-background flex items-center justify-center bg-muted">
+        <div className="size-24 rounded-2xl overflow-hidden ring-2 ring-background flex items-center justify-center bg-muted">
           {avatar ? (
             <img src={avatar} alt="Profile" className="size-full object-cover" />
           ) : (
@@ -91,7 +91,7 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: ProfileImageUploa
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="absolute bottom-0 right-0 rounded-full bg-primary p-2.5 sm:p-2 text-primary-foreground hover:bg-primary/90"
+          className="absolute bottom-0 right-0 rounded-sm bg-primary p-2.5 sm:p-2 text-primary-foreground hover:bg-primary/90"
           aria-label="Upload photo"
         >
           <Camera className="h-4 w-4" />
@@ -482,7 +482,7 @@ export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow, def
       {(isOpen || readOnly) && (
         <div className="space-y-6">
           {rows.map((row) => (
-            <div key={row.id} className="relative border rounded-lg p-4">
+            <div key={row.id} className="relative border rounded-sm p-4">
               <div className="pt-8 sm:pt-0">
                 {renderRow(row)}
               </div>

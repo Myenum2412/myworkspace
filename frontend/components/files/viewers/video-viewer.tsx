@@ -120,7 +120,7 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
       {loading && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
           <div className="flex flex-col items-center gap-3 text-white/80">
-            <div className="size-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="size-8 border-2 border-white border-t-transparent rounded-sm animate-spin" />
             <p className="text-xs">Loading video...</p>
           </div>
         </div>
@@ -151,7 +151,7 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
           playing ? "opacity-0" : "opacity-100"
         }`}
       >
-        <div className="size-16 rounded-full bg-black/60 flex items-center justify-center pointer-events-auto cursor-pointer" onClick={togglePlay}>
+        <div className="size-16 rounded-sm bg-black/60 flex items-center justify-center pointer-events-auto cursor-pointer" onClick={togglePlay}>
           <PlayIcon className="size-8 text-white ml-1" />
         </div>
       </div>

@@ -234,7 +234,7 @@ export function UploadThingDropzone({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          "relative border-2 border-dashed rounded-lg p-8",
+          "relative border-2 border-dashed rounded-sm p-8",
           "flex flex-col items-center justify-center gap-4",
           "transition-all duration-200 cursor-pointer",
           "hover:border-primary/50 hover:bg-muted/30",
@@ -251,9 +251,9 @@ export function UploadThingDropzone({
           
           {isUploading ? (
             <div className="w-48 space-y-2">
-              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-muted rounded-sm h-2 overflow-hidden">
                 <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
+                  className="bg-primary h-2 rounded-sm transition-all duration-300 ease-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -303,7 +303,7 @@ export function UploadThingDropzone({
             {uploadedFiles.map((file, index) => (
               <div
                 key={`${file.name}-${index}`}
-                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border"
+                className="flex items-center justify-between p-3 bg-muted/50 rounded-sm border border-border"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <FileIcon className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -318,7 +318,7 @@ export function UploadThingDropzone({
                   <button
                     type="button"
                     onClick={() => copyUrl(file.url)}
-                    className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
+                    className="p-1.5 hover:bg-muted rounded-sm text-muted-foreground hover:text-foreground transition-colors"
                     title="Copy URL"
                   >
                     <CopyIcon className="w-4 h-4" />
@@ -327,7 +327,7 @@ export function UploadThingDropzone({
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
+                    className="p-1.5 hover:bg-muted rounded-sm text-muted-foreground hover:text-foreground transition-colors"
                     title="Open file"
                   >
                     <ExternalLinkIcon className="w-4 h-4" />
@@ -335,7 +335,7 @@ export function UploadThingDropzone({
                   <button
                     type="button"
                     onClick={() => removeFile(index)}
-                    className="p-1.5 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-colors"
+                    className="p-1.5 hover:bg-destructive/10 rounded-sm text-muted-foreground hover:text-destructive transition-colors"
                     title="Remove"
                   >
                     <XIcon className="w-4 h-4" />

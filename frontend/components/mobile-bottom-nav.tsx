@@ -88,7 +88,7 @@ export function MobileBottomNav({ context }: { context?: string }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 h-full rounded-md transition-colors",
+                "flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 h-full rounded-sm transition-colors",
                 "touch-target",
                 isActive
                   ? "text-white font-semibold"

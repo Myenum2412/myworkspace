@@ -105,7 +105,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 <AlertCircleIcon className="size-4 shrink-0" />
                 {error}
               </div>
@@ -124,7 +124,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
                 onChange={(e) => setClient(e.target.value)}
                 required
                 disabled={submitting}
-                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">Select a client</option>
                 {clientList.map((c) => (
@@ -142,7 +142,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={submitting}
                 rows={4}
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                className="flex min-h-[80px] w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
               />
             </div>
 
@@ -161,7 +161,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
                       type="button"
                       onClick={() => setColor(c)}
                       disabled={submitting}
-                      className={`size-7 rounded-full ring-offset-2 ring-offset-background transition-all ${
+                      className={`size-7 rounded-sm ring-offset-2 ring-offset-background transition-all ${
                         color === c ? "ring-2 ring-foreground scale-110" : ""
                       }`}
                       style={{ backgroundColor: c }}
@@ -173,7 +173,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                   disabled={submitting}
-                  className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
+                  className="size-8 cursor-pointer rounded-sm border border-border bg-transparent p-0.5"
                 />
               </div>
             </div>

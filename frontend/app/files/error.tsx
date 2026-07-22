@@ -8,7 +8,7 @@ export default function FilesError({ error, reset }: { error: Error & { digest?:
         {error.message || "An unexpected error occurred. Please try again."}
       </p>
       <div className="flex gap-3">
-        <button onClick={() => reset()} className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+        <button onClick={() => reset()} className="inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
           Try again
         </button>
       </div>

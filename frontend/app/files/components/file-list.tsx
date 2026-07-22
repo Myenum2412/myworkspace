@@ -39,7 +39,7 @@ function ListThumbnail({ file }: { file: { id: string; mimeType: string; origina
       <img
         src={`/api/files/thumbnail/${file.id}?size=small`}
         alt={file.originalName}
-        className="size-8 rounded object-cover shrink-0"
+        className="size-8 rounded-sm object-cover shrink-0"
         loading="lazy"
         onError={() => setError(true)}
       />

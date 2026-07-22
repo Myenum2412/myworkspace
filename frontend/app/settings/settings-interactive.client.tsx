@@ -341,7 +341,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                   const limit = sectionLimits[key] ?? DEFAULT_SECTION_LIMITS[key] ?? 20
                   const atLimit = items.length >= limit
                   return (
-                    <div key={key} className="border rounded-lg p-4 space-y-3">
+                    <div key={key} className="border rounded-sm p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-medium">{label}</h3>
                         <Badge variant={atLimit ? "destructive" : "secondary"}>

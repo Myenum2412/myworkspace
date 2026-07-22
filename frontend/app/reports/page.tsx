@@ -88,8 +88,8 @@ export default async function ReportsPage() {
                     <div className={`size-3 rounded-full ${p.color}`} />
                     <span className="text-sm flex-1">{p.label}</span>
                     <span className="text-sm font-bold">{p.count}</span>
-                    <div className="w-24 h-2 rounded-full bg-muted">
-                      <div className={`h-2 rounded-full ${p.color}`} style={{ width: `${total > 0 ? (p.count / total) * 100 : 0}%` }} />
+                    <div className="w-24 h-2 rounded-sm bg-muted">
+                      <div className={`h-2 rounded-sm ${p.color}`} style={{ width: `${total > 0 ? (p.count / total) * 100 : 0}%` }} />
                     </div>
                   </div>
                 ))}
@@ -117,8 +117,8 @@ export default async function ReportsPage() {
                     <div className={`size-3 rounded-full ${s.color}`} />
                     <span className="text-sm flex-1">{s.label}</span>
                     <span className="text-sm font-bold">{s.count}</span>
-                    <div className="w-24 h-2 rounded-full bg-muted">
-                      <div className={`h-2 rounded-full ${s.color}`} style={{ width: `${total > 0 ? (s.count / total) * 100 : 0}%` }} />
+                    <div className="w-24 h-2 rounded-sm bg-muted">
+                      <div className={`h-2 rounded-sm ${s.color}`} style={{ width: `${total > 0 ? (s.count / total) * 100 : 0}%` }} />
                     </div>
                   </div>
                 ))}

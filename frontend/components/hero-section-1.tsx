@@ -43,8 +43,8 @@ export default function HeroSection() {
                 <div
                     aria-hidden
                     className="absolute inset-0 isolate hidden opacity-65 contain-strict lg:block">
-                    <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(198,100%,37%,.08)_0,hsla(198,100%,27%,.02)_50%,hsla(198,100%,20%,0)_80%)]" />
-                    <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(198,100%,37%,.06)_0,hsla(198,100%,20%,.02)_80%,transparent_100%)] [translate:5%_-50%]" />
+                    <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-sm bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(198,100%,37%,.08)_0,hsla(198,100%,27%,.02)_50%,hsla(198,100%,20%,0)_80%)]" />
+                    <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-sm bg-[radial-gradient(50%_50%_at_50%_50%,hsla(198,100%,37%,.06)_0,hsla(198,100%,20%,.02)_80%,transparent_100%)] [translate:5%_-50%]" />
                     <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(198,100%,37%,.04)_0,hsla(198,100%,20%,.02)_80%,transparent_100%)]" />
                 </div>
                 <section>
@@ -94,11 +94,11 @@ export default function HeroSection() {
                                 <AnimatedGroup variants={transitionVariants}>
                                     <Link
                                         href="#link"
-                                        className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-black/5 transition-colors duration-300 border-black/5 dark:shadow-black">
+                                        className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-sm border p-1 pl-4 shadow-md shadow-black/5 transition-colors duration-300 border-black/5 dark:shadow-black">
                                         <span className="text-foreground text-sm">Introducing Support for AI Models</span>
                                         <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-neutral-700"></span>
 
-                                        <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
+                                        <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-sm duration-500">
                                             <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
                                                 <span className="flex size-6">
                                                     <ArrowRight className="m-auto size-3" />
@@ -147,7 +147,7 @@ export default function HeroSection() {
                                         <Button
                                             asChild
                                             size="lg"
-                                            className="rounded-xl px-5 text-base bg-[#2596be] hover:bg-[#1e7ea3] text-white">
+                                            className="rounded-sm px-5 text-base bg-[#2596be] hover:bg-[#1e7ea3] text-white">
                                             <Link href="#link">
                                                 <span className="text-nowrap">Start Building</span>
                                             </Link>
@@ -158,7 +158,7 @@ export default function HeroSection() {
                                         asChild
                                         size="lg"
                                         variant="ghost"
-                                        className="h-10.5 rounded-xl px-5">
+                                        className="h-10.5 rounded-sm px-5">
                                         <Link href="#link">
                                             <span className="text-nowrap">Request a demo</span>
                                         </Link>
@@ -180,16 +180,16 @@ export default function HeroSection() {
                                 ...transitionVariants,
                             }}>
                             <div className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
-                                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-black/15 ring-1">
+                                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-sm border p-4 shadow-lg shadow-black/15 ring-1">
                                     <Image
-                                        className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
+                                        className="bg-background aspect-15/8 relative hidden rounded-sm dark:block"
                                         src="/mail2.png"
                                         alt="app screen"
                                         width="2700"
                                         height="1440"
                                     />
                                     <Image
-                                        className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
+                                        className="z-2 border-border/25 aspect-15/8 relative rounded-sm border dark:hidden"
                                         src="/mail2-light.png"
                                         alt="app screen"
                                         width="2700"

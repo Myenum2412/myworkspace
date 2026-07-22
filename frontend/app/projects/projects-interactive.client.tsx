@@ -393,7 +393,7 @@ export default function ProjectsInteractive({
         ) : (
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1 rounded-lg border p-0.5 bg-muted/50 shrink-0">
+              <div className="flex items-center gap-1 rounded-sm border p-0.5 bg-muted/50 shrink-0">
                 {VIEW_TABS.map((t) => {
                   const Icon = t.icon;
                   return (
@@ -401,7 +401,7 @@ export default function ProjectsInteractive({
                       key={t.id}
                       onClick={() => setViewMode(t.id)}
                       className={cn(
-                        "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                        "flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
                         viewMode === t.id
                           ? "bg-background text-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"

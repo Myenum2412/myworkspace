@@ -154,7 +154,7 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
               {employee.files && employee.files.length > 0 ? (
                 <div className="space-y-2">
                   {employee.files.map((f) => (
-                    <div key={f.id} className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
+                    <div key={f.id} className="flex items-center justify-between rounded-sm border bg-card px-4 py-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <FileIcon className="size-5 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
@@ -191,7 +191,7 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
               {employee.workExperience && employee.workExperience.length > 0 ? (
                 <div className="space-y-4">
                   {employee.workExperience.map((row) => (
-                    <div key={row.id} className="rounded-lg border bg-card p-4">
+                    <div key={row.id} className="rounded-sm border bg-card p-4">
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <FieldInput label="Company" value={row.company} />
                         <FieldInput label="Job Title" value={row.title} />
@@ -215,7 +215,7 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
               {employee.educationDetails && employee.educationDetails.length > 0 ? (
                 <div className="space-y-4">
                   {employee.educationDetails.map((row) => (
-                    <div key={row.id} className="rounded-lg border bg-card p-4">
+                    <div key={row.id} className="rounded-sm border bg-card p-4">
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <FieldInput label="Institute" value={row.institute} />
                         <FieldInput label="Degree/Diploma" value={row.degree} />
@@ -237,7 +237,7 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
               {employee.dependentDetails && employee.dependentDetails.length > 0 ? (
                 <div className="space-y-4">
                   {employee.dependentDetails.map((row) => (
-                    <div key={row.id} className="rounded-lg border bg-card p-4">
+                    <div key={row.id} className="rounded-sm border bg-card p-4">
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <FieldInput label="Name" value={row.name} />
                         <FieldInput label="Relationship" value={row.relationship} />

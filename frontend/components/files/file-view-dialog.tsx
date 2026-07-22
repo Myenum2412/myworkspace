@@ -35,7 +35,7 @@ function formatSize(bytes: number) {
 
 function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+    <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
@@ -55,7 +55,7 @@ export function FileViewDialog({ file, open, onOpenChange }: FileViewDialogProps
       <DialogContent className="max-w-xl w-full p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-sm bg-muted flex items-center justify-center shrink-0">
               <FileIcon className="size-5 text-muted-foreground" />
             </div>
             <div className="min-w-0 flex-1">

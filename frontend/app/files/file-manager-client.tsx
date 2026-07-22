@@ -80,7 +80,7 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
                   {loading ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                       {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="aspect-square rounded-xl bg-muted animate-pulse" />
+                        <div key={i} className="aspect-square rounded-sm bg-muted animate-pulse" />
                       ))}
                     </div>
                   ) : viewMode === "grid" ? (

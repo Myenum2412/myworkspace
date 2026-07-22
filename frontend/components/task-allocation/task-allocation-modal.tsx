@@ -257,7 +257,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50">
-      <div className="w-full h-full sm:relative sm:w-[95vw] sm:h-[95vh] sm:mx-auto sm:mt-[2.5vh] sm:rounded-xl bg-card flex flex-col overflow-hidden">
+      <div className="w-full h-full sm:relative sm:w-[95vw] sm:h-[95vh] sm:mx-auto sm:mt-[2.5vh] sm:rounded-sm bg-card flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-4 border-b shrink-0">
           <div>
@@ -317,7 +317,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                   key={id}
                   type="button"
                   onClick={() => setTaskType(id)}
-                  className={`flex flex-col items-center justify-center gap-1 rounded-lg border p-2 text-[11px] font-medium transition-colors ${
+                  className={`flex flex-col items-center justify-center gap-1 rounded-sm border p-2 text-[11px] font-medium transition-colors ${
                     taskType === id
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:bg-muted"
@@ -400,7 +400,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-sm" align="start">
                     <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -440,7 +440,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-sm" align="start">
                     <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -479,7 +479,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-sm" align="start">
                     <Calendar mode="single" selected={scheduledDate} onSelect={(d) => { setScheduledDate(d); setScheduledDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>
@@ -497,7 +497,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                       <CalendarIcon className="size-3.5 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-sm" align="start">
                     <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                   </PopoverContent>
                 </Popover>

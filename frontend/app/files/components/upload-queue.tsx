@@ -403,7 +403,7 @@ export function UploadDialog() {
             }}
             onDrop={onDrop}
             className={cn(
-              "flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed px-6 py-8 text-center transition-colors outline-none rounded-lg",
+              "flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed px-6 py-8 text-center transition-colors outline-none rounded-sm",
               "focus-visible:ring-[3px] focus-visible:ring-ring/50",
               isDragging
                 ? "border-primary bg-primary/5"
@@ -422,7 +422,7 @@ export function UploadDialog() {
             />
             <div
               className={cn(
-                "flex size-12 items-center justify-center border transition-colors rounded-lg",
+                "flex size-12 items-center justify-center border transition-colors rounded-sm",
                 isDragging
                   ? "border-primary bg-background text-primary"
                   : "border-border bg-background text-muted-foreground"

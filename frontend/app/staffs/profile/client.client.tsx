@@ -610,7 +610,7 @@ export default function ProfileClient({ data }: Props) {
               </Avatar>
               <button
                 onClick={() => setShowImageEditor(true)}
-                className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-sm bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
                 aria-label="Edit profile photo"
               >
                 <CameraIcon className="size-4" />
@@ -632,13 +632,13 @@ export default function ProfileClient({ data }: Props) {
 
           <div className="flex flex-col gap-2 max-w-4xl mx-auto w-full px-6 pt-4">
             {saveError && (
-              <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 <AlertCircleIcon className="size-3.5 shrink-0" />
                 {saveError}
               </div>
             )}
             {saveSuccess && (
-              <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 <CheckCircleIcon className="size-3.5 shrink-0" />
                 {saveSuccess}
               </div>
@@ -1041,7 +1041,7 @@ export default function ProfileClient({ data }: Props) {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs text-muted-foreground">Company Description</Label>
-                      <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                      <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
                     </div>
                   </div>
                 ) : (
@@ -1143,7 +1143,7 @@ export default function ProfileClient({ data }: Props) {
                 {editing ? (
                   <div className="space-y-6">
                     {/* Work Info */}
-                    <fieldset className="rounded-xl border p-4 space-y-4">
+                    <fieldset className="rounded-sm border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <BriefcaseIcon className="size-3.5" />
                         Work Info
@@ -1195,7 +1195,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* Personal Info */}
-                    <fieldset className="rounded-xl border p-4 space-y-4">
+                    <fieldset className="rounded-sm border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <UserIcon className="size-3.5" />
                         Personal Info
@@ -1219,7 +1219,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* Contact */}
-                    <fieldset className="rounded-xl border p-4 space-y-4">
+                    <fieldset className="rounded-sm border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <PhoneIcon className="size-3.5" />
                         Contact
@@ -1235,14 +1235,14 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* History - Work Experience */}
-                    <fieldset className="rounded-xl border p-4 space-y-4">
+                    <fieldset className="rounded-sm border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <HistoryIcon className="size-3.5" />
                         Work Experience
                       </legend>
                       <div className="space-y-4">
                         {editWorkExperience.map((row) => (
-                          <div key={row.id} className="rounded-lg border p-4">
+                          <div key={row.id} className="rounded-sm border p-4">
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <div className="space-y-1.5">
                                 <Label className="text-xs text-muted-foreground">Company name</Label>
@@ -1270,7 +1270,7 @@ export default function ProfileClient({ data }: Props) {
                               </div>
                               <div className="sm:col-span-2 space-y-1.5">
                                 <Label className="text-xs text-muted-foreground">Job Description</Label>
-                                <textarea className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" value={row.description || ""} onChange={(e) => updateWorkRow(row.id!, "description", e.target.value)} placeholder="" />
+                                <textarea className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" value={row.description || ""} onChange={(e) => updateWorkRow(row.id!, "description", e.target.value)} placeholder="" />
                               </div>
                             </div>
                             <Button type="button" variant="ghost" size="sm" className="mt-2 text-destructive" onClick={() => removeRow("work", row.id!)}>
@@ -1287,14 +1287,14 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* History - Education */}
-                    <fieldset className="rounded-xl border p-4 space-y-4">
+                    <fieldset className="rounded-sm border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <GraduationCapIcon className="size-3.5" />
                         Education
                       </legend>
                       <div className="space-y-4">
                         {editEducationDetails.map((row) => (
-                          <div key={row.id} className="rounded-lg border p-4">
+                          <div key={row.id} className="rounded-sm border p-4">
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <div className="space-y-1.5">
                                 <Label className="text-xs text-muted-foreground">Institute Name</Label>
@@ -1327,14 +1327,14 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* History - Dependents */}
-                    <fieldset className="rounded-xl border p-4 space-y-4">
+                    <fieldset className="rounded-sm border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <HeartIcon className="size-3.5" />
                         Dependents
                       </legend>
                       <div className="space-y-4">
                         {editDependentDetails.map((row) => (
-                          <div key={row.id} className="rounded-lg border p-4">
+                          <div key={row.id} className="rounded-sm border p-4">
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <div className="space-y-1.5">
                                 <Label className="text-xs text-muted-foreground">Name</Label>
@@ -1363,13 +1363,13 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* Offer Letter */}
-                    <fieldset className="rounded-xl border p-4 space-y-4">
+                    <fieldset className="rounded-sm border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <FileTextIcon className="size-3.5" />
                         Documents
                       </legend>
                       {editOfferLetter ? (
-                        <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/20">
+                        <div className="flex items-center gap-3 rounded-sm border p-3 bg-muted/20">
                           <FileTextIcon className="size-5 text-muted-foreground shrink-0" />
                           <span className="text-sm truncate flex-1">{editOfferLetter.name}</span>
                           <button type="button" onClick={() => setEditOfferLetter(null)} className="text-destructive hover:text-destructive/80">
@@ -1377,7 +1377,7 @@ export default function ProfileClient({ data }: Props) {
                           </button>
                         </div>
                       ) : (
-                        <label className="flex items-center gap-3 rounded-lg border border-dashed p-4 cursor-pointer hover:bg-muted/20 transition-colors">
+                        <label className="flex items-center gap-3 rounded-sm border border-dashed p-4 cursor-pointer hover:bg-muted/20 transition-colors">
                           <UploadIcon className="size-5 text-muted-foreground" />
                           <span className="text-sm text-muted-foreground">
                             {offerLetterUploading ? "Uploading..." : "Upload offer letter (PDF, max 10MB)"}
@@ -1390,7 +1390,7 @@ export default function ProfileClient({ data }: Props) {
                 ) : (
                   <div className="space-y-6">
                     {/* Work Info */}
-                    <fieldset className="rounded-xl border p-4 space-y-4">
+                    <fieldset className="rounded-sm border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <BriefcaseIcon className="size-3.5" />
                         Work Info
@@ -1446,7 +1446,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* Personal Info */}
-                    <fieldset className="rounded-xl border p-4 space-y-4">
+                    <fieldset className="rounded-sm border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <UserIcon className="size-3.5" />
                         Personal Info
@@ -1475,14 +1475,14 @@ export default function ProfileClient({ data }: Props) {
                     {dbUser?.workExperience && dbUser.workExperience.length > 0 && (
                       <>
                         <Separator />
-                        <fieldset className="rounded-xl border p-4 space-y-4">
+                        <fieldset className="rounded-sm border p-4 space-y-4">
                           <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                             <HistoryIcon className="size-3.5" />
                             Work Experience
                           </legend>
                           <div className="space-y-4">
                             {dbUser.workExperience.map((exp, i) => (
-                              <div key={exp.id || i} className="rounded-lg border p-4">
+                              <div key={exp.id || i} className="rounded-sm border p-4">
                                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                   <div>
                                     <p className="text-xs text-muted-foreground">Company</p>
@@ -1526,14 +1526,14 @@ export default function ProfileClient({ data }: Props) {
                     {dbUser?.educationDetails && dbUser.educationDetails.length > 0 && (
                       <>
                         <Separator />
-                        <fieldset className="rounded-xl border p-4 space-y-4">
+                        <fieldset className="rounded-sm border p-4 space-y-4">
                           <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                             <GraduationCapIcon className="size-3.5" />
                             Education
                           </legend>
                           <div className="space-y-4">
                             {dbUser.educationDetails.map((edu, i) => (
-                              <div key={edu.id || i} className="rounded-lg border p-4">
+                              <div key={edu.id || i} className="rounded-sm border p-4">
                                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                   <div>
                                     <p className="text-xs text-muted-foreground">Institute</p>
@@ -1567,14 +1567,14 @@ export default function ProfileClient({ data }: Props) {
                     {dbUser?.dependentDetails && dbUser.dependentDetails.length > 0 && (
                       <>
                         <Separator />
-                        <fieldset className="rounded-xl border p-4 space-y-4">
+                        <fieldset className="rounded-sm border p-4 space-y-4">
                           <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                             <HeartIcon className="size-3.5" />
                             Dependents
                           </legend>
                           <div className="space-y-4">
                             {dbUser.dependentDetails.map((dep, i) => (
-                              <div key={dep.id || i} className="rounded-lg border p-4">
+                              <div key={dep.id || i} className="rounded-sm border p-4">
                                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                   <div>
                                     <p className="text-xs text-muted-foreground">Name</p>
@@ -1609,12 +1609,12 @@ export default function ProfileClient({ data }: Props) {
         {/* Banner editor modal */}
         {showBannerEditor && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBannerEditor(false)}>
-            <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-semibold">Update banner</h2>
                 <button
                   onClick={() => setShowBannerEditor(false)}
-                  className="rounded-md p-1 hover:bg-muted transition-colors"
+                  className="rounded-sm p-1 hover:bg-muted transition-colors"
                 >
                   <XIcon className="size-3.5" />
                 </button>
@@ -1680,12 +1680,12 @@ export default function ProfileClient({ data }: Props) {
         {/* Profile image editor modal */}
         {showImageEditor && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageEditor(false)}>
-            <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-semibold">Update profile photo</h2>
                 <button
                   onClick={() => setShowImageEditor(false)}
-                  className="rounded-md p-1 hover:bg-muted transition-colors"
+                  className="rounded-sm p-1 hover:bg-muted transition-colors"
                 >
                   <XIcon className="size-3.5" />
                 </button>

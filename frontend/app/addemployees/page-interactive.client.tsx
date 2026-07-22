@@ -13,7 +13,7 @@ export function AddEmployeePageInteractive() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-card border rounded-lg overflow-hidden shadow-sm">
+    <div className="flex flex-col h-full bg-card border rounded-sm overflow-hidden shadow-sm">
       <div className="px-6 py-4 border-b">
         <h2 className="text-xl font-semibold">Add New Employee</h2>
       </div>

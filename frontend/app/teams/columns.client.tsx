@@ -30,7 +30,7 @@ export const columns: ColumnDef<Team>[] = [
     cell: ({ row }) => {
       const team = row.original;
       return (
-        <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+        <div className="size-8 rounded-sm bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
           {team.leadAvatar ? (
             <img src={team.leadAvatar} alt={team.leadName} className="size-full object-cover" />
           ) : (

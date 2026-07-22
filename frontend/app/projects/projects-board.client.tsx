@@ -68,13 +68,13 @@ function ProjectCard({ project, onView }: { project: Project; onView: (p: Projec
     <button
       onClick={() => onView(project)}
       className={cn(
-        "w-full text-left rounded-lg border border-l-4 bg-white p-3 shadow-sm hover:shadow-md transition-all",
+        "w-full text-left rounded-sm border border-l-4 bg-white p-3 shadow-sm hover:shadow-md transition-all",
         PRIORITY_BORDERS[priority] || "border-l-blue-400"
       )}
     >
       <div className="flex items-start gap-2">
         <div
-          className="size-7 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
+          className="size-7 rounded-sm flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
           style={{ backgroundColor: project.color }}
         >
           {project.name.charAt(0).toUpperCase()}
@@ -91,9 +91,9 @@ function ProjectCard({ project, onView }: { project: Project; onView: (p: Projec
 
       <div className="flex items-center gap-2 mt-2.5">
         {project.progress > 0 && (
-          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+          <div className="flex-1 h-1.5 rounded-sm bg-muted overflow-hidden">
             <div
-              className="h-full rounded-full bg-primary transition-all"
+              className="h-full rounded-sm bg-primary transition-all"
               style={{ width: `${project.progress}%` }}
             />
           </div>
@@ -124,7 +124,7 @@ export default function ProjectsBoard({ projects, onView, onEdit }: BoardProps) 
         const colProjects = projects.filter(col.filter);
         const Icon = col.icon;
         return (
-          <div key={col.id} className={cn("flex flex-col rounded-lg border-t-4", col.color, col.bgColor)}>
+          <div key={col.id} className={cn("flex flex-col rounded-sm border-t-4", col.color, col.bgColor)}>
             <div className="flex items-center justify-between px-3 py-3 border-b">
               <div className="flex items-center gap-2">
                 <Icon className="size-4 text-muted-foreground" />

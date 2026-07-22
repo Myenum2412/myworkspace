@@ -77,7 +77,7 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Customer Details</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -125,7 +125,7 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
         </div>
       </fieldset>
 
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Status & Remarks</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -148,7 +148,7 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
             placeholder="Any notes or remarks..."
-            className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
+            className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
           />
         </div>
       </fieldset>

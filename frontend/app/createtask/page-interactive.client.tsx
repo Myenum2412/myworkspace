@@ -296,7 +296,7 @@ export function CreateTaskPageInteractive() {
                     key={id}
                     type="button"
                     onClick={() => setTaskType(id)}
-                    className={`flex flex-col items-center justify-center gap-1 rounded-lg border p-2 text-[11px] font-medium transition-colors ${
+                    className={`flex flex-col items-center justify-center gap-1 rounded-sm border p-2 text-[11px] font-medium transition-colors ${
                       taskType === id
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border text-muted-foreground hover:bg-muted"
@@ -378,7 +378,7 @@ export function CreateTaskPageInteractive() {
                         <CalendarIcon className="size-3.5 text-muted-foreground" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                    <PopoverContent className="w-auto p-0 rounded-sm" align="start">
                       <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                     </PopoverContent>
                   </Popover>
@@ -418,7 +418,7 @@ export function CreateTaskPageInteractive() {
                         <CalendarIcon className="size-3.5 text-muted-foreground" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                    <PopoverContent className="w-auto p-0 rounded-sm" align="start">
                       <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                     </PopoverContent>
                   </Popover>
@@ -457,7 +457,7 @@ export function CreateTaskPageInteractive() {
                         <CalendarIcon className="size-3.5 text-muted-foreground" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                    <PopoverContent className="w-auto p-0 rounded-sm" align="start">
                       <Calendar mode="single" selected={scheduledDate} onSelect={(d) => { setScheduledDate(d); setScheduledDateOpen(false); }} />
                     </PopoverContent>
                   </Popover>
@@ -475,7 +475,7 @@ export function CreateTaskPageInteractive() {
                         <CalendarIcon className="size-3.5 text-muted-foreground" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                    <PopoverContent className="w-auto p-0 rounded-sm" align="start">
                       <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
                     </PopoverContent>
                   </Popover>
@@ -485,7 +485,7 @@ export function CreateTaskPageInteractive() {
 
             <Separator />
 
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2 flex items-center gap-1">
                 <PaperclipIcon className="size-3" />
                 Attachments
@@ -517,7 +517,7 @@ export function CreateTaskPageInteractive() {
           </div>
         </ScrollArea>
 
-        <fieldset className="rounded-xl border p-4 space-y-4 flex flex-col h-full">
+        <fieldset className="rounded-sm border p-4 space-y-4 flex flex-col h-full">
           <legend className="text-sm font-semibold px-2">Description <span className="text-destructive">*</span></legend>
           <div className="flex-1 min-h-0">
             <TiptapEditor

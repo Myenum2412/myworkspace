@@ -50,12 +50,12 @@ export default async function BillingPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {billing.subscription ? (
-              <div className="rounded-lg border p-4">
+              <div className="rounded-sm border p-4">
                 <p className="text-sm font-medium capitalize">{(billing.subscription as Record<string, unknown>).plan as string || billing.plan} Plan</p>
                 <p className="text-xs text-muted-foreground">Status: {(billing.subscription as Record<string, unknown>).status as string || "active"}</p>
               </div>
             ) : (
-              <div className="rounded-lg border p-4">
+              <div className="rounded-sm border p-4">
                 <p className="text-sm font-medium">Free Plan</p>
                 <p className="text-xs text-muted-foreground">No payment method on file</p>
               </div>
@@ -75,7 +75,7 @@ export default async function BillingPage() {
               <p className="text-sm text-muted-foreground">No invoices yet.</p>
             ) : (
               billing.invoices.map((inv) => (
-                <div key={(inv._id as { toString: () => string }).toString()} className="flex items-center justify-between rounded-lg border p-3">
+                <div key={(inv._id as { toString: () => string }).toString()} className="flex items-center justify-between rounded-sm border p-3">
                   <div>
                     <p className="text-sm font-medium">{inv.description || inv.period || "Invoice"}</p>
                     <p className="text-xs text-muted-foreground">{inv.amount ? `$${(inv.amount / 100).toFixed(2)}` : ""} &middot; {inv.status || "pending"}</p>

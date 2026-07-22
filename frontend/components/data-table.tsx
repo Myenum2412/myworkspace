@@ -113,7 +113,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-2 sm:space-y-3">
-      <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
+      <div className="border rounded-sm bg-card shadow-sm overflow-hidden">
         {!hideSearchBar && (
           <div className="bg-muted/30 px-3 sm:px-4 py-2.5 sm:py-3 border-b">
             <div className="flex items-center gap-4">
@@ -209,7 +209,7 @@ export function DataTable<TData, TValue>({
                   <td colSpan={columns.length}>
                     <div className="flex flex-col items-center justify-center py-12 sm:py-16 gap-3">
                       {emptyIcon && (
-                        <div className="flex items-center justify-center size-12 rounded-full bg-muted">
+                        <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
                           {emptyIcon}
                         </div>
                       )}

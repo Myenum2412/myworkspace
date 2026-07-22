@@ -17,7 +17,7 @@ export default function AuthNotFoundPage({
               alt="MyWorkSpace Logo"
               width={32}
               height={32}
-              className="size-8 rounded-lg object-cover shadow-sm"
+              className="size-8 rounded-sm object-cover shadow-sm"
             />
             <span className="text-base tracking-tight">MyWorkSpace</span>
           </Link>
@@ -25,7 +25,7 @@ export default function AuthNotFoundPage({
 
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-sm flex flex-col items-center text-center gap-6">
-            <div className="flex size-16 items-center justify-center rounded-full bg-destructive/10">
+            <div className="flex size-16 items-center justify-center rounded-sm bg-destructive/10">
               <AlertCircle className="size-8 text-destructive" />
             </div>
             <div className="space-y-2">
@@ -38,13 +38,13 @@ export default function AuthNotFoundPage({
             <div className="flex flex-col gap-3 w-full">
               <Link
                 href="/signup"
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 shadow-md hover:shadow-lg"
+                className="inline-flex items-center justify-center rounded-sm bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 shadow-md hover:shadow-lg"
               >
                 Create Account
               </Link>
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-lg border border-input bg-background px-8 py-3 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex items-center justify-center rounded-sm border border-input bg-background px-8 py-3 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:text-accent-foreground"
               >
                 Back to Sign In
               </Link>

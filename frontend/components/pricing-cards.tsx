@@ -27,7 +27,7 @@ export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) 
             key={plan.id}
             onClick={() => onSelectPlan(plan.id)}
             className={cn(
-              "relative flex flex-col rounded-2xl border-2 p-6 cursor-pointer transition-all duration-300 hover:shadow-xl",
+              "relative flex flex-col rounded-sm border-2 p-6 cursor-pointer transition-all duration-300 hover:shadow-xl",
               isSelected
                 ? "border-primary bg-primary/5 shadow-lg scale-[1.02]"
                 : "border-border bg-card hover:border-primary/40",
@@ -36,7 +36,7 @@ export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) 
           >
             {plan.popular && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                <span className="inline-flex items-center gap-1 rounded-sm bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
                   <Sparkles className="size-3" />
                   Most Popular
                 </span>
@@ -45,7 +45,7 @@ export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) 
 
             <div className="flex items-center gap-3 mb-4">
               <div className={cn(
-                "flex size-10 items-center justify-center rounded-xl",
+                "flex size-10 items-center justify-center rounded-sm",
                 isSelected ? "bg-primary text-primary-foreground" : "bg-muted"
               )}>
                 <Icon className="size-5" />

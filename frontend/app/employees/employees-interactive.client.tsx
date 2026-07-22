@@ -148,7 +148,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
   // ──── OVERLAYS ────
   const terminateOverlay = terminatingEmployee && (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-background rounded-t-xl sm:rounded-xl shadow-2xl border w-full sm:max-w-md mx-0 sm:mx-4 p-4 sm:p-6 space-y-4 animate-in fade-in-0 zoom-in-95">
+      <div className="bg-background rounded-t-sm sm:rounded-sm shadow-2xl border w-full sm:max-w-md mx-0 sm:mx-4 p-4 sm:p-6 space-y-4 animate-in fade-in-0 zoom-in-95">
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-lg font-semibold">Terminate Employee</h3>
@@ -166,7 +166,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
         <div>
           <label className="text-sm font-medium">Reason for termination</label>
           <textarea
-            className="flex w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring min-h-[80px] mt-1.5"
+            className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring min-h-[80px] mt-1.5"
             placeholder=""
             value={terminateReason}
             onChange={(e) => setTerminateReason(e.target.value)}

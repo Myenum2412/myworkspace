@@ -526,7 +526,7 @@ export default function IntegrationsBlock() {
             {/* QR code state */}
             {whatsappState.status === "qr" && whatsappState.qrCode && (
               <>
-                <img src={whatsappState.qrCode} alt="QR Code" className="rounded-lg border" />
+                <img src={whatsappState.qrCode} alt="QR Code" className="rounded-sm border" />
                 <p className="text-xs text-muted-foreground text-center max-w-xs">
                   Open WhatsApp on your phone → Linked Devices → Link a Device → Scan this QR code.
                 </p>

@@ -136,7 +136,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
         <div className="bg-gradient-to-br from-primary/5 via-background to-background p-6 space-y-6">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/5">
+              <div className="flex size-10 items-center justify-center rounded-sm bg-primary/10 ring-4 ring-primary/5">
                 <UploadIcon className="size-5 text-primary" />
               </div>
               <div>
@@ -148,7 +148,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
             </div>
           </DialogHeader>
 
-          <div className="bg-amber-50/80 border border-amber-200/60 rounded-xl p-4 flex gap-3 text-sm text-amber-800 dark:bg-amber-900/10 dark:border-amber-900/30 dark:text-amber-400">
+          <div className="bg-amber-50/80 border border-amber-200/60 rounded-sm p-4 flex gap-3 text-sm text-amber-800 dark:bg-amber-900/10 dark:border-amber-900/30 dark:text-amber-400">
             <AlertCircleIcon className="size-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-500" />
             <div className="space-y-1">
               <p className="font-semibold">Important Upload Guidelines</p>
@@ -161,7 +161,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
           </div>
 
           <div
-            className={`group relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200 ease-in-out ${
+            className={`group relative border-2 border-dashed rounded-sm p-10 text-center cursor-pointer transition-all duration-200 ease-in-out ${
               dragOver 
                 ? "border-primary bg-primary/10 scale-[1.02] shadow-inner" 
                 : "border-muted-foreground/25 bg-card hover:bg-muted/50 hover:border-primary/50"
@@ -171,8 +171,8 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
             onDragLeave={handleDragLeave}
             onClick={() => inputRef.current?.click()}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
-            <div className={`mx-auto flex size-16 items-center justify-center rounded-full bg-primary/10 mb-4 transition-transform duration-300 ${dragOver ? "scale-110" : ""}`}>
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-sm" />
+            <div className={`mx-auto flex size-16 items-center justify-center rounded-sm bg-primary/10 mb-4 transition-transform duration-300 ${dragOver ? "scale-110" : ""}`}>
               <UploadIcon className="size-8 text-primary" />
             </div>
             <p className="text-base font-medium text-foreground mb-1">
@@ -217,8 +217,8 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
           {files.length > 0 && (
             <div className="space-y-2 max-h-52 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted-foreground/20">
               {files.map((f) => (
-                <div key={f.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card shadow-sm text-sm group transition-all hover:border-primary/30">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                <div key={f.id} className="flex items-center gap-3 p-3 rounded-sm border bg-card shadow-sm text-sm group transition-all hover:border-primary/30">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-sm bg-primary/10">
                     <FileIcon className="size-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -232,7 +232,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
                   {!uploading && f.status === "pending" && (
                     <button 
                       onClick={(e) => { e.stopPropagation(); removeFile(f.id); }} 
-                      className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-destructive/10"
+                      className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-sm hover:bg-destructive/10"
                       title="Remove file"
                     >
                       <XIcon className="size-4" />
@@ -244,7 +244,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
           )}
 
           {hasError && (
-            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 p-3 rounded-sm">
               <AlertCircleIcon className="size-4 shrink-0" /> 
               <span>Some files failed to upload. Hover over the error icon for details.</span>
             </div>

@@ -85,7 +85,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+            <div className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
               {error}
             </div>
           )}

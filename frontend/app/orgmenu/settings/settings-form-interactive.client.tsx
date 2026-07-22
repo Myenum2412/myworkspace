@@ -29,13 +29,13 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
   return (
     <form action={formAction}>
       {state?.success && (
-        <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400 rounded-md px-3 py-2 mb-4">
+        <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400 rounded-sm px-3 py-2 mb-4">
           <CheckCircle2Icon className="size-4" />
           Settings saved successfully
         </div>
       )}
       {state?.error && (
-        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-md px-3 py-2 mb-4">
+        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-sm px-3 py-2 mb-4">
           <AlertCircleIcon className="size-4" />
           {state.error}
         </div>

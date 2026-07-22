@@ -165,7 +165,7 @@ export function TaskDataTable({
       header: "Assigned To",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <div className="size-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+          <div className="size-6 rounded-sm bg-muted flex items-center justify-center overflow-hidden shrink-0">
             {row.original.assigneeAvatar ? (
               <img
                 src={row.original.assigneeAvatar}

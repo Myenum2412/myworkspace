@@ -36,9 +36,9 @@ export default function AdminConsentPage() {
   useEffect(() => { fetchStats(dateRange); }, [dateRange]);
 
   const StatCard = ({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: any; color: string }) => (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
       <div className="flex items-center gap-2 mb-1">
-        <div className={`p-1.5 rounded-lg ${color}`}>
+        <div className={`p-1.5 rounded-sm ${color}`}>
           <Icon className="size-4 text-white" />
         </div>
         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</span>
@@ -58,13 +58,13 @@ export default function AdminConsentPage() {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+            className="text-sm border border-gray-200 dark:border-gray-700 rounded-sm px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
           </select>
-          <button onClick={() => fetchStats(dateRange)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+          <button onClick={() => fetchStats(dateRange)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-sm">
             <RefreshCw className="size-4 text-gray-400" />
           </button>
         </div>
@@ -72,7 +72,7 @@ export default function AdminConsentPage() {
 
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)}
+          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800 rounded-sm animate-pulse" />)}
         </div>
       ) : stats ? (
         <>
@@ -83,7 +83,7 @@ export default function AdminConsentPage() {
             <StatCard label="Functional Rate" value={`${stats.acceptanceRates.functional}%`} icon={Globe} color="bg-purple-500" />
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Acceptance Rates by Category</h3>
             <div className="space-y-3">
               {Object.entries(stats.acceptanceRates).map(([category, rate]) => (
@@ -92,9 +92,9 @@ export default function AdminConsentPage() {
                     <span className="capitalize text-gray-700 dark:text-gray-300">{category}</span>
                     <span className="text-gray-500">{rate}%</span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-sm overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-primary transition-all"
+                      className="h-full rounded-sm bg-primary transition-all"
                       style={{ width: `${rate}%` }}
                     />
                   </div>
@@ -104,7 +104,7 @@ export default function AdminConsentPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">By Region</h3>
               <div className="space-y-2">
                 {stats.regionBreakdown.map(r => (
@@ -115,7 +115,7 @@ export default function AdminConsentPage() {
                 ))}
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">By Source</h3>
               <div className="space-y-2">
                 {stats.sourceBreakdown.map(s => (

@@ -483,8 +483,8 @@ export default function ChatPage() {
                 <div className="text-center py-8 text-muted-foreground"><BellIcon className="size-8 mx-auto mb-2 opacity-30" /><p className="text-sm">No notifications</p></div>
               ) : (
                 notifications.map((n) => (
-                  <div key={n.id} className={`flex items-start gap-3 p-2 rounded-lg mb-1 ${n.read ? "" : "bg-muted/50"}`}>
-                    <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5"><BellIcon className="size-4 text-primary" /></div>
+                  <div key={n.id} className={`flex items-start gap-3 p-2 rounded-sm mb-1 ${n.read ? "" : "bg-muted/50"}`}>
+                    <div className="size-8 rounded-sm bg-primary/10 flex items-center justify-center shrink-0 mt-0.5"><BellIcon className="size-4 text-primary" /></div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{n.title}</p>
                       <p className="text-xs text-muted-foreground">{n.body}</p>
@@ -539,8 +539,8 @@ export default function ChatPage() {
                         {!isOwn && <Avatar className="size-8 shrink-0"><AvatarImage src={msg.senderAvatar} /><AvatarFallback className="text-xs">{msg.senderName?.charAt(0)}</AvatarFallback></Avatar>}
                         <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
                           {!isOwn && <p className="text-xs font-medium text-muted-foreground mb-0.5">{msg.senderName}</p>}
-                          {replyMsg && <div className="text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1 mb-1 border-l-2 border-primary"><span className="font-medium">{replyMsg.senderName}</span>: {replyMsg.text.substring(0, 50)}</div>}
-                          <div className={`rounded-xl px-3 py-2 text-sm ${isOwn ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                          {replyMsg && <div className="text-xs text-muted-foreground bg-muted/50 rounded-sm px-2 py-1 mb-1 border-l-2 border-primary"><span className="font-medium">{replyMsg.senderName}</span>: {replyMsg.text.substring(0, 50)}</div>}
+                          <div className={`rounded-sm px-3 py-2 text-sm ${isOwn ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                             {msg.type === "system" ? <p className="text-xs text-muted-foreground italic text-center">{msg.text}</p> : msg.deleted ? <p className="text-xs italic opacity-50">Message deleted</p> : <p className="whitespace-pre-wrap break-words">{msg.text}</p>}
                           </div>
                           <div className="flex items-center gap-1 mt-0.5">
@@ -634,7 +634,7 @@ export default function ChatPage() {
         {/* ── Create Conversation Modal ──────────────────────── */}
         {createConvOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="relative w-full max-w-md mx-4 bg-card rounded-xl shadow-xl overflow-hidden flex flex-col p-6">
+            <div className="relative w-full max-w-md mx-4 bg-card rounded-sm shadow-xl overflow-hidden flex flex-col p-6">
               <h2 className="text-lg font-semibold">New Conversation</h2>
               <p className="text-sm text-muted-foreground mt-1">Start a chat with a team member</p>
               <div className="space-y-3 mt-4">

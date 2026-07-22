@@ -115,7 +115,7 @@ export default function Verify2FAForm({ email }: { email: string }) {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center pb-2">
           <div className="flex justify-center mb-4">
-            <div className="rounded-full bg-primary/10 p-3">
+            <div className="rounded-sm bg-primary/10 p-3">
               <ShieldAlert className="size-8 text-primary" />
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function Verify2FAForm({ email }: { email: string }) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+              <div className="rounded-sm bg-red-50 border border-red-200 p-3 text-sm text-red-700">
                 {error}
               </div>
             )}

@@ -89,7 +89,7 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
         </div>
         <Popover>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-3 py-2 text-sm border rounded-md hover:bg-muted transition-colors">
+            <button className="flex items-center gap-2 px-3 py-2 text-sm border rounded-sm hover:bg-muted transition-colors">
               <Calendar className="size-4" />
               {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString() : "Select date"}
             </button>
@@ -156,7 +156,7 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
               <p className="text-sm">Select a different date to view team activity</p>
             </div>
           ) : (
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
               <table className="table-premium w-full text-sm text-left">
                 <thead>
                   <tr>

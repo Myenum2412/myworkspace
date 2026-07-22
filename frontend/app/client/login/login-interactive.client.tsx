@@ -81,7 +81,7 @@ export default function LoginInteractive() {
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center pb-2">
             <div className="flex justify-center mb-4">
-              <div className="rounded-full bg-primary/10 p-3">
+              <div className="rounded-sm bg-primary/10 p-3">
                 <Building2 className="size-8 text-primary" />
               </div>
             </div>
@@ -90,7 +90,7 @@ export default function LoginInteractive() {
           </CardHeader>
           <CardContent>
             {newClient && (
-              <div className="rounded-lg bg-green-50 border border-green-300 p-3 flex items-start gap-2">
+              <div className="rounded-sm bg-green-50 border border-green-300 p-3 flex items-start gap-2">
                 <CheckCircle2 className="size-5 text-success shrink-0 mt-0.5" />
                 <p className="text-sm text-gray-700">
                   Your client workspace has been created. Use the credentials sent to your email to sign in.
@@ -99,7 +99,7 @@ export default function LoginInteractive() {
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                <div className="rounded-sm bg-red-50 border border-red-200 p-3 text-sm text-red-700">
                   {error}
                 </div>
               )}
@@ -157,7 +157,7 @@ export default function LoginInteractive() {
             alt="My Workspace Illustration"
             width={800}
             height={600}
-            className="w-full h-auto drop-shadow-lg rounded-2xl"
+            className="w-full h-auto drop-shadow-lg rounded-sm"
             priority
           />
         </div>

@@ -105,7 +105,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
           <p className="text-sm text-muted-foreground mt-1">0 former employees</p>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px]">
-          <div className="flex items-center justify-center size-12 rounded-full bg-muted">
+          <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
             <UserX className="size-6 text-muted-foreground/50" />
           </div>
           <p className="text-sm font-medium text-muted-foreground mt-4">No terminated employees.</p>
@@ -123,13 +123,13 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
         </div>
         {terminated.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px]">
-            <div className="flex items-center justify-center size-12 rounded-full bg-muted">
+            <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
               <UserX className="size-6 text-muted-foreground/50" />
             </div>
             <p className="text-sm font-medium text-muted-foreground mt-4">No terminated employees.</p>
           </div>
         ) : (
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
             <div className="overflow-x-auto overflow-y-auto flex-1">
               <table className="table-premium w-full text-sm text-left" style={{ minWidth: 900 }}>
                 <thead className="sticky top-0 z-10">
@@ -162,9 +162,9 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {emp.avatar ? (
-                            <img src={emp.avatar} alt={emp.name} className="size-8 rounded-full object-cover ring-2 ring-background opacity-60" />
+                            <img src={emp.avatar} alt={emp.name} className="size-8 rounded-2xl object-cover ring-2 ring-background opacity-60" />
                           ) : (
-                            <div className="size-8 rounded-full flex items-center justify-center text-xs font-semibold bg-gray-100 text-gray-600 opacity-60">
+                            <div className="size-8 rounded-2xl flex items-center justify-center text-xs font-semibold bg-gray-100 text-gray-600 opacity-60">
                               {getInitials(emp.name)}
                             </div>
                           )}
@@ -180,7 +180,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                         {emp.terminateDate ? new Date(emp.terminateDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center rounded-md border border-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                        <span className="inline-flex items-center rounded-sm border border-gray-200 px-2 py-0.5 text-xs text-gray-600">
                           {emp.terminateReason}
                         </span>
                       </td>
@@ -229,7 +229,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
         <DialogContent className="max-w-[700px] max-h-[85vh] p-6">
           <DialogHeader className="pb-4 border-b">
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center size-12 rounded-full bg-green-50 border border-green-200">
+              <div className="flex items-center justify-center size-12 rounded-sm bg-green-50 border border-green-200">
                 <Undo2 className="size-6 text-green-600" />
               </div>
               <div>
@@ -242,11 +242,11 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
           </DialogHeader>
 
           <div className="py-6 space-y-5">
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50 border">
+            <div className="flex items-center gap-3 p-4 rounded-sm bg-muted/50 border">
               {reactivateEmp?.avatar ? (
-                <img src={reactivateEmp.avatar} alt={reactivateEmp.name} className="size-10 rounded-full object-cover ring-2 ring-background" />
+                <img src={reactivateEmp.avatar} alt={reactivateEmp.name} className="size-10 rounded-2xl object-cover ring-2 ring-background" />
               ) : (
-                <div className="size-10 rounded-full flex items-center justify-center text-sm font-semibold bg-gray-100 text-gray-600">
+                <div className="size-10 rounded-2xl flex items-center justify-center text-sm font-semibold bg-gray-100 text-gray-600">
                   {getInitials(reactivateEmp?.name || "")}
                 </div>
               )}
@@ -259,7 +259,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
             <div className="space-y-1.5 px-2">
               <Label className="text-xs text-muted-foreground">Reason for reactivation <span className="text-destructive">*</span></Label>
               <Textarea
-                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Enter the reason for reactivating this employee..."
                 value={reactivateReason}
                 onChange={(e) => setReactivateReason(e.target.value)}

@@ -96,7 +96,7 @@ export function StorageChart({ orgPlan: rawOrgPlan }: StorageChartProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-3 pb-4">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+        <div className="flex size-10 items-center justify-center rounded-sm bg-primary/10">
           <HardDrive className="size-5 text-primary" />
         </div>
         <div>
@@ -164,14 +164,14 @@ export function StorageChart({ orgPlan: rawOrgPlan }: StorageChartProps) {
                 <div
                   key={tier.name}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg border p-3 transition-colors",
+                    "flex items-center gap-3 rounded-sm border p-3 transition-colors",
                     isActive
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/30"
                   )}
                 >
                   <div className={cn(
-                    "flex size-8 items-center justify-center rounded-lg",
+                    "flex size-8 items-center justify-center rounded-sm",
                     isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                   )}>
                     {isActive ? <Check className="size-4" /> : <Database className="size-4" />}

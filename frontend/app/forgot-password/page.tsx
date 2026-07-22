@@ -20,7 +20,7 @@ export default async function ForgotPasswordPage(props: { searchParams: Promise<
       <div className="relative z-10 flex flex-col min-h-dvh p-4 sm:p-6 md:p-10 safe-paddings">
         <div className="flex gap-2">
           <Link href="/login" className="flex items-center gap-2 font-semibold">
-            <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-7 sm:size-8 rounded-lg object-cover shadow-sm" priority />
+            <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-7 sm:size-8 rounded-sm object-cover shadow-sm" priority />
             <span className="text-sm sm:text-base tracking-tight text-white">MyWorkSpace</span>
           </Link>
         </div>

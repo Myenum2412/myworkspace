@@ -51,7 +51,7 @@ export default async function LoginPage(props: {
                 alt="MyWorkSpace Logo"
                 width={32}
                 height={32}
-                className="size-7 sm:size-8 rounded-lg object-cover shadow-sm"
+                className="size-7 sm:size-8 rounded-sm object-cover shadow-sm"
                 priority
               />
               <span className="text-sm sm:text-base tracking-tight text-white">MyWorkSpace</span>

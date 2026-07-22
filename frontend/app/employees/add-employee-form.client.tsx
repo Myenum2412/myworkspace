@@ -301,7 +301,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
             <p className="text-sm text-muted-foreground">
               Account created. Share the credentials below with the user.
             </p>
-            <div className="rounded-lg border p-4 space-y-3">
+            <div className="rounded-sm border p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground">Email</p>
@@ -324,7 +324,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
             </div>
 
             {/* Email notification status */}
-            <div className={`rounded-lg border p-3 flex items-start gap-3 ${
+            <div className={`rounded-sm border p-3 flex items-start gap-3 ${
               emailStatus === "sent"
                 ? "border-green-200 bg-green-50"
                 : emailStatus === "failed"
@@ -373,7 +373,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
         </DialogContent>
       </Dialog>
       {formError && (
-        <div className="mx-6 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+        <div className="mx-6 mt-4 rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
           {formError}
         </div>
       )}
@@ -458,7 +458,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                     </div>
                     <Field className="sm:col-span-2">
                       <FieldLabel>Job Description</FieldLabel>
-                      <textarea className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring" value={row.description || ""} onChange={(e) => updateWorkRow(row.id, "description", e.target.value)} placeholder="" />
+                      <textarea className="min-h-[60px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring" value={row.description || ""} onChange={(e) => updateWorkRow(row.id, "description", e.target.value)} placeholder="" />
                     </Field>
                   </div>
                 )}
@@ -488,7 +488,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <Field>
                     <FieldLabel>Offer Letter</FieldLabel>
                     {offerLetter ? (
-                      <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/20">
+                      <div className="flex items-center gap-3 rounded-sm border p-3 bg-muted/20">
                         <FileTextIcon className="size-5 text-muted-foreground shrink-0" />
                         <span className="text-sm truncate flex-1">{offerLetter.name}</span>
                         <button type="button" onClick={removeOfferLetter} className="text-destructive hover:text-destructive/80">
@@ -496,7 +496,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                         </button>
                       </div>
                     ) : (
-                      <label className="flex items-center gap-3 rounded-lg border border-dashed p-4 cursor-pointer hover:bg-muted/20 transition-colors">
+                      <label className="flex items-center gap-3 rounded-sm border border-dashed p-4 cursor-pointer hover:bg-muted/20 transition-colors">
                         <UploadIcon className="size-5 text-muted-foreground" />
                         <span className="text-sm text-muted-foreground">
                           {offerLetterUploading ? "Uploading..." : "Upload offer letter (PDF, max 10MB)"}

@@ -73,7 +73,7 @@ export default function ClientDashboardPage() {
       </h1>
 
       {billing && billing.pendingCount > 0 && (
-        <div className="w-full flex items-center gap-4 rounded-xl border border-amber-200 bg-amber-50 px-6 py-4">
+        <div className="w-full flex items-center gap-4 rounded-sm border border-amber-200 bg-amber-50 px-6 py-4">
           <AlertCircleIcon className="size-6 text-amber-600 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-amber-900 text-base">

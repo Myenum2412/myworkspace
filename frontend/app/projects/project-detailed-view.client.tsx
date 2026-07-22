@@ -149,7 +149,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
               key={t.id}
               onClick={() => setTab(i)}
               className={cn(
-                "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap",
+                "flex items-center gap-1.5 rounded-sm px-3.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap",
                 tab === i
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted"
@@ -167,7 +167,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
           <div className="space-y-6">
             <div className="flex items-start gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
               <div
-                className="size-12 sm:size-14 rounded-xl shrink-0 flex items-center justify-center text-black text-lg font-bold bg-gray-200"
+                className="size-12 sm:size-14 rounded-sm shrink-0 flex items-center justify-center text-black text-lg font-bold bg-gray-200"
                 style={{ backgroundColor: project.color }}
               >
                 {project.name.charAt(0).toUpperCase()}
@@ -188,7 +188,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
               </div>
             </div>
 
-            <div className="rounded-lg border p-4 space-y-3">
+            <div className="rounded-sm border p-4 space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Details</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <FieldRow label="Project ID" value={project.id} />
@@ -203,10 +203,10 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
               </div>
             </div>
 
-            <div className="rounded-lg border p-4 space-y-3">
+            <div className="rounded-sm border p-4 space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Progress</h3>
               <div className="flex items-center gap-3">
-                <div className="flex-1 h-2.5 rounded-full bg-muted overflow-hidden">
+                <div className="flex-1 h-2.5 rounded-sm bg-muted overflow-hidden">
                   <div className={cn("h-full rounded-full transition-all", progressColor)} style={{ width: `${project.progress}%` }} />
                 </div>
                 <span className="text-sm font-medium whitespace-nowrap">{project.progress}%</span>
@@ -234,8 +234,8 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {memberNames.map((m) => (
-                  <div key={m.id} className="flex items-center gap-3 rounded-lg border p-3">
-                    <div className="size-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium shrink-0 overflow-hidden">
+                  <div key={m.id} className="flex items-center gap-3 rounded-sm border p-3">
+                    <div className="size-8 rounded-2xl bg-muted flex items-center justify-center text-[10px] font-medium shrink-0 overflow-hidden">
                       {m.image ? (
                         <img src={m.image} alt={m.name} className="size-full object-cover" />
                       ) : (
@@ -264,7 +264,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
               </div>
             </div>
             {timeEntries.length === 0 ? (
-              <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
+              <div className="flex items-center justify-center py-12 rounded-sm border border-dashed">
                 <div className="text-center space-y-2">
                   <TimerIcon className="size-8 mx-auto text-muted-foreground/40" />
                   <p className="text-sm text-muted-foreground">No time entries for this project</p>
@@ -272,7 +272,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
               </div>
             ) : (
               <>
-                <div className="hidden sm:block border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+                <div className="hidden sm:block border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
                   <table className="table-premium w-full text-sm text-left">
                     <thead>
                       <tr>
@@ -318,8 +318,8 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 ...(project.status === "Active" ? [{ action: "Project marked as active", user: "System", time: activityTimestamp }] : []),
                 ...(memberNames.length > 0 ? [{ action: `${memberNames.length} team member(s) assigned`, user: "System", time: activityTimestamp }] : []),
               ].map((activity, i) => (
-                <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
-                  <div className="size-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                <div key={i} className="flex items-start gap-3 rounded-sm border p-3">
+                  <div className="size-7 rounded-sm bg-muted flex items-center justify-center shrink-0 mt-0.5">
                     <ActivityIcon className="size-3.5 text-muted-foreground" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -346,14 +346,14 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
           <div className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Tasks ({projectTasks.length})</h3>
             {projectTasks.length === 0 ? (
-              <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
+              <div className="flex items-center justify-center py-12 rounded-sm border border-dashed">
                 <div className="text-center space-y-2">
                   <ListChecksIcon className="size-8 mx-auto text-muted-foreground/40" />
                   <p className="text-sm text-muted-foreground">No tasks linked to this project</p>
                 </div>
               </div>
             ) : (
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-sm overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
@@ -385,14 +385,14 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
           <div className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Invoices ({invoices.length})</h3>
             {invoices.length === 0 ? (
-              <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
+              <div className="flex items-center justify-center py-12 rounded-sm border border-dashed">
                 <div className="text-center space-y-2">
                   <BarChart3Icon className="size-8 mx-auto text-muted-foreground/40" />
                   <p className="text-sm text-muted-foreground">No invoices yet</p>
                 </div>
               </div>
             ) : (
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-sm overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
@@ -472,7 +472,7 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
     <div className="space-y-3">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Files ({files.length})</h3>
       {files.length === 0 ? (
-        <div className="flex items-center justify-center py-12 rounded-lg border border-dashed">
+        <div className="flex items-center justify-center py-12 rounded-sm border border-dashed">
           <div className="text-center space-y-2">
             <FileIcon className="size-8 mx-auto text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">No files attached to this project</p>
@@ -481,8 +481,8 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
       ) : (
         <div className="space-y-2">
           {files.map((file) => (
-            <div key={file.id} className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors">
-              <div className="size-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+            <div key={file.id} className="flex items-center gap-3 rounded-sm border p-3 hover:bg-muted/50 transition-colors">
+              <div className="size-9 rounded-sm bg-muted flex items-center justify-center shrink-0">
                 {fileIcon(file.mimeType)}
               </div>
               <div className="min-w-0 flex-1">

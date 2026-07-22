@@ -101,7 +101,7 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
     const parts = line.split(regex);
     return parts.map((part, i) =>
       regex.test(part)
-        ? <mark key={i} className="bg-yellow-300/40 dark:bg-yellow-500/30 rounded px-0.5">{part}</mark>
+        ? <mark key={i} className="bg-yellow-300/40 dark:bg-yellow-500/30 rounded-sm px-0.5">{part}</mark>
         : part,
     );
   };
@@ -109,7 +109,7 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="size-5 border-2 border-primary border-t-transparent rounded-sm animate-spin" />
       </div>
     );
   }

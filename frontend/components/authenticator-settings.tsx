@@ -374,7 +374,7 @@ export default function AuthenticatorSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="rounded-full bg-muted p-2">
+            <div className="rounded-sm bg-muted p-2">
               <ShieldOff className="size-6 text-muted-foreground" />
             </div>
             <div>
@@ -386,7 +386,7 @@ export default function AuthenticatorSettings() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-lg border border-border bg-muted/30 p-4">
+          <div className="rounded-sm border border-border bg-muted/30 p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="size-5 text-amber-500 shrink-0 mt-0.5" />
               <div className="text-sm text-muted-foreground">
@@ -416,7 +416,7 @@ export default function AuthenticatorSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="rounded-full bg-amber-500/10 p-2">
+            <div className="rounded-sm bg-amber-500/10 p-2">
               <ShieldAlert className="size-6 text-amber-500" />
             </div>
             <div>
@@ -436,13 +436,13 @@ export default function AuthenticatorSettings() {
             <div className="space-y-6">
               {setupData ? (
                 <>
-                  <div className="flex flex-col items-center gap-4 p-4 bg-muted/30 rounded-lg">
+                  <div className="flex flex-col items-center gap-4 p-4 bg-muted/30 rounded-sm">
                     {setupData.qr_code && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={setupData.qr_code}
                         alt="QR Code"
-                        className="rounded-lg border"
+                        className="rounded-sm border"
                         width={200}
                         height={200}
                       />
@@ -458,7 +458,7 @@ export default function AuthenticatorSettings() {
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Or enter this key manually</Label>
                     <div className="flex gap-2">
-                      <code className="flex-1 rounded border bg-muted px-3 py-2 text-xs font-mono break-all">
+                      <code className="flex-1 rounded-sm border bg-muted px-3 py-2 text-xs font-mono break-all">
                         {setupData.secret}
                       </code>
                       <Button
@@ -477,7 +477,7 @@ export default function AuthenticatorSettings() {
                   <Separator />
                 </>
               ) : (
-                <div className="flex flex-col items-center gap-3 p-4 bg-muted/30 rounded-lg">
+                <div className="flex flex-col items-center gap-3 p-4 bg-muted/30 rounded-sm">
                   <p className="text-sm text-muted-foreground text-center">
                     You have a pending setup. Click below to view your QR code and secret key, then enter the code from your authenticator app.
                   </p>
@@ -493,7 +493,7 @@ export default function AuthenticatorSettings() {
                   Enter the 6-digit code from your authenticator app
                 </Label>
                 {verifyError && (
-                  <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                  <div className="rounded-sm bg-red-50 border border-red-200 p-3 text-sm text-red-700">
                     {verifyError}
                   </div>
                 )}
@@ -522,7 +522,7 @@ export default function AuthenticatorSettings() {
 
           {step === STEP_RECOVERY && (
             <div className="space-y-6">
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <div className="rounded-sm border border-amber-200 bg-amber-50 p-4">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="size-5 text-amber-600 shrink-0 mt-0.5" />
                   <div className="space-y-2">
@@ -538,7 +538,7 @@ export default function AuthenticatorSettings() {
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   {recoveryCodes.map((code, i) => (
-                    <code key={i} className="rounded border bg-muted px-3 py-2 text-xs font-mono text-center">
+                    <code key={i} className="rounded-sm border bg-muted px-3 py-2 text-xs font-mono text-center">
                       {code}
                     </code>
                   ))}
@@ -570,7 +570,7 @@ export default function AuthenticatorSettings() {
 
           {step === STEP_DONE && (
             <div className="flex flex-col items-center gap-4 py-6">
-              <div className="rounded-full bg-green-500/10 p-3">
+              <div className="rounded-sm bg-green-500/10 p-3">
                 <CheckCircle2 className="size-8 text-green-500" />
               </div>
               <div className="text-center">
@@ -593,7 +593,7 @@ export default function AuthenticatorSettings() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-green-500/10 p-2">
+              <div className="rounded-sm bg-green-500/10 p-2">
                 <ShieldCheck className="size-6 text-green-500" />
               </div>
               <div>
@@ -611,15 +611,15 @@ export default function AuthenticatorSettings() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-lg border p-3">
+            <div className="rounded-sm border p-3">
               <Label className="text-xs text-muted-foreground">Method</Label>
               <p className="text-sm font-medium mt-1 capitalize">{status?.method === "totp" ? "Authenticator App" : status?.method}</p>
             </div>
-            <div className="rounded-lg border p-3">
+            <div className="rounded-sm border p-3">
               <Label className="text-xs text-muted-foreground">Enabled Since</Label>
               <p className="text-sm font-medium mt-1">{formatDate(status?.enabledAt)}</p>
             </div>
-            <div className="rounded-lg border p-3">
+            <div className="rounded-sm border p-3">
               <Label className="text-xs text-muted-foreground">Last Verified</Label>
               <p className="text-sm font-medium mt-1">{formatDate(status?.lastVerifiedAt)}</p>
             </div>
@@ -658,7 +658,7 @@ export default function AuthenticatorSettings() {
             <div className="pt-4">
               {activeTab === "overview" && (
                 <div className="space-y-4">
-                  <div className="rounded-lg border border-green-100 bg-green-50 p-3 text-sm text-green-800">
+                  <div className="rounded-sm border border-green-100 bg-green-50 p-3 text-sm text-green-800">
                     Your account is protected with two-factor authentication. 
                     You will need to enter a code from your authenticator app each time you sign in.
                   </div>
@@ -756,7 +756,7 @@ export default function AuthenticatorSettings() {
                   ) : (
                     <div className="space-y-2">
                       {trustedDevices.map((device) => (
-                        <div key={device.id} className="flex items-center justify-between rounded-lg border p-3">
+                        <div key={device.id} className="flex items-center justify-between rounded-sm border p-3">
                           <div className="flex items-center gap-3">
                             <Laptop className="size-8 text-muted-foreground" />
                             <div>
@@ -789,15 +789,15 @@ export default function AuthenticatorSettings() {
                 <div className="space-y-4">
                   {recoveryCodeStatus && (
                     <div className="grid grid-cols-3 gap-3">
-                      <div className="rounded-lg border p-3 text-center">
+                      <div className="rounded-sm border p-3 text-center">
                         <p className="text-2xl font-bold">{recoveryCodeStatus.total}</p>
                         <p className="text-xs text-muted-foreground">Total Generated</p>
                       </div>
-                      <div className="rounded-lg border p-3 text-center">
+                      <div className="rounded-sm border p-3 text-center">
                         <p className="text-2xl font-bold">{recoveryCodeStatus.used}</p>
                         <p className="text-xs text-muted-foreground">Used</p>
                       </div>
-                      <div className="rounded-lg border p-3 text-center">
+                      <div className="rounded-sm border p-3 text-center">
                         <p className="text-2xl font-bold">{recoveryCodeStatus.remaining}</p>
                         <p className="text-xs text-muted-foreground">Remaining</p>
                       </div>
@@ -805,14 +805,14 @@ export default function AuthenticatorSettings() {
                   )}
 
                   {recoveryCodeStatus && recoveryCodeStatus.remaining <= 2 && recoveryCodeStatus.remaining > 0 && (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                    <div className="rounded-sm border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
                       <AlertTriangle className="size-4 inline mr-1" />
                       You are running low on recovery codes. Generate new ones.
                     </div>
                   )}
 
                   {showRecoveryCodes && newRecoveryCodes.length > 0 && (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+                    <div className="rounded-sm border border-amber-200 bg-amber-50 p-4 space-y-3">
                       <div className="flex items-start gap-2">
                         <AlertTriangle className="size-5 text-amber-600 shrink-0 mt-0.5" />
                         <div>
@@ -824,7 +824,7 @@ export default function AuthenticatorSettings() {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         {newRecoveryCodes.map((code, i) => (
-                          <code key={i} className="rounded border bg-white px-3 py-2 text-xs font-mono text-center">
+                          <code key={i} className="rounded-sm border bg-white px-3 py-2 text-xs font-mono text-center">
                             {code}
                           </code>
                         ))}
@@ -875,7 +875,7 @@ export default function AuthenticatorSettings() {
                     <ScrollArea className="max-h-80">
                       <div className="space-y-2">
                         {activities.map((entry) => (
-                          <div key={entry._id} className="flex items-start gap-3 rounded-lg border p-3">
+                          <div key={entry._id} className="flex items-start gap-3 rounded-sm border p-3">
                             <div className="mt-0.5">
                               {entry.success ? (
                                 <CheckCircle2 className="size-4 text-green-500" />

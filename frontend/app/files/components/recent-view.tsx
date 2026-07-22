@@ -38,7 +38,7 @@ export function RecentView() {
         {files.map((file, idx) => (
           <div
             key={file.id}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/30 cursor-pointer transition-colors"
+            className="flex items-center gap-3 p-3 rounded-sm hover:bg-accent/30 cursor-pointer transition-colors"
             onDoubleClick={() => setPreviewFile(file)}
           >
             <span className="text-[10px] text-muted-foreground w-6 text-right font-mono">{idx + 1}</span>

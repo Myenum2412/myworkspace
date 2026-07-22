@@ -129,7 +129,7 @@ export function AudioViewer({ src, fileName, fileSize, mimeType }: AudioViewerPr
         onEnded={() => setPlaying(false)}
       />
 
-      <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center">
+      <div className="size-24 rounded-sm bg-primary/10 flex items-center justify-center">
         <MusicIcon className="size-10 text-primary" />
       </div>
 
@@ -144,15 +144,15 @@ export function AudioViewer({ src, fileName, fileSize, mimeType }: AudioViewerPr
         ref={canvasRef}
         width={400}
         height={80}
-        className="w-full max-w-[400px] h-20 rounded-lg"
+        className="w-full max-w-[400px] h-20 rounded-sm"
       />
 
       <div
-        className="w-full max-w-[400px] h-1.5 bg-muted rounded-full cursor-pointer relative"
+        className="w-full max-w-[400px] h-1.5 bg-muted rounded-sm cursor-pointer relative"
         onClick={handleSeek}
       >
         <div
-          className="h-full bg-primary rounded-full"
+          className="h-full bg-primary rounded-sm"
           style={{ width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%" }}
         />
       </div>
@@ -165,7 +165,7 @@ export function AudioViewer({ src, fileName, fileSize, mimeType }: AudioViewerPr
         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
           <SkipBackIcon className="size-4" />
         </Button>
-        <Button variant="default" size="icon" className="size-12 rounded-full" onClick={handlePlay}>
+        <Button variant="default" size="icon" className="size-12 rounded-sm" onClick={handlePlay}>
           {playing ? <PauseIcon className="size-5" /> : <PlayIcon className="size-5 ml-0.5" />}
         </Button>
         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

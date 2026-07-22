@@ -17,7 +17,7 @@ export function NotFoundContent() {
               404
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 ring-1 ring-primary/10 backdrop-blur-sm">
+              <div className="rounded-sm bg-gradient-to-br from-primary/10 to-primary/5 p-6 ring-1 ring-primary/10 backdrop-blur-sm">
                 <p className="text-6xl sm:text-7xl font-bold text-primary">Oops!</p>
               </div>
             </div>

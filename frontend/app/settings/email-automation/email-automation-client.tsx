@@ -316,19 +316,19 @@ export default function EmailAutomationClient() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-4">
-                <div className="text-center p-4 border rounded-lg">
+                <div className="text-center p-4 border rounded-sm">
                   <p className="text-2xl font-bold text-green-600">{stats.emailsSentToday}</p>
                   <p className="text-sm text-muted-foreground">Emails Sent</p>
                 </div>
-                <div className="text-center p-4 border rounded-lg">
+                <div className="text-center p-4 border rounded-sm">
                   <p className="text-2xl font-bold text-red-600">{stats.emailsFailedToday}</p>
                   <p className="text-sm text-muted-foreground">Failed</p>
                 </div>
-                <div className="text-center p-4 border rounded-lg">
+                <div className="text-center p-4 border rounded-sm">
                   <p className="text-2xl font-bold">{stats.totalEmailsSent}</p>
                   <p className="text-sm text-muted-foreground">Total Sent</p>
                 </div>
-                <div className="text-center p-4 border rounded-lg">
+                <div className="text-center p-4 border rounded-sm">
                   <p className="text-2xl font-bold">{stats.auditStats.totalSent}</p>
                   <p className="text-sm text-muted-foreground">All Time Sent</p>
                 </div>
@@ -595,7 +595,7 @@ export default function EmailAutomationClient() {
                 {auditLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
+                    className="flex items-center justify-between p-3 border rounded-sm"
                   >
                     <div className="flex items-center gap-3">
                       <Badge

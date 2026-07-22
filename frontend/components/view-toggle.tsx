@@ -37,10 +37,10 @@ export function ViewToggle<T extends string>({
   return (
     <div
       ref={containerRef}
-      className="relative flex items-center bg-muted rounded-lg p-0.5 gap-0"
+      className="relative flex items-center bg-muted rounded-sm p-0.5 gap-0"
     >
       <div
-        className="absolute top-0.5 bottom-0.5 z-0 rounded-md bg-background shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+        className="absolute top-0.5 bottom-0.5 z-0 rounded-sm bg-background shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
         style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
       />
       {options.map((opt) => (
@@ -48,7 +48,7 @@ export function ViewToggle<T extends string>({
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value as T)}
-          className={`relative z-10 px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-200 ${
+          className={`relative z-10 px-3 py-1.5 text-xs font-medium rounded-sm transition-colors duration-200 ${
             value === opt.value
               ? "text-foreground"
               : "text-muted-foreground hover:text-foreground"

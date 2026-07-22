@@ -62,7 +62,7 @@ export default async function BlogAdminPage() {
         </div>
         <a
           href="/orgmenu/blog/editor"
-          className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90"
+          className="inline-flex items-center justify-center rounded-sm bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90"
         >
           New Post
         </a>

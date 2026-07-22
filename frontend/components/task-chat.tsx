@@ -232,7 +232,7 @@ export function TaskChat({
       {isDragging && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
           <div className="bg-white p-6 rounded-2xl flex flex-col items-center gap-3 animate-in zoom-in-95 duration-200 border border-gray-200">
-            <div className="size-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+            <div className="size-16 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-600">
               <DownloadIcon className="size-8" />
             </div>
             <p className="text-lg font-bold text-gray-800">Drop files to attach</p>
@@ -251,17 +251,17 @@ export function TaskChat({
               </AvatarFallback>
             </Avatar>
             {/* Online indicator mock */}
-            <span className="absolute bottom-0 right-0 size-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+            <span className="absolute bottom-0 right-0 size-2.5 bg-green-500 border-2 border-white rounded-2xl"></span>
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-[15px] font-semibold text-gray-900 truncate leading-tight">{taskTitle}</span>
             <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5 truncate">
               <span className="capitalize">{taskStatus.replace(/_/g, " ")}</span>
-              <span className="size-1 bg-gray-300 rounded-full shrink-0"></span>
+              <span className="size-1 bg-gray-300 rounded-2xl shrink-0"></span>
               <span className="capitalize">{taskPriority}</span>
               {taskDueDate && (
                 <>
-                  <span className="size-1 bg-gray-300 rounded-full shrink-0"></span>
+                  <span className="size-1 bg-gray-300 rounded-2xl shrink-0"></span>
                   <span>Due {new Date(taskDueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                 </>
               )}
@@ -346,7 +346,7 @@ export function TaskChat({
                     )}
 
                     {/* Hover Actions */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-0.5">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200 rounded-sm p-0.5">
                       <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900">
                         <ReplyIcon className="size-3.5" />
                       </Button>
@@ -367,8 +367,8 @@ export function TaskChat({
                   {c.attachments && c.attachments.length > 0 && (
                     <div className={`flex flex-col gap-2 mt-2 w-full max-w-[280px]`}>
                       {c.attachments.map(att => (
-                         <div key={att.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-colors group/att cursor-pointer">
-                          <div className="shrink-0 bg-gray-50 p-2 rounded-lg">
+                         <div key={att.id} className="flex items-center gap-3 p-3 rounded-sm border border-gray-200 bg-white hover:border-gray-300 transition-colors group/att cursor-pointer">
+                          <div className="shrink-0 bg-gray-50 p-2 rounded-sm">
                             {getFileIcon(att.type)}
                           </div>
                           <div className="flex flex-col min-w-0 flex-1">
@@ -397,11 +397,11 @@ export function TaskChat({
         {pendingAttachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {pendingAttachments.map((file, idx) => (
-               <div key={idx} className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg pl-2 pr-1 py-1 text-xs font-medium text-gray-700">
+               <div key={idx} className="flex items-center gap-2 bg-white border border-gray-200 rounded-sm pl-2 pr-1 py-1 text-xs font-medium text-gray-700">
                 <span className="truncate max-w-[120px]">{file.name}</span>
                 <button 
                   onClick={() => removePendingAttachment(idx)}
-                  className="p-1 hover:bg-gray-100 rounded-md text-gray-500 hover:text-red-500 transition-colors"
+                  className="p-1 hover:bg-gray-100 rounded-sm text-gray-500 hover:text-red-500 transition-colors"
                 >
                   <XIcon className="size-3.5" />
                 </button>
@@ -411,7 +411,7 @@ export function TaskChat({
         )}
 
         {editingId && (
-          <div className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-t-xl border-x border-t border-blue-100 text-sm mb-[-1px]">
+          <div className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-t-sm border-x border-t border-blue-100 text-sm mb-[-1px]">
             <span className="text-blue-700 font-medium flex items-center gap-2">
               <PencilIcon className="size-3.5" />
               Editing message
@@ -426,7 +426,7 @@ export function TaskChat({
         )}
         <form
           onSubmit={(e) => { e.preventDefault(); send(); }}
-          className={`flex flex-col gap-2 bg-white border border-gray-200 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all p-1 ${editingId ? 'rounded-b-xl rounded-t-none' : 'rounded-xl'}`}
+          className={`flex flex-col gap-2 bg-white border border-gray-200 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all p-1 ${editingId ? 'rounded-b-sm rounded-t-none' : 'rounded-sm'}`}
         >
           <textarea
             value={input}
@@ -453,7 +453,7 @@ export function TaskChat({
                 type="button" 
                 variant="ghost" 
                 size="icon" 
-                className="size-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full"
+                className="size-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-2xl"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <PaperclipIcon className="size-4" />
@@ -462,7 +462,7 @@ export function TaskChat({
             <Button 
               type="submit" 
               size="sm" 
-              className={`rounded-full px-4 font-semibold transition-all ${
+              className={`rounded-2xl px-4 font-semibold transition-all ${
                 (!input.trim() && pendingAttachments.length === 0) 
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100" 
                   : "bg-gray-900 text-white hover:bg-gray-800"

@@ -58,7 +58,7 @@ export function EditSignupDialog({
         </DialogHeader>
         <form action={formAction} className="space-y-4">
           {state?.error && (
-            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-sm px-3 py-2">
               <AlertCircleIcon className="size-4 shrink-0" />
               {state.error}
             </div>

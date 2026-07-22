@@ -55,7 +55,7 @@ export function AppointmentViewDialog({ appointment, open, onOpenChange }: Props
           </div>
           <div>
             <p className="text-muted-foreground">Status</p>
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColorMap[appointment.status as AppointmentStatus] || ""}`}>
+            <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${statusColorMap[appointment.status as AppointmentStatus] || ""}`}>
               {appointment.status}
             </span>
           </div>

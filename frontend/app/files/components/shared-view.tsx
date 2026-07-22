@@ -41,7 +41,7 @@ export function SharedWithMe() {
         <p className="text-sm text-muted-foreground">{shares.length} shared file{shares.length !== 1 ? "s" : ""}</p>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-sm">
         <Table>
           <TableHeader>
             <TableRow>

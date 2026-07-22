@@ -108,7 +108,7 @@ export function getColumns(
       cell: ({ row }) => {
         const emp = row.original;
         return (
-          <div className="size-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+          <div className="size-8 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
             {emp.avatar ? (
               <img src={emp.avatar} alt={emp.name} className="size-full object-cover" />
             ) : (

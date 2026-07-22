@@ -45,11 +45,11 @@ export function ClientSuccessDialog({ open, onOpenChange, credentials }: ClientS
 
         {credentials && (
           <div className="space-y-4">
-            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+            <div className="rounded-sm border bg-muted/30 p-4 space-y-3">
               <div>
                 <Label className="text-xs text-muted-foreground">Login URL</Label>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="flex-1 rounded bg-muted px-2 py-1 text-sm break-all">{credentials.loginUrl}</code>
+                  <code className="flex-1 rounded-sm bg-muted px-2 py-1 text-sm break-all">{credentials.loginUrl}</code>
                   <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => copyToClipboard(credentials.loginUrl, "url")}>
                     <Copy className="size-4" />
                   </Button>
@@ -62,7 +62,7 @@ export function ClientSuccessDialog({ open, onOpenChange, credentials }: ClientS
               <div>
                 <Label className="text-xs text-muted-foreground">Username / Email</Label>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">{credentials.email}</code>
+                  <code className="flex-1 rounded-sm bg-muted px-2 py-1 text-sm">{credentials.email}</code>
                   <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => copyToClipboard(credentials.email, "email")}>
                     <Copy className="size-4" />
                   </Button>
@@ -75,7 +75,7 @@ export function ClientSuccessDialog({ open, onOpenChange, credentials }: ClientS
               <div>
                 <Label className="text-xs text-muted-foreground">Temporary Password</Label>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
+                  <code className="flex-1 rounded-sm bg-muted px-2 py-1 text-sm">
                     {showPassword ? credentials.password : "••••••••••••"}
                   </code>
                   <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => setShowPassword(!showPassword)}>
@@ -89,7 +89,7 @@ export function ClientSuccessDialog({ open, onOpenChange, credentials }: ClientS
               </div>
             </div>
 
-            <div className="rounded-lg bg-gray-100 border-border p-3">
+            <div className="rounded-sm bg-gray-100 border-border p-3">
               <p className="text-xs text-gray-700">
                 <strong>Note:</strong> The client will be required to change this password on first login.
                 An email with these credentials has been sent to {credentials.email}.

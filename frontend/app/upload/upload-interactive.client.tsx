@@ -90,7 +90,7 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
         <CardContent className="flex flex-col items-center justify-center gap-4">
           {status === "success" ? (
             <div className="flex flex-col items-center gap-3">
-              <div className="rounded-full bg-green-100 p-4 dark:bg-green-900/30">
+              <div className="rounded-sm bg-green-100 p-4 dark:bg-green-900/30">
                 <CheckCircleIcon className="size-8 text-success" />
               </div>
               <p className="text-sm font-medium text-success">
@@ -99,7 +99,7 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
             </div>
           ) : status === "error" ? (
             <div className="flex flex-col items-center gap-3">
-              <div className="rounded-full bg-red-100 p-4 dark:bg-red-900/30">
+              <div className="rounded-sm bg-red-100 p-4 dark:bg-red-900/30">
                 <AlertCircleIcon className="size-8 text-destructive" />
               </div>
               <p className="text-sm font-medium text-destructive">{error}</p>
@@ -113,13 +113,13 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
                 onDrop={(e) => { e.preventDefault(); setDragOver(false); handleSelect(e.dataTransfer.files[0]); }}
                 onClick={() => inputRef.current?.click()}
                 className={cn(
-                  "flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed p-12 transition-colors",
+                  "flex cursor-pointer flex-col items-center gap-3 rounded-sm border-2 border-dashed p-12 transition-colors",
                   dragOver
                     ? "border-primary bg-primary/5"
                     : "border-muted-foreground/25 hover:border-muted-foreground/50"
                 )}
               >
-                <div className="rounded-full bg-muted p-4">
+                <div className="rounded-sm bg-muted p-4">
                   <UploadIcon className="size-8 text-muted-foreground" />
                 </div>
                 <div className="text-center">
@@ -139,7 +139,7 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
             </>
           ) : (
             <div className="w-full max-w-md space-y-4">
-              <div className="rounded-lg border p-4">
+              <div className="rounded-sm border p-4">
                 <div className="flex items-center gap-3">
                   <FileIcon className="size-6 text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -186,9 +186,9 @@ export default function UploadInteractive({ projects, user }: { projects: Projec
                     <span>Uploading...</span>
                     <span>{progress}%</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-muted">
+                  <div className="h-2 w-full rounded-sm bg-muted">
                     <div
-                      className="h-2 rounded-full bg-primary transition-all duration-300"
+                      className="h-2 rounded-sm bg-primary transition-all duration-300"
                       style={{ width: `${progress}%` }}
                     />
                   </div>

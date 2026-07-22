@@ -69,10 +69,10 @@ export function CookieBanner() {
       {/* Banner */}
       {showBanner && !showPreferences && consent === null && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6">
-          <div className="mx-auto max-w-6xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="mx-auto max-w-6xl bg-white dark:bg-gray-900 rounded-sm shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="p-4 md:p-6">
               <div className="flex items-start gap-4">
-                <div className="hidden md:flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <div className="hidden md:flex size-12 shrink-0 items-center justify-center rounded-sm bg-primary/10">
                   <Cookie className="size-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -82,7 +82,7 @@ export function CookieBanner() {
                     </h3>
                     <button
                       onClick={() => useConsentStore.getState().setShowBanner(false)}
-                      className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
+                      className="p-1 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
                     >
                       <X className="size-4" />
                     </button>
@@ -126,7 +126,7 @@ export function CookieBanner() {
       {/* Preferences Modal */}
       {showPreferences && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 max-h-[90vh] flex flex-col">
+          <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-sm shadow-2xl border border-gray-200 dark:border-gray-800 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
               <div className="flex items-center gap-2">
                 <Shield className="size-5 text-primary" />
@@ -136,7 +136,7 @@ export function CookieBanner() {
               </div>
               <button
                 onClick={() => setShowPreferences(false)}
-                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
+                className="p-1 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
               >
                 <X className="size-4" />
               </button>
@@ -156,7 +156,7 @@ export function CookieBanner() {
                 return (
                   <div
                     key={key}
-                    className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50"
+                    className="flex items-start gap-3 p-3 rounded-sm bg-gray-50 dark:bg-gray-800/50"
                   >
                     <div className="flex-1 min-w-0">
                       <label
@@ -177,7 +177,7 @@ export function CookieBanner() {
                         const cats = { ...(consent?.categories || {}), [key]: e.target.checked } as any;
                         useConsentStore.setState({ consent: { ...consent!, categories: cats } } as any);
                       }}
-                      className="mt-1 size-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
+                      className="mt-1 size-4 rounded-sm border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                     />
                   </div>
                 );

@@ -371,7 +371,7 @@ export function EditClientFormFields(props: {
         <div className="mt-4">
           <Label className="text-xs text-muted-foreground mb-1.5 block">Notes</Label>
           <textarea
-            className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
+            className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
             placeholder=""
             value={v.notes}
             onChange={(e) => set("notes", e.target.value)}

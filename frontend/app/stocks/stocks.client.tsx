@@ -131,7 +131,7 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
                     <FilterIcon className="size-3.5" />
                     Filter
                     {statusFilter.length > 0 && (
-                      <span className="ml-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold leading-none px-1.5 py-0.5">
+                      <span className="ml-0.5 rounded-sm bg-primary text-primary-foreground text-[10px] font-bold leading-none px-1.5 py-0.5">
                         {statusFilter.length}
                       </span>
                     )}
@@ -240,14 +240,14 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
 
       {viewingStock && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setViewingStock(null)}>
-          <div className="bg-background rounded-xl shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-background rounded-sm shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">Stock Details</h2>
             </div>
             <div className="p-6 space-y-4 text-sm">
               {viewingStock.image && (
                 <div className="flex justify-center mb-4">
-                  <img src={viewingStock.image} alt={viewingStock.productName} className="size-24 rounded-lg object-cover border" />
+                  <img src={viewingStock.image} alt={viewingStock.productName} className="size-24 rounded-sm object-cover border" />
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">
@@ -277,7 +277,7 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setShowForm(false); setEditingStock(null); }}>
-          <div className="bg-background rounded-xl shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-background rounded-sm shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">{editingStock ? "Edit Stock" : "Add Stock"}</h2>
             </div>
@@ -294,7 +294,7 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
 
       {deletingStock && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDeletingStock(null)}>
-          <div className="bg-background rounded-xl shadow-lg w-full max-w-md m-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-background rounded-sm shadow-lg w-full max-w-md m-4" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">Delete Stock</h2>
             </div>

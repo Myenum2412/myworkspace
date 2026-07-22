@@ -83,7 +83,7 @@ function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleCli
           )}
         >
           <div className={cn(
-            "size-16 rounded-2xl flex items-center justify-center transition-colors",
+            "size-16 rounded-sm flex items-center justify-center transition-colors",
             folder.color || "bg-primary/5",
           )}>
             <FolderIcon className="size-8 text-primary/70" />
@@ -92,7 +92,7 @@ function FolderCard({ folder, onDoubleClick }: { folder: FolderItem; onDoubleCli
             <p className="text-xs font-medium truncate">{folder.name}</p>
           </div>
           {selected && (
-            <div className="absolute top-2 right-2 size-5 rounded-full bg-primary flex items-center justify-center">
+            <div className="absolute top-2 right-2 size-5 rounded-sm bg-primary flex items-center justify-center">
               <span className="text-[10px] text-primary-foreground font-bold">✓</span>
             </div>
           )}
@@ -176,7 +176,7 @@ function FileCard({ file }: { file: FileItem }) {
           {file.isFavorite && <StarIcon className="absolute top-2 left-2 size-3 fill-amber-400 text-amber-400" />}
           {file.isLocked && <LockIcon className="absolute top-2 right-2 size-3 text-muted-foreground" />}
           {selected && (
-            <div className="absolute top-2 right-2 size-5 rounded-full bg-primary flex items-center justify-center">
+            <div className="absolute top-2 right-2 size-5 rounded-sm bg-primary flex items-center justify-center">
               <span className="text-[10px] text-primary-foreground font-bold">✓</span>
             </div>
           )}

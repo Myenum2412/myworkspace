@@ -69,7 +69,7 @@ export default async function AuditExportsPage() {
           ) : (
             <div className="space-y-3">
               {exports.map((exp) => (
-                <div key={exp.month} className="flex items-center justify-between rounded-lg border p-3">
+                <div key={exp.month} className="flex items-center justify-between rounded-sm border p-3">
                   <div className="flex items-center gap-3">
                     <FileTextIcon className="size-5 text-muted-foreground" />
                     <div>

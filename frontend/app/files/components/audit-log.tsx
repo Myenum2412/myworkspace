@@ -148,7 +148,7 @@ export function AuditLogView() {
         </div>
       ) : (
         <>
-          <div className="border rounded-lg">
+          <div className="border rounded-sm">
             <Table>
               <TableHeader>
                 <TableRow>

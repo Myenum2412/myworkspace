@@ -184,7 +184,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
         </div>
         <Popover>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-3 py-2 text-sm rounded-md border hover:bg-muted transition-colors">
+            <button className="flex items-center gap-2 px-3 py-2 text-sm rounded-sm border hover:bg-muted transition-colors">
               <Calendar className="size-4" />
               {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString() : "Select date"}
             </button>
@@ -203,15 +203,15 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
             Weekly Timesheet
           </CardTitle>
           <div className="flex items-center gap-2">
-            <button onClick={prevWeek} className="px-2 py-1 text-sm rounded border hover:bg-muted transition-colors">←</button>
+            <button onClick={prevWeek} className="px-2 py-1 text-sm rounded-sm border hover:bg-muted transition-colors">←</button>
             <span className="text-sm font-medium min-w-[160px] text-center">
               {weekDates[0].date} — {weekDates[6].date}
             </span>
-            <button onClick={nextWeek} className="px-2 py-1 text-sm rounded border hover:bg-muted transition-colors">→</button>
+            <button onClick={nextWeek} className="px-2 py-1 text-sm rounded-sm border hover:bg-muted transition-colors">→</button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg overflow-hidden">
+          <div className="border rounded-sm overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b">
@@ -260,7 +260,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
                           step="0.5"
                           value={row.hours[day] || ""}
                           onChange={(e) => updateHour(row.id, day, e.target.value)}
-                          className="w-14 h-8 text-center border rounded text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                          className="w-14 h-8 text-center border rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                         />
                       </td>
                     ))}
@@ -301,7 +301,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
             </table>
           </div>
           <div className="mt-3 flex gap-2">
-            <button onClick={addTimesheetRow} className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border hover:bg-muted transition-colors">
+            <button onClick={addTimesheetRow} className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-sm border hover:bg-muted transition-colors">
               <Plus className="size-4" /> Add Row
             </button>
           </div>
@@ -333,7 +333,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
               <p className="text-sm">Go to Time Tracker to log your hours</p>
             </div>
           ) : (
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
               <table className="table-premium w-full text-sm text-left">
                 <thead>
                   <tr>

@@ -273,7 +273,7 @@ export function GalleryAccessClient({
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-muted">
+                      <div className="relative aspect-[3/4] rounded-sm overflow-hidden bg-muted">
                         <video ref={videoRef} className="size-full object-cover" playsInline />
                       </div>
                       <Button onClick={captureSelfie} className="w-full">
@@ -284,7 +284,7 @@ export function GalleryAccessClient({
                 </>
               ) : (
                 <div className="space-y-3">
-                  <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-muted">
+                  <div className="relative aspect-[3/4] rounded-sm overflow-hidden bg-muted">
                     <img src={selfie} alt="Selfie preview" className="size-full object-cover" />
                   </div>
                   <div className="flex gap-2">

@@ -92,9 +92,9 @@ export function VersionHistory({ file, open, onOpenChange }: VersionHistoryProps
               .map((version) => (
                 <div
                   key={version.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/30 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-sm border bg-card hover:bg-accent/30 transition-colors"
                 >
-                  <div className="size-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <div className="size-8 rounded-sm bg-muted flex items-center justify-center shrink-0">
                     <span className="text-xs font-bold">v{version.versionNumber}</span>
                   </div>
                   <div className="flex-1 min-w-0">

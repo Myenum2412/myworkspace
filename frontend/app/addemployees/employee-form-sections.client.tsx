@@ -113,7 +113,7 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
   return (
     <div className="flex flex-col items-center gap-3">
       <div
-        className={`relative size-28 rounded-full flex items-center justify-center border-2 transition-colors cursor-pointer overflow-hidden ${
+        className={`relative size-28 rounded-2xl flex items-center justify-center border-2 transition-colors cursor-pointer overflow-hidden ${
           dragOver ? "border-primary bg-primary/5" : "border-border bg-muted"
         }`}
         onClick={() => fileInputRef.current?.click()}
@@ -123,13 +123,13 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
       >
         {currentImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={currentImage} alt="Avatar" className="size-full rounded-full object-cover" />
+          <img src={currentImage} alt="Avatar" className="size-full rounded-2xl object-cover" />
         ) : (
           <CameraIcon className="size-8 text-muted-foreground" />
         )}
 
         {uploading && (
-          <div className="absolute inset-0 bg-background/70 flex items-center justify-center rounded-full">
+          <div className="absolute inset-0 bg-background/70 flex items-center justify-center rounded-sm">
             <Loader2Icon className="size-6 animate-spin text-primary" />
           </div>
         )}
@@ -138,7 +138,7 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); removeImage(); }}
-            className="absolute top-0 right-0 size-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow hover:bg-destructive/80 transition-colors"
+            className="absolute top-0 right-0 size-6 rounded-sm bg-destructive text-destructive-foreground flex items-center justify-center shadow hover:bg-destructive/80 transition-colors"
           >
             <XIcon className="size-3" />
           </button>
@@ -446,10 +446,10 @@ interface DynamicRowSectionProps {
 
 export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: DynamicRowSectionProps) {
   return (
-    <fieldset className="rounded-xl border p-4 space-y-4">
+    <fieldset className="rounded-sm border p-4 space-y-4">
       <legend className="text-sm font-semibold px-2">{title}</legend>
       {rows.map((row, index) => (
-        <div key={row.id} className="relative border rounded-md p-4 bg-muted/20">
+        <div key={row.id} className="relative border rounded-sm p-4 bg-muted/20">
           <button
             type="button"
             onClick={() => onRemove(row.id)}
@@ -483,7 +483,7 @@ export function SelectWithAdd({ label, options, value, onChange }: SelectWithAdd
     <Field>
       <FieldLabel>{label}</FieldLabel>
       <select
-        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm md:text-sm"
+        className="flex h-9 w-full rounded-sm border border-input bg-transparent px-3 py-1 text-base shadow-sm md:text-sm"
         value={value || ""}
         onChange={(e) => onChange?.(e.target.value)}
       >

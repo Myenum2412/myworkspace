@@ -79,7 +79,7 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="size-8 border-2 border-primary border-t-transparent rounded-sm animate-spin" />
       </div>
     );
   }
@@ -107,7 +107,7 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
     <div className="space-y-4">
       {/* Storage Warning Banners */}
       {stats.usagePercent >= 100 && (
-        <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
+        <div className="flex items-center gap-3 p-4 rounded-sm bg-red-50 border border-red-200 text-red-800">
           <AlertTriangle className="size-5 shrink-0" />
           <div>
             <p className="text-sm font-semibold">Storage Full</p>
@@ -116,7 +116,7 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
         </div>
       )}
       {stats.usagePercent >= 80 && stats.usagePercent < 100 && (
-        <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
+        <div className="flex items-center gap-3 p-4 rounded-sm bg-amber-50 border border-amber-200 text-amber-800">
           <AlertTriangle className="size-5 shrink-0" />
           <div>
             <p className="text-sm font-semibold">Storage Running Low</p>
@@ -195,7 +195,7 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
               {stats.extensionStats.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {stats.extensionStats.map((e) => (
-                    <div key={e.ext} className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/50">
+                    <div key={e.ext} className="flex items-center justify-between px-3 py-2 rounded-sm bg-muted/50">
                       <span className="text-sm font-medium">.{e.ext}</span>
                       <span className="text-sm text-muted-foreground">{e.count}</span>
                     </div>
@@ -219,9 +219,9 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
                 {formatBytes(stats.usedStorage)} / {formatBytes(stats.totalStorage)}
               </span>
             </div>
-            <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+            <div className="relative h-3 bg-muted rounded-sm overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${getStorageBarColor(stats.usagePercent)}`}
+                className={`h-full rounded-sm transition-all duration-500 ${getStorageBarColor(stats.usagePercent)}`}
                 style={{ width: `${Math.min(100, stats.usagePercent)}%` }}
               />
             </div>
@@ -256,9 +256,9 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
                       <span className="text-sm font-medium">{formatBytes(ft.size)}</span>
                     </div>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-2 bg-muted rounded-sm overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-300"
+                      className="h-full rounded-sm transition-all duration-300"
                       style={{ width: `${ft.percent}%`, backgroundColor: categoryColors[ft.category] || "#6b7280" }}
                     />
                   </div>

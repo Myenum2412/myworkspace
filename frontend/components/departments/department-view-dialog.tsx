@@ -32,7 +32,7 @@ const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").
 
 function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+    <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
@@ -50,7 +50,7 @@ export function DepartmentViewDialog({ department, open, onOpenChange }: Departm
       <DialogContent className="max-w-md w-full p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b">
           <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-lg ${department.color} text-black`}>
+            <div className={`p-2.5 rounded-sm ${department.color} text-black`}>
               <Building2 className="size-5" />
             </div>
             <div>
@@ -67,7 +67,7 @@ export function DepartmentViewDialog({ department, open, onOpenChange }: Departm
             <Field icon={Briefcase} label="Open Positions" value={department.openPositions} />
             <Field icon={CircleDollarSign} label="Budget" value={department.budget} />
           </div>
-          <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3">
+          <div className="flex items-center gap-3 rounded-sm border bg-card px-4 py-3">
             <Avatar className="size-8">
               <AvatarImage src={department.headAvatar} alt={department.head} />
               <AvatarFallback className="text-xs">{getInitials(department.head)}</AvatarFallback>

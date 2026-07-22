@@ -76,7 +76,7 @@ export function FileList({
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+        <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-sm">
           <span className="text-sm font-medium">{selectedIds.size} selected</span>
           <Button variant="outline" size="sm" onClick={onBulkDelete}>
             <Trash2Icon className="mr-1 size-4" /> Delete
@@ -200,7 +200,7 @@ export function FileList({
           ))}
         </div>
       ) : (
-        <div className="border border-gray-200 bg-white shadow-sm overflow-x-auto rounded-md">
+        <div className="border border-gray-200 bg-white shadow-sm overflow-x-auto rounded-sm">
           <table className="table-premium w-full text-sm text-left">
             <thead>
               <tr className="border-b text-left text-sm font-semibold">

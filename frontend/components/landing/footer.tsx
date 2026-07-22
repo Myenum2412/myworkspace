@@ -48,7 +48,7 @@ export function Footer() {
         <div className="mt-12 border-t border-brand-200/60 pt-8">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             <div className="flex items-center gap-2 min-h-[44px]">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-800">
+              <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-brand-800">
                 <span className="text-xs font-bold text-white">M</span>
               </div>
               <span className="text-sm font-medium text-brand-900">

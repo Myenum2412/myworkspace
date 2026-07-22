@@ -71,7 +71,7 @@ export const columns: ColumnDef<Task>[] = [
       const t = row.original;
       return (
         <div className="flex items-center gap-2">
-          <div className="size-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+          <div className="size-6 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
             {t.assigneeAvatar ? (
               <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
             ) : (

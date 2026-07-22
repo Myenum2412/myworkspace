@@ -19,7 +19,7 @@ export function NotificationDisabledBanner() {
   if (!show) return null;
 
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+    <div className="flex items-start gap-3 rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
       <BellOffIcon className="mt-0.5 size-4 shrink-0 text-amber-500" />
       <div className="flex-1">
         <p className="font-medium">Notifications are disabled</p>

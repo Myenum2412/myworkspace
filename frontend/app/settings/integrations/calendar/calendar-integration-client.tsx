@@ -163,7 +163,7 @@ export default function CalendarIntegrationClient() {
               {connections.map((conn) => (
                 <div
                   key={conn.id}
-                  className="flex items-center justify-between gap-4 p-4 border rounded-lg"
+                  className="flex items-center justify-between gap-4 p-4 border rounded-sm"
                 >
                   <div className="flex items-center gap-4">
                     <span className="flex size-10 items-center justify-center border border-border bg-muted">
@@ -227,7 +227,7 @@ export default function CalendarIntegrationClient() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Google Calendar */}
-          <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
+          <div className="flex items-center justify-between gap-4 p-4 border rounded-sm">
             <div className="flex items-center gap-4">
               <span className="flex size-10 items-center justify-center border border-border bg-muted">
                 <RiGoogleLine className="size-5" />
@@ -255,7 +255,7 @@ export default function CalendarIntegrationClient() {
           </div>
 
           {/* Microsoft Outlook */}
-          <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
+          <div className="flex items-center justify-between gap-4 p-4 border rounded-sm">
             <div className="flex items-center gap-4">
               <span className="flex size-10 items-center justify-center border border-border bg-muted">
                 <RiMicrosoftLine className="size-5" />
@@ -309,7 +309,7 @@ export default function CalendarIntegrationClient() {
               {calendars.map((cal) => (
                 <div
                   key={cal.id}
-                  className="flex items-center justify-between gap-4 p-3 border rounded-lg"
+                  className="flex items-center justify-between gap-4 p-3 border rounded-sm"
                 >
                   <div className="flex items-center gap-3">
                     <div

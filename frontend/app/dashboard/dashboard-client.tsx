@@ -137,13 +137,13 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                   <div className="responsive-table flex-1 overflow-y-auto min-h-0">
                     <div className="sm:hidden space-y-2">
                       {projects.slice(0, ROWS_PER_CARD).map((p) => (
-                        <div key={p.id} className="border rounded-lg p-3 bg-card space-y-1.5 text-sm">
+                        <div key={p.id} className="border rounded-sm p-3 bg-card space-y-1.5 text-sm">
                           <div className="flex items-center justify-between">
                             <span className="font-medium">{p.name}</span>
                             <span className="text-xs text-muted-foreground">{p.client || "—"}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="flex-1 h-1.5 bg-muted rounded-sm overflow-hidden">
                               <div className="h-full bg-primary rounded-full" style={{ width: `${p.progress}%` }} />
                             </div>
                             <span className="text-xs text-muted-foreground shrink-0">{p.progress}%</span>
@@ -170,7 +170,7 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                             <td className="px-4 py-3 text-sm text-muted-foreground">{p.client || "—"}</td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <div className="flex-1 h-2 bg-muted rounded-sm overflow-hidden">
                                   <div className="h-full bg-primary rounded-full" style={{ width: `${p.progress}%` }} />
                                 </div>
                                 <span className="text-xs text-muted-foreground w-8 text-right">{p.progress}%</span>
@@ -202,7 +202,7 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                   <div className="responsive-table flex-1 overflow-y-auto min-h-0">
                     <div className="sm:hidden space-y-2">
                       {members.slice(0, ROWS_PER_CARD).map((m) => (
-                        <div key={m.email} className="border rounded-lg p-3 bg-card flex items-center gap-3">
+                        <div key={m.email} className="border rounded-sm p-3 bg-card flex items-center gap-3">
                           <Avatar className="size-10 shrink-0">
                             <AvatarImage src={m.avatar} alt={m.name} />
                             <AvatarFallback>{getInitials(m.name)}</AvatarFallback>
@@ -264,7 +264,7 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                   <div className="responsive-table flex-1 overflow-y-auto min-h-0">
                     <div className="sm:hidden space-y-2">
                       {clients.slice(0, ROWS_PER_CARD).map((c) => (
-                        <div key={c.id} className="border rounded-lg p-3 bg-card space-y-1">
+                        <div key={c.id} className="border rounded-sm p-3 bg-card space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">{c.name}</span>
                             <Badge variant="secondary" className="text-xs">{c.status || "Lead"}</Badge>
@@ -308,7 +308,7 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                   <div className="responsive-table flex-1 overflow-y-auto min-h-0">
                     <div className="sm:hidden space-y-2">
                       {pendingInvoices.slice(0, ROWS_PER_CARD).map((inv) => (
-                        <div key={inv.id} className="border rounded-lg p-3 bg-card space-y-1">
+                        <div key={inv.id} className="border rounded-sm p-3 bg-card space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">Invoice #{inv.number || inv.id.slice(0, 8)}</span>
                             <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">Pending</Badge>
@@ -393,8 +393,8 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                         <div className={`size-3 rounded-full ${p.color}`} />
                         <span className="text-sm flex-1">{p.label}</span>
                         <span className="text-sm font-bold">{p.count}</span>
-                        <div className="w-24 h-2 rounded-full bg-muted">
-                          <div className={`h-2 rounded-full ${p.color}`} style={{ width: `${rTotal > 0 ? (p.count / rTotal) * 100 : 0}%` }} />
+                        <div className="w-24 h-2 rounded-sm bg-muted">
+                          <div className={`h-2 rounded-sm ${p.color}`} style={{ width: `${rTotal > 0 ? (p.count / rTotal) * 100 : 0}%` }} />
                         </div>
                       </div>
                     ))}
@@ -415,8 +415,8 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                         <div className={`size-3 rounded-full ${s.color}`} />
                         <span className="text-sm flex-1">{s.label}</span>
                         <span className="text-sm font-bold">{s.count}</span>
-                        <div className="w-24 h-2 rounded-full bg-muted">
-                          <div className={`h-2 rounded-full ${s.color}`} style={{ width: `${rTotal > 0 ? (s.count / rTotal) * 100 : 0}%` }} />
+                        <div className="w-24 h-2 rounded-sm bg-muted">
+                          <div className={`h-2 rounded-sm ${s.color}`} style={{ width: `${rTotal > 0 ? (s.count / rTotal) * 100 : 0}%` }} />
                         </div>
                       </div>
                     ))}

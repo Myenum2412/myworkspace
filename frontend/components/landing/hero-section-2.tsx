@@ -38,8 +38,8 @@ export function HeroSection2() {
         aria-hidden
         className="absolute inset-0 isolate hidden contain-strict lg:block"
       >
-        <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(0,0%,85%,.08)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]" />
-        <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.06)_0,hsla(0,0%,45%,.02)_80%,hsla(0,0%,45%,0)_80%)] [translate:5%_-50%]" />
+        <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-sm bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(0,0%,85%,.08)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]" />
+        <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-sm bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.06)_0,hsla(0,0%,45%,.02)_80%,hsla(0,0%,45%,0)_80%)] [translate:5%_-50%]" />
         <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
       </div>
       <section>
@@ -88,7 +88,7 @@ export function HeroSection2() {
                   <Button
                     asChild
                     size="lg"
-                    className="rounded-xl px-5 text-base"
+                    className="rounded-sm px-5 text-base"
                   >
                     <Link href="/signup">
                       <span className="text-nowrap">Start Free Trial</span>
@@ -100,7 +100,7 @@ export function HeroSection2() {
                   asChild
                   size="lg"
                   variant="ghost"
-                  className="h-10.5 rounded-xl px-5 text-base"
+                  className="h-10.5 rounded-sm px-5 text-base"
                 >
                   <a href="#features">
                     <span className="text-nowrap">Learn More</span>
@@ -123,8 +123,8 @@ export function HeroSection2() {
             }}
           >
             <div className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
-              <div className="ring-background bg-background relative mx-auto max-w-5xl overflow-hidden rounded-2xl border p-4 ring-1">
-                <div className="bg-gradient-to-br from-brand-100 to-brand-200 aspect-15/8 relative flex items-center justify-center rounded-2xl">
+              <div className="ring-background bg-background relative mx-auto max-w-5xl overflow-hidden rounded-sm border p-4 ring-1">
+                <div className="bg-gradient-to-br from-brand-100 to-brand-200 aspect-15/8 relative flex items-center justify-center rounded-sm">
                   <div className="text-center">
                     <div className="text-4xl font-bold text-brand-600 mb-2">
                       Dashboard Preview

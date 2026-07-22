@@ -204,7 +204,7 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             {fileManagement.folders.map((folder) => (
-              <div key={folder.id} className="rounded-md border p-3">
+              <div key={folder.id} className="rounded-sm border p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{folder.name}</p>
@@ -226,7 +226,7 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
           </CardHeader>
           <CardContent>
             {fileManagement.files.length ? (
-              <div className="divide-y rounded-md border">
+              <div className="divide-y rounded-sm border">
                 {fileManagement.files.map((file) => (
                   <div key={file.id} className="grid gap-2 p-3 text-sm md:grid-cols-[1fr_140px_100px_120px] md:items-center">
                     <div className="min-w-0">
@@ -240,7 +240,7 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
                 ))}
               </div>
             ) : (
-              <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+              <div className="rounded-sm border border-dashed p-8 text-center text-sm text-muted-foreground">
                 Default folders are ready. Uploaded files and generated documents for this client will appear here.
               </div>
             )}

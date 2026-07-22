@@ -82,7 +82,7 @@ export function Header({ context }: { context?: AppContextType }) {
         <Separator orientation="vertical" className="mr-1 sm:mr-2 data-vertical:h-4 data-vertical:self-auto hidden sm:block" />
         <button
           onClick={toggleSidebar}
-          className="flex items-center justify-center size-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 touch-target-sm"
+          className="flex items-center justify-center size-8 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 touch-target-sm"
           aria-label="Toggle sidebar"
         >
           <MenuOpenIcon className="size-5" />
@@ -138,17 +138,17 @@ export function Header({ context }: { context?: AppContextType }) {
         <NotificationBell />
         <button
           onClick={() => setSearchOpen(true)}
-          className="flex md:hidden items-center justify-center size-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer touch-target"
+          className="flex md:hidden items-center justify-center size-9 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer touch-target"
           aria-label="Search"
         >
           <Search className="size-4" />
         </button>
         <button
           onClick={() => setSearchOpen(true)}
-          className="hidden md:flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer px-2 py-1.5 rounded-md hover:bg-muted/50"
+          className="hidden md:flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer px-2 py-1.5 rounded-sm hover:bg-muted/50"
         >
           <Search className="size-4" />
-          <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium">⌘K</kbd>
+          <kbd className="rounded-sm border bg-muted px-1.5 py-0.5 text-[10px] font-medium">⌘K</kbd>
         </button>
 
         <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
@@ -177,10 +177,10 @@ export function Header({ context }: { context?: AppContextType }) {
               >
                 <span className="relative flex size-2 shrink-0">
                   {status === "online" && (
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-sm bg-green-500 opacity-75" />
                   )}
                   <span
-                    className={`relative inline-flex size-2 rounded-full ${STATUS_COLORS[status] || "bg-gray-400"}`}
+                    className={`relative inline-flex size-2 rounded-sm ${STATUS_COLORS[status] || "bg-gray-400"}`}
                   />
                 </span>
                 <span className="hidden sm:inline">{STATUS_LABELS[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span>

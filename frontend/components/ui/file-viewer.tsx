@@ -374,7 +374,7 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
 
             {!loading && !error && category === "audio" && (
               <div className="w-full flex flex-col items-center justify-center p-8 gap-4">
-                <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="size-24 rounded-sm bg-primary/10 flex items-center justify-center">
                   <MusicIcon className="size-12 text-primary" />
                 </div>
                 <p className="text-sm font-medium">{file.name}</p>

@@ -68,7 +68,7 @@ export function ClientSidebar({
             alt="MyWorkSpace Logo"
             width={32}
             height={32}
-            className="size-8 rounded-lg object-cover shadow-sm shrink-0"
+            className="size-8 rounded-sm object-cover shadow-sm shrink-0"
           />
           <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">
             Client Portal

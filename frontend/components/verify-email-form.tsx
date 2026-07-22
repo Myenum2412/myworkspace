@@ -13,7 +13,7 @@ export function VerifyEmailForm({ className, searchParams, ...props }: React.Com
     return (
       <div className={cn("flex flex-col gap-6 text-center", className)} {...props}>
         <div className="flex flex-col items-center gap-4">
-          <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+          <div className="flex size-14 items-center justify-center rounded-sm bg-destructive/10 text-destructive">
             <XCircleIcon className="size-7" />
           </div>
           <div className="flex flex-col gap-1">
@@ -34,7 +34,7 @@ export function VerifyEmailForm({ className, searchParams, ...props }: React.Com
     return (
       <div className={cn("flex flex-col gap-6 text-center", className)} {...props}>
         <div className="flex flex-col items-center gap-4">
-          <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <div className="flex size-14 items-center justify-center rounded-sm bg-muted text-muted-foreground">
             <XCircleIcon className="size-7" />
           </div>
           <div className="flex flex-col gap-1">
@@ -55,7 +55,7 @@ export function VerifyEmailForm({ className, searchParams, ...props }: React.Com
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-2 text-center">
-        <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary mb-2">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-sm bg-primary/10 text-primary mb-2">
           <CheckCircleIcon className="size-7" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight">Verify your email</h1>

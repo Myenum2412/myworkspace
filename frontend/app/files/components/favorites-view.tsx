@@ -37,13 +37,13 @@ export function FavoritesView() {
         {favorites.map((item) => (
           <div
             key={item.id}
-            className="group relative flex flex-col items-center gap-2 p-4 rounded-xl border bg-card cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all"
+            className="group relative flex flex-col items-center gap-2 p-4 rounded-sm border bg-card cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all"
             onDoubleClick={() => {
               if (item.type === "folder") setCurrentFolder(item.id);
               else if (item.type === "file" && "mimeType" in item) setPreviewFile(item as any);
             }}
           >
-            <div className="size-16 rounded-2xl bg-muted flex items-center justify-center">
+            <div className="size-16 rounded-sm bg-muted flex items-center justify-center">
               {item.type === "folder" ? <FolderIcon className="size-8 text-primary/60" /> : getFileIcon((item as any).mimeType || "")}
             </div>
             <div className="text-center min-w-0 w-full">

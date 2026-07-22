@@ -323,7 +323,7 @@ export default function InvoiceFormPage() {
           </div>
 
           {/* Table Section */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <div className="border border-gray-200 rounded-sm overflow-hidden">
             {!isSimplifiedView && (
               <div className="bg-[#f9fafb] px-3 sm:px-4 py-2 border-b border-gray-200">
                 <span className="font-semibold text-white-800 text-sm">Item Table</span>
@@ -334,7 +334,7 @@ export default function InvoiceFormPage() {
               {items.map((item) => {
                 const amount = item.quantity * item.rate;
                 return (
-                  <div key={item.id} className="border border-gray-200 rounded-lg p-3 bg-white space-y-1.5">
+                  <div key={item.id} className="border border-gray-200 rounded-sm p-3 bg-white space-y-1.5">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelectItem(item.id)} className="size-4 accent-blue-600 mt-0.5 shrink-0" />
@@ -367,7 +367,7 @@ export default function InvoiceFormPage() {
                       placeholder=""
                       value={item.description}
                       onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                      className="border focus-visible:ring-1 focus-visible:ring-blue-400 rounded-md resize-none min-h-[50px] text-sm"
+                      className="border focus-visible:ring-1 focus-visible:ring-blue-400 rounded-sm resize-none min-h-[50px] text-sm"
                     />
                     <div className="grid grid-cols-3 gap-2">
                       <div>
@@ -497,7 +497,7 @@ export default function InvoiceFormPage() {
 
           {/* Add Row Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-            <div className="flex items-center rounded overflow-hidden bg-gray-50 border border-gray-200">
+            <div className="flex items-center rounded-sm overflow-hidden bg-gray-50 border border-gray-200">
               <Button variant="ghost" size="sm" onClick={addNewRow} className="text-blue-600 gap-1.5 px-3 hover:bg-gray-100 font-medium text-sm touch-target">
                 <PlusCircle className="size-4" />
                 Add New Row
@@ -534,7 +534,7 @@ export default function InvoiceFormPage() {
             </div>
 
             {/* Summary */}
-            <div className="w-full lg:max-w-[450px] bg-[#f9fafb] p-4 sm:p-6 rounded-lg border border-gray-200">
+            <div className="w-full lg:max-w-[450px] bg-[#f9fafb] p-4 sm:p-6 rounded-sm border border-gray-200">
               <div className="flex justify-end items-center mb-4 sm:mb-5 text-sm gap-3">
                 <span className="text-gray-700 font-semibold">Sub Total</span>
                 <span className="font-semibold text-gray-900">{subTotal.toFixed(2)}</span>
@@ -545,7 +545,7 @@ export default function InvoiceFormPage() {
                   <div className="flex justify-between items-center mb-4 sm:mb-5 text-sm">
                     <div className="flex items-center gap-2 sm:gap-4">
                       <span className="text-gray-600">Discount</span>
-                      <div className="flex items-center bg-white rounded border border-gray-200 overflow-hidden focus-within:ring-1 focus-within:ring-blue-400">
+                      <div className="flex items-center bg-white rounded-sm border border-gray-200 overflow-hidden focus-within:ring-1 focus-within:ring-blue-400">
                         <Input
                           type="number"
                           value={discountPercent}

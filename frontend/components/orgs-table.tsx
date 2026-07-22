@@ -58,7 +58,7 @@ function ViewOrgDialog({ org, open, onOpenChange }: { org: OrgRow | null; open: 
       <DialogContent className="sm:max-w-lg p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <div className="flex items-center gap-4">
-            <div className="size-12 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
+            <div className="size-12 rounded-sm bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
               <Building2Icon className="size-6 text-white" />
             </div>
             <div>
@@ -69,28 +69,28 @@ function ViewOrgDialog({ org, open, onOpenChange }: { org: OrgRow | null; open: 
         </DialogHeader>
         <div className="px-6 py-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+            <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
               <TagIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Plan</p>
                 <p className="text-sm font-medium mt-0.5 capitalize">{org.plan || "free"}</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+            <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
               <GlobeIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Domain</p>
                 <p className="text-sm font-medium mt-0.5">{org.domain || "\u2014"}</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+            <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
               <HashIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Slug</p>
                 <p className="text-sm font-medium mt-0.5">{org.slug || "\u2014"}</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+            <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
               <CalendarDays className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Created</p>
@@ -138,7 +138,7 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
 
         <form action={formAction} className="flex flex-col">
           {state?.error && (
-            <div className="mx-6 mt-4 flex items-center gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3">
+            <div className="mx-6 mt-4 flex items-center gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-sm px-4 py-3">
               <AlertCircleIcon className="size-4 shrink-0" />
               {state.error}
             </div>
@@ -210,7 +210,7 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
             <Button type="submit" disabled={pending} className="px-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
               {pending ? (
                 <>
-                  <span className="animate-spin size-4 border-2 border-white/30 border-t-white rounded-full mr-2" />
+                  <span className="animate-spin size-4 border-2 border-white/30 border-t-white rounded-sm mr-2" />
                   Saving...
                 </>
               ) : (
@@ -362,7 +362,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize">
+                      <span className="inline-flex items-center rounded-sm border px-2.5 py-0.5 text-xs font-medium capitalize">
                         {o.plan || "free"}
                       </span>
                     </td>

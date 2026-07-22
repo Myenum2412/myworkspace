@@ -148,7 +148,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
           </Avatar>
           <button
             onClick={() => setShowImageEditor(true)}
-            className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+            className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-sm bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
             aria-label="Edit profile photo"
           >
             <CameraIcon className="size-4" />
@@ -173,10 +173,10 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
 
       <div className="flex flex-col gap-2 w-full px-6 pt-4 shrink-0">
         {saveError && (
-          <div className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{saveError}</div>
+          <div className="rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">{saveError}</div>
         )}
         {saveSuccess && (
-          <div className="rounded-md bg-green-500/10 px-3 py-2 text-xs text-green-600">{saveSuccess}</div>
+          <div className="rounded-sm bg-green-500/10 px-3 py-2 text-xs text-green-600">{saveSuccess}</div>
         )}
         <div className="flex justify-end">
           {editing ? (
@@ -502,7 +502,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   </div>
                   <div className="sm:col-span-2 space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Company Description</Label>
-                    <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                    <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Year Established</Label>
@@ -1132,12 +1132,12 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
 
       {showBannerEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBannerEditor(false)}>
-          <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">Update banner</h2>
               <button
                 onClick={() => setShowBannerEditor(false)}
-                className="rounded-md p-1 hover:bg-muted transition-colors"
+                className="rounded-sm p-1 hover:bg-muted transition-colors"
               >
                 <XIcon className="size-3.5" />
               </button>
@@ -1198,12 +1198,12 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
 
       {showImageEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageEditor(false)}>
-          <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">Update profile photo</h2>
               <button
                 onClick={() => setShowImageEditor(false)}
-                className="rounded-md p-1 hover:bg-muted transition-colors"
+                className="rounded-sm p-1 hover:bg-muted transition-colors"
               >
                 <XIcon className="size-3.5" />
               </button>

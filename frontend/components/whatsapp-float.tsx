@@ -119,7 +119,7 @@ export function WhatsAppFloat() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex size-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl active:scale-95"
+        className="fixed bottom-6 right-6 z-50 flex size-14 items-center justify-center rounded-sm bg-[#25D366] text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl active:scale-95"
         aria-label="Connect WhatsApp"
       >
         <WhatsAppIcon className="size-7" />
@@ -174,7 +174,7 @@ export function WhatsAppFloat() {
             {/* QR code state */}
             {clientState.status === "qr" && clientState.qrCode && (
               <>
-                <img src={clientState.qrCode} alt="QR Code" className="rounded-lg border" />
+                <img src={clientState.qrCode} alt="QR Code" className="rounded-sm border" />
                 <p className="text-xs text-muted-foreground text-center max-w-xs">
                   Open WhatsApp on your phone → Linked Devices → Link a Device → Scan this QR code.
                 </p>

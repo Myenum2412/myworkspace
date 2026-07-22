@@ -149,7 +149,7 @@ export default function SecurityDashboard() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Security Score</span>
-              <div className={`rounded-full px-3 py-1 text-sm font-bold ${
+              <div className={`rounded-sm px-3 py-1 text-sm font-bold ${
                 securityScore.level === "good" ? "bg-green-100 text-green-700" :
                 securityScore.level === "fair" ? "bg-amber-100 text-amber-700" :
                 "bg-red-100 text-red-700"
@@ -161,7 +161,7 @@ export default function SecurityDashboard() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="rounded-lg border p-4 space-y-2">
+            <div className="rounded-sm border p-4 space-y-2">
               <div className="flex items-center gap-2">
                 {mfaStatus?.enabled ? (
                   <ShieldCheck className="size-4 text-green-500" />
@@ -178,7 +178,7 @@ export default function SecurityDashboard() {
               )}
             </div>
 
-            <div className="rounded-lg border p-4 space-y-2">
+            <div className="rounded-sm border p-4 space-y-2">
               <div className="flex items-center gap-2">
                 <Smartphone className="size-4 text-blue-500" />
                 <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Method</span>
@@ -191,7 +191,7 @@ export default function SecurityDashboard() {
               )}
             </div>
 
-            <div className="rounded-lg border p-4 space-y-2">
+            <div className="rounded-sm border p-4 space-y-2">
               <div className="flex items-center gap-2">
                 <Laptop className="size-4 text-purple-500" />
                 <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Trusted Devices</span>
@@ -200,7 +200,7 @@ export default function SecurityDashboard() {
               <p className="text-xs text-muted-foreground">Active trusted devices</p>
             </div>
 
-            <div className="rounded-lg border p-4 space-y-2">
+            <div className="rounded-sm border p-4 space-y-2">
               <div className="flex items-center gap-2">
                 <KeyRound className="size-4 text-amber-500" />
                 <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Recovery Codes</span>
@@ -213,7 +213,7 @@ export default function SecurityDashboard() {
           </div>
 
           {securityScore.recommendations.length > 0 && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
+            <div className="rounded-sm border border-amber-200 bg-amber-50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="size-4 text-amber-600" />
                 <span className="text-sm font-medium text-amber-800">Recommendations</span>
@@ -221,7 +221,7 @@ export default function SecurityDashboard() {
               <ul className="space-y-1">
                 {securityScore.recommendations.map((rec, i) => (
                   <li key={i} className="text-xs text-amber-700 flex items-center gap-2">
-                    <span className="size-1.5 rounded-full bg-amber-500 shrink-0" />
+                    <span className="size-1.5 rounded-sm bg-amber-500 shrink-0" />
                     {rec}
                   </li>
                 ))}
@@ -237,7 +237,7 @@ export default function SecurityDashboard() {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4 pt-4">
-              <div className="rounded-lg border p-4">
+              <div className="rounded-sm border p-4">
                 <h3 className="text-sm font-medium mb-3">Authentication Methods</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -266,7 +266,7 @@ export default function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground text-center py-6">No trusted devices</p>
               ) : (
                 trustedDevices.map((device) => (
-                  <div key={device.id} className="flex items-center gap-3 rounded-lg border p-3">
+                  <div key={device.id} className="flex items-center gap-3 rounded-sm border p-3">
                     <Laptop className="size-8 text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{device.deviceName}</p>
@@ -293,7 +293,7 @@ export default function SecurityDashboard() {
                 <ScrollArea className="max-h-96">
                   <div className="space-y-2">
                     {activities.map((entry) => (
-                      <div key={entry._id} className="flex items-start gap-3 rounded-lg border p-3">
+                      <div key={entry._id} className="flex items-start gap-3 rounded-sm border p-3">
                         <div className="mt-0.5">
                           {entry.success ? (
                             <CheckCircle2 className="size-4 text-green-500" />

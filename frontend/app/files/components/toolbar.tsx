@@ -194,7 +194,7 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
 
       {/* Selection bar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-md text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-sm text-xs text-muted-foreground">
           <span className="font-medium text-foreground">{selectedIds.size}</span> selected
           <div className="flex items-center gap-1 ml-2">
             {!readonly && (
@@ -220,7 +220,7 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
 
       {/* Clipboard paste bar */}
       {clipboard && selectedIds.size === 0 && (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/30 rounded-md text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/30 rounded-sm text-xs text-muted-foreground">
           <span className="font-medium text-foreground">{clipboard.ids.length}</span> item{clipboard.ids.length !== 1 ? "s" : ""} on clipboard ({clipboard.action === "cut" ? "Cut" : "Copy"})
           <div className="flex items-center gap-1 ml-2">
             {!readonly && (

@@ -51,7 +51,7 @@ export function FileSearch({ orgId, onSelectFile, onClose }: FileSearchProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-black/50" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-xl shadow-2xl border overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-sm shadow-2xl border overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-2 px-4 py-3 border-b">
           <Search className="w-4 h-4 text-gray-400" />
           <input
@@ -62,7 +62,7 @@ export function FileSearch({ orgId, onSelectFile, onClose }: FileSearchProps) {
             placeholder="Search files..."
             className="flex-1 bg-white outline-none text-sm"
           />
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-sm">
             <X className="w-4 h-4" />
           </button>
         </div>

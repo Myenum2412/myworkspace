@@ -154,7 +154,7 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
 
       {viewingEngagement && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setViewingEngagement(null)}>
-          <div className="bg-background rounded-xl shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-background rounded-sm shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">Interaction Followup Details</h2>
             </div>
@@ -179,7 +179,7 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setShowForm(false); setEditingEngagement(null); }}>
-          <div className="bg-background rounded-xl shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-background rounded-sm shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">{editingEngagement ? "Edit Interaction Followup" : "Add Interaction Followup"}</h2>
             </div>
@@ -196,7 +196,7 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
 
       {deletingEngagement && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDeletingEngagement(null)}>
-          <div className="bg-background rounded-xl shadow-lg w-full max-w-md m-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-background rounded-sm shadow-lg w-full max-w-md m-4" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">Delete Interaction Followup</h2>
             </div>

@@ -88,7 +88,7 @@ export function ClientEditDialog({ client, open, onOpenChange, onClientUpdated, 
 
         {editApiError && (
           <div className="px-6">
-            <div className="flex items-start gap-3 rounded-lg border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 p-4 shadow-sm">
+            <div className="flex items-start gap-3 rounded-sm border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 p-4 shadow-sm">
               <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-red-800">{editApiError}</p>
@@ -159,7 +159,7 @@ export function ClientDeleteDialog({ client, open, onOpenChange, onClientDeleted
     <Dialog open={open} onOpenChange={(o) => { if (!o) onOpenChange(false); }}>
       <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-none shadow-2xl">
         <div className="bg-gradient-to-br from-red-500/10 via-background to-background p-6">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-red-100/80 ring-8 ring-red-50 mb-6 dark:bg-red-500/20 dark:ring-red-500/10">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-sm bg-red-100/80 ring-8 ring-red-50 mb-6 dark:bg-red-500/20 dark:ring-red-500/10">
             <Trash2 className="size-7 text-red-600 dark:text-red-400" />
           </div>
 
@@ -173,21 +173,21 @@ export function ClientDeleteDialog({ client, open, onOpenChange, onClientDeleted
           </DialogHeader>
 
           {client && (
-            <div className="mt-6 space-y-3 rounded-xl border border-border bg-card/50 p-4 shadow-sm backdrop-blur-sm">
+            <div className="mt-6 space-y-3 rounded-sm border border-border bg-card/50 p-4 shadow-sm backdrop-blur-sm">
               <div className="flex items-center gap-3">
-                <div className="flex size-8 items-center justify-center rounded-md bg-primary/10">
+                <div className="flex size-8 items-center justify-center rounded-sm bg-primary/10">
                   <FolderIcon className="size-4 text-primary" />
                 </div>
                 <div className="text-sm font-medium">All associated projects</div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex size-8 items-center justify-center rounded-md bg-primary/10">
+                <div className="flex size-8 items-center justify-center rounded-sm bg-primary/10">
                   <FileText className="size-4 text-primary" />
                 </div>
                 <div className="text-sm font-medium">Files and documents</div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex size-8 items-center justify-center rounded-md bg-red-500/10">
+                <div className="flex size-8 items-center justify-center rounded-sm bg-red-500/10">
                   <AlertCircle className="size-4 text-red-600" />
                 </div>
                 <div className="text-sm font-medium text-red-600">Client-user access revoked</div>
@@ -196,7 +196,7 @@ export function ClientDeleteDialog({ client, open, onOpenChange, onClientDeleted
           )}
 
           {deleteError && (
-            <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-destructive flex items-center gap-2">
+            <div className="mt-4 rounded-sm bg-red-50 border border-red-200 p-3 text-sm text-destructive flex items-center gap-2">
               <AlertCircle className="size-4" />
               {deleteError}
             </div>

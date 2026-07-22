@@ -272,7 +272,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
           <div className="grid grid-cols-7 gap-1 flex-1">
             {/* Empty cells before first day */}
             {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} className="min-h-[80px] rounded-lg bg-muted/30" />
+              <div key={`empty-${i}`} className="min-h-[80px] rounded-sm bg-muted/30" />
             ))}
 
             {/* Day cells */}
@@ -290,7 +290,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                 <button
                   key={day}
                   onClick={() => setSelectedDate(date)}
-                  className={`min-h-[80px] rounded-lg border p-1.5 text-left transition-all hover:border-primary/50 ${
+                  className={`min-h-[80px] rounded-sm border p-1.5 text-left transition-all hover:border-primary/50 ${
                     isSelected
                       ? "border-primary bg-primary/5 ring-1 ring-primary/30"
                       : today
@@ -302,7 +302,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                     <span
                       className={`text-xs font-medium ${
                         today
-                          ? "bg-primary text-primary-foreground rounded-full size-5 flex items-center justify-center"
+                          ? "bg-primary text-primary-foreground rounded-sm size-5 flex items-center justify-center"
                           : "text-muted-foreground"
                       }`}
                     >
@@ -324,7 +324,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                           setSelectedTask(task);
                           setTaskDetailOpen(true);
                         }}
-                        className={`text-[10px] leading-tight px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80 ${
+                        className={`text-[10px] leading-tight px-1 py-0.5 rounded-sm truncate cursor-pointer hover:opacity-80 ${
                           PRIORITY_COLORS[task.priority] || "bg-gray-400"
                         } text-white`}
                         title={task.title}
@@ -336,7 +336,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                     {dayEvents.slice(0, 2).map((event) => (
                       <div
                         key={event.id}
-                        className={`text-[10px] leading-tight px-1 py-0.5 rounded truncate ${
+                        className={`text-[10px] leading-tight px-1 py-0.5 rounded-sm truncate ${
                           PROVIDER_COLORS[event.provider] || "bg-gray-400"
                         } text-white`}
                         title={`${event.title} (${event.provider})`}
@@ -391,7 +391,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                     setSelectedTask(task);
                     setTaskDetailOpen(true);
                   }}
-                  className="rounded-lg border p-3 hover:bg-accent/50 cursor-pointer transition-colors"
+                  className="rounded-sm border p-3 hover:bg-accent/50 cursor-pointer transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h4 className="text-sm font-medium line-clamp-1">{task.title}</h4>
@@ -417,14 +417,14 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
               {selectedDateEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="rounded-lg border p-3 transition-colors"
+                  className="rounded-sm border p-3 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h4 className="text-sm font-medium line-clamp-1">{event.title}</h4>
                     <div className={`size-2 rounded-full shrink-0 mt-1.5 ${PROVIDER_COLORS[event.provider] || "bg-gray-400"}`} />
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-sm font-medium ${
                       event.provider === "google" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700"
                     }`}>
                       {event.provider === "google" ? "Google" : "Outlook"}
@@ -461,7 +461,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
 
       {/* Task Detail Dialog */}
       <Dialog open={taskDetailOpen} onOpenChange={(open) => { if (!open) { setTaskDetailOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-xl sm:m-4" showCloseButton={false}>
+        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-sm sm:m-4" showCloseButton={false}>
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}

@@ -56,7 +56,7 @@ export default async function StaffTimeOffPage() {
           <CardTitle>Requests</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
             <div className="overflow-x-auto">
               <table className="table-premium w-full text-sm text-left">
                 <thead>

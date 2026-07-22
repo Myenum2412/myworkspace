@@ -94,7 +94,7 @@ export function ArchiveViewer({ src, fileName, fileSize }: ArchiveViewerProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="size-5 border-2 border-primary border-t-transparent rounded-sm animate-spin" />
       </div>
     );
   }

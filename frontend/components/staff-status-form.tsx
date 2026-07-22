@@ -126,7 +126,7 @@ export function StaffStatusForm({
                 key={opt.value}
                 type="button"
                 onClick={() => setSelectedStatus(opt.value)}
-                className={`flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left transition-all ${
+                className={`flex items-center gap-2.5 rounded-sm border px-3 py-2.5 text-left transition-all ${
                   isActive
                     ? `${opt.bg} ${opt.color} border-transparent ring-2 ${opt.ring}`
                     : "bg-card hover:bg-accent/50 border-border"
@@ -143,7 +143,7 @@ export function StaffStatusForm({
         <button
           type="button"
           onClick={() => setSelectedStatus("custom")}
-          className={`flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left transition-all w-full mt-2 ${
+          className={`flex items-center gap-2.5 rounded-sm border px-3 py-2.5 text-left transition-all w-full mt-2 ${
             selectedStatus === "custom"
               ? "bg-muted text-foreground border-transparent ring-2 ring-muted-foreground/30"
               : "bg-card hover:bg-accent/50 border-border"
@@ -161,7 +161,7 @@ export function StaffStatusForm({
             value={customStatus}
             onChange={(e) => setCustomStatus(e.target.value)}
             placeholder=""
-            className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-ring"
+            className="w-full rounded-sm border bg-background px-3 py-2 text-sm outline-none focus:border-ring"
             maxLength={60}
             autoFocus
           />
@@ -173,7 +173,7 @@ export function StaffStatusForm({
           value={statusNote}
           onChange={(e) => setStatusNote(e.target.value)}
           placeholder=""
-          className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           maxLength={200}
         />
       </div>

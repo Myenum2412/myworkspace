@@ -244,9 +244,9 @@ export default function ProjectsDashboard({ projects, onView }: DashboardProps) 
                     <button
                       key={p.id}
                       onClick={() => onView(p)}
-                      className="w-full flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors text-left"
+                      className="w-full flex items-center gap-3 rounded-sm border p-3 hover:bg-muted/50 transition-colors text-left"
                     >
-                      <div className="size-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0" style={{ backgroundColor: p.color }}>
+                      <div className="size-8 rounded-sm flex items-center justify-center text-sm font-bold shrink-0" style={{ backgroundColor: p.color }}>
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">

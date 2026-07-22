@@ -118,7 +118,7 @@ export function PDFViewer({ src, fileName }: PDFViewerProps) {
             {Array.from({ length: Math.max(totalPages, 1) }).map((_, i) => (
               <div
                 key={i}
-                className={`aspect-[3/4] rounded border cursor-pointer transition-colors ${
+                className={`aspect-[3/4] rounded-sm border cursor-pointer transition-colors ${
                   page === i + 1 ? "border-primary ring-1 ring-primary" : "border-border hover:border-muted-foreground/30"
                 }`}
                 onClick={() => setPage(i + 1)}

@@ -44,10 +44,10 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
             <img
               src={emp.avatar}
               alt={emp.name}
-              className="size-8 rounded-full object-cover ring-2 ring-background"
+              className="size-8 rounded-sm object-cover ring-2 ring-background"
             />
           ) : (
-            <div className={`size-8 rounded-full flex items-center justify-center text-xs font-semibold ${getAvatarColor(emp.name)}`}>
+            <div className={`size-8 rounded-sm flex items-center justify-center text-xs font-semibold ${getAvatarColor(emp.name)}`}>
               {getInitials(emp.name)}
             </div>
           )}
@@ -69,7 +69,7 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
 
       <td className="px-4 py-3">
         {emp.department ? (
-          <span className="inline-flex items-center rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">
+          <span className="inline-flex items-center rounded-sm bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">
             {emp.department}
           </span>
         ) : (
@@ -82,7 +82,7 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
       </td>
 
       <td className="px-4 py-3">
-        <span className="inline-flex items-center rounded-md border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">
+        <span className="inline-flex items-center rounded-sm border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">
           {emp.role}
         </span>
       </td>
@@ -96,8 +96,8 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
       </td>
 
       <td className="px-4 py-3">
-        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
-          <span className={`size-1.5 rounded-full ${status.dot}`} />
+        <span className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
+          <span className={`size-1.5 rounded-sm ${status.dot}`} />
           {status.label}
         </span>
       </td>

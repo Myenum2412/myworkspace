@@ -166,7 +166,7 @@ export function BlogDataTable({ initialPosts, categories, orgId }: BlogDataTable
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg">
+      <div className="border rounded-sm">
         <Table>
           <TableHeader>
             <TableRow>

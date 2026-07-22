@@ -138,11 +138,11 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-8">
       {Object.keys(errors).length > 0 && (
-        <div className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-sm border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
           Fix {Object.keys(errors).length} field{Object.keys(errors).length === 1 ? "" : "s"} above.
         </div>
       )}
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Business Information</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -191,7 +191,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
         </div>
       </fieldset>
 
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Contact Information</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -214,7 +214,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
         </div>
       </fieldset>
 
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Address</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5 md:col-span-2">
@@ -248,7 +248,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
         </div>
       </fieldset>
 
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Authorized Person</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -273,7 +273,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
         </div>
       </fieldset>
 
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Company Description</legend>
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">Company Description</Label>
@@ -289,7 +289,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
         <Button type="submit" disabled={isSubmitting} className="min-w-[160px]">
           {isSubmitting ? (
             <div className="flex items-center gap-2">
-              <div className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              <div className="size-4 animate-spin rounded-sm border-2 border-current border-t-transparent" />
               Saving...
             </div>
           ) : (

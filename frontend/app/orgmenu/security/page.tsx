@@ -64,7 +64,7 @@ export default async function SecurityPage() {
         <CardContent>
           <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
             {items.map((item) => (
-              <div key={item.label} className="rounded-lg border p-4">
+              <div key={item.label} className="rounded-sm border p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <item.icon className={`size-4 ${item.color}`} />
                   <p className="text-sm text-muted-foreground">{item.label}</p>

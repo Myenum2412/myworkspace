@@ -68,7 +68,7 @@ export function OfflineBanner() {
   const state = deriveState(isOnline, sync, queued);
 
   const baseClasses =
-    "fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-lg transition-all duration-300";
+    "fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium shadow-lg transition-all duration-300";
 
   const variants: Record<BannerState["kind"], string> = {
     online: "bg-green-100 text-green-800 border border-green-200",
@@ -125,7 +125,7 @@ export function OfflineBanner() {
       className={`${baseClasses} ${variants[state.kind]} motion-reduce:transition-none`}
     >
       <span
-        className="inline-block w-2 h-2 rounded-full motion-safe:animate-pulse"
+        className="inline-block w-2 h-2 rounded-sm motion-safe:animate-pulse"
         style={{ backgroundColor: indicatorColor }}
         aria-hidden="true"
       />

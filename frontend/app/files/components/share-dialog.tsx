@@ -164,7 +164,7 @@ export function ShareDialog() {
             </Button>
 
             {shareLink && (
-              <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+              <div className="flex items-center gap-2 p-2 bg-muted rounded-sm">
                 <Input value={shareLink} readOnly className="text-xs h-8 bg-transparent border-0" />
                 <Button variant="ghost" size="sm" onClick={copyLink} className="h-8 shrink-0">
                   {copied ? <CheckIcon className="size-3.5" /> : <CopyIcon className="size-3.5" />}

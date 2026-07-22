@@ -211,7 +211,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
               <button
                 key={cat}
                 onClick={() => { setActiveCategory(cat); setSelectedUserId(null); setSearch(""); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${
                   activeCategory === cat
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -258,9 +258,9 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
                   <button
                     key={m.userId}
                     onClick={() => setSelectedUserId(m.userId)}
-                    className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-card hover:bg-accent/50 hover:border-accent-foreground/20 transition-all group cursor-pointer text-center"
+                    className="flex flex-col items-center gap-2 p-4 rounded-sm border bg-card hover:bg-accent/50 hover:border-accent-foreground/20 transition-all group cursor-pointer text-center"
                   >
-                    <div className="size-20 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                    <div className="size-20 rounded-sm bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                       <FolderIcon className="size-10 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                     <div className="flex flex-col gap-0.5 min-w-0 w-full">
@@ -331,7 +331,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${
                   activeCategory === cat
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -439,7 +439,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
                 {/^(image|text|video|audio)\//.test(previewFile.mimeType) || previewFile.mimeType.includes("pdf") || previewFile.mimeType === "application/json" || previewFile.mimeType === "application/xml" ? (
                   <iframe
                     src={`/api/files/${previewFile.id}`}
-                    className="w-full h-full border rounded-md"
+                    className="w-full h-full border rounded-sm"
                     title={previewFile.originalName}
                   />
                 ) : (

@@ -205,7 +205,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
   return (
     <div className="flex flex-1 flex-col gap-6 overflow-hidden">
       {apiError && (
-        <div className="mx-6 mt-4 flex items-start gap-3 rounded-lg border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 px-4 py-3 shadow-sm">
+        <div className="mx-6 mt-4 flex items-start gap-3 rounded-sm border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 px-4 py-3 shadow-sm">
           <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
           <p className="text-sm font-semibold text-red-800">{apiError}</p>
         </div>
@@ -216,7 +216,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
           <div className="space-y-8 py-6 w-full">
 
             {/* 1. Basic Information */}
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">1. Basic Information</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -271,7 +271,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 2. Contractor Details */}
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">2. Contractor Details</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -324,7 +324,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 3. License & Insurance */}
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">3. License & Insurance</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -350,7 +350,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 4. Work Information */}
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">4. Work Information</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -383,7 +383,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 5. Payment Details */}
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">5. Payment Details</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -419,12 +419,12 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 6. Emergency Contact */}
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">6. Emergency Contact</legend>
               {fieldError("emergencyContacts") && <p className="text-xs text-red-500">{fieldError("emergencyContacts")}</p>}
               <div className="space-y-3">
                 {emergencyContacts.map((contact) => (
-                  <div key={contact.id} className="rounded-lg border p-3 space-y-3">
+                  <div key={contact.id} className="rounded-sm border p-3 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Contact</span>
                       {emergencyContacts.length > 1 && (

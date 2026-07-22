@@ -24,7 +24,7 @@ export function Pricing() {
     <div className="py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-sm font-medium text-brand-600 shadow-xs">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-sm border border-brand-200 bg-white px-4 py-1.5 text-sm font-medium text-brand-600 shadow-xs">
             Pricing
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
@@ -39,13 +39,13 @@ export function Pricing() {
           <div className="mt-8 flex items-center justify-center gap-2 text-sm text-brand-600">
             <span className={inr ? "font-semibold text-brand-900" : ""}>₹ INR</span>
             <div
-              className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${
+              className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-sm transition-colors ${
                 inr ? "bg-brand-800" : "bg-brand-200"
               }`}
               onClick={toggleCurrency}
             >
               <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-5 w-5 transform rounded-sm bg-white transition-transform ${
                   inr ? "translate-x-6" : "translate-x-0.5"
                 }`}
               />
@@ -62,7 +62,7 @@ export function Pricing() {
             return (
               <div
                 key={plan.id}
-                className={`relative flex flex-col rounded-2xl border bg-white p-8 transition-all duration-200 hover:shadow-lg ${
+                className={`relative flex flex-col rounded-sm border bg-white p-8 transition-all duration-200 hover:shadow-lg ${
                   plan.popular
                     ? "border-brand-500 shadow-xl ring-2 ring-brand-500/30 scale-105 lg:scale-110 z-10"
                     : "border-brand-200/60 hover:border-brand-300"
@@ -70,7 +70,7 @@ export function Pricing() {
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-800 px-4 py-1 text-xs font-semibold text-white shadow-sm">
+                    <span className="inline-flex items-center gap-1 rounded-sm bg-brand-800 px-4 py-1 text-xs font-semibold text-white shadow-sm">
                       <Star className="size-3.5 fill-yellow-400 text-yellow-400" />
                       Most Popular
                     </span>
@@ -140,12 +140,12 @@ export function Pricing() {
                 </Button>
 
                 {plan.limits.length > 0 && (
-                  <div className="mb-4 rounded-lg bg-brand-50/80 p-3">
+                  <div className="mb-4 rounded-sm bg-brand-50/80 p-3">
                     <p className="text-xs font-semibold text-brand-700 uppercase tracking-wide mb-2">Limits</p>
                     <ul className="space-y-1">
                       {plan.limits.map((limit) => (
                         <li key={limit} className="flex items-start gap-2 text-xs text-brand-600">
-                          <span className="mt-0.5 size-1.5 rounded-full bg-brand-400 shrink-0" />
+                          <span className="mt-0.5 size-1.5 rounded-sm bg-brand-400 shrink-0" />
                           {limit}
                         </li>
                       ))}

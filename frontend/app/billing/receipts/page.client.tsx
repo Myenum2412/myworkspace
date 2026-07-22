@@ -69,7 +69,7 @@ function ReceiptStatusBadge({ status }: { status: ReceiptStatus }) {
   const opt = STATUS_OPTIONS.find((s) => s.value === status);
   if (!opt) return <Badge variant="outline">{status}</Badge>;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${opt.color}`}>
+    <span className={`inline-flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-medium ring-1 ring-inset ${opt.color}`}>
       {opt.icon}
       {opt.label}
     </span>
@@ -203,11 +203,11 @@ export default function ReceiptsPageClient() {
             placeholder=""
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-10 pl-9 rounded-xl border-[#E5E7EB]"
+            className="h-10 pl-9 rounded-sm border-[#E5E7EB]"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-10 w-36 rounded-xl border-[#E5E7EB]">
+          <SelectTrigger className="h-10 w-36 rounded-sm border-[#E5E7EB]">
             <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
@@ -284,7 +284,7 @@ export default function ReceiptsPageClient() {
                           onValueChange={(val) => handleStatusChange(receipt.id, val as ReceiptStatus)}
                           disabled={updatingId === receipt.id}
                         >
-                          <SelectTrigger className="h-9 w-40 rounded-lg border-[#E5E7EB] text-xs ml-auto">
+                          <SelectTrigger className="h-9 w-40 rounded-sm border-[#E5E7EB] text-xs ml-auto">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

@@ -514,7 +514,7 @@ export const GanttSidebarItem: FC<GanttSidebarItemProps> = ({
     >
       {/* <Checkbox onCheckedChange={handleCheck} className="shrink-0" /> */}
       <div
-        className="pointer-events-none h-2 w-2 shrink-0 rounded-full"
+        className="pointer-events-none h-2 w-2 shrink-0 rounded-sm"
         style={{
           backgroundColor: feature.status.color,
         }}
@@ -613,7 +613,7 @@ export const GanttAddFeatureHelper: FC<GanttAddFeatureHelperProps> = ({
       }}
     >
       <button
-        className="flex h-full w-full items-center justify-center rounded-md border border-dashed p-2"
+        className="flex h-full w-full items-center justify-center rounded-sm border border-dashed p-2"
         onClick={handleClick}
         type="button"
       >
@@ -735,13 +735,13 @@ export const GanttCreateMarkerTrigger: FC<GanttCreateMarkerTriggerProps> = ({
         style={{ transform: `translateX(${x}px)` }}
       >
         <button
-          className="z-50 inline-flex h-4 w-4 items-center justify-center rounded-full bg-card"
+          className="z-50 inline-flex h-4 w-4 items-center justify-center rounded-sm bg-card"
           onClick={handleClick}
           type="button"
         >
           <PlusIcon className="text-muted-foreground" size={12} />
         </button>
-        <div className="whitespace-nowrap rounded-full border border-border/50 bg-background/90 px-2 py-1 text-foreground text-xs backdrop-blur-lg">
+        <div className="whitespace-nowrap rounded-sm border border-border/50 bg-background/90 px-2 py-1 text-foreground text-xs backdrop-blur-lg">
           {formatDate(date, "MMM dd, yyyy")}
         </div>
       </div>
@@ -772,7 +772,7 @@ export const GanttFeatureDragHelper: FC<GanttFeatureDragHelperProps> = ({
   return (
     <div
       className={cn(
-        "group -translate-y-1/2 !cursor-col-resize absolute top-1/2 z-[3] h-full w-6 rounded-md outline-none",
+        "group -translate-y-1/2 !cursor-col-resize absolute top-1/2 z-[3] h-full w-6 rounded-sm outline-none",
         direction === "left" ? "-left-2.5" : "-right-2.5"
       )}
       ref={setNodeRef}
@@ -792,7 +792,7 @@ export const GanttFeatureDragHelper: FC<GanttFeatureDragHelperProps> = ({
       {date && (
         <div
           className={cn(
-            "-translate-x-1/2 absolute top-10 hidden whitespace-nowrap rounded-lg border border-border/50 bg-background/90 px-2 py-1 text-foreground text-xs backdrop-blur-lg group-hover:block",
+            "-translate-x-1/2 absolute top-10 hidden whitespace-nowrap rounded-sm border border-border/50 bg-background/90 px-2 py-1 text-foreground text-xs backdrop-blur-lg group-hover:block",
             isPressed && "block"
           )}
         >
@@ -818,7 +818,7 @@ export const GanttFeatureItemCard: FC<GanttFeatureItemCardProps> = ({
   useEffect(() => setDragging(isPressed), [isPressed, setDragging]);
 
   return (
-    <Card className="h-full w-full rounded-md bg-background p-2 text-xs shadow-sm">
+    <Card className="h-full w-full rounded-sm bg-background p-2 text-xs shadow-sm">
       <div
         className={cn(
           "flex h-full w-full items-center justify-between gap-2 text-left",

@@ -60,7 +60,7 @@ export function StorageUsage() {
         ) : items.length === 0 ? (
           <div className="flex gap-4">
             {["Img", "Doc", "Video", "Audio", "Other"].map((label) => (
-              <div key={label} className="flex-1 flex items-center justify-end gap-2 rounded-lg border border-dashed p-4">
+              <div key={label} className="flex-1 flex items-center justify-end gap-2 rounded-sm border border-dashed p-4">
                 <span className="text-2xl font-bold tabular-nums">0</span>
                 <span className="text-xs text-muted-foreground">{label}</span>
               </div>
@@ -69,7 +69,7 @@ export function StorageUsage() {
         ) : (
           <div className="flex gap-4">
             {items.map((item) => (
-              <div key={item.id} className="flex-1 flex items-center justify-end gap-2 rounded-lg border p-4">
+              <div key={item.id} className="flex-1 flex items-center justify-end gap-2 rounded-sm border p-4">
                 <span className="text-2xl font-bold tabular-nums">{item.count}</span>
                 <span className="text-xs text-muted-foreground">{item.label}</span>
               </div>

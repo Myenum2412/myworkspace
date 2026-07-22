@@ -267,7 +267,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
       >
         <button
           onClick={() => setShowBannerEditor(true)}
-          className="absolute top-3 right-3 flex items-center gap-1.5 rounded-md bg-background/80 backdrop-blur-sm px-2.5 py-1.5 text-xs font-medium shadow-sm hover:bg-background transition-colors"
+          className="absolute top-3 right-3 flex items-center gap-1.5 rounded-sm bg-background/80 backdrop-blur-sm px-2.5 py-1.5 text-xs font-medium shadow-sm hover:bg-background transition-colors"
         >
           <CameraIcon className="size-3.5" />
           Edit Banner
@@ -282,7 +282,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
           </Avatar>
           <button
             onClick={() => setShowImageEditor(true)}
-            className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+            className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-sm bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
             aria-label="Edit profile photo"
           >
             <CameraIcon className="size-4" />
@@ -307,10 +307,10 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
 
       <div className="flex flex-col gap-2 max-w-4xl mx-auto w-full px-6 pt-4">
         {saveError && (
-          <div className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{saveError}</div>
+          <div className="rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">{saveError}</div>
         )}
         {saveSuccess && (
-          <div className="rounded-md bg-green-500/10 px-3 py-2 text-xs text-green-600">{saveSuccess}</div>
+          <div className="rounded-sm bg-green-500/10 px-3 py-2 text-xs text-green-600">{saveSuccess}</div>
         )}
         <div className="flex justify-end">
           {editing ? (
@@ -567,12 +567,12 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
 
       {showBannerEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBannerEditor(false)}>
-          <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">Update banner</h2>
               <button
                 onClick={() => setShowBannerEditor(false)}
-                className="rounded-md p-1 hover:bg-muted transition-colors"
+                className="rounded-sm p-1 hover:bg-muted transition-colors"
               >
                 <XIcon className="size-3.5" />
               </button>
@@ -633,12 +633,12 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
 
       {showImageEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageEditor(false)}>
-          <div className="w-full max-w-xs rounded-xl bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">Update profile photo</h2>
               <button
                 onClick={() => setShowImageEditor(false)}
-                className="rounded-md p-1 hover:bg-muted transition-colors"
+                className="rounded-sm p-1 hover:bg-muted transition-colors"
               >
                 <XIcon className="size-3.5" />
               </button>

@@ -95,7 +95,7 @@ export function ShareTokenPageInteractive({ token, fileInfo }: { token: string; 
           )}
 
           {error && (
-            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-2 rounded-md">
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-2 rounded-sm">
               <AlertCircleIcon className="size-4" /> {error}
             </div>
           )}

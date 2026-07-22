@@ -90,7 +90,7 @@ export function RecycleBin() {
           <p className="text-xs">Deleted files will appear here</p>
         </div>
       ) : (
-        <div className="border rounded-lg">
+        <div className="border rounded-sm">
           <Table>
             <TableHeader>
               <TableRow>

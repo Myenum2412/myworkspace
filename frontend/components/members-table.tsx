@@ -109,7 +109,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
         </DialogHeader>
 
         {/* Profile summary strip */}
-        <div className="flex items-center gap-4 rounded-lg border bg-muted/30 px-4 py-3">
+        <div className="flex items-center gap-4 rounded-sm border bg-muted/30 px-4 py-3">
           <Avatar className="size-14">
             <AvatarImage src={member.avatar} alt={member.name} />
             <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
@@ -125,14 +125,14 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
 
         <form action={formAction} className="space-y-5">
           {state?.error && (
-            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-sm px-3 py-2">
               <AlertCircleIcon className="size-4 shrink-0" />
               {state.error}
             </div>
           )}
 
           {/* Personal info */}
-          <fieldset className="rounded-xl border p-4 space-y-4">
+          <fieldset className="rounded-sm border p-4 space-y-4">
             <legend className="text-sm font-semibold px-2">Personal</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -147,7 +147,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
           </fieldset>
 
           {/* Work info */}
-          <fieldset className="rounded-xl border p-4 space-y-4">
+          <fieldset className="rounded-sm border p-4 space-y-4">
             <legend className="text-sm font-semibold px-2">Work</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -187,7 +187,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
           </fieldset>
 
           {/* Contact info */}
-          <fieldset className="rounded-xl border p-4 space-y-4">
+          <fieldset className="rounded-sm border p-4 space-y-4">
             <legend className="text-sm font-semibold px-2">Contact</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -202,7 +202,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
           </fieldset>
 
           {/* Meta info (read-only) */}
-          <div className="rounded-lg border bg-muted/20 px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+          <div className="rounded-sm border bg-muted/20 px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div>
               <div className="text-muted-foreground text-xs">Joined</div>
               <div className="font-medium">{fmtDate(member.joinedAt || member.createdAt)}</div>
@@ -252,7 +252,7 @@ function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: str
     ? value ? "Yes" : "No"
     : (value ?? "\u2014");
   return (
-    <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+    <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>

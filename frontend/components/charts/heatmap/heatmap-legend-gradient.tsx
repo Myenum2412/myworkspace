@@ -65,10 +65,7 @@ export const HeatmapLegendGradient = memo(function HeatmapLegendGradient({
         aria-hidden="true"
         className="absolute inset-0"
         initial={{ opacity: 1, scale: 1 }}
-        style={{
-          borderRadius: 0,
-          background: gradient,
-        }}
+        
         transition={HEATMAP_INACTIVE_TRANSITION}
       />
       {levels.map((level, index) => {

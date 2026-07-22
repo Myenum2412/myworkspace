@@ -81,7 +81,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
         </div>
 
         <div className="grid gap-4 grid-cols-3 sm:grid-cols-6">
-          <Card className="border-border rounded-xl">
+          <Card className="border-border rounded-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground">Total Tasks</CardTitle>
             </CardHeader>
@@ -90,7 +90,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               <p className="text-xs text-muted-foreground mt-1">{completedCount} completed ({completionRate}%)</p>
             </CardContent>
           </Card>
-          <Card className="border-border rounded-xl">
+          <Card className="border-border rounded-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
                 <UsersIcon className="size-3.5" /> My Tasks
@@ -101,7 +101,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               <p className="text-xs text-muted-foreground mt-1">Assigned to you</p>
             </CardContent>
           </Card>
-          <Card className="border-border rounded-xl">
+          <Card className="border-border rounded-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
                 <UsersIcon className="size-3.5" /> Team Tasks
@@ -112,7 +112,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               <p className="text-xs text-muted-foreground mt-1">Assigned to others</p>
             </CardContent>
           </Card>
-          <Card className="border-border rounded-xl">
+          <Card className="border-border rounded-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
                 <BookmarkIcon className="size-3.5" /> Saved
@@ -123,7 +123,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               <p className="text-xs text-muted-foreground mt-1">Bookmarked tasks</p>
             </CardContent>
           </Card>
-          <Card className="border-border rounded-xl">
+          <Card className="border-border rounded-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
                 <CalendarClockIcon className="size-3.5" /> Upcoming
@@ -134,7 +134,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               <p className="text-xs text-muted-foreground mt-1">Pending due dates</p>
             </CardContent>
           </Card>
-          <Card className="border-border rounded-xl">
+          <Card className="border-border rounded-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
                 <CheckCircle2Icon className="size-3.5" /> Completion
@@ -142,9 +142,9 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{completionRate}%</div>
-              <div className="mt-2 h-1.5 w-full bg-muted rounded-full overflow-hidden">
+              <div className="mt-2 h-1.5 w-full bg-muted rounded-sm overflow-hidden">
                 <div
-                  className="h-full bg-red-500 rounded-full transition-all duration-500"
+                  className="h-full bg-red-500 rounded-sm transition-all duration-500"
                   style={{ width: `${completionRate}%` }}
                 />
               </div>
@@ -217,7 +217,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
 
       {viewOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="relative w-[95vw] h-[95vh] bg-card rounded-xl shadow-xl overflow-hidden flex flex-col">
+          <div className="relative w-[95vw] h-[95vh] bg-card rounded-sm shadow-xl overflow-hidden flex flex-col">
             <TaskDetailedView
               task={selectedTask}
               editable

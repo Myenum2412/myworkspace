@@ -52,7 +52,7 @@ const statusStyles: Record<string, string> = {
 function TaskViewDialog({ task, open, onOpenChange }: { task: Task | null; open: boolean; onOpenChange: (open: boolean) => void }) {
   if (!task) return null;
   const field = (label: string, value: string | null | undefined) => (
-    <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+    <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
         <p className="text-sm font-medium mt-0.5">{value || "\u2014"}</p>
@@ -96,7 +96,7 @@ export function StaffTasksView({ tasks }: { tasks: Task[] }) {
         open={!!viewTask}
         onOpenChange={(open) => { if (!open) setViewTask(null); }}
       />
-      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
         <div className="overflow-x-auto">
           <table className="table-premium w-full text-sm text-left">
             <thead>

@@ -47,7 +47,7 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
 
       <form action={signupActionMongo} className="flex flex-col gap-4">
         {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+          <div className="rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
         )}
         <div className="flex flex-col gap-1.5">
           <Label className="text-xs text-muted-foreground">Full name</Label>

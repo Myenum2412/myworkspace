@@ -91,7 +91,7 @@ export function StaffFilesView() {
           </Button>
           <div className="h-5 w-px bg-border" />
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-full bg-accent flex items-center justify-center">
+            <div className="size-8 rounded-2xl bg-accent flex items-center justify-center">
               <UserIcon className="size-4 text-muted-foreground" />
             </div>
             <div>
@@ -116,7 +116,7 @@ export function StaffFilesView() {
             {staffFiles.map((f) => (
               <div
                 key={f.id}
-                className="flex items-center gap-3 p-3 rounded-xl border bg-card hover:border-primary/30 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-3 rounded-sm border bg-card hover:border-primary/30 hover:shadow-sm transition-all group"
               >
                 <span className="text-xl shrink-0">{getFileIcon(f.mimeType)}</span>
                 <div className="flex-1 min-w-0">
@@ -127,7 +127,7 @@ export function StaffFilesView() {
                 </div>
                 <a
                   href={`/api/files/${f.id}/download`}
-                  className="size-8 rounded-md hover:bg-accent flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="size-8 rounded-sm hover:bg-accent flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   title="Download"
                 >
                   <DownloadIcon className="size-4 text-muted-foreground" />
@@ -172,9 +172,9 @@ export function StaffFilesView() {
           <button
             key={s.id}
             onClick={() => setSelectedStaff(s)}
-            className="flex items-center gap-3 p-4 rounded-xl border bg-card hover:border-primary/30 hover:shadow-sm transition-all group text-left"
+            className="flex items-center gap-3 p-4 rounded-sm border bg-card hover:border-primary/30 hover:shadow-sm transition-all group text-left"
           >
-            <div className="size-10 rounded-full bg-accent flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-2xl bg-accent flex items-center justify-center shrink-0">
               <UserIcon className="size-5 text-muted-foreground" />
             </div>
             <div className="flex-1 min-w-0">

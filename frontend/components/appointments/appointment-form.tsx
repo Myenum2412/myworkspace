@@ -94,7 +94,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Patient Information</legend>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1.5">
@@ -133,7 +133,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
         </div>
       </fieldset>
 
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Appointment Information</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">

@@ -58,7 +58,7 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
           <CardTitle>Today</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
             <table className="table-premium w-full text-sm text-left">
               <thead>
                 <tr>
@@ -106,7 +106,7 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
                     </td>
                     <td className="px-4 py-3">
                       {t.department !== "\u2014" ? (
-                        <span className="inline-flex items-center rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">
+                        <span className="inline-flex items-center rounded-sm bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">
                           {t.department}
                         </span>
                       ) : (

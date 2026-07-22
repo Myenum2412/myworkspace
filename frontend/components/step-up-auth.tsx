@@ -64,7 +64,7 @@ export default function StepUpAuth({ open, onOpenChange, onVerified, action, act
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-full bg-amber-500/10 p-2">
+            <div className="rounded-sm bg-amber-500/10 p-2">
               <ShieldAlert className="size-5 text-amber-500" />
             </div>
             <div>
@@ -85,7 +85,7 @@ export default function StepUpAuth({ open, onOpenChange, onVerified, action, act
         ) : (
           <div className="space-y-4 py-2">
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+              <div className="rounded-sm bg-red-50 border border-red-200 p-3 text-sm text-red-700">
                 {error}
               </div>
             )}

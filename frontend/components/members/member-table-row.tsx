@@ -52,10 +52,10 @@ export function MemberTableRow({ member: m, selected, onToggleSelect, onView, on
             <img
               src={m.avatar}
               alt={m.name}
-              className="size-8 rounded-full object-cover ring-2 ring-background"
+              className="size-8 rounded-2xl object-cover ring-2 ring-background"
             />
           ) : (
-            <div className={`size-8 rounded-full flex items-center justify-center text-xs font-semibold ${getAvatarColor(m.name)}`}>
+            <div className={`size-8 rounded-2xl flex items-center justify-center text-xs font-semibold ${getAvatarColor(m.name)}`}>
               {getInitials(m.name)}
             </div>
           )}
@@ -70,7 +70,7 @@ export function MemberTableRow({ member: m, selected, onToggleSelect, onView, on
       </td>
 
       <td className="px-4 py-3">
-        <span className="inline-flex items-center rounded-md border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">
+        <span className="inline-flex items-center rounded-sm border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">
           {m.role}
         </span>
       </td>
@@ -92,8 +92,8 @@ export function MemberTableRow({ member: m, selected, onToggleSelect, onView, on
       </td>
 
       <td className="px-4 py-3">
-        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
-          <span className={`size-1.5 rounded-full ${status.dot}`} />
+        <span className={`inline-flex items-center gap-1.5 rounded-2xl px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
+          <span className={`size-1.5 rounded-2xl ${status.dot}`} />
           {status.label}
         </span>
       </td>

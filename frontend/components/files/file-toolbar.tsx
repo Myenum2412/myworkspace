@@ -117,7 +117,7 @@ export function FileToolbar({
               {clients.map((c) => (
                 <button
                   key={c.id}
-                  className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted text-left disabled:opacity-50"
+                  className="w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-muted text-left disabled:opacity-50"
                   disabled={creatingClientFolder === c.id}
                   onClick={() => createClientFolder(c.id, c.name)}
                 >
@@ -133,7 +133,7 @@ export function FileToolbar({
         <Button size="sm" onClick={onToggleUpload} variant={showUpload ? "secondary" : "default"}>
           <UploadIcon className="mr-1 size-4" /> {showUpload ? "Close Upload" : "Upload"}
         </Button>
-        <div className="flex border rounded-md">
+        <div className="flex border rounded-sm">
           <button
             className={`p-2 ${viewMode === "grid" ? "bg-muted" : ""}`}
             onClick={() => onViewModeChange("grid")}
@@ -144,7 +144,7 @@ export function FileToolbar({
           ><ListIcon className="size-4" /></button>
         </div>
         <select
-          className="text-sm border rounded-md px-2 py-1"
+          className="text-sm border rounded-sm px-2 py-1"
           value={sortBy}
           onChange={e => onSortByChange(e.target.value)}
         >
@@ -158,7 +158,7 @@ export function FileToolbar({
       </div>
 
       {showNewFolder && (
-        <div className="flex items-center gap-2 p-2 border rounded-md">
+        <div className="flex items-center gap-2 p-2 border rounded-sm">
           <MuiFolderIcon className="size-5 text-muted-foreground" />
           <Input
             placeholder=""

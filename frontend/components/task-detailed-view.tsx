@@ -26,7 +26,6 @@ import {
   CircleIcon, CircleDashedIcon, FileTextIcon, UserCheckIcon,
   SaveIcon, FileEditIcon, UsersIcon,
 } from "lucide-react";
-import FolderIcon from "@mui/icons-material/Folder";
 import { TaskChat } from "@/components/task-chat";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -142,7 +141,7 @@ function Section({ icon: Icon, title, children, rightAction }: { icon: any; titl
 function PersonBadge({ name, avatar, role }: { name?: string; avatar?: string; role: string }) {
   return (
     <div className="flex items-center gap-2 border-b pb-2">
-      <div className="size-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+      <div className="size-8 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
         {avatar ? (
           <img src={avatar} alt={name} className="size-full object-cover" />
         ) : (
@@ -245,15 +244,15 @@ export function TaskDetailedView({
   const typeBadge = TYPE_BADGES[taskType] || TYPE_BADGES.individual;
 
   return (
-    <div className="flex flex-col sm:flex-row border rounded-lg overflow-hidden bg-background">
+    <div className="flex flex-col sm:flex-row border rounded-sm overflow-hidden bg-background">
       <div className="flex-1 min-w-0 overflow-y-auto">
 
         {/* Header */}
         <div className="px-4 py-4 border-b">
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="text-xs font-medium text-muted-foreground">Project / {task.project || "General Workspace"}</span>
-            <span className="text-xs border rounded px-1.5 py-0.5">{typeBadge.label}</span>
-            <span className="text-xs border rounded px-1.5 py-0.5">{task.priority} Priority</span>
+            <span className="text-xs border rounded-sm px-1.5 py-0.5">{typeBadge.label}</span>
+            <span className="text-xs border rounded-sm px-1.5 py-0.5">{task.priority} Priority</span>
             {task.dueDate && (() => {
               const now = new Date();
               const due = new Date(task.dueDate!);
@@ -320,9 +319,9 @@ export function TaskDetailedView({
                 <span>Progress</span>
                 <span>{progress}%</span>
               </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-gray-100 rounded-2xl overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
+                  className={`h-full rounded-2xl transition-all duration-500 ${
                     task.status === "completed" || task.status === "approved" || task.status === "closed" ? "bg-green-500" :
                     task.status === "rejected" || task.status === "cancelled" ? "bg-orange-500" : "bg-blue-600"
                   }`}
@@ -403,12 +402,12 @@ export function TaskDetailedView({
                     <UserCheckIcon className="size-4" />
                     <span className="font-medium text-sm">Task Approved</span>
                   </div>
-                  <span className="text-[11px] sm:text-xs opacity-70 bg-green-200/50 px-2 py-1 rounded-md sm:ml-auto">
+                  <span className="text-[11px] sm:text-xs opacity-70 bg-green-200/50 px-2 py-1 rounded-sm sm:ml-auto">
                     {task.approvedAt ? new Date(task.approvedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" }) : ""}
                   </span>
                 </div>
                 {task.approvalNote && (
-                  <div className="bg-white/60 rounded p-3 text-sm text-green-900 border border-green-100/50">
+                  <div className="bg-white/60 rounded-sm p-3 text-sm text-green-900 border border-green-100/50">
                     <span className="font-semibold block text-[11px] uppercase tracking-wider opacity-60 mb-1">Note</span>
                     {task.approvalNote}
                   </div>
@@ -428,12 +427,12 @@ export function TaskDetailedView({
                     <XCircleIcon className="size-4" />
                     <span className="font-medium text-sm">Task Rejected</span>
                   </div>
-                  <span className="text-[11px] sm:text-xs sm:ml-auto opacity-70 bg-orange-200/50 px-2 py-1 rounded-md">
+                  <span className="text-[11px] sm:text-xs sm:ml-auto opacity-70 bg-orange-200/50 px-2 py-1 rounded-sm">
                     {task.rejectedAt ? new Date(task.rejectedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" }) : ""}
                   </span>
                 </div>
                 {task.rejectionReason && (
-                  <div className="bg-white/60 rounded p-3 text-sm text-red-900 border border-red-100/50">
+                  <div className="bg-white/60 rounded-sm p-3 text-sm text-red-900 border border-red-100/50">
                     <span className="font-semibold block text-[11px] uppercase tracking-wider opacity-60 mb-1">Reason</span>
                     {task.rejectionReason}
                   </div>
@@ -446,20 +445,20 @@ export function TaskDetailedView({
             <div className="border p-4">
               <div className="relative border-l border-gray-200 ml-3 space-y-4 pb-2">
                 <div className="relative pl-6">
-                  <span className="absolute -left-1.5 top-1 size-3 rounded-full bg-blue-500 ring-4 ring-white" />
+                  <span className="absolute -left-1.5 top-1 size-3 rounded-2xl bg-blue-500 ring-4 ring-white" />
                   <p className="text-sm font-medium text-gray-900">Task Created</p>
                   <p className="text-xs text-gray-500 mt-0.5">
                     {new Date(task.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
                 <div className="relative pl-6">
-                  <span className="absolute -left-1.5 top-1 size-3 rounded-full bg-gray-300 ring-4 ring-white" />
+                  <span className="absolute -left-1.5 top-1 size-3 rounded-2xl bg-gray-300 ring-4 ring-white" />
                   <p className="text-sm font-medium text-gray-900">Assigned to {task.assigneeName || "Someone"}</p>
                   <p className="text-xs text-gray-500 mt-0.5">By {task.creatorName}</p>
                 </div>
                 {task.updatedAt && (
                   <div className="relative pl-6">
-                    <span className="absolute -left-1.5 top-1 size-3 rounded-full bg-orange-400 ring-4 ring-white" />
+                    <span className="absolute -left-1.5 top-1 size-3 rounded-2xl bg-orange-400 ring-4 ring-white" />
                     <p className="text-sm font-medium text-gray-900">Last Activity</p>
                     <p className="text-xs text-gray-500 mt-0.5">
                       {new Date(task.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}

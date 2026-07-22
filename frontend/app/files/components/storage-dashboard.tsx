@@ -56,9 +56,9 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-sm w-1/4" />
           <div className="grid grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded" />)}
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-sm" />)}
           </div>
         </div>
       </div>
@@ -83,34 +83,34 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Storage Usage</h2>
-        <button onClick={fetchStats} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
+        <button onClick={fetchStats} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-sm">
           <RefreshCw className="w-4 h-4 text-gray-400" />
         </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
           <div className="flex items-center gap-2 text-gray-400 mb-1">
             <HardDrive className="w-4 h-4" />
             <span className="text-xs font-medium uppercase">Total Size</span>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatBytes(stats.totalSize)}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
           <div className="flex items-center gap-2 text-gray-400 mb-1">
             <FileText className="w-4 h-4" />
             <span className="text-xs font-medium uppercase">Files</span>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{(stats.fileCount || 0).toLocaleString()}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
           <div className="flex items-center gap-2 text-gray-400 mb-1">
             <Upload className="w-4 h-4" />
             <span className="text-xs font-medium uppercase">Quota Used</span>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatBytes(stats.quotaUsed)}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
           <div className="flex items-center gap-2 text-gray-400 mb-1">
             <Download className="w-4 h-4" />
             <span className="text-xs font-medium uppercase">Quota Limit</span>
@@ -119,18 +119,18 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Storage Quota</span>
           <span className="text-xs text-gray-400">{quotaPct.toFixed(1)}% used</span>
         </div>
-        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-          <div className={`h-full rounded-full transition-all duration-500 ${getQuotaColor()}`} style={{ width: `${quotaPct}%` }} />
+        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-sm overflow-hidden">
+          <div className={`h-full rounded-sm transition-all duration-500 ${getQuotaColor()}`} style={{ width: `${quotaPct}%` }} />
         </div>
       </div>
 
       {Object.keys(stats.byType).length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">By File Type</h3>
           <div className="space-y-2">
             {Object.entries(stats.byType).sort((a, b) => b[1].size - a[1].size).map(([type, data]) => (

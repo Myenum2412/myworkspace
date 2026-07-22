@@ -146,10 +146,10 @@ export function ContractorEditDialog({ contractor, open, onOpenChange, onContrac
               </div>
             </div>
 
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Emergency Contacts</legend>
               {form.emergencyContacts?.map((c, i) => (
-                <div key={i} className="rounded-lg border p-3 space-y-3">
+                <div key={i} className="rounded-sm border p-3 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium">Contact {i + 1}</span>
                     <Button type="button" variant="ghost" size="icon" className="size-8 text-destructive" onClick={() => {

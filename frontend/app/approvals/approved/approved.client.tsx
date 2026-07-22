@@ -66,14 +66,14 @@ export default function Approved({ initialItems }: ApprovedProps) {
                 )}
                 <Separator />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Type</p><p className="font-medium capitalize mt-0.5">{selectedItem.itemType}</p></div>
+                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Type</p><p className="font-medium capitalize mt-0.5">{selectedItem.itemType}</p></div>
                   {!isFile && (
-                    <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Priority</p><p className="font-medium capitalize mt-0.5">{selectedItem.priority}</p></div>
+                    <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Priority</p><p className="font-medium capitalize mt-0.5">{selectedItem.priority}</p></div>
                   )}
-                  <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Status</p><p className="font-medium text-green-400 mt-0.5">Approved</p></div>
-                  <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">{isFile ? "Uploaded By" : "Assignee"}</p><p className="font-medium mt-0.5">{(isFile ? selectedItem.uploaderName : selectedItem.assigneeName) || "—"}</p></div>
-                  <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Approved By</p><p className="font-medium mt-0.5">{selectedItem.approvedBy || "—"}</p></div>
-                  <div className="rounded-lg border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Approved At</p><p className="font-medium mt-0.5">{selectedItem.approvedAt ? new Date(selectedItem.approvedAt).toLocaleDateString() : "—"}</p></div>
+                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Status</p><p className="font-medium text-green-400 mt-0.5">Approved</p></div>
+                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">{isFile ? "Uploaded By" : "Assignee"}</p><p className="font-medium mt-0.5">{(isFile ? selectedItem.uploaderName : selectedItem.assigneeName) || "—"}</p></div>
+                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Approved By</p><p className="font-medium mt-0.5">{selectedItem.approvedBy || "—"}</p></div>
+                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Approved At</p><p className="font-medium mt-0.5">{selectedItem.approvedAt ? new Date(selectedItem.approvedAt).toLocaleDateString() : "—"}</p></div>
                 </div>
                 {selectedItem.approvalNote && (
                   <>

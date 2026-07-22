@@ -95,7 +95,7 @@ export const columns: ColumnDef<Contractor>[] = [
     cell: ({ row }) => {
       const val = row.getValue<string>("insuranceAvailable");
       return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
           val === "Yes" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"
         }`}>
           {val}
@@ -114,7 +114,7 @@ export const columns: ColumnDef<Contractor>[] = [
     cell: ({ row }) => {
       const status = row.getValue<string>("status");
       return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
           status === "Active" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"
         }`}>
           {status}

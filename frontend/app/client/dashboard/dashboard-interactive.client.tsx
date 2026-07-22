@@ -159,7 +159,7 @@ export default function DashboardInteractive() {
 
       {billingStatus && billingStatus.pendingCount > 0 && (
         <Link href="/client/bills" className="block w-full no-underline">
-          <div className="w-full flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+          <div className="w-full flex items-center gap-3 rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
             <AlertCircleIcon className="size-5 text-amber-600 shrink-0" />
             <span className="font-medium text-amber-800">
               {billingStatus.pendingCount} pending invoice{billingStatus.pendingCount > 1 ? "s" : ""}
@@ -218,7 +218,7 @@ function QuickActionCard({
   return (
     <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push(href)}>
       <CardContent className="p-6">
-        <div className="rounded-full bg-primary/10 p-3 w-fit mb-3">
+        <div className="rounded-sm bg-primary/10 p-3 w-fit mb-3">
           <Icon className="size-5 text-primary" />
         </div>
         <h3 className="font-semibold">{title}</h3>

@@ -17,7 +17,7 @@ import { getInitials } from "./team-types";
 
 function TeamNode({ data }: { data: { label: string; description?: string } }) {
   return (
-    <div className="rounded-xl border bg-card px-5 py-3 shadow-md min-w-[180px] text-center">
+    <div className="rounded-sm border bg-card px-5 py-3 shadow-md min-w-[180px] text-center">
       <Handle type="source" position={Position.Bottom} className="!bg-primary" />
       <p className="text-sm font-bold text-card-foreground">{data.label}</p>
       {data.description && (
@@ -29,14 +29,14 @@ function TeamNode({ data }: { data: { label: string; description?: string } }) {
 
 function LeadNode({ data }: { data: { name: string; email: string; avatar?: string } }) {
   return (
-    <div className="rounded-xl border-2 border-amber-300 bg-amber-50 px-4 py-3 shadow-md min-w-[170px]">
+    <div className="rounded-sm border-2 border-amber-300 bg-amber-50 px-4 py-3 shadow-md min-w-[170px]">
       <Handle type="target" position={Position.Top} className="!bg-amber-500" />
       <Handle type="source" position={Position.Bottom} className="!bg-amber-500" />
       <div className="flex items-center gap-3">
         {data.avatar ? (
-          <img src={data.avatar} alt={data.name} className="size-9 rounded-full object-cover ring-2 ring-amber-200" />
+          <img src={data.avatar} alt={data.name} className="size-9 rounded-2xl object-cover ring-2 ring-amber-200" />
         ) : (
-          <div className="size-9 rounded-full flex items-center justify-center text-xs font-bold bg-amber-200 text-amber-800">
+          <div className="size-9 rounded-2xl flex items-center justify-center text-xs font-bold bg-amber-200 text-amber-800">
             {getInitials(data.name)}
           </div>
         )}
@@ -54,13 +54,13 @@ function LeadNode({ data }: { data: { name: string; email: string; avatar?: stri
 
 function MemberNode({ data }: { data: TeamMember }) {
   return (
-    <div className="rounded-xl border bg-card px-4 py-3 shadow-sm min-w-[160px]">
+    <div className="rounded-sm border bg-card px-4 py-3 shadow-sm min-w-[160px]">
       <Handle type="target" position={Position.Top} className="!bg-muted-foreground" />
       <div className="flex items-center gap-3">
         {data.avatar ? (
-          <img src={data.avatar} alt={data.name} className="size-8 rounded-full object-cover ring-2 ring-background" />
+          <img src={data.avatar} alt={data.name} className="size-8 rounded-2xl object-cover ring-2 ring-background" />
         ) : (
-          <div className="size-8 rounded-full flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground">
+          <div className="size-8 rounded-2xl flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground">
             {getInitials(data.name)}
           </div>
         )}

@@ -46,7 +46,7 @@ export const columns: ColumnDef<Project>[] = [
     cell: ({ row }) => {
       const color = row.original.color;
       return color
-        ? <span className="inline-block size-5 rounded-full border" style={{ backgroundColor: color }} title={color} />
+        ? <span className="inline-block size-5 rounded-sm border" style={{ backgroundColor: color }} title={color} />
         : <span className="text-muted-foreground">—</span>;
     },
   },
@@ -62,7 +62,7 @@ export const columns: ColumnDef<Project>[] = [
         critical: "bg-red-100 text-red-600",
       };
       return (
-        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${colors[priority] || colors.medium}`}>
+        <span className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-medium ${colors[priority] || colors.medium}`}>
           {priority === "critical" || priority === "high" ? <AlertCircleIcon className="size-2.5" /> : null}
           {priority}
         </span>
@@ -123,7 +123,7 @@ export const columns: ColumnDef<Project>[] = [
       if (project.headName) {
         return (
           <div className="flex items-center gap-2">
-            <div className="size-7 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+            <div className="size-7 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
               {project.headAvatar ? (
                 <img src={project.headAvatar} alt={project.headName} className="size-full object-cover" />
               ) : (
@@ -138,9 +138,9 @@ export const columns: ColumnDef<Project>[] = [
       }
       return (
         <div className="flex items-center gap-2">
-          <div className="h-2 w-20 rounded-full bg-muted">
+          <div className="h-2 w-20 rounded-sm bg-muted">
             <div
-              className="h-2 rounded-full bg-primary transition-all"
+              className="h-2 rounded-sm bg-primary transition-all"
               style={{ width: `${project.progress}%` }}
             />
           </div>
@@ -155,7 +155,7 @@ export const columns: ColumnDef<Project>[] = [
     cell: ({ row }) => {
       const access = row.getValue<string>("access");
       return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
           access === "Public"
             ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
             : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600"
@@ -172,7 +172,7 @@ export const columns: ColumnDef<Project>[] = [
       const status = row.getValue<string>("status");
       const active = status === "Active";
       return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
           active
             ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
             : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600"

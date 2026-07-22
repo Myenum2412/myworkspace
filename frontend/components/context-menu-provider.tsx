@@ -84,7 +84,7 @@ export function ContextMenuProvider() {
 
   return (
     <div
-      className="fixed z-[9999] min-w-[200px] rounded-xl border bg-popover p-1.5 shadow-xl animate-in fade-in zoom-in-95 duration-100"
+      className="fixed z-[9999] min-w-[200px] rounded-sm border bg-popover p-1.5 shadow-xl animate-in fade-in zoom-in-95 duration-100"
       style={{ left: x, top: y }}
       onContextMenu={(e) => e.preventDefault()}
     >
@@ -95,7 +95,7 @@ export function ContextMenuProvider() {
             setVisible(false);
             router.push(item.href);
           }}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-medium text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
         >
           <item.icon className="size-4 shrink-0 text-muted-foreground" />
           {item.label}

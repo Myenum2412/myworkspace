@@ -46,7 +46,7 @@ export function DepartmentsClient({ departments, totalMembers, totalOpen }: Depa
             <Card key={dept.name} className="relative group">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${dept.color} text-black`}>
+                  <div className={`p-2 rounded-sm ${dept.color} text-black`}>
                     <Building2 className="size-5" />
                   </div>
                   <div>

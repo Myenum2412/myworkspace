@@ -189,7 +189,7 @@ export function BlogEditorClient({
               <img
                 src={featuredImage}
                 alt={title}
-                className="w-full rounded-lg mb-6 object-cover max-h-[400px]"
+                className="w-full rounded-sm mb-6 object-cover max-h-[400px]"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
@@ -324,7 +324,7 @@ export function BlogEditorClient({
                         setUploadingImage(false);
                       }
                     }}
-                    className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 disabled:opacity-50"
+                    className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 disabled:opacity-50"
                   />
                 </div>
                 {featuredImage && (
@@ -332,7 +332,7 @@ export function BlogEditorClient({
                     <img
                       src={featuredImage}
                       alt="Preview"
-                      className="w-32 h-20 object-cover rounded"
+                      className="w-32 h-20 object-cover rounded-sm"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}
@@ -340,14 +340,14 @@ export function BlogEditorClient({
                     <button
                       type="button"
                       onClick={() => setFeaturedImage("")}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-sm w-5 h-5 text-xs flex items-center justify-center"
                     >
                       x
                     </button>
                   </div>
                 )}
                 {uploadingImage && (
-                  <div className="w-32 h-20 bg-muted rounded flex items-center justify-center">
+                  <div className="w-32 h-20 bg-muted rounded-sm flex items-center justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   </div>
                 )}

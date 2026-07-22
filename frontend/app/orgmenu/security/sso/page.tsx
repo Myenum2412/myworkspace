@@ -65,7 +65,7 @@ export default async function SsoPage() {
           </p>
           <div className="space-y-3">
             {providers.map((item) => (
-              <div key={item.provider} className="flex items-center justify-between rounded-lg border p-4">
+              <div key={item.provider} className="flex items-center justify-between rounded-sm border p-4">
                 <div>
                   <p className="font-medium">{item.provider}</p>
                   <Badge variant="secondary" className="mt-1">{item.status}</Badge>

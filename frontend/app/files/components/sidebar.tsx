@@ -60,7 +60,7 @@ export function Sidebar() {
             key={item.id}
             onClick={() => setCurrentNav(item.id as typeof currentNav)}
             className={cn(
-              "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm transition-colors",
+              "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-sm text-sm transition-colors",
               currentNav === item.id
                 ? "bg-primary/10 text-primary font-medium"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
@@ -69,7 +69,7 @@ export function Sidebar() {
             {item.icon}
             <span className="flex-1 text-left">{item.label}</span>
             {item.shortcut && (
-              <kbd className="text-[10px] text-muted-foreground/50 font-mono border rounded px-1">{item.shortcut}</kbd>
+              <kbd className="text-[10px] text-muted-foreground/50 font-mono border rounded-sm px-1">{item.shortcut}</kbd>
             )}
           </button>
         ))}
@@ -82,7 +82,7 @@ export function Sidebar() {
               key={item.id}
               onClick={() => setCurrentNav(navId as typeof currentNav)}
               className={cn(
-                "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm transition-colors",
+                "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-sm text-sm transition-colors",
                 currentNav === navId
                   ? "bg-primary/10 text-primary font-medium"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
@@ -102,9 +102,9 @@ export function Sidebar() {
             <span className="flex-1">Storage</span>
             <span className="font-medium">{formatSize(stats.usedStorage)} / {formatSize(stats.maxStorage)}</span>
           </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+          <div className="h-1.5 bg-muted rounded-sm overflow-hidden">
             <div
-              className="h-full bg-primary rounded-full transition-all"
+              className="h-full bg-primary rounded-sm transition-all"
               style={{ width: `${Math.min(100, (stats.usedStorage / stats.maxStorage) * 100)}%` }}
             />
           </div>

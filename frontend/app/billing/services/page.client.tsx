@@ -79,7 +79,7 @@ export default function BillingServicesPage() {
         </div>
       </div>
 
-      <div className="border border-gray-200 bg-white overflow-hidden flex flex-col rounded-lg">
+      <div className="border border-gray-200 bg-white overflow-hidden flex flex-col rounded-sm">
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="table-premium w-full text-sm text-left" style={{ minWidth: 800 }}>
             <thead className="sticky top-0 z-10">
@@ -130,9 +130,9 @@ export default function BillingServicesPage() {
                     <td className="px-4 py-3 align-middle text-gray-700">{service.unit}</td>
                     <td className="px-4 py-3 align-middle">
                       {service.status === "Active" ? (
-                        <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Active</span>
+                        <span className="inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Active</span>
                       ) : (
-                        <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">Inactive</span>
+                        <span className="inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">Inactive</span>
                       )}
                     </td>
                     <td className="px-4 py-3 align-middle text-center">

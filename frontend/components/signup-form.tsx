@@ -76,7 +76,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
 
         <form ref={formRef} onSubmit={handleVerifyOtp} className="flex flex-col gap-4">
           {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+            <div className="rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
           )}
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs text-muted-foreground">Verification code</Label>
@@ -136,7 +136,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
       <form onSubmit={handleSendOtp} className="flex flex-col gap-4">
         {plan && <input type="hidden" name="selectedPlan" value={plan} />}
         {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+          <div className="rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
         )}
         <div className="flex flex-col gap-1.5">
           <Label className="text-xs text-muted-foreground">Full name</Label>

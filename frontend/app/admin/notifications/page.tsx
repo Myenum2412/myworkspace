@@ -54,7 +54,7 @@ function SkeletonCard() {
     <Card>
       <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">&nbsp;</CardTitle></CardHeader>
       <CardContent>
-        <div className="h-8 w-20 animate-pulse rounded bg-muted" />
+        <div className="h-8 w-20 animate-pulse rounded-sm bg-muted" />
       </CardContent>
     </Card>
   );
@@ -64,7 +64,7 @@ function SkeletonTable() {
   return (
     <div className="space-y-3 py-4">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="h-10 animate-pulse rounded bg-muted" />
+        <div key={i} className="h-10 animate-pulse rounded-sm bg-muted" />
       ))}
     </div>
   );
@@ -303,7 +303,7 @@ export default function AdminNotificationsPage() {
                 <Label>Message</Label>
                 <textarea value={broadcastMessage} onChange={(e) => setBroadcastMessage(e.target.value)}
                   placeholder="Notification message"
-                  className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring min-h-[100px]" />
+                  className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring min-h-[100px]" />
               </div>
               <div className="flex items-center gap-4">
                 <div>
@@ -359,7 +359,7 @@ export default function AdminNotificationsPage() {
                         { label: "SMTP", key: "smtp", status: health.smtp },
                         { label: "VAPID", key: "vapid", status: health.vapid },
                       ].map((item) => (
-                        <div key={item.key} className="flex items-center justify-between rounded-lg border p-3">
+                        <div key={item.key} className="flex items-center justify-between rounded-sm border p-3">
                           <span className="text-xs text-muted-foreground">{item.label}</span>
                           <Badge variant="outline" className={`text-[10px] px-1.5 ${
                             item.status === "healthy" || item.status === "ok"
@@ -556,7 +556,7 @@ export default function AdminNotificationsPage() {
               {emailLogLoading ? (
                 <div className="space-y-2 py-4">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="h-12 animate-pulse rounded bg-muted" />
+                    <div key={i} className="h-12 animate-pulse rounded-sm bg-muted" />
                   ))}
                 </div>
               ) : emailLogs.length === 0 ? (

@@ -30,7 +30,7 @@ export default function TableUpload({ onFilesChange, compactImage }: TableUpload
   return (
     <div className="space-y-2">
       <div
-        className="border-2 border-dashed border-muted-foreground/20 rounded-lg p-6 text-center cursor-pointer hover:border-primary/40 transition-colors"
+        className="border-2 border-dashed border-muted-foreground/20 rounded-sm p-6 text-center cursor-pointer hover:border-primary/40 transition-colors"
         onClick={() => inputRef.current?.click()}
         onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
         onDragOver={(e) => e.preventDefault()}
@@ -48,7 +48,7 @@ export default function TableUpload({ onFilesChange, compactImage }: TableUpload
       {files.length > 0 && (
         <div className="space-y-1">
           {files.map((f, i) => (
-            <div key={i} className="flex items-center gap-2 bg-muted/30 rounded px-3 py-1.5 text-sm">
+            <div key={i} className="flex items-center gap-2 bg-muted/30 rounded-sm px-3 py-1.5 text-sm">
               <FileIcon className="size-4 text-muted-foreground shrink-0" />
               <span className="truncate flex-1">{f.name}</span>
               <button type="button" onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive">

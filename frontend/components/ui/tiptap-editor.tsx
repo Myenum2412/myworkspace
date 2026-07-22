@@ -54,7 +54,7 @@ function MenuButton({ onClick, active, children, title }: { onClick: () => void;
       type="button"
       onClick={onClick}
       title={title}
-      className={`p-1.5 rounded transition-colors ${
+      className={`p-1.5 rounded-sm transition-colors ${
         active ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
@@ -75,7 +75,7 @@ function ColorPicker({ icon: Icon, label, onSelect, currentColor }: { icon: Reac
         <Icon className="size-4" />
       </MenuButton>
       <div className="absolute top-full left-0 mt-1 z-50 hidden group-hover:block">
-        <div className="p-2 bg-popover border rounded-lg shadow-lg w-44">
+        <div className="p-2 bg-popover border rounded-sm shadow-lg w-44">
           <p className="text-[10px] font-medium text-muted-foreground mb-1.5 uppercase">{label}</p>
           <div className="grid grid-cols-10 gap-0.5">
             {colors.map((c) => (
@@ -148,7 +148,7 @@ export function TiptapEditor({ value, onChange, placeholder }: TiptapEditorProps
   if (!editor) return null;
 
   return (
-    <div className="flex flex-col h-full border rounded-lg overflow-hidden bg-background">
+    <div className="flex flex-col h-full border rounded-sm overflow-hidden bg-background">
       <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b bg-muted/30 shrink-0">
         <MenuButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold (Ctrl+B)">
           <Bold className="size-4" />

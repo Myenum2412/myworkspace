@@ -12,44 +12,44 @@ export default function CommunitySection() {
                     <p className="mt-6 text-neutral-400">Harum quae dolore orrupti aut temporibus ariatur.</p>
                 </div>
                 <div className="mx-auto mt-12 flex max-w-lg flex-wrap justify-center gap-3">
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/1.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/2.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/3.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/4.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/5.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/6.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/7.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/1.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/8.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/9.jpg" loading="lazy" width={120} height={120} />
                     </Link>
-                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-full border border-neutral-700 *:size-full *:rounded-full *:object-cover">
+                    <Link href="https://github.com/meschacirung" target="_blank" title="Méschac Irung" className="size-16 rounded-2xl border border-neutral-700 *:size-full *:rounded-2xl *:object-cover">
                         <img alt="John Doe" src="https://randomuser.me/api/portraits/men/10.jpg" loading="lazy" width={120} height={120} />
                     </Link>
                 </div>
                 <div className="mt-12 text-center">
                     <Link
                         href="#"
-                        className="inline-flex items-center gap-2 rounded-full bg-[#2596be] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1e7ea3]">
+                        className="inline-flex items-center gap-2 rounded-2xl bg-[#2596be] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1e7ea3]">
                         Join the Community
                         <ChevronRight className="size-4" />
                     </Link>

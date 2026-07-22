@@ -252,7 +252,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
   return (
     <div className="flex flex-1 flex-col gap-6 overflow-hidden [&_input]:border-black [&_select>button]:border-black [&_textarea]:border-black">
       {apiError && (
-        <div className="mx-6 mt-4 flex items-start gap-3 rounded-lg border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 px-4 py-3 shadow-sm">
+        <div className="mx-6 mt-4 flex items-start gap-3 rounded-sm border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 px-4 py-3 shadow-sm">
           <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
           <p className="text-sm font-semibold text-red-800">{apiError}</p>
         </div>
@@ -261,7 +261,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
       <div className="relative flex-1 overflow-hidden px-1">
         <ScrollArea className="h-full px-5">
           <div className="space-y-8 py-6 max-w-4xl mx-auto">
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Customer Information</legend>
               <fieldset className="space-y-3 border-0 p-0">
                 <legend className="text-xs font-medium text-muted-foreground px-0">Customer Type</legend>
@@ -291,7 +291,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-xl border p-4 space-y-4">
+              <fieldset className="rounded-sm border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Primary Contact</legend>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
@@ -316,7 +316,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-xl border p-4 space-y-4">
+              <fieldset className="rounded-sm border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Company Details</legend>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -332,7 +332,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-xl border p-4 space-y-4">
+              <fieldset className="rounded-sm border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Financial Details</legend>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Currency</Label>
@@ -343,7 +343,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-xl border p-4 space-y-4">
+              <fieldset className="rounded-sm border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Contact Information</legend>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -375,7 +375,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
               </TabsList>
 
               <TabsContent value="other-details" className="space-y-6 pt-4">
-                <fieldset className="rounded-xl border p-4 space-y-4">
+                <fieldset className="rounded-sm border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Tax Information</legend>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -435,7 +435,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-xl border p-4 space-y-4">
+              <fieldset className="rounded-sm border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Payment</legend>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Payment Terms</Label>
@@ -443,7 +443,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-xl border p-4 space-y-4">
+              <fieldset className="rounded-sm border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Portal Access</legend>
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -457,7 +457,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-xl border p-4 space-y-4">
+              <fieldset className="rounded-sm border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Documents</legend>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
@@ -493,7 +493,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
               </TabsContent>
 
               <TabsContent value="address" className="space-y-6 pt-4">
-                <fieldset className="rounded-xl border p-4 space-y-4">
+                <fieldset className="rounded-sm border p-4 space-y-4">
                   <legend className="text-sm font-semibold px-2">Billing Address</legend>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
@@ -538,7 +538,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                   </div>
                 </fieldset>
 
-                <fieldset className="rounded-xl border p-4 space-y-4">
+                <fieldset className="rounded-sm border p-4 space-y-4">
                   <legend className="text-sm font-semibold px-2">Shipping Address</legend>
                   <div className="flex items-center gap-2 mb-4">
                     <Checkbox
@@ -616,7 +616,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
               <TabsContent value="contact-persons" className="space-y-4 pt-4">
                 <div className="space-y-3">
                   {contactPersons.map((cp) => (
-                    <div key={cp.id} className="rounded-lg border p-4 space-y-3">
+                    <div key={cp.id} className="rounded-sm border p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Contact Person</span>
                         <Button type="button" variant="ghost" size="icon" className="size-8 text-destructive" onClick={() => removeContactPerson(cp.id)}>
@@ -694,12 +694,12 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
               </TabsContent>
 
               <TabsContent value="remarks" className="pt-4">
-                <fieldset className="rounded-xl border p-4 space-y-4">
+                <fieldset className="rounded-sm border p-4 space-y-4">
                   <legend className="text-sm font-semibold px-2">Remarks</legend>
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Remarks</Label>
                     <textarea
-                      className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px]"
+                      className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px]"
                       placeholder=""
                       value={remarks}
                       onChange={(e) => setRemarks(e.target.value)}

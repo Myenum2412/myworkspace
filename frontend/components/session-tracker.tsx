@@ -109,9 +109,9 @@ export function SessionTracker() {
 
         {activeMinutes > 0 && (
           <div className="px-2 pb-2">
-            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-muted rounded-sm overflow-hidden">
               <div
-                className="h-full bg-red-500 rounded-full transition-all"
+                className="h-full bg-red-500 rounded-sm transition-all"
                 style={{
                   width: `${Math.min((activeMinutes / 480) * 100, 100)}%`,
                 }}

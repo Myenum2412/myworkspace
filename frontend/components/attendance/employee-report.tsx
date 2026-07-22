@@ -120,7 +120,7 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
     const status = (emp.status as string) || "active";
     const color = statusColors[status] || "bg-gray-100 text-gray-700";
     return (
-      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${color}`}>
+      <span className={`inline-flex items-center rounded-2xl px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${color}`}>
         {status}
       </span>
     );
@@ -208,7 +208,7 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                       </td>
                       <td className="px-4 py-3">
                         {(emp.department as string) ? (
-                          <span className="inline-flex items-center rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">
+                          <span className="inline-flex items-center rounded-sm bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">
                             {emp.department as string}
                           </span>
                         ) : <span className="text-gray-300">\u2014</span>}
@@ -217,7 +217,7 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                         <span className="text-gray-800">{(emp.designation as string) || "\u2014"}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center rounded-md border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">
+                        <span className="inline-flex items-center rounded-sm border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">
                           {emp.role as string}
                         </span>
                       </td>
@@ -340,7 +340,7 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                       </h3>
                       <div className="space-y-3">
                         {(employeeDetails.workExperience as any[]).map((exp: any, i: number) => (
-                          <div key={exp.id || i} className="border rounded-lg p-3 bg-gray-50">
+                          <div key={exp.id || i} className="border rounded-sm p-3 bg-gray-50">
                             <div className="flex items-start justify-between gap-2">
                               <div>
                                 <p className="font-medium text-sm">{exp.company}{exp.title ? ` \u2013 ${exp.title}` : ""}</p>
@@ -366,7 +366,7 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                       </h3>
                       <div className="space-y-3">
                         {(employeeDetails.educationDetails as any[]).map((edu: any, i: number) => (
-                          <div key={edu.id || i} className="border rounded-lg p-3 bg-gray-50">
+                          <div key={edu.id || i} className="border rounded-sm p-3 bg-gray-50">
                             <p className="font-medium text-sm">{edu.institute}</p>
                             <p className="text-xs text-gray-600 mt-0.5">
                               {[edu.degree, edu.specialization].filter(Boolean).join(" \u2013 ")}
@@ -389,7 +389,7 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                       </h3>
                       <div className="space-y-3">
                         {(employeeDetails.dependentDetails as any[]).map((dep: any, i: number) => (
-                          <div key={dep.id || i} className="border rounded-lg p-3 bg-gray-50">
+                          <div key={dep.id || i} className="border rounded-sm p-3 bg-gray-50">
                             <p className="font-medium text-sm">{dep.name}</p>
                             <p className="text-xs text-gray-600 mt-0.5">
                               {dep.relationship}{dep.dob ? ` | ${new Date(dep.dob).toLocaleDateString()}` : ""}
@@ -410,7 +410,7 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                     </h3>
                     <div className="space-y-2">
                       {(employeeDetails.files as any[]).map((file: any, i: number) => (
-                        <div key={file.id || i} className="flex items-center justify-between border rounded-lg p-3 bg-gray-50">
+                        <div key={file.id || i} className="flex items-center justify-between border rounded-sm p-3 bg-gray-50">
                           <div className="flex items-center gap-3 min-w-0">
                             <FileIcon className="size-4 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
@@ -456,7 +456,7 @@ function FieldDisplay({ label, value, type }: { label: string; value?: string | 
     return (
       <div>
         <p className="text-xs text-muted-foreground">{label}</p>
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium mt-0.5 ring-1 ring-inset ${color}`}>
+        <span className={`inline-flex items-center rounded-2xl px-2.5 py-0.5 text-xs font-medium mt-0.5 ring-1 ring-inset ${color}`}>
           {value}
         </span>
       </div>

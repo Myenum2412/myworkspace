@@ -96,7 +96,7 @@ export function ImageViewer({ src, fileName, fileSize, mimeType }: ImageViewerPr
       <div className="flex-1 flex items-center justify-center overflow-auto bg-[repeating-conic-gradient(#e5e7eb_0%_25%,transparent_0%_50%)_50%/20px_20px] dark:bg-[repeating-conic-gradient(#374151_0%_25%,transparent_0%_50%)_50%/20px_20px]">
         {loading && !error && (
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
-            <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="size-8 border-2 border-primary border-t-transparent rounded-sm animate-spin" />
             <p className="text-xs">Loading image...</p>
           </div>
         )}

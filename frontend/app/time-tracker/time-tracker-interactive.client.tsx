@@ -174,12 +174,12 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
           placeholder=""
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none bg-transparent"
+          className="w-full border border-gray-200 rounded-sm px-3 py-2.5 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none bg-transparent"
         />
         <div className="flex items-center flex-wrap gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 text-primary font-medium text-xs border border-gray-200 rounded-md px-2.5 py-2 transition-colors outline-none">
+              <button className="flex items-center gap-1.5 text-primary font-medium text-xs border border-gray-200 rounded-sm px-2.5 py-2 transition-colors outline-none">
                 <PlusCircle className="size-3.5" />
                 <span className="max-w-[80px] truncate">{selectedProject ? selectedProject.name : "Project"}</span>
               </button>
@@ -202,7 +202,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
               ) : (
                 projects.map((project) => (
                   <DropdownMenuItem key={project.id} className="cursor-pointer" onClick={() => setSelectedProject(project)}>
-                    <div className="w-2 h-2 rounded-full mr-2 shadow-sm shrink-0" style={{ backgroundColor: project.color }} />
+                    <div className="w-2 h-2 rounded-sm mr-2 shadow-sm shrink-0" style={{ backgroundColor: project.color }} />
                     {project.name}
                   </DropdownMenuItem>
                 ))
@@ -217,7 +217,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
 
           <Popover>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-1.5 text-gray-600 font-medium text-xs border border-gray-200 rounded-md px-2.5 py-2 transition-colors outline-none">
+              <button className="flex items-center gap-1.5 text-gray-600 font-medium text-xs border border-gray-200 rounded-sm px-2.5 py-2 transition-colors outline-none">
                 <Calendar className="size-3.5" />
                 {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString().slice(0, 6) : "Today"}
               </button>
@@ -228,22 +228,22 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
           </Popover>
 
           <div className="flex items-center gap-1 text-gray-800 font-medium text-xs">
-            <select value={startHour} onChange={(e) => setStartHour(e.target.value)} className="border border-gray-200 rounded px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
+            <select value={startHour} onChange={(e) => setStartHour(e.target.value)} className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
               {hours.map((h) => <option key={h} value={h}>{h}</option>)}
             </select>
             <span className="text-gray-400">:</span>
-            <select value={startMinute} onChange={(e) => setStartMinute(e.target.value)} className="border border-gray-200 rounded px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
+            <select value={startMinute} onChange={(e) => setStartMinute(e.target.value)} className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
               {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
             <button onClick={() => setStartPeriod(startPeriod === "AM" ? "PM" : "AM")} className="text-[10px] font-semibold uppercase text-muted-foreground hover:text-gray-800 w-6 text-center">
               {startPeriod}
             </button>
             <span className="text-gray-300 mx-0.5">-</span>
-            <select value={endHour} onChange={(e) => setEndHour(e.target.value)} className="border border-gray-200 rounded px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
+            <select value={endHour} onChange={(e) => setEndHour(e.target.value)} className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
               {hours.map((h) => <option key={h} value={h}>{h}</option>)}
             </select>
             <span className="text-gray-400">:</span>
-            <select value={endMinute} onChange={(e) => setEndMinute(e.target.value)} className="border border-gray-200 rounded px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
+            <select value={endMinute} onChange={(e) => setEndMinute(e.target.value)} className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
               {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
             <button onClick={() => setEndPeriod(endPeriod === "AM" ? "PM" : "AM")} className="text-[10px] font-semibold uppercase text-muted-foreground hover:text-gray-800 w-6 text-center">
@@ -252,7 +252,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
           </div>
 
           <Button
-            className="bg-primary hover:bg-accent text-primary-foreground rounded-lg h-9 px-4 font-semibold text-xs flex-1"
+            className="bg-primary hover:bg-accent text-primary-foreground rounded-sm h-9 px-4 font-semibold text-xs flex-1"
             onClick={handleAdd}
             disabled={saving || !description.trim()}
           >
@@ -319,7 +319,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                     onClick={() => setSelectedProject(project)}
                   >
                     <div
-                      className="w-2 h-2 rounded-full mr-2 shadow-sm shrink-0"
+                      className="w-2 h-2 rounded-sm mr-2 shadow-sm shrink-0"
                       style={{ backgroundColor: project.color }}
                     />
                     {project.name}
@@ -437,7 +437,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
         ) : (
           <div>
             {selectedIds.size > 0 && (
-              <div className="flex items-center justify-between mb-3 rounded-lg border bg-muted/50 px-4 py-2.5">
+              <div className="flex items-center justify-between mb-3 rounded-sm border bg-muted/50 px-4 py-2.5">
                 <span className="text-sm text-muted-foreground">
                   {selectedIds.size} entry{selectedIds.size > 1 ? "ies" : "y"} selected
                 </span>
@@ -452,7 +452,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                 </div>
               </div>
             )}
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
               {/* Desktop table */}
               <table className="table-premium hidden sm:table w-full text-sm text-left">
                 <thead>
@@ -462,7 +462,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                         type="checkbox"
                         checked={selectedIds.size === entries.length && entries.length > 0}
                         onChange={toggleSelectAll}
-                        className="size-4 rounded border-gray-300 cursor-pointer"
+                        className="size-4 rounded-sm border-gray-300 cursor-pointer"
                       />
                     </th>
                     <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Description</th>
@@ -481,7 +481,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                           checked={selectedIds.has(entry.id)}
                           onChange={(e) => { e.stopPropagation(); toggleSelect(entry.id); }}
                           onClick={(e) => e.stopPropagation()}
-                          className="size-4 rounded border-gray-300 cursor-pointer"
+                          className="size-4 rounded-sm border-gray-300 cursor-pointer"
                         />
                       </td>
                       <td className="px-4 py-3">

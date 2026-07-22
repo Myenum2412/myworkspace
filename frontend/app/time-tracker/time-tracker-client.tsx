@@ -40,7 +40,7 @@ function TimeReportsView({ data }: TimeReportsViewProps) {
       ) : (
         <>
           <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+            <div className="rounded-sm border bg-card text-card-foreground shadow-sm">
               <div className="flex flex-row items-center justify-between pb-2 p-6">
                 <h3 className="tracking-tight text-sm font-medium">Total Hours</h3>
               </div>
@@ -51,7 +51,7 @@ function TimeReportsView({ data }: TimeReportsViewProps) {
                 </div>
               </div>
             </div>
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+            <div className="rounded-sm border bg-card text-card-foreground shadow-sm">
               <div className="flex flex-row items-center justify-between pb-2 p-6">
                 <h3 className="tracking-tight text-sm font-medium">Billable Hours</h3>
               </div>
@@ -60,7 +60,7 @@ function TimeReportsView({ data }: TimeReportsViewProps) {
                 <p className="text-xs text-muted-foreground mt-1">{data.utilization}% utilization rate</p>
               </div>
             </div>
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+            <div className="rounded-sm border bg-card text-card-foreground shadow-sm">
               <div className="flex flex-row items-center justify-between pb-2 p-6">
                 <h3 className="tracking-tight text-sm font-medium">Active Projects</h3>
               </div>
@@ -69,7 +69,7 @@ function TimeReportsView({ data }: TimeReportsViewProps) {
                 <p className="text-xs text-muted-foreground mt-1">{data.teamMembers} team members</p>
               </div>
             </div>
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+            <div className="rounded-sm border bg-card text-card-foreground shadow-sm">
               <div className="flex flex-row items-center justify-between pb-2 p-6">
                 <h3 className="tracking-tight text-sm font-medium">Daily Average</h3>
               </div>
@@ -81,7 +81,7 @@ function TimeReportsView({ data }: TimeReportsViewProps) {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+            <div className="rounded-sm border bg-card text-card-foreground shadow-sm">
               <div className="p-6">
                 <h3 className="font-semibold leading-none tracking-tight text-sm">Weekly Hours</h3>
               </div>
@@ -101,7 +101,7 @@ function TimeReportsView({ data }: TimeReportsViewProps) {
               </div>
             </div>
 
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+            <div className="rounded-sm border bg-card text-card-foreground shadow-sm">
               <div className="p-6">
                 <h3 className="font-semibold leading-none tracking-tight text-sm">Top Contributors</h3>
               </div>
@@ -118,7 +118,7 @@ function TimeReportsView({ data }: TimeReportsViewProps) {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{m.hours.toFixed(1)}h</span>
-                          <span className="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">{m.billable.toFixed(1)}h billable</span>
+                          <span className="inline-flex items-center rounded-sm border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">{m.billable.toFixed(1)}h billable</span>
                         </div>
                       </div>
                     ))

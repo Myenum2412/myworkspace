@@ -9,9 +9,9 @@ type TooltipVariant = "default" | "frosted-glass";
 
 const roundnessMap: Record<TooltipRoundness, string> = {
   sm: "rounded-sm",
-  md: "rounded-md",
-  lg: "rounded-lg",
-  xl: "rounded-xl",
+  md: "rounded-sm",
+  lg: "rounded-sm",
+  xl: "rounded-sm",
 };
 
 const variantMap: Record<TooltipVariant, string> = {

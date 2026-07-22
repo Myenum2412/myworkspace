@@ -137,7 +137,7 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
           <div className="flex-1 min-h-0 overflow-hidden">
             {isPreviewable(file.mimeType) ? (
               file.mimeType.startsWith("video/") ? (
-                <video controls className="w-full h-full rounded-md border" key={file.id}>
+                <video controls className="w-full h-full rounded-sm border" key={file.id}>
                   <source src={previewUrl} type={file.mimeType} />
                 </video>
               ) : file.mimeType.startsWith("audio/") ? (
@@ -147,7 +147,7 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
                   </audio>
                 </div>
               ) : (
-                <iframe src={previewUrl} className="w-full h-full border rounded-md" title={file.originalName} />
+                <iframe src={previewUrl} className="w-full h-full border rounded-sm" title={file.originalName} />
               )
             ) : (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
@@ -166,7 +166,7 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
               <h4 className="text-sm font-medium mb-2">Version History</h4>
               <div className="space-y-2">
                 {versions.map((v: any) => (
-                  <div key={v.id} className="text-xs p-2 rounded-md border">
+                  <div key={v.id} className="text-xs p-2 rounded-sm border">
                     <div className="font-medium">v{v.versionNumber}</div>
                     <div className="text-muted-foreground">{formatSize(v.size)}</div>
                     {v.comment && <div className="text-muted-foreground mt-1">"{v.comment}"</div>}

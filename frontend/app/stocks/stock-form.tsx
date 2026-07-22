@@ -134,12 +134,12 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Product Details</legend>
         <div className="flex gap-6">
           <div className="shrink-0">
             <div
-              className="size-24 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer hover:border-primary transition-colors overflow-hidden bg-muted/30"
+              className="size-24 rounded-sm border-2 border-dashed flex items-center justify-center cursor-pointer hover:border-primary transition-colors overflow-hidden bg-muted/30"
               onClick={() => fileRef.current?.click()}
             >
               {preview ? (
@@ -224,7 +224,7 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
         </div>
       </fieldset>
 
-      <fieldset className="rounded-xl border p-4 space-y-4">
+      <fieldset className="rounded-sm border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Stock & Pricing</legend>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5">
           <div className="space-y-1.5">

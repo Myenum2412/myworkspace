@@ -118,12 +118,12 @@ function LegendIndicator({
       return <div className="h-2 w-2 shrink-0" style={fillStyle} />;
 
     case "circle":
-      return <div className="h-2 w-2 shrink-0 rounded-full" style={fillStyle} />;
+      return <div className="h-2 w-2 shrink-0 rounded-sm" style={fillStyle} />;
 
     case "circle-outline":
       return (
         <div
-          className="h-2.5 w-2.5 shrink-0 rounded-full p-[1.5px]"
+          className="h-2.5 w-2.5 shrink-0 rounded-sm p-[1.5px]"
           style={outlineStyle}
         />
       );

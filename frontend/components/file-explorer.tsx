@@ -301,7 +301,7 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
 
       {renamingId && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setRenamingId(null)}>
-          <div className="bg-background rounded-lg p-4 w-80" onClick={e => e.stopPropagation()}>
+          <div className="bg-background rounded-sm p-4 w-80" onClick={e => e.stopPropagation()}>
             <h3 className="text-sm font-medium mb-2">Rename</h3>
             <Input value={renameValue} onChange={e => setRenameValue(e.target.value)} onKeyDown={e => {
               if (e.key === "Enter") handleRename(renamingId, files.find((f: FileItem) => f.id === renamingId) ? "file" : "folder");
@@ -317,7 +317,7 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
 
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setConfirmDelete(null)}>
-          <div className="bg-background rounded-lg p-5 w-96" onClick={e => e.stopPropagation()}>
+          <div className="bg-background rounded-sm p-5 w-96" onClick={e => e.stopPropagation()}>
             <h3 className="text-base font-semibold mb-2">Confirm Delete</h3>
             <p className="text-sm text-muted-foreground mb-2">
               Are you sure you want to delete <strong>{confirmDelete.name}</strong>?
@@ -338,7 +338,7 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
       )}
 
       {toastMessage && (
-        <div className="fixed bottom-4 right-4 z-50 bg-foreground text-background px-4 py-2.5 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-4 right-4 z-50 bg-foreground text-background px-4 py-2.5 rounded-sm shadow-lg text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
           <CheckCircle2Icon className="size-4" />
           {toastMessage}
         </div>
@@ -367,7 +367,7 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
 
       {propertiesOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => { setPropertiesOpen(false); setPropertiesData(null); }}>
-          <div className="bg-background rounded-lg p-5 w-96" onClick={e => e.stopPropagation()}>
+          <div className="bg-background rounded-sm p-5 w-96" onClick={e => e.stopPropagation()}>
             <h3 className="text-base font-semibold mb-4">Folder Properties</h3>
             {propertiesLoading ? (
               <div className="flex items-center justify-center py-8">

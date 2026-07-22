@@ -108,7 +108,7 @@ export function GalleryViewClient({
           <div className="relative">
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <input
-              className="flex h-9 w-48 rounded-md border border-input bg-background pl-8 pr-3 py-1 text-sm"
+              className="flex h-9 w-48 rounded-sm border border-input bg-background pl-8 pr-3 py-1 text-sm"
               placeholder=""
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -127,20 +127,20 @@ export function GalleryViewClient({
               {paginated.map((img) => (
                 <div
                   key={img.id}
-                  className="group relative aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer"
+                  className="group relative aspect-square rounded-sm overflow-hidden bg-muted cursor-pointer"
                   onClick={() => openLightbox(img)}
                 >
                   <img src={img.url} alt={img.filename} className="size-full object-cover" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors">
                     <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        className="size-7 rounded-full bg-white/80 flex items-center justify-center hover:bg-white"
+                        className="size-7 rounded-sm bg-white/80 flex items-center justify-center hover:bg-white"
                         onClick={(e) => { e.stopPropagation(); toggleFavorite(img.id); }}
                       >
                         <HeartIcon className={`size-3 ${favorites.has(img.id) ? "fill-red-500 text-red-500" : "text-gray-700"}`} />
                       </button>
                       <button
-                        className="size-7 rounded-full bg-white/80 flex items-center justify-center hover:bg-white"
+                        className="size-7 rounded-sm bg-white/80 flex items-center justify-center hover:bg-white"
                         onClick={(e) => { e.stopPropagation(); downloadImage(img.url, img.filename); }}
                       >
                         <DownloadIcon className="size-3 text-gray-700" />

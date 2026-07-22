@@ -74,13 +74,13 @@ export function TeamForm({
         </DialogHeader>
 
         {formError && (
-          <div className="mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <div className="mx-6 flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-sm text-destructive">
             <AlertCircleIcon className="size-4 shrink-0" />{formError}
           </div>
         )}
 
         <div className="flex-1 overflow-y-auto px-6 py-3 space-y-5">
-          <fieldset className="rounded-xl border p-4 space-y-4">
+          <fieldset className="rounded-sm border p-4 space-y-4">
             <legend className="text-sm font-semibold px-2">Team Information</legend>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -95,7 +95,7 @@ export function TeamForm({
                     {members.filter((m) => m.userId === teamHeadId || !selectedMemberIds.includes(m.userId)).map((m) => (
                       <SelectItem key={m.userId} value={m.userId}>
                         <div className="flex items-center gap-2">
-                          <div className="size-5 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium">{getInitials(m.name)}</div>
+                          <div className="size-5 rounded-sm bg-muted flex items-center justify-center text-[9px] font-medium">{getInitials(m.name)}</div>
                           <span>{m.name}</span>
                         </div>
                       </SelectItem>
@@ -114,7 +114,7 @@ export function TeamForm({
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <UsersIcon className="size-3.5" />Team Members
-                {selectedMemberIds.length > 0 && <span className="ml-1 text-[10px] font-normal text-primary bg-primary/10 rounded-full px-1.5 py-0.5">{selectedMemberIds.length}</span>}
+                {selectedMemberIds.length > 0 && <span className="ml-1 text-[10px] font-normal text-primary bg-primary/10 rounded-sm px-1.5 py-0.5">{selectedMemberIds.length}</span>}
               </h3>
               <div className="flex items-center gap-2">
                 <Input placeholder="" value={memberSearch} onChange={(e) => onMemberSearchChange(e.target.value)} className="max-w-[150px] text-xs bg-white" />
@@ -132,9 +132,9 @@ export function TeamForm({
                         const checked = false;
                         const isLead = m.userId === teamHeadId;
                         return (
-                          <label key={m.userId} className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-muted">
+                          <label key={m.userId} className="flex items-center gap-2.5 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-muted">
                             <Checkbox checked={checked} onCheckedChange={() => { onSelectedMemberIdsChange((prev) => [...prev, m.userId]); }} />
-                            <div className="size-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium shrink-0">{getInitials(m.name)}</div>
+                            <div className="size-6 rounded-sm bg-muted flex items-center justify-center text-[9px] font-medium shrink-0">{getInitials(m.name)}</div>
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium truncate flex items-center gap-1">{m.name}{isLead && <span className="text-[9px] text-red-400 font-semibold">(Lead)</span>}</p>
                               <p className="text-[10px] text-muted-foreground truncate">{m.designation}</p>
@@ -154,15 +154,15 @@ export function TeamForm({
                   if (!m) return null;
                   const isLead = m.userId === teamHeadId;
                   return (
-                    <div key={id} className="inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs">
-                      <div className="size-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                    <div key={id} className="inline-flex items-center gap-2 rounded-sm border px-2.5 py-1.5 text-xs">
+                      <div className="size-6 rounded-sm bg-muted flex items-center justify-center overflow-hidden shrink-0">
                         {m.avatar ? <img src={m.avatar} alt={m.name} className="size-full object-cover" /> : <span className="text-[9px] font-bold text-muted-foreground">{getInitials(m.name)}</span>}
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-medium truncate max-w-[120px] flex items-center gap-1">{m.name}{isLead && <CrownIcon className="size-3 text-primary shrink-0" />}</p>
                         <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{m.email}</p>
                       </div>
-                      <button type="button" onClick={() => onSelectedMemberIdsChange((prev) => prev.filter((p) => p !== id))} className="ml-0.5 rounded-full hover:bg-destructive/10 p-0.5 text-muted-foreground hover:text-destructive shrink-0"><XIcon className="size-3" /></button>
+                      <button type="button" onClick={() => onSelectedMemberIdsChange((prev) => prev.filter((p) => p !== id))} className="ml-0.5 rounded-sm hover:bg-destructive/10 p-0.5 text-muted-foreground hover:text-destructive shrink-0"><XIcon className="size-3" /></button>
                     </div>
                   );
                 })}

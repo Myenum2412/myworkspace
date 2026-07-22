@@ -274,7 +274,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
 
         {viewOpen && selectedTask && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="relative w-[95vw] h-[95vh] bg-card rounded-xl shadow-xl overflow-hidden flex flex-col">
+            <div className="relative w-[95vw] h-[95vh] bg-card rounded-sm shadow-xl overflow-hidden flex flex-col">
               <TaskDetailedView
                 task={selectedTask}
                 editable

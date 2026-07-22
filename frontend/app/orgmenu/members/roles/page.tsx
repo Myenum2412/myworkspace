@@ -196,7 +196,7 @@ export default async function RolesPage() {
         {/* Header Section */}
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
+            <div className="p-2 bg-primary/10 rounded-sm">
               <ShieldIcon className="size-6 text-primary" />
             </div>
             <div>
@@ -220,7 +220,7 @@ export default async function RolesPage() {
               <Card key={roleKey} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`p-2 rounded-lg ${colorClass}`}>
+                    <div className={`p-2 rounded-sm ${colorClass}`}>
                       <IconComponent className="size-4" />
                     </div>
                     <Badge variant="secondary" className="text-xs">
@@ -255,7 +255,7 @@ export default async function RolesPage() {
                   <CardHeader className={`pb-4 ${colorClass.split(" ")[1]}`}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${colorClass}`}>
+                        <div className={`p-2 rounded-sm ${colorClass}`}>
                           <IconComponent className="size-5" />
                         </div>
                         <div>
@@ -333,7 +333,7 @@ export default async function RolesPage() {
                           {roleMembers.slice(0, 10).map((member, idx) => (
                             <div
                               key={idx}
-                              className="flex items-center gap-3 p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                              className="flex items-center gap-3 p-2 rounded-sm bg-muted/50 hover:bg-muted transition-colors"
                             >
                               <Avatar className="size-8">
                                 <AvatarImage src={member.avatar} alt={member.name} />
@@ -352,7 +352,7 @@ export default async function RolesPage() {
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-muted-foreground text-center py-4 bg-muted/30 rounded-lg">
+                        <p className="text-sm text-muted-foreground text-center py-4 bg-muted/30 rounded-sm">
                           No members assigned to this role yet.
                         </p>
                       )}

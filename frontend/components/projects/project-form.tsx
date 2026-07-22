@@ -73,10 +73,10 @@ export function ProjectCreateForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="rounded-2xl border bg-card shadow-sm">
+    <div className="rounded-sm border bg-card shadow-sm">
       <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+          <div className="flex size-10 items-center justify-center rounded-sm bg-primary/10">
             <PlusIcon className="size-5 text-primary" />
           </div>
           <div>
@@ -90,7 +90,7 @@ export function ProjectCreateForm({
       </div>
 
       {formError && (
-        <div className="mx-6 mt-4 flex items-center gap-2.5 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive border border-destructive/20">
+        <div className="mx-6 mt-4 flex items-center gap-2.5 rounded-sm bg-destructive/10 px-4 py-3 text-sm text-destructive border border-destructive/20">
           <AlertCircleIcon className="size-4 shrink-0 mt-0.5" />
           <span>{formError}</span>
         </div>
@@ -98,7 +98,7 @@ export function ProjectCreateForm({
 
       <div className="px-4 sm:px-6 py-5 space-y-6">
 
-        <fieldset className="rounded-xl border p-4 space-y-4">
+        <fieldset className="rounded-sm border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Basic Information</legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -136,7 +136,7 @@ export function ProjectCreateForm({
           </div>
         </fieldset>
 
-        <fieldset className="rounded-xl border p-4 space-y-4">
+        <fieldset className="rounded-sm border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Timeline & Team</legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -194,7 +194,7 @@ export function ProjectCreateForm({
                   ) : filteredMembers.map((m) => {
                     const checked = projectMembers.includes(m.id);
                     return (
-                      <label key={m.id} className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-muted">
+                      <label key={m.id} className="flex items-center gap-2.5 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-muted">
                         <Checkbox
                           checked={checked}
                           onCheckedChange={() => {
@@ -203,7 +203,7 @@ export function ProjectCreateForm({
                             );
                           }}
                         />
-                        <div className="size-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium shrink-0 overflow-hidden">
+                        <div className="size-7 rounded-sm bg-muted flex items-center justify-center text-[10px] font-medium shrink-0 overflow-hidden">
                           {m.image ? (
                             <img src={m.image} alt={m.name} className="size-full object-cover" />
                           ) : (
@@ -223,7 +223,7 @@ export function ProjectCreateForm({
           </div>
         </fieldset>
 
-        <fieldset className="rounded-xl border p-4 space-y-4">
+        <fieldset className="rounded-sm border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Classification</legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -259,7 +259,7 @@ export function ProjectCreateForm({
           </div>
         </fieldset>
 
-        <fieldset className="rounded-xl border p-4 space-y-4">
+        <fieldset className="rounded-sm border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Budget & Planning</legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -276,7 +276,7 @@ export function ProjectCreateForm({
           </div>
         </fieldset>
 
-        <fieldset className="rounded-xl border p-4 space-y-4">
+        <fieldset className="rounded-sm border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Branding</legend>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Project Color</Label>
@@ -288,7 +288,7 @@ export function ProjectCreateForm({
                     type="button"
                     onClick={() => onProjectColorChange(c)}
                     disabled={submitting}
-                    className={`size-8 rounded-full ring-offset-2 ring-offset-background transition-all ${
+                    className={`size-8 rounded-sm ring-offset-2 ring-offset-background transition-all ${
                       projectColor === c ? "ring-2 ring-foreground scale-110 shadow-md" : "hover:scale-105"
                     }`}
                     style={{ backgroundColor: c }}
@@ -300,13 +300,13 @@ export function ProjectCreateForm({
                 value={projectColor}
                 onChange={(e) => onProjectColorChange(e.target.value)}
                 disabled={submitting}
-                className="size-9 cursor-pointer rounded-lg border border-border bg-transparent p-0.5"
+                className="size-9 cursor-pointer rounded-sm border border-border bg-transparent p-0.5"
               />
             </div>
           </div>
         </fieldset>
 
-        <fieldset className="rounded-xl border p-4 space-y-4">
+        <fieldset className="rounded-sm border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Attachments</legend>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Project File</Label>
@@ -318,11 +318,11 @@ export function ProjectCreateForm({
                 if (file) onProjectAttachmentChange(file);
               }}
               onDragOver={(e) => e.preventDefault()}
-              className="mt-1 border-2 border-dashed border-muted-foreground/20 rounded-lg p-5 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all group"
+              className="mt-1 border-2 border-dashed border-muted-foreground/20 rounded-sm p-5 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all group"
             >
               {projectAttachment ? (
                 <div className="flex items-center justify-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                  <div className="flex size-10 items-center justify-center rounded-sm bg-primary/10">
                     <FileIcon className="size-5 text-primary" />
                   </div>
                   <div className="text-left">
@@ -332,7 +332,7 @@ export function ProjectCreateForm({
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onProjectAttachmentChange(null); }}
-                    className="ml-auto p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
+                    className="ml-auto p-1.5 rounded-sm hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
                   >
                     <XIcon className="size-4" />
                   </button>
@@ -372,7 +372,7 @@ export function ProjectCreateForm({
         <Button disabled={!projectName || !selectedClient || submitting} onClick={onSubmit} className="w-full sm:w-auto touch-target">
           {submitting ? (
             <span className="flex items-center gap-2">
-              <span className="size-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+              <span className="size-4 animate-spin rounded-sm border-2 border-background border-t-transparent" />
               Creating...
             </span>
           ) : (
@@ -428,7 +428,7 @@ export function ProjectEditForm({
   return (
     <div className="flex flex-1 flex-col gap-6 overflow-hidden">
       {formError && (
-        <div className="mx-6 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+        <div className="mx-6 mt-4 rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
           {formError}
         </div>
       )}
@@ -446,7 +446,7 @@ export function ProjectEditForm({
       <div className="relative flex-1 overflow-hidden px-1">
         <ScrollArea className="h-full px-5">
           <div className="space-y-8 py-6 max-w-4xl mx-auto">
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">General</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -499,7 +499,7 @@ export function ProjectEditForm({
 
             <Separator />
 
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Timeline &amp; Team</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -565,7 +565,7 @@ export function ProjectEditForm({
                           filteredMembers.map((m) => (
                             <label
                               key={m.id}
-                              className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent cursor-pointer text-sm"
+                              className="flex items-center gap-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer text-sm"
                             >
                               <Checkbox
                                 checked={editMembers.includes(m.id)}
@@ -590,7 +590,7 @@ export function ProjectEditForm({
 
             <Separator />
 
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Budget &amp; Category</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -623,7 +623,7 @@ export function ProjectEditForm({
 
             <Separator />
 
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Access &amp; Branding</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -648,7 +648,7 @@ export function ProjectEditForm({
                           type="button"
                           onClick={() => onEditColorChange(c)}
                           className={cn(
-                            "size-7 rounded-full ring-offset-2 ring-offset-background transition-all",
+                            "size-7 rounded-sm ring-offset-2 ring-offset-background transition-all",
                             editColor === c ? "ring-2 ring-foreground scale-110" : ""
                           )}
                           style={{ backgroundColor: c }}
@@ -659,7 +659,7 @@ export function ProjectEditForm({
                       type="color"
                       value={editColor}
                       onChange={(e) => onEditColorChange(e.target.value)}
-                      className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
+                      className="size-8 cursor-pointer rounded-sm border border-border bg-transparent p-0.5"
                     />
                   </div>
                 </div>
@@ -668,7 +668,7 @@ export function ProjectEditForm({
 
             <Separator />
 
-            <fieldset className="rounded-xl border p-4 space-y-4">
+            <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Attachments</legend>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Project File</Label>
@@ -680,11 +680,11 @@ export function ProjectEditForm({
                     if (file) onEditAttachmentChange(file);
                   }}
                   onDragOver={(e) => e.preventDefault()}
-                  className="mt-1 border-2 border-dashed border-muted-foreground/20 rounded-lg p-5 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all group"
+                  className="mt-1 border-2 border-dashed border-muted-foreground/20 rounded-sm p-5 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all group"
                 >
                   {editAttachment ? (
                     <div className="flex items-center justify-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                      <div className="flex size-10 items-center justify-center rounded-sm bg-primary/10">
                         <FileIcon className="size-5 text-primary" />
                       </div>
                       <div className="text-left">
@@ -694,7 +694,7 @@ export function ProjectEditForm({
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); onEditAttachmentChange(null); }}
-                        className="ml-auto p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
+                        className="ml-auto p-1.5 rounded-sm hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
                       >
                         <XIcon className="size-4" />
                       </button>

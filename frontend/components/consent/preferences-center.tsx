@@ -67,7 +67,7 @@ export function PreferencesCenter() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
+        <div className="size-10 rounded-sm bg-primary/10 flex items-center justify-center">
           <Shield className="size-5 text-primary" />
         </div>
         <div>
@@ -76,7 +76,7 @@ export function PreferencesCenter() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+      <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
         {CATEGORIES.map(({ key, title, description }) => (
           <div key={key} className="flex items-start gap-4 p-4">
             <div className="flex-1 min-w-0">
@@ -97,7 +97,7 @@ export function PreferencesCenter() {
                 onChange={() => handleToggle(key)}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary" />
+              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/30 rounded-sm peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-sm after:h-4 after:w-4 after:transition-all peer-checked:bg-primary" />
             </div>
           </div>
         ))}
@@ -119,7 +119,7 @@ export function PreferencesCenter() {
       </div>
 
       {showHistory && history.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
           <div className="p-3 border-b border-gray-100 dark:border-gray-800">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Consent History</h3>
           </div>
@@ -132,7 +132,7 @@ export function PreferencesCenter() {
                 </div>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {Object.entries(h.categories || {}).filter(([, v]) => v).map(([k]) => (
-                    <span key={k} className="px-1.5 py-0.5 bg-primary/5 text-primary text-[10px] rounded">{k}</span>
+                    <span key={k} className="px-1.5 py-0.5 bg-primary/5 text-primary text-[10px] rounded-sm">{k}</span>
                   ))}
                 </div>
               </div>

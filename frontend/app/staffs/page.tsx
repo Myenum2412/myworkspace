@@ -204,9 +204,9 @@ export default async function StaffsPage() {
                 <div key={s.label} className="flex items-center gap-3">
                   <div className={`size-3 rounded-full ${s.color}`} />
                   <span className="text-sm w-20">{s.label}</span>
-                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-muted rounded-sm overflow-hidden">
                     <div
-                      className={`h-full ${s.color} rounded-full`}
+                      className={`h-full ${s.color} rounded-sm`}
                       style={{ width: `${totalStaff > 0 ? (s.count / totalStaff) * 100 : 0}%` }}
                     />
                   </div>

@@ -134,7 +134,7 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
                 <p className="text-sm text-muted-foreground">No tasks found.</p>
               </div>
             ) : (
-              <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+              <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
                 <table className="table-premium w-full text-sm text-left">
                   <thead className="sticky top-0 z-10">
                     <tr>
@@ -158,7 +158,7 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
                         <td className="px-4 py-3 font-medium">{t.title}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="size-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                            <div className="size-6 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
                               {t.assigneeAvatar ? (
                                 <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
                               ) : (
@@ -221,7 +221,7 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
       </main>
 
       <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-xl sm:m-4">
+        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-sm sm:m-4">
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}

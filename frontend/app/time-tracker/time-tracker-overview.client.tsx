@@ -238,7 +238,7 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
           {data.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">No entries this week</p>
           ) : (
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
               {/* Desktop table */}
               <table className="table-premium hidden sm:table w-full text-sm text-left">
                 <thead>

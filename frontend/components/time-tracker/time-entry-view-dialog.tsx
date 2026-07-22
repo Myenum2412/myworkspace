@@ -35,7 +35,7 @@ type TimeEntryViewDialogProps = {
 function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null | boolean }) {
   const displayValue = typeof value === "boolean" ? (value ? "Yes" : "No") : (value ?? "\u2014");
   return (
-    <div className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3">
+    <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>

@@ -71,7 +71,7 @@ export function BlogEditor({ value, onChange, placeholder }: BlogEditorProps) {
         <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('italic')}><ItalicIcon className="size-4" /></Button>
         <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('underline')}><UnderlineIcon className="size-4" /></Button>
         <div className="w-px h-4 bg-border mx-1" />
-        <label className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted cursor-pointer relative text-muted-foreground hover:text-foreground transition-colors" title="Highlight Color">
+        <label className="flex items-center justify-center h-8 w-8 rounded-sm hover:bg-muted cursor-pointer relative text-muted-foreground hover:text-foreground transition-colors" title="Highlight Color">
           <HighlighterIcon className="size-4" />
           <input
             type="color"

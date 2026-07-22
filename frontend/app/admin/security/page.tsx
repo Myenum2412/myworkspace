@@ -147,43 +147,43 @@ export default function AdminSecurityPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Security Administration</h1>
           <p className="text-sm text-gray-500 mt-1">MFA enforcement, risk monitoring, and security analytics</p>
         </div>
-        <button onClick={fetchAll} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+        <button onClick={fetchAll} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-sm">
           <RefreshCw className="size-4 text-gray-400" />
         </button>
       </div>
 
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-lg bg-green-500"><ShieldCheck className="size-4 text-white" /></div>
+              <div className="p-1.5 rounded-sm bg-green-500"><ShieldCheck className="size-4 text-white" /></div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Adoption Rate</span>
             </div>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{Math.round(stats.adoptionRate * 100)}%</p>
             <p className="text-xs text-gray-400 mt-1">{stats.mfaEnabledUsers}/{stats.totalUsers} users enrolled</p>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-lg bg-amber-500"><ShieldAlert className="size-4 text-white" /></div>
+              <div className="p-1.5 rounded-sm bg-amber-500"><ShieldAlert className="size-4 text-white" /></div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Bypass Users</span>
             </div>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.mfaBypassUsers}</p>
             <p className="text-xs text-gray-400 mt-1">Users without MFA</p>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-lg bg-blue-500"><Activity className="size-4 text-white" /></div>
+              <div className="p-1.5 rounded-sm bg-blue-500"><Activity className="size-4 text-white" /></div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Verifications</span>
             </div>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.recentVerifications}</p>
             <p className="text-xs text-gray-400 mt-1">Successful</p>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-lg bg-red-500"><AlertTriangle className="size-4 text-white" /></div>
+              <div className="p-1.5 rounded-sm bg-red-500"><AlertTriangle className="size-4 text-white" /></div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Failed</span>
             </div>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.recentFailures}</p>
@@ -192,7 +192,7 @@ export default function AdminSecurityPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+      <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800">
         <div className="border-b border-gray-200 dark:border-gray-800">
           <div className="flex">
             {[
@@ -222,7 +222,7 @@ export default function AdminSecurityPage() {
           {/* Overview */}
           {activeTab === "overview" && stats && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-gray-100 dark:border-gray-700 p-4">
+              <div className="rounded-sm border border-gray-100 dark:border-gray-700 p-4">
                 <h3 className="text-sm font-semibold mb-3">Method Distribution</h3>
                 <div className="space-y-2">
                   {Object.entries(stats.methodBreakdown).length === 0 ? (
@@ -237,7 +237,7 @@ export default function AdminSecurityPage() {
                   )}
                 </div>
               </div>
-              <div className="rounded-lg border border-gray-100 dark:border-gray-700 p-4">
+              <div className="rounded-sm border border-gray-100 dark:border-gray-700 p-4">
                 <h3 className="text-sm font-semibold mb-3">Enrollment Status</h3>
                 <div className="space-y-3">
                   <div>
@@ -245,8 +245,8 @@ export default function AdminSecurityPage() {
                       <span className="text-gray-600 dark:text-gray-400">Enabled</span>
                       <span className="font-medium">{stats.mfaEnabledUsers}</span>
                     </div>
-                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-500 rounded-full" style={{ width: `${(stats.mfaEnabledUsers / stats.totalUsers) * 100}%` }} />
+                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-sm overflow-hidden">
+                      <div className="h-full bg-green-500 rounded-sm" style={{ width: `${(stats.mfaEnabledUsers / stats.totalUsers) * 100}%` }} />
                     </div>
                   </div>
                   <div>
@@ -254,8 +254,8 @@ export default function AdminSecurityPage() {
                       <span className="text-gray-600 dark:text-gray-400">Pending</span>
                       <span className="font-medium">{stats.mfaPendingUsers}</span>
                     </div>
-                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(stats.mfaPendingUsers / stats.totalUsers) * 100}%` }} />
+                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-sm overflow-hidden">
+                      <div className="h-full bg-amber-500 rounded-sm" style={{ width: `${(stats.mfaPendingUsers / stats.totalUsers) * 100}%` }} />
                     </div>
                   </div>
                   <div>
@@ -263,18 +263,18 @@ export default function AdminSecurityPage() {
                       <span className="text-gray-600 dark:text-gray-400">Not Enrolled</span>
                       <span className="font-medium">{stats.mfaBypassUsers}</span>
                     </div>
-                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-500 rounded-full" style={{ width: `${(stats.mfaBypassUsers / stats.totalUsers) * 100}%` }} />
+                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-sm overflow-hidden">
+                      <div className="h-full bg-red-500 rounded-sm" style={{ width: `${(stats.mfaBypassUsers / stats.totalUsers) * 100}%` }} />
                     </div>
                   </div>
                 </div>
               </div>
               {adoption.length > 0 && (
-                <div className="rounded-lg border border-gray-100 dark:border-gray-700 p-4 md:col-span-2">
+                <div className="rounded-sm border border-gray-100 dark:border-gray-700 p-4 md:col-span-2">
                   <h3 className="text-sm font-semibold mb-3">Adoption by Role</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {adoption.map((a) => (
-                      <div key={a.role} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                      <div key={a.role} className="flex items-center justify-between p-2 rounded-sm bg-gray-50 dark:bg-gray-800/50">
                         <div>
                           <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">{a.role}</span>
                           <span className="text-xs text-gray-400 ml-2">({a.enabled}/{a.total})</span>
@@ -345,7 +345,7 @@ export default function AdminSecurityPage() {
                 <p className="text-center py-8 text-gray-400 text-sm">No activity</p>
               ) : (
                 activities.map((a) => (
-                  <div key={a._id} className="flex items-start gap-3 rounded-lg border border-gray-100 dark:border-gray-700 p-3">
+                  <div key={a._id} className="flex items-start gap-3 rounded-sm border border-gray-100 dark:border-gray-700 p-3">
                     <div className={`mt-0.5 ${a.success ? "text-green-500" : "text-red-500"}`}>
                       {a.success ? <ShieldCheck className="size-4" /> : <ShieldAlert className="size-4" />}
                     </div>
@@ -357,7 +357,7 @@ export default function AdminSecurityPage() {
                         {a.ipAddress && <span>IP: {a.ipAddress}</span>}
                       </div>
                     </div>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-sm shrink-0 ${
                       a.success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                     }`}>
                       {a.success ? "OK" : "FAIL"}
@@ -375,14 +375,14 @@ export default function AdminSecurityPage() {
                 <p className="text-center py-8 text-gray-400 text-sm">No risk events</p>
               ) : (
                 riskEvents.map((r) => (
-                  <div key={r._id} className="flex items-start gap-3 rounded-lg border border-amber-100 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-900/10 p-3">
+                  <div key={r._id} className="flex items-start gap-3 rounded-sm border border-amber-100 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-900/10 p-3">
                     <AlertTriangle className="size-4 text-amber-600 mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{r.riskType}</p>
                       <p className="text-xs text-gray-500">{r.email} — Score: {r.riskScore}</p>
                       <p className="text-xs text-gray-400 mt-1">{fmt(r.createdAt)}</p>
                     </div>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-sm shrink-0 ${
                       r.riskScore >= 80 ? "bg-red-100 text-red-700" :
                       r.riskScore >= 50 ? "bg-amber-100 text-amber-700" :
                       "bg-yellow-100 text-yellow-700"
@@ -402,7 +402,7 @@ export default function AdminSecurityPage() {
                 <p className="text-center py-8 text-gray-400 text-sm">No failed logins</p>
               ) : (
                 failedLogins.map((f) => (
-                  <div key={f._id} className="flex items-start gap-3 rounded-lg border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 p-3">
+                  <div key={f._id} className="flex items-start gap-3 rounded-sm border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 p-3">
                     <AlertTriangle className="size-4 text-red-600 mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{f.email}</p>
@@ -430,8 +430,8 @@ export default function AdminSecurityPage() {
                       <span className="font-medium capitalize">{a.role}</span>
                       <span className="text-gray-500">{a.enabled}/{a.total} ({Math.round(a.rate * 100)}%)</span>
                     </div>
-                    <div className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${
+                    <div className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-sm overflow-hidden">
+                      <div className={`h-full rounded-sm ${
                         a.rate >= 0.8 ? "bg-green-500" : a.rate >= 0.5 ? "bg-amber-500" : "bg-red-500"
                       }`} style={{ width: `${a.rate * 100}%` }} />
                     </div>

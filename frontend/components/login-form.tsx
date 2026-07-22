@@ -46,7 +46,7 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {displayError && !displayError.includes("2fa") && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          <div className="rounded-sm bg-destructive/10 p-3 text-sm text-destructive">
             {displayError}
           </div>
         )}

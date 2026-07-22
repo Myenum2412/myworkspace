@@ -191,7 +191,7 @@ function EditPlanDialog({ plan, onUpdated }: { plan: Plan; onUpdated: () => void
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded-md px-3 py-2"
+              className="w-full border rounded-sm px-3 py-2"
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
@@ -205,7 +205,7 @@ function EditPlanDialog({ plan, onUpdated }: { plan: Plan; onUpdated: () => void
               <Label>Current Limits</Label>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {plan.limits.map((limit) => (
-                  <div key={limit.key} className="flex justify-between p-2 bg-muted rounded">
+                  <div key={limit.key} className="flex justify-between p-2 bg-muted rounded-sm">
                     <span>{limit.label}</span>
                     <span className="font-medium">{String(limit.value)}</span>
                   </div>
@@ -220,7 +220,7 @@ function EditPlanDialog({ plan, onUpdated }: { plan: Plan; onUpdated: () => void
               <Label>Current Features</Label>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {plan.features.map((feature) => (
-                  <div key={feature.key} className="flex justify-between p-2 bg-muted rounded">
+                  <div key={feature.key} className="flex justify-between p-2 bg-muted rounded-sm">
                     <span>{feature.label}</span>
                     <Badge variant={feature.enabled ? "default" : "secondary"}>
                       {feature.enabled ? "Enabled" : "Disabled"}
@@ -328,7 +328,7 @@ export function PlansDataTable({ initialPlans }: { initialPlans: Plan[] }) {
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg">
+      <div className="border rounded-sm">
         <Table>
           <TableHeader>
             <TableRow>

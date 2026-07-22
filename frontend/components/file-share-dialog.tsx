@@ -121,11 +121,11 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
 
         <div className="flex gap-2 border-b pb-2">
           <button
-            className={`px-3 py-1 text-sm rounded-md ${tab === "link" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            className={`px-3 py-1 text-sm rounded-sm ${tab === "link" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
             onClick={() => setTab("link")}
           ><Link2Icon className="inline size-4 mr-1" /> Share Link</button>
           <button
-            className={`px-3 py-1 text-sm rounded-md ${tab === "internal" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            className={`px-3 py-1 text-sm rounded-sm ${tab === "internal" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
             onClick={() => setTab("internal")}
           ><UsersIcon className="inline size-4 mr-1" /> Internal</button>
         </div>
@@ -158,7 +158,7 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
               </Button>
             ) : (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30">
+                <div className="flex items-center gap-2 p-2 rounded-sm border bg-muted/30">
                   <Input value={shareUrl} readOnly className="border-0 bg-transparent text-sm" />
                   <Button variant="outline" size="sm" onClick={copyToClipboard}>
                     {copied ? <CheckCircle2Icon className="size-4 text-success" /> : <CopyIcon className="size-4" />}
@@ -176,7 +176,7 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
           <div className="space-y-4 py-2">
             <div className="flex gap-2">
               <select
-                className="flex-1 border rounded-md px-3 py-2 text-sm"
+                className="flex-1 border rounded-sm px-3 py-2 text-sm"
                 value={selectedUser}
                 onChange={e => setSelectedUser(e.target.value)}
               >
@@ -196,7 +196,7 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
                 <p className="text-sm text-muted-foreground">Not shared with anyone yet</p>
               ) : (
                 internalLinks.map((link: any) => (
-                  <div key={link.id} className="flex items-center justify-between p-2 rounded-md border text-sm">
+                  <div key={link.id} className="flex items-center justify-between p-2 rounded-sm border text-sm">
                     <span>{link.sharedWithUserId || "Organization"}</span>
                     <button onClick={() => removeInternal(link.id)} className="text-muted-foreground hover:text-destructive">
                       <XIcon className="size-4" />

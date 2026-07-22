@@ -59,7 +59,7 @@ export function OnboardingInteractive() {
                 <div key={step.id} className="flex items-center gap-2 sm:gap-4">
                   <div className="flex items-center gap-2">
                     <div className={cn(
-                      "flex size-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors",
+                      "flex size-8 items-center justify-center rounded-sm border-2 text-sm font-semibold transition-colors",
                       isCompleted && "border-primary bg-primary text-primary-foreground",
                       isActive && "border-primary bg-primary/10 text-primary",
                       !isActive && !isCompleted && "border-muted-foreground/30 text-muted-foreground"
@@ -103,7 +103,7 @@ export function OnboardingInteractive() {
                 onClick={handleProceedToDetails}
                 disabled={!selectedPlan}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                  "inline-flex items-center gap-2 rounded-sm bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
                 )}
               >
                 Continue with {selectedPlan ? steps.find(s => s.id === 1)?.label : "selected plan"}
@@ -123,7 +123,7 @@ export function OnboardingInteractive() {
             </div>
 
             {submitError && (
-              <div className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+              <div className="rounded-sm border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
                 {submitError}
               </div>
             )}

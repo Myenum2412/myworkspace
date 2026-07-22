@@ -234,7 +234,7 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
             placeholder=""
             className="border-none shadow-none focus-visible:ring-0 h-8 px-0 text-base bg-white"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <kbd className="hidden sm:inline-flex items-center gap-1 rounded-sm border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
             ESC
           </kbd>
         </div>
@@ -244,7 +244,7 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
             <div className="p-4 space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <Skeleton className="size-8 rounded-lg" />
+                  <Skeleton className="size-8 rounded-sm" />
                   <div className="space-y-1.5 flex-1">
                     <Skeleton className="h-4 w-3/5" />
                     <Skeleton className="h-3 w-2/5" />
@@ -294,7 +294,7 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
                           }}
                           onMouseEnter={() => setSelectedIndex(idx)}
                         >
-                          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-muted text-muted-foreground">
+                          <span className="flex size-8 shrink-0 items-center justify-center rounded-sm border bg-muted text-muted-foreground">
                             {item.icon}
                           </span>
                           <div className="min-w-0 flex-1">
@@ -323,9 +323,9 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
         </ScrollArea>
 
         <div className="border-t px-4 py-2 text-[11px] text-muted-foreground flex items-center gap-4">
-          <span><kbd className="rounded border bg-muted px-1 py-0.5 text-[10px]">↑↓</kbd> Navigate</span>
-          <span><kbd className="rounded border bg-muted px-1 py-0.5 text-[10px]">↵</kbd> Open</span>
-          <span><kbd className="rounded border bg-muted px-1 py-0.5 text-[10px]">Esc</kbd> Close</span>
+          <span><kbd className="rounded-sm border bg-muted px-1 py-0.5 text-[10px]">↑↓</kbd> Navigate</span>
+          <span><kbd className="rounded-sm border bg-muted px-1 py-0.5 text-[10px]">↵</kbd> Open</span>
+          <span><kbd className="rounded-sm border bg-muted px-1 py-0.5 text-[10px]">Esc</kbd> Close</span>
         </div>
       </DialogContent>
     </Dialog>

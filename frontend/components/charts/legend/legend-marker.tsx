@@ -14,7 +14,7 @@ export function LegendMarker({ className = "h-2.5 w-2.5" }: LegendMarkerProps) {
   // Note: backgroundColor must remain inline style as item.color is dynamic data
   return (
     <div
-      className={cn("shrink-0 rounded-full", className)}
+      className={cn("shrink-0 rounded-sm", className)}
       style={{ backgroundColor: item.color }}
     />
   );

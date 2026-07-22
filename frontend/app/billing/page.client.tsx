@@ -88,7 +88,7 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {error && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
+      {error && <div className="rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
 
       <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-4">
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Total Paid</CardTitle></CardHeader><CardContent><div className="text-lg sm:text-2xl font-bold">₹{(totalAmountPaid / 100).toLocaleString()}</div></CardContent></Card>

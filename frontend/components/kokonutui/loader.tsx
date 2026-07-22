@@ -67,7 +67,7 @@ export default function Loader({
           animate={{
             rotate: [0, 360],
           }}
-          className="absolute inset-0 rounded-full"
+          className="absolute inset-0 rounded-sm"
           style={{
             background:
               "conic-gradient(from 0deg, transparent 0deg, rgb(0, 0, 0) 90deg, transparent 180deg)",
@@ -88,7 +88,7 @@ export default function Loader({
           animate={{
             rotate: [0, 360],
           }}
-          className="absolute inset-0 rounded-full"
+          className="absolute inset-0 rounded-sm"
           style={{
             background:
               "conic-gradient(from 0deg, transparent 0deg, rgb(0, 0, 0) 120deg, rgba(0, 0, 0, 0.5) 240deg, transparent 360deg)",
@@ -109,7 +109,7 @@ export default function Loader({
           animate={{
             rotate: [0, -360],
           }}
-          className="absolute inset-0 rounded-full"
+          className="absolute inset-0 rounded-sm"
           style={{
             background:
               "conic-gradient(from 180deg, transparent 0deg, rgba(0, 0, 0, 0.6) 45deg, transparent 90deg)",
@@ -130,7 +130,7 @@ export default function Loader({
           animate={{
             rotate: [0, 360],
           }}
-          className="absolute inset-0 rounded-full"
+          className="absolute inset-0 rounded-sm"
           style={{
             background:
               "conic-gradient(from 270deg, transparent 0deg, rgba(0, 0, 0, 0.4) 20deg, transparent 40deg)",
@@ -151,7 +151,7 @@ export default function Loader({
           animate={{
             rotate: [0, 360],
           }}
-          className="absolute inset-0 hidden rounded-full dark:block"
+          className="absolute inset-0 hidden rounded-sm dark:block"
           style={{
             background:
               "conic-gradient(from 0deg, transparent 0deg, rgb(255, 255, 255) 90deg, transparent 180deg)",
@@ -171,7 +171,7 @@ export default function Loader({
           animate={{
             rotate: [0, 360],
           }}
-          className="absolute inset-0 hidden rounded-full dark:block"
+          className="absolute inset-0 hidden rounded-sm dark:block"
           style={{
             background:
               "conic-gradient(from 0deg, transparent 0deg, rgb(255, 255, 255) 120deg, rgba(255, 255, 255, 0.5) 240deg, transparent 360deg)",
@@ -191,7 +191,7 @@ export default function Loader({
           animate={{
             rotate: [0, -360],
           }}
-          className="absolute inset-0 hidden rounded-full dark:block"
+          className="absolute inset-0 hidden rounded-sm dark:block"
           style={{
             background:
               "conic-gradient(from 180deg, transparent 0deg, rgba(255, 255, 255, 0.6) 45deg, transparent 90deg)",
@@ -211,7 +211,7 @@ export default function Loader({
           animate={{
             rotate: [0, 360],
           }}
-          className="absolute inset-0 hidden rounded-full dark:block"
+          className="absolute inset-0 hidden rounded-sm dark:block"
           style={{
             background:
               "conic-gradient(from 270deg, transparent 0deg, rgba(255, 255, 255, 0.4) 20deg, transparent 40deg)",

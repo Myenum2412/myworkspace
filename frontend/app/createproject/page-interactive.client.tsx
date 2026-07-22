@@ -177,7 +177,7 @@ export function CreateProjectPageInteractive() {
                     <CalendarIcon className="size-3.5 text-muted-foreground" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                <PopoverContent className="w-auto p-0 rounded-sm" align="start">
                   <Calendar mode="single" selected={deadline} onSelect={(d) => { setDeadline(d); setDeadlineOpen(false); }} />
                 </PopoverContent>
               </Popover>
@@ -191,7 +191,7 @@ export function CreateProjectPageInteractive() {
                       key={c}
                       type="button"
                       onClick={() => setColor(c)}
-                      className={`size-7 rounded-full ring-offset-2 ring-offset-background transition-all ${
+                      className={`size-7 rounded-sm ring-offset-2 ring-offset-background transition-all ${
                         color === c ? "ring-2 ring-foreground scale-110" : ""
                       }`}
                       style={{ backgroundColor: c }}
@@ -202,7 +202,7 @@ export function CreateProjectPageInteractive() {
                   type="color"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
-                  className="size-8 cursor-pointer rounded-md border border-border bg-transparent p-0.5"
+                  className="size-8 cursor-pointer rounded-sm border border-border bg-transparent p-0.5"
                 />
               </div>
             </FormField>
@@ -211,7 +211,7 @@ export function CreateProjectPageInteractive() {
           </div>
         </ScrollArea>
 
-        <fieldset className="rounded-xl border p-4 space-y-4 flex flex-col h-full">
+        <fieldset className="rounded-sm border p-4 space-y-4 flex flex-col h-full">
           <legend className="text-sm font-semibold px-2">Description</legend>
           <div className="flex-1 min-h-0">
             <GoogleDocsEditor

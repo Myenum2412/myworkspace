@@ -293,20 +293,20 @@ export function SetupWizard() {
               )}
 
               {state.error && (
-                <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                <div className="p-3 rounded-sm bg-destructive/10 text-destructive text-sm">
                   {state.error}
                 </div>
               )}
 
               {state.warning && (
-                <div className="p-3 rounded-lg bg-yellow-500/10 text-yellow-600 text-sm">
+                <div className="p-3 rounded-sm bg-yellow-500/10 text-yellow-600 text-sm">
                   {state.warning}
                 </div>
               )}
 
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>The following directories will be created:</p>
-                <code className="block p-2 rounded bg-muted font-mono text-[11px] leading-relaxed">
+                <code className="block p-2 rounded-sm bg-muted font-mono text-[11px] leading-relaxed">
                   {state.storagePath || "[path]"}/
                   {"{cache, attachments, exports, backups, logs, offline-db, thumbnails, temp}"}
                 </code>

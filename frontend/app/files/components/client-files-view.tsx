@@ -83,7 +83,7 @@ export function ClientFilesView() {
           </Button>
           <div className="h-5 w-px bg-border" />
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="size-8 rounded-sm bg-primary/10 flex items-center justify-center">
               <Building2Icon className="size-4 text-primary" />
             </div>
             <div>
@@ -109,7 +109,7 @@ export function ClientFilesView() {
                   {clientFolders.map((f) => (
                     <div
                       key={f.id}
-                      className="flex items-center gap-2 p-3 rounded-xl border bg-card"
+                      className="flex items-center gap-2 p-3 rounded-sm border bg-card"
                     >
                       <FolderIcon className="size-5 text-amber-500 shrink-0" />
                       <span className="text-sm font-medium truncate">{f.name}</span>
@@ -135,7 +135,7 @@ export function ClientFilesView() {
                   {clientFiles.map((f) => (
                     <div
                       key={f.id}
-                      className="flex items-center gap-3 p-3 rounded-xl border bg-card hover:border-primary/30 hover:shadow-sm transition-all group"
+                      className="flex items-center gap-3 p-3 rounded-sm border bg-card hover:border-primary/30 hover:shadow-sm transition-all group"
                     >
                       <FileIcon className="size-5 text-muted-foreground shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -146,7 +146,7 @@ export function ClientFilesView() {
                       </div>
                       <a
                         href={`/api/files/${f.id}/download`}
-                        className="size-8 rounded-md hover:bg-accent flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="size-8 rounded-sm hover:bg-accent flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Download"
                       >
                         <DownloadIcon className="size-4 text-muted-foreground" />
@@ -194,9 +194,9 @@ export function ClientFilesView() {
           <button
             key={c.id}
             onClick={() => setSelectedClient(c)}
-            className="flex items-center gap-3 p-4 rounded-xl border bg-card hover:border-primary/30 hover:shadow-sm transition-all group text-left"
+            className="flex items-center gap-3 p-4 rounded-sm border bg-card hover:border-primary/30 hover:shadow-sm transition-all group text-left"
           >
-            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-sm bg-primary/10 flex items-center justify-center shrink-0">
               <Building2Icon className="size-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">

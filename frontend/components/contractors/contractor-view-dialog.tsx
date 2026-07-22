@@ -88,7 +88,7 @@ export function ContractorViewDialog({ contractor, open, onOpenChange }: Props) 
               <h3 className="text-sm font-semibold mb-2">Emergency Contacts</h3>
               <div className="space-y-2">
                 {contractor.emergencyContacts?.map((c, i) => (
-                  <div key={i} className="rounded-lg border p-3">
+                  <div key={i} className="rounded-sm border p-3">
                     <p className="text-xs font-medium text-muted-foreground mb-1">Contact {i + 1}</p>
                     <div className="grid grid-cols-3 gap-4">
                       <FieldDisplay label="Name" value={c.name} />

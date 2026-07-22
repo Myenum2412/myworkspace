@@ -200,7 +200,7 @@ export function ChartBarInteractive() {
                   )
                 }
                 className={cn(
-                  "flex h-5 items-center justify-end rounded px-2 text-xs leading-none transition-colors",
+                  "flex h-5 items-center justify-end rounded-sm px-2 text-xs leading-none transition-colors",
                   selectedHour === hour
                     ? "bg-primary font-medium text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"

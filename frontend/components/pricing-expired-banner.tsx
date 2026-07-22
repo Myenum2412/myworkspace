@@ -31,8 +31,8 @@ export function PricingExpiredBanner() {
   const Icon = config.icon;
 
   return (
-    <div className={cn("rounded-xl border p-4 flex items-start gap-3 mb-8", config.bg)}>
-      <div className={cn("size-10 rounded-full flex items-center justify-center shrink-0", config.bg)}>
+    <div className={cn("rounded-sm border p-4 flex items-start gap-3 mb-8", config.bg)}>
+      <div className={cn("size-10 rounded-sm flex items-center justify-center shrink-0", config.bg)}>
         <Icon className={cn("size-5", config.color)} />
       </div>
       <div>

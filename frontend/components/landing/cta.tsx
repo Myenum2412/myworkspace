@@ -6,10 +6,10 @@ export function Cta() {
   return (
     <section className="py-20 sm:py-28 safe-paddings">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-800 to-brand-900 px-6 py-16 sm:px-12 sm:py-20">
+        <div className="relative overflow-hidden rounded-sm bg-gradient-to-br from-brand-800 to-brand-900 px-6 py-16 sm:px-12 sm:py-20">
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-brand-500/20 blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-brand-400/10 blur-3xl" />
+            <div className="absolute -top-20 -right-20 h-60 w-60 rounded-sm bg-brand-500/20 blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-sm bg-brand-400/10 blur-3xl" />
           </div>
 
           <div className="relative mx-auto max-w-2xl text-center">

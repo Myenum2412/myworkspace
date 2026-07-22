@@ -116,7 +116,7 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
     <main className="flex flex-1 flex-col gap-0 p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
         <div className="flex items-center gap-3 min-w-0 shrink-0">
-          <div className="flex items-center justify-center size-10 rounded-xl bg-primary/10 shrink-0">
+          <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
             <UsersIcon className="size-5 text-primary" />
           </div>
           <div className="min-w-0">
@@ -130,7 +130,7 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
         </div>
 
         <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">
-          <div className="relative bg-white border border-gray-200 rounded-lg focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+          <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder=""
@@ -158,7 +158,7 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
       </div>
 
       <div className="relative w-full mb-4 sm:hidden">
-        <div className="relative bg-white border border-gray-200 rounded-lg focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+        <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder=""
@@ -235,7 +235,7 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
                 <tr>
                   <td colSpan={colSpan} className="text-center py-16 bg-white">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="flex items-center justify-center size-12 rounded-full bg-muted">
+                      <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
                         <UsersIcon className="size-6 text-muted-foreground/50" />
                       </div>
                       <div>

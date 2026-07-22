@@ -37,7 +37,7 @@ function toRow(arr: any[] | undefined, defaults: Record<string, any>): Row[] {
 
 function Section({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) {
   return (
-    <fieldset className="rounded-xl border p-4 space-y-4">
+    <fieldset className="rounded-sm border p-4 space-y-4">
       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
         <Icon className="size-3.5" />
         {title}
@@ -209,13 +209,13 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
       </div>
 
       {formSuccess && (
-        <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
+        <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-sm bg-green-50 px-3 py-2 text-sm text-green-700">
           <CheckCircle2Icon className="size-4 shrink-0" />
           {formSuccess}
         </div>
       )}
       {formError && (
-        <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-sm text-destructive">
           <AlertCircleIcon className="size-4 shrink-0" />
           {formError}
         </div>
@@ -333,7 +333,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
                   <Field className="sm:col-span-2">
                     <FieldLabel>Job Description</FieldLabel>
                     <textarea
-                      className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
+                      className="min-h-[60px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
                       placeholder=""
                       value={row.description || ""}
                       onChange={(e) => updateRow(setWorkExperience, row.id, "description", e.target.value)}
