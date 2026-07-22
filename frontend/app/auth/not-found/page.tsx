@@ -17,7 +17,7 @@ export default function AuthNotFoundPage({
               alt="MyWorkSpace Logo"
               width={32}
               height={32}
-              className="size-8 rounded-sm object-cover shadow-sm"
+              className="size-8 rounded-full object-cover shadow-sm"
             />
             <span className="text-base tracking-tight">MyWorkSpace</span>
           </Link>

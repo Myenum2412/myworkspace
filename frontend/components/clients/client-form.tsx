@@ -156,7 +156,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
       displayName,
       workPhone, mobile,
       gstTreatment, placeOfSupply, panNumber, taxPreference,
-      paymentTerms, portalAccess, clientPassword,
+      paymentTerms, portalAccess, password: clientPassword,
       billingAttention, billingCountry, billingStreet1, billingStreet2,
       billingCity, billingState, billingPinCode,
       billingPhoneCode, billingPhone, billingFax,

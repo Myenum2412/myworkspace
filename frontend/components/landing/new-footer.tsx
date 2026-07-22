@@ -48,8 +48,8 @@ export function NewFooter() {
         <div className="grid gap-8 md:grid-cols-2">
           <div className="max-w-sm">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-none bg-brand-800">
-                <Image src="/logo.jpeg" alt="Logo" width={24} height={24} className="h-6 w-6 object-contain" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-800">
+                <Image src="/logo.jpeg" alt="Logo" width={24} height={24} className="h-6 w-6 object-cover rounded-full" />
               </div>
               <span className="text-lg font-bold tracking-tight text-brand-900">MyWorkSpace</span>
             </Link>

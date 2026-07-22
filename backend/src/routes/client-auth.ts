@@ -57,6 +57,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     orgId: result.orgId || "",
     clientId: result.user?.id || "",
     clientUserId: result.user?.id || "",
+    createdBy: result.user?.id || "",
     action: "client.login.success",
     entityType: "client_user",
     entityId: result.user?.id || "",

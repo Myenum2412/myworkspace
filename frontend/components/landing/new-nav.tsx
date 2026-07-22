@@ -28,8 +28,8 @@ export function NewNav() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex h-16 w-full items-center border-b border-border bg-background/80 backdrop-blur-md px-6 safe-paddings">
       <Link href="/" className="flex shrink-0 items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-none bg-brand-800">
-          <Image src="/logo.jpeg" alt="Logo" width={24} height={24} className="h-6 w-6 object-contain" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-800">
+          <Image src="/logo.jpeg" alt="Logo" width={24} height={24} className="h-6 w-6 object-cover rounded-full" />
         </div>
         <span className="text-base font-bold tracking-tight text-brand-900">MyWorkSpace</span>
       </Link>

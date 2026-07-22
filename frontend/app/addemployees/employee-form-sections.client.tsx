@@ -123,7 +123,7 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
       >
         {currentImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={currentImage} alt="Avatar" className="size-full rounded-2xl object-cover" />
+          <img src={currentImage} alt="Avatar" className="size-full rounded-full object-cover" />
         ) : (
           <CameraIcon className="size-8 text-muted-foreground" />
         )}
