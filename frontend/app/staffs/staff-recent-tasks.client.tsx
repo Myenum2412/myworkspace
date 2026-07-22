@@ -23,6 +23,18 @@ const priorityStyles: Record<string, string> = {
   urgent: "bg-red-100 text-red-600",
 };
 
+const COMPLETED_STATUSES = new Set(["completed", "done", "cancelled", "closed", "rejected"]);
+
+function getDueStatus(dueDate: string | null, status: string): "overdue" | "due-soon" | "normal" {
+  if (!dueDate || COMPLETED_STATUSES.has(status)) return "normal";
+  const now = new Date();
+  const due = new Date(dueDate);
+  const diffMs = due.getTime() - now.getTime();
+  if (diffMs < 0) return "overdue";
+  if (diffMs <= 86400000) return "due-soon";
+  return "normal";
+}
+
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-100 text-gray-700",
   in_progress: "bg-blue-100 text-blue-700",
@@ -53,10 +65,13 @@ export function StaffRecentTasks({ tasks }: { tasks: Task[] }) {
                 </tr>
               </thead>
               <tbody>
-                {tasks.map((t) => (
+                {tasks.map((t) => {
+                  const dueStatus = getDueStatus(t.dueDate, t.status);
+                  const rowClass = dueStatus === "overdue" ? "bg-red-50 hover:bg-red-100/50" : dueStatus === "due-soon" ? "bg-yellow-50 hover:bg-yellow-100/50" : "bg-white hover:bg-slate-50";
+                  return (
                   <tr
                     key={t._id}
-                    className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer"
+                    className={`border-b last:border-0 transition-colors cursor-pointer ${rowClass}`}
                     onClick={() => { setSelectedTask(t); setViewOpen(true); }}
                   >
                     <td className="px-4 py-3 text-sm font-medium">{t.title}</td>
@@ -72,10 +87,15 @@ export function StaffRecentTasks({ tasks }: { tasks: Task[] }) {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
+                      <span className="flex items-center gap-1">
+                        {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
+                        {dueStatus === "overdue" && <span className="text-[10px] font-medium text-red-600">(Overdue)</span>}
+                        {dueStatus === "due-soon" && <span className="text-[10px] font-medium text-yellow-600">(Due Soon)</span>}
+                      </span>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -83,7 +103,7 @@ export function StaffRecentTasks({ tasks }: { tasks: Task[] }) {
       )}
 
       <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 flex flex-col sm:max-w-4xl" showCloseButton={false}>
+        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-xl sm:m-4" showCloseButton={false}>
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask as any}

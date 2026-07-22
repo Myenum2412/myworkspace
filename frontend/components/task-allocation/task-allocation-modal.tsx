@@ -19,7 +19,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+
 
 import { BlogEditor } from "@/components/ui/blog-editor";
 
@@ -253,9 +253,11 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
   const TaskTypeIcon = TASK_TYPES.find(t => t.id === taskType)?.icon || UserIcon;
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open}>
-      <DialogContent showCloseButton={false} className="sm:max-w-[90vw] max-h-[100vh] min-h-[80vh] w-full flex flex-col overflow-hidden p-0 gap-0">
+    <div className="fixed inset-0 z-50 bg-black/50">
+      <div className="w-full h-full sm:relative sm:w-[95vw] sm:h-[95vh] sm:mx-auto sm:mt-[2.5vh] sm:rounded-xl bg-card flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-4 border-b shrink-0">
           <div>
@@ -303,7 +305,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
 
         {/* Scrollable Form Body */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 w-full">
             {/* Left Column: Fields */}
             <div className="md:col-span-2 space-y-6">
 
@@ -573,7 +575,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             )}
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

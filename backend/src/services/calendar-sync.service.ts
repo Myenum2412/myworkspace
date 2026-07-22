@@ -1,5 +1,7 @@
-import { db } from "../lib/db/index.js";
+import { mongoose } from "../lib/db/index.js";
 import { collections } from "../lib/db/collections.js";
+
+const db = mongoose.connection.db!;
 import { logger } from "../lib/logger/index.js";
 import crypto from "crypto";
 
@@ -95,7 +97,7 @@ async function refreshGoogleToken(refreshToken: string): Promise<string | null> 
     });
     const data = await res.json();
     return data.access_token || null;
-  } catch (err) {
+  } catch (err: any) {
     logger.error("Failed to refresh Google token:", err);
     return null;
   }
@@ -235,7 +237,7 @@ export async function syncUserCalendars(userId: string): Promise<SyncResult> {
         result.updated += googleResult.updated;
         result.deleted += googleResult.deleted;
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.error(`Error syncing calendar for user ${userId}:`, err);
       result.errors++;
     }
@@ -274,7 +276,7 @@ async function syncGoogleCalendar(
           { $set: { syncToken: calResult.nextSyncToken, lastSyncAt: new Date() } }
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.error(`Error syncing calendar ${cal.id}:`, err);
       result.errors++;
     }
@@ -374,7 +376,7 @@ async function syncGoogleCalendarEvents(
           result.synced++;
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.error(`Error processing event ${event.id}:`, err);
       result.errors++;
     }
@@ -432,7 +434,7 @@ export async function setupCalendarWebhook(
 
     logger.info(`Webhook set up for calendar ${calendarId}, channel ${channelId}`);
     return true;
-  } catch (err) {
+  } catch (err: any) {
     logger.error("Failed to set up webhook:", err);
     return false;
   }
@@ -457,7 +459,7 @@ export async function renewExpiringWebhooks(): Promise<number> {
       const connection = conn as unknown as CalendarConnection;
       const success = await setupCalendarWebhook(connection.id, "primary");
       if (success) renewed++;
-    } catch (err) {
+    } catch (err: any) {
       logger.error(`Failed to renew webhook for connection ${conn.id}:`, err);
     }
   }
@@ -515,12 +517,12 @@ export async function runScheduledSync(): Promise<void> {
     .find({ syncEnabled: true })
     .toArray();
 
-  const uniqueUserIds = [...new Set(connections.map((c) => c.userId))];
+  const uniqueUserIds = [...new Set(connections.map((c: any) => c.userId))];
 
   for (const userId of uniqueUserIds) {
     try {
-      await syncUserCalendars(userId);
-    } catch (err) {
+      await syncUserCalendars(userId as string);
+    } catch (err: any) {
       logger.error(`Scheduled sync failed for user ${userId}:`, err);
     }
   }

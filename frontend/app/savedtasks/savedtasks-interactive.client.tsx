@@ -7,12 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { TaskDataTable } from "@/components/task-data-table";
 import TaskGanttView from "@/components/task-gantt-view";
 import { apiFetch } from "@/lib/api";
@@ -44,7 +38,7 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4 h-screen">
+      <main className="flex flex-1 flex-col gap-4 p-4 min-h-0">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <BookmarkIcon className="size-5 sm:size-6" />
@@ -114,9 +108,9 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
           </div>
       </main>
 
-      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setEditMode(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 flex flex-col sm:max-w-4xl" showCloseButton={false}>
-          {selectedTask && (
+      {viewOpen && selectedTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="relative w-[95vw] h-[95vh] bg-card rounded-xl shadow-xl overflow-hidden flex flex-col">
             <TaskDetailedView
               task={selectedTask}
               editable
@@ -125,9 +119,9 @@ export default function SavedTasksInteractive({ initialTasks }: { initialTasks: 
               }}
               onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
     </>
   );

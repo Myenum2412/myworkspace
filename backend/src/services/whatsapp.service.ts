@@ -103,6 +103,13 @@ class WhatsAppService {
         },
       });
 
+      // Set custom user agent to show "My Workspace" in WhatsApp Linked Devices
+      this.client.on("browser_page", (page: any) => {
+        page.setUserAgent(
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 MyWorkspace/1.0"
+        );
+      });
+
       this.client.on("qr", async (qr: string) => {
         logger.info("WhatsApp QR code received");
         const qrDataUrl = await QRCode.toDataURL(qr, {

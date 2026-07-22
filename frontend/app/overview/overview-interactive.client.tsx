@@ -217,7 +217,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
 
       {viewOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="relative w-full max-w-6xl max-h-[90vh] mx-4 bg-card rounded-xl shadow-xl overflow-hidden flex flex-col">
+          <div className="relative w-[95vw] h-[95vh] bg-card rounded-xl shadow-xl overflow-hidden flex flex-col">
             <TaskDetailedView
               task={selectedTask}
               editable

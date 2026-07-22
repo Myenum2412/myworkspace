@@ -13,10 +13,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
 import { TaskDataTable } from "@/components/task-data-table";
 import TaskGanttView from "@/components/task-gantt-view";
 import { toast } from "sonner";
@@ -135,7 +131,8 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
     if (activeTypeTab !== "all") {
       result = result.filter((t: UiTask) => t.type === activeTypeTab);
     }
-    return result;
+    const seen = new Set<string>();
+    return result.filter((t: UiTask) => { const k = t._id || t.id; if (seen.has(k)) return false; seen.add(k); return true; });
   }, [tasks, activeTypeTab]);
 
   // Status-summary cards
@@ -162,7 +159,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4 h-screen">
+      <main className="flex flex-1 flex-col gap-4 p-4 min-h-0">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="w-full sm:w-auto">
             <h1 className="text-xl sm:text-2xl font-bold">Tasks</h1>
@@ -275,9 +272,9 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
             </div>
           </div>
 
-        <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
-          <DialogContent className="p-0 flex flex-col sm:max-w-4xl max-h-[90vh]" showCloseButton={false}>
-            {selectedTask && (
+        {viewOpen && selectedTask && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="relative w-[95vw] h-[95vh] bg-card rounded-xl shadow-xl overflow-hidden flex flex-col">
               <TaskDetailedView
                 task={selectedTask}
                 editable
@@ -286,9 +283,9 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
                 }}
                 onClose={() => { setViewOpen(false); setSelectedTask(null); }}
               />
-            )}
-          </DialogContent>
-        </Dialog>
+            </div>
+          </div>
+        )}
 
       </main>
     </>

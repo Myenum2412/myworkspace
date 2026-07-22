@@ -38,7 +38,7 @@ export default function OverviewClient({
   upcomingTasks,
 }: OverviewClientProps) {
   return (
-    <Tabs defaultValue="overview" className="w-full">
+    <Tabs defaultValue="overview" className="w-full flex-1 min-h-0 flex flex-col">
       <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
         <TabsTrigger
           value="overview"
@@ -78,27 +78,27 @@ export default function OverviewClient({
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="overview" className="mt-4">
+      <TabsContent value="overview" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
         <OverviewInteractive tasks={overviewTasks} currentUserId={currentUserId} />
       </TabsContent>
 
-      <TabsContent value="team_tasks" className="mt-4">
+      <TabsContent value="team_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
         <TeamTasksInteractive tasks={teamTasks} />
       </TabsContent>
 
-      <TabsContent value="all_tasks" className="mt-4">
+      <TabsContent value="all_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
         <AllTasksInteractive initialTasks={allTasks} orgId={orgId} />
       </TabsContent>
 
-      <TabsContent value="my_tasks" className="mt-4">
+      <TabsContent value="my_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
         <MyTasksInteractive initialTasks={myTasks} orgId={orgId} userId={userId} />
       </TabsContent>
 
-      <TabsContent value="saved_tasks" className="mt-4">
+      <TabsContent value="saved_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
         <SavedTasksInteractive initialTasks={savedTasks} />
       </TabsContent>
 
-      <TabsContent value="upcoming_tasks" className="mt-4">
+      <TabsContent value="upcoming_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
         <UpcomingTasksInteractive initialTasks={upcomingTasks} />
       </TabsContent>
     </Tabs>

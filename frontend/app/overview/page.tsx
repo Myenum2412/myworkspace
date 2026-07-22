@@ -165,7 +165,12 @@ export default async function OverviewPage() {
       };
     });
 
-    allTasks = (allRaw as Record<string, unknown>[]).map((t) => {
+    const allDedupMap = new Map<string, Record<string, unknown>>();
+    for (const t of (allRaw as Record<string, unknown>[])) {
+      const key = String((t._id as { toString: () => string })?.toString?.() || t._id || "");
+      if (!allDedupMap.has(key)) allDedupMap.set(key, t);
+    }
+    allTasks = [...allDedupMap.values()].map((t) => {
       const assignee = (t.assignee as Record<string, unknown> | null) || null;
       const creator = (t.creator as Record<string, unknown> | null) || null;
       const team = (t.team as Record<string, unknown> | null) || null;

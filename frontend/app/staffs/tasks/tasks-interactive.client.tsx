@@ -221,7 +221,7 @@ export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task
       </main>
 
       <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 flex flex-col max-w-5xl w-[95vw]">
+        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-xl sm:m-4">
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}

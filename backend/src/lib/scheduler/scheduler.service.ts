@@ -41,10 +41,6 @@ class SchedulerService {
     this.startupTime = new Date();
     logger.info("Initializing scheduler service with Bree (JobScheduler.NET)");
 
-    const heartbeatHandler = async () => {
-      await this.processHeartbeat();
-    };
-
     this.bree = new Bree({
       logger: false,
       root: false,
@@ -67,7 +63,7 @@ class SchedulerService {
           name: "scheduler-heartbeat",
           cron: "* * * * *",
           timeout: false,
-          path: heartbeatHandler,
+          path: path.join(__dirname, "workers", "scheduler-heartbeat.js"),
         },
       ],
     });
@@ -86,6 +82,13 @@ class SchedulerService {
     await this.bree.start();
 
     await this.seedSystemJobs();
+
+    // Run heartbeat in main process (worker is just a placeholder for Bree)
+    setInterval(() => {
+      this.processHeartbeat().catch((err) => {
+        logger.error({ err }, "Heartbeat processing failed");
+      });
+    }, 60000); // Every 60 seconds
 
     this.initialized = true;
     logger.info({ systemJobs: SYSTEM_JOBS.length }, "Scheduler initialized with Bree");

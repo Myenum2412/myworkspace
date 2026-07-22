@@ -24,8 +24,9 @@ router.get("/admin/settings", authenticate, async (req: AuthRequest, res: Respon
   if (user.role !== "org_admin" && user.role !== "members") {
     throw new AppError(403, "Forbidden: Admin access required");
   }
+  if (!user.orgId) throw new AppError(400, "User not associated with an organization");
 
-  const scheduler = await getOrCreateScheduler(user.orgId);
+  const scheduler = await getOrCreateScheduler(user.orgId!);
   res.json({ data: scheduler });
 });
 
@@ -37,10 +38,10 @@ router.put("/admin/settings", authenticate, async (req: AuthRequest, res: Respon
   }
 
   const settings = req.body;
-  const scheduler = await updateSchedulerSettings(user.orgId, settings);
+  const scheduler = await updateSchedulerSettings(user.orgId!, settings);
 
   await recordAuditLog({
-    orgId: user.orgId,
+    orgId: user.orgId!,
     userId: user.userId,
     createdBy: user.userId,
     action: "scheduler.settings_updated",
@@ -60,8 +61,8 @@ router.get("/admin/stats", authenticate, async (req: AuthRequest, res: Response)
     throw new AppError(403, "Forbidden: Admin access required");
   }
 
-  const scheduler = await getSchedulerSettings(user.orgId);
-  const auditStats = await getAuditLogStats(user.orgId);
+  const scheduler = await getSchedulerSettings(user.orgId!);
+  const auditStats = await getAuditLogStats(user.orgId!);
 
   const now = new Date();
   const nextRun = new Date();
@@ -96,10 +97,10 @@ router.post("/admin/run", authenticate, async (req: AuthRequest, res: Response) 
     throw new AppError(403, "Forbidden: Admin access required");
   }
 
-  const results = await runDailyTaskEmailScheduler(user.orgId);
+  const results = await runDailyTaskEmailScheduler(user.orgId!);
 
   await recordAuditLog({
-    orgId: user.orgId,
+    orgId: user.orgId!,
     userId: user.userId,
     createdBy: user.userId,
     action: "scheduler.manual_run",
@@ -121,8 +122,8 @@ router.get("/admin/audit-logs", authenticate, async (req: AuthRequest, res: Resp
   const limit = parseInt(req.query.limit as string) || 50;
   const offset = parseInt(req.query.offset as string) || 0;
 
-  const logs = await getAuditLogs(user.orgId, limit, offset);
-  const stats = await getAuditLogStats(user.orgId);
+  const logs = await getAuditLogs(user.orgId!, limit, offset);
+  const stats = await getAuditLogStats(user.orgId!);
 
   res.json({ data: { logs, stats } });
 });
@@ -134,7 +135,7 @@ router.post("/admin/retry-failed", authenticate, async (req: AuthRequest, res: R
     throw new AppError(403, "Forbidden: Admin access required");
   }
 
-  const retriedCount = await retryFailedEmails(user.orgId);
+  const retriedCount = await retryFailedEmails(user.orgId!);
 
   res.json({ data: { retriedCount } });
 });

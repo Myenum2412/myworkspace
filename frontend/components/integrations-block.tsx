@@ -13,6 +13,7 @@ import {
   RiRobot2Line,
   RiBrainLine,
   RiMagicLine,
+  RiWhatsappLine,
 } from "@remixicon/react"
 
 import { cn } from "@/lib/utils"
@@ -28,7 +29,15 @@ import {
 } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Loader2Icon } from "lucide-react"
+import { Loader2Icon, CheckCircle2Icon, XCircleIcon, SmartphoneIcon } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { getSocketIO } from "@/lib/socketio-client"
 
 type CalendarConnection = {
   id: string
@@ -40,17 +49,35 @@ type CalendarConnection = {
   createdAt: string
 }
 
+type WhatsAppStatus = "disconnected" | "initializing" | "qr" | "ready" | "authenticated" | "error"
+
+interface WhatsAppClientState {
+  status: WhatsAppStatus
+  qrCode?: string
+  phoneNumber?: string
+  error?: string
+  info?: { me: string; phone: string; platform: string }
+}
+
 type Integration = {
   id: string
   name: string
   description: string
   icon: typeof RiGoogleLine
   category: string
-  type: "calendar" | "email" | "ai"
+  type: "calendar" | "email" | "ai" | "whatsapp"
   provider?: "google"
 }
 
 const integrations: Integration[] = [
+  {
+    id: "whatsapp",
+    name: "WhatsApp",
+    description: "Connect WhatsApp for messaging automation, notifications, and communication.",
+    icon: RiWhatsappLine,
+    category: "Messaging",
+    type: "whatsapp",
+  },
   {
     id: "google-calendar",
     name: "Google Calendar",
@@ -109,6 +136,11 @@ export default function IntegrationsBlock() {
   const [connecting, setConnecting] = useState<string | null>(null)
   const [syncing, setSyncing] = useState<string | null>(null)
 
+  // WhatsApp state
+  const [whatsappState, setWhatsappState] = useState<WhatsAppClientState>({ status: "disconnected" })
+  const [whatsappOpen, setWhatsappOpen] = useState(false)
+  const [whatsappStarting, setWhatsappStarting] = useState(false)
+
   const fetchConnections = useCallback(async () => {
     try {
       const res = await fetch("/api/calendar/connections")
@@ -127,7 +159,61 @@ export default function IntegrationsBlock() {
     fetchConnections()
   }, [fetchConnections])
 
+  // WhatsApp socket listener
+  useEffect(() => {
+    if (!whatsappOpen) return
+
+    const socket = getSocketIO()
+
+    const handleStatus = (state: WhatsAppClientState) => {
+      setWhatsappState(state)
+    }
+
+    socket.on("whatsapp:status", handleStatus)
+
+    fetch("/api/whatsapp/status")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setWhatsappState(d.data)
+      })
+      .catch(() => {})
+
+    return () => {
+      socket.off("whatsapp:status", handleStatus)
+    }
+  }, [whatsappOpen])
+
+  // WhatsApp polling for QR code
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (whatsappState.status === "initializing" || whatsappState.status === "qr") {
+        fetch("/api/whatsapp/status")
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.success) setWhatsappState(d.data)
+          })
+          .catch(() => {})
+      }
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [whatsappState.status])
+
+  // Send email notification when WhatsApp connects
+  useEffect(() => {
+    if (whatsappState.status === "ready" && whatsappState.phoneNumber) {
+      fetch("/api/whatsapp/notify-connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: whatsappState.phoneNumber }),
+      }).catch(() => {})
+    }
+  }, [whatsappState.status, whatsappState.phoneNumber])
+
   const isConnected = (integration: Integration): boolean => {
+    if (integration.type === "whatsapp") {
+      return whatsappState.status === "ready"
+    }
     if (integration.type === "calendar" && integration.provider) {
       return connections.some(
         (c) => c.provider === integration.provider && c.syncEnabled
@@ -148,7 +234,9 @@ export default function IntegrationsBlock() {
   const handleConnect = async (integration: Integration) => {
     setConnecting(integration.id)
     try {
-      if (integration.type === "calendar" && integration.provider === "google") {
+      if (integration.type === "whatsapp") {
+        setWhatsappOpen(true)
+      } else if (integration.type === "calendar" && integration.provider === "google") {
         window.location.href = "/api/calendar/google"
       } else {
         // For AI and other integrations, show coming soon
@@ -159,10 +247,45 @@ export default function IntegrationsBlock() {
     }
   }
 
+  const handleWhatsAppStart = async () => {
+    setWhatsappStarting(true)
+    try {
+      const res = await fetch("/api/whatsapp/start", { method: "POST" })
+      const data = await res.json()
+      if (!data.success) {
+        setWhatsappState({ status: "error", error: data.error || "Failed to start client" })
+      }
+    } catch {
+      setWhatsappState({ status: "error", error: "Failed to start client" })
+    } finally {
+      setWhatsappStarting(false)
+    }
+  }
+
+  const handleWhatsAppStop = async () => {
+    try {
+      await fetch("/api/whatsapp/stop", { method: "POST" })
+      setWhatsappState({ status: "disconnected" })
+    } catch {
+      setWhatsappState({ status: "error", error: "Failed to stop client" })
+    }
+  }
+
+  const handleWhatsAppLogout = async () => {
+    try {
+      await fetch("/api/whatsapp/logout", { method: "POST" })
+      setWhatsappState({ status: "disconnected" })
+    } catch {
+      setWhatsappState({ status: "error", error: "Failed to logout" })
+    }
+  }
+
   const handleDisconnect = async (integration: Integration) => {
     setConnecting(integration.id)
     try {
-      if (integration.type === "calendar" && integration.provider) {
+      if (integration.type === "whatsapp") {
+        await handleWhatsAppStop()
+      } else if (integration.type === "calendar" && integration.provider) {
         await fetch(`/api/calendar/connections?provider=${integration.provider}`, {
           method: "DELETE",
         })
@@ -223,7 +346,7 @@ export default function IntegrationsBlock() {
             <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             {integrations.map((integration) => {
               const isOn = isConnected(integration)
               const connection = getConnection(integration)
@@ -358,6 +481,123 @@ export default function IntegrationsBlock() {
           </div>
         </div>
       </div>
+
+      {/* WhatsApp QR Code Modal */}
+      <Dialog open={whatsappOpen} onOpenChange={setWhatsappOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Connect WhatsApp</DialogTitle>
+            <DialogDescription>
+              {whatsappState.status === "disconnected" &&
+                "Start the client and scan the QR code with your phone."}
+              {whatsappState.status === "initializing" &&
+                "Initializing WhatsApp client..."}
+              {whatsappState.status === "qr" &&
+                "Scan the QR code with your phone's WhatsApp."}
+              {whatsappState.status === "ready" &&
+                `Connected as ${whatsappState.phoneNumber || "your account"}.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col items-center gap-4 py-4">
+            {/* Disconnected state */}
+            {whatsappState.status === "disconnected" && (
+              <div className="flex flex-col items-center gap-4 py-4">
+                <SmartphoneIcon className="size-16 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground text-center max-w-xs">
+                  Start the client and scan the QR code with your phone's WhatsApp
+                  (Linked Devices → Link a Device).
+                </p>
+                <Button onClick={handleWhatsAppStart} disabled={whatsappStarting} className="w-full">
+                  {whatsappStarting && <Loader2Icon className="mr-2 size-4 animate-spin" />}
+                  Start & Show QR Code
+                </Button>
+              </div>
+            )}
+
+            {/* Initializing state */}
+            {whatsappState.status === "initializing" && (
+              <div className="flex flex-col items-center gap-4 py-8">
+                <Loader2Icon className="size-12 animate-spin text-amber-500" />
+                <p className="text-sm text-muted-foreground">Initializing WhatsApp client...</p>
+              </div>
+            )}
+
+            {/* QR code state */}
+            {whatsappState.status === "qr" && whatsappState.qrCode && (
+              <>
+                <img src={whatsappState.qrCode} alt="QR Code" className="rounded-lg border" />
+                <p className="text-xs text-muted-foreground text-center max-w-xs">
+                  Open WhatsApp on your phone → Linked Devices → Link a Device → Scan this QR code.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  QR expires in 2 minutes — a new one will appear automatically.
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleWhatsAppStop}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Connected state */}
+            {whatsappState.status === "ready" && (
+              <div className="flex flex-col items-center gap-4 py-4">
+                <CheckCircle2Icon className="size-16 text-green-500" />
+                <div className="text-center">
+                  <p className="text-sm font-medium">WhatsApp Connected</p>
+                  {whatsappState.phoneNumber && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {whatsappState.phoneNumber}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleWhatsAppStop}>
+                    Disconnect
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={handleWhatsAppLogout}>
+                    Logout
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Error state */}
+            {whatsappState.status === "error" && (
+              <div className="flex flex-col items-center gap-4 py-4">
+                <XCircleIcon className="size-16 text-destructive" />
+                <p className="text-sm text-destructive text-center max-w-xs">
+                  {whatsappState.error || "Failed to connect."}
+                </p>
+                <Button size="sm" onClick={handleWhatsAppStart}>Retry</Button>
+              </div>
+            )}
+
+            {/* Status indicator */}
+            {whatsappState.status !== "disconnected" && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                {whatsappState.status === "ready" ? (
+                  <CheckCircle2Icon className="size-4 text-green-500" />
+                ) : whatsappState.status === "initializing" || whatsappState.status === "qr" ? (
+                  <Loader2Icon className="size-4 animate-spin text-amber-500" />
+                ) : whatsappState.status === "error" ? (
+                  <XCircleIcon className="size-4 text-destructive" />
+                ) : (
+                  <SmartphoneIcon className="size-4 text-muted-foreground" />
+                )}
+                <span>
+                  {whatsappState.status === "ready" ? "Connected" :
+                   whatsappState.status === "initializing" ? "Initializing..." :
+                   whatsappState.status === "qr" ? "Awaiting scan" :
+                   whatsappState.status === "error" ? "Error" : "Disconnected"}
+                </span>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }

@@ -48,7 +48,7 @@ function getDueDateStatus(dueDate?: string | null, status?: string): "overdue" |
   const diffMs = due.getTime() - now.getTime();
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
   if (diffMs < 0) return "overdue";
-  if (diffDays <= 1) return "due-soon";
+  if (diffDays <= 3) return "due-soon";
   return "normal";
 }
 

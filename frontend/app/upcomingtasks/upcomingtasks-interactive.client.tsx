@@ -8,12 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { TaskDataTable } from "@/components/task-data-table";
 import TaskGanttView from "@/components/task-gantt-view";
 import { apiFetch } from "@/lib/api";
@@ -44,7 +38,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4 h-screen">
+      <main className="flex flex-1 flex-col gap-4 p-4 min-h-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CalendarClockIcon className="size-6" />
@@ -123,9 +117,9 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
         )}
       </main>
 
-      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setEditMode(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 flex flex-col sm:max-w-4xl" showCloseButton={false}>
-          {selectedTask && (
+      {viewOpen && selectedTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="relative w-[95vw] h-[95vh] bg-card rounded-xl shadow-xl overflow-hidden flex flex-col">
             <TaskDetailedView
               task={selectedTask}
               editable
@@ -134,9 +128,9 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
               }}
               onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
     </>
   );
