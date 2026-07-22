@@ -66,8 +66,6 @@ export default async function SignupPage(props: {
               <SignupForm
                 error={searchParams.error}
                 plan={searchParams.plan}
-                paymentId={searchParams.paymentId}
-                orderId={searchParams.orderId}
               />
             </div>
           </div>

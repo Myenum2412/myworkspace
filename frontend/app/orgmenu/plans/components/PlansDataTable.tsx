@@ -36,7 +36,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PaymentDialog } from "./PaymentDialog";
 import {
   Plus,
   MoreHorizontal,
@@ -265,12 +264,10 @@ function PlanCard({
   plan,
   organizations,
   onAssigned,
-  onPay,
 }: {
   plan: DefaultPlan;
   organizations: Organization[];
   onAssigned: () => void;
-  onPay: (plan: DefaultPlan) => void;
 }) {
   const orgsOnPlan = organizations.filter((org) => org.plan === plan.slug);
 
@@ -319,18 +316,11 @@ function PlanCard({
           <p className="text-xs text-muted-foreground mb-2">
             {orgsOnPlan.length} organization{orgsOnPlan.length !== 1 ? "s" : ""} on this plan
           </p>
-          {plan.priceMonthly > 0 ? (
-            <Button onClick={() => onPay(plan)} className="w-full">
-              <CreditCard className="h-4 w-4 mr-2" />
-              Assign & Pay
-            </Button>
-          ) : (
-            <AssignPlanDialog
-              plan={plan}
-              organizations={organizations}
-              onAssigned={onAssigned}
-            />
-          )}
+          <AssignPlanDialog
+            plan={plan}
+            organizations={organizations}
+            onAssigned={onAssigned}
+          />
         </div>
       </CardContent>
     </Card>
@@ -607,16 +597,9 @@ export function PlansDataTable({
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"pricing" | "custom" | "subscriptions">("pricing");
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<DefaultPlan | null>(null);
 
   const handleRefresh = async () => {
     window.location.reload();
-  };
-
-  const handlePay = (plan: DefaultPlan) => {
-    setSelectedPlanForPayment(plan);
-    setPaymentDialogOpen(true);
   };
 
   const handleDelete = async (planId: string) => {
@@ -707,7 +690,6 @@ export function PlansDataTable({
                 plan={plan}
                 organizations={organizations}
                 onAssigned={handleRefresh}
-                onPay={handlePay}
               />
             ))}
           </div>
@@ -955,17 +937,6 @@ export function PlansDataTable({
             </Table>
           </div>
         </div>
-      )}
-
-      {/* Payment Dialog */}
-      {selectedPlanForPayment && (
-        <PaymentDialog
-          open={paymentDialogOpen}
-          onOpenChange={setPaymentDialogOpen}
-          plan={selectedPlanForPayment}
-          organizations={organizations}
-          onSuccess={handleRefresh}
-        />
       )}
     </div>
   );
