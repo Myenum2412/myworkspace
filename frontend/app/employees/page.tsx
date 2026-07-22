@@ -194,7 +194,7 @@ export default async function EmployeesPage() {
             { $match: { orgId } },
             {
               $lookup: {
-                from: "teammembers",
+                from: collections.teamMembers,
                 let: { teamObjId: "$_id" },
                 pipeline: [
                   { $match: { $expr: { $eq: ["$teamId", { $toString: "$$teamObjId" }] } } },

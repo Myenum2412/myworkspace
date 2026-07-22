@@ -44,7 +44,7 @@ export default async function TeamsPage() {
         { $match: { orgId } },
         {
           $lookup: {
-            from: "teammembers",
+            from: collections.teamMembers,
             let: { teamObjId: "$_id" },
             pipeline: [
               { $match: { $expr: { $eq: ["$teamId", { $toString: "$$teamObjId" }] } } },
@@ -77,6 +77,7 @@ export default async function TeamsPage() {
         {
           $addFields: {
             memberCount: { $size: "$members" },
+            memberIds: "$members.userId",
             leadUser: { $arrayElemAt: ["$leadUsers", 0] },
             id: "$_id",
           },
@@ -88,6 +89,7 @@ export default async function TeamsPage() {
             name: 1,
             description: 1,
             memberCount: 1,
+            memberIds: 1,
             leadName: "$leadUser.name",
             leadAvatar: "$leadUser.image",
             leadId: "$leadUser._id",

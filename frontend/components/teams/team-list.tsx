@@ -48,9 +48,14 @@ export function TeamList({
   return (
     <>
       <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
-        <div className="min-w-0 shrink-0">
-          <h1 className="text-xl font-bold tracking-tight">Teams</h1>
-          <p className="text-sm text-muted-foreground">{filteredTeams.length} team(s)</p>
+        <div className="flex items-center gap-3 min-w-0 shrink-0">
+          <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
+            <UsersIcon className="size-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold tracking-tight">Teams</h1>
+            <p className="text-sm text-muted-foreground">Manage your team members and their roles</p>
+          </div>
         </div>
 
         <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">

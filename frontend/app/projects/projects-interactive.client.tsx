@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2Icon, LayoutDashboardIcon, Table2Icon } from "lucide-react";
+import { Trash2Icon, LayoutDashboardIcon, Table2Icon, ChevronLeftIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/components/projects/project-types";
 import { PROJECT_COLORS } from "@/components/projects/project-types";
@@ -331,49 +331,115 @@ export default function ProjectsInteractive({
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-        {showEdit && editingProject ? (
-          <ProjectEditForm
-            editName={editName}
-            onEditNameChange={setEditName}
-            editClient={editClient}
-            onEditClientChange={setEditClient}
-            editColor={editColor}
-            onEditColorChange={setEditColor}
-            editAccess={editAccess}
-            onEditAccessChange={setEditAccess}
-            editStatus={editStatus}
-            onEditStatusChange={setEditStatus}
-            editDescription={editDescription}
-            onEditDescriptionChange={setEditDescription}
-            editDeadline={editDeadline}
-            onEditDeadlineChange={setEditDeadline}
-            editPriority={editPriority}
-            onEditPriorityChange={setEditPriority}
-            editCategory={editCategory}
-            onEditCategoryChange={setEditCategory}
-            editStartDate={editStartDate}
-            onEditStartDateChange={setEditStartDate}
-            editBudget={editBudget}
-            onEditBudgetChange={setEditBudget}
-            editHealth={editHealth}
-            onEditHealthChange={setEditHealth}
-            editMembers={editMembers}
-            onEditMembersChange={setEditMembers}
-            editMemberSearch={editMemberSearch}
-            onEditMemberSearchChange={setEditMemberSearch}
-            editAttachment={editAttachment}
-            onEditAttachmentChange={setEditAttachment}
-            filteredMembers={editFilteredMembers}
-            clientList={clientList}
-            colors={PROJECT_COLORS}
-            submitting={submitting}
-            formError={formError}
-            onSubmit={handleSave}
-            onCancel={resetEdit}
-          />
+      <main className="flex flex-1 flex-col h-full bg-white min-w-0 max-w-full">
+        {showForm ? (
+          <>
+            <div className="flex items-center gap-3 px-3 sm:px-4 md:px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
+              <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); resetForm(); }} className="gap-1.5">
+                <ChevronLeftIcon className="size-4" />
+                Back
+              </Button>
+              <div className="h-5 w-px bg-border" />
+              <h1 className="text-lg font-semibold text-black">New Project</h1>
+            </div>
+            <div className="flex-1 overflow-auto bg-white">
+              <div className="max-w-5xl mx-auto py-6 bg-white my-6">
+                <ProjectCreateForm
+                  projectName={projectName}
+                  onProjectNameChange={setProjectName}
+                  selectedClient={selectedClient}
+                  onSelectedClientChange={setSelectedClient}
+                  projectDescription={projectDescription}
+                  onProjectDescriptionChange={setProjectDescription}
+                  projectDeadline={projectDeadline}
+                  onProjectDeadlineChange={setProjectDeadline}
+                  projectColor={projectColor}
+                  onProjectColorChange={setProjectColor}
+                  projectMembers={projectMembers}
+                  onProjectMembersChange={setProjectMembers}
+                  projectPriority={projectPriority}
+                  onProjectPriorityChange={setProjectPriority}
+                  projectCategory={projectCategory}
+                  onProjectCategoryChange={setProjectCategory}
+                  projectStartDate={projectStartDate}
+                  onProjectStartDateChange={setProjectStartDate}
+                  projectBudget={projectBudget}
+                  onProjectBudgetChange={setProjectBudget}
+                  projectAttachment={projectAttachment}
+                  onProjectAttachmentChange={setProjectAttachment}
+                  projectAccess={projectAccess}
+                  onProjectAccessChange={setProjectAccess}
+                  projectHealth={projectHealth}
+                  onProjectHealthChange={setProjectHealth}
+                  submitting={submitting}
+                  formError={formError}
+                  clientList={clientList}
+                  filteredMembers={filteredMembers}
+                  memberSearch={memberSearch}
+                  onMemberSearchChange={setMemberSearch}
+                  colors={PROJECT_COLORS}
+                  onSubmit={handleSubmit}
+                  onCancel={() => { setShowForm(false); resetForm(); }}
+                />
+              </div>
+            </div>
+          </>
+        ) : showEdit && editingProject ? (
+          <>
+            <div className="flex items-center gap-3 px-3 sm:px-4 md:px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
+              <Button variant="ghost" size="sm" onClick={resetEdit} className="gap-1.5">
+                <ChevronLeftIcon className="size-4" />
+                Back
+              </Button>
+              <div className="h-5 w-px bg-border" />
+              <h1 className="text-lg font-semibold text-black">Edit Project — {editingProject.name}</h1>
+            </div>
+            <div className="flex-1 overflow-auto bg-white">
+              <div className="max-w-5xl mx-auto py-6 bg-white my-6">
+                <ProjectEditForm
+                  editName={editName}
+                  onEditNameChange={setEditName}
+                  editClient={editClient}
+                  onEditClientChange={setEditClient}
+                  editColor={editColor}
+                  onEditColorChange={setEditColor}
+                  editAccess={editAccess}
+                  onEditAccessChange={setEditAccess}
+                  editStatus={editStatus}
+                  onEditStatusChange={setEditStatus}
+                  editDescription={editDescription}
+                  onEditDescriptionChange={setEditDescription}
+                  editDeadline={editDeadline}
+                  onEditDeadlineChange={setEditDeadline}
+                  editPriority={editPriority}
+                  onEditPriorityChange={setEditPriority}
+                  editCategory={editCategory}
+                  onEditCategoryChange={setEditCategory}
+                  editStartDate={editStartDate}
+                  onEditStartDateChange={setEditStartDate}
+                  editBudget={editBudget}
+                  onEditBudgetChange={setEditBudget}
+                  editHealth={editHealth}
+                  onEditHealthChange={setEditHealth}
+                  editMembers={editMembers}
+                  onEditMembersChange={setEditMembers}
+                  editMemberSearch={editMemberSearch}
+                  onEditMemberSearchChange={setEditMemberSearch}
+                  editAttachment={editAttachment}
+                  onEditAttachmentChange={setEditAttachment}
+                  filteredMembers={editFilteredMembers}
+                  clientList={clientList}
+                  colors={PROJECT_COLORS}
+                  submitting={submitting}
+                  formError={formError}
+                  onSubmit={handleSave}
+                  onCancel={resetEdit}
+                />
+              </div>
+            </div>
+          </>
         ) : viewProject ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-3 min-w-0">
                 <Button variant="ghost" size="sm" onClick={() => setViewProject(null)}>← Back</Button>
@@ -391,7 +457,7 @@ export default function ProjectsInteractive({
             <ProjectDetailedView project={viewProject} orgId={orgId} />
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1 rounded-sm border p-0.5 bg-muted/50 shrink-0">
                 {VIEW_TABS.map((t) => {
@@ -417,72 +483,29 @@ export default function ProjectsInteractive({
                 New Project
               </Button>
             </div>
-            {showForm ? (
-              <ProjectCreateForm
-                projectName={projectName}
-                onProjectNameChange={setProjectName}
-                selectedClient={selectedClient}
-                onSelectedClientChange={setSelectedClient}
-                projectDescription={projectDescription}
-                onProjectDescriptionChange={setProjectDescription}
-                projectDeadline={projectDeadline}
-                onProjectDeadlineChange={setProjectDeadline}
-                projectColor={projectColor}
-                onProjectColorChange={setProjectColor}
-                projectMembers={projectMembers}
-                onProjectMembersChange={setProjectMembers}
-                projectPriority={projectPriority}
-                onProjectPriorityChange={setProjectPriority}
-                projectCategory={projectCategory}
-                onProjectCategoryChange={setProjectCategory}
-                projectStartDate={projectStartDate}
-                onProjectStartDateChange={setProjectStartDate}
-                projectBudget={projectBudget}
-                onProjectBudgetChange={setProjectBudget}
-                projectAttachment={projectAttachment}
-                onProjectAttachmentChange={setProjectAttachment}
-                projectAccess={projectAccess}
-                onProjectAccessChange={setProjectAccess}
-                projectHealth={projectHealth}
-                onProjectHealthChange={setProjectHealth}
-                submitting={submitting}
-                formError={formError}
-                clientList={clientList}
-                filteredMembers={filteredMembers}
-                memberSearch={memberSearch}
-                onMemberSearchChange={setMemberSearch}
-                colors={PROJECT_COLORS}
-                onSubmit={handleSubmit}
-                onCancel={() => { setShowForm(false); resetForm(); }}
-              />
-            ) : (
+            {viewMode === "dashboard" && (
               <>
-                {viewMode === "dashboard" && (
-                  <>
-                    <ProjectsDashboard projects={projects} />
-                    <ProjectList
-                      projects={projects}
-                      loading={loading}
-                      onView={handleView}
-                      onEdit={handleEdit}
-                      onDelete={(p) => setDeleteConfirm(p)}
-                      onNewProject={() => setShowForm(true)}
-                    />
-                  </>
-                )}
-                {viewMode === "list" && (
-                  <ProjectList
-                    projects={projects}
-                    loading={loading}
-                    onView={handleView}
-                    onEdit={handleEdit}
-                    onDelete={(p) => setDeleteConfirm(p)}
-                    onNewProject={() => setShowForm(true)}
-                  />
-                )}
+                <ProjectsDashboard projects={projects} />
+                <ProjectList
+                  projects={projects}
+                  loading={loading}
+                  onView={handleView}
+                  onEdit={handleEdit}
+                  onDelete={(p) => setDeleteConfirm(p)}
+                  onNewProject={() => setShowForm(true)}
+                />
               </>
             )}
-
+            {viewMode === "list" && (
+              <ProjectList
+                projects={projects}
+                loading={loading}
+                onView={handleView}
+                onEdit={handleEdit}
+                onDelete={(p) => setDeleteConfirm(p)}
+                onNewProject={() => setShowForm(true)}
+              />
+            )}
           </div>
         )}
       </main>

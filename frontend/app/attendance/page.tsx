@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { AttendanceTable } from "@/components/attendance/attendance-table";
+import { CalendarCheckIcon } from "lucide-react";
 
 export const metadata = {
   title: "Attendance",
@@ -67,9 +68,14 @@ export default async function StaffAttendancePage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Attendance</h1>
-        <p className="text-sm text-muted-foreground mt-1">Today's attendance record</p>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
+          <CalendarCheckIcon className="size-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold">Attendance</h1>
+          <p className="text-sm text-muted-foreground mt-1">Track employee attendance and work hours</p>
+        </div>
       </div>
       <AttendanceTable data={today} />
     </main>

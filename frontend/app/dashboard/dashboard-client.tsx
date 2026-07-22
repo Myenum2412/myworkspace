@@ -150,29 +150,54 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                 {upcomingDeadlines.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-4 text-center">No upcoming deadlines</p>
                 ) : (
-                  <div className="flex-1 overflow-y-auto min-h-0 space-y-2">
-                    {upcomingDeadlines.map((p) => {
-                      const daysLeft = Math.ceil((new Date(p.deadline!).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-                      return (
-                        <div key={p.id} className="flex items-center gap-3 rounded-sm border p-3">
-                          <div className="size-8 rounded-sm flex items-center justify-center text-sm font-bold shrink-0 bg-primary/10 text-primary">
-                            {p.name.charAt(0).toUpperCase()}
+                  <div className="responsive-table flex-1 overflow-y-auto min-h-0">
+                    <div className="sm:hidden space-y-2">
+                      {upcomingDeadlines.map((p) => {
+                        const daysLeft = Math.ceil((new Date(p.deadline!).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                        return (
+                          <div key={p.id} className="border rounded-sm p-3 bg-card space-y-1.5 text-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium">{p.name}</span>
+                              <Badge variant={daysLeft < 0 ? "destructive" : daysLeft <= 7 ? "secondary" : "outline"} className="text-[10px]">
+                                {daysLeft < 0 ? "Overdue" : `${daysLeft}d left`}
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground">{p.client || "—"}</div>
+                            <div className="text-xs text-muted-foreground">{p.deadline ? new Date(p.deadline).toLocaleDateString() : "—"}</div>
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{p.name}</p>
-                            <p className="text-xs text-muted-foreground">{p.client || "—"}</p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-xs font-medium">{p.deadline ? new Date(p.deadline).toLocaleDateString() : "—"}</p>
-                            <Badge variant={daysLeft < 0 ? "destructive" : daysLeft <= 7 ? "secondary" : "outline"} className="text-[10px] mt-0.5">
-                              {daysLeft < 0 ? "Overdue" : `${daysLeft}d left`}
-                            </Badge>
-                          </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
+                    <table className="table-premium hidden sm:table w-full text-sm text-left">
+                      <thead>
+                        <tr>
+                          <th>Project</th>
+                          <th>Client</th>
+                          <th>Deadline</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {upcomingDeadlines.map((p) => {
+                          const daysLeft = Math.ceil((new Date(p.deadline!).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                          return (
+                            <tr key={p.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                              <td className="px-4 py-3 text-sm font-medium">{p.name}</td>
+                              <td className="px-4 py-3 text-sm text-muted-foreground">{p.client || "—"}</td>
+                              <td className="px-4 py-3 text-sm text-muted-foreground">{new Date(p.deadline!).toLocaleDateString()}</td>
+                              <td className="px-4 py-3">
+                                <Badge variant={daysLeft < 0 ? "destructive" : daysLeft <= 7 ? "secondary" : "outline"} className="text-[10px]">
+                                  {daysLeft < 0 ? "Overdue" : `${daysLeft}d left`}
+                                </Badge>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
+                <ViewMoreFooter href="/projects" />
               </CardContent>
             </Card>
 
@@ -186,26 +211,48 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
                 {topProjects.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-4 text-center">No projects yet</p>
                 ) : (
-                  <div className="flex-1 overflow-y-auto min-h-0 space-y-3">
-                    {topProjects.map((p) => {
-                      const isOnTrack = p.progress > 50
-                      return (
-                        <div key={p.id} className="group">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-medium truncate">{p.name}</span>
-                            <div className="flex items-center gap-2 shrink-0 ml-3">
-                              <span className={`inline-flex items-center text-xs font-semibold ${isOnTrack ? "text-green-600" : "text-amber-600"}`}>
-                                {isOnTrack ? <ArrowUpIcon className="size-3 mr-0.5" /> : <ArrowDownIcon className="size-3 mr-0.5" />}
-                                {p.progress}%
-                              </span>
+                  <div className="responsive-table flex-1 overflow-y-auto min-h-0">
+                    <div className="sm:hidden space-y-2">
+                      {topProjects.map((p) => (
+                        <div key={p.id} className="border rounded-sm p-3 bg-card space-y-1.5 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{p.name}</span>
+                            <span className="text-xs text-muted-foreground">{p.progress}%</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-muted rounded-sm overflow-hidden">
+                              <div className="h-full bg-primary rounded-full" style={{ width: `${p.progress}%` }} />
                             </div>
                           </div>
-                          <Progress value={p.progress} className="h-2" />
                         </div>
-                      )
-                    })}
+                      ))}
+                    </div>
+                    <table className="table-premium hidden sm:table w-full text-sm text-left">
+                      <thead>
+                        <tr>
+                          <th>Project</th>
+                          <th>Progress</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topProjects.map((p) => (
+                          <tr key={p.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
+                            <td className="px-4 py-3 text-sm font-medium">{p.name}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 h-2 bg-muted rounded-sm overflow-hidden">
+                                  <div className="h-full bg-primary rounded-full" style={{ width: `${p.progress}%` }} />
+                                </div>
+                                <span className="text-xs text-muted-foreground w-8 text-right">{p.progress}%</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
+                <ViewMoreFooter href="/projects" />
               </CardContent>
             </Card>
           </div>

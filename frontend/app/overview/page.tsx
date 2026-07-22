@@ -54,7 +54,7 @@ export default async function OverviewPage() {
         { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
         { $lookup: { from: "users", localField: "creatorId", foreignField: "id", as: "creator", pipeline: [{ $project: { _id: 1, name: 1, email: 1, image: 1 } }] } },
         { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
-        { $lookup: { from: "teammembers", let: { taskTeamId: "$teamId" }, pipeline: [{ $match: { $expr: { $eq: ["$teamId", "$$taskTeamId"] }, role: "team_lead" } }, { $limit: 1 }], as: "teamLead" } },
+        { $lookup: { from: collections.teamMembers, let: { taskTeamId: "$teamId" }, pipeline: [{ $match: { $expr: { $eq: ["$teamId", "$$taskTeamId"] }, role: "team_lead" } }, { $limit: 1 }], as: "teamLead" } },
         { $unwind: { path: "$teamLead", preserveNullAndEmptyArrays: true } },
         { $lookup: { from: "users", localField: "teamLead.userId", foreignField: "id", as: "teamHeadUser", pipeline: [{ $project: { name: 1 } }] } },
         { $unwind: { path: "$teamHeadUser", preserveNullAndEmptyArrays: true } },

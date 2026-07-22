@@ -100,9 +100,14 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
   if (terminated.length === 0 && initial.length === 0) {
     return (
       <main className="flex flex-1 flex-col gap-4 p-4">
-        <div>
-          <h1 className="text-2xl font-bold">Terminated</h1>
-          <p className="text-sm text-muted-foreground mt-1">0 former employees</p>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
+            <UserX className="size-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Terminated</h1>
+            <p className="text-sm text-muted-foreground mt-1">Track and manage terminated employees</p>
+          </div>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px]">
           <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
@@ -117,9 +122,14 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4">
-        <div>
-          <h1 className="text-2xl font-bold">Terminated</h1>
-          <p className="text-sm text-muted-foreground mt-1">{terminated.length} former employees</p>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
+            <UserX className="size-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Terminated</h1>
+            <p className="text-sm text-muted-foreground mt-1">Track and manage terminated employees</p>
+          </div>
         </div>
         {terminated.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px]">

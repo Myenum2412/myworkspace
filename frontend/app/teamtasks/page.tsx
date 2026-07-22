@@ -48,7 +48,7 @@ export default async function TeamTasksPage() {
       { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "teammembers",
+          from: collections.teamMembers,
           let: { taskTeamId: "$teamId" },
           pipeline: [
             { $match: { $expr: { $eq: ["$teamId", "$$taskTeamId"] }, role: "team_lead" } },

@@ -45,43 +45,45 @@ export default function ContractorsPage() {
 
   if (pageView === "add") {
     return (
-      <div className="flex flex-1 flex-col h-full min-w-0 max-w-full">
-        <div className="flex items-center gap-3 px-3 sm:px-4 md:px-6 py-4 border-b sticky top-0 z-10 shrink-0">
+      <main className="flex flex-1 flex-col h-full bg-white min-w-0 max-w-full">
+        <div className="flex items-center gap-3 px-3 sm:px-4 md:px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
           <Button variant="ghost" size="sm" onClick={() => setPageView("list")} className="gap-1.5">
             <ChevronLeftIcon className="size-4" />
             Back
           </Button>
           <div className="h-5 w-px bg-border" />
-          <h1 className="text-lg font-semibold">Add New Contractor</h1>
+          <h1 className="text-lg font-semibold text-black">Add New Contractor</h1>
         </div>
-        <div className="flex-1 overflow-auto">
-          <div className="w-full py-6 my-6">
+        <div className="flex-1 overflow-auto bg-white">
+          <div className="max-w-5xl mx-auto py-6 bg-white my-6">
             <ContractorForm
               onCancel={() => setPageView("list")}
               onContractorAdded={handleContractorAdded}
             />
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl sm:text-2xl font-bold">Contractors</h1>
-        <Button onClick={() => setPageView("add")}>
-          <PlusIcon className="mr-2 size-4" />
-          Add Contractor
-        </Button>
-      </div>
+      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold">Contractors</h1>
+          <Button onClick={() => setPageView("add")}>
+            <PlusIcon className="mr-2 size-4" />
+            Add Contractor
+          </Button>
+        </div>
 
-      <ContractorList
-        contractors={contractors}
-        onView={(c) => setViewingContractor(c)}
-        onEdit={(c) => setEditingContractor(c)}
-        onDelete={(c) => setDeletingContractor(c)}
-      />
+        <ContractorList
+          contractors={contractors}
+          onView={(c) => setViewingContractor(c)}
+          onEdit={(c) => setEditingContractor(c)}
+          onDelete={(c) => setDeletingContractor(c)}
+        />
+      </main>
 
       <ContractorViewDialog
         contractor={viewingContractor}
