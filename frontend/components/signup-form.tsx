@@ -21,7 +21,7 @@ function GoogleIcon() {
   );
 }
 
-export function SignupForm({ className, error: _error, plan, ...props }: React.ComponentProps<"div"> & { error?: string; plan?: string }) {
+export function SignupForm({ className, error: _error, plan, paymentId, orderId, ...props }: React.ComponentProps<"div"> & { error?: string; plan?: string; paymentId?: string; orderId?: string }) {
   const [step, setStep] = useState<"details" | "otp">("details");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -30,6 +30,10 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Build callback URL - always go to dashboard after Google auth
+  // Payment activation will be handled by checking the pending_payment cookie
+  const googleCallbackUrl = "/dashboard";
 
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
@@ -111,7 +115,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
           <Separator className="flex-1" />
         </div>
 
-        <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span>Google</span></Button>
+        <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: googleCallbackUrl })}><GoogleIcon /><span>Google</span></Button>
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
@@ -161,7 +165,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
         <Separator className="flex-1" />
       </div>
 
-      <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span>Google</span></Button>
+      <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: googleCallbackUrl })}><GoogleIcon /><span>Google</span></Button>
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}

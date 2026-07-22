@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import DashboardCalendarPopup from "@/components/dashboard-calendar-popup"
+import { ActivatePlanGuard } from "@/components/activate-plan-guard"
 
 const ROWS_PER_CARD = 5
 
@@ -91,6 +92,7 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
   const statusBreakdown = reportsData?.statusBreakdown || []
 
   return (
+    <ActivatePlanGuard>
     <Tabs defaultValue="overview" className="w-full">
       <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
         <TabsTrigger
@@ -563,5 +565,6 @@ export function DashboardClient({ dashboardData, reportsData }: Props) {
         </div>
       </TabsContent>
     </Tabs>
+    </ActivatePlanGuard>
   )
 }

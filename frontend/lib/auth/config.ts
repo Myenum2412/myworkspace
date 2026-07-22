@@ -56,6 +56,12 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           const { db } = await import("@/lib/db");
           const userId = token.id as string;
 
+          // Skip if database is not available
+          if (!db) {
+            (token as any).lastVerified = now;
+            return token;
+          }
+
           const [dbUser, org] = await Promise.all([
             db.collection("users").findOne({ id: userId }).catch(() => null),
             token.orgId
@@ -138,6 +144,13 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
       try {
         const { db } = await import("@/lib/db");
+
+        // Skip if database is not available
+        if (!db) {
+          console.warn("[AUTH] Database not available, skipping sign-in processing");
+          return true;
+        }
+
         const { v4: uuid } = await import("uuid");
         const existing = await db.collection("users").findOne({ email: user.email });
 
@@ -243,35 +256,38 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         const email = credentials?.email as string;
         if (!email) return null;
 
+        const apiUrl = process.env.API_URL || "http://localhost:4000";
+
         const twoFactorToken = credentials?.twoFactorToken as string | undefined;
         if (twoFactorToken) {
-          const apiUrl = process.env.API_URL || "http://localhost:4000";
-          const res = await fetch(`${apiUrl}/api/two-factor/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, token: twoFactorToken }),
-          });
-          const data = await res.json();
-          if (!data.success || !data.data) return null;
-          const userData = data.data.user;
-          return {
-            id: userData.id,
-            email: userData.email,
-            name: userData.name,
-            image: userData.image,
-            role: userData.role,
-            permissions: userData.permissions || [],
-            orgId: data.data.orgId,
-          };
+          try {
+            const res = await fetch(`${apiUrl}/api/two-factor/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, token: twoFactorToken }),
+            });
+            const data = await res.json();
+            if (!data.success || !data.data) return null;
+            const userData = data.data.user;
+            return {
+              id: userData.id,
+              email: userData.email,
+              name: userData.name,
+              image: userData.image,
+              role: userData.role,
+              permissions: userData.permissions || [],
+              orgId: data.data.orgId,
+            };
+          } catch (err) {
+            console.error("[AUTH] 2FA login failed:", err);
+            return null;
+          }
         }
 
         const password = credentials?.password as string;
         if (!password) return null;
 
         const loginSource = credentials?.loginSource as string | undefined;
-
-        // Delegate authentication to the backend API
-        const apiUrl = process.env.API_URL || "http://localhost:4000";
         const endpoint = loginSource === "client" ? "/api/client-auth/login" : "/api/auth/login";
 
         try {

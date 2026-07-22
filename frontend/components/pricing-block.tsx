@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { RiCheckLine, RiSparklingFill } from "@remixicon/react"
 
 import { Badge } from "@/components/ui/badge"
@@ -120,10 +121,19 @@ const tiers = [
 
 export default function PricingBlock() {
   const [currency, setCurrency] = useState<CurrencyCode>("INR")
+  const router = useRouter()
 
   useEffect(() => {
     setCurrency(detectCurrency())
   }, [])
+
+  const handlePlanSelect = (planName: string, basePrice: number) => {
+    if (planName === "Enterprise") {
+      window.open("mailto:sales@myenum.in?subject=Enterprise Plan Inquiry", "_blank")
+      return
+    }
+    router.push(`/checkout?plan=${planName.toLowerCase()}&amount=${basePrice}`)
+  }
 
   return (
     <section className="flex w-full items-center justify-center bg-background px-6 py-16 text-foreground">
@@ -212,12 +222,12 @@ export default function PricingBlock() {
               </CardContent>
               <CardFooter className="flex flex-col gap-2">
                 <Button
-                  asChild
                   variant={tier.featured ? "default" : "outline"}
                   size="lg"
                   className="w-full"
+                  onClick={() => handlePlanSelect(tier.name, tier.basePrice)}
                 >
-                  <a href="#">{tier.cta}</a>
+                  {tier.cta}
                 </Button>
               </CardFooter>
             </Card>

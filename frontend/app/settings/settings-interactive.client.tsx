@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { toast } from "sonner"
+import Link from "next/link"
 import {
   RiBankCardLine,
   RiCheckLine,
@@ -264,6 +265,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
         <Tabs defaultValue="account" className="gap-6">
           <TabsList className="w-full sm:w-auto">
             <TabsTrigger value="account">Account</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="team">Team</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -326,6 +328,89 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                   onCheckedChange={setMarketingEmails}
                 />
               </Field>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="billing">
+            <div className="flex flex-col gap-6">
+              <div>
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <RiBankCardLine className="size-5" />
+                  Subscription & Billing
+                </h2>
+                <p className="text-sm text-muted-foreground">Manage your subscription plan and billing.</p>
+              </div>
+
+              {/* Plan Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  {
+                    name: "Starter",
+                    slug: "starter",
+                    price: "₹5,000",
+                    period: "one-time",
+                    description: "For startups & solopreneurs",
+                    features: ["50 projects", "15 staff users", "500 GB storage", "Monthly backup", "2K WhatsApp tokens"],
+                    popular: false,
+                  },
+                  {
+                    name: "Growth",
+                    slug: "growth",
+                    price: "₹15,000",
+                    period: "one-time",
+                    description: "For growing SMBs & funded startups",
+                    features: ["100 projects", "40 staff users", "1 TB storage", "Weekly backup", "8K WhatsApp tokens"],
+                    popular: true,
+                  },
+                  {
+                    name: "Enterprise",
+                    slug: "enterprise",
+                    price: "Contact Us",
+                    period: "custom",
+                    description: "For enterprises & high-growth companies",
+                    features: ["Unlimited projects", "Unlimited staff users", "Unlimited storage", "Daily backup", "Priority support"],
+                    popular: false,
+                  },
+                ].map((plan) => (
+                  <div
+                    key={plan.slug}
+                    className={`relative border rounded-sm p-5 flex flex-col ${plan.popular ? "border-primary ring-2 ring-primary/20" : ""}`}
+                  >
+                    {plan.popular && (
+                      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                        <Badge className="bg-primary text-primary-foreground px-2 py-0.5 text-xs">
+                          Most Popular
+                        </Badge>
+                      </div>
+                    )}
+                    <div className={plan.popular ? "pt-2" : ""}>
+                      <h3 className="font-semibold">{plan.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
+                    </div>
+                    <div className="mt-4">
+                      <span className="text-3xl font-bold">{plan.price}</span>
+                      <span className="text-xs text-muted-foreground ml-1">{plan.period}</span>
+                    </div>
+                    <ul className="mt-4 space-y-2 flex-1">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2 text-sm">
+                          <RiCheckLine className="size-4 text-green-500 shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link href="/pricing" className="block mt-4">
+                      <Button
+                        variant={plan.popular ? "default" : "outline"}
+                        size="sm"
+                        className="w-full"
+                      >
+                        {plan.price === "Contact Us" ? "Contact Sales" : "Select Plan"}
+                      </Button>
+                    </Link>
+                  </div>
+                ))}
+              </div>
             </div>
           </TabsContent>
 

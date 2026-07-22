@@ -20,6 +20,7 @@ export default async function SignupPage(props: {
   searchParams: Promise<Record<string, string>>;
 }) {
   const jsonLd = signupPageJsonLd();
+  const searchParams = await props.searchParams;
 
   return (
     <>
@@ -63,8 +64,10 @@ export default async function SignupPage(props: {
             <div className="w-full max-w-sm px-2 sm:px-0">
               <h1 className="sr-only">Create Your Free MyWorkSpace Account</h1>
               <SignupForm
-                error={(await props.searchParams).error}
-                plan={(await props.searchParams).plan}
+                error={searchParams.error}
+                plan={searchParams.plan}
+                paymentId={searchParams.paymentId}
+                orderId={searchParams.orderId}
               />
             </div>
           </div>
