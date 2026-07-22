@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import {
-  BellIcon, CheckCheckIcon, ArchiveIcon, Trash2Icon, Loader2Icon,
+  CheckCheckIcon, ArchiveIcon, Trash2Icon, Loader2Icon,
   SearchIcon, FilterIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon,
   MessageSquareIcon, CheckCircle2Icon, AlertTriangleIcon, CreditCardIcon,
   UsersIcon, FolderKanbanIcon, InfoIcon, ExternalLinkIcon, MegaphoneIcon,
@@ -221,7 +222,7 @@ export default function NotificationsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <BellIcon className="size-12 mb-3 opacity-20" />
+            <NotificationsActiveIcon className="size-12 mb-3 opacity-20" />
             <p className="text-sm font-medium">No notifications</p>
             <p className="text-xs mt-1">
               {searchQuery ? "No results for your search" : filterCategory !== "all" ? `No ${filterCategory} notifications` : "You're all caught up!"}

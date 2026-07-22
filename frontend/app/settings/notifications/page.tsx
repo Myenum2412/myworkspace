@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2Icon, SaveIcon, BellIcon, GlobeIcon } from "lucide-react";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import { Loader2Icon, SaveIcon, GlobeIcon } from "lucide-react";
 
 interface ChannelSettings {
   inApp: boolean;
@@ -153,7 +154,7 @@ export default function NotificationSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BellIcon className="size-4" />
+            <NotificationsActiveIcon className="size-4" />
             Delivery Preferences
           </CardTitle>
           <CardDescription>Choose how frequently you receive notification digests</CardDescription>
@@ -215,7 +216,7 @@ export default function NotificationSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BellIcon className="size-4" />
+            <NotificationsActiveIcon className="size-4" />
             Notification Behavior
           </CardTitle>
           <CardDescription>Configure how notifications behave</CardDescription>

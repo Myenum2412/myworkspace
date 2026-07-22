@@ -14,7 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  MessageSquareIcon, PhoneIcon, VideoIcon, UsersIcon, BellIcon,
+  MessageSquareIcon, PhoneIcon, VideoIcon, UsersIcon,
   SearchIcon, SendIcon, PlusIcon, MoreVerticalIcon, PinIcon, ArchiveIcon,
   Trash2Icon, ReplyIcon, SmileIcon, PaperclipIcon, ImageIcon,
   MicIcon, MicOffIcon, VideoOffIcon, ScreenShareIcon, ScreenShareOffIcon,
@@ -24,6 +24,7 @@ import {
   PhoneCallIcon, InfoIcon,
 } from "lucide-react";
 import ChatIcon from '@mui/icons-material/Chat';
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
@@ -373,7 +374,7 @@ export default function ChatPage() {
                 <TabsTrigger value="chats" className="text-xs flex-1"><ChatIcon className="size-3.5 mr-1" /> Chats</TabsTrigger>
                 <TabsTrigger value="contacts" className="text-xs flex-1"><UsersIcon className="size-3.5 mr-1" /> Contacts</TabsTrigger>
                 <TabsTrigger value="notifications" className="text-xs flex-1 relative">
-                  <BellIcon className="size-3.5 mr-1" /> Notif
+                  <NotificationsActiveIcon className="size-3.5 mr-1" /> Notif
                   {unreadCount > 0 && <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{unreadCount}</span>}
                 </TabsTrigger>
               </TabsList>
@@ -480,11 +481,11 @@ export default function ChatPage() {
             {/* Notifications Tab */}
             <TabsContent value="notifications" className="flex-1 overflow-auto m-0 p-3">
               {notifications.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground"><BellIcon className="size-8 mx-auto mb-2 opacity-30" /><p className="text-sm">No notifications</p></div>
+                <div className="text-center py-8 text-muted-foreground"><NotificationsActiveIcon className="size-8 mx-auto mb-2 opacity-30" /><p className="text-sm">No notifications</p></div>
               ) : (
                 notifications.map((n) => (
                   <div key={n.id} className={`flex items-start gap-3 p-2 rounded-sm mb-1 ${n.read ? "" : "bg-muted/50"}`}>
-                    <div className="size-8 rounded-sm bg-primary/10 flex items-center justify-center shrink-0 mt-0.5"><BellIcon className="size-4 text-primary" /></div>
+                    <div className="size-8 rounded-sm bg-primary/10 flex items-center justify-center shrink-0 mt-0.5"><NotificationsActiveIcon className="size-4 text-primary" /></div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{n.title}</p>
                       <p className="text-xs text-muted-foreground">{n.body}</p>

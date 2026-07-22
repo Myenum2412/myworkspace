@@ -1,4 +1,5 @@
-import { LayoutDashboard, Users, Clock, BarChart3, Shield, Bell } from "lucide-react";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import { LayoutDashboard, Users, Clock, BarChart3, Shield } from "lucide-react";
 
 const features = [
   {
@@ -27,7 +28,7 @@ const features = [
     description: "Keep your data safe with role-based access control, audit logs, and SOC 2 compliant infrastructure.",
   },
   {
-    icon: Bell,
+    icon: NotificationsActiveIcon,
     title: "Smart Notifications",
     description: "Stay in the loop with intelligent alerts for deadlines, mentions, and project updates across all devices.",
   },

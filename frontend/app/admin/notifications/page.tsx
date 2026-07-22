@@ -23,7 +23,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line,
 } from "recharts";
 import {
-  Loader2Icon, SendIcon, BellIcon, MailIcon, CheckCircle2Icon,
+  Loader2Icon, SendIcon, MailIcon, CheckCircle2Icon,
   AlertCircleIcon, BarChart3Icon, TrendingUpIcon,
   ActivityIcon, HeartPulseIcon, SearchIcon, FilterIcon, ClockIcon,
 } from "lucide-react";

@@ -459,7 +459,7 @@ export default function ProjectsInteractive({
               <>
                 {viewMode === "dashboard" && (
                   <>
-                    <ProjectsDashboard projects={projects} onView={handleView} />
+                    <ProjectsDashboard projects={projects} />
                     <ProjectList
                       projects={projects}
                       loading={loading}

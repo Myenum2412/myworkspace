@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import {
-  RiBellLine, RiCheckLine, RiErrorWarningLine, RiFileTextLine,
+  RiCheckLine, RiErrorWarningLine, RiFileTextLine,
   RiGitMergeLine, RiMegaphoneLine, RiShieldCheckLine, RiUserAddLine,
   RiFileLine, RiLockLine, RiGlobalLine,
 } from "@remixicon/react"
@@ -76,7 +77,7 @@ export function NotificationBell() {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative size-9" aria-label="Open notifications">
-          <RiBellLine className="size-4" aria-hidden="true" />
+          <NotificationsActiveIcon className="size-4" aria-hidden="true" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex min-w-[16px] h-4 items-center justify-center bg-primary text-[10px] font-semibold text-primary-foreground px-1">
               {unreadCount > 99 ? "99+" : unreadCount}
@@ -109,14 +110,14 @@ export function NotificationBell() {
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-              <RiBellLine className="size-8 mb-2 opacity-30" />
+              <NotificationsActiveIcon className="size-8 mb-2 opacity-30" />
               <p className="text-sm">No notifications yet</p>
               <p className="text-xs mt-1">You&apos;ll see updates here when they arrive</p>
             </div>
           ) : (
             <ul className="flex flex-col">
               {notifications.slice(0, 20).map((item, index) => {
-                const Icon = categoryIcons[item.category] || RiBellLine
+                const Icon = categoryIcons[item.category] || NotificationsActiveIcon
                 return (
                   <li key={item.id}>
                     <button

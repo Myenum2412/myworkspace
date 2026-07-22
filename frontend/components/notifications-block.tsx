@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import {
-  RiBellLine,
   RiCheckLine,
   RiErrorWarningLine,
   RiFileTextLine,
@@ -96,7 +96,7 @@ export default function NotificationsBlock() {
       <Sheet defaultOpen>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" aria-label="Open notifications">
-            <RiBellLine className="size-4" aria-hidden="true" />
+            <NotificationsActiveIcon className="size-4" aria-hidden="true" />
           </Button>
         </SheetTrigger>
 
