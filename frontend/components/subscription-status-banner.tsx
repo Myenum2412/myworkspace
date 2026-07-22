@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, Clock, CreditCard, CheckCircle2, Ban } from "lucide-react";
+import { AlertCircle, Clock, CreditCard, CheckCircle2, Ban, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -21,6 +21,7 @@ export function SubscriptionStatusBanner() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [banner, setBanner] = useState<BannerState | null>(null);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (status !== "authenticated" || !session?.user) {
@@ -123,7 +124,7 @@ export function SubscriptionStatusBanner() {
     }
   }, [session, status]);
 
-  if (!banner?.visible) return null;
+  if (!banner?.visible || dismissed) return null;
 
   const Icon = banner.icon;
 
@@ -136,16 +137,26 @@ export function SubscriptionStatusBanner() {
         <p className={cn("text-sm font-semibold", banner.color)}>{banner.label}</p>
         <p className="text-sm text-muted-foreground mt-0.5">{banner.message}</p>
       </div>
-      {banner.action && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0"
-          onClick={() => router.push(banner.action!.href)}
+      <div className="flex items-center gap-2 shrink-0">
+        {banner.action && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => router.push(banner.action!.href)}
+          >
+            {banner.action.label}
+          </Button>
+        )}
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          className={cn("rounded-sm p-1 hover:bg-black/5 dark:hover:bg-white/10 transition-colors", banner.color)}
+          aria-label="Dismiss"
         >
-          {banner.action.label}
-        </Button>
-      )}
+          <X className="size-4" />
+        </button>
+      </div>
     </div>
   );
 }
