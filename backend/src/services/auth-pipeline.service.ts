@@ -217,6 +217,10 @@ async function verifyPassword(user: any, password: string): Promise<void> {
 }
 
 async function evaluateMfaRequirement(user: any, orgId: string, _riskResult: any, opts: AuthPipelineOptions): Promise<{ required: boolean; reason?: string; gracePeriodEndsAt?: Date }> {
+  if (!user.role || user.role === "staffs" || user.role === "clients") {
+    return { required: false };
+  }
+
   if (user.twoFactorEnabled === true) {
     return { required: true, reason: "mandatory" };
   }
@@ -455,7 +459,7 @@ export async function verifyRefreshTokenPipeline(
   if (!user) throw new AppError(401, "User not found");
   if (!user.isActive) throw new AppError(403, "Account is deactivated");
 
-  if (user.twoFactorEnabled) {
+  if (user.twoFactorEnabled && user.role !== "staffs" && user.role !== "clients") {
     const mfaCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const recentMfaSession = await MfaSession.findOne({
       userId: user.id,
@@ -510,7 +514,7 @@ export async function verifyRefreshTokenPipeline(
 }
 
 export async function checkOrgMfaPolicy(userId: string, orgId: string, role: string): Promise<{ mfaRequired: boolean; inGracePeriod: boolean; gracePeriodEndsAt: Date | null }> {
-  if (!orgId) return { mfaRequired: false, inGracePeriod: false, gracePeriodEndsAt: null };
+  if (!orgId || !role || role === "staffs" || role === "clients") return { mfaRequired: false, inGracePeriod: false, gracePeriodEndsAt: null };
 
   const policy = await OrgMfaPolicy.findOne({ orgId }).lean();
   if (!policy || policy.enforcement === "optional") {

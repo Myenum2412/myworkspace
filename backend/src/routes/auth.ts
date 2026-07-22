@@ -98,7 +98,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
 
   const userAgent = req.headers["user-agent"] || "unknown";
 
-  if (user.twoFactorEnabled) {
+  if (user.twoFactorEnabled && user.role !== "staffs" && user.role !== "clients") {
     const tempToken = jwt.sign(
       { userId: user.id, email: user.email, purpose: "2fa" },
       env.JWT_SECRET,

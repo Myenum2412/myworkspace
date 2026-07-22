@@ -23,6 +23,10 @@ const router = Router();
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 
+function isMfaBlockedRole(role: string | undefined): boolean {
+  return !role || role === "staffs" || role === "clients";
+}
+
 function getAuditContext(req: AuthRequest): totpService.AuditContext {
   return {
     orgId: req.user?.orgId || req.user?.userId || "system",
@@ -34,11 +38,16 @@ function getAuditContext(req: AuthRequest): totpService.AuditContext {
 }
 
 router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) {
+    res.json({ success: true, data: { enabled: false, method: "none", pendingVerification: false, enabledAt: null, lastVerifiedAt: null, backupCodesGeneratedAt: null } });
+    return;
+  }
   const status = await totpService.getMfaStatus(req.user!.userId);
   res.json({ success: true, data: status });
 });
 
 router.post("/setup", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) throw new AppError(403, "Two-factor authentication is not available for your account type");
   const user = await User.findOne({ id: req.user!.userId }).select("id twoFactorEnabled email orgId");
   if (!user) throw new AppError(404, "User not found");
   if (user.twoFactorEnabled) throw new AppError(400, "Two-factor authentication is already enabled");
@@ -70,6 +79,7 @@ router.post("/setup", authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/verify", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) throw new AppError(403, "Two-factor authentication is not available for your account type");
   const token = requireString(req.body.token, "token", { min: 6, max: 6 });
 
   const result = await totpService.verifyAndEnableTOTP(
@@ -108,6 +118,7 @@ router.post("/verify", authenticate, async (req: AuthRequest, res: Response) => 
 });
 
 router.post("/disable", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) throw new AppError(403, "Two-factor authentication is not available for your account type");
   const password = requireString(req.body.password, "password", { min: 1 });
   const token = optionalString(req.body.token, "token", { max: 6 });
   const recoveryCode = optionalString(req.body.recoveryCode, "recoveryCode", { max: 100 });
@@ -158,8 +169,8 @@ router.post("/disable", authenticate, async (req: AuthRequest, res: Response) =>
 router.post("/challenge", async (req, res: Response) => {
   const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
 
-  const user = await User.findOne({ email }).select("twoFactorEnabled twoFactorMethod").lean();
-  if (!user || !user.twoFactorEnabled) {
+  const user = await User.findOne({ email }).select("twoFactorEnabled twoFactorMethod role").lean();
+  if (!user || !user.twoFactorEnabled || !user.role || user.role === "staffs" || user.role === "clients") {
     res.json({ success: true, data: { requiresTwoFactor: false, method: "none" } });
     return;
   }
@@ -183,7 +194,7 @@ router.post("/login", async (req, res: Response) => {
     "id email name role permissions status isActive lockedUntil failedLoginAttempts twoFactorEnabled twoFactorMethod orgId emailVerified image userNumber lastLogin tokenVersion"
   );
   if (!user) throw new AppError(401, "Invalid email or token");
-  if (!user.twoFactorEnabled) throw new AppError(400, "Two-factor authentication is not enabled for this account");
+  if (!user.twoFactorEnabled || !user.role || user.role === "staffs" || user.role === "clients") throw new AppError(400, "Two-factor authentication is not enabled for this account");
   if (!user.isActive) throw new AppError(403, "Account is deactivated");
 
   if (user.lockedUntil && user.lockedUntil > new Date()) {
@@ -360,7 +371,7 @@ router.post("/login-recovery", async (req, res: Response) => {
     "id email name role permissions status isActive lockedUntil failedLoginAttempts twoFactorEnabled twoFactorMethod orgId emailVerified image userNumber lastLogin tokenVersion"
   );
   if (!user) throw new AppError(401, "Invalid email or recovery code");
-  if (!user.twoFactorEnabled) throw new AppError(400, "Two-factor authentication is not enabled for this account");
+  if (!user.twoFactorEnabled || !user.role || user.role === "staffs" || user.role === "clients") throw new AppError(400, "Two-factor authentication is not enabled for this account");
   if (!user.isActive) throw new AppError(403, "Account is deactivated");
 
   if (user.lockedUntil && user.lockedUntil > new Date()) {
@@ -500,11 +511,16 @@ router.post("/login-recovery", async (req, res: Response) => {
 });
 
 router.get("/trusted-devices", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) {
+    res.json({ success: true, data: [] });
+    return;
+  }
   const devices = await totpService.getTrustedDevices(req.user!.userId);
   res.json({ success: true, data: devices });
 });
 
 router.post("/trust-device", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) throw new AppError(403, "Two-factor authentication is not available for your account type");
   const deviceFingerprint = requireString(req.body.deviceFingerprint, "deviceFingerprint", { max: 256 });
   const deviceName = optionalString(req.body.deviceName, "deviceName", { max: 128 }) || "Unknown device";
 
@@ -533,6 +549,7 @@ router.post("/trust-device", authenticate, async (req: AuthRequest, res: Respons
 });
 
 router.delete("/trusted-devices/:id", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) throw new AppError(403, "Two-factor authentication is not available for your account type");
   await totpService.removeTrustedDevice(req.params.id, req.user!.userId);
 
   await recordAuditLog({
@@ -552,6 +569,7 @@ router.delete("/trusted-devices/:id", authenticate, async (req: AuthRequest, res
 });
 
 router.post("/recovery-codes", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) throw new AppError(403, "Two-factor authentication is not available for your account type");
   const user = await User.findOne({ id: req.user!.userId }).select("id twoFactorEnabled");
   if (!user) throw new AppError(404, "User not found");
   if (!user.twoFactorEnabled) throw new AppError(400, "Two-factor authentication must be enabled first");
@@ -578,11 +596,19 @@ router.post("/recovery-codes", authenticate, async (req: AuthRequest, res: Respo
 });
 
 router.get("/recovery-codes/status", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) {
+    res.json({ success: true, data: { total: 0, used: 0, remaining: 0, generatedAt: null } });
+    return;
+  }
   const status = await totpService.getRecoveryCodesStatus(req.user!.userId);
   res.json({ success: true, data: status });
 });
 
 router.get("/activity", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) {
+    res.json({ success: true, data: [] });
+    return;
+  }
   const { AuditLog } = await import("../lib/db/models/AuditLog.js");
   const activities = await AuditLog.find({
     userId: req.user!.userId,
@@ -651,6 +677,7 @@ function getCorrelationId(req: AuthRequest): string | undefined {
 }
 
 router.post("/step-up", authenticate, async (req: AuthRequest, res: Response) => {
+  if (isMfaBlockedRole(req.user?.role)) throw new AppError(403, "Two-factor authentication is not available for your account type");
   const token = requireString(req.body.token, "token", { min: 6, max: 6 });
 
   const { verifyStepUp } = await import("../middleware/step-up-auth.js");

@@ -57,7 +57,7 @@ const emailLogSchema = new Schema<IEmailLog>(
     openedCount: { type: Number, default: 0 },
     clickedUrls: { type: [ClickedUrlSchema], default: [] },
     error: String,
-    correlationId: { type: String, index: true },
+    correlationId: { type: String },
     notificationId: { type: String, index: true },
     category: { type: String, default: "system" },
     metadata: String,

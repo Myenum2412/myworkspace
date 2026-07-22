@@ -17,6 +17,7 @@ export default async function SettingsPage() {
     name: session?.user?.name || "User",
     email: session?.user?.email || "",
     avatar: session?.user?.image || "",
+    role: session?.user?.role || "",
   };
 
   let initialSettings: Record<string, unknown> | null = null;

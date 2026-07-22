@@ -20,7 +20,7 @@ export interface IMfaSession extends Document {
 
 const mfaSessionSchema = new Schema<IMfaSession>({
   userId: { type: String, required: true, index: true },
-  sessionId: { type: String, required: true, unique: true, index: true },
+  sessionId: { type: String, required: true, unique: true },
   mfaVerified: { type: Boolean, required: true, default: false },
   mfaMethod: { type: String, default: "none" },
   mfaVerifiedAt: Date,

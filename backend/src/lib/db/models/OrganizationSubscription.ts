@@ -24,7 +24,7 @@ const orgSubscriptionSchema = new Schema<IOrganizationSubscription>(
   {
     id: { type: String, required: true, unique: true },
     orgId: { type: String, required: true, index: true },
-    planId: { type: String, required: true, index: true },
+    planId: { type: String, required: true },
     planSlug: { type: String, required: true },
     status: {
       type: String,

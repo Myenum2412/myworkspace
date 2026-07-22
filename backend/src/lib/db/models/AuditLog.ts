@@ -62,7 +62,7 @@ const auditLogSchema = new Schema<IAuditLog>({
   description: { type: String, required: true },
 
   // Request context
-  correlationId: { type: String, required: true, index: true },
+  correlationId: { type: String, required: true },
   traceId: { type: String },
   sessionId: { type: String, index: true },
   requestId: { type: String },

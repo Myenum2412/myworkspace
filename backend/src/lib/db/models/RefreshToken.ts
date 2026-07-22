@@ -21,7 +21,7 @@ const refreshTokenSchema = new Schema<IRefreshToken>(
     userId: { type: String, required: true, index: true },
     orgId: { type: String, required: true, index: true },
     family: { type: String, required: true, index: true },
-    expiresAt: { type: Date, required: true, index: true },
+    expiresAt: { type: Date, required: true },
     revokedAt: { type: Date },
     replacedBy: { type: String },
     deviceFingerprint: { type: String },

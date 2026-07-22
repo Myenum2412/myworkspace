@@ -86,7 +86,7 @@ function saveSectionLimits(limits: Record<string, number>) {
 
 export type SettingsPageClientProps = {
   orgId: string
-  user: { name: string; email: string; avatar: string }
+  user: { name: string; email: string; avatar: string; role: string }
   initialSettings: {
     general?: { orgName?: string; orgSlug?: string; timezone?: string; language?: string; monthlyProjectLimit?: number }
     team?: { defaultTeamRole?: string; allowSelfAssign?: boolean; maxTeamSize?: number; autoAssignLead?: boolean; showTeamAsAssignee?: boolean }
@@ -660,7 +660,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 <h2 className="text-lg font-semibold">Security</h2>
                 <p className="text-sm text-muted-foreground">Manage your account security and authentication methods.</p>
               </div>
-              <AuthenticatorSettings />
+              {initialUser.role !== "staffs" && initialUser.role !== "clients" && <AuthenticatorSettings />}
             </div>
           </TabsContent>
         </Tabs>

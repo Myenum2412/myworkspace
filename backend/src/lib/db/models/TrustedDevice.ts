@@ -18,7 +18,7 @@ const trustedDeviceSchema = new Schema<ITrustedDevice>({
   deviceName: { type: String, default: "Unknown device" },
   ipAddress: { type: String },
   userAgent: { type: String },
-  expiresAt: { type: Date, required: true, index: true },
+  expiresAt: { type: Date, required: true },
   lastUsedAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
