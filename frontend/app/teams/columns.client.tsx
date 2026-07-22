@@ -20,6 +20,17 @@ export type Team = {
   leadAvatar: string;
   leadId?: string;
   memberIds?: string[];
+  members?: Array<{
+    id: string;
+    userId: string;
+    name: string;
+    email: string;
+    avatar: string;
+    status: string;
+    department: string;
+    designation: string;
+    role: string;
+  }>;
   createdAt: string;
 };
 

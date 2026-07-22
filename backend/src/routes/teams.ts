@@ -46,10 +46,23 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tag
   const pipeline: PipelineStage[] = [
     { $match: teamMatch },
     {
+      $addFields: {
+        _teamIdStr: { $toString: "$_id" },
+      },
+    },
+    {
       $lookup: {
         from: "teammembers",
-        localField: "_id",
-        foreignField: "teamId",
+        let: { teamIdStr: "$_teamIdStr" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ["$teamId", "$$teamIdStr"],
+              },
+            },
+          },
+        ],
         as: "members",
       },
     },
@@ -84,7 +97,7 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tag
         leadUser: { $arrayElemAt: ["$leadUsers", 0] },
       },
     },
-    { $project: { members: 0, leadUsers: 0 } },
+    { $project: { _teamIdStr: 0, members: 0, leadUsers: 0 } },
     // Sorting
     { $sort: { [sortBy]: sortOrder } },
     // Pagination
@@ -139,10 +152,23 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
   const pipeline: PipelineStage[] = [
     { $match: { _id: team._id } },
     {
+      $addFields: {
+        _teamIdStr: { $toString: "$_id" },
+      },
+    },
+    {
       $lookup: {
         from: "teammembers",
-        localField: "_id",
-        foreignField: "teamId",
+        let: { teamIdStr: "$_teamIdStr" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ["$teamId", "$$teamIdStr"],
+              },
+            },
+          },
+        ],
         as: "teamMembers",
       },
     },
@@ -193,7 +219,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
                       $filter: {
                         input: "$users",
                         as: "u",
-                        cond: { $eq: ["$$u._id", "$$tm.userId"] },
+                        cond: { $eq: ["$$u.id", "$$tm.userId"] },
                       },
                     },
                     0,
@@ -207,6 +233,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
     },
     {
       $project: {
+        _teamIdStr: 0,
         teamMembers: 0,
         users: 0,
       },

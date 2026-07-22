@@ -193,11 +193,16 @@ export default async function EmployeesPage() {
           db.collection(collections.teams).aggregate([
             { $match: { orgId } },
             {
+              $addFields: {
+                _teamIdStr: { $toString: "$_id" },
+              },
+            },
+            {
               $lookup: {
                 from: collections.teamMembers,
-                let: { teamObjId: "$_id" },
+                let: { teamIdStr: "$_teamIdStr" },
                 pipeline: [
-                  { $match: { $expr: { $eq: ["$teamId", { $toString: "$$teamObjId" }] } } },
+                  { $match: { $expr: { $eq: ["$teamId", "$$teamIdStr"] } } },
                 ],
                 as: "members",
               },
@@ -208,7 +213,7 @@ export default async function EmployeesPage() {
                   $filter: {
                     input: "$members",
                     as: "m",
-                    cond: { $eq: ["$m.role", "team_lead"] },
+                    cond: { $eq: ["$$m.role", "team_lead"] },
                   },
                 },
               },
@@ -225,23 +230,65 @@ export default async function EmployeesPage() {
               },
             },
             {
+              $lookup: {
+                from: "users",
+                let: { memberUserIds: "$members.userId" },
+                pipeline: [
+                  { $match: { $expr: { $in: ["$id", "$$memberUserIds"] } } },
+                  { $project: { name: 1, email: 1, image: 1, status: 1, department: 1, designation: 1 } },
+                ],
+                as: "memberUsers",
+              },
+            },
+            {
               $addFields: {
                 memberCount: { $size: "$members" },
                 leadUser: { $arrayElemAt: ["$leadUsers", 0] },
                 id: "$_id",
+                members: {
+                  $map: {
+                    input: "$members",
+                    as: "tm",
+                    in: {
+                      $mergeObjects: [
+                        {
+                          id: "$$tm._id",
+                          userId: "$$tm.userId",
+                          role: "$$tm.role",
+                        },
+                        {
+                          $arrayElemAt: [
+                            {
+                              $filter: {
+                                input: "$memberUsers",
+                                as: "u",
+                                cond: { $eq: ["$$u.id", "$$tm.userId"] },
+                              },
+                            },
+                            0,
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $addFields: {
+                leadName: "$leadUser.name",
+                leadAvatar: "$leadUser.image",
+                leadId: "$leadUser.id",
               },
             },
             {
               $project: {
                 _id: 0,
-                id: 1,
-                name: 1,
-                description: 1,
-                memberCount: 1,
-                leadName: "$leadUser.name",
-                leadAvatar: "$leadUser.image",
-                leadId: "$leadUser._id",
-                createdAt: 1,
+                _teamIdStr: 0,
+                leadIds: 0,
+                leadUsers: 0,
+                memberUsers: 0,
+                leadUser: 0,
               },
             },
             { $sort: { createdAt: -1 } },
@@ -342,6 +389,17 @@ export default async function EmployeesPage() {
           leadName: (t.leadName as string) || "",
           leadAvatar: (t.leadAvatar as string) || "",
           leadId: t.leadId ? String(t.leadId) : undefined,
+          members: (t.members as Record<string, unknown>[] || []).map((m) => ({
+            id: String(m.id || ""),
+            userId: String(m.userId || ""),
+            name: (m.name as string) || "Unknown",
+            email: (m.email as string) || "",
+            avatar: (m.image as string) || "",
+            status: (m.status as string) || "offline",
+            department: (m.department as string) || "",
+            designation: (m.designation as string) || "",
+            role: (m.role as string) || "team_staff",
+          })),
           createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
         }));
 
