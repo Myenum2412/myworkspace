@@ -203,6 +203,22 @@ export async function initializeAgenda() {
   await agenda.every("*/30 * * * *", "task-due-reminders");
   await agenda.every("0 */6 * * *", "cleanup-files");
 
+  // Daily task email scheduler - runs every hour to check for orgs that need to send emails
+  agenda.define("daily-task-email-scheduler", async (job: any, done: any) => {
+    try {
+      const { runDailyTaskEmailScheduler } = await import("../../services/daily-task-email-scheduler.service.js");
+      const results = await runDailyTaskEmailScheduler();
+      console.log(`✦ Agenda: daily task email scheduler completed - ${results.success} sent, ${results.failed} failed, ${results.skipped} skipped`);
+      done();
+    } catch (err) {
+      console.error("[agenda] daily-task-email-scheduler error:", err);
+      done(err as Error);
+    }
+  });
+
+  // Run every hour to check for scheduled emails
+  await agenda.every("0 * * * *", "daily-task-email-scheduler");
+
   // Register notification jobs
   setupNotificationJobs(agenda);
 

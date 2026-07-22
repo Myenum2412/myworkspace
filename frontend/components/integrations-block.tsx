@@ -4,13 +4,15 @@ import { useState, useEffect, useCallback } from "react"
 import {
   RiCheckLine,
   RiGoogleLine,
-  RiMicrosoftLine,
   RiMailLine,
   RiCalendarLine,
   RiStackLine,
-  RiSettings3Line,
   RiRefreshLine,
   RiExternalLinkLine,
+  RiMicLine,
+  RiRobot2Line,
+  RiBrainLine,
+  RiMagicLine,
 } from "@remixicon/react"
 
 import { cn } from "@/lib/utils"
@@ -30,7 +32,7 @@ import { Loader2Icon } from "lucide-react"
 
 type CalendarConnection = {
   id: string
-  provider: "google" | "microsoft"
+  provider: "google"
   calendarEmail: string
   calendarName: string
   syncEnabled: boolean
@@ -45,7 +47,7 @@ type Integration = {
   icon: typeof RiGoogleLine
   category: string
   type: "calendar" | "email" | "ai"
-  provider?: "google" | "microsoft"
+  provider?: "google"
 }
 
 const integrations: Integration[] = [
@@ -59,15 +61,6 @@ const integrations: Integration[] = [
     provider: "google",
   },
   {
-    id: "outlook-calendar",
-    name: "Microsoft Outlook",
-    description: "Connect your Outlook calendar for two-way sync of events and meetings.",
-    icon: RiMicrosoftLine,
-    category: "Calendar",
-    type: "calendar",
-    provider: "microsoft",
-  },
-  {
     id: "gmail",
     name: "Gmail",
     description: "Send and receive emails directly from the platform using your Gmail account.",
@@ -75,6 +68,38 @@ const integrations: Integration[] = [
     category: "Email",
     type: "email",
     provider: "google",
+  },
+  {
+    id: "ai-voice",
+    name: "AI Voice",
+    description: "Voice-powered task management and dictation using advanced speech recognition.",
+    icon: RiMicLine,
+    category: "AI",
+    type: "ai",
+  },
+  {
+    id: "ai-assistant",
+    name: "AI Assistant",
+    description: "Intelligent assistant for task automation, scheduling, and smart recommendations.",
+    icon: RiRobot2Line,
+    category: "AI",
+    type: "ai",
+  },
+  {
+    id: "ai-analytics",
+    name: "AI Analytics",
+    description: "Advanced analytics and insights powered by machine learning algorithms.",
+    icon: RiBrainLine,
+    category: "AI",
+    type: "ai",
+  },
+  {
+    id: "ai-content",
+    name: "AI Content",
+    description: "Generate and optimize content using AI-powered writing tools.",
+    icon: RiMagicLine,
+    category: "AI",
+    type: "ai",
   },
 ]
 
@@ -125,10 +150,8 @@ export default function IntegrationsBlock() {
     try {
       if (integration.type === "calendar" && integration.provider === "google") {
         window.location.href = "/api/calendar/google"
-      } else if (integration.type === "calendar" && integration.provider === "microsoft") {
-        window.location.href = "/api/calendar/microsoft"
       } else {
-        // For other integrations, show coming soon
+        // For AI and other integrations, show coming soon
         alert(`${integration.name} integration coming soon!`)
       }
     } finally {
@@ -329,13 +352,6 @@ export default function IntegrationsBlock() {
               <a href="/calendar" className="gap-2">
                 <RiCalendarLine className="size-4" />
                 Open Calendar
-                <RiExternalLinkLine className="size-3" />
-              </a>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <a href="/api/calendar/admin" className="gap-2" target="_blank">
-                <RiSettings3Line className="size-4" />
-                Calendar Admin
                 <RiExternalLinkLine className="size-3" />
               </a>
             </Button>

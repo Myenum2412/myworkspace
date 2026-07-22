@@ -94,28 +94,77 @@ export type SettingsPageClientProps = {
       taskAssigned?: boolean
       taskStatusChange?: boolean
       taskComments?: boolean
+      taskMentions?: boolean
       dueDateReminders?: boolean
+      taskDeadlines?: boolean
+      taskCompleted?: boolean
+      projectUpdates?: boolean
+      projectMentions?: boolean
+      projectMilestones?: boolean
+      projectDeadlines?: boolean
       memberJoinLeave?: boolean
       teamMentions?: boolean
-      projectUpdates?: boolean
+      teamUpdates?: boolean
+      calendarReminders?: boolean
+      meetingReminders?: boolean
+      meetingInvitations?: boolean
       securityAlerts?: boolean
       billingUpdates?: boolean
+      systemUpdates?: boolean
       featureAnnouncements?: boolean
+      emailDigest?: boolean
+      weeklyReport?: boolean
+      dailySummary?: boolean
+      pushEnabled?: boolean
+      pushTaskUpdates?: boolean
+      pushCalendarEvents?: boolean
+      pushTeamMessages?: boolean
     }
   } | null
 }
 
 const defaultNotifSettings = {
+  // Task Notifications
   taskAssigned: true,
   taskStatusChange: true,
-  taskComments: false,
+  taskComments: true,
+  taskMentions: true,
   dueDateReminders: true,
+  taskDeadlines: true,
+  taskCompleted: true,
+
+  // Project Notifications
+  projectUpdates: true,
+  projectMentions: true,
+  projectMilestones: true,
+  projectDeadlines: true,
+
+  // Team Notifications
   memberJoinLeave: true,
   teamMentions: true,
-  projectUpdates: false,
+  teamUpdates: true,
+
+  // Calendar Notifications
+  calendarReminders: true,
+  meetingReminders: true,
+  meetingInvitations: true,
+
+  // System Notifications
   securityAlerts: true,
   billingUpdates: true,
-  featureAnnouncements: false,
+  systemUpdates: true,
+  featureAnnouncements: true,
+
+  // Email Notifications
+  emailDigest: true,
+  weeklyReport: true,
+  dailySummary: true,
+
+  // Push Notifications
+  pushEnabled: true,
+  pushTaskUpdates: true,
+  pushCalendarEvents: true,
+  pushTeamMessages: true,
 }
 
 export function SettingsPageClient({ orgId, user: initialUser, initialSettings }: SettingsPageClientProps) {
@@ -388,20 +437,210 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
           </TabsContent>
 
           <TabsContent value="notifications">
-            <div className="flex flex-col gap-0">
-              <div className="mb-4">
+            <div className="flex flex-col gap-6">
+              <div>
                 <h2 className="text-lg font-semibold">Notification Preferences</h2>
-                <p className="text-sm text-muted-foreground">Choose which notifications to receive.</p>
+                <p className="text-sm text-muted-foreground">Choose which notifications you want to receive across different channels.</p>
               </div>
-              {Object.entries(formData.notifications).map(([key, val], i) => (
-                <div key={key}>
-                  {i > 0 && <Separator />}
-                  <div className="flex items-center justify-between py-3">
-                    <Label className="capitalize cursor-pointer">{key.replace(/([A-Z])/g, " $1").trim()}</Label>
-                    <Switch checked={!!val} onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })} />
-                  </div>
+
+              {/* Task Notifications */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Tasks</h3>
+                  <Separator className="flex-1" />
                 </div>
-              ))}
+                <div className="grid gap-3">
+                  {[
+                    { key: "taskAssigned", label: "Task Assigned", desc: "When a task is assigned to you" },
+                    { key: "taskStatusChange", label: "Task Status Changes", desc: "When task status is updated" },
+                    { key: "taskComments", label: "Task Comments", desc: "When someone comments on your task" },
+                    { key: "taskMentions", label: "Task Mentions", desc: "When you're mentioned in a task" },
+                    { key: "dueDateReminders", label: "Due Date Reminders", desc: "Reminders before task due dates" },
+                    { key: "taskDeadlines", label: "Task Deadlines", desc: "When a task deadline is approaching" },
+                    { key: "taskCompleted", label: "Task Completed", desc: "When a task you're involved in is completed" },
+                  ].map(({ key, label, desc }) => (
+                    <div key={key} className="flex items-center justify-between py-2">
+                      <div>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                      <Switch
+                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
+                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Project Notifications */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Projects</h3>
+                  <Separator className="flex-1" />
+                </div>
+                <div className="grid gap-3">
+                  {[
+                    { key: "projectUpdates", label: "Project Updates", desc: "When project details are updated" },
+                    { key: "projectMentions", label: "Project Mentions", desc: "When you're mentioned in a project" },
+                    { key: "projectMilestones", label: "Project Milestones", desc: "When a milestone is reached" },
+                    { key: "projectDeadlines", label: "Project Deadlines", desc: "When project deadlines approach" },
+                  ].map(({ key, label, desc }) => (
+                    <div key={key} className="flex items-center justify-between py-2">
+                      <div>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                      <Switch
+                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
+                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Team Notifications */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Team</h3>
+                  <Separator className="flex-1" />
+                </div>
+                <div className="grid gap-3">
+                  {[
+                    { key: "memberJoinLeave", label: "Member Join/Leave", desc: "When team members join or leave" },
+                    { key: "teamMentions", label: "Team Mentions", desc: "When you're mentioned in team chat" },
+                    { key: "teamUpdates", label: "Team Updates", desc: "When team settings or details change" },
+                  ].map(({ key, label, desc }) => (
+                    <div key={key} className="flex items-center justify-between py-2">
+                      <div>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                      <Switch
+                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
+                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Calendar Notifications */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Calendar</h3>
+                  <Separator className="flex-1" />
+                </div>
+                <div className="grid gap-3">
+                  {[
+                    { key: "calendarReminders", label: "Calendar Reminders", desc: "Reminders for upcoming events" },
+                    { key: "meetingReminders", label: "Meeting Reminders", desc: "Reminders before meetings start" },
+                    { key: "meetingInvitations", label: "Meeting Invitations", desc: "When you're invited to a meeting" },
+                  ].map(({ key, label, desc }) => (
+                    <div key={key} className="flex items-center justify-between py-2">
+                      <div>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                      <Switch
+                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
+                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* System Notifications */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">System</h3>
+                  <Separator className="flex-1" />
+                </div>
+                <div className="grid gap-3">
+                  {[
+                    { key: "securityAlerts", label: "Security Alerts", desc: "Important security notifications" },
+                    { key: "billingUpdates", label: "Billing Updates", desc: "Payment and subscription updates" },
+                    { key: "systemUpdates", label: "System Updates", desc: "Platform updates and maintenance" },
+                    { key: "featureAnnouncements", label: "Feature Announcements", desc: "New features and improvements" },
+                  ].map(({ key, label, desc }) => (
+                    <div key={key} className="flex items-center justify-between py-2">
+                      <div>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                      <Switch
+                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
+                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Email Notifications */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Email</h3>
+                  <Separator className="flex-1" />
+                </div>
+                <div className="grid gap-3">
+                  {[
+                    { key: "emailDigest", label: "Email Digest", desc: "Receive periodic email summaries" },
+                    { key: "weeklyReport", label: "Weekly Report", desc: "Weekly activity summary" },
+                    { key: "dailySummary", label: "Daily Summary", desc: "Daily activity summary" },
+                  ].map(({ key, label, desc }) => (
+                    <div key={key} className="flex items-center justify-between py-2">
+                      <div>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                      <Switch
+                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
+                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Push Notifications */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Push Notifications</h3>
+                  <Separator className="flex-1" />
+                </div>
+                <div className="grid gap-3">
+                  {[
+                    { key: "pushEnabled", label: "Enable Push Notifications", desc: "Receive push notifications on your devices" },
+                    { key: "pushTaskUpdates", label: "Task Updates", desc: "Push notifications for task changes" },
+                    { key: "pushCalendarEvents", label: "Calendar Events", desc: "Push notifications for calendar events" },
+                    { key: "pushTeamMessages", label: "Team Messages", desc: "Push notifications for team messages" },
+                  ].map(({ key, label, desc }) => (
+                    <div key={key} className="flex items-center justify-between py-2">
+                      <div>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                      <Switch
+                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
+                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Email Automation Link */}
+              <div className="mt-4 pt-4 border-t">
+                <Button variant="outline" asChild>
+                  <a href="/settings/email-automation" className="gap-2">
+                    <RiMailLine className="size-4" />
+                    Configure Daily Task Email Scheduler
+                  </a>
+                </Button>
+              </div>
             </div>
           </TabsContent>
 

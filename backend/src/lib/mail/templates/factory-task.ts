@@ -313,3 +313,219 @@ export const buildDailyTaskSummary = (
   button: { text: "View Dashboard", url: dashboardUrl },
   supportEmail: "support@workspace.com",
 });
+
+interface TaskItem {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  dueDate?: Date;
+  project?: string;
+  estimatedDuration?: string;
+}
+
+interface DailyTaskEmailOptions {
+  firstName: string;
+  date: string;
+  totalTasks: number;
+  pendingTasks: TaskItem[];
+  overdueTasks: TaskItem[];
+  highPriorityTasks: TaskItem[];
+  includeProjectGrouping: boolean;
+  includeTaskLinks: boolean;
+  includeCompanyBranding: boolean;
+  dashboardUrl: string;
+}
+
+export const buildDailyTaskEmail = (options: DailyTaskEmailOptions): string => {
+  const {
+    firstName,
+    date,
+    totalTasks,
+    pendingTasks,
+    overdueTasks,
+    highPriorityTasks,
+    includeProjectGrouping,
+    includeTaskLinks,
+    includeCompanyBranding,
+    dashboardUrl,
+  } = options;
+
+  const priorityColors: Record<string, string> = {
+    urgent: "#dc2626",
+    high: "#ea580c",
+    medium: "#ca8a04",
+    low: "#16a34a",
+  };
+
+  const statusColors: Record<string, string> = {
+    pending: "#6b7280",
+    assigned: "#3b82f6",
+    in_progress: "#8b5cf6",
+    submitted: "#f59e0b",
+  };
+
+  const getPriorityBadge = (priority: string) => {
+    const color = priorityColors[priority] || "#6b7280";
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;color:white;background-color:${color};text-transform:uppercase;">${priority}</span>`;
+  };
+
+  const getStatusBadge = (status: string) => {
+    const color = statusColors[status] || "#6b7280";
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;color:white;background-color:${color};text-transform:uppercase;">${status.replace("_", " ")}</span>`;
+  };
+
+  const getTaskRow = (task: TaskItem) => {
+    const dueDateStr = task.dueDate
+      ? new Date(task.dueDate).toLocaleDateString()
+      : "No due date";
+    const taskLink = includeTaskLinks
+      ? `<a href="${dashboardUrl}/tasks/${task.id}" style="color:#2563eb;text-decoration:none;">${task.title}</a>`
+      : task.title;
+
+    return `
+      <tr style="border-bottom:1px solid #e5e7eb;">
+        <td style="padding:12px 8px;font-weight:500;">${taskLink}</td>
+        <td style="padding:12px 8px;">${task.project || "No Project"}</td>
+        <td style="padding:12px 8px;">${dueDateStr}</td>
+        <td style="padding:12px 8px;">${getPriorityBadge(task.priority)}</td>
+        <td style="padding:12px 8px;">${getStatusBadge(task.status)}</td>
+      </tr>
+    `;
+  };
+
+  // Build task sections
+  let taskSections = "";
+
+  // Overdue Tasks Section
+  if (overdueTasks.length > 0) {
+    taskSections += `
+      <div style="margin-bottom:24px;">
+        <h3 style="color:#dc2626;font-size:16px;font-weight:600;margin-bottom:12px;">⚠️ Overdue Tasks (${overdueTasks.length})</h3>
+        <table style="width:100%;border-collapse:collapse;background-color:#fef2f2;border-radius:8px;overflow:hidden;">
+          <thead>
+            <tr style="background-color:#fee2e2;border-bottom:2px solid #fca5a5;">
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#991b1b;">Task</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#991b1b;">Project</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#991b1b;">Due Date</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#991b1b;">Priority</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#991b1b;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${overdueTasks.map(getTaskRow).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // High Priority Tasks Section
+  if (highPriorityTasks.length > 0) {
+    taskSections += `
+      <div style="margin-bottom:24px;">
+        <h3 style="color:#ea580c;font-size:16px;font-weight:600;margin-bottom:12px;">🔥 High Priority Tasks (${highPriorityTasks.length})</h3>
+        <table style="width:100%;border-collapse:collapse;background-color:#fff7ed;border-radius:8px;overflow:hidden;">
+          <thead>
+            <tr style="background-color:#ffedd5;border-bottom:2px solid #fed7aa;">
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#9a3412;">Task</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#9a3412;">Project</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#9a3412;">Due Date</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#9a3412;">Priority</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#9a3412;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${highPriorityTasks.map(getTaskRow).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // Pending Tasks Section
+  if (pendingTasks.length > 0) {
+    taskSections += `
+      <div style="margin-bottom:24px;">
+        <h3 style="color:#3b82f6;font-size:16px;font-weight:600;margin-bottom:12px;">📋 Pending Tasks (${pendingTasks.length})</h3>
+        <table style="width:100%;border-collapse:collapse;background-color:#eff6ff;border-radius:8px;overflow:hidden;">
+          <thead>
+            <tr style="background-color:#dbeafe;border-bottom:2px solid #93c5fd;">
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#1e40af;">Task</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#1e40af;">Project</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#1e40af;">Due Date</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#1e40af;">Priority</th>
+              <th style="padding:10px 8px;text-align:left;font-size:12px;color:#1e40af;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pendingTasks.map(getTaskRow).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // No tasks message
+  if (totalTasks === 0) {
+    taskSections = `
+      <div style="text-align:center;padding:40px 20px;background-color:#f0fdf4;border-radius:8px;margin-bottom:24px;">
+        <p style="color:#16a34a;font-size:18px;font-weight:500;margin:0;">You have no assigned tasks for today.</p>
+        <p style="color:#6b7280;font-size:14px;margin:8px 0 0 0;">Enjoy your productive day!</p>
+      </div>
+    `;
+  }
+
+  // Company branding footer
+  const brandingFooter = includeCompanyBranding
+    ? `
+      <div style="text-align:center;padding:20px;border-top:1px solid #e5e7eb;margin-top:32px;">
+        <p style="color:#9ca3af;font-size:12px;margin:0;">This email was sent by MyWorkSpace</p>
+        <p style="color:#9ca3af;font-size:12px;margin:4px 0 0 0;">© ${new Date().getFullYear()} MyWorkSpace. All rights reserved.</p>
+      </div>
+    `
+    : "";
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background-color:#f3f4f6;margin:0;padding:20px;">
+      <div style="max-width:600px;margin:0 auto;background-color:white;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.1);overflow:hidden;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);padding:24px;text-align:center;">
+          <h1 style="color:white;font-size:24px;font-weight:700;margin:0;">Daily Task Summary</h1>
+          <p style="color:rgba(255,255,255,0.9);font-size:14px;margin:8px 0 0 0;">${date}</p>
+        </div>
+
+        <!-- Content -->
+        <div style="padding:24px;">
+          <!-- Greeting -->
+          <p style="font-size:16px;color:#374151;margin:0 0 16px 0;">Hi ${firstName},</p>
+          
+          ${totalTasks > 0 
+            ? `<p style="font-size:14px;color:#6b7280;margin:0 0 24px 0;">You have <strong>${totalTasks}</strong> task${totalTasks > 1 ? 's' : ''} assigned today.</p>`
+            : ""
+          }
+
+          <!-- Task Sections -->
+          ${taskSections}
+
+          <!-- View Dashboard Button -->
+          ${totalTasks > 0 ? `
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${dashboardUrl}" style="display:inline-block;background-color:#3b82f6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">View Dashboard</a>
+            </div>
+          ` : ""}
+        </div>
+
+        <!-- Branding Footer -->
+        ${brandingFooter}
+      </div>
+    </body>
+    </html>
+  `;
+};

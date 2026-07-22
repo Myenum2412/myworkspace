@@ -59,6 +59,7 @@ import blogRoutes from "./routes/blog.js";
 import plansRoutes from "./routes/plans.js";
 import adminSecurityRoutes from "./routes/admin-security.js";
 import orgMfaPolicyRoutes from "./routes/org-mfa-policy.js";
+import dailyTaskEmailSchedulerRoutes from "./routes/daily-task-email-scheduler.js";
 
 const app = express();
 
@@ -360,6 +361,7 @@ app.use("/api/blog", blogRoutes);
 app.use("/api/plans", plansRoutes);
 app.use("/api/admin/security", adminSecurityRoutes);
 app.use("/api/org/mfa-policy", orgMfaPolicyRoutes);
+app.use("/api/daily-task-email-scheduler", dailyTaskEmailSchedulerRoutes);
 
 // ── Public config endpoint (unauthenticated, exposes safe values) ──
 app.get("/api/config/public", (_req, res) => {
