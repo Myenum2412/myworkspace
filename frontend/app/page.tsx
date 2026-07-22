@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import HeroBlock from "@/components/hero-block";
 import { NewsletterBlock } from "@/components/landing/newsletter-block";
 import { HeroSection2 } from "@/components/landing/hero-section-2";
+import AboutPage from "./about/page";
 
 export const metadata: Metadata = {
   title: "MyWorkSpace — Enterprise Workspace Management Platform",
@@ -26,6 +27,7 @@ export default function Home() {
     <>
       <main className="flex min-h-screen flex-col items-center justify-center">
         <HeroBlock />
+        <AboutPage />
         <HeroSection2 />
         <NewsletterBlock />
       </main>
