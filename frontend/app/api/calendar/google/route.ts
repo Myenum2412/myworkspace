@@ -14,10 +14,20 @@ export async function GET() {
     return NextResponse.json({ error: "Google Calendar not configured" }, { status: 500 });
   }
 
+  // Full calendar access scopes for two-way sync
   const scopes = [
-    "https://www.googleapis.com/auth/calendar.readonly",
-    "https://www.googleapis.com/auth/calendar.events.readonly",
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/calendar.settings.readonly",
+    "https://www.googleapis.com/auth/userinfo.email",
   ].join(" ");
+
+  // Generate a random state nonce for CSRF protection
+  const state = JSON.stringify({
+    userId: session.user.id,
+    nonce: crypto.randomUUID(),
+    timestamp: Date.now(),
+  });
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -26,7 +36,7 @@ export async function GET() {
     scope: scopes,
     access_type: "offline",
     prompt: "consent",
-    state: session.user.id,
+    state: Buffer.from(state).toString("base64"),
   });
 
   return NextResponse.redirect(

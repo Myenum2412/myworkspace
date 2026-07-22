@@ -27,4 +27,9 @@ export const collections = {
   businessSettings: "businessSettings",
   stocks: "stocks",
   engagements: "engagements",
+
+  // Calendar collections
+  calendarConnections: "calendar_connections",
+  calendarEvents: "calendar_events",
+  syncTokens: "sync_tokens",
 } as const;

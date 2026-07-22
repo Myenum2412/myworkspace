@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
+import { encryptToken } from "@/lib/services/calendar-service";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
-  const state = searchParams.get("state"); // userId
+  const stateParam = searchParams.get("state");
   const error = searchParams.get("error");
 
   if (error) {
@@ -15,13 +16,24 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  if (!code || !state) {
+  if (!code || !stateParam) {
     return NextResponse.redirect(
       new URL("/?error=missing_params", req.url)
     );
   }
 
   try {
+    // Decode and validate state
+    const state = JSON.parse(Buffer.from(stateParam, "base64").toString());
+    const userId = state.userId;
+
+    // Validate state freshness (5 minutes max)
+    if (Date.now() - state.timestamp > 5 * 60 * 1000) {
+      return NextResponse.redirect(
+        new URL("/?error=state_expired", req.url)
+      );
+    }
+
     // Exchange code for tokens
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -49,11 +61,20 @@ export async function GET(req: NextRequest) {
     });
     const userData = await userRes.json();
 
-    // Store connection in DB
-    const userId = state;
-    const user = await db.collection(collections.users).findOne({ id: userId });
+    // Get org ID from user
     const orgMember = await db.collection(collections.orgMembers).findOne({ userId });
     const orgId = orgMember?.orgId || "";
+
+    // Encrypt tokens before storage
+    const encryptedAccessToken = encryptToken(tokenData.access_token);
+    const encryptedRefreshToken = tokenData.refresh_token
+      ? encryptToken(tokenData.refresh_token)
+      : null;
+
+    // Calculate token expiry
+    const tokenExpiry = tokenData.expires_in
+      ? new Date(Date.now() + tokenData.expires_in * 1000)
+      : new Date(Date.now() + 3600 * 1000); // Default 1 hour
 
     // Remove existing Google connection for this user
     await db.collection(collections.calendarConnections).deleteMany({
@@ -61,20 +82,23 @@ export async function GET(req: NextRequest) {
       provider: "google",
     });
 
+    // Store new connection with encrypted tokens
     await db.collection(collections.calendarConnections).insertOne({
       id: uuid(),
       userId,
       orgId,
       provider: "google",
-      accessToken: tokenData.access_token,
-      refreshToken: tokenData.refresh_token || null,
-      tokenExpiry: tokenData.expires_in
-        ? new Date(Date.now() + tokenData.expires_in * 1000)
-        : null,
+      accessToken: encryptedAccessToken,
+      refreshToken: encryptedRefreshToken,
+      tokenExpiry,
       calendarEmail: userData.email || "",
       calendarName: "Google Calendar",
       syncEnabled: true,
       lastSyncAt: null,
+      syncToken: null,
+      webhookChannelId: null,
+      webhookExpiration: null,
+      scopes: tokenData.scope?.split(" ") || [],
       createdAt: new Date(),
       updatedAt: new Date(),
     });
