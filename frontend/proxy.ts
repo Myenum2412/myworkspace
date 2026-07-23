@@ -15,7 +15,7 @@ const STAFF_PREFIXES = ["/staffs"];
 const CLIENT_PREFIXES = ["/client"];
 
 const PUBLIC_PATHS = new Set([
-  "/login", "/login/verify-2fa", "/signup", "/signup-mongo", "/forgot-password",
+  "/login", "/signup", "/signup-mongo", "/forgot-password",
   "/reset-password", "/verify-email",
   "/pricing", "/client/login", "/auth/not-found", "/",
   "/features", "/solutions", "/platform", "/about", "/blog", "/contact",
@@ -189,7 +189,7 @@ export const proxy = auth((req) => {
     }
     // Allow authenticated users to access auth pages (login, signup, etc.)
     // so they can log out and switch accounts if needed.
-    const AUTH_PAGES = new Set(["/login", "/login/verify-2fa", "/signup", "/signup-mongo", "/forgot-password", "/reset-password", "/verify-email"]);
+    const AUTH_PAGES = new Set(["/login", "/signup", "/signup-mongo", "/forgot-password", "/reset-password", "/verify-email"]);
     if (AUTH_PAGES.has(pathname)) {
       return;
     }

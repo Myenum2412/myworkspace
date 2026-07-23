@@ -22,7 +22,7 @@ const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 
 router.post("/login", async (req: AuthRequest, res: Response) => {
-  const { email, password, token: totpToken, recoveryCode, trustDevice } = req.body;
+  const { email, password } = req.body;
   if (!email || !password) {
     throw new AppError(400, "Email and password are required");
   }
@@ -32,26 +32,11 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   const result = await executeAuthPipeline({
     email: (email as string).toLowerCase(),
     password: password as string,
-    totpToken: totpToken as string | undefined,
-    recoveryCode: recoveryCode as string | undefined,
     deviceFingerprint: req.body.deviceFingerprint as string | undefined,
-    trustDevice: trustDevice === true,
     authMethod: "password",
     ipAddress: req.ip,
     userAgent: req.headers["user-agent"] as string,
   });
-
-  if (result.requiresTwoFactor) {
-    res.json({
-      success: true,
-      data: {
-        requiresTwoFactor: true,
-        twoFactorMethod: result.twoFactorMethod,
-        tempToken: result.tempToken,
-      },
-    });
-    return;
-  }
 
   await ClientAuditLog.create({
     orgId: result.orgId || "",

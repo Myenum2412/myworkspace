@@ -18,10 +18,6 @@ export interface RequestContext {
   department?: string;
   /** User's clearance level */
   clearance?: string;
-  /** Is the request from a trusted device */
-  trustedDevice?: boolean;
-  /** Is MFA completed */
-  mfaCompleted?: boolean;
   /** Request method */
   method?: string;
   /** Request path */
@@ -127,16 +123,6 @@ function evaluateSingleCondition(condition: string, ctx: RequestContext): boolea
   // Risk-based conditions
   if (condition.startsWith("risk_score")) {
     return evaluateRiskCondition(condition, ctx);
-  }
-
-  // Device trust conditions
-  if (condition.startsWith("trusted_device")) {
-    return ctx.trustedDevice === true;
-  }
-
-  // MFA conditions
-  if (condition.startsWith("mfa_completed")) {
-    return ctx.mfaCompleted === true;
   }
 
   // Location conditions
@@ -332,8 +318,7 @@ export function buildConditionString(conditions: {
   countries?: string[];
   roles?: string[];
   departments?: string[];
-  requireTrustedDevice?: boolean;
-  requireMfa?: boolean;
+}
 }): string {
   const parts: string[] = [];
 
@@ -366,12 +351,5 @@ export function buildConditionString(conditions: {
   if (conditions.departments && conditions.departments.length > 0) {
     parts.push(`department == "${conditions.departments[0]}"`);
   }
-  if (conditions.requireTrustedDevice) {
-    parts.push("trusted_device");
-  }
-  if (conditions.requireMfa) {
-    parts.push("mfa_completed");
-  }
-
   return parts.length > 0 ? parts.join(" AND ") : "true";
 }

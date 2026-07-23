@@ -62,7 +62,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   const deviceFingerprint = optionalString(req.body.deviceFingerprint, "deviceFingerprint", { max: 256 });
 
   const user = await User.findOne({ email })
-    .select("id email password name role permissions status isActive lockedUntil failedLoginAttempts twoFactorEnabled orgId emailVerified image userNumber lastLogin tokenVersion");
+    .select("id email password name role permissions status isActive lockedUntil failedLoginAttempts orgId emailVerified image userNumber lastLogin tokenVersion");
   if (!user || !user.password) {
     throw new AppError(401, "Invalid email or password");
   }
@@ -97,24 +97,6 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   await user.save();
 
   const userAgent = req.headers["user-agent"] || "unknown";
-
-  if (user.twoFactorEnabled && user.role !== "staffs" && user.role !== "clients") {
-    const tempToken = jwt.sign(
-      { userId: user.id, email: user.email, purpose: "2fa" },
-      env.JWT_SECRET,
-      { expiresIn: "5m" } as jwt.SignOptions,
-    );
-
-    res.json({
-      success: true,
-      data: {
-        requiresTwoFactor: true,
-        tempToken,
-        email: user.email,
-      },
-    });
-    return;
-  }
 
   await recordAuditLog({
     orgId: resolvedOrgId,
@@ -205,17 +187,6 @@ router.post("/refresh", async (req: AuthRequest, res: Response) => {
     req.ip || "unknown",
     req.headers["user-agent"] as string,
   );
-
-  if ("requiresTwoFactor" in result) {
-    res.json({
-      success: true,
-      data: {
-        requiresTwoFactor: true,
-        message: result.message,
-      },
-    });
-    return;
-  }
 
   res.json({
     success: true,
@@ -598,7 +569,7 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
 
 router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
   const user = await User.findOne({ id: req.user!.userId })
-    .select("id userNumber name email image role permissions status isActive emailVerified twoFactorEnabled createdAt orgId")
+    .select("id userNumber name email image role permissions status isActive emailVerified createdAt orgId")
     .lean();
   if (!user) throw new AppError(404, "User not found");
 
@@ -617,7 +588,6 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
       status: user.status,
       isActive: user.isActive,
       emailVerified: user.emailVerified || false,
-      twoFactorEnabled: user.twoFactorEnabled,
       createdAt: user.createdAt,
       orgId: orgId || undefined,
     },

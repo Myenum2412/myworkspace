@@ -14,8 +14,6 @@ export const NOTIFICATION_TYPES = [
   "password_changed",
   "new_device_login",
   "failed_login",
-  "mfa_enabled",
-  "mfa_disabled",
   "account_locked",
   "account_unlocked",
   "account_suspended",
@@ -173,7 +171,6 @@ export const NOTIFICATION_TYPES = [
   // Security
   "suspicious_login",
   "email_changed",
-  "backup_codes_generated",
   "api_abuse_detected",
   "rate_limit_exceeded",
   "unauthorized_access_attempt",

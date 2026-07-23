@@ -30,7 +30,6 @@ const releases: Release[] = [
         items: [
           "Notification bell moved to header right side for quicker access on all screen sizes.",
           "Public marketing pages no longer render duplicate headers and footers.",
-          "Two-factor authentication secrets are now uniquely generated per user with stronger encryption.",
           "Notification page redesigned with cleaner layout and simplified behavior controls.",
         ],
       },
@@ -54,8 +53,7 @@ const releases: Release[] = [
         type: "Added",
         items: [
           "Google Calendar and Gmail OAuth integration for seamless scheduling.",
-          "Two-factor authentication with per-user TOTP secrets and recovery codes.",
-          "Admin security dashboard with MFA adoption tracking and risk monitoring.",
+          "Admin security dashboard with risk monitoring.",
           "Offline support with sync engine for uninterrupted productivity.",
         ],
       },

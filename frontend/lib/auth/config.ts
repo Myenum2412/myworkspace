@@ -249,44 +249,16 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
-        twoFactorToken: { label: "2FA Token", type: "text" },
         loginSource: { label: "Login Source", type: "text" },
       },
       async authorize(credentials) {
         const email = credentials?.email as string;
         if (!email) return null;
 
-        const apiUrl = process.env.API_URL || "http://localhost:4000";
-
-        const twoFactorToken = credentials?.twoFactorToken as string | undefined;
-        if (twoFactorToken) {
-          try {
-            const res = await fetch(`${apiUrl}/api/two-factor/login`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, token: twoFactorToken }),
-            });
-            const data = await res.json();
-            if (!data.success || !data.data) return null;
-            const userData = data.data.user;
-            return {
-              id: userData.id,
-              email: userData.email,
-              name: userData.name,
-              image: userData.image,
-              role: userData.role,
-              permissions: userData.permissions || [],
-              orgId: data.data.orgId,
-            };
-          } catch (err) {
-            console.error("[AUTH] 2FA login failed:", err);
-            return null;
-          }
-        }
-
         const password = credentials?.password as string;
         if (!password) return null;
 
+        const apiUrl = process.env.API_URL || "http://localhost:4000";
         const loginSource = credentials?.loginSource as string | undefined;
         const endpoint = loginSource === "client" ? "/api/client-auth/login" : "/api/auth/login";
 
@@ -300,11 +272,6 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           const data = await res.json();
 
           if (!data.success || !data.data) {
-            return null;
-          }
-
-          // 2FA required — auth incomplete
-          if (data.data.requiresTwoFactor) {
             return null;
           }
 

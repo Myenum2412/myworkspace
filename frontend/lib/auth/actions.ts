@@ -33,22 +33,10 @@ export async function loginAction(formData: FormData) {
   let isClient = false;
 
   try {
-    const apiUrl = process.env.API_URL || "http://localhost:4000";
-
-    // Parallelize 2FA challenge check with DB lookups
-    const [challengeRes, dbUser, clientUser] = await Promise.all([
-      fetch(`${apiUrl}/api/two-factor/challenge`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      }).then(r => r.json()),
+    const [dbUser, clientUser] = await Promise.all([
       db.collection(collections.users).findOne({ email }),
       db.collection(collections.clientUsers).findOne({ email }),
     ]);
-
-    if (challengeRes?.data?.requiresTwoFactor) {
-      redirect(`/login/verify-2fa?email=${encodeURIComponent(email)}`);
-    }
 
     if (dbUser) {
       user = dbUser;

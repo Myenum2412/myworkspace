@@ -26,16 +26,6 @@ export const notifySecurity = {
     });
   },
 
-  async backupCodesGenerated(userId: string, orgId: string) {
-    return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "backup_codes_generated", category: "security",
-      title: "Backup Codes Generated",
-      message: "New backup codes were generated for your account",
-      actions: [{ label: "View Codes", action: "view", url: "/settings/security", primary: true }],
-    });
-  },
-
   async apiAbuseDetected(userId: string, orgId: string, endpoint: string, reason: string) {
     return createNotification({
       userId, orgId, createdBy: userId,

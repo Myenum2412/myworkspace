@@ -25,7 +25,6 @@ export interface ITenantConfig extends Document {
     passwordMinLength: number;
     sessionTimeout: number;
     maxLoginAttempts: number;
-    twoFactorRequired: boolean;
     ipWhitelist: string[];
     allowedDomains: string[];
   };
@@ -60,7 +59,6 @@ const tenantConfigSchema = new Schema<ITenantConfig>({
     passwordMinLength: { type: Number, default: 8 },
     sessionTimeout: { type: Number, default: 1440 },
     maxLoginAttempts: { type: Number, default: 5 },
-    twoFactorRequired: { type: Boolean, default: false },
     ipWhitelist: [{ type: String }],
     allowedDomains: [{ type: String }],
   },

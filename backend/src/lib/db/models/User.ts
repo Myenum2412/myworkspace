@@ -18,13 +18,6 @@ export interface IUser extends Document {
   failedLoginAttempts: number;
   lockedUntil?: Date;
   tokenVersion: number;
-  twoFactorEnabled: boolean;
-  twoFactorSecret?: string;
-  twoFactorPendingSecret?: string;
-  twoFactorEnabledAt?: Date;
-  twoFactorLastVerifiedAt?: Date;
-  twoFactorMethod: "totp" | "none";
-  backupCodesGeneratedAt?: Date;
   phone?: string;
   secondaryPhone?: string;
   department?: string;
@@ -67,13 +60,6 @@ const userSchema = new Schema<IUser>(
     tokenVersion: { type: Number, default: 0 },
     failedLoginAttempts: { type: Number, default: 0 },
     lockedUntil: Date,
-    twoFactorEnabled: { type: Boolean, default: false },
-    twoFactorSecret: String,
-    twoFactorPendingSecret: String,
-    twoFactorEnabledAt: Date,
-    twoFactorLastVerifiedAt: Date,
-    twoFactorMethod: { type: String, enum: ["totp", "none"], default: "none" },
-    backupCodesGeneratedAt: Date,
     phone: String,
     secondaryPhone: String,
     department: String,

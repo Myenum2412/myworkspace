@@ -9,8 +9,6 @@ describe("ABAC Condition Evaluator", () => {
     role: "staffs",
     department: "engineering",
     clearance: "standard",
-    trustedDevice: true,
-    mfaCompleted: true,
     method: "GET",
     path: "/api/tasks",
   };
@@ -101,28 +99,6 @@ describe("ABAC Condition Evaluator", () => {
     it("defaults riskScore to 0 if not provided", () => {
       const context: RequestContext = { ...baseContext, riskScore: undefined };
       expect(evaluateCondition("risk_score < 50", context)).toBe(true);
-    });
-  });
-
-  describe("device trust conditions", () => {
-    it("trusted_device matches when trusted", () => {
-      const context: RequestContext = { ...baseContext, trustedDevice: true };
-      expect(evaluateCondition("trusted_device", context)).toBe(true);
-    });
-
-    it("trusted_device rejects when not trusted", () => {
-      const context: RequestContext = { ...baseContext, trustedDevice: false };
-      expect(evaluateCondition("trusted_device", context)).toBe(false);
-    });
-
-    it("mfa_completed matches when completed", () => {
-      const context: RequestContext = { ...baseContext, mfaCompleted: true };
-      expect(evaluateCondition("mfa_completed", context)).toBe(true);
-    });
-
-    it("mfa_completed rejects when not completed", () => {
-      const context: RequestContext = { ...baseContext, mfaCompleted: false };
-      expect(evaluateCondition("mfa_completed", context)).toBe(false);
     });
   });
 
@@ -258,11 +234,9 @@ describe("ABAC Condition Evaluator", () => {
       const result = buildConditionString({
         timeBetween: ["09:00", "18:00"],
         maxRiskScore: 50,
-        requireTrustedDevice: true,
       });
       expect(result).toContain('time_between("09:00", "18:00")');
       expect(result).toContain("risk_score < 50");
-      expect(result).toContain("trusted_device");
       expect(result).toContain(" AND ");
     });
 

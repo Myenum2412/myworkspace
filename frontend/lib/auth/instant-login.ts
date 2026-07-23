@@ -26,18 +26,6 @@ export async function instantLoginAction(email: string, password: string): Promi
   }
 
   try {
-    const apiUrl = process.env.API_URL || "http://localhost:4000";
-
-    const challengeRes = await fetch(`${apiUrl}/api/two-factor/challenge`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    }).then(r => r.json()).catch(() => ({ data: { requiresTwoFactor: true } }));
-
-    if (challengeRes?.data?.requiresTwoFactor) {
-      return { success: false, error: "2fa_required", redirectTo: `/login/verify-2fa?email=${encodeURIComponent(email)}` };
-    }
-
     const signInResult = await signIn("credentials", {
       email,
       password,

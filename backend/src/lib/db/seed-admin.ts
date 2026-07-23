@@ -41,7 +41,6 @@ async function seedAdmin() {
     permissions: [],
     isActive: true,
     failedLoginAttempts: 0,
-    twoFactorEnabled: false,
   });
 
   const org = await Organization.create({

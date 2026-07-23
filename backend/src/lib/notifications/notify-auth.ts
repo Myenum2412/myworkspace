@@ -133,25 +133,6 @@ export const notifyUserAuth = {
     });
   },
 
-  async mfaEnabled(userId: string, orgId: string) {
-    return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "mfa_enabled", category: "auth",
-      title: "Two-Factor Authentication Enabled",
-      message: "Two-factor authentication has been enabled on your account.",
-      actions: [{ label: "View Backup Codes", action: "view", url: "/settings/security", primary: true }],
-    });
-  },
-
-  async mfaDisabled(userId: string, orgId: string) {
-    return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "mfa_disabled", category: "auth", priority: "high",
-      title: "Two-Factor Authentication Disabled",
-      message: "Two-factor authentication has been disabled on your account.",
-    });
-  },
-
   async accountLocked(userId: string, orgId: string, reason: string) {
     return createNotification({
       userId, orgId, createdBy: userId,

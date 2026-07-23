@@ -13,7 +13,7 @@ if (u) {
   console.log(JSON.stringify({
     _id: u._id, email: u.email, name: u.name, orgId: u.orgId,
     role: u.role, status: u.status, hasPassword: !!u.password,
-    isActive: u.isActive, twoFactorEnabled: u.twoFactorEnabled
+    isActive: u.isActive
   }, null, 2));
 } else {
   console.log("User not found");

@@ -29,29 +29,9 @@ export function useInstantLogin() {
 
   const instantLogin = useCallback(async (email: string, password: string) => {
     const loginStart = performance.now();
-    setState({ loading: true, error: null, step: "challenging" });
+    setState({ loading: true, error: null, step: "authenticating" });
 
     try {
-      let requiresTwoFactor = false;
-      try {
-        const challengeRes = await fetch(apiUrl("/api/two-factor/challenge"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }).then(r => r.json());
-        requiresTwoFactor = challengeRes?.data?.requiresTwoFactor === true;
-      } catch {
-        // Backend not available — skip 2FA pre-check
-      }
-
-      if (requiresTwoFactor) {
-        router.replace(`/login/verify-2fa?email=${encodeURIComponent(email)}`);
-        setState({ loading: false, error: null, step: "idle" });
-        return;
-      }
-
-      setState((s) => ({ ...s, step: "authenticating" }));
-
       let signInData: any;
       try {
         signInData = await signIn("credentials", {
@@ -65,13 +45,7 @@ export function useInstantLogin() {
       }
 
       if (!signInData.ok || signInData.error) {
-        const errMsg = signInData.error || "Invalid credentials";
-        if (errMsg === "2fa_required" || errMsg === "CredentialsSignin") {
-          router.replace(`/login/verify-2fa?email=${encodeURIComponent(email)}`);
-          setState({ loading: false, error: null, step: "idle" });
-          return;
-        }
-        setState({ loading: false, error: errMsg, step: "idle" });
+        setState({ loading: false, error: signInData.error || "Invalid credentials", step: "idle" });
         return;
       }
 

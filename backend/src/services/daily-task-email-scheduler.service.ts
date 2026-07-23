@@ -8,6 +8,23 @@ import { buildDailyTaskEmail } from "../lib/mail/templates/factory-task.js";
 import { logger } from "../lib/logger/index.js";
 import { v4 as uuid } from "uuid";
 
+function getTimeInTimezone(timezone: string): string {
+  const now = new Date();
+  try {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: timezone,
+    });
+    return formatter.format(now);
+  } catch {
+    const h = String(now.getHours()).padStart(2, "0");
+    const m = String(now.getMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+  }
+}
+
 // ── Types ────────────────────────────────────────────────────────────
 
 interface TaskWithDetails {
@@ -257,13 +274,61 @@ export async function runDailyTaskEmailScheduler(orgId?: string): Promise<{
   const query: any = { enabled: true, paused: false };
   if (orgId) query.orgId = orgId;
   
-  const schedulers = await DailyTaskEmailScheduler.find(query);
+  let schedulers = await DailyTaskEmailScheduler.find(query);
+  
+  // Auto-create scheduler configs for orgs that have users but no scheduler
+  if (!orgId) {
+    const orgsWithSchedulers = new Set(schedulers.map((s: any) => s.orgId));
+    const orgMembers = await OrgMember.distinct("orgId");
+    for (const oid of orgMembers) {
+      if (!orgsWithSchedulers.has(oid)) {
+        try {
+          const created = await getOrCreateScheduler(oid);
+          schedulers.push(created);
+          logger.info(`Auto-created daily task email scheduler for org ${oid}`);
+        } catch (err: any) {
+          logger.error(`Failed to auto-create scheduler for org ${oid}: ${err.message}`);
+        }
+      }
+    }
+  }
+  
+  const now = new Date();
+  
+  // Reset daily counters at midnight (UTC check)
+  {
+    const utcH = String(now.getUTCHours()).padStart(2, "0");
+    const utcM = String(now.getUTCMinutes()).padStart(2, "0");
+    if (`${utcH}:${utcM}` === "00:00") {
+      await DailyTaskEmailScheduler.updateMany({}, {
+        $set: { emailsSentToday: 0, emailsFailedToday: 0 }
+      });
+    }
+  }
   
   for (const scheduler of schedulers) {
     try {
+      // Get current time in the scheduler's configured timezone
+      const tz = scheduler.timezone || "UTC";
+      const currentTime = getTimeInTimezone(tz);
+      
+      // Check if current time matches the configured send time
+      const configuredTime = scheduler.sendTime || "08:00";
+      if (currentTime !== configuredTime) {
+        continue;
+      }
+      // Only send once per day per org (check lastSuccessfulRun date)
+      if (scheduler.lastSuccessfulRun) {
+        const lastRunDate = new Date(scheduler.lastSuccessfulRun);
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+        if (lastRunDate >= todayStart) {
+          continue;
+        }
+      }
+      
       // Check if today is an enabled day
-      const today = new Date();
-      const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
       const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
       const todayDayName = dayNames[dayOfWeek];
       
@@ -276,6 +341,8 @@ export async function runDailyTaskEmailScheduler(orgId?: string): Promise<{
       const orgMembers = await OrgMember.find({ orgId: scheduler.orgId }).lean();
       const userIds = orgMembers.map((m: any) => m.userId);
       
+      if (userIds.length === 0) continue;
+      
       // Filter users based on recipients setting
       let usersToEmail: any[] = [];
       
@@ -287,7 +354,12 @@ export async function runDailyTaskEmailScheduler(orgId?: string): Promise<{
         usersToEmail = await User.find({ id: { $in: userIds }, role: { $in: ["members", "team_leader"] }, isActive: true }).lean();
       }
       
+      if (usersToEmail.length === 0) continue;
+      
       // Process each user
+      let orgSuccess = 0;
+      let orgFailed = 0;
+      
       for (const user of usersToEmail) {
         try {
           // Check user email preferences
@@ -325,20 +397,23 @@ export async function runDailyTaskEmailScheduler(orgId?: string): Promise<{
           
           if (sent) {
             results.success++;
+            orgSuccess++;
           } else {
             results.failed++;
+            orgFailed++;
           }
           
         } catch (error: any) {
           logger.error(`Error processing user ${(user as any).id}: ${error.message}`);
           results.failed++;
+          orgFailed++;
         }
       }
       
       // Update scheduler last successful run
       scheduler.lastSuccessfulRun = new Date();
-      scheduler.emailsSentToday = results.success;
-      scheduler.emailsFailedToday = results.failed;
+      scheduler.emailsSentToday = (scheduler.emailsSentToday || 0) + orgSuccess;
+      scheduler.emailsFailedToday = (scheduler.emailsFailedToday || 0) + orgFailed;
       await scheduler.save();
       
     } catch (error: any) {
