@@ -47,12 +47,12 @@ export async function instantLoginAction(email: string, password: string): Promi
     });
 
     if (!signInResult || signInResult.error) {
-      return { success: false, error: AUTH_ERRORS[signInResult?.error] || signInResult?.error || "Invalid email or password. Please try again." };
+      return { success: false, error: AUTH_ERRORS[signInResult?.error || ""] || signInResult?.error || "Invalid email or password. Please try again." };
     }
 
     const user = signInResult as unknown as { ok: boolean; url?: string; error?: string };
     if (!user.ok) {
-      return { success: false, error: AUTH_ERRORS[user.error] || user.error || "Authentication failed" };
+      return { success: false, error: AUTH_ERRORS[user.error || ""] || user.error || "Authentication failed" };
     }
 
     const sessionToken = signInResult as unknown as { token?: string };
