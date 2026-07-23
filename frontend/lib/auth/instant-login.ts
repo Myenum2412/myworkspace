@@ -1,10 +1,12 @@
 "use server";
 
-import { signIn } from "./config";
+import { signIn, auth } from "./config";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import type { BootstrapData } from "@/lib/api/bootstrap";
 import { ROLES } from "@/lib/rbac";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
 
 function getRedirectPath(role?: string): string {
   const r = role?.toLowerCase() || "";
@@ -55,18 +57,51 @@ export async function instantLoginAction(email: string, password: string): Promi
       return { success: false, error: AUTH_ERRORS[user.error || ""] || user.error || "Authentication failed" };
     }
 
-    const sessionToken = signInResult as unknown as { token?: string };
+    const session = await auth();
 
-    const apiUrl = process.env.API_URL || "http://localhost:4000";
-    const sessionRes = await fetch(`${apiUrl}/api/bootstrap`, {
-      headers: {
-        Cookie: `authjs.session-token=${sessionToken.token || ""}`,
+    const userId = session?.user?.id;
+    if (!userId) {
+      return { success: false, error: "Authentication succeeded but session not found" };
+    }
+
+    const role = session.user.role || "staffs";
+    const orgId = session.user.orgId || "";
+    const [userDoc, orgDoc] = await Promise.all([
+      db.collection(collections.users).findOne({ id: userId }).catch(() => null),
+      orgId ? db.collection(collections.organizations).findOne({ id: orgId }).catch(() => null) : Promise.resolve(null),
+    ]);
+
+    const org = orgDoc as Record<string, unknown> | null;
+    const bootstrapData: BootstrapData = {
+      user: {
+        id: userId,
+        name: userDoc?.name || session.user.name || "",
+        email: userDoc?.email || session.user.email || "",
+        image: userDoc?.image || session.user.image || "",
+        role,
+        permissions: session.user.permissions || [],
+        status: userDoc?.status || "online",
+        lastLogin: userDoc?.lastLogin ? new Date(userDoc.lastLogin).toISOString() : null,
+        createdAt: userDoc?.createdAt ? new Date(userDoc.createdAt).toISOString() : null,
       },
-    });
-    const bootstrapJson = await sessionRes.json();
-    const bootstrapData = bootstrapJson.data || bootstrapJson;
+      organization: org
+        ? {
+            id: org.id as string,
+            name: org.name as string,
+            slug: org.slug as string,
+            plan: (org.plan as string) || "trial",
+            trialEnd: org.trialEnd ? new Date(org.trialEnd as string).toISOString() : null,
+            ownerId: org.ownerId as string,
+            onboardingCompleted: org.onboardingCompleted === true,
+          }
+        : null,
+      orgId,
+      notifications: { unreadCount: 0 },
+      members: [],
+      recentSessions: [],
+      navigation: { role, orgId },
+    };
 
-    const role = bootstrapData?.user?.role;
     const redirectTo = getRedirectPath(role);
 
     revalidatePath(redirectTo, "page");
