@@ -1,7 +1,10 @@
 import { newEnforcer, Enforcer } from "casbin";
 import path from "path";
+import { fileURLToPath } from "url";
 import { buildFileResource, buildFolderResource } from "../../../src/config/casbin.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const CONFIG_DIR = path.resolve(__dirname, "../../../src/config");
 
 let enforcer: Enforcer;

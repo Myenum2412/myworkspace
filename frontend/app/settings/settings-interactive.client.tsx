@@ -48,7 +48,6 @@ import {
 } from "@/components/ui/select"
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options"
 import IntegrationsBlock from "@/components/integrations-block"
-import AuthenticatorSettings from "@/components/authenticator-settings"
 import {
   Loader2Icon,
   PlusIcon,
@@ -745,7 +744,6 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 <h2 className="text-lg font-semibold">Security</h2>
                 <p className="text-sm text-muted-foreground">Manage your account security and authentication methods.</p>
               </div>
-              {initialUser.role !== "staffs" && initialUser.role !== "clients" && <AuthenticatorSettings />}
             </div>
           </TabsContent>
         </Tabs>

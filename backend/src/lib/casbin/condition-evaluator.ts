@@ -318,7 +318,6 @@ export function buildConditionString(conditions: {
   countries?: string[];
   roles?: string[];
   departments?: string[];
-}
 }): string {
   const parts: string[] = [];
 

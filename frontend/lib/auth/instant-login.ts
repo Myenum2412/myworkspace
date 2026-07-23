@@ -43,6 +43,7 @@ export async function instantLoginAction(email: string, password: string): Promi
 
     const sessionToken = signInResult as unknown as { token?: string };
 
+    const apiUrl = process.env.API_URL || "http://localhost:4000";
     const sessionRes = await fetch(`${apiUrl}/api/bootstrap`, {
       headers: {
         Cookie: `authjs.session-token=${sessionToken.token || ""}`,
