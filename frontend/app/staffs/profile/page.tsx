@@ -107,35 +107,50 @@ type ProfileData = {
   memberCount: number;
 };
 
-export default async function ProfilePage() {
+export default async function ProfilePage(props: { searchParams?: Promise<{ id?: string }> }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const userId = session.user.id;
-  const email = session.user.email;
+  const searchParams = await props.searchParams;
+  const targetUserId = searchParams?.id || session.user.id;
+  const targetEmail = targetUserId === session.user.id ? session.user.email : null;
+
+  // Only the current session user can view their own full profile by default.
+  // For other users, load their data (scoped to the same org) when ?id= is provided.
 
   // Find user by email first, then id, then _id (mirrors /api/user/profile)
   let user: Record<string, unknown> | null = null;
-  if (email) {
-    user = (await db.collection(collections.users).findOne({ email })) as Record<string, unknown> | null;
+  if (targetEmail) {
+    user = (await db.collection(collections.users).findOne({ email: targetEmail })) as Record<string, unknown> | null;
   }
   if (!user) {
-    user = (await db.collection(collections.users).findOne({ id: userId })) as Record<string, unknown> | null;
+    user = (await db.collection(collections.users).findOne({ id: targetUserId })) as Record<string, unknown> | null;
   }
-  if (!user && ObjectId.isValid(userId)) {
+  if (!user && ObjectId.isValid(targetUserId)) {
     try {
-      user = (await db.collection(collections.users).findOne({ _id: new ObjectId(userId) } as never)) as Record<string, unknown> | null;
+      user = (await db.collection(collections.users).findOne({ _id: new ObjectId(targetUserId) } as never)) as Record<string, unknown> | null;
     } catch {}
   }
   if (!user) {
-    user = (await db.collection(collections.users).findOne({ _id: userId } as never)) as Record<string, unknown> | null;
+    user = (await db.collection(collections.users).findOne({ _id: targetUserId } as never)) as Record<string, unknown> | null;
   }
 
   if (!user) {
     return <ProfileClient data={{ user: null, org: null, memberCount: 0 }} />;
   }
 
-  const orgId = await getUserOrgId(userId, email);
+  const sessionOrgId = await getUserOrgId(session.user.id, session.user.email);
+
+  // If viewing another user, ensure they're in the same org
+  let orgId = sessionOrgId;
+  if (targetUserId !== session.user.id) {
+    const targetOrgMember = await db.collection(collections.orgMembers).findOne({ userId: targetUserId });
+    const sessionOrgMember = await db.collection(collections.orgMembers).findOne({ userId: session.user.id });
+    if (!targetOrgMember || !sessionOrgMember || targetOrgMember.orgId !== sessionOrgMember.orgId) {
+      return <ProfileClient data={{ user: null, org: null, memberCount: 0 }} />;
+    }
+    orgId = sessionOrgMember.orgId as string;
+  }
 
   let org: Record<string, unknown> | null = null;
   let memberCount = 0;

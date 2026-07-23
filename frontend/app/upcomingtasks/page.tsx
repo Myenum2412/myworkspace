@@ -5,6 +5,7 @@ import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import UpcomingTasksInteractive, { UpcomingTask } from "./upcomingtasks-interactive";
+import { OverdueTasksCard, type OverdueTask } from "@/components/overdue-tasks-card";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +16,28 @@ export default async function UpcomingTasksPage() {
   const orgId = await getUserOrgId(session.user.id, session.user.email);
 
   let initialTasks: UpcomingTask[] = [];
+  let overdueTasks: OverdueTask[] = [];
 
   if (orgId) {
     const now = new Date();
+    const overdueRaw = (await db
+      .collection(collections.tasks)
+      .find({
+        orgId,
+        dueDate: { $lt: now },
+        status: { $nin: ["done", "cancelled", "completed", "closed", "rejected"] },
+      })
+      .project({ title: 1, dueDate: 1 })
+      .sort({ dueDate: 1 })
+      .limit(10)
+      .toArray()) as unknown as Record<string, unknown>[];
+
+    overdueTasks = overdueRaw.map((t) => ({
+      _id: (t._id as { toString: () => string }).toString(),
+      title: (t.title as string) || "",
+      dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
+    }));
+
     const rawTasks = (await db
       .collection(collections.tasks)
       .find({
@@ -85,8 +105,11 @@ export default async function UpcomingTasksPage() {
   }
 
   return (
-    <Suspense fallback={null}>
-      <UpcomingTasksInteractive initialTasks={initialTasks} />
-    </Suspense>
+    <>
+      <OverdueTasksCard tasks={overdueTasks} />
+      <Suspense fallback={null}>
+        <UpcomingTasksInteractive initialTasks={initialTasks} />
+      </Suspense>
+    </>
   );
 }

@@ -4,16 +4,8 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import {
-  UsersIcon,
   ListTodoIcon,
-  ClockIcon,
-  CheckCircle2Icon,
-  AlertCircleIcon,
   BriefcaseIcon,
-  UserCheckIcon,
-  UserXIcon,
-  CalendarIcon,
-  HourglassIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -129,12 +121,6 @@ export default async function StaffsPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
-  const absentCount = onLeave + (totalStaff - activeStaff - onLeave);
-  const staffByStatus = [
-    { label: "Present", count: activeStaff, icon: UserCheckIcon, color: "bg-green-500" },
-    { label: "Absent", count: absentCount, icon: UserXIcon, color: "bg-gray-500" },
-  ];
-
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
@@ -155,34 +141,6 @@ export default async function StaffsPage() {
           { name: 'Pending', value: pendingTasks, subtitle: 'In progress' },
         ]}
       />
-
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <UsersIcon className="size-4" />
-              Staff Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {staffByStatus.map((s) => (
-                <div key={s.label} className="flex items-center gap-3">
-                  <div className={`size-3 rounded-full ${s.color}`} />
-                  <span className="text-sm w-20">{s.label}</span>
-                  <div className="flex-1 h-2 bg-muted rounded-sm overflow-hidden">
-                    <div
-                      className={`h-full ${s.color} rounded-sm`}
-                      style={{ width: `${totalStaff > 0 ? (s.count / totalStaff) * 100 : 0}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium w-8 text-right">{s.count}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       <Card>
         <CardHeader>

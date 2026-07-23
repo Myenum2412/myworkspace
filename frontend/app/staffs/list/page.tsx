@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
@@ -23,7 +24,7 @@ export default async function StaffListPage() {
   const session = await auth();
   const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
 
-  let staff: Array<{ name: string; email: string; role: string; department: string; status: string; avatar: string }> = [];
+  let staff: Array<{ id: string; name: string; email: string; role: string; department: string; status: string; avatar: string }> = [];
 
   try {
     if (orgId) {
@@ -32,16 +33,17 @@ export default async function StaffListPage() {
       if (userIds.length > 0) {
         const users = await db.collection(collections.users)
           .find({ id: { $in: userIds } })
-          .project({ id: 1, name: 1, email: 1, image: 1, status: 1 })
+          .project({ id: 1, name: 1, email: 1, image: 1, status: 1, department: 1 })
           .toArray();
         const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
         staff = members.map((m: Record<string, unknown>) => {
           const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
           return {
+            id: (user?.id as string) || (user?._id as string) || "",
             name: (user?.name as string) || "Unknown",
             email: (user?.email as string) || "",
             role: (m.role as string) || "staffs",
-            department: (user?.role as string) || "",
+            department: (user?.department as string) || "",
             status: (user?.status as string) || "active",
             avatar: (user?.image as string) || "",
           };
@@ -92,7 +94,7 @@ export default async function StaffListPage() {
                 {staff.map((s) => (
                   <tr key={s.email} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/staffs/profile?id=${s.id}`} className="flex items-center gap-3">
                         <Avatar className="size-8">
                           <AvatarImage src={s.avatar} alt={s.name} />
                           <AvatarFallback>{getInitials(s.name)}</AvatarFallback>
@@ -101,7 +103,7 @@ export default async function StaffListPage() {
                           <p className="text-sm font-medium">{s.name}</p>
                           <p className="text-xs text-muted-foreground">{s.email}</p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-sm">{s.department}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{s.role}</td>

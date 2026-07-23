@@ -5,6 +5,7 @@ import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import TeamTasksInteractive, { TeamTask } from "./teamtasks-interactive";
+import { OverdueTasksCard, type OverdueTask } from "@/components/overdue-tasks-card";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,28 @@ export default async function TeamTasksPage() {
   const orgId = await getUserOrgId(session.user.id, session.user.email);
 
   let tasks: TeamTask[] = [];
+  let overdueTasks: OverdueTask[] = [];
 
   if (orgId) {
+    const now = new Date();
+    const overdueRaw = (await db
+      .collection(collections.tasks)
+      .find({
+        orgId,
+        teamId: { $exists: true, $ne: null },
+        dueDate: { $lt: now },
+        status: { $nin: ["done", "cancelled", "completed", "closed", "rejected"] },
+      })
+      .project({ title: 1, dueDate: 1 })
+      .sort({ dueDate: 1 })
+      .limit(10)
+      .toArray()) as unknown as Record<string, unknown>[];
+
+    overdueTasks = overdueRaw.map((t) => ({
+      _id: (t._id as { toString: () => string }).toString(),
+      title: (t.title as string) || "",
+      dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
+    }));
     const match: Record<string, unknown> = { orgId, teamId: { $exists: true, $ne: null } };
 
     const pipeline: Record<string, unknown>[] = [
@@ -121,8 +142,11 @@ export default async function TeamTasksPage() {
   }
 
   return (
-    <Suspense fallback={null}>
-      <TeamTasksInteractive tasks={tasks} />
-    </Suspense>
+    <>
+      <OverdueTasksCard tasks={overdueTasks} />
+      <Suspense fallback={null}>
+        <TeamTasksInteractive tasks={tasks} />
+      </Suspense>
+    </>
   );
 }

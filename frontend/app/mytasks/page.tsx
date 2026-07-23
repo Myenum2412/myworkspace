@@ -5,6 +5,7 @@ import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import MyTasksInteractive, { MyTasksProps } from "./mytasks-interactive";
+import { OverdueTasksCard, type OverdueTask } from "@/components/overdue-tasks-card";
 
 export default async function MyTasksPage() {
   const session = await auth();
@@ -14,8 +15,28 @@ export default async function MyTasksPage() {
   const userId = session.user.id;
 
   let initialTasks: MyTasksProps["initialTasks"] = [];
+  let overdueTasks: OverdueTask[] = [];
 
   if (orgId) {
+    const now = new Date();
+    const overdueRaw = (await db
+      .collection(collections.tasks)
+      .find({
+        orgId,
+        assigneeId: userId,
+        dueDate: { $lt: now },
+        status: { $nin: ["done", "cancelled", "completed", "closed", "rejected"] },
+      })
+      .project({ title: 1, dueDate: 1 })
+      .sort({ dueDate: 1 })
+      .limit(10)
+      .toArray()) as unknown as Record<string, unknown>[];
+
+    overdueTasks = overdueRaw.map((t) => ({
+      _id: (t._id as { toString: () => string }).toString(),
+      title: (t.title as string) || "",
+      dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
+    }));
     // Replicates the backend GET /api/tasks query shape: tasks scoped to the
     // user's org, with assignee/creator names resolved via $lookup. Filtering
     // to the current user's assigned tasks happens client-side in the
@@ -73,8 +94,11 @@ export default async function MyTasksPage() {
   }
 
   return (
-    <Suspense fallback={null}>
-      <MyTasksInteractive initialTasks={initialTasks} orgId={orgId || ""} userId={userId} />
-    </Suspense>
+    <>
+      <OverdueTasksCard tasks={overdueTasks} />
+      <Suspense fallback={null}>
+        <MyTasksInteractive initialTasks={initialTasks} orgId={orgId || ""} userId={userId} />
+      </Suspense>
+    </>
   );
 }

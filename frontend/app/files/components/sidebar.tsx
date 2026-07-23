@@ -39,7 +39,6 @@ const extraNav: NavItem[] = [
   { id: "team", label: "Team Files", icon: <UsersIcon className="size-4" /> },
   { id: "client-files", label: "Client Files", icon: <Building2Icon className="size-4" /> },
   { id: "staff-files", label: "Staff Files", icon: <UserIcon className="size-4" /> },
-  { id: "storage", label: "Storage Dashboard", icon: <HardDriveIcon className="size-4" /> },
 ];
 
 export function Sidebar() {
