@@ -36,7 +36,7 @@ const WORKSPACE_PREFIXES = [
   "/createtask", "/createproject",
   "/upload", "/billing", "/files",
   "/attendance", "/appointments",
-  "/ai", "/engagement", "/stocks", "/addons",
+  "/ai", "/engagement", "/stocks", "/reworks", "/addons",
   "/chat", "/notifications",
 ];
 
@@ -85,6 +85,7 @@ const ROLE_ROUTE_ACCESS: Record<string, string[]> = {
   "/overview": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
   "/engagement": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
   "/stocks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.FINANCE],
+  "/reworks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
 
   // HR specific
   "/attendance": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR],
