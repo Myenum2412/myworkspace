@@ -1,7 +1,9 @@
 "use client"
 import { useState } from "react";
+import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { ListTodoIcon } from "lucide-react";
+import { DataTable } from "@/components/data-table";
 import {
   Dialog,
   DialogContent,
@@ -85,9 +87,63 @@ function TaskViewDialog({ task, open, onOpenChange }: { task: Task | null; open:
 export function StaffTasksView({ tasks }: { tasks: Task[] }) {
   const [viewTask, setViewTask] = useState<Task | null>(null);
 
-  if (tasks.length === 0) {
-    return <p className="text-sm text-muted-foreground">No tasks allocated yet</p>;
-  }
+  const columns: ColumnDef<Task>[] = [
+    {
+      accessorKey: "title",
+      header: "Task",
+      cell: ({ row }) => <span className="font-medium">{row.getValue("title")}</span>,
+    },
+    {
+      accessorKey: "assigneeName",
+      header: "Assignee",
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {(row.getValue("assigneeName") as string) || "Unassigned"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "priority",
+      header: "Priority",
+      cell: ({ row }) => {
+        const priority = row.getValue("priority") as string;
+        return (
+          <Badge className={priorityStyles[priority] || ""}>
+            {priority}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string;
+        return (
+          <Badge className={statusStyles[status] || ""}>
+            {status.replace(/_/g, " ")}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "dueDate",
+      header: "Due",
+      cell: ({ row }) => {
+        const dueDate = row.getValue("dueDate") as string | null;
+        const status = row.original.status;
+        const dueStatus = getDueStatus(dueDate, status);
+        if (!dueDate) return <span className="text-muted-foreground">—</span>;
+        return (
+          <span className="flex items-center gap-1">
+            {new Date(dueDate).toLocaleDateString()}
+            {dueStatus === "overdue" && <span className="text-[10px] font-medium text-red-600">(Overdue)</span>}
+            {dueStatus === "due-soon" && <span className="text-[10px] font-medium text-yellow-600">(Due Soon)</span>}
+          </span>
+        );
+      },
+    },
+  ];
 
   return (
     <>
@@ -96,50 +152,17 @@ export function StaffTasksView({ tasks }: { tasks: Task[] }) {
         open={!!viewTask}
         onOpenChange={(open) => { if (!open) setViewTask(null); }}
       />
-      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
-        <div className="overflow-x-auto">
-          <table className="table-premium w-full text-sm text-left">
-            <thead>
-              <tr>
-                <th className="px-4 py-3.5 font-semibold text-left">Task</th>
-                <th className="px-4 py-3.5 font-semibold text-left">Assignee</th>
-                <th className="px-4 py-3.5 font-semibold text-left">Priority</th>
-                <th className="px-4 py-3.5 font-semibold text-left">Status</th>
-                <th className="px-4 py-3.5 font-semibold text-left">Due</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tasks.map((t) => {
-                const dueStatus = getDueStatus(t.dueDate, t.status);
-                const rowClass = dueStatus === "overdue" ? "bg-red-50 hover:bg-red-100/50" : dueStatus === "due-soon" ? "bg-yellow-50 hover:bg-yellow-100/50" : "bg-white hover:bg-slate-50";
-                return (
-                <tr key={t._id} className={`border-b last:border-0 transition-colors cursor-pointer ${rowClass}`} onClick={() => setViewTask(t)}>
-                  <td className="px-4 py-3 text-sm font-medium">{t.title}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{t.assigneeName || "Unassigned"}</td>
-                  <td className="px-4 py-3">
-                    <Badge className={(priorityStyles[t.priority] || "") + ""}>
-                      {t.priority}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge className={(statusStyles[t.status] || "") + ""}>
-                      {t.status.replace(/_/g, " ")}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "\u2014"}
-                      {dueStatus === "overdue" && <span className="text-[10px] font-medium text-red-600">(Overdue)</span>}
-                      {dueStatus === "due-soon" && <span className="text-[10px] font-medium text-yellow-600">(Due Soon)</span>}
-                    </span>
-                  </td>
-                </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={tasks}
+        label="task(s)"
+        emptyMessage="No tasks allocated yet"
+        emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
+        onRowClick={(task) => setViewTask(task)}
+        pageSize={tasks.length}
+        showCheckboxes={false}
+        hideSearchBar
+      />
     </>
   );
 }

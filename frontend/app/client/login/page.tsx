@@ -1,12 +1,5 @@
-import { Suspense } from "react";
-import LoginInteractive from "./login-interactive";
-
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
 export default function ClientLoginPage() {
-  return (
-    <Suspense fallback={null}>
-      <LoginInteractive />
-    </Suspense>
-  );
+  redirect("/login");
 }

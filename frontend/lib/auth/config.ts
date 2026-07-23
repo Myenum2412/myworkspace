@@ -54,6 +54,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
         try {
           const { db } = await import("@/lib/db");
+          const { collections } = await import("@/lib/db/schema");
           const userId = token.id as string;
 
           // Skip if database is not available
@@ -62,8 +63,12 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             return token;
           }
 
-          const [dbUser, org] = await Promise.all([
-            db.collection("users").findOne({ id: userId }).catch(() => null),
+          let dbUser = await db.collection("users").findOne({ id: userId }).catch(() => null);
+          if (!dbUser) {
+            dbUser = await db.collection(collections.clientUsers).findOne({ id: userId }).catch(() => null);
+          }
+
+          const [org] = await Promise.all([
             token.orgId
               ? db.collection("organizations").findOne({ id: token.orgId as string }).catch(() => null)
               : Promise.resolve(null),
@@ -264,10 +269,11 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
           const { compare } = await import("bcryptjs");
           const { collections } = await import("@/lib/db/schema");
-          const loginSource = credentials?.loginSource as string | undefined;
 
-          const collectionName = loginSource === "client" ? collections.clientUsers : collections.users;
-          const user = await db.collection(collectionName).findOne({ email: email.toLowerCase() });
+          let user = await db.collection(collections.users).findOne({ email: email.toLowerCase() });
+          if (!user) {
+            user = await db.collection(collections.clientUsers).findOne({ email: email.toLowerCase() });
+          }
           if (!user) return null;
 
           if (!user.password) return null;

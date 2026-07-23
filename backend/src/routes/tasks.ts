@@ -107,7 +107,6 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   try {
-    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update tasks");
     const orgId = await requireOrgMembership(req.user!.userId);
     const oldTask = await Task.findById(req.params.id).select("assigneeId priority title").lean();
     await updateTask(req.params.id, req.user!.userId, req.body, req.query.scope as string | undefined);
@@ -190,8 +189,7 @@ router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
   try {
-    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update task status");
-    const { status } = req.body;
+    const { status } = req.body;    
     if (!status) throw new AppError(400, "Status is required");
     const orgId = await requireOrgMembership(req.user!.userId);
     await updateTaskStatus(req.params.id, status, req.user!.userId);
@@ -218,7 +216,6 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
   try {
-    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can assign tasks");
     const { assigneeId } = req.body;
     if (!assigneeId) throw new AppError(400, "assigneeId is required");
     const orgId = await requireOrgMembership(req.user!.userId);
@@ -241,7 +238,6 @@ router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) => {
   try {
-    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can submit tasks for verification");
     const orgId = await requireOrgMembership(req.user!.userId);
     await submitForVerification(req.params.id, req.user!.userId);
     const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
@@ -270,7 +266,6 @@ router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) 
 // ─────────────────────────────────────────────
 router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
   try {
-    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can approve tasks");
     const orgId = await requireOrgMembership(req.user!.userId);
     await approveTeamTask(req.params.id, req.user!.userId, req.body.note);
     const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
@@ -291,7 +286,6 @@ router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
   try {
-    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can reject tasks");
     const { reason } = req.body;
     if (!reason) throw new AppError(400, "Rejection reason is required");
     const orgId = await requireOrgMembership(req.user!.userId);

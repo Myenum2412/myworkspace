@@ -21,7 +21,6 @@ import { Label } from "@/components/ui/label";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { INDUSTRIES } from "@/lib/industries";
-import { WhatsAppStats } from "@/components/whatsapp-stats";
 import {
   MailIcon,
   CalendarIcon,
@@ -36,7 +35,6 @@ import {
   CheckIcon,
   PhoneIcon,
   CheckCircleIcon,
-  HardDrive as HardDriveIcon,
   MapPinIcon,
   LinkIcon,
   FileTextIcon,
@@ -59,19 +57,10 @@ const ProfileImageUpload = nextDynamic(
   () => import("@/components/ui/profile-image-upload").then((m) => m.ProfileImageUpload),
   { ssr: false }
 );
-const ChartPieDonutText = nextDynamic(
-  () => import("@/components/chart-pie-donut-text").then((m) => m.ChartPieDonutText),
-  { ssr: false }
-);
-const StorageDashboard = nextDynamic(
-  () => import("@/components/storage-dashboard").then((m) => m.StorageDashboard),
-  { ssr: false }
-);
 
 const TABS = [
   { id: "profile", label: "Profile", icon: UserIcon },
   { id: "company", label: "Company", icon: Building2Icon },
-  { id: "storage", label: "Storage", icon: HardDriveIcon },
   { id: "terms", label: "Terms", icon: FileTextIcon },
 ] as const;
 
@@ -1049,14 +1038,6 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
               </div>
             </CardContent>
           </Card>
-        </div>
-      )}
-
-      {activeTab === "storage" && (
-        <div className="flex-1 p-3 sm:p-4 md:p-6 w-full min-w-0 max-w-full overflow-auto space-y-6">
-          <StorageDashboard orgId={initialData.org?.id || ""} />
-          <WhatsAppStats />
-          <ChartPieDonutText />
         </div>
       )}
 

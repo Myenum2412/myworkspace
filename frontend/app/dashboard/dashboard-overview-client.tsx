@@ -89,7 +89,7 @@ export function DashboardOverviewClient({ dashboardData }: Props) {
         items={[
           { name: 'Total Tasks', value: totalTasks, subtitle: `${completedTasks} completed` },
           { name: 'In Progress', value: inProgressTasks, subtitle: 'Active tasks' },
-          { name: 'Overdue', value: overdueTasks, subtitle: 'Past due date' },
+              { name: 'Overdue', value: overdueTasks, subtitle: 'Past due date', fill: '#ef4444' },
           { name: 'Today', value: todayTasks, subtitle: 'Created today' },
           { name: 'Pending Approval', value: pendingApproval, subtitle: 'Awaiting review' },
           { name: 'Projects', value: projects.length, subtitle: 'Active projects' },

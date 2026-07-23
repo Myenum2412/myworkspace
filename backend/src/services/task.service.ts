@@ -629,6 +629,14 @@ export async function updateTaskStatus(id: string, status: TaskStatus, userId: s
   if (!existing) throw new AppError(404, "Task not found");
   if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to modify this task");
 
+  const userRecord = await User.findOne({ id: userId }).lean();
+  const isAdmin = isAdminRole(userRecord?.role || "");
+  const isAssignee = existing.assigneeId?.toString() === userId;
+  const isCreator = existing.creatorId === userId;
+  if (!isAdmin && !isAssignee && !isCreator) {
+    throw new AppError(403, "Not authorized to modify this task");
+  }
+
   validateTransition(existing.type, existing.status, status);
 
   await Task.findByIdAndUpdate(id, { status });
@@ -994,15 +1002,18 @@ export async function autoActivateScheduledTasks(): Promise<number> {
 // ─────────────────────────────────────────────
 
 async function checkModifyPermission(task: any, userId: string, scope?: string): Promise<void> {
-  if (scope === "staffs") {
-    const userTeams = await TeamMember.find({ userId }).lean();
-    const teamIds = userTeams.map(t => t.teamId);
-    const isOwnTask = task.assigneeId?.toString() === userId;
-    const isTeamTask = task.teamId && teamIds.includes(task.teamId);
+  const userRecord = await User.findOne({ id: userId }).lean();
+  const isAdmin = isAdminRole(userRecord?.role || "");
 
-    if (!isOwnTask && !isTeamTask && task.creatorId !== userId) {
-      throw new AppError(403, "Not authorized to modify this task");
-    }
+  if (isAdmin) return;
+
+  const userTeams = await TeamMember.find({ userId }).lean();
+  const teamIds = userTeams.map(t => t.teamId);
+  const isOwnTask = task.assigneeId?.toString() === userId;
+  const isTeamTask = task.teamId && teamIds.includes(task.teamId);
+
+  if (!isOwnTask && !isTeamTask && task.creatorId !== userId) {
+    throw new AppError(403, "Not authorized to modify this task");
   }
 }
 
