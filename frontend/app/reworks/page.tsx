@@ -5,8 +5,18 @@ import ReworksClient from "./reworks-client";
 export const dynamic = "force-dynamic";
 
 export default async function ReworksPage() {
-  const session = await auth();
+  let session;
+  try {
+    session = await auth();
+  } catch {
+    redirect("/login");
+  }
   if (!session?.user?.id) redirect("/login");
 
-  return <ReworksClient />;
+  try {
+    return <ReworksClient />;
+  } catch (e) {
+    console.error("[REWORKS] Error rendering page:", e);
+    return <ReworksClient />;
+  }
 }
