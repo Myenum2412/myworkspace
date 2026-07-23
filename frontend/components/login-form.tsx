@@ -21,6 +21,20 @@ function GoogleIcon() {
   );
 }
 
+const AUTH_ERRORS: Record<string, string> = {
+  CredentialsSignin: "Invalid email or password. Please try again.",
+  OAuthSignin: "There was a problem signing in with this provider.",
+  OAuthCallback: "There was a problem signing in with this provider.",
+  OAuthCreateAccount: "Could not create an account with this provider.",
+  EmailCreateAccount: "Could not create an account with this email.",
+  Callback: "There was a problem signing in.",
+  OAuthAccountNotLinked: "This email is already associated with another account.",
+  EmailSignin: "There was a problem sending the verification email.",
+  SessionRequired: "Please sign in to access this page.",
+  Configuration: "Server configuration error. Please contact support.",
+  AccessDenied: "Access denied. You don't have permission to access this resource.",
+};
+
 export function LoginForm({ className, error, ...props }: React.ComponentProps<"div"> & { error?: string }) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -33,7 +47,7 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
     await instantLogin(email, password);
   }, [email, password, loading, instantLogin]);
 
-  const displayError = loginError || error;
+  const displayError = AUTH_ERRORS[loginError || ""] || AUTH_ERRORS[error || ""] || loginError || error || null;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

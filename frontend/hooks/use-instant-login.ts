@@ -10,6 +10,20 @@ import { recordLoginTime } from "@/lib/performance";
 import { ROLES } from "@/lib/rbac";
 import { apiUrl } from "@/lib/api";
 
+const AUTH_ERRORS: Record<string, string> = {
+  CredentialsSignin: "Invalid email or password. Please try again.",
+  OAuthSignin: "There was a problem signing in with this provider.",
+  OAuthCallback: "There was a problem signing in with this provider.",
+  OAuthCreateAccount: "Could not create an account with this provider.",
+  EmailCreateAccount: "Could not create an account with this email.",
+  Callback: "There was a problem signing in.",
+  OAuthAccountNotLinked: "This email is already associated with another account.",
+  EmailSignin: "There was a problem sending the verification email.",
+  SessionRequired: "Please sign in to access this page.",
+  Configuration: "Server configuration error. Please contact support.",
+  AccessDenied: "Access denied. You don't have permission to access this resource.",
+};
+
 type LoginState = {
   loading: boolean;
   error: string | null;
@@ -45,7 +59,7 @@ export function useInstantLogin() {
       }
 
       if (!signInData.ok || signInData.error) {
-        setState({ loading: false, error: signInData.error || "Invalid credentials", step: "idle" });
+        setState({ loading: false, error: AUTH_ERRORS[signInData.error] || signInData.error || "Invalid email or password. Please try again.", step: "idle" });
         return;
       }
 
