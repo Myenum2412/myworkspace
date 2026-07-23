@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   PlusIcon, ListTodoIcon, SearchIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon,
-  UserIcon, UsersIcon, GlobeIcon, FileEditIcon, UserCheckIcon, LayoutGridIcon, CalendarIcon,
+  UserIcon, UsersIcon, GlobeIcon, UserCheckIcon, LayoutGridIcon, CalendarIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,7 +62,7 @@ const TYPE_TABS = [
 ];
 
 const STATUS_ICONS: Record<string, typeof ListTodoIcon> = {
-  draft: FileEditIcon, assigned: UserCheckIcon, pending: ClockIcon,
+  assigned: UserCheckIcon, pending: ClockIcon,
   in_progress: ClockIcon, completed: CheckCircle2Icon, closed: CheckCircle2Icon,
   hold: AlertCircleIcon, cancelled: XCircleIcon, rejected: XCircleIcon,
   reopened: AlertCircleIcon, submitted: AlertCircleIcon, approved: CheckCircle2Icon,

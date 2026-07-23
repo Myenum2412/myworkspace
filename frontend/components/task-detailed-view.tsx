@@ -24,7 +24,7 @@ import {
   ListTodoIcon, CheckCircleIcon, XCircleIcon, PaperclipIcon,
   ActivityIcon, AlertCircleIcon, ClockIcon, Loader2Icon,
   CircleIcon, CircleDashedIcon, FileTextIcon, UserCheckIcon,
-  SaveIcon, FileEditIcon, UsersIcon,
+  SaveIcon, UsersIcon,
 } from "lucide-react";
 import FolderIcon from "@mui/icons-material/Folder";
 import { TaskChat } from "@/components/task-chat";
@@ -75,7 +75,6 @@ export type Task = {
 
 const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; icon: any; color: string }[]> = {
   individual: [
-    { value: "draft", label: "Draft", icon: FileEditIcon, color: "text-gray-500" },
     { value: "assigned", label: "Assigned", icon: UserCheckIcon, color: "text-blue-500" },
     { value: "pending", label: "Pending", icon: ClockIcon, color: "text-yellow-500" },
     { value: "in_progress", label: "In Progress", icon: ClockIcon, color: "text-blue-500" },
@@ -85,7 +84,6 @@ const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; ico
     { value: "reopened", label: "Reopened", icon: AlertCircleIcon, color: "text-purple-500" },
   ],
   team: [
-    { value: "draft", label: "Draft", icon: FileEditIcon, color: "text-gray-500" },
     { value: "pending", label: "Pending", icon: ClockIcon, color: "text-yellow-500" },
     { value: "in_progress", label: "In Progress", icon: ClockIcon, color: "text-blue-500" },
     { value: "submitted", label: "Submitted", icon: AlertCircleIcon, color: "text-purple-500" },
@@ -95,7 +93,6 @@ const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; ico
     { value: "cancelled", label: "Cancelled", icon: XCircleIcon, color: "text-red-500" },
   ],
   upcoming: [
-    { value: "draft", label: "Draft", icon: FileEditIcon, color: "text-gray-500" },
     { value: "scheduled", label: "Scheduled", icon: ClockIcon, color: "text-blue-500" },
     { value: "activated", label: "Activated", icon: UserCheckIcon, color: "text-green-500" },
     { value: "in_progress", label: "In Progress", icon: ClockIcon, color: "text-blue-500" },
@@ -194,7 +191,7 @@ export function TaskDetailedView({
   const typeOptions = STATUS_OPTIONS_BY_TYPE[taskType] || STATUS_OPTIONS_BY_TYPE.individual;
 
   const progressMap: Record<string, number> = {
-    draft: 0, assigned: 10, pending: 20, in_progress: 40,
+    assigned: 10, pending: 20, in_progress: 40,
     submitted: 60, approved: 80, completed: 100, closed: 100,
     published: 50, accepted: 80, scheduled: 20, activated: 40,
     hold: 20, cancelled: 100, rejected: 100, reopened: 20,

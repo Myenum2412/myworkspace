@@ -53,11 +53,6 @@ const platformItems: NavItem[] = [
     isActive: true,
   },
   {
-    title: "Reports",
-    url: "/dashboard/reports",
-    icon: <BarChart3Icon className="size-6" />,
-  },
-  {
     title: "Assign Tasks",
     url: "/overview",
     icon: <ListChecksIcon className="size-6" />,
@@ -102,16 +97,22 @@ const platformItems: NavItem[] = [
     url: "/stocks",
     icon: <PackageIcon className="size-6" />,
   },
+
+  {
+    title: "Reworks",
+    url: "/reworks",
+    icon: <RotateCcwIcon className="size-6" />,
+  },
   {
     title: "Addons",
     url: "/addons",
     icon: <AddonsIcon className="size-6" />,
   },
   {
-    title: "Reworks",
-    url: "/reworks",
-    icon: <RotateCcwIcon className="size-6" />,
-  },
+    title: "Reports",
+    url: "/dashboard/reports",
+    icon: <BarChart3Icon className="size-6" />,
+  }
 ];
 
 const photographyItem: NavItem = {
@@ -144,8 +145,8 @@ export function AppSidebar({
 
   useEffect(() => {
     Promise.allSettled([
-      fetch("/api/photography").then(r => r.json()).then(data => setPhotographyInstalled(data.installed)).catch(() => {}),
-      fetch("/api/sidebar-features").then(r => r.json()).then(data => { if (data.hidden) setHiddenFeatures(data.hidden); }).catch(() => {}),
+      fetch("/api/photography").then(r => r.json()).then(data => setPhotographyInstalled(data.installed)).catch(() => { }),
+      fetch("/api/sidebar-features").then(r => r.json()).then(data => { if (data.hidden) setHiddenFeatures(data.hidden); }).catch(() => { }),
     ]);
   }, []);
 

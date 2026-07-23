@@ -72,11 +72,9 @@ const typeStyles: Record<string, string> = {
   team: "bg-purple-50 text-purple-700 border-purple-200",
   common: "bg-green-50 text-green-700 border-green-200",
   upcoming: "bg-orange-50 text-orange-700 border-orange-200",
-  draft: "bg-gray-50 text-gray-700 border-gray-200",
 };
 
 const statusStyles: Record<string, string> = {
-  draft: "bg-gray-100 text-gray-500",
   todo: "bg-gray-100 text-gray-700",
   assigned: "bg-blue-100 text-blue-700",
   pending: "bg-yellow-100 text-yellow-700",

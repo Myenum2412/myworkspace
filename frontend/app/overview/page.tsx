@@ -180,7 +180,7 @@ export default async function OverviewPage() {
         title: (t.title as string) || "",
         description: (t.description as string) || "",
         type: (t.type as string) || "individual",
-        status: (t.status as string) || "draft",
+        status: (t.status as string) || "todo",
         priority: (t.priority as string) || "medium",
         dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
         assigneeId: (t.assigneeId as string) || "",

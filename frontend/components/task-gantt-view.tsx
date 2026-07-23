@@ -26,7 +26,6 @@ import {
 import { TaskRow } from "./task-data-table";
 
 const statusStyles: Record<string, { name: string; color: string }> = {
-  draft: { name: "Draft", color: "#6B7280" },
   todo: { name: "Todo", color: "#9CA3AF" },
   assigned: { name: "Assigned", color: "#3B82F6" },
   pending: { name: "Pending", color: "#EAB308" },
