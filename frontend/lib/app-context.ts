@@ -4,7 +4,7 @@ export const ORIGIN_ROUTES = ["/orgmenu"];
 export const STAFF_ROUTES = ["/staffs"];
 export const PUBLIC_ROUTES = ["/login", "/signup", "/signup-mongo", "/forgot-password", "/pricing", "/auth/not-found", "/", "/features", "/solutions", "/platform", "/about", "/blog", "/contact", "/careers", "/changelog", "/docs", "/guides", "/new-update"];
 export const WORKSPACE_ROUTES = [
-  "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
+  "/dashboard", "/dashboard/reports", "/overview", "/employees", "/alltasks", "/mytasks",
   "/projects", "/teams", "/clients", "/approvals", "/reports",
   "/calendar", "/time-tracker", "/time-reports", "/my-time",
   "/teamtasks", "/settings", "/profile", "/admin",

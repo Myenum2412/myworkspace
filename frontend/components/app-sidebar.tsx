@@ -25,6 +25,7 @@ import {
   HeartHandshakeIcon,
   PackageIcon,
   RotateCcwIcon,
+  BarChart3Icon,
 } from "lucide-react";
 
 const AddonsIcon = ({ className }: { className?: string }) => (
@@ -50,6 +51,11 @@ const platformItems: NavItem[] = [
     url: "/dashboard",
     icon: <LayoutDashboardIcon className="size-6" />,
     isActive: true,
+  },
+  {
+    title: "Reports",
+    url: "/dashboard/reports",
+    icon: <BarChart3Icon className="size-6" />,
   },
   {
     title: "Assign Tasks",
