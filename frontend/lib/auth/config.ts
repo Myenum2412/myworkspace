@@ -258,36 +258,37 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         const password = credentials?.password as string;
         if (!password) return null;
 
-        const apiUrl = process.env.API_URL || "http://localhost:4000";
-        const loginSource = credentials?.loginSource as string | undefined;
-        const endpoint = loginSource === "client" ? "/api/client-auth/login" : "/api/auth/login";
-
         try {
-          const res = await fetch(`${apiUrl}${endpoint}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-          });
+          const { db } = await import("@/lib/db");
+          if (!db) return null;
 
-          const data = await res.json();
+          const { compare } = await import("bcryptjs");
+          const { collections } = await import("@/lib/db/schema");
+          const loginSource = credentials?.loginSource as string | undefined;
 
-          if (!data.success || !data.data) {
-            return null;
-          }
+          const collectionName = loginSource === "client" ? collections.clientUsers : collections.users;
+          const user = await db.collection(collectionName).findOne({ email: email.toLowerCase() });
+          if (!user) return null;
 
-          const userData = data.data.user;
+          if (!user.password) return null;
+
+          const valid = await compare(password, user.password);
+          if (!valid) return null;
+
+          const orgId = user.orgId || "";
+
           return {
-            id: userData.id,
-            email: userData.email,
-            name: userData.name,
-            image: userData.image,
-            role: userData.role,
-            permissions: userData.permissions || [],
-            orgId: data.data.orgId || userData.orgId,
+            id: user.id || user._id.toString(),
+            email: user.email,
+            name: user.name,
+            image: user.image || null,
+            role: user.role || "members",
+            permissions: user.permissions || [],
+            orgId,
             onboardingCompleted: true,
           };
         } catch (e) {
-          console.error("[AUTH authorize] Backend API error:", e);
+          console.error("[AUTH authorize] Error:", e);
           return null;
         }
       },
