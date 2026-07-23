@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import TimeTrackerOverview from "./time-tracker-overview"
-import TimeTracker from "./time-tracker-interactive.client"
+import TimesheetInteractive from "@/app/staffs/timesheet/timesheet-interactive.client"
 
 type Entry = {
   id: string; userId: string; date: string; startTime?: string; endTime?: string;
@@ -135,7 +135,7 @@ function TimeReportsView({ data }: TimeReportsViewProps) {
 
 type Props = {
   overviewData: Entry[] | null
-  myTimeData: { entries: MyTimeEntry[]; projects: { id: string; name: string; color: string }[]; user: { name: string; email: string; avatar: string; id: string }; orgId: string } | null
+  myTimeData: { entries: MyTimeEntry[]; projects: { id: string; name: string; color: string }[]; tasks: { _id: string; title: string; projectId?: string }[]; user: { name: string; email: string; avatar: string; id: string }; orgId: string } | null
   reportsData: TimeReportsViewProps["data"]
 }
 
@@ -152,14 +152,14 @@ export default function TimeTrackerClient({ overviewData, myTimeData, reportsDat
       </TabsContent>
       <TabsContent value="my-time" className="mt-4">
         {myTimeData ? (
-          <TimeTracker
-            user={myTimeData.user}
-            orgId={myTimeData.orgId}
-            initialEntries={myTimeData.entries}
+          <TimesheetInteractive
             projects={myTimeData.projects}
+            tasks={myTimeData.tasks}
+            orgId={myTimeData.orgId}
+            userId={myTimeData.user.id}
           />
         ) : (
-          <TimeTracker user={{ name: "", email: "", avatar: "", id: "" }} orgId="" initialEntries={[]} projects={[]} />
+          <TimesheetInteractive projects={[]} tasks={[]} orgId="" userId="" />
         )}
       </TabsContent>
       <TabsContent value="reports" className="mt-4">

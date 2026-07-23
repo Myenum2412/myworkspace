@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import type { DashboardData } from "./page"
 import {
   Card,
@@ -11,10 +11,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
 import {
   ListTodo, Clock, CalendarIcon, TrendingUpIcon,
   Users, FolderKanbanIcon, Building2Icon,
-  IndianRupeeIcon, ArrowRightIcon,
+  IndianRupeeIcon, ArrowRightIcon, SearchIcon,
 } from "lucide-react"
 import Link from "next/link"
 import DashboardCalendarPopup from "@/components/dashboard-calendar-popup"
@@ -74,6 +75,15 @@ export function DashboardOverviewClient({ dashboardData }: Props) {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-0.5">
         <h1 className="text-xl sm:text-2xl font-bold">Dashboard Overview</h1>
+        <div className="flex-1 flex justify-center max-w-md mx-4">
+          <div className="relative w-full">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search tasks, projects..."
+              className="pl-9 h-9 bg-white"
+            />
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <DashboardCalendarPopup />
           <Button asChild size="sm">

@@ -5,7 +5,6 @@ import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import AllTasksInteractive, { AllTasksProps } from "./alltasks-interactive";
-import { OverdueTasksCard, type OverdueTask } from "@/components/overdue-tasks-card";
 
 export const dynamic = "force-dynamic";
 
@@ -16,34 +15,29 @@ export default async function AllTasksPage() {
   const orgId = await getUserOrgId(session.user.id, session.user.email);
 
   let initialTasks: AllTasksProps["initialTasks"] = [];
-  let overdueTasks: OverdueTask[] = [];
 
   if (orgId) {
-    const now = new Date();
-    const overdueRaw = (await db
-      .collection(collections.tasks)
-      .find({
-        orgId,
-        dueDate: { $lt: now },
-        status: { $nin: ["done", "cancelled", "completed", "closed", "rejected"] },
-      })
-      .project({ title: 1, dueDate: 1 })
-      .sort({ dueDate: 1 })
-      .limit(10)
-      .toArray()) as unknown as Record<string, unknown>[];
+    // Find teams the user is a member of
+    const userTeamMembers = await db
+      .collection("teammembers")
+      .find({ orgId, userId: session.user.id })
+      .toArray() as unknown as { teamId: string }[];
+    const userTeamIds = userTeamMembers.map((m) => m.teamId);
 
-    overdueTasks = overdueRaw.map((t) => ({
-      _id: (t._id as { toString: () => string }).toString(),
-      title: (t.title as string) || "",
-      dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
-    }));
+    // Get tasks assigned to user OR team tasks OR common tasks with user
+    const match: Record<string, unknown> = {
+      orgId,
+      $or: [
+        { assigneeId: session.user.id },
+        { type: "team", teamId: { $in: userTeamIds } },
+        { type: "common", selectedUserIds: session.user.id },
+      ],
+    };
 
-    // Replicates the backend GET /api/tasks query shape: tasks scoped to the
-    // user's org, with assignee/creator names resolved via $lookup.
     const rawTasks = (await db
       .collection(collections.tasks)
       .aggregate([
-        { $match: { orgId } },
+        { $match: match },
         {
           $lookup: {
             from: "users",
@@ -107,11 +101,8 @@ export default async function AllTasksPage() {
   }
 
   return (
-    <>
-      <OverdueTasksCard tasks={overdueTasks} />
-      <Suspense fallback={null}>
-        <AllTasksInteractive initialTasks={initialTasks} orgId={orgId || ""} />
-      </Suspense>
-    </>
+    <Suspense fallback={null}>
+      <AllTasksInteractive initialTasks={initialTasks} orgId={orgId || ""} sessionUserId={session.user.id} />
+    </Suspense>
   );
 }

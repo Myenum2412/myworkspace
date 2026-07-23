@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, ListTodoIcon, UsersIcon, CheckCircle2Icon, BookmarkIcon, CalendarClockIcon, LayoutGridIcon, CalendarIcon } from "lucide-react";
+import { PlusIcon, ListTodoIcon, SearchIcon, LayoutGridIcon, CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +33,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [viewMode, setViewMode] = useState<"table" | "gantt">("table");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const total = tasks.length;
   const myTasks = currentUserId ? tasks.filter((t) => t.assigneeId === currentUserId).length : 0;
@@ -63,7 +65,14 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
     }
   }
 
-  const recentTasks = [...tasks]
+  const filteredTasks = searchQuery
+    ? tasks.filter((t) =>
+        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.assigneeName?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : tasks;
+
+  const recentTasks = [...filteredTasks]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 10);
 
@@ -74,6 +83,17 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
           <div className="flex items-center gap-2">
             <ListTodoIcon className="size-5 sm:size-6" />
             <h1 className="text-xl sm:text-2xl font-bold">Task Overview</h1>
+          </div>
+          <div className="flex-1 flex justify-center max-w-md mx-4">
+            <div className="relative w-full">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 bg-white"
+              />
+            </div>
           </div>
           <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
@@ -145,6 +165,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             label="task(s)"
             emptyMessage="No tasks yet."
             emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
+            hideSearchBar
           />
         ) : (
           <div className="flex-1 min-h-0">

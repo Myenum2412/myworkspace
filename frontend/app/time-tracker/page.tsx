@@ -56,8 +56,8 @@ export default async function TimeTrackerPage() {
     createdAt: (e.createdAt as string) || "",
   }));
 
-  // Fetch my-time data (today's entries + projects)
-  const [myTimeRaw, rawProjects] = await Promise.all([
+  // Fetch my-time data (today's entries + projects + tasks)
+  const [myTimeRaw, rawProjects, rawTasks] = await Promise.all([
     db.collection(collections.timeEntries)
       .find({ orgId, userId: session.user.id, date: today })
       .sort({ createdAt: -1 })
@@ -65,6 +65,10 @@ export default async function TimeTrackerPage() {
     db.collection(collections.projects)
       .find({ orgId })
       .sort({ name: 1 })
+      .toArray(),
+    db.collection(collections.tasks)
+      .find({ orgId })
+      .sort({ title: 1 })
       .toArray(),
   ]);
 
@@ -87,6 +91,12 @@ export default async function TimeTrackerPage() {
     id: (p.id as string) || String(p._id || ""),
     name: (p.name as string) || "",
     color: (p.color as string) || "#93c5fd",
+  }));
+
+  const tasks = (rawTasks as unknown as Record<string, unknown>[]).map((t) => ({
+    _id: (t._id as { toString: () => string }).toString(),
+    title: (t.title as string) || "",
+    projectId: (t.projectId as string) || (t.project as string) || undefined,
   }));
 
   // Fetch reports data (weekly stats)
@@ -173,6 +183,7 @@ export default async function TimeTrackerPage() {
       myTimeData={{
         entries: myTimeEntries,
         projects,
+        tasks,
         user: userData,
         orgId,
       }}

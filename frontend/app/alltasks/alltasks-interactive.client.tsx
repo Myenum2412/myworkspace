@@ -4,19 +4,13 @@ import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  PlusIcon, ListTodoIcon, SearchIcon, ClockIcon, CheckCircle2Icon, XCircleIcon, AlertCircleIcon,
-  UserIcon, UsersIcon, GlobeIcon, UserCheckIcon, LayoutGridIcon, CalendarIcon,
+  PlusIcon, ListTodoIcon, SearchIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import { TaskDataTable } from "@/components/task-data-table";
-import TaskGanttView from "@/components/task-gantt-view";
 import { toast } from "sonner";
-import { perfLog, perfNow } from "@/lib/perf";
 import { apiFetch } from "@/lib/api";
 import Stats07 from "@/components/stats-07";
 
@@ -52,35 +46,17 @@ type UiTask = {
 export type AllTasksProps = {
   initialTasks: UiTask[];
   orgId: string;
+  sessionUserId?: string;
 };
 
-const TYPE_TABS = [
-  { id: "all", label: "All", icon: ListTodoIcon },
-  { id: "individual", label: "Individual", icon: UserIcon },
-  { id: "team", label: "Team", icon: UsersIcon },
-  { id: "upcoming", label: "Upcoming", icon: ClockIcon },
-];
-
-const STATUS_ICONS: Record<string, typeof ListTodoIcon> = {
-  assigned: UserCheckIcon, pending: ClockIcon,
-  in_progress: ClockIcon, completed: CheckCircle2Icon, closed: CheckCircle2Icon,
-  hold: AlertCircleIcon, cancelled: XCircleIcon, rejected: XCircleIcon,
-  reopened: AlertCircleIcon, submitted: AlertCircleIcon, approved: CheckCircle2Icon,
-  published: GlobeIcon, accepted: CheckCircle2Icon, scheduled: ClockIcon, activated: UserCheckIcon,
-};
-
-export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksProps) {
+export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId }: AllTasksProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
-  const [activeTypeTab, setActiveTypeTab] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"table" | "gantt">("table");
 
-  // Seed React Query with the SSR payload.
-  const queryKey = useMemo(() => ["tasks", "all", orgId] as const, [orgId]);
+  const queryKey = useMemo(() => ["tasks", "my", orgId, sessionUserId] as const, [orgId, sessionUserId]);
   const seeded = useRef(false);
   useEffect(() => {
     if (seeded.current || !orgId) return;
@@ -94,8 +70,7 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
       if (!orgId) return [];
       try {
         const params = new URLSearchParams({ orgId });
-        if (activeTypeTab !== "all") params.set("type", activeTypeTab);
-        if (statusFilter) params.set("status", statusFilter);
+        if (sessionUserId) params.set("assigneeId", sessionUserId);
         const res = await apiFetch(`/api/tasks?${params}`);
         if (!res.ok) return [];
         const d = await res.json();
@@ -107,10 +82,6 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
     initialData: initialTasks,
   });
 
-  // Refetch when type tab changes
-  useEffect(() => { refetch(); }, [activeTypeTab, statusFilter, refetch]);
-
-  // Auto-refresh on window focus
   useEffect(() => {
     const handler = () => refetch();
     window.addEventListener("focus", handler);
@@ -128,15 +99,15 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
   );
 
   const filteredTasks = useMemo(() => {
-    let result = tasks;
-    if (activeTypeTab !== "all") {
-      result = result.filter((t: UiTask) => t.type === activeTypeTab);
-    }
     const seen = new Set<string>();
-    return result.filter((t: UiTask) => { const k = t._id || t.id; if (seen.has(k)) return false; seen.add(k); return true; });
-  }, [tasks, activeTypeTab]);
+    return tasks.filter((t: UiTask) => {
+      const k = t._id || t.id;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [tasks]);
 
-  // Status-summary cards
   const summary = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const t of filteredTasks) {
@@ -163,8 +134,19 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
       <main className="flex flex-1 flex-col gap-4 p-4 min-h-0">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="w-full sm:w-auto">
-            <h1 className="text-xl sm:text-2xl font-bold">Tasks</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Manage tasks across your organization</p>
+            <h1 className="text-xl sm:text-2xl font-bold">My Tasks</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Tasks assigned to you and your teams</p>
+          </div>
+          <div className="flex-1 flex justify-center max-w-md mx-4">
+            <div className="relative w-full">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 bg-white"
+              />
+            </div>
           </div>
           <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
             <PlusIcon className="mr-2 size-4" />
@@ -172,11 +154,10 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           </Button>
         </div>
 
-        {/* Stats Overview */}
         <Stats07
           items={[
             { name: 'Total Tasks', value: filteredTasks.length, subtitle: 'All tasks' },
-            ...Object.entries(summary).slice(0, 5).map(([status, count]) => ({
+            ...Object.entries(summary).map(([status, count]) => ({
               name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
               value: count,
               subtitle: `${status.replace(/_/g, ' ')} tasks`,
@@ -184,106 +165,26 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
           ]}
         />
 
-        {/* Type tabs */}
-        <Tabs value={activeTypeTab} onValueChange={setActiveTypeTab} className="w-full">
-          <TabsList className="w-full justify-start overflow-x-auto">
-            {TYPE_TABS.map(({ id, label, icon: Icon }) => (
-              <TabsTrigger key={id} value={id} className="gap-1.5 text-xs sm:text-sm">
-                <Icon className="size-3.5" />
-                <span className="hidden sm:inline">{label}</span>
-                <span className="sm:hidden">{label.slice(0, 4)}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-
-        {/* Task Overview */}
-        <div className="grid gap-3 grid-cols-6">
-          {Object.keys(summary).slice(0, 5).map((s) => {
-            const Icon = STATUS_ICONS[s] || ListTodoIcon;
-            return (
-              <Card key={s} className={cn("cursor-pointer transition-colors", statusFilter === s ? "ring-2 ring-primary" : "")} onClick={() => setStatusFilter(statusFilter === s ? "" : s)}>
-                <CardHeader className="pb-1.5">
-                  <CardTitle className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <Icon className="size-3" />
-                    {s.replace(/_/g, " ")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pb-3">
-                  <div className="text-xl font-bold">{summary[s]}</div>
-                </CardContent>
-              </Card>
-            );
-          })}
-          <Card className="bg-card">
-            <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <ListTodoIcon className="size-3" />
-                Total
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pb-3">
-              <div className="text-xl font-bold">{filteredTasks.length}</div>
-            </CardContent>
-          </Card>
-        </div>
-
         <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex items-center gap-4 mb-4">
-              <h2 className="text-lg font-semibold shrink-0 capitalize">{activeTypeTab === "all" ? "All" : activeTypeTab} Tasks</h2>
-              <div className="flex-1 flex justify-center">
-                <div className="relative w-full max-w-md">
-                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                  <Input
-                    placeholder={`Search ${activeTypeTab} tasks...`}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-9 bg-white"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={viewMode === "table" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("table")}
-                >
-                  <LayoutGridIcon className="mr-2 size-4" />
-                  Table
-                </Button>
-                <Button
-                  variant={viewMode === "gantt" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("gantt")}
-                >
-                  <CalendarIcon className="mr-2 size-4" />
-                  Gantt
-                </Button>
-              </div>
-              <span className="text-sm text-muted-foreground shrink-0">{filteredTasks.length} tasks</span>
-            </div>
-            <div className="flex-1 min-h-0">
-              {viewMode === "table" ? (
-                <TaskDataTable
-                  data={filteredTasks}
-                  onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-                  onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-                  onDelete={(t) => handleDelete(t as UiTask)}
-                  searchPlaceholder={`Search ${activeTypeTab} tasks...`}
-                  emptyMessage={`No ${activeTypeTab} tasks found.`}
-                  label="task"
-                  hideSearchBar
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                />
-              ) : (
-                <TaskGanttView
-                  tasks={filteredTasks}
-                  onViewTask={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-                />
-              )}
-            </div>
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="text-lg font-semibold shrink-0">All Tasks</h2>
+            <span className="text-sm text-muted-foreground shrink-0 ml-auto">{filteredTasks.length} tasks</span>
           </div>
+          <div className="flex-1 min-h-0">
+            <TaskDataTable
+              data={filteredTasks}
+              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+              onDelete={(t) => handleDelete(t as UiTask)}
+              searchPlaceholder="Search tasks..."
+              emptyMessage="No tasks found."
+              label="task"
+              hideSearchBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+            />
+          </div>
+        </div>
 
         {viewOpen && selectedTask && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -299,7 +200,6 @@ export default function AllTasksInteractive({ initialTasks, orgId }: AllTasksPro
             </div>
           </div>
         )}
-
       </main>
     </>
   );

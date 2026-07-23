@@ -33,7 +33,7 @@ const chartConfig = {
 
 export default function Stats07({ items, className }: Stats07Props) {
   return (
-    <dl className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 ${className ?? ''}`}>
+    <dl className={`grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 ${className ?? ''}`}>
       {items.map((item, i) => {
         const maxValue = Math.max(...items.map((x) => x.value), 1);
         const percentage = maxValue > 0 ? Math.round((item.value / maxValue) * 100) : 0;

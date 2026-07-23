@@ -1,11 +1,10 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import type { ReactElement } from "react";
-import ReworksClient from "./reworks-client";
+import ReworksInteractive from "@/app/staffs/reworks/reworks-interactive";
 
 export const dynamic = "force-dynamic";
 
-export default async function ReworksPage(): Promise<ReactElement> {
+export default async function ReworksPage() {
   let session;
   try {
     session = await auth();
@@ -14,5 +13,5 @@ export default async function ReworksPage(): Promise<ReactElement> {
   }
   if (!session?.user?.id) redirect("/login");
 
-  return <ReworksClient />;
+  return <ReworksInteractive />;
 }
