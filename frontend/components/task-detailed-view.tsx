@@ -26,6 +26,7 @@ import {
   CircleIcon, CircleDashedIcon, FileTextIcon, UserCheckIcon,
   SaveIcon, FileEditIcon, UsersIcon,
 } from "lucide-react";
+import FolderIcon from "@mui/icons-material/Folder";
 import { TaskChat } from "@/components/task-chat";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -111,10 +112,10 @@ const priorityOptions = [
 ];
 
 const priorityStyles: Record<string, string> = {
-  low: "bg-gray-100 text-gray-700 border-transparent",
-  medium: "bg-blue-50 text-blue-700 border-blue-200",
-  high: "bg-orange-50 text-orange-700 border-orange-200",
-  urgent: "bg-red-50 text-red-700 border-red-200 font-bold",
+  low: "bg-slate-50 text-slate-600 border-slate-200/60 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-800/50",
+  medium: "bg-blue-50/50 text-blue-600 border-blue-200/60 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800/50",
+  high: "bg-amber-50/60 text-amber-700 border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/50",
+  urgent: "bg-red-50/60 text-red-650 border-red-200/60 font-semibold dark:bg-red-950/30 dark:text-red-450 dark:border-red-800/50",
 };
 
 const priorityIcons: Record<string, React.FC<any>> = {
@@ -126,11 +127,14 @@ const priorityIcons: Record<string, React.FC<any>> = {
 
 function Section({ icon: Icon, title, children, rightAction }: { icon: any; title: string; children: React.ReactNode, rightAction?: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {title}
-        </h3>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/50 pb-2">
+        <div className="flex items-center gap-2">
+          {Icon && <Icon className="size-4 text-slate-400 dark:text-slate-500 shrink-0" />}
+          <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            {title}
+          </h3>
+        </div>
         {rightAction}
       </div>
       {children}
@@ -139,20 +143,23 @@ function Section({ icon: Icon, title, children, rightAction }: { icon: any; titl
 }
 
 function PersonBadge({ name, avatar, role }: { name?: string; avatar?: string; role: string }) {
+  const initials = (name || "U")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
   return (
-    <div className="flex items-center gap-2 border-b pb-2">
-      <div className="size-8 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
-        {avatar ? (
-          <img src={avatar} alt={name} className="size-full object-cover" />
-        ) : (
-          <span className="text-xs font-bold text-muted-foreground">
-            {(name || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-          </span>
-        )}
-      </div>
-      <div className="flex flex-col">
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{role}</span>
-        <span className="text-sm font-medium text-foreground">{name || "Unassigned"}</span>
+    <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50/20 dark:bg-slate-900/20 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-all duration-200">
+      <Avatar className="size-9 border border-slate-205 dark:border-slate-800 shrink-0 shadow-sm">
+        {avatar ? <AvatarImage src={avatar} alt={name} /> : null}
+        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs font-bold">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex flex-col min-w-0">
+        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">{role}</span>
+        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{name || "Unassigned"}</span>
       </div>
     </div>
   );
@@ -244,15 +251,23 @@ export function TaskDetailedView({
   const typeBadge = TYPE_BADGES[taskType] || TYPE_BADGES.individual;
 
   return (
-    <div className="flex flex-col sm:flex-row border rounded-sm overflow-hidden bg-background">
+    <div className="flex flex-col sm:flex-row w-full h-full overflow-hidden bg-background">
       <div className="flex-1 min-w-0 overflow-y-auto">
 
         {/* Header */}
-        <div className="px-4 py-4 border-b">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-muted-foreground">Project / {task.project || "General Workspace"}</span>
-            <span className="text-xs border rounded-sm px-1.5 py-0.5">{typeBadge.label}</span>
-            <span className="text-xs border rounded-sm px-1.5 py-0.5">{task.priority} Priority</span>
+        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/40">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="text-xs font-semibold text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2.5 py-0.5 rounded-md flex items-center gap-1 border border-indigo-100/50 dark:border-indigo-900/30">
+              <FolderIcon className="!size-3.5 text-indigo-550 shrink-0" />
+              {task.project || "General Workspace"}
+            </span>
+            <Badge variant="secondary" className="bg-slate-50 text-slate-600 dark:bg-slate-900/50 dark:text-slate-350 border border-slate-200/50 dark:border-slate-800 text-xs px-2.5 py-0.5 font-medium rounded-md">
+              {typeBadge.label}
+            </Badge>
+            <Badge className={`${priorityStyles[task.priority.toLowerCase()] || "bg-slate-100 text-slate-700"} text-xs px-2.5 py-0.5 font-semibold rounded-md flex items-center gap-1 border`}>
+              <PriorityIcon className="size-3 shrink-0" />
+              <span className="capitalize">{task.priority} Priority</span>
+            </Badge>
             {task.dueDate && (() => {
               const now = new Date();
               const due = new Date(task.dueDate!);
@@ -261,15 +276,16 @@ export function TaskDetailedView({
               const isOverdue = diffMs < 0 && !COMPLETED.has(task.status);
               const isDueSoon = diffMs > 0 && diffMs <= 86400000 && !COMPLETED.has(task.status);
               return (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 ml-1">
+                  <CalendarIcon className="size-3.5" />
                   Due {new Date(task.dueDate!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   {isOverdue && (
-                    <Badge className="bg-red-100 text-red-700 border-red-200 text-[9px] px-1.5 py-0 gap-0.5">
+                    <Badge className="bg-rose-50 text-rose-700 border-rose-200/80 text-[10px] px-2 py-0 gap-1 rounded-md">
                       <AlertCircleIcon className="size-2.5" /> Overdue
                     </Badge>
                   )}
                   {isDueSoon && (
-                    <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-[9px] px-1.5 py-0 gap-0.5">
+                    <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] px-2 py-0 gap-1 rounded-md">
                       <ClockIcon className="size-2.5" /> Due Soon
                     </Badge>
                   )}
@@ -278,15 +294,15 @@ export function TaskDetailedView({
             })()}
           </div>
 
-          <h1 className="text-lg font-semibold text-foreground mb-3">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-5">
             {task.title}
           </h1>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Status</label>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 bg-slate-50/50 dark:bg-slate-900/20 p-4 rounded-xl border border-slate-100 dark:border-slate-800/40">
+            <div className="flex flex-col gap-1.5 shrink-0">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</label>
               <Select value={task.status} onValueChange={handleStatusChange} disabled={updating}>
-                <SelectTrigger className="w-full sm:w-[180px] h-9 border font-medium">
+                <SelectTrigger className="w-full sm:w-[180px] h-10 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 font-semibold text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm">
                   {updating ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2Icon className="size-4 animate-spin" /> Updating...
@@ -294,15 +310,15 @@ export function TaskDetailedView({
                   ) : (
                     <div className="flex items-center gap-2">
                       <StatusIcon className={`size-4 ${activeStatusOpt?.color}`} />
-                      <span>{activeStatusOpt?.label}</span>
+                      <span className="text-slate-800 dark:text-slate-200">{activeStatusOpt?.label}</span>
                     </div>
                   )}
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl">
                   {typeOptions.map((opt) => {
                     const OptIcon = opt.icon;
                     return (
-                      <SelectItem key={opt.value} value={opt.value}>
+                      <SelectItem key={opt.value} value={opt.value} className="rounded-lg my-0.5">
                         <div className="flex items-center gap-2">
                           <OptIcon className={`size-4 ${opt.color}`} />
                           {opt.label}
@@ -314,50 +330,50 @@ export function TaskDetailedView({
               </Select>
             </div>
 
-            <div className="flex flex-col gap-1 flex-1 max-w-none sm:max-w-xs sm:ml-auto">
-              <div className="flex justify-between items-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="flex flex-col gap-1.5 flex-1 max-w-none sm:max-w-xs sm:ml-auto">
+              <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                 <span>Progress</span>
-                <span>{progress}%</span>
+                <span className="text-slate-850 dark:text-slate-250 font-bold">{progress}%</span>
               </div>
-              <div className="h-2 w-full bg-gray-100 rounded-2xl overflow-hidden">
+              <div className="h-2.5 w-full bg-slate-200/50 dark:bg-slate-850/80 rounded-full overflow-hidden border border-slate-200/20 dark:border-slate-800/40">
                 <div
-                  className={`h-full rounded-2xl transition-all duration-500 ${
-                    task.status === "completed" || task.status === "approved" || task.status === "closed" ? "bg-green-500" :
-                    task.status === "rejected" || task.status === "cancelled" ? "bg-orange-500" : "bg-blue-600"
+                  className={`h-full rounded-full transition-all duration-500 bg-gradient-to-r ${
+                    task.status === "completed" || task.status === "approved" || task.status === "closed" ? "from-emerald-400 to-green-500" :
+                    task.status === "rejected" || task.status === "cancelled" ? "from-orange-400 to-red-500" : "from-blue-500 to-indigo-600"
                   }`}
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:ml-4">
               {taskType === "team" && task.status === "in_progress" && (
-                <Button size="sm" variant="default" className="h-8 text-xs" onClick={() => handleAction("submit-verification")} disabled={actionLoading}>
-                  {actionLoading ? <Loader2Icon className="size-3 animate-spin mr-1" /> : <AlertCircleIcon className="size-3 mr-1" />}
+                <Button size="sm" variant="default" className="h-9 px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => handleAction("submit-verification")} disabled={actionLoading}>
+                  {actionLoading ? <Loader2Icon className="size-3.5 animate-spin mr-1.5" /> : <AlertCircleIcon className="size-3.5 mr-1.5" />}
                   Submit for Verification
                 </Button>
               )}
               {taskType === "team" && task.status === "submitted" && (
-                <>
-                  <Button size="sm" variant="default" className="h-8 text-xs bg-green-600 hover:bg-green-700" onClick={() => {
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="default" className="h-9 px-4 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={() => {
                     const note = prompt("Approval note (optional):");
                     handleAction("approve", { note });
                   }} disabled={actionLoading}>
-                    <CheckCircleIcon className="size-3 mr-1" />
+                    <CheckCircleIcon className="size-3.5 mr-1.5" />
                     Approve
                   </Button>
-                  <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={() => {
+                  <Button size="sm" variant="destructive" className="h-9 px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => {
                     const reason = prompt("Rejection reason (required):");
                     if (reason) handleAction("reject", { reason });
                   }} disabled={actionLoading}>
-                    <XCircleIcon className="size-3 mr-1" />
+                    <XCircleIcon className="size-3.5 mr-1.5" />
                     Reject
                   </Button>
-                </>
+                </div>
               )}
               {taskType === "upcoming" && task.status === "scheduled" && (
-                <Button size="sm" variant="default" className="h-8 text-xs" onClick={() => handleAction("activate")} disabled={actionLoading}>
-                  {actionLoading ? <Loader2Icon className="size-3 animate-spin mr-1" /> : <ClockIcon className="size-3 mr-1" />}
+                <Button size="sm" variant="default" className="h-9 px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => handleAction("activate")} disabled={actionLoading}>
+                  {actionLoading ? <Loader2Icon className="size-3.5 animate-spin mr-1.5" /> : <ClockIcon className="size-3.5 mr-1.5" />}
                   Activate Now
                 </Button>
               )}
@@ -366,15 +382,15 @@ export function TaskDetailedView({
         </div>
 
         {/* Content Body */}
-        <div className="px-4 py-4 space-y-6">
+        <div className="px-6 py-6 space-y-7">
 
           <Section icon={AlignLeftIcon} title="Description">
-            <div className="border p-4">
+            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-900/30 p-4 sm:p-5 shadow-sm">
               {task.description ? (
-                <div className="text-sm leading-relaxed text-gray-700" dangerouslySetInnerHTML={{ __html: task.description }} />
+                <div className="text-sm leading-relaxed text-slate-700 dark:text-slate-300" dangerouslySetInnerHTML={{ __html: task.description }} />
               ) : (
-                <div className="flex flex-col items-center justify-center py-4 text-muted-foreground opacity-60">
-                  <AlignLeftIcon className="size-6 mb-2" />
+                <div className="flex flex-col items-center justify-center py-6 text-muted-foreground opacity-60">
+                  <AlignLeftIcon className="size-6 mb-2 text-slate-400" />
                   <p className="text-sm italic">No description provided for this task.</p>
                 </div>
               )}
@@ -382,7 +398,7 @@ export function TaskDetailedView({
           </Section>
 
           <Section icon={UserIcon} title="People">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <PersonBadge name={task.assigneeName} avatar={task.assigneeAvatar} role="Assigned To" />
               <PersonBadge name={task.creatorName} avatar="" role="Created By" />
               {task.teamName && (
@@ -396,24 +412,24 @@ export function TaskDetailedView({
 
           {(task.status === "approved" || (task.status === "completed" && task.approvedBy)) && (
             <Section icon={CheckCircleIcon} title="Approval Details">
-              <div className="border border-green-200 bg-green-50 p-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-2 text-green-800">
+              <div className="rounded-xl border border-emerald-100 dark:border-emerald-950 bg-emerald-50/30 dark:bg-emerald-950/20 p-5 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 text-emerald-800 dark:text-emerald-300">
                   <div className="flex items-center gap-2">
-                    <UserCheckIcon className="size-4" />
-                    <span className="font-medium text-sm">Task Approved</span>
+                    <UserCheckIcon className="size-4.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="font-semibold text-sm">Task Approved</span>
                   </div>
-                  <span className="text-[11px] sm:text-xs opacity-70 bg-green-200/50 px-2 py-1 rounded-sm sm:ml-auto">
+                  <span className="text-[10px] font-medium opacity-80 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-355 px-2.5 py-0.5 rounded-md sm:ml-auto">
                     {task.approvedAt ? new Date(task.approvedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" }) : ""}
                   </span>
                 </div>
                 {task.approvalNote && (
-                  <div className="bg-white/60 rounded-sm p-3 text-sm text-green-900 border border-green-100/50">
-                    <span className="font-semibold block text-[11px] uppercase tracking-wider opacity-60 mb-1">Note</span>
+                  <div className="bg-white/80 dark:bg-slate-900/60 rounded-lg p-3 text-sm text-emerald-900 dark:text-emerald-250 border border-emerald-100/50 dark:border-emerald-900/30">
+                    <span className="font-bold block text-[9px] uppercase tracking-widest opacity-60 mb-1">Note</span>
                     {task.approvalNote}
                   </div>
                 )}
                 {task.approverName && (
-                  <p className="text-xs text-green-700 mt-2">Approved by <strong>{task.approverName}</strong></p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-3 font-medium">Approved by <strong className="text-emerald-900 dark:text-emerald-200">{task.approverName}</strong></p>
                 )}
               </div>
             </Section>
@@ -421,19 +437,19 @@ export function TaskDetailedView({
 
           {(task.status === "rejected" && task.rejectionReason) && (
             <Section icon={XCircleIcon} title="Rejection Details">
-              <div className="border border-orange-200 bg-orange-50 p-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-2 text-orange-800">
+              <div className="rounded-xl border border-rose-100 dark:border-rose-950 bg-rose-50/30 dark:bg-rose-950/20 p-5 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 text-rose-800 dark:text-rose-350">
                   <div className="flex items-center gap-2">
-                    <XCircleIcon className="size-4" />
-                    <span className="font-medium text-sm">Task Rejected</span>
+                    <XCircleIcon className="size-4.5 text-rose-600 dark:text-rose-400" />
+                    <span className="font-semibold text-sm">Task Rejected</span>
                   </div>
-                  <span className="text-[11px] sm:text-xs sm:ml-auto opacity-70 bg-orange-200/50 px-2 py-1 rounded-sm">
+                  <span className="text-[10px] font-medium opacity-80 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-350 px-2.5 py-0.5 rounded-md sm:ml-auto">
                     {task.rejectedAt ? new Date(task.rejectedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" }) : ""}
                   </span>
                 </div>
                 {task.rejectionReason && (
-                  <div className="bg-white/60 rounded-sm p-3 text-sm text-red-900 border border-red-100/50">
-                    <span className="font-semibold block text-[11px] uppercase tracking-wider opacity-60 mb-1">Reason</span>
+                  <div className="bg-white/80 dark:bg-slate-900/60 rounded-lg p-3 text-sm text-rose-900 dark:text-rose-250 border border-rose-100/50 dark:border-rose-900/30">
+                    <span className="font-bold block text-[9px] uppercase tracking-widest opacity-60 mb-1">Reason</span>
                     {task.rejectionReason}
                   </div>
                 )}
@@ -442,25 +458,25 @@ export function TaskDetailedView({
           )}
 
           <Section icon={ActivityIcon} title="Activity Timeline">
-            <div className="border p-4">
-              <div className="relative border-l border-gray-200 ml-3 space-y-4 pb-2">
+            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-900/30 p-5 shadow-sm">
+              <div className="relative border-l-2 border-slate-200 dark:border-slate-800 ml-2.5 space-y-5 pb-1">
                 <div className="relative pl-6">
-                  <span className="absolute -left-1.5 top-1 size-3 rounded-2xl bg-blue-500 ring-4 ring-white" />
-                  <p className="text-sm font-medium text-gray-900">Task Created</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-indigo-500 ring-4 ring-white dark:ring-slate-900 shadow-sm" />
+                  <p className="text-sm font-semibold text-slate-850 dark:text-slate-200">Task Created</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
                     {new Date(task.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
                 <div className="relative pl-6">
-                  <span className="absolute -left-1.5 top-1 size-3 rounded-2xl bg-gray-300 ring-4 ring-white" />
-                  <p className="text-sm font-medium text-gray-900">Assigned to {task.assigneeName || "Someone"}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">By {task.creatorName}</p>
+                  <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-slate-400 ring-4 ring-white dark:ring-slate-900 shadow-sm" />
+                  <p className="text-sm font-semibold text-slate-850 dark:text-slate-200">Assigned to {task.assigneeName || "Someone"}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">By {task.creatorName}</p>
                 </div>
                 {task.updatedAt && (
                   <div className="relative pl-6">
-                    <span className="absolute -left-1.5 top-1 size-3 rounded-2xl bg-orange-400 ring-4 ring-white" />
-                    <p className="text-sm font-medium text-gray-900">Last Activity</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-amber-500 ring-4 ring-white dark:ring-slate-900 shadow-sm" />
+                    <p className="text-sm font-semibold text-slate-850 dark:text-slate-200">Last Activity</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
                       {new Date(task.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                     </p>
                   </div>
@@ -473,7 +489,7 @@ export function TaskDetailedView({
       </div>
 
       {/* Right Column - Comments / Chat */}
-      <div className="w-full sm:w-[360px] shrink-0 flex flex-col border-t sm:border-t-0 sm:border-l">
+      <div className="w-full sm:w-[360px] shrink-0 flex flex-col border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-800/40 h-full">
         <TaskChat
           taskId={task._id}
           sessionUserId={sessionUserId || ""}
