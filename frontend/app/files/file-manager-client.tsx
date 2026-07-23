@@ -26,6 +26,7 @@ import { CreateFolderDialog, RenameDialog, MoveDialog } from "./components/dialo
 import { UploadDialog } from "./components/upload-queue";
 import { FileSearch } from "./components/file-search";
 import { StorageDashboard } from "./components/storage-dashboard";
+import { ApprovalFilesView } from "./components/approval-files-view";
 import { RiUploadCloud2Line } from "@remixicon/react";
 
 interface FileManagerClientProps {
@@ -133,6 +134,7 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
 
               {currentNav === "shared" && <SharedWithMe />}
               {currentNav === "favorites" && <FavoritesView />}
+              {currentNav === "approvals" && <ApprovalFilesView />}
               {currentNav === "recent" && <RecentView />}
               {currentNav === "recycle" && <RecycleBin />}
               {currentNav === "audit" && <AuditLogView />}

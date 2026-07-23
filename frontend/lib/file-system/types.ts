@@ -1,7 +1,7 @@
 export type ViewMode = "grid" | "list";
 export type SortField = "name" | "createdAt" | "updatedAt" | "size" | "uploaderName" | "mimeType";
 export type SortDir = "asc" | "desc";
-export type NavSection = "files" | "shared" | "recent" | "favorites" | "recycle" | "audit" | "starred" | "team" | "client-files" | "staff-files" | "company" | "storage";
+export type NavSection = "files" | "shared" | "recent" | "favorites" | "approvals" | "recycle" | "audit" | "starred" | "team" | "client-files" | "staff-files" | "company" | "storage";
 
 export type FileItem = {
   id: string;
@@ -28,6 +28,9 @@ export type FileItem = {
   isFavorite?: boolean;
   checksum?: string;
   virusScanStatus?: string;
+  approvalStatus?: "none" | "pending" | "approved" | "rejected";
+  approvedBy?: string | null;
+  approvalNote?: string;
   deletedAt?: string | null;
   deletedBy?: string | null;
 };

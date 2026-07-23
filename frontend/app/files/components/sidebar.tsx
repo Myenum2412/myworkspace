@@ -14,6 +14,7 @@ import {
   Building2Icon,
   UserIcon,
   HardDriveIcon,
+  ClipboardCheckIcon,
 } from "lucide-react";
 import { useStorage } from "@/hooks/file-system/use-file-data";
 import { formatSize } from "@/lib/file-system/types";
@@ -30,8 +31,9 @@ const mainNav: NavItem[] = [
   { id: "shared", label: "Shared with Me", icon: <Share2Icon className="size-4" />, shortcut: "2" },
   { id: "recent", label: "Recent", icon: <ClockIcon className="size-4" />, shortcut: "3" },
   { id: "favorites", label: "Favorites", icon: <StarIcon className="size-4" />, shortcut: "4" },
-  { id: "recycle", label: "Recycle Bin", icon: <Trash2Icon className="size-4" />, shortcut: "5" },
-  { id: "audit", label: "Audit Log", icon: <HistoryIcon className="size-4" />, shortcut: "6" },
+  { id: "approvals", label: "Approvals", icon: <ClipboardCheckIcon className="size-4" />, shortcut: "5" },
+  { id: "recycle", label: "Recycle Bin", icon: <Trash2Icon className="size-4" />, shortcut: "6" },
+  { id: "audit", label: "Audit Log", icon: <HistoryIcon className="size-4" />, shortcut: "7" },
 ];
 
 const extraNav: NavItem[] = [
