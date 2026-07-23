@@ -3,14 +3,9 @@ import { EmailData, SocialLinks, StatusType } from "./types.js";
 import fs from "fs";
 import path from "path";
 
-// Use process.cwd() to find the frontend/public directory
-// This works in both ESM and CJS contexts (including Jest)
 const publicDir = path.join(process.cwd(), "frontend", "public");
 
-const logoBannerPath = path.join(publicDir, "logobg.png");
-const logoBannerBase64 = fs.existsSync(logoBannerPath)
-  ? `data:image/png;base64,${fs.readFileSync(logoBannerPath).toString("base64")}`
-  : `${env.APP_URL}/logobg.png`;
+const LOGO_URL = "https://xqjcfue7ip.ufs.sh/f/cKsBR9z4ADeg4IxO2b1PGo8paUj29TWQBHMEVgYrN6hf0JyR";
 
 const logoSmallPath = path.join(publicDir, "logo.jpeg");
 const logoSmallBase64 = fs.existsSync(logoSmallPath)
@@ -75,8 +70,8 @@ export function buildEmailHtml(data: EmailData): string {
   const renderHeader = () => {
     return `
       <tr>
-        <td align="center" style="padding: 0;">
-          <img src="${logoBannerBase64}" alt="MyWorkspace" width="100%" style="display: block; width: 100%; max-width: 100%; height: auto;" />
+        <td align="center" style="padding: 32px 40px 8px;">
+          <img src="${LOGO_URL}" alt="MyWorkspace" width="80" height="80" style="display: block; width: 80px; height: 80px; border-radius: 50%; border: 3px solid ${COLORS.border}; object-fit: cover;" />
         </td>
       </tr>
     `;
