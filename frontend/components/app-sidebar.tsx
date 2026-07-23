@@ -24,6 +24,7 @@ import {
   CheckCheckIcon,
   HeartHandshakeIcon,
   PackageIcon,
+  RotateCcwIcon,
 } from "lucide-react";
 
 const AddonsIcon = ({ className }: { className?: string }) => (
@@ -99,6 +100,11 @@ const platformItems: NavItem[] = [
     title: "Addons",
     url: "/addons",
     icon: <AddonsIcon className="size-6" />,
+  },
+  {
+    title: "Reworks",
+    url: "/reworks",
+    icon: <RotateCcwIcon className="size-6" />,
   },
 ];
 

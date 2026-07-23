@@ -19,6 +19,7 @@ import {
   ClockIcon,
   CalendarClockIcon,
   ActivityIcon,
+  RotateCcwIcon,
 } from "lucide-react";
 
 function buildStaffNavData() {
@@ -53,6 +54,11 @@ function buildStaffNavData() {
       title: "Activity",
       url: "/staffs/activity",
       icon: <ActivityIcon className="size-6" />,
+    },
+    {
+      title: "Reworks",
+      url: "/staffs/reworks",
+      icon: <RotateCcwIcon className="size-6" />,
     },
   ];
 }
