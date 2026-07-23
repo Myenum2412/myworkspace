@@ -627,7 +627,7 @@ export default function TableBlock() {
           </div>
         )}
 
-        <div className="border border-border bg-card">
+        <div className="border border-border bg-card rounded-lg">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

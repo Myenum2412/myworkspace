@@ -20,6 +20,7 @@ import {
   CalendarClockIcon,
   ActivityIcon,
   RotateCcwIcon,
+  FolderKanbanIcon,
 } from "lucide-react";
 
 function buildStaffNavData() {
@@ -34,6 +35,11 @@ function buildStaffNavData() {
       title: "Task",
       url: "/staffs/tasks",
       icon: <ListTodoIcon className="size-6" />,
+    },
+    {
+      title: "Projects",
+      url: "/staffs/projects",
+      icon: <FolderKanbanIcon className="size-6" />,
     },
     {
       title: "Time Sheet",

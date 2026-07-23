@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import ReworksClient from "@/app/reworks/reworks-client";
+import ReworksInteractive from "./reworks-interactive";
 
 export const dynamic = "force-dynamic";
 
@@ -13,5 +13,5 @@ export default async function StaffReworksPage() {
   }
   if (!session?.user?.id) redirect("/login");
 
-  return <ReworksClient />;
+  return <ReworksInteractive />;
 }

@@ -177,7 +177,7 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
         </div>
       </div>
 
-      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)]">
+      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)] rounded-lg">
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="table-premium w-full text-sm text-left" style={{ minWidth: 950 }}>
             <thead className="sticky top-0 z-10">

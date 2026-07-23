@@ -109,7 +109,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
             <p className="text-sm text-muted-foreground mt-1">Track and manage terminated employees</p>
           </div>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px]">
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px] rounded-lg">
           <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
             <UserX className="size-6 text-muted-foreground/50" />
           </div>
@@ -132,7 +132,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
           </div>
         </div>
         {terminated.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px]">
+          <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px] rounded-lg">
             <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
               <UserX className="size-6 text-muted-foreground/50" />
             </div>

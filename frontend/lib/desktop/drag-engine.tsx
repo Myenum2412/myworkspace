@@ -101,7 +101,7 @@ export function DragEngineProvider({
 
       const previewEl = document.createElement("div");
       previewEl.style.cssText =
-        "position:fixed;top:-9999px;left:-9999px;padding:8px 16px;background:rgba(0,0,0,0.8);color:white;border-radius:8px;font-size:13px;z-index:9999;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px);";
+        "position:fixed;top:-9999px;left:-9999px;padding:8px 16px;background:rgba(0,0,0,0.8);color:white;border-radius:var(--radius-md);font-size:13px;z-index:9999;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px);";
       previewEl.textContent = items.length > 1 ? `${items.length} items` : `${items[0].data || "Item"}`;
       document.body.appendChild(previewEl);
       e.dataTransfer.setDragImage(previewEl, 10, 10);

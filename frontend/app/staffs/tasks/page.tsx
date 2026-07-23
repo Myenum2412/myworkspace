@@ -13,6 +13,7 @@ type Task = {
   _id: string;
   title: string;
   description: string;
+  type: string;
   status: string;
   priority: string;
   dueDate: string | null;
@@ -34,14 +35,30 @@ export default async function StaffTasksPage() {
   let overdueTasks: OverdueTask[] = [];
 
   if (orgId) {
+    // Find teams the user is a member of
+    const userTeamMembers = await db
+      .collection("teammembers")
+      .find({ orgId, userId: session.user.id })
+      .toArray() as unknown as { teamId: string }[];
+    const userTeamIds = userTeamMembers.map((m) => m.teamId);
+
     const now = new Date();
+
+    // Get overdue tasks (assigned to user OR team tasks OR common tasks with user)
+    const overdueMatch: Record<string, unknown> = {
+      orgId,
+      dueDate: { $lt: now },
+      status: { $nin: ["done", "cancelled", "completed", "closed", "rejected"] },
+      $or: [
+        { assigneeId: session.user.id },
+        { type: "team", teamId: { $in: userTeamIds } },
+        { type: "common", selectedUserIds: session.user.id },
+      ],
+    };
+
     const overdueRaw = (await db
       .collection(collections.tasks)
-      .find({
-        orgId,
-        dueDate: { $lt: now },
-        status: { $nin: ["done", "cancelled", "completed", "closed", "rejected"] },
-      })
+      .find(overdueMatch)
       .project({ title: 1, dueDate: 1 })
       .sort({ dueDate: 1 })
       .limit(10)
@@ -52,8 +69,16 @@ export default async function StaffTasksPage() {
       title: (t.title as string) || "",
       dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
     }));
-    // Show all tasks for the org
-    const match: Record<string, unknown> = { orgId };
+
+    // Show tasks assigned to user OR team tasks OR common tasks with user
+    const match: Record<string, unknown> = {
+      orgId,
+      $or: [
+        { assigneeId: session.user.id },
+        { type: "team", teamId: { $in: userTeamIds } },
+        { type: "common", selectedUserIds: session.user.id },
+      ],
+    };
 
     const pipeline: Record<string, unknown>[] = [
       { $match: match },
@@ -110,6 +135,7 @@ export default async function StaffTasksPage() {
         _id: (t._id as { toString: () => string }).toString(),
         title: (t.title as string) || "",
         description: (t.description as string) || "",
+        type: (t.type as string) || "individual",
         status: (t.status as string) || "todo",
         priority: (t.priority as string) || "medium",
         dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
@@ -127,7 +153,7 @@ export default async function StaffTasksPage() {
     <>
       <OverdueTasksCard tasks={overdueTasks} />
       <Suspense fallback={null}>
-        <TasksInteractive tasks={tasks} sessionUserId={session?.user?.id} />
+        <TasksInteractive initialTasks={tasks} orgId={orgId || ""} sessionUserId={session?.user?.id} />
       </Suspense>
     </>
   );

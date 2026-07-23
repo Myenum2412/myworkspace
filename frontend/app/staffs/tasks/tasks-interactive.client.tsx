@@ -1,30 +1,52 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  ListTodoIcon, SearchIcon,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ListTodoIcon, ClockIcon, CheckCircle2Icon, AlertCircleIcon, MoreHorizontalIcon, PencilIcon, EyeIcon } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { TaskDetailedView } from "@/components/task-detailed-view";
+import { TaskDataTable } from "@/components/task-data-table";
+import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 import Stats07 from "@/components/stats-07";
+
+type UiTask = {
+  _id: string;
+  id: string;
+  title: string;
+  description?: string;
+  type: string;
+  status: string;
+  priority: string;
+  assigneeId?: string;
+  assigneeName?: string;
+  assigneeAvatar?: string;
+  creatorId?: string;
+  creatorName?: string;
+  orgId: string;
+  teamId?: string;
+  teamName?: string;
+  dueDate?: string | null;
+  startDate?: string | null;
+  scheduledDate?: string | null;
+  activatedAt?: string | null;
+  submittedAt?: string | null;
+  approvedBy?: string;
+  approverName?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
+  createdAt: string;
+  updatedAt?: string;
+};
 
 type Task = {
   _id: string;
   title: string;
   description: string;
+  type: string;
   status: string;
   priority: string;
   dueDate: string | null;
@@ -36,174 +58,146 @@ type Task = {
   createdAt: string;
 };
 
-const statusStyles: Record<string, string> = {
-  todo: "bg-gray-100 text-gray-700",
-  in_progress: "bg-blue-100 text-blue-700",
-  review: "bg-purple-100 text-purple-700",
-  done: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
-  postponed: "bg-orange-100 text-orange-700",
+export type StaffTasksProps = {
+  initialTasks: Task[];
+  orgId: string;
+  sessionUserId?: string;
 };
 
-const priorityStyles: Record<string, string> = {
-  low: "bg-gray-100 text-gray-600",
-  medium: "bg-gray-200 text-gray-800",
-  high: "bg-orange-100 text-orange-600",
-  urgent: "bg-red-100 text-red-600",
-};
-
-const COMPLETED_STATUSES = new Set(["completed", "done", "cancelled", "closed", "rejected"]);
-
-function getDueStatus(dueDate: string | null, status: string): "overdue" | "due-soon" | "normal" {
-  if (!dueDate || COMPLETED_STATUSES.has(status)) return "normal";
-  const now = new Date();
-  const due = new Date(dueDate);
-  const diffMs = due.getTime() - now.getTime();
-  if (diffMs < 0) return "overdue";
-  if (diffMs <= 86400000) return "due-soon";
-  return "normal";
-}
-
-export default function TasksInteractive({ tasks, sessionUserId }: { tasks: Task[]; sessionUserId?: string }) {
+export default function TasksInteractive({ initialTasks, orgId, sessionUserId }: StaffTasksProps) {
+  const queryClient = useQueryClient();
   const [viewOpen, setViewOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [localTasks, setLocalTasks] = useState<Task[]>(tasks);
+  const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const total = localTasks.length;
-  const completed = localTasks.filter((t) => t.status === "done").length;
-  const inProgress = localTasks.filter((t) => t.status === "in_progress").length;
-  const pending = localTasks.filter((t) => t.status !== "done" && t.status !== "cancelled").length;
+  const queryKey = useMemo(() => ["tasks", "staff", orgId, sessionUserId] as const, [orgId, sessionUserId]);
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (seeded.current || !orgId) return;
+    seeded.current = true;
+    queryClient.setQueryData(queryKey, initialTasks);
+  }, [queryClient, queryKey, orgId, initialTasks]);
+
+  const { data: tasks = [], refetch } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!orgId) return [];
+      try {
+        const params = new URLSearchParams({ orgId });
+        if (sessionUserId) params.set("assigneeId", sessionUserId);
+        const res = await apiFetch(`/api/tasks?${params}`);
+        if (!res.ok) return [];
+        const d = await res.json();
+        return d.data || [];
+      } catch { return []; }
+    },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    initialData: initialTasks,
+  });
+
+  useEffect(() => {
+    const handler = () => refetch();
+    window.addEventListener("focus", handler);
+    return () => window.removeEventListener("focus", handler);
+  }, [refetch]);
+
+  const setTasks = useCallback(
+    (updater: UiTask[] | ((prev: UiTask[]) => UiTask[])) => {
+      queryClient.setQueryData(queryKey, (prev: UiTask[] | undefined) => {
+        const current = prev ?? [];
+        return typeof updater === "function" ? updater(current) : updater;
+      });
+    },
+    [queryClient, queryKey],
+  );
+
+  const filteredTasks = useMemo(() => {
+    const seen = new Set<string>();
+    return tasks.filter((t: UiTask) => {
+      const k = t._id || t.id;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [tasks]);
+
+  const summary = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const t of filteredTasks) {
+      counts[t.status] = (counts[t.status] || 0) + 1;
+    }
+    return counts;
+  }, [filteredTasks]);
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center gap-2">
-          <ListTodoIcon className="size-6" />
-          <h1 className="text-2xl font-bold">My Tasks</h1>
-          <Badge variant="secondary" className="ml-auto">{total} tasks</Badge>
+      <main className="flex flex-1 flex-col gap-4 p-4 min-h-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="w-full sm:w-auto">
+            <h1 className="text-xl sm:text-2xl font-bold">My Tasks</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Tasks assigned to you and your teams</p>
+          </div>
         </div>
 
-        {/* Stats Overview */}
         <Stats07
           items={[
-            { name: 'Total Tasks', value: total, subtitle: 'All tasks' },
-            { name: 'Completed', value: completed, subtitle: 'Done tasks' },
-            { name: 'In Progress', value: inProgress, subtitle: 'Active tasks' },
-            { name: 'Pending', value: pending, subtitle: 'Awaiting completion' },
+            { name: 'Total Tasks', value: filteredTasks.length, subtitle: 'All tasks' },
+            ...Object.entries(summary).map(([status, count]) => ({
+              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              value: count,
+              subtitle: `${status.replace(/_/g, ' ')} tasks`,
+            })),
           ]}
         />
 
-        <Card>
-          <CardHeader><CardTitle>Tasks</CardTitle></CardHeader>
-          <CardContent>
-            {localTasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <ListTodoIcon className="size-10 text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">No tasks found.</p>
+        <div className="flex flex-col flex-1 min-h-0">
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="text-lg font-semibold shrink-0">All Tasks</h2>
+            <div className="flex-1 flex justify-center">
+              <div className="relative w-full max-w-md">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tasks..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-9 bg-white"
+                />
               </div>
-            ) : (
-              <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
-                <table className="table-premium w-full text-sm text-left">
-                  <thead className="sticky top-0 z-10">
-                    <tr>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-20">Task #</th>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Task</th>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Assigned To</th>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Delegated By</th>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Priority</th>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Due Date</th>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-16">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {localTasks.map((t, idx) => {
-                      const dueStatus = getDueStatus(t.dueDate, t.status);
-                      const rowClass = dueStatus === "overdue" ? "bg-red-50 hover:bg-red-100/50" : dueStatus === "due-soon" ? "bg-yellow-50 hover:bg-yellow-100/50" : "bg-white hover:bg-slate-50";
-                      return (
-                      <tr key={t._id} className={`border-b last:border-0 transition-colors group cursor-pointer ${rowClass}`} onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
-                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">#{idx + 1}</td>
-                        <td className="px-4 py-3 font-medium">{t.title}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="size-6 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                              {t.assigneeAvatar ? (
-                                <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
-                              ) : (
-                                <span className="text-[10px] font-medium text-muted-foreground">
-                                  {(t.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-sm">{t.assigneeName || "—"}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3"><span className="text-sm">{t.creatorName || "—"}</span></td>
-                        <td className="px-4 py-3">
-                          <Badge className={(statusStyles[t.status] || "") + ""}>
-                            {t.status.replace(/_/g, " ")}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge className={(priorityStyles[t.priority] || "") + ""}>
-                            {t.priority}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
-                            {dueStatus === "overdue" && (
-                              <Badge className="bg-red-100 text-red-700 border-red-200 text-[9px] px-1.5 py-0 gap-0.5">
-                                <AlertCircleIcon className="size-2.5" /> Overdue
-                              </Badge>
-                            )}
-                            {dueStatus === "due-soon" && (
-                              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-[9px] px-1.5 py-0 gap-0.5">
-                                <ClockIcon className="size-2.5" /> Due Soon
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => { setSelectedTask(t); setViewOpen(true); }}>
-                                <EyeIcon className="mr-2 size-4" />View
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-
-      <Dialog open={viewOpen} onOpenChange={(open) => { if (!open) { setViewOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-sm sm:m-4">
-          {selectedTask && (
-            <TaskDetailedView
-              task={selectedTask}
-              sessionUserId={sessionUserId}
-              editable
-              onTaskUpdate={(updatedTask) => {
-                setLocalTasks((prev) => prev.map((t) => t._id === updatedTask._id ? (updatedTask as Task) : t));
-                setSelectedTask(updatedTask as Task);
-              }}
-              onClose={() => { setViewOpen(false); setSelectedTask(null); }}
+            </div>
+            <span className="text-sm text-muted-foreground shrink-0">{filteredTasks.length} tasks</span>
+          </div>
+          <div className="flex-1 min-h-0">
+            <TaskDataTable
+              data={filteredTasks}
+              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+              searchPlaceholder="Search tasks..."
+              emptyMessage="No tasks found."
+              label="task"
+              hideSearchBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+
+        {viewOpen && selectedTask && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="relative w-[95vw] h-[95vh] bg-card rounded-sm shadow-xl overflow-hidden flex flex-col">
+              <TaskDetailedView
+                task={selectedTask}
+                sessionUserId={sessionUserId}
+                editable
+                onTaskUpdate={(updated) => {
+                  setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
+                }}
+                onClose={() => { setViewOpen(false); setSelectedTask(null); }}
+              />
+            </div>
+          </div>
+        )}
+      </main>
     </>
   );
 }

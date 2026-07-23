@@ -275,7 +275,7 @@ export default function CalendarBlock() {
   return (
     <section className="flex w-full items-center justify-center bg-background px-6 py-12 text-foreground">
       <div className="w-full max-w-xl">
-        <div className="border border-border bg-card">
+        <div className="border border-border bg-card rounded-lg">
           <div className="flex items-center justify-between gap-4 px-4 py-3.5">
             <div className="flex items-center gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center bg-primary/10 text-primary">

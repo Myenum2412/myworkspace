@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2Icon, LayoutDashboardIcon, Table2Icon, ChevronLeftIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Trash2Icon, ChevronLeftIcon, SearchIcon } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
 import { PROJECT_COLORS } from "@/components/projects/project-types";
 import { ProjectDetailedView } from "./project-detailed-view";
@@ -66,6 +66,19 @@ export default function ProjectsInteractive({
   const [editMembers, setEditMembers] = useState<string[]>([]);
   const [editMemberSearch, setEditMemberSearch] = useState("");
   const [editAttachment, setEditAttachment] = useState<File | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredProjects = useMemo(() => {
+    if (!searchQuery) return projects;
+    const q = searchQuery.toLowerCase();
+    return projects.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.client && p.client.toLowerCase().includes(q)) ||
+        (p.description && p.description.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q))
+    );
+  }, [projects, searchQuery]);
 
   const filteredMembers = useMemo(() => {
     if (!memberSearch) return employees;
@@ -185,7 +198,6 @@ export default function ProjectsInteractive({
 
   const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [viewMode, setViewMode] = useState<"dashboard" | "list">("dashboard");
 
   function handleView(project: Project) {
     setViewProject(project);
@@ -324,11 +336,6 @@ export default function ProjectsInteractive({
     setEditAttachment(null);
   }
 
-  const VIEW_TABS = [
-    { id: "dashboard", label: "Overview", icon: LayoutDashboardIcon },
-    { id: "list", label: "List", icon: Table2Icon },
-  ] as const;
-
   return (
     <>
       <main className="flex flex-1 flex-col h-full bg-white min-w-0 max-w-full">
@@ -458,54 +465,32 @@ export default function ProjectsInteractive({
           </div>
         ) : (
           <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1 rounded-sm border p-0.5 bg-muted/50 shrink-0">
-                {VIEW_TABS.map((t) => {
-                  const Icon = t.icon;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => setViewMode(t.id)}
-                      className={cn(
-                        "flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
-                        viewMode === t.id
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <Icon className="size-3.5" />
-                      {t.label}
-                    </button>
-                  );
-                })}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <h1 className="text-xl sm:text-2xl font-bold">Projects</h1>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="relative w-full sm:w-64">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search projects..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 h-9 bg-white"
+                  />
+                </div>
+                <Button onClick={() => setShowForm(true)} size="sm">
+                  New Project
+                </Button>
               </div>
-              <Button onClick={() => setShowForm(true)} size="sm">
-                New Project
-              </Button>
             </div>
-            {viewMode === "dashboard" && (
-              <>
-                <ProjectsDashboard projects={projects} />
-                <ProjectList
-                  projects={projects}
-                  loading={loading}
-                  onView={handleView}
-                  onEdit={handleEdit}
-                  onDelete={(p) => setDeleteConfirm(p)}
-                  onNewProject={() => setShowForm(true)}
-                />
-              </>
-            )}
-            {viewMode === "list" && (
-              <ProjectList
-                projects={projects}
-                loading={loading}
-                onView={handleView}
-                onEdit={handleEdit}
-                onDelete={(p) => setDeleteConfirm(p)}
-                onNewProject={() => setShowForm(true)}
-              />
-            )}
+            <ProjectsDashboard projects={filteredProjects} />
+            <ProjectList
+              projects={filteredProjects}
+              loading={loading}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={(p) => setDeleteConfirm(p)}
+              onNewProject={() => setShowForm(true)}
+            />
           </div>
         )}
       </main>

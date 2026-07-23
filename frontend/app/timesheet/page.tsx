@@ -3,11 +3,11 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
-import TimesheetInteractive from "./timesheet-interactive.client";
+import TimesheetInteractive from "@/app/staffs/timesheet/timesheet-interactive.client";
 
 export const dynamic = "force-dynamic";
 
-export default async function StaffTimesheetPage() {
+export default async function TimesheetPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 

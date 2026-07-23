@@ -156,7 +156,7 @@ export default function DashboardCalendarPopup() {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[380px] p-0">
-        <div className="border border-border bg-card">
+        <div className="border border-border bg-card rounded-lg">
           <div className="flex items-center justify-between gap-4 px-4 py-3.5">
             <div className="flex items-center gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center bg-primary/10 text-primary">

@@ -16,9 +16,7 @@ export default function ProjectList({
 }: ProjectListProps) {
   return (
     <>
-      <h1 className="text-2xl font-bold">All Projects</h1>
-
-      <div className="flex-1 mt-4">
+      <div className="flex-1">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
@@ -29,6 +27,7 @@ export default function ProjectList({
             data={projects}
             meta={{ onView, onEdit, onDelete } as Record<string, unknown>}
             onRowClick={(p) => onView(p)}
+            hideSearchBar
           />
         )}
       </div>

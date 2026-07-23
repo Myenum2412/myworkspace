@@ -89,7 +89,7 @@ export function TeamMembers({
       </div>
 
       {tableView ? (
-        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col rounded-lg" style={{ maxHeight: 'calc(100vh - 220px)' }}>
           <div className="overflow-x-auto overflow-y-auto flex-1">
             <table className="table-premium w-full text-sm text-left" style={{ minWidth: 900 }}>
               <thead className="sticky top-0 z-10">
@@ -160,7 +160,7 @@ export function TeamMembers({
 
         </div>
       ) : (
-        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col rounded-lg" style={{ maxHeight: 'calc(100vh - 220px)' }}>
           <div className="overflow-y-auto flex-1">
             {team.members.length === 0 ? (
               <div className="py-8 text-center"><UsersIcon className="size-10 mx-auto text-muted-foreground/30 mb-2" /><p className="text-sm text-muted-foreground">No members yet.</p></div>

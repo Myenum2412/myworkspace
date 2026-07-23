@@ -6,10 +6,10 @@ import { redirect } from "next/navigation";
 import {
   ListTodoIcon,
   BriefcaseIcon,
+  AlertCircleIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { StaffTasksView } from "@/components/staffs/staff-tasks-view";
+import { StaffTasksView } from "./tasks/staff-tasks-view";
 import Stats07 from "@/components/stats-07";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +31,9 @@ type Task = {
   status: string;
   assigneeId: string;
   assigneeName: string;
+  assigneeAvatar: string;
+  creatorId: string;
+  creatorName: string;
   createdAt: string;
   dueDate: string | null;
 };
@@ -70,13 +73,13 @@ export default async function StaffsPage() {
       };
     });
 
-    // Fetch last 10 tasks for this org with assignee lookup
+    // Fetch tasks assigned to the current user only
     const rawTasks = (await db
       .collection(collections.tasks)
       .aggregate([
-        { $match: { orgId } },
+        { $match: { orgId, assigneeId: session.user.id } },
         { $sort: { createdAt: -1 } },
-        { $limit: 10 },
+        { $limit: 50 },
         {
           $lookup: {
             from: "users",
@@ -86,11 +89,21 @@ export default async function StaffsPage() {
           },
         },
         { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "creatorId",
+            foreignField: "id",
+            as: "creator",
+          },
+        },
+        { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
       ])
       .toArray()) as unknown as Record<string, unknown>[];
 
     tasks = rawTasks.map((t) => {
       const assignee = t.assignee as Record<string, unknown> | null;
+      const creator = t.creator as Record<string, unknown> | null;
       return {
         _id: String(t._id ?? ""),
         title: (t.title as string) || "",
@@ -98,6 +111,67 @@ export default async function StaffsPage() {
         status: (t.status as string) || "todo",
         assigneeId: (t.assigneeId as string) || "",
         assigneeName: assignee?.name as string || "",
+        assigneeAvatar: assignee?.image as string || "",
+        creatorId: (t.creatorId as string) || "",
+        creatorName: creator?.name as string || "",
+        createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
+        dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
+      };
+    });
+  }
+
+  const COMPLETED_STATUSES = ["done", "completed", "cancelled", "closed", "rejected"];
+
+  const now = new Date();
+  let overdueTasks: Task[] = [];
+  if (orgId) {
+    const rawOverdue = (await db
+      .collection(collections.tasks)
+      .aggregate([
+        {
+          $match: {
+            orgId,
+            assigneeId: session.user.id,
+            dueDate: { $lt: now },
+            status: { $nin: COMPLETED_STATUSES },
+          },
+        },
+        { $sort: { dueDate: 1 } },
+        { $limit: 20 },
+        {
+          $lookup: {
+            from: "users",
+            localField: "assigneeId",
+            foreignField: "id",
+            as: "assignee",
+          },
+        },
+        { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "creatorId",
+            foreignField: "id",
+            as: "creator",
+          },
+        },
+        { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
+      ])
+      .toArray()) as unknown as Record<string, unknown>[];
+
+    overdueTasks = rawOverdue.map((t) => {
+      const assignee = t.assignee as Record<string, unknown> | null;
+      const creator = t.creator as Record<string, unknown> | null;
+      return {
+        _id: String(t._id ?? ""),
+        title: (t.title as string) || "",
+        priority: (t.priority as string) || "medium",
+        status: (t.status as string) || "todo",
+        assigneeId: (t.assigneeId as string) || "",
+        assigneeName: assignee?.name as string || "",
+        assigneeAvatar: assignee?.image as string || "",
+        creatorId: (t.creatorId as string) || "",
+        creatorName: creator?.name as string || "",
         createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
         dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
       };
@@ -119,7 +193,7 @@ export default async function StaffsPage() {
 
   const recentTasks = [...tasks]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5);
+    .slice(0, 10);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
@@ -142,17 +216,33 @@ export default async function StaffsPage() {
         ]}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <ListTodoIcon className="size-4" />
-            Recently Allocated Tasks
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <StaffTasksView tasks={recentTasks} />
-        </CardContent>
-      </Card>
+      <div className={`grid gap-4 ${overdueTasks.length > 0 ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <ListTodoIcon className="size-4" />
+              Recently Allocated Tasks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StaffTasksView tasks={recentTasks} sessionUserId={session.user.id} />
+          </CardContent>
+        </Card>
+
+        {overdueTasks.length > 0 && (
+          <Card className="border-red-200">
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2 text-red-700">
+                <AlertCircleIcon className="size-4" />
+                Overdue Tasks ({overdueTasks.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StaffTasksView tasks={overdueTasks} sessionUserId={session.user.id} />
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </main>
   );
 }

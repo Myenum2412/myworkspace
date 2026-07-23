@@ -58,6 +58,7 @@ import blogRoutes from "./routes/blog.js";
 import plansRoutes from "./routes/plans.js";
 import dailyTaskEmailSchedulerRoutes from "./routes/daily-task-email-scheduler.js";
 import schedulerRoutes from "./routes/scheduler.js";
+import timesheetRoutes from "./routes/timesheet.js";
 
 const app = express();
 
@@ -354,6 +355,7 @@ app.use("/api/blog", blogRoutes);
 app.use("/api/plans", plansRoutes);
 app.use("/api/daily-task-email-scheduler", dailyTaskEmailSchedulerRoutes);
 app.use("/api/scheduler", schedulerRoutes);
+app.use("/api/timesheet", timesheetRoutes);
 
 // ── Public config endpoint (unauthenticated, exposes safe values) ──
 app.get("/api/config/public", (_req, res) => {

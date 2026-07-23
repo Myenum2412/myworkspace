@@ -118,7 +118,7 @@ export function DashboardSignupsTable({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
           <table className="table-premium w-full text-sm text-left">
             <thead className="sticky top-0 z-10">
               <tr>
