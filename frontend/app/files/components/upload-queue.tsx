@@ -87,7 +87,7 @@ function formatSize(bytes: number) {
 
 export function UploadDialog() {
   const queryClient = useQueryClient();
-  const { showUpload, setShowUpload, orgId, currentFolderId } = useFileSystemStore();
+  const { showUpload, setShowUpload, orgId, currentFolderId, pendingFiles, setPendingFiles } = useFileSystemStore();
 
   const [items, setItems] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -336,6 +336,27 @@ export function UploadDialog() {
     },
     [uploadFile]
   );
+
+  // Process pending files dropped on the page
+  useEffect(() => {
+    if (showUpload && pendingFiles && pendingFiles.length > 0) {
+      const fileList = pendingFiles;
+      setPendingFiles(null);
+      requestAnimationFrame(() => {
+        const newItems: UploadItem[] = fileList.map((file) => ({
+          id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+          name: file.name,
+          size: file.size,
+          progress: 0,
+          status: "uploading" as UploadStatus,
+        }));
+        setItems((prev) => [...newItems, ...prev]);
+        newItems.forEach((item, idx) => {
+          uploadFile(item, fileList[idx]);
+        });
+      });
+    }
+  }, [showUpload, pendingFiles, setPendingFiles, uploadFile]);
 
   const removeItem = useCallback((id: string) => {
     setItems((prev) => {

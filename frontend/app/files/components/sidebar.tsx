@@ -93,26 +93,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      {stats && (
-        <div className="p-3 border-t space-y-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <HardDriveIcon className="size-3.5" />
-            <span className="flex-1">Storage</span>
-            <span className="font-medium">{formatSize(stats.usedStorage)} / {formatSize(stats.maxStorage)}</span>
-          </div>
-          <div className="h-1.5 bg-muted rounded-sm overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-sm transition-all"
-              style={{ width: `${Math.min(100, (stats.usedStorage / stats.maxStorage) * 100)}%` }}
-            />
-          </div>
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>{stats.totalFiles} files</span>
-            <span>{stats.deletedFiles} deleted</span>
-          </div>
-        </div>
-      )}
     </aside>
   );
 }

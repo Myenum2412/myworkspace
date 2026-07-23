@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { useFileData } from "@/hooks/file-system/use-file-data";
 import { useKeyboardShortcuts } from "@/hooks/file-system/use-keyboard";
+import { cn } from "@/lib/utils";
 import { Sidebar } from "./components/sidebar";
 import { Toolbar } from "./components/toolbar";
 import { BreadcrumbNav } from "./components/breadcrumb-nav";
@@ -25,6 +26,7 @@ import { CreateFolderDialog, RenameDialog, MoveDialog } from "./components/dialo
 import { UploadDialog } from "./components/upload-queue";
 import { FileSearch } from "./components/file-search";
 import { StorageDashboard } from "./components/storage-dashboard";
+import { RiUploadCloud2Line } from "@remixicon/react";
 
 interface FileManagerClientProps {
   orgId: string;
@@ -39,6 +41,8 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
   const previewPaneFile = useFileSystemStore((s) => s.previewPaneFile);
   const { loading } = useFileData();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const dragDepth = useRef(0);
 
   useKeyboardShortcuts();
 
@@ -61,8 +65,44 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  const onDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current += 1;
+    if (dragDepth.current === 1) setIsDraggingOver(true);
+  }, []);
+
+  const onDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current -= 1;
+    if (dragDepth.current <= 0) {
+      dragDepth.current = 0;
+      setIsDraggingOver(false);
+    }
+  }, []);
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+  }, []);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current = 0;
+    setIsDraggingOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0 && userRole !== ROLES.CLIENTS) {
+      useFileSystemStore.getState().setPendingFiles(files);
+      useFileSystemStore.getState().setShowUpload(true);
+    }
+  }, [userRole]);
+
   return (
-    <div className="flex h-[calc(100vh-3.5rem)]">
+    <div
+      className="flex h-[calc(100vh-3.5rem)] relative"
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
       {previewPaneFile ? (
         <PreviewPane onClose={() => useFileSystemStore.getState().setPreviewPaneFile(null)} />
       ) : (
@@ -102,6 +142,26 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
             </div>
           </main>
         </>
+      )}
+
+      {/* Drag-and-drop overlay */}
+      {isDraggingOver && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm pointer-events-none">
+          <div className={cn(
+            "flex flex-col items-center gap-4 rounded-lg border-2 border-dashed px-12 py-10 transition-colors",
+            "border-primary bg-primary/5"
+          )}>
+            <div className="flex size-16 items-center justify-center rounded-lg border border-primary bg-background text-primary">
+              <RiUploadCloud2Line className="size-8" />
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-semibold text-foreground">Drop files to upload</p>
+              <p className="text-sm text-muted-foreground">
+                Files will be uploaded to the current folder
+              </p>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Dialogs and overlays */}

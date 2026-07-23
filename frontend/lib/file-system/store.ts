@@ -35,6 +35,7 @@ interface FileSystemState {
   moveTarget: { type: "file" | "folder"; id: string } | null;
   isCreatingFolder: boolean;
   showUpload: boolean;
+  pendingFiles: File[] | null;
 
   // ── Actions ──
   setOrgContext: (orgId: string, userId: string, role: string) => void;
@@ -64,6 +65,7 @@ interface FileSystemState {
   setMoveTarget: (t: { type: "file" | "folder"; id: string } | null) => void;
   setIsCreatingFolder: (v: boolean) => void;
   setShowUpload: (v: boolean) => void;
+  setPendingFiles: (f: File[] | null) => void;
   removeFile: (id: string) => void;
   removeFolder: (id: string) => void;
   addFolder: (f: FolderItem) => void;
@@ -97,6 +99,7 @@ export const useFileSystemStore = create<FileSystemState>((set) => ({
   moveTarget: null,
   isCreatingFolder: false,
   showUpload: false,
+  pendingFiles: null,
 
   setOrgContext: (orgId, userId, role) => set({ orgId, userId, userRole: role }),
   setCurrentFolder: (id) => set({ currentFolderId: id, selectedIds: new Set() }),
@@ -136,6 +139,7 @@ export const useFileSystemStore = create<FileSystemState>((set) => ({
   setMoveTarget: (t) => set({ moveTarget: t }),
   setIsCreatingFolder: (v) => set({ isCreatingFolder: v }),
   setShowUpload: (v) => set({ showUpload: v }),
+  setPendingFiles: (f) => set({ pendingFiles: f }),
   removeFile: (id) => set((s) => ({ files: s.files.filter((f) => f.id !== id) })),
   removeFolder: (id) => set((s) => ({ folders: s.folders.filter((f) => f.id !== id) })),
   addFolder: (f) => set((s) => ({ folders: [...s.folders, f] })),
