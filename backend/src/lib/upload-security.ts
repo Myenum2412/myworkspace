@@ -154,10 +154,11 @@ export interface ValidationResult {
  * Validate an uploaded file buffer.
  *
  * 1. Checks extension against blocked list
- * 2. Checks extension against known MIME mapping
+ * 2. Checks extension against known MIME mapping (warn on mismatch)
  * 3. Inspects magic bytes with `file-type`
- * 4. Ensures detected MIME matches declared MIME
- * 5. Ensures MIME is in the allowed list
+ * 4. Ensures detected MIME matches declared MIME (anti-spoofing)
+ *
+ * All file types are accepted except dangerous executables (blocked extensions).
  */
 export async function validateFileUpload(
   buffer: Buffer,
@@ -175,7 +176,6 @@ export async function validateFileUpload(
   if (declaredMime) {
     const expectedExt = EXT_TO_MIME[ext];
     if (expectedExt && expectedExt !== declaredMime) {
-      // e.g. file says .png but declares image/jpeg — suspicious
       logger.warn({ originalName, declaredMime, expectedExt }, "MIME/extension mismatch");
     }
   }
@@ -187,23 +187,13 @@ export async function validateFileUpload(
     detectedMime = type?.mime;
   } catch (err) {
     logger.error({ err, originalName }, "Magic-byte inspection failed");
-    // Don't fail the upload on inspection error (best-effort)
   }
 
+  // Anti-spoofing: reject if declared type doesn't match actual content
   if (detectedMime && declaredMime && detectedMime !== declaredMime) {
     return {
       valid: false,
       error: `Declared MIME type '${declaredMime}' does not match file content '${detectedMime}'`,
-      detectedMime,
-    };
-  }
-
-  // Use detected MIME for allowed check, fall back to declared
-  const effectiveMime = detectedMime || declaredMime;
-  if (effectiveMime && !ALLOWED_MIME_TYPES.has(effectiveMime)) {
-    return {
-      valid: false,
-      error: `File type '${effectiveMime}' is not allowed for upload`,
       detectedMime,
     };
   }

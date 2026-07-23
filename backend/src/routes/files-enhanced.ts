@@ -32,36 +32,64 @@ import { notifyFile } from "../lib/notifications/notification-wiring.js";
 const router = Router();
 
 const ALLOWED_MIME_TYPES = new Set([
+  // Images
   "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif", "image/svg+xml",
-  "image/bmp", "image/tiff", "image/x-icon", "image/heic", "image/heif", "image/x-canon-cr2",
-  "image/x-nikon-nef", "image/x-sony-arw", "image/x-adobe-dng", "image/x-olympus-orf",
-  "image/x-fuji-raf",
+  "image/bmp", "image/tiff", "image/x-icon", "image/heic", "image/heif",
+  "image/x-canon-cr2", "image/x-nikon-nef", "image/x-sony-arw", "image/x-adobe-dng",
+  "image/x-olympus-orf", "image/x-fuji-raf", "image/x-panasonic-rw2",
+  "image/x Canon-pef", "image/x-kodak-dcr", "image/x-sigma-x3f",
+  "image/jxl", "image/avif", "image/vnd.microsoft.icon",
+  // Documents
   "application/pdf",
   "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/plain", "text/csv", "text/markdown", "text/html", "text/css", "text/javascript",
-  "text/x-scss", "text/x-typescript", "text/x-java", "text/x-python", "text/x-go",
-  "text/x-rust", "text/x-c", "text/x-cpp", "text/x-csharp", "text/x-php", "text/x-yaml",
-  "text/xml", "application/json", "application/xml", "application/x-yaml",
-  "application/zip", "application/x-rar-compressed", "application/x-7z-compressed",
-  "application/x-tar", "application/gzip", "application/x-bzip2",
+  "application/vnd.oasis.opendocument.text", "application/vnd.oasis.opendocument.spreadsheet",
+  "application/vnd.oasis.opendocument.presentation",
+  "application/vnd.apple.pages", "application/vnd.apple.numbers", "application/vnd.apple.keynote",
+  "application/epub+zip", "application/x-mobipocket-ebook",
+  "application/rtf", "application/x-rtf",
+  // Text / Code
+  "text/plain", "text/csv", "text/tsv", "text/markdown", "text/html", "text/css",
+  "text/javascript", "text/x-scss", "text/x-typescript", "text/x-java", "text/x-python",
+  "text/x-go", "text/x-rust", "text/x-c", "text/x-cpp", "text/x-csharp", "text/x-php",
+  "text/x-yaml", "text/xml", "text/x-graphql", "text/x-log",
+  "application/json", "application/jsonl", "application/xml", "application/x-yaml",
+  "application/graphql", "application/x-protobuf", "application/x-thrift",
+  "application/typescript", "application/javascript",
+  // Archives
+  "application/zip", "application/x-zip-compressed", "application/x-rar-compressed",
+  "application/x-7z-compressed", "application/x-tar", "application/gzip",
+  "application/x-bzip2", "application/x-xz", "application/zstd", "application/x-lz4",
+  "application/x-cab", "application/x-iso9660-image", "application/x-apple-diskimage",
+  // Video
   "video/mp4", "video/webm", "video/quicktime", "video/x-msvideo", "video/x-matroska",
-  "video/x-ms-wmv", "video/x-flv", "video/mpeg", "video/3gpp", "video/ogg", "video/mp2t",
-  "video/x-m2ts", "video/dv",
+  "video/x-ms-wmv", "video/x-flv", "video/mpeg", "video/3gpp", "video/ogg",
+  "video/mp2t", "video/x-m2ts", "video/dv", "video/x-f4v", "video/divx",
+  // Audio
   "audio/mpeg", "audio/wav", "audio/ogg", "audio/aac", "audio/flac", "audio/x-m4a",
-  "audio/x-ms-wma", "audio/x-aiff", "audio/opus",
+  "audio/x-ms-wma", "audio/x-aiff", "audio/opus", "audio/x-matroska",
+  "audio/ape", "audio/x-wavpack", "audio/ac3", "audio/dts", "audio/alac",
+  "audio/midi", "audio/x-midi",
+  // 3D / CAD
   "model/gltf+json", "model/gltf-binary", "model/stl", "model/obj", "model/vnd.fbx",
-  "model/ply",
+  "model/ply", "model/3ds", "model/vnd.collada+xml",
   "image/vnd.dwg", "image/vnd.dxf", "application/x-step", "application/x-iges",
+  "application/x-sat", "application/skp", "application/x-blender",
+  // Design
   "image/vnd.adobe.photoshop", "application/postscript", "application/x-figma",
-  "application/x-sketch",
-  "application/octet-stream",
+  "application/x-sketch", "application/x-indesign", "image/x-eps",
+  // Data
+  "application/x-sqlite3", "application/x-parquet", "application/x-avro",
+  "application/x-feather", "application/x-ipynb+json",
+  // Misc
+  "application/octet-stream", "application/wasm",
+  "text/x-python", "text/x-ruby", "text/x-shellscript",
 ]);
 
 const MIME_PREFIXES = [
   "image/", "video/", "audio/", "text/", "model/",
-  "application/",
+  "application/", "font/", "multipart/",
 ];
 
 function isAllowedMimeType(mimeType: string): boolean {
@@ -70,21 +98,75 @@ function isAllowedMimeType(mimeType: string): boolean {
 }
 
 const ALLOWED_EXTENSIONS = new Set([
+  // Images
   ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".svg", ".bmp", ".tiff", ".tif", ".ico",
-  ".heic", ".heif", ".cr2", ".nef", ".arw", ".dng", ".orf", ".raf",
-  ".pdf",
-  ".doc", ".docx", ".dot", ".xls", ".xlsx", ".csv", ".ppt", ".pptx",
-  ".txt", ".md", ".json", ".xml", ".yml", ".yaml", ".toml", ".ini", ".cfg", ".env", ".log", ".sql",
-  ".js", ".ts", ".jsx", ".tsx", ".html", ".css", ".scss", ".sass", ".less",
-  ".php", ".java", ".py", ".go", ".rs", ".c", ".cpp", ".h", ".cs", ".sh", ".bat", ".ps1",
-  ".zip", ".rar", ".7z", ".tar", ".gz", ".bz2",
+  ".heic", ".heif", ".cr2", ".nef", ".arw", ".dng", ".orf", ".raf", ".raw", ".pef",
+  ".kdc", ".srw", ".x3f", ".3fr", ".mef", ".mrw", ".nrw", ".rw2", ".rwl", ".sr2",
+  ".srf", ".fff", ".iiq", ".mdc", ".mdc",
+  // Documents
+  ".pdf", ".epub", ".mobi",
+  ".doc", ".docx", ".dot", ".dotx", ".docm",
+  ".xls", ".xlsx", ".xlt", ".xltx", ".xlsm", ".xlsb",
+  ".ppt", ".pptx", ".pot", ".potx", ".pptm",
+  ".odt", ".ods", ".odp",
+  ".pages", ".numbers", ".key",
+  ".csv", ".tsv", ".rtf",
+  // Text / Config / Code
+  ".txt", ".md", ".markdown", ".rst", ".log",
+  ".json", ".jsonl", ".jsonc",
+  ".xml", ".yaml", ".yml", ".toml", ".ini", ".cfg", ".conf", ".env",
+  ".sql", ".graphql", ".gql",
+  ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
+  ".html", ".htm", ".xhtml", ".css", ".scss", ".sass", ".less", ".styl",
+  ".vue", ".svelte", ".astro",
+  ".php", ".phtml",
+  ".java", ".kt", ".kts", ".scala", ".groovy",
+  ".py", ".pyw", ".pyi", ".pyx",
+  ".go", ".rs", ".c", ".h", ".cpp", ".hpp", ".cc", ".cxx",
+  ".cs", ".fs", ".fsx", ".vb",
+  ".rb", ".rake", ".gemspec",
+  ".swift", ".m", ".mm",
+  ".lua", ".r", ".R", ".pl", ".pm", ".tcl",
+  ".dart", ".zig", ".nim", ".cr", ".jl",
+  ".sh", ".bash", ".zsh", ".fish", ".bat", ".cmd", ".ps1", ".psm1",
+  ".makefile", ".cmake", ".gradle", ".sbt",
+  ".dockerfile", ".dockerignore",
+  ".gitignore", ".gitattributes",
+  // Data
+  ".db", ".sqlite", ".sqlite3", ".mdb",
+  ".parquet", ".avro", ".orc", ".feather", ".arrow",
+  ".proto", ".thrift",
+  ".ipynb",
+  // Archives / Compression
+  ".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".zst", ".lz4", ".tgz", ".tbz2",
+  ".cab", ".iso", ".dmg",
+  // Video
   ".mp4", ".webm", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".m4v", ".mpeg", ".mpg",
-  ".3gp", ".ogv", ".ts", ".mts", ".vob",
-  ".mp3", ".wav", ".ogg", ".aac", ".flac", ".m4a", ".wma", ".aiff", ".opus",
-  ".glb", ".gltf", ".obj", ".fbx", ".stl", ".ply",
-  ".dwg", ".dxf", ".ifc", ".dgn", ".stp", ".step", ".igs", ".iges",
-  ".psd", ".ai", ".xd", ".fig", ".sketch",
-  ".ttf", ".otf", ".woff", ".woff2", ".eot",
+  ".3gp", ".ogv", ".ts", ".mts", ".m2ts", ".vob", ".rm", ".rmvb", ".asf", ".f4v",
+  ".mpg", ".mpe", ".divx",
+  // Audio
+  ".mp3", ".wav", ".ogg", ".aac", ".flac", ".m4a", ".wma", ".aiff", ".aif", ".opus",
+  ".mka", ".ape", ".wv", ".ac3", ".dts", ".alac",
+  ".mid", ".midi", ".kar",
+  // 3D / CAD
+  ".glb", ".gltf", ".obj", ".fbx", ".stl", ".ply", ".3ds", ".dae", ".off",
+  ".blend", ".c4d", ".ma", ".mb", ".hip", ".hda",
+  ".dwg", ".dxf", ".ifc", ".dgn", ".stp", ".step", ".igs", ".iges", ".sat",
+  ".3dm", ".skp",
+  // Design / Creative
+  ".psd", ".ai", ".xd", ".fig", ".sketch", ".indd", ".indt",
+  ".eps", ".cdr", ".afphoto", ".afdesign",
+  ".kra", ".ora", ".xcf",
+  // Fonts
+  ".ttf", ".otf", ".woff", ".woff2", ".eot", ".ttc",
+  // GIS / Mapping
+  ".kml", ".kmz", ".gpx", ".geojson", ".shp", ".shx", ".dbf",
+  // Calendar / Contacts
+  ".ics", ".vcf", ".vcard",
+  // Ebooks
+  ".lit", ".djvu", ".cbz", ".cbr",
+  // Misc
+  ".ics", ".manifest", ".wasm",
 ]);
 
 function isAllowedExtension(ext: string): boolean {

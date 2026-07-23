@@ -103,21 +103,21 @@ export function validateEmail(email: string): string {
   return normalized;
 }
 
-const ALLOWED_MIME_TYPES = new Set([
-  "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
-  "application/pdf",
-  "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/plain", "text/csv", "text/html",
-  "application/json", "application/xml",
-  "application/zip", "application/x-rar-compressed", "application/x-tar", "application/gzip",
-  "video/mp4", "video/mpeg", "video/webm",
-  "audio/mpeg", "audio/ogg", "audio/wav", "audio/webm",
-]);
-
+/**
+ * Check if a MIME type is allowed for upload.
+ * All types are accepted except explicitly dangerous ones.
+ */
 export function isAllowedMimeType(mimeType: string): boolean {
-  return ALLOWED_MIME_TYPES.has(mimeType.toLowerCase());
+  const mime = mimeType.toLowerCase();
+  // Block known dangerous MIME types
+  if (
+    mime.startsWith("application/x-msdownload") ||
+    mime.startsWith("application/x-executable") ||
+    mime === "application/x-sharedlib"
+  ) {
+    return false;
+  }
+  return true;
 }
 
 const MAGIC_BYTE_CHECKERS: Array<{ bytes: number[]; offset: number; mime: string }> = [
@@ -157,27 +157,18 @@ export function detectMimeTypeFromBuffer(buffer: Buffer): string | null {
  * magic-byte database) with the existing hand-rolled checkers as fallback
  * for edge cases file-type doesn't cover.
  *
- * @returns The detected MIME type (never null — falls back to declared on miss).
+ * @returns The detected MIME type (falls back to declared on miss).
  */
 export async function validateFileMagicBytesAsync(buffer: Buffer, declaredMime: string): Promise<string> {
-  // Primary: file-type (handles 500+ formats, including modern ones like avif, heic, cr3)
   try {
     const detected = await fileTypeFromBuffer(buffer);
     if (detected) {
-      // Category-level validation
-      const declaredCategory = declaredMime.split("/")[0];
-      const detectedCategory = detected.mime.split("/")[0];
-      if (declaredCategory !== detectedCategory && declaredMime !== "application/octet-stream") {
-        return detected.mime;
-      }
       return detected.mime;
     }
   } catch (err) {
     logger.warn({ err }, "file-type inspection failed, falling back to hand-rolled checkers");
   }
 
-  // Fallback: hand-rolled magic bytes (for formats file-type might miss or
-  // when the buffer is truncated / too short for file-type to handle).
   return validateFileMagicBytes(buffer, declaredMime);
 }
 
@@ -195,13 +186,6 @@ export function validateFileMagicBytes(buffer: Buffer, declaredMime: string): st
     const textChars = buffer.slice(0, 512).filter((b) => b >= 32 && b <= 126).length;
     if (textChars > 400) return "text/plain";
     return declaredMime;
-  }
-
-  const declaredCategory = declaredMime.split("/")[0];
-  const detectedCategory = detected.split("/")[0];
-
-  if (declaredCategory !== detectedCategory && declaredMime !== "application/octet-stream") {
-    return detected;
   }
 
   return detected;
