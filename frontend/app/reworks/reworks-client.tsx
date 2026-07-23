@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -129,20 +128,18 @@ export default function ReworksClient() {
                         updateStatus(item.id, val as "Completed" | "InCompleted")
                       }
                     >
-                      <SelectTrigger className="h-8 w-36">
+                      <SelectTrigger
+                        className={`h-8 w-36 ${
+                          item.status === "Completed"
+                            ? "text-green-700"
+                            : "text-yellow-700"
+                        }`}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Completed">
-                          <Badge className="bg-green-100 text-green-700 border-green-300 hover:bg-green-100">
-                            Completed
-                          </Badge>
-                        </SelectItem>
-                        <SelectItem value="InCompleted">
-                          <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-100">
-                            InCompleted
-                          </Badge>
-                        </SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="InCompleted">InCompleted</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
