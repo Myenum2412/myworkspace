@@ -136,6 +136,15 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
   const statuses = [...new Set(stocks.map((s) => s.status).filter(Boolean))];
   const filteredData = statusFilter.length > 0 ? stocks.filter((s) => statusFilter.includes(s.status)) : stocks;
 
+  const statsItems = useMemo(() => [
+    { name: 'Total Items', value: stats.totalItems, subtitle: 'All inventory' },
+    { name: 'Total Stock', value: stats.totalStock, subtitle: 'Units available' },
+    { name: 'Low Stock', value: stats.lowStock, subtitle: 'Below reorder' },
+    { name: 'Out of Stock', value: stats.outOfStock, subtitle: 'Zero available' },
+    { name: 'Stock In', value: stats.stockIn, subtitle: 'Received today' },
+    { name: 'Stock Out', value: stats.stockOut, subtitle: 'Dispatched today' },
+  ], [stats]);
+
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 min-w-0 w-full">
@@ -207,16 +216,7 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
         </div>
 
         {/* Stats Overview */}
-        <Stats07
-          items={[
-            { name: 'Total Items', value: stats.totalItems, subtitle: 'All inventory' },
-            { name: 'Total Stock', value: stats.totalStock, subtitle: 'Units available' },
-            { name: 'Low Stock', value: stats.lowStock, subtitle: 'Below reorder' },
-            { name: 'Out of Stock', value: stats.outOfStock, subtitle: 'Zero available' },
-            { name: 'Stock In', value: stats.stockIn, subtitle: 'Received today' },
-            { name: 'Stock Out', value: stats.stockOut, subtitle: 'Dispatched today' },
-          ]}
-        />
+        <Stats07 items={statsItems} />
 
         <DataTable
             columns={columns}

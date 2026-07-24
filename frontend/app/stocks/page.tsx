@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { redirect } from "next/navigation";
-import { ObjectId } from "mongodb";
 import StocksPage from "./stocks.client";
 import type { Stock } from "./columns";
 
@@ -14,11 +13,15 @@ export default async function StocksServerPage() {
   try {
     session = await auth();
   } catch {
-    redirect("/login");
+    // Do NOT call redirect() here — it throws NEXT_REDIRECT which this
+    // catch block swallows, causing the server component to crash instead
+    // of redirecting. Just fall through to the null-check below.
+    session = null;
   }
+
   if (!session?.user?.id) redirect("/login");
 
-  let orgId;
+  let orgId: string | null = null;
   try {
     orgId = await getUserOrgId(session.user.id, session.user.email);
   } catch {
@@ -77,6 +80,8 @@ export default async function StocksServerPage() {
       status: String(s.status ?? "Active"),
       lastUpdated,
       image: String(s.image ?? ""),
+      projectId: s.projectId ? String(s.projectId) : undefined,
+      projectName: s.projectName ? String(s.projectName) : undefined,
     };
   });
 

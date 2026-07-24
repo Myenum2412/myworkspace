@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect, useMemo, type ReactNode } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, type ReactNode } from "react";
 import {
   type ColumnDef,
   flexRender,
@@ -62,8 +62,49 @@ export function DataTable<TData, TValue>({
   const scrollRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<Table<TData> | null>(null);
 
+  // All three handlers guard against no-op updates to prevent TanStack Table's
+  // synchronous render-time state sync from triggering infinite re-render loops.
+  const handleRowSelectionChange = useCallback(
+    (updater: Record<string, boolean> | ((old: Record<string, boolean>) => Record<string, boolean>)) => {
+      setRowSelection((prev) => {
+        const next = typeof updater === "function" ? updater(prev) : updater;
+        if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
+        return next;
+      });
+    },
+    []
+  );
+
+  const handleSortingChange = useCallback(
+    (updater: SortingState | ((old: SortingState) => SortingState)) => {
+      setSorting((prev) => {
+        const next = typeof updater === "function" ? updater(prev) : updater;
+        if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
+        return next;
+      });
+    },
+    []
+  );
+
   const globalFilter = searchQuery ?? internalFilter;
-  const setGlobalFilter = onSearchChange ?? setInternalFilter;
+
+  const handleFilterChange = useCallback(
+    (updater: string | ((old: string) => string)) => {
+      if (onSearchChange) {
+        // Externally controlled filter: delegate to parent only,
+        // never call onSearchChange inside a setState updater.
+        const next = typeof updater === "function" ? updater(globalFilter) : updater;
+        onSearchChange(next);
+      } else {
+        // Internally controlled filter: update local state with guard
+        setInternalFilter((prev) => {
+          const next = typeof updater === "function" ? updater(prev) : updater;
+          return prev === next ? prev : next;
+        });
+      }
+    },
+    [onSearchChange, globalFilter]
+  );
 
   const checkboxColumn = useMemo<ColumnDef<TData, TValue>>(
     () => ({
@@ -101,9 +142,9 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
-    onRowSelectionChange: setRowSelection,
+    onSortingChange: handleSortingChange,
+    onGlobalFilterChange: handleFilterChange,
+    onRowSelectionChange: handleRowSelectionChange,
     state: { sorting, globalFilter, rowSelection },
     initialState: { pagination: { pageSize } },
     meta,
@@ -137,7 +178,7 @@ export function DataTable<TData, TValue>({
                 <Input
                   placeholder={searchPlaceholder}
                   value={globalFilter}
-                  onChange={(e) => setGlobalFilter(e.target.value)}
+                  onChange={(e) => handleFilterChange(e.target.value)}
                   className="pl-9 w-full h-9 text-sm bg-white"
                   aria-label={searchPlaceholder}
                 />
