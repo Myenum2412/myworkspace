@@ -7,14 +7,16 @@ type ClientListProps = {
   onView: (client: Client) => void;
   onEdit?: (client: Client) => void;
   onDelete: (client: Client) => void;
+  hideSearchBar?: boolean;
 };
 
-export function ClientList({ clients, onView, onEdit, onDelete }: ClientListProps) {
+export function ClientList({ clients, onView, onEdit, onDelete, hideSearchBar }: ClientListProps) {
   return (
     <div className="flex-1">
       <DataTable
         columns={[...columns, makeActionsCell(onView, onDelete, onEdit)]}
         data={clients}
+        hideSearchBar={hideSearchBar}
       />
     </div>
   );

@@ -7,12 +7,14 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onRowClick?: (row: TData) => void;
+  hideSearchBar?: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   onRowClick,
+  hideSearchBar,
 }: DataTableProps<TData, TValue>) {
   return (
     <SharedDataTable
@@ -23,6 +25,7 @@ export function DataTable<TData, TValue>({
       label="client(s)"
       emptyMessage="No clients yet."
       emptyIcon={<FolderIcon className="size-6 text-muted-foreground/50" />}
+      hideSearchBar={hideSearchBar}
     />
   );
 }

@@ -1,19 +1,37 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, ChevronLeftIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { PlusIcon, ChevronLeftIcon, SearchIcon } from "lucide-react";
 import { ContractorList } from "@/components/contractors/contractor-list";
 import { ContractorForm } from "@/components/contractors/contractor-form";
 import { ContractorViewDialog } from "@/components/contractors/contractor-view-dialog";
 import { ContractorEditDialog, ContractorDeleteDialog } from "@/components/contractors/contractor-actions";
 import type { Contractor } from "@/app/contractors/columns";
 
-export default function ContractorsPage() {
+type ContractorsPageProps = {
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+};
+
+export default function ContractorsPage({ searchQuery: externalSearchQuery, onSearchChange }: ContractorsPageProps) {
   const [contractors, setContractors] = useState<Contractor[]>([]);
   const [pageView, setPageView] = useState<"list" | "add">("list");
   const [viewingContractor, setViewingContractor] = useState<Contractor | null>(null);
   const [editingContractor, setEditingContractor] = useState<Contractor | null>(null);
   const [deletingContractor, setDeletingContractor] = useState<Contractor | null>(null);
+
+  const filteredContractors = useMemo(() => {
+    if (!externalSearchQuery) return contractors;
+    const q = externalSearchQuery.toLowerCase();
+    return contractors.filter(
+      (c) =>
+        c.fullName.toLowerCase().includes(q) ||
+        c.emailAddress.toLowerCase().includes(q) ||
+        (c.companyName && c.companyName.toLowerCase().includes(q)) ||
+        c.mainTrade.toLowerCase().includes(q)
+    );
+  }, [contractors, externalSearchQuery]);
 
   function fetchContractors() {
     fetch("/api/contractors", { credentials: "include" })
@@ -69,16 +87,27 @@ export default function ContractorsPage() {
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="text-xl sm:text-2xl font-bold">Contractors</h1>
-          <Button onClick={() => setPageView("add")}>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold shrink-0">Contractors</h1>
+          <div className="flex-1 flex justify-center">
+            <div className="relative w-full max-w-sm">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search contractors..."
+                value={externalSearchQuery || ""}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                className="pl-9 h-9 bg-white"
+              />
+            </div>
+          </div>
+          <Button onClick={() => setPageView("add")} className="shrink-0">
             <PlusIcon className="mr-2 size-4" />
             Add Contractor
           </Button>
         </div>
 
         <ContractorList
-          contractors={contractors}
+          contractors={filteredContractors}
           onView={(c) => setViewingContractor(c)}
           onEdit={(c) => setEditingContractor(c)}
           onDelete={(c) => setDeletingContractor(c)}

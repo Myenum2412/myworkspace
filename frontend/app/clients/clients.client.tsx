@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, Loader2, ChevronLeftIcon, SaveIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { PlusIcon, Loader2, ChevronLeftIcon, SaveIcon, SearchIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Client } from "@/app/clients/columns";
 import type { Credentials } from "@/components/clients/client-types";
@@ -23,6 +24,8 @@ type SessionUser = {
 type ClientsProps = {
   initialClients: Client[];
   user: SessionUser;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 };
 
 function getCsrfHeaders(): Record<string, string> {
@@ -34,7 +37,7 @@ function getCsrfHeaders(): Record<string, string> {
 }
 const CSRF_HEADERS = getCsrfHeaders();
 
-export default function Clients({ initialClients, user: sessionUser }: ClientsProps) {
+export default function Clients({ initialClients, user: sessionUser, searchQuery: externalSearchQuery, onSearchChange }: ClientsProps) {
   const [user, setUser] = useState(sessionUser);
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [loading] = useState(false);
@@ -48,6 +51,17 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
   const [editValues, setEditValues] = useState<Record<string, string>>(EMPTY_VALUES);
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+
+  const filteredClients = useMemo(() => {
+    if (!externalSearchQuery) return clients;
+    const q = externalSearchQuery.toLowerCase();
+    return clients.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        (c.company && c.company.toLowerCase().includes(q))
+    );
+  }, [clients, externalSearchQuery]);
 
   useEffect(() => {
     Promise.all([
@@ -208,19 +222,31 @@ export default function Clients({ initialClients, user: sessionUser }: ClientsPr
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="text-xl sm:text-2xl font-bold">Clients</h1>
-          <Button onClick={() => setPageView("add")}>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold shrink-0">Clients</h1>
+          <div className="flex-1 flex justify-center">
+            <div className="relative w-full max-w-sm">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search clients..."
+                value={externalSearchQuery || ""}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                className="pl-9 h-9 bg-white"
+              />
+            </div>
+          </div>
+          <Button onClick={() => setPageView("add")} className="shrink-0">
             <PlusIcon className="mr-2 size-4" />
             Add Client
           </Button>
         </div>
 
         <ClientList
-          clients={clients}
+          clients={filteredClients}
           onView={(client) => setViewingClient(client)}
           onEdit={handleEdit}
           onDelete={(client) => { setDeletingClient(client); }}
+          hideSearchBar
         />
       </main>
 

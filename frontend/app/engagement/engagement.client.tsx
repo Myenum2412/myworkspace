@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { PlusIcon, Loader2, SearchIcon } from "lucide-react";
 import type { Engagement } from "@/app/engagement/columns";
 import { DataTable } from "@/app/engagement/data-table";
 import { columns, makeActionsCell } from "@/app/engagement/columns";
@@ -19,6 +20,20 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
   const [editingEngagement, setEditingEngagement] = useState<Engagement | null>(null);
   const [viewingEngagement, setViewingEngagement] = useState<Engagement | null>(null);
   const [deletingEngagement, setDeletingEngagement] = useState<Engagement | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredEngagements = useMemo(() => {
+    if (!searchQuery) return engagements;
+    const q = searchQuery.toLowerCase();
+    return engagements.filter(
+      (e) =>
+        e.customerName.toLowerCase().includes(q) ||
+        e.contact?.toLowerCase().includes(q) ||
+        e.source?.toLowerCase().includes(q) ||
+        e.status?.toLowerCase().includes(q) ||
+        e.assignedTo?.toLowerCase().includes(q)
+    );
+  }, [engagements, searchQuery]);
 
   async function refreshEngagements() {
     setLoading(true);
@@ -109,9 +124,20 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="text-xl sm:text-2xl font-bold">Interaction Followups</h1>
-          <Button onClick={() => setShowForm(true)}>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold shrink-0">Interaction Followups</h1>
+          <div className="flex-1 flex justify-center">
+            <div className="relative w-full max-w-sm">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search interactions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 bg-white"
+              />
+            </div>
+          </div>
+          <Button onClick={() => setShowForm(true)} className="shrink-0">
             <PlusIcon className="mr-2 size-4" />
             Add Interaction Followup
           </Button>
@@ -132,8 +158,9 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
         <div className="flex-1">
           <DataTable
             columns={[...columns, makeActionsCell(handleView, handleEdit, handleDeleteClick)]}
-            data={engagements}
+            data={filteredEngagements}
             onRowClick={handleView}
+            hideSearchBar
           />
         </div>
       </main>

@@ -18,12 +18,16 @@ export interface ProjectsInteractiveProps {
   orgId: string;
   initialProjects: Project[];
   initialClientList: string[];
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 export default function ProjectsInteractive({
   orgId,
   initialProjects,
   initialClientList,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
 }: ProjectsInteractiveProps) {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
   const [showForm, setShowForm] = useState(false);
@@ -66,11 +70,10 @@ export default function ProjectsInteractive({
   const [editMembers, setEditMembers] = useState<string[]>([]);
   const [editMemberSearch, setEditMemberSearch] = useState("");
   const [editAttachment, setEditAttachment] = useState<File | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProjects = useMemo(() => {
-    if (!searchQuery) return projects;
-    const q = searchQuery.toLowerCase();
+    if (!externalSearchQuery) return projects;
+    const q = externalSearchQuery.toLowerCase();
     return projects.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
@@ -78,7 +81,7 @@ export default function ProjectsInteractive({
         (p.description && p.description.toLowerCase().includes(q)) ||
         (p.category && p.category.toLowerCase().includes(q))
     );
-  }, [projects, searchQuery]);
+  }, [projects, externalSearchQuery]);
 
   const filteredMembers = useMemo(() => {
     if (!memberSearch) return employees;
@@ -465,22 +468,22 @@ export default function ProjectsInteractive({
           </div>
         ) : (
           <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <h1 className="text-xl sm:text-2xl font-bold">Projects</h1>
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <div className="relative w-full sm:w-64">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl sm:text-2xl font-bold shrink-0">Projects</h1>
+              <div className="flex-1 flex justify-center">
+                <div className="relative w-full max-w-sm">
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input
                     placeholder="Search projects..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={externalSearchQuery || ""}
+                    onChange={(e) => onSearchChange?.(e.target.value)}
                     className="pl-9 h-9 bg-white"
                   />
                 </div>
-                <Button onClick={() => setShowForm(true)} size="sm">
-                  New Project
-                </Button>
               </div>
+              <Button onClick={() => setShowForm(true)} size="sm" className="shrink-0">
+                New Project
+              </Button>
             </div>
             <ProjectsDashboard projects={filteredProjects} />
             <ProjectList
