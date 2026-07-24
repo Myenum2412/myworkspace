@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import { useState, useRef, useEffect, useMemo, type ReactNode } from "react";
 import {
   type ColumnDef,
   flexRender,
@@ -65,28 +65,34 @@ export function DataTable<TData, TValue>({
   const globalFilter = searchQuery ?? internalFilter;
   const setGlobalFilter = onSearchChange ?? setInternalFilter;
 
-  const checkboxColumn: ColumnDef<TData, TValue> = {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-    size: 40,
-  };
+  const checkboxColumn = useMemo<ColumnDef<TData, TValue>>(
+    () => ({
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 40,
+    }),
+    []
+  );
 
-  const allColumns = showCheckboxes ? [checkboxColumn, ...columns] : columns;
+  const allColumns = useMemo(
+    () => (showCheckboxes ? [checkboxColumn, ...columns] : columns),
+    [showCheckboxes, columns, checkboxColumn]
+  );
 
   const table = useReactTable({
     data,

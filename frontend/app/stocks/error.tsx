@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function Error({
   error,
@@ -9,8 +9,14 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const loggedRef = useRef<string | null>(null);
+
   useEffect(() => {
-    console.error("[stocks] Error:", error);
+    const key = error.digest ?? error.message;
+    if (key !== loggedRef.current) {
+      loggedRef.current = key;
+      console.error("[stocks] Error:", error);
+    }
   }, [error]);
 
   return (
