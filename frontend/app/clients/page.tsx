@@ -1,55 +1,25 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { redirect } from "next/navigation";
-import { ObjectId } from "mongodb";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Clients from "./clients";
-import type { Client } from "./columns";
 
-export const dynamic = "force-dynamic";
+export default function ClientsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-interface ClientUserDoc {
-  clientId?: string;
-  username?: string;
-}
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/clients").then(r => r.json()).then(setData).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-export default async function ClientsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
-  if (!orgId) redirect("/login");
-
-  const rawClients = (await db
-    .collection(collections.clients)
-    .find({ orgId })
-    .sort({ createdAt: -1 })
-    .toArray()) as Record<string, unknown>[];
-
-  const clientUsers = (await db
-    .collection(collections.clientUsers)
-    .find({ orgId })
-    .toArray()) as ClientUserDoc[];
-
-  const userMap = new Map<string, string>();
-  for (const u of clientUsers) {
-    if (u.clientId && u.username) userMap.set(u.clientId, u.username);
-  }
-
-  const clients: Client[] = rawClients.map((c) => {
-    const id = (c.id ?? (c._id instanceof ObjectId ? c._id.toString() : String(c._id ?? ""))) as string;
-    return {
-      ...(c as unknown as Client),
-      id,
-      name: (c.name as string) || "",
-      email: (c.email as string) || "",
-      username: userMap.get(id) || (c.username as string) || "",
-      company: (c.company as string) || "",
-      projects: Number(c.projects ?? 0),
-      status: (c.status as string) || "",
-    };
-  });
-
-  return <Clients initialClients={clients} user={session.user} />;
+  return <Clients {...(data || {})} />;
 }

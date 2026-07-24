@@ -1,22 +1,25 @@
-import { auth } from "@/lib/auth/config";
-import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { requireUserOrgId } from "@/lib/org";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { PhotographyPageClient } from "./photography-client";
 
-export const dynamic = "force-dynamic";
+export default function PhotographyPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function PhotographyPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/photography").then(r => r.json()).then(setData).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
-  const galleries = await db.collection(collections.qrGalleries)
-    .find({ orgId })
-    .sort({ createdAt: -1 })
-    .toArray();
-
-  return <PhotographyPageClient orgId={orgId} galleries={JSON.parse(JSON.stringify(galleries))} />;
+  return <PhotographyPageClient {...(data || {})} />;
 }

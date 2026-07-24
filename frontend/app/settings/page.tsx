@@ -1,34 +1,27 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
 import { SettingsPageClient } from "./settings-interactive";
 
-export const revalidate = 60;
+export default function SettingsPage() {
+  const [data, setData] = useState<{ orgId: string; user: any; initialSettings: Record<string, unknown> | null } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function SettingsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then(setData)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
-
-  const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: session?.user?.image || "",
-    role: session?.user?.role || "",
-  };
-
-  let initialSettings: Record<string, unknown> | null = null;
-
-  if (orgId) {
-    const settingsDoc = (await db.collection("settings").findOne({ orgId })) as Record<string, unknown> | null;
-    if (settingsDoc) {
-      const { _id, ...rest } = settingsDoc;
-      initialSettings = rest as Record<string, unknown>;
-    }
+  if (loading || !data) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
   }
 
-  return <SettingsPageClient orgId={orgId || ""} user={user} initialSettings={initialSettings} />;
+  return <SettingsPageClient orgId={data.orgId} user={data.user} initialSettings={data.initialSettings} />;
 }

@@ -1,9 +1,7 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-export const metadata = {
-  title: "Staff Roles",
-};
 
 const roles = [
   { name: "Admin", members: 3, permissions: "Full access to all features" },

@@ -1,10 +1,19 @@
-import { auth } from "@/lib/auth/config";
+"use client";
+
+import { useSession } from "next-auth/react";
 import { FileManagerClient } from "../../files/file-manager-client";
 
-export const dynamic = "force-dynamic";
+export default function ClientFileManagerPage() {
+  const { data: session, status } = useSession();
 
-export default async function ClientFileManagerPage() {
-  const session = await auth();
+  if (status === "loading") {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
+  }
+
   if (!session?.user?.id) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">

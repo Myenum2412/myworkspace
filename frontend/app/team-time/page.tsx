@@ -1,112 +1,37 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { redirect } from "next/navigation";
-import TeamTime from "./team-time-interactive";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default async function TeamTimePage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+export default function TeamTimePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [entries, setEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
-  if (!orgId) {
-    return <TeamTime initialData={null} />;
-  }
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/team-time").then(r => r.json()).then(d => setEntries(d.entries || [])).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setHours(23, 59, 59, 999);
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
-  const TimeEntry = db.collection(collections.timeEntries);
-  const pipeline = [
-    { $match: { orgId, date: { $gte: today, $lt: tomorrow } } },
-    {
-      $group: {
-        _id: "$userId",
-        totalMinutes: { $sum: "$duration" },
-        entryCount: { $sum: 1 },
-        pendingEntries: {
-          $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
-        },
-        approvedEntries: {
-          $sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] },
-        },
-      },
-    },
-    {
-      $lookup: {
-        from: "orgmembers",
-        localField: "_id",
-        foreignField: "userId",
-        as: "membership",
-      },
-    },
-    { $unwind: "$membership" },
-    {
-      $match: { "membership.orgId": orgId },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "_id",
-        foreignField: "id",
-        as: "userData",
-      },
-    },
-    { $unwind: { path: "$userData", preserveNullAndEmptyArrays: true } },
-    {
-      $project: {
-        _id: 0,
-        userId: "$_id",
-        name: { $ifNull: ["$userData.name", "Unknown"] },
-        email: { $ifNull: ["$userData.email", ""] },
-        avatar: { $ifNull: ["$userData.image", ""] },
-        status: { $ifNull: ["$userData.status", "offline"] },
-        department: { $ifNull: ["$userData.department", ""] },
-        designation: { $ifNull: ["$userData.designation", ""] },
-        role: "$membership.role",
-        totalMinutes: 1,
-        entryCount: 1,
-        pendingEntries: 1,
-        approvedEntries: 1,
-      },
-    },
-  ];
-
-  const rawMembers = await TimeEntry.aggregate(pipeline).toArray();
-
-  const members = (rawMembers as unknown as Record<string, unknown>[]).map((r) => ({
-    userId: (r.userId as string) || "",
-    name: (r.name as string) || "Unknown",
-    email: (r.email as string) || "",
-    avatar: (r.avatar as string) || "",
-    status: (r.status as string) || "offline",
-    department: (r.department as string) || "",
-    designation: (r.designation as string) || "",
-    role: (r.role as string) || "",
-    totalMinutes: (r.totalMinutes as number) || 0,
-    totalHours: ((r.totalMinutes as number) / 60).toFixed(1),
-    entryCount: (r.entryCount as number) || 0,
-    pendingEntries: (r.pendingEntries as number) || 0,
-    approvedEntries: (r.approvedEntries as number) || 0,
-  }));
-
-  const totalMinutesAll = members.reduce((s, m) => s + m.totalMinutes, 0);
-  const activeMembers = members.filter((m) => m.entryCount > 0).length;
-
-  const data = {
-    members,
-    summary: {
-      totalMembers: members.length,
-      activeMembers,
-      totalHoursAll: (totalMinutesAll / 60).toFixed(1),
-      totalEntries: members.reduce((s, m) => s + m.entryCount, 0),
-    },
-  };
-
-  return <TeamTime initialData={data} />;
+  return (
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
+      <h1 className="text-2xl font-bold tracking-tight">Team Time</h1>
+      <Card><CardHeader><CardTitle>Time Entries</CardTitle></CardHeader><CardContent>
+        {entries.length === 0 ? <p className="text-sm text-muted-foreground">No entries</p> : entries.map((e) => (
+          <div key={e._id} className="flex items-center justify-between py-2 border-b last:border-0">
+            <span>{e.projectName} - {e.task}</span>
+            <span className="text-sm text-muted-foreground">{e.duration}min</span>
+          </div>
+        ))}
+      </CardContent></Card>
+    </main>
+  );
 }

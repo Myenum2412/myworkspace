@@ -1,61 +1,25 @@
-import { auth } from "@/lib/auth/config";
-import { redirect, notFound } from "next/navigation";
-import { db } from "@/lib/db";
-import { getUserOrgId } from "@/lib/org";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { BlogEditorClient } from "../client";
 
-async function getBlogPost(postId: string, orgId: string) {
-  try {
-    const post = await db.collection("blog_posts").findOne({ id: postId, orgId });
-    return post;
-  } catch {
-    return null;
-  }
-}
+export default function EditBlogPostPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function EditBlogPostPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const session = await auth();
-  if (!session?.user) redirect("/login");
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/orgmenu/blog/editor/[id]").then(r => r.json()).then(setData).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-  const role = session.user.role;
-  if (role !== "org_admin" && role !== "members" && role !== "manager") {
-    redirect("/dashboard");
-  }
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email || undefined);
-  if (!orgId) redirect("/dashboard");
-
-  const post = await getBlogPost(id, orgId);
-  if (!post) notFound();
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Edit Blog Post</h1>
-        <p className="text-muted-foreground">Editing: {post.title}</p>
-      </div>
-      <BlogEditorClient
-        orgId={orgId}
-        userId={session.user.id}
-        userName={session.user.name || session.user.email || "Admin"}
-        initialPost={{
-          id: post.id,
-          title: post.title,
-          subtitle: post.subtitle,
-          content: post.content,
-          excerpt: post.excerpt,
-          featuredImage: post.featuredImage,
-          categories: post.categories || [],
-          tags: post.tags || [],
-          seoTitle: post.seoTitle,
-          seoDescription: post.seoDescription,
-          seoKeywords: post.seoKeywords || [],
-          canonicalUrl: post.canonicalUrl,
-          featured: post.featured || false,
-          status: post.status,
-        }}
-      />
-    </div>
-  );
+  return <BlogEditorClient {...(data || {})} />;
 }

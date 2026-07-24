@@ -1,12 +1,19 @@
-import { auth } from "@/lib/auth/config";
-import { requireUserOrgId } from "@/lib/org";
+"use client";
+
+import { useSession } from "next-auth/react";
 import { FileManagerClient } from "@/app/files/file-manager-client";
 
-export const dynamic = "force-dynamic";
-export const metadata = { title: "File Manager | MyWorkSpace" };
+export default function StaffFilesPage() {
+  const { data: session, status } = useSession();
 
-export default async function StaffFilesPage() {
-  const session = await auth();
+  if (status === "loading") {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
+  }
+
   if (!session?.user?.id) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
@@ -15,14 +22,7 @@ export default async function StaffFilesPage() {
     );
   }
 
-  const sessionOrgId = (session.user as Record<string, unknown>)?.orgId as string | undefined;
-  let orgId: string | null = null;
-  try {
-    orgId = await requireUserOrgId(session.user.id, session.user.email, sessionOrgId);
-  } catch {
-    orgId = sessionOrgId || null;
-  }
-
+  const orgId = (session.user as Record<string, unknown>)?.orgId as string | undefined;
   if (!orgId) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">

@@ -1,152 +1,38 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { redirect } from "next/navigation";
-import { Suspense } from "react";
-import TeamTasksInteractive, { TeamTask } from "./teamtasks-interactive";
-import { OverdueTasksCard, type OverdueTask } from "@/components/overdue-tasks-card";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-// Mirrors the backend GET /api/tasks handler: filters by orgId (admin/owner
-// scope — all org tasks) and joins assignee + creator user docs so the client
-// can render names/avatars without a second fetch. The backend's teamTasks
-// scope is identical to the default GET /?scope absent, limited here to the
-// org-wide view used by the team-tasks page.
-export default async function TeamTasksPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+export default function TeamTasksPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/teamtasks").then(r => r.json()).then(d => setTasks(d.tasks || [])).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-  let tasks: TeamTask[] = [];
-  let overdueTasks: OverdueTask[] = [];
-
-  if (orgId) {
-    const now = new Date();
-    const overdueRaw = (await db
-      .collection(collections.tasks)
-      .find({
-        orgId,
-        teamId: { $exists: true, $ne: null },
-        dueDate: { $lt: now },
-        status: { $nin: ["done", "cancelled", "completed", "closed", "rejected"] },
-      })
-      .project({ title: 1, dueDate: 1 })
-      .sort({ dueDate: 1 })
-      .limit(10)
-      .toArray()) as unknown as Record<string, unknown>[];
-
-    overdueTasks = overdueRaw.map((t) => ({
-      _id: (t._id as { toString: () => string }).toString(),
-      title: (t.title as string) || "",
-      dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
-    }));
-    const match: Record<string, unknown> = { orgId, teamId: { $exists: true, $ne: null } };
-
-    const pipeline: Record<string, unknown>[] = [
-      { $match: match },
-      {
-        $lookup: {
-          from: "users",
-          localField: "assigneeId",
-          foreignField: "id",
-          as: "assignee",
-          pipeline: [{ $project: { _id: 1, name: 1, email: 1, image: 1 } }],
-        },
-      },
-      { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: "users",
-          localField: "creatorId",
-          foreignField: "id",
-          as: "creator",
-          pipeline: [{ $project: { _id: 1, name: 1, email: 1, image: 1 } }],
-        },
-      },
-      { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: collections.teamMembers,
-          let: { taskTeamId: "$teamId" },
-          pipeline: [
-            { $match: { $expr: { $eq: ["$teamId", "$$taskTeamId"] }, role: "team_lead" } },
-            { $limit: 1 },
-          ],
-          as: "teamLead",
-        },
-      },
-      { $unwind: { path: "$teamLead", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: "users",
-          localField: "teamLead.userId",
-          foreignField: "id",
-          as: "teamHeadUser",
-          pipeline: [{ $project: { name: 1 } }],
-        },
-      },
-      { $unwind: { path: "$teamHeadUser", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: "teams",
-          let: { taskTeamId: "$teamId" },
-          pipeline: [
-            { $match: { $expr: { $eq: [{ $toString: "$_id" }, "$$taskTeamId"] } } },
-            { $project: { name: 1 } },
-            { $limit: 1 },
-          ],
-          as: "teamInfo",
-        },
-      },
-      { $unwind: { path: "$teamInfo", preserveNullAndEmptyArrays: true } },
-      { $sort: { createdAt: -1 } },
-      { $limit: 100 },
-    ];
-
-    const raw = (await db
-      .collection(collections.tasks)
-      .aggregate(pipeline)
-      .toArray()) as unknown as Record<string, unknown>[];
-
-    tasks = raw.map((t) => {
-      const assignee = t.assignee as Record<string, unknown> | null;
-      const creator = t.creator as Record<string, unknown> | null;
-      const teamHeadUser = t.teamHeadUser as Record<string, unknown> | null;
-      const teamInfo = t.teamInfo as Record<string, unknown> | null;
-      return {
-        id: (t._id as { toString: () => string }).toString(),
-        _id: (t._id as { toString: () => string }).toString(),
-        title: (t.title as string) || "",
-        description: (t.description as string) || "",
-        status: (t.status as string) || "todo",
-        priority: (t.priority as string) || "medium",
-        dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
-        assigneeId: t.assigneeId
-          ? (t.assigneeId as { toString?: () => string }).toString?.() || (t.assigneeId as string)
-          : "",
-        assigneeName: assignee ? (assignee.name as string) || "" : "",
-        assigneeAvatar: assignee ? (assignee.image as string) || "" : "",
-        creatorId: t.creatorId
-          ? (t.creatorId as { toString?: () => string }).toString?.() || (t.creatorId as string)
-          : "",
-        creatorName: creator ? (creator.name as string) || "" : "",
-        teamHeadName: teamHeadUser ? (teamHeadUser.name as string) || "" : "",
-        teamName: teamInfo ? (teamInfo.name as string) || "" : "",
-        teamId: (t.teamId as string) || "",
-        createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
-      };
-    });
-  }
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return (
-    <>
-      <OverdueTasksCard tasks={overdueTasks} />
-      <Suspense fallback={null}>
-        <TeamTasksInteractive tasks={tasks} />
-      </Suspense>
-    </>
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
+      <h1 className="text-2xl font-bold tracking-tight">Team Tasks</h1>
+      <Card><CardHeader><CardTitle>Tasks</CardTitle></CardHeader><CardContent>
+        {tasks.length === 0 ? <p className="text-sm text-muted-foreground">No tasks</p> : tasks.map((t) => (
+          <div key={t._id} className="flex items-center justify-between py-2 border-b last:border-0">
+            <span>{t.title}</span>
+            <Badge>{t.status}</Badge>
+          </div>
+        ))}
+      </CardContent></Card>
+    </main>
   );
 }

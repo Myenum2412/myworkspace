@@ -1,26 +1,17 @@
-import { Metadata } from "next";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { SignupForm } from "@/components/signup-form";
 import { signupPageJsonLd } from "@/lib/seo/seo-config";
 
-export const metadata: Metadata = {
-  title: "Create Free Account — MyWorkSpace",
-  description: "Create your free MyWorkSpace account and start managing projects, collaborating with your team, and automating your business workflows today.",
-  keywords: ["free signup", "create account", "workspace management", "project management", "team collaboration"],
-  robots: { index: true, follow: true },
-  openGraph: {
-    title: "Create Free Account — MyWorkSpace",
-    description: "Start your free workspace management account today.",
-    type: "website",
-  },
-};
-
-export default async function SignupPage(props: {
-  searchParams: Promise<Record<string, string>>;
-}) {
+function SignupContent() {
+  const searchParams = useSearchParams();
   const jsonLd = signupPageJsonLd();
-  const searchParams = await props.searchParams;
+  const error = searchParams.get("error") || undefined;
+  const plan = searchParams.get("plan") || undefined;
 
   return (
     <>
@@ -63,10 +54,7 @@ export default async function SignupPage(props: {
           <div className="flex flex-1 items-center justify-center py-4 sm:py-0">
             <div className="w-full max-w-sm px-2 sm:px-0">
               <h1 className="sr-only">Create Your Free MyWorkSpace Account</h1>
-              <SignupForm
-                error={searchParams.error}
-                plan={searchParams.plan}
-              />
+              <SignupForm error={error} plan={plan} />
             </div>
           </div>
 
@@ -76,5 +64,13 @@ export default async function SignupPage(props: {
         </div>
       </main>
     </>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupContent />
+    </Suspense>
   );
 }

@@ -1,38 +1,25 @@
-import { auth } from "@/lib/auth/config";
-import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { ensureUserOrg } from "@/lib/org";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Appointments from "./appointments";
-import type { Doctor } from "@/components/appointments/appointment-types";
 
-export const dynamic = "force-dynamic";
+export default function AppointmentsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function AppointmentsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/appointments").then(r => r.json()).then(d => setDoctors(d.doctors || [])).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-  const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
-
-  const doctorDocs = await db
-    .collection(collections.doctors)
-    .find({ orgId })
-    .sort({ doctorName: 1 })
-    .toArray() as unknown as Record<string, unknown>[];
-
-  const doctors: Doctor[] = doctorDocs.map((d) => ({
-    id: (d.id as string) || "",
-    orgId: (d.orgId as string) || "",
-    doctorName: (d.doctorName as string) || "",
-    specialization: (d.specialization as string) || "",
-    department: (d.department as string) || "",
-    consultationFee: (d.consultationFee as number) || 0,
-    phone: (d.phone as string) || "",
-    email: (d.email as string) || "",
-    status: (d.status as "active" | "inactive") || "active",
-    createdAt: (d.createdAt as string) || "",
-    updatedAt: (d.updatedAt as string) || "",
-  }));
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return <Appointments initialDoctors={doctors} />;
 }

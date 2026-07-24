@@ -1,23 +1,14 @@
-import { Metadata } from "next";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { LoginForm } from "@/components/login-form";
 import { loginPageJsonLd } from "@/lib/seo/seo-config";
 
-export const metadata: Metadata = {
-  title: "Sign In to MyWorkSpace",
-  description: "Sign in to your MyWorkSpace account to access project management, team collaboration, task tracking, and business automation tools.",
-  robots: { index: false, follow: false },
-  openGraph: {
-    title: "Sign In — MyWorkSpace",
-    description: "Access your workspace management dashboard.",
-    type: "website",
-  },
-};
-
-export default async function LoginPage(props: {
-  searchParams: Promise<Record<string, string>>;
-}) {
+function LoginContent() {
+  const searchParams = useSearchParams();
   const jsonLd = loginPageJsonLd();
 
   return (
@@ -61,7 +52,7 @@ export default async function LoginPage(props: {
           <div className="flex flex-1 items-center justify-center py-4 sm:py-0">
             <div className="w-full max-w-sm px-2 sm:px-0">
               <h1 className="sr-only">Sign In to MyWorkSpace</h1>
-              <LoginForm error={(await props.searchParams).error} />
+              <LoginForm error={searchParams.get("error") || undefined} />
             </div>
           </div>
 
@@ -71,5 +62,13 @@ export default async function LoginPage(props: {
         </div>
       </main>
     </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   );
 }

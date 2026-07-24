@@ -1,19 +1,33 @@
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShieldAlertIcon, HomeIcon } from "lucide-react";
-import { auth } from "@/lib/auth/config";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 
-export default async function OrgLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
+export default function OrgLayout({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  const sessionRole = session.user.role;
-  const authorized = sessionRole === "org_admin";
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!session?.user) return null;
+
+  const authorized = session.user.role === "org_admin";
 
   if (!authorized) {
     return (
@@ -38,18 +52,6 @@ export default async function OrgLayout({
       </div>
     );
   }
-
-  const userName = session.user.name || "User";
-  const userEmailDisplay = session.user.email || "";
-  const userAvatar = session.user.image || "";
-
-  const user = {
-    name: userName,
-    email: userEmailDisplay,
-    avatar: userAvatar,
-    role: sessionRole || "org_admin",
-    permissions: session.user.permissions || [],
-  };
 
   return <>{children}</>;
 }

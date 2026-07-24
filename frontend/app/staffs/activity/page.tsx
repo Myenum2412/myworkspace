@@ -1,8 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
 
-export const metadata = {
-  title: "Staff Activity",
-};
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function StaffActivityPage() {
   return (

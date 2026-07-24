@@ -1,57 +1,31 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { ensureUserOrg } from "@/lib/org";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { EmployeeReport } from "@/components/attendance/employee-report";
 
-export const metadata = {
-  title: "Employee Report",
-};
+export default function EmployeeReportPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function EmployeeReportPage() {
-  const session = await auth();
-  const orgId = session?.user?.id ? await ensureUserOrg(session.user.id, session.user.email) : null;
-
-  let employees: Record<string, unknown>[] = [];
-
-  try {
-    if (orgId) {
-      const [fromNextAuth, fromMongoose] = await Promise.all([
-        db.collection(collections.orgMembers).find({ orgId }).toArray(),
-        db.collection("orgmembers").find({ orgId }).toArray(),
-      ]);
-      const allMembers = [...fromNextAuth, ...fromMongoose];
-      const seenUserIds = new Set<string>();
-      const members = allMembers.filter((m: any) => {
-        const uid = m.userId as string;
-        if (!uid || seenUserIds.has(uid)) return false;
-        seenUserIds.add(uid);
-        return true;
-      });
-      const userIds = members.map((m: any) => m.userId as string);
-      if (userIds.length > 0) {
-        const { ObjectId } = await import("mongodb");
-        const objectIds = userIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
-        const users = await db.collection(collections.users).find(
-          { $or: [{ id: { $in: userIds } }, ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : [])] },
-          { projection: { _id: 1, id: 1, name: 1, email: 1, image: 1, department: 1, designation: 1, status: 1, displayId: 1, createdAt: 1 } }
-        ).sort({ createdAt: -1 }).toArray();
-
-        employees = users.map((u: Record<string, unknown>) => ({
-          ...u,
-          _id: u._id ? String(u._id) : undefined,
-        }));
-      }
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/attendance/reports").then(r => r.json()).then(d => setEmployees(d.employees || [])).catch(() => {}).finally(() => setLoading(false));
     }
-  } catch {
-    // employees stays empty on error
-  }
+  }, [status, router]);
+
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Employee Report</h1>
-        <p className="text-sm text-muted-foreground mt-1">Comprehensive employee information report</p>
+        <h1 className="text-2xl font-bold tracking-tight">Employee Report</h1>
+        <p className="text-sm text-muted-foreground">Attendance reports for all employees</p>
       </div>
       <EmployeeReport employees={employees} />
     </main>

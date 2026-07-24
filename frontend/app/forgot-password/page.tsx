@@ -1,14 +1,14 @@
-import type { Metadata } from "next"
-import Image from "next/image"
-import Link from "next/link"
-import { ForgotPasswordForm } from "@/components/forgot-password-form"
+"use client";
 
-export const metadata: Metadata = {
-  title: "Forgot Password",
-  description: "Reset your MyWorkSpace account password.",
-}
+import Image from "next/image";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { ForgotPasswordForm } from "@/components/forgot-password-form";
 
-export default async function ForgotPasswordPage(props: { searchParams: Promise<Record<string, string>> }) {
+function ForgotPasswordContent() {
+  const searchParams = useSearchParams();
+
   return (
     <main
       className="relative min-h-dvh overflow-hidden"
@@ -28,7 +28,7 @@ export default async function ForgotPasswordPage(props: { searchParams: Promise<
         <div className="flex flex-1 items-center justify-center py-4 sm:py-0">
           <div className="w-full max-w-sm px-2 sm:px-0">
             <h1 className="sr-only">Reset your MyWorkSpace password</h1>
-            <ForgotPasswordForm searchParams={await props.searchParams} />
+            <ForgotPasswordForm searchParams={Object.fromEntries(searchParams.entries())} />
           </div>
         </div>
 
@@ -37,5 +37,13 @@ export default async function ForgotPasswordPage(props: { searchParams: Promise<
         </p>
       </div>
     </main>
-  )
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense>
+      <ForgotPasswordContent />
+    </Suspense>
+  );
 }

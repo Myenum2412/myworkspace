@@ -1,80 +1,34 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AttendanceTable } from "@/components/attendance/attendance-table";
 import { CalendarCheckIcon } from "lucide-react";
 
-export const metadata = {
-  title: "Attendance",
-};
+export default function StaffAttendancePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [today, setToday] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function StaffAttendancePage() {
-  const session = await auth();
-  const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
-
-  let today: Array<{ name: string; displayId: string; email: string; department: string; designation: string; checkIn: string | null; checkOut: string | null; status: string }> = [];
-
-  try {
-    if (orgId) {
-      const [fromNextAuth, fromMongoose] = await Promise.all([
-        db.collection(collections.orgMembers).find({ orgId }).toArray(),
-        db.collection("orgmembers").find({ orgId }).toArray(),
-      ]);
-      const allMembers = [...fromNextAuth, ...fromMongoose];
-      const seenUserIds = new Set<string>();
-      const members = allMembers.filter((m: any) => {
-        const uid = m.userId as string;
-        if (!uid || seenUserIds.has(uid)) return false;
-        seenUserIds.add(uid);
-        return true;
-      });
-      const userIds = members.map((m: Record<string, unknown>) => m.userId as string);
-      if (userIds.length > 0) {
-        const { ObjectId } = await import("mongodb");
-        const objectIds = userIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
-        const users = await db.collection(collections.users).find(
-          { $or: [{ id: { $in: userIds } }, ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : [])] },
-          { projection: { _id: 1, id: 1, name: 1, email: 1, image: 1, department: 1, designation: 1, status: 1, displayId: 1, createdAt: 1 } }
-        ).toArray();
-        const userMap = new Map<string, Record<string, unknown>>();
-        for (const u of users) {
-          const uIdStr = u.id as string;
-          const uObjIdStr = u._id ? String(u._id) : "";
-          if (uIdStr) userMap.set(uIdStr, u);
-          if (uObjIdStr) userMap.set(uObjIdStr, u);
-        }
-        today = members.map((m: Record<string, unknown>) => {
-          const userId = m.userId as string;
-          const user = userMap.get(userId) as Record<string, unknown> | undefined;
-          const createdAt = user?.createdAt;
-          const checkInTime = createdAt ? new Date(createdAt as string).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : null;
-          return {
-            name: (user?.name as string) || "Unknown",
-            displayId: (user?.displayId as string) || "\u2014",
-            email: (user?.email as string) || "\u2014",
-            department: (user?.department as string) || "\u2014",
-            designation: (user?.designation as string) || "\u2014",
-            checkIn: checkInTime,
-            checkOut: null,
-            status: (user?.status as string) === "break" ? "late" : (user?.status as string) === "offline" ? "absent" : "present",
-          };
-        });
-      }
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/attendance").then(r => r.json()).then(d => setToday(d.today || [])).catch(() => {}).finally(() => setLoading(false));
     }
-  } catch {
-    // today stays empty on error
-  }
+  }, [status, router]);
+
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
       <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
-          <CalendarCheckIcon className="size-5 text-primary" />
-        </div>
+        <CalendarCheckIcon className="size-6 text-primary" />
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Attendance</h1>
-          <p className="text-sm text-muted-foreground mt-1">Track employee attendance and work hours</p>
+          <h1 className="text-2xl font-bold tracking-tight">Attendance</h1>
+          <p className="text-sm text-muted-foreground">Today&apos;s attendance overview</p>
         </div>
       </div>
       <AttendanceTable data={today} />

@@ -1,16 +1,6 @@
-import { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "About Us — MyWorkSpace Team & Mission",
-  description: "Learn about MyWorkSpace — our mission to transform workspace management, project collaboration, and business automation for teams worldwide.",
-  keywords: ["about MyWorkSpace", "company mission", "team collaboration platform", "workspace management company"],
-  openGraph: {
-    title: "About Us — MyWorkSpace",
-    description: "Learn about MyWorkSpace and our mission.",
-    type: "website",
-  },
-  robots: { index: true, follow: true },
-};
+import { Metadata } from "next";
 
 export default function AboutPage() {
   return (

@@ -1,7 +1,15 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import type { DashboardData } from "./page"
+import { useEffect, useMemo, useState } from "react"
+
+type DashboardData = {
+  totalTasks: number; completedTasks: number; inProgressTasks: number;
+  overdueTasks: number; todayTasks: number; pendingApproval: number;
+  projects: { id: string; name: string; client: string; status: string; progress: number; deadline: string | null; }[];
+  members: { name: string; email: string; role: string; status: string; avatar: string; }[];
+  clients: { id: string; name: string; company: string; email: string; status: string; }[];
+  pendingInvoices: { id: string; number: string; amountPaid: number; currency: string; status: string; createdAt: string; customerName: string; }[];
+};
 import {
   Card,
   CardContent,
@@ -48,10 +56,22 @@ function ViewMoreFooter({ href, label = "View More" }: { href: string; label?: s
 }
 
 type Props = {
-  dashboardData: DashboardData | null
+  dashboardData?: DashboardData | null
 }
 
-export function DashboardOverviewClient({ dashboardData }: Props) {
+export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(initialData || null);
+  const [loading, setLoading] = useState(!initialData);
+
+  useEffect(() => {
+    if (initialData) return;
+    fetch("/api/dashboard/data")
+      .then((r) => r.json())
+      .then((data) => setDashboardData(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [initialData]);
+
   const {
     totalTasks = 0, completedTasks = 0, inProgressTasks = 0, overdueTasks = 0,
     todayTasks = 0, pendingApproval = 0,

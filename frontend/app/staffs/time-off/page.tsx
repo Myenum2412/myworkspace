@@ -1,104 +1,38 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Stats07 from "@/components/stats-07";
 
-export const metadata = {
-  title: "Time Off",
-};
+export default function TimeOffPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const statusStyles: Record<string, string> = {
-  approved: "bg-red-100 text-red-700 border-red-300",
-  pending: "bg-gray-100 text-gray-700 border-gray-300",
-  rejected: "bg-red-100 text-red-700 border-red-200",
-};
-
-export default async function StaffTimeOffPage() {
-  const session = await auth();
-  const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
-
-  let requests: Array<{ name: string; type: string; days: string; status: string }> = [];
-
-  try {
-    if (orgId) {
-      const members = await db.collection(collections.orgMembers).find({ orgId }).toArray();
-      const userIds = members.map((m: Record<string, unknown>) => m.userId as string);
-      if (userIds.length > 0) {
-        const users = await db.collection(collections.users)
-          .find({ id: { $in: userIds } })
-          .project({ id: 1, name: 1 })
-          .toArray();
-        const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u.name]));
-        const types = ["Vacation", "Sick Leave", "Personal", "Training"];
-        const statuses = ["approved", "pending", "pending", "approved"];
-        requests = members.map((m: Record<string, unknown>, i: number) => ({
-          name: (userMap.get(m.userId as string) as string) || "Unknown",
-          type: types[i % types.length],
-          days: "TBD",
-          status: statuses[i % statuses.length],
-        }));
-      }
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/staffs/time-off").then(r => r.json()).then(d => setRequests(d.requests || [])).catch(() => {}).finally(() => setLoading(false));
     }
-  } catch {
-    // requests stays empty on error
-  }
+  }, [status, router]);
 
-  const totalRequests = requests.length;
-  const approvedCount = requests.filter((r) => r.status === "approved").length;
-  const pendingCount = requests.filter((r) => r.status === "pending").length;
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
-      <div>
-        <h1 className="text-2xl font-bold">Time Off</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage time-off requests</p>
-      </div>
-
-      {/* Stats Overview */}
-      <Stats07
-        items={[
-          { name: 'Total Requests', value: totalRequests, subtitle: 'All requests' },
-          { name: 'Approved', value: approvedCount, subtitle: 'Approved requests' },
-          { name: 'Pending', value: pendingCount, subtitle: 'Awaiting approval' },
-        ]}
-      />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Requests</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
-            <div className="overflow-x-auto">
-              <table className="table-premium w-full text-sm text-left">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3.5 font-semibold">Staff</th>
-                    <th className="px-4 py-3.5 font-semibold">Type</th>
-                    <th className="px-4 py-3.5 font-semibold">Dates</th>
-                    <th className="px-4 py-3.5 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map((r, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
-                    <td className="px-4 py-3 text-sm">{r.name}</td>
-                    <td className="px-4 py-3 text-sm">{r.type}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{r.days}</td>
-                    <td className="px-4 py-3">
-                      <Badge className={statusStyles[r.status] || ""}>{r.status}</Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              </table>
-            </div>
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
+      <h1 className="text-2xl font-bold tracking-tight">Time Off</h1>
+      <Card><CardHeader><CardTitle>Requests</CardTitle></CardHeader><CardContent>
+        {requests.length === 0 ? <p className="text-sm text-muted-foreground">No requests</p> : requests.map((r) => (
+          <div key={r.id} className="flex items-center justify-between py-2 border-b last:border-0">
+            <span>{r.type} - {r.startDate} to {r.endDate}</span>
+            <Badge>{r.status}</Badge>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </CardContent></Card>
     </main>
   );
 }

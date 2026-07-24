@@ -1,22 +1,23 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InviteMemberFormInteractive } from "./invite-form-interactive";
 
-export const metadata = { title: "Invite Members" };
-
-export default function InvitePage() {
+export default function InviteMemberPage() {
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Invite Members</h1>
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold tracking-tight">Invite Members</h1>
+        <p className="text-sm text-muted-foreground">Send invitations to new team members.</p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Send Invitations</CardTitle>
+          <CardTitle>Invite by Email</CardTitle>
         </CardHeader>
         <CardContent>
           <InviteMemberFormInteractive />
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }

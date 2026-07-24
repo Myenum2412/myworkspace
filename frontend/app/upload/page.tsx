@@ -1,31 +1,25 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import UploadInteractive from "./upload-interactive";
 
-export const dynamic = "force-dynamic";
+export default function UploadPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  const [loading, setLoading] = useState(true);
 
-type Project = {
-  id: string;
-  name: string;
-};
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/upload").then(r => r.json()).then(d => setProjects(d.projects || [])).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-export default async function UploadPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
-
-  let projects: Project[] = [];
-  if (orgId) {
-    const raw = await db.collection(collections.projects).find({ orgId }).sort({ createdAt: -1 }).toArray();
-    projects = (raw as unknown as Record<string, unknown>[]).map((p) => ({
-      id: (p.id as string) || "",
-      name: (p.name as string) || "",
-    }));
-  }
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return <UploadInteractive projects={projects} user={session.user} />;
 }

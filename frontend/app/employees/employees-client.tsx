@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import EmployeesInteractive from "./employees-interactive"
 import TeamsClient from "@/app/teams/teams-client.client"
@@ -9,21 +9,50 @@ import type { Team } from "@/app/teams/columns"
 import type { OrgMember } from "@/components/teams/team-types"
 
 type EmployeesClientProps = {
-  employees: Employee[];
-  user: any;
-  teams: Team[];
-  teamMembers: OrgMember[];
-  orgId: string;
+  employees?: Employee[];
+  user?: any;
+  teams?: Team[];
+  teamMembers?: OrgMember[];
+  orgId?: string;
 }
 
 export default function EmployeesClient({
-  employees,
-  user,
-  teams,
-  teamMembers,
-  orgId,
+  employees: initialEmployees = [],
+  user: initialUser,
+  teams: initialTeams = [],
+  teamMembers: initialTeamMembers = [],
+  orgId: initialOrgId = "",
 }: EmployeesClientProps) {
   const [activeTab, setActiveTab] = useState("employees");
+  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [user, setUser] = useState(initialUser);
+  const [teams, setTeams] = useState<Team[]>(initialTeams);
+  const [teamMembers, setTeamMembers] = useState<OrgMember[]>(initialTeamMembers);
+  const [orgId, setOrgId] = useState(initialOrgId);
+  const [loading, setLoading] = useState(!initialOrgId);
+
+  useEffect(() => {
+    if (initialOrgId) return;
+    fetch("/api/employees")
+      .then((r) => r.json())
+      .then((data) => {
+        setEmployees(data.employees || []);
+        setUser(data.user);
+        setTeams(data.teams || []);
+        setTeamMembers(data.teamMembers || []);
+        setOrgId(data.orgId || "");
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [initialOrgId]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

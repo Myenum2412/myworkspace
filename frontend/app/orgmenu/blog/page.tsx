@@ -1,74 +1,43 @@
-import { Metadata } from "next";
-import { auth } from "@/lib/auth/config";
-import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
-import { getUserOrgId } from "@/lib/org";
-import { BlogDataTable } from "./components/BlogDataTable";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Blog Management | OrgMenu",
-  description: "Manage your blog posts, categories, and content.",
-};
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
-async function getBlogPosts(orgId: string) {
-  try {
-    const posts = await db.collection("blog_posts")
-      .find({ orgId })
-      .sort({ createdAt: -1 })
-      .limit(100)
-      .project({ versions: 0 })
-      .toArray();
-    return posts;
-  } catch {
-    return [];
-  }
-}
+export default function BlogManagementPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-async function getBlogCategories(orgId: string) {
-  try {
-    const categories = await db.collection("blog_categories")
-      .find({ orgId })
-      .sort({ name: 1 })
-      .toArray();
-    return categories;
-  } catch {
-    return [];
-  }
-}
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/orgmenu/blog").then(r => r.json()).then(d => setPosts(d.posts || [])).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-export default async function BlogAdminPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
-
-  const role = session.user.role;
-  if (role !== "org_admin" && role !== "members" && role !== "manager") {
-    redirect("/dashboard");
-  }
-
-  const orgId = await getUserOrgId(session.user.id, session.user.email || undefined);
-  if (!orgId) redirect("/dashboard");
-
-  const [posts, categories] = await Promise.all([
-    getBlogPosts(orgId),
-    getBlogCategories(orgId),
-  ]);
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return (
-    <div className="space-y-6">
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Blog Management</h1>
-          <p className="text-muted-foreground">Create, edit, and manage your blog posts</p>
-        </div>
-        <a
-          href="/orgmenu/blog/editor"
-          className="inline-flex items-center justify-center rounded-sm bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90"
-        >
-          New Post
-        </a>
+        <h1 className="text-2xl font-bold tracking-tight">Blog Management</h1>
+        <Button asChild><Link href="/orgmenu/blog/editor">New Post</Link></Button>
       </div>
-
-      <BlogDataTable initialPosts={posts as any[]} categories={categories as any[]} orgId={orgId} />
-    </div>
+      <Card><CardHeader><CardTitle>Posts</CardTitle></CardHeader><CardContent>
+        {posts.length === 0 ? <p className="text-sm text-muted-foreground">No posts</p> : posts.map((p) => (
+          <div key={p.id || p._id} className="flex items-center justify-between py-2 border-b last:border-0">
+            <span className="font-medium">{p.title}</span>
+            <Badge>{p.status || "draft"}</Badge>
+          </div>
+        ))}
+      </CardContent></Card>
+    </main>
   );
 }

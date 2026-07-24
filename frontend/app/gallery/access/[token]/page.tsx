@@ -1,35 +1,25 @@
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { GalleryAccessClient } from "./access-client";
 
-export const dynamic = "force-dynamic";
+export default function GalleryAccessPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function GalleryAccessPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/gallery/access/[token]").then(r => r.json()).then(setData).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-  const tokenDoc = await db.collection(collections.galleryAccessTokens).findOne({ token });
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
-  if (!tokenDoc || !tokenDoc.active) {
-    notFound();
-  }
-
-  if (tokenDoc.expiresAt && new Date(tokenDoc.expiresAt) < new Date()) {
-    await db.collection(collections.galleryAccessTokens).updateOne(
-      { token },
-      { $set: { active: false } }
-    );
-    notFound();
-  }
-
-  const gallery = await db.collection(collections.qrGalleries).findOne({ id: tokenDoc.galleryId });
-  if (!gallery) notFound();
-
-  return (
-    <GalleryAccessClient
-      token={token}
-      galleryId={tokenDoc.galleryId}
-      galleryName={gallery.name as string}
-    />
-  );
+  return <GalleryAccessClient {...(data || {})} />;
 }

@@ -1,9 +1,20 @@
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { ResetPasswordForm } from "./form";
 
-export const metadata = { title: "Reset Password" };
-export const dynamic = "force-dynamic";
-
-export default async function ResetPasswordPage(props: { searchParams: Promise<{ token?: string; email?: string }> }) {
-  const { token, email } = await props.searchParams;
+function ResetPasswordContent() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") || undefined;
+  const email = searchParams.get("email") || undefined;
   return <ResetPasswordForm token={token} email={email} />;
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordContent />
+    </Suspense>
+  );
 }

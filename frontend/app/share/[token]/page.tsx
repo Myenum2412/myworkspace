@@ -1,43 +1,25 @@
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ShareTokenPageInteractive } from "./page-interactive";
 
-export const dynamic = "force-dynamic";
+export default function ShareTokenPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-type ShareFileInfo = {
-  fileId: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  hasPassword: boolean;
-  allowDownload: boolean;
-} | null;
-
-export default async function ShareTokenPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
-
-  let fileInfo: ShareFileInfo = null;
-  const shareLink = await db.collection(collections.shareLinks).findOne({ token, isActive: true });
-
-  if (shareLink) {
-    const now = new Date();
-    if (shareLink.expiresAt && new Date(shareLink.expiresAt) < now) {
-      // expired
-      fileInfo = null;
-    } else {
-      const file = await db.collection(collections.fileAttachments).findOne({ id: shareLink.fileId, deletedAt: null });
-      if (file) {
-        fileInfo = {
-          fileId: file.id as string,
-          originalName: (file.originalName as string) || (file.name as string) || "Shared File",
-          mimeType: (file.mimeType as string) || "application/octet-stream",
-          size: (file.size as number) || 0,
-          hasPassword: !!(shareLink.password as string),
-          allowDownload: (shareLink.allowDownload as boolean) ?? true,
-        };
-      }
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/share/[token]").then(r => r.json()).then(setData).catch(() => {}).finally(() => setLoading(false));
     }
-  }
+  }, [status, router]);
 
-  return <ShareTokenPageInteractive token={token} fileInfo={fileInfo} />;
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
+
+  return <ShareTokenPageInteractive {...(data || {})} />;
 }

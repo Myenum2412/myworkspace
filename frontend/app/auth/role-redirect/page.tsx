@@ -1,24 +1,34 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { ROLES } from "@/lib/rbac";
 
-export default async function RoleRedirectPage() {
-  const session = await auth();
+export default function RoleRedirectPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  if (!session?.user) {
-    redirect("/login?error=Session+not+found.+Please+sign+in+again.");
-  }
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login?error=Session+not+found.+Please+sign+in+again.");
+      return;
+    }
+    if (status === "authenticated" && session?.user) {
+      const role = session.user.role?.toLowerCase() || "";
+      if (role === ROLES.ORG_ADMIN) {
+        router.replace("/orgmenu");
+      } else if (role === ROLES.MEMBERS) {
+        router.replace("/dashboard");
+      } else {
+        router.replace("/staffs");
+      }
+    }
+  }, [status, session, router]);
 
-  const role = session.user.role?.toLowerCase() || "";
-
-  if (role === ROLES.ORG_ADMIN) {
-    redirect("/orgmenu");
-  }
-
-  if (role === ROLES.MEMBERS) {
-    redirect("/dashboard");
-  }
-
-  redirect("/staffs");
+  return (
+    <div className="flex flex-1 items-center justify-center p-8">
+      <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+    </div>
+  );
 }

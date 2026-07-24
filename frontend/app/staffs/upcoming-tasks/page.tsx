@@ -1,79 +1,38 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { redirect } from "next/navigation";
-import UpcomingTasksClient, { type CalendarTask } from "./upcoming-tasks-client";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-export default async function StaffUpcomingTasksPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+export default function StaffUpcomingTasksPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
-
-  let initialTasks: CalendarTask[] = [];
-
-  if (orgId) {
-    const rawTasks = (await db
-      .collection(collections.tasks)
-      .find({
-        orgId,
-        dueDate: { $ne: null },
-        status: { $nin: ["done", "cancelled"] },
-      })
-      .sort({ dueDate: 1 })
-      .toArray()) as unknown as Record<string, unknown>[];
-
-    const userIds = [...new Set(
-      rawTasks.flatMap((t) => [
-        t.assigneeId as string,
-        t.creatorId as string,
-      ]).filter(Boolean)
-    )];
-
-    const users = userIds.length > 0
-      ? (await db
-          .collection(collections.users)
-          .find({ id: { $in: userIds } }, { projection: { id: 1, name: 1, image: 1 } })
-          .toArray()) as unknown as Record<string, unknown>[]
-      : [];
-
-    const userMap = new Map<string, { name: string; image: string }>();
-    for (const u of users) {
-      const uid = (u.id as string) || "";
-      if (uid && !userMap.has(uid)) {
-        userMap.set(uid, {
-          name: (u.name as string) || "",
-          image: (u.image as string) || "",
-        });
-      }
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/staffs/upcoming-tasks").then(r => r.json()).then(d => setTasks(d.tasks || [])).catch(() => {}).finally(() => setLoading(false));
     }
+  }, [status, router]);
 
-    initialTasks = rawTasks.map((t) => {
-      const assigneeId = (t.assigneeId as string) || "";
-      const creatorId = (t.creatorId as string) || "";
-      const assignee = assigneeId ? userMap.get(assigneeId) : null;
-      const creator = creatorId ? userMap.get(creatorId) : null;
-      return {
-        _id: (t._id as { toString: () => string }).toString(),
-        title: (t.title as string) || "",
-        description: (t.description as string) || "",
-        status: (t.status as string) || "todo",
-        priority: (t.priority as string) || "medium",
-        dueDate: t.dueDate ? new Date(t.dueDate as string).toISOString() : null,
-        assigneeId,
-        assigneeName: assignee?.name || (t.assigneeName as string) || "",
-        assigneeAvatar: assignee?.image || (t.assigneeAvatar as string) || "",
-        creatorId,
-        creatorName: creator?.name || (t.creatorName as string) || "",
-        createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
-      };
-    });
-  }
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return (
-    <UpcomingTasksClient initialTasks={initialTasks} />
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
+      <h1 className="text-2xl font-bold tracking-tight">Upcoming Tasks</h1>
+      <Card><CardHeader><CardTitle>Tasks</CardTitle></CardHeader><CardContent>
+        {tasks.length === 0 ? <p className="text-sm text-muted-foreground">No upcoming tasks</p> : tasks.map((t) => (
+          <div key={t._id} className="flex items-center justify-between py-2 border-b last:border-0">
+            <span>{t.title}</span>
+            <Badge>{t.priority}</Badge>
+          </div>
+        ))}
+      </CardContent></Card>
+    </main>
   );
 }

@@ -1,12 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { ClientForgotPasswordForm } from "./form";
 
-export const metadata = { title: "Forgot Password - Client Portal" };
-export const dynamic = "force-dynamic";
-
-export default async function ClientForgotPasswordPage(props: { searchParams: Promise<Record<string, string>> }) {
-  const searchParams = await props.searchParams;
-  const success = searchParams.success;
+function ClientForgotPasswordContent() {
+  const searchParams = useSearchParams();
+  const success = searchParams.get("success");
 
   if (success) {
     return (
@@ -28,4 +29,12 @@ export default async function ClientForgotPasswordPage(props: { searchParams: Pr
   }
 
   return <ClientForgotPasswordForm />;
+}
+
+export default function ClientForgotPasswordPage() {
+  return (
+    <Suspense>
+      <ClientForgotPasswordContent />
+    </Suspense>
+  );
 }

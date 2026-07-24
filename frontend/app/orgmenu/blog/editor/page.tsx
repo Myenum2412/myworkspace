@@ -1,33 +1,25 @@
-import { Metadata } from "next";
-import { auth } from "@/lib/auth/config";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { BlogEditorClient } from "./client";
 
-export const metadata: Metadata = {
-  title: "New Blog Post | OrgMenu",
-  description: "Create a new blog post",
-};
+export default function NewBlogPostPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [orgId, setOrgId] = useState("");
+  const [loading, setLoading] = useState(true);
 
-export default async function NewBlogPostPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/orgmenu").then(r => r.json()).then(d => setOrgId(d.orgId || "")).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-  const role = session.user.role;
-  if (role !== "org_admin" && role !== "members" && role !== "manager") {
-    redirect("/dashboard");
-  }
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">New Blog Post</h1>
-        <p className="text-muted-foreground">Create a new blog post</p>
-      </div>
-      <BlogEditorClient
-        orgId={(session.user as any).orgId || ""}
-        userId={session.user.id}
-        userName={session.user.name || session.user.email || "Admin"}
-      />
-    </div>
-  );
+  return <BlogEditorClient orgId={orgId} userId={session.user.id} userName={session.user.name || ""} />;
 }

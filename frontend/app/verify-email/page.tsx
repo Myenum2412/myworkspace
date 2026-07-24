@@ -1,14 +1,14 @@
-import type { Metadata } from "next"
-import Image from "next/image"
-import Link from "next/link"
-import { VerifyEmailForm } from "@/components/verify-email-form"
+"use client";
 
-export const metadata: Metadata = {
-  title: "Verify Email",
-  description: "Verify your MyWorkSpace email address.",
-}
+import Image from "next/image";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { VerifyEmailForm } from "@/components/verify-email-form";
 
-export default async function VerifyEmailPage(props: { searchParams: Promise<Record<string, string>> }) {
+function VerifyEmailContent() {
+  const searchParams = useSearchParams();
+
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-4 sm:p-6 md:p-10">
       <Link href="/login" className="flex items-center gap-2 font-semibold text-foreground">
@@ -17,12 +17,20 @@ export default async function VerifyEmailPage(props: { searchParams: Promise<Rec
       </Link>
 
       <div className="w-full max-w-sm">
-        <VerifyEmailForm searchParams={await props.searchParams} />
+        <VerifyEmailForm searchParams={Object.fromEntries(searchParams.entries())} />
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
         &copy; {new Date().getFullYear()} MyWorkSpace. All rights reserved.
       </p>
     </div>
-  )
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense>
+      <VerifyEmailContent />
+    </Suspense>
+  );
 }

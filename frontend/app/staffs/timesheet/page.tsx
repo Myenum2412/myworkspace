@@ -1,58 +1,25 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import TimesheetInteractive from "./timesheet-interactive.client";
 
-export const dynamic = "force-dynamic";
+export default function StaffTimesheetPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function StaffTimesheetPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/staffs/timesheet").then(r => r.json()).then(setData).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
-  if (!orgId || !session.user.id) {
-    return <TimesheetInteractive projects={[]} tasks={[]} orgId="" userId="" />;
-  }
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
-  const week = new Date().toISOString().slice(0, 10);
-
-  const [rawProjects, rawTasks, timesheetData] = await Promise.all([
-    db.collection(collections.projects)
-      .find({ orgId })
-      .sort({ name: 1 })
-      .toArray(),
-    db.collection(collections.tasks)
-      .find({ orgId })
-      .sort({ title: 1 })
-      .toArray(),
-    db.collection("timesheets")
-      .findOne({ orgId, userId: session.user.id, week })
-      .then((doc) => doc?.rows || []),
-  ]);
-
-  const projects = (rawProjects as unknown as Record<string, unknown>[]).map((p) => ({
-    id: (p.id as string) || String(p._id || ""),
-    name: (p.name as string) || "",
-    color: (p.color as string) || "#93c5fd",
-  }));
-
-  const tasks = (rawTasks as unknown as Record<string, unknown>[]).map((t) => ({
-    _id: (t._id as { toString: () => string }).toString(),
-    title: (t.title as string) || "",
-    projectId: (t.projectId as string) || (t.project as string) || undefined,
-  }));
-
-  const initialTimesheet = Array.isArray(timesheetData) ? timesheetData : [];
-
-  return (
-    <TimesheetInteractive
-      projects={projects}
-      tasks={tasks}
-      orgId={orgId}
-      userId={session.user.id}
-      initialTimesheet={initialTimesheet}
-    />
-  );
+  return <TimesheetInteractive {...(data || {})} />;
 }

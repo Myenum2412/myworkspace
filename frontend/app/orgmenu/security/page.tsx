@@ -1,80 +1,34 @@
-import { cache } from "react";
-import { db } from "@/lib/db";
-import { auth } from "@/lib/auth/config";
-import { getUserOrgId } from "@/lib/org";
-import { collections } from "@/lib/db/schema";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldIcon, KeyIcon, ShieldCheckIcon, UsersIcon } from "lucide-react";
 
-export const dynamic = "force-dynamic";
-export const metadata = { title: "Security" };
+export default function SecurityPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-const getSecurityData = cache(async (orgId: string) => {
-  const [activeSessions, totalMembers, adminCount, apiKeyCount] = await Promise.all([
-    db.collection(collections.users).countDocuments({ status: "online" }),
-    db.collection(collections.orgMembers).countDocuments({ orgId }),
-    db.collection(collections.orgMembers).countDocuments({ orgId, role: "members" }),
-    db.collection(collections.apiKeys).countDocuments({ orgId }),
-  ]);
-  return { activeSessions, totalMembers, adminCount, apiKeyCount };
-});
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/orgmenu/security").then(r => r.json()).then(setData).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-const getAllSecurityData = cache(async () => {
-  const [activeSessions, totalMembers, adminCount, apiKeyCount] = await Promise.all([
-    db.collection(collections.users).countDocuments({ status: "online" }),
-    db.collection(collections.orgMembers).countDocuments({}),
-    db.collection(collections.orgMembers).countDocuments({ role: "members" }),
-    db.collection(collections.apiKeys).countDocuments({}),
-  ]);
-  return { activeSessions, totalMembers, adminCount, apiKeyCount };
-});
-
-export default async function SecurityPage() {
-  const session = await auth();
-  const role = session?.user?.role;
-  const isSuperAdmin = role === "org_admin";
-  const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
-
-  const data = isSuperAdmin ? await getAllSecurityData() : await getSecurityData(orgId || "null");
-
-  const items = [
-    { label: "Active Sessions", value: String(data.activeSessions), color: "text-primary", icon: ShieldIcon },
-    { label: "Total Members", value: String(data.totalMembers), color: "text-primary", icon: UsersIcon },
-    { label: "Admins", value: String(data.adminCount), color: "text-primary", icon: ShieldCheckIcon },
-    { label: "API Keys", value: String(data.apiKeyCount), color: "text-primary", icon: KeyIcon },
-  ];
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Security</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {isSuperAdmin ? "Security overview across all organizations" : "Your organization security status"}
-          </p>
-        </div>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShieldIcon className="size-5" />
-            Security Overview
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            {items.map((item) => (
-              <div key={item.label} className="rounded-sm border p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <item.icon className={`size-4 ${item.color}`} />
-                  <p className="text-sm text-muted-foreground">{item.label}</p>
-                </div>
-                <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
+      <h1 className="text-2xl font-bold tracking-tight">Security</h1>
+      <Card><CardHeader><CardTitle>Account</CardTitle></CardHeader><CardContent>
+        <p className="text-sm">Name: {data?.user?.name}</p>
+        <p className="text-sm">Email: {data?.user?.email}</p>
+        <p className="text-sm">Role: {data?.user?.role}</p>
+      </CardContent></Card>
+    </main>
   );
 }

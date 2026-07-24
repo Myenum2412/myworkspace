@@ -1,85 +1,25 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Approved from "./approved";
-import type { ApprovalItem } from "../columns";
 
-export const dynamic = "force-dynamic";
+export default function ApprovedPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function ApprovedPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/approvals/approved").then(r => r.json()).then(setData).catch(() => {}).finally(() => setLoading(false));
+    }
+  }, [status, router]);
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
-  if (!orgId) {
-    return <Approved initialItems={[]} />;
-  }
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
-  const [rawTasks, rawFiles] = await Promise.all([
-    db.collection(collections.tasks)
-      .find({ orgId, status: { $in: ["approved", "done"] } })
-      .sort({ createdAt: -1 })
-      .toArray(),
-    db.collection(collections.uploadApprovals)
-      .find({ orgId, status: "approved" })
-      .sort({ createdAt: -1 })
-      .toArray(),
-  ]);
-
-  const tasks: ApprovalItem[] = (rawTasks as unknown as Record<string, unknown>[]).map((t) => ({
-    _id: (t._id as { toString: () => string }).toString(),
-    itemType: "task" as const,
-    title: (t.title as string) || "",
-    status: (t.status as string) || "",
-    priority: (t.priority as string) || "medium",
-    dueDate: (t.dueDate as string) || undefined,
-    assigneeId: (t.assigneeId as string) || undefined,
-    assigneeName: (t.assignee as Record<string, string>)?.name || undefined,
-    assigneeAvatar: (t.assignee as Record<string, string>)?.image || undefined,
-    creatorId: (t.creatorId as string) || undefined,
-    creatorName: (t.creator as Record<string, string>)?.name || undefined,
-    description: (t.description as string) || undefined,
-    createdAt: (t.createdAt as string) || undefined,
-    approvedBy: (t.approvedBy as string) || undefined,
-    approvedAt: (t.approvedAt as string) || undefined,
-    approvalNote: (t.approvalNote as string) || undefined,
-    rejectedBy: (t.rejectedBy as string) || undefined,
-    rejectedAt: (t.rejectedAt as string) || undefined,
-    rejectionReason: (t.rejectionReason as string) || undefined,
-  }));
-
-  const files: ApprovalItem[] = (rawFiles as unknown as Record<string, unknown>[]).map((f) => {
-    const uploader = f.uploader as Record<string, string> | undefined;
-    return {
-      _id: (f._id as { toString: () => string }).toString(),
-      itemType: "file" as const,
-      title: (f.fileName as string) || "Untitled file",
-      status: (f.status as string) || "approved",
-      priority: "medium",
-      createdAt: (f.createdAt as string) || undefined,
-      uploaderId: (f.uploaderId as string) || undefined,
-      uploaderName: uploader?.name || (f.uploaderId as string) || undefined,
-      assigneeId: (f.uploaderId as string) || undefined,
-      assigneeName: uploader?.name || undefined,
-      fileName: (f.fileName as string) || undefined,
-      fileSize: (f.fileSize as number) || undefined,
-      mimeType: (f.mimeType as string) || undefined,
-      approvedBy: (f.approvedBy as string) || undefined,
-      approvedAt: (f.reviewedAt as string) || undefined,
-      approvalNote: (f.approvalNote as string) || undefined,
-      rejectedBy: (f.approvedBy as string) || undefined,
-      rejectedAt: (f.reviewedAt as string) || undefined,
-      rejectionReason: (f.rejectionReason as string) || undefined,
-    };
-  });
-
-  const items = [...tasks, ...files].sort((a, b) => {
-    const dateA = (a.approvedAt || a.createdAt) ? new Date(a.approvedAt || a.createdAt!).getTime() : 0;
-    const dateB = (b.approvedAt || b.createdAt) ? new Date(b.approvedAt || b.createdAt!).getTime() : 0;
-    return dateB - dateA;
-  });
-
-  return <Approved initialItems={items} />;
+  return <Approved {...(data || {})} />;
 }

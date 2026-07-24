@@ -1,89 +1,25 @@
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import StocksPage from "./stocks.client";
-import type { Stock } from "./columns";
 
-export const dynamic = "force-dynamic";
+export default function StocksServerPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function StocksServerPage() {
-  let session;
-  try {
-    session = await auth();
-  } catch {
-    // Do NOT call redirect() here — it throws NEXT_REDIRECT which this
-    // catch block swallows, causing the server component to crash instead
-    // of redirecting. Just fall through to the null-check below.
-    session = null;
-  }
-
-  if (!session?.user?.id) redirect("/login");
-
-  let orgId: string | null = null;
-  try {
-    orgId = await getUserOrgId(session.user.id, session.user.email);
-  } catch {
-    orgId = null;
-  }
-  if (!orgId) redirect("/login");
-
-  let rawStocks: Record<string, unknown>[] = [];
-  try {
-    rawStocks = (await db
-      .collection(collections.stocks)
-      .find({ orgId })
-      .sort({ createdAt: -1 })
-      .limit(100)
-      .toArray()) as Record<string, unknown>[];
-  } catch {
-    rawStocks = [];
-  }
-
-  const stocks: Stock[] = rawStocks.map((s) => {
-    let id = "";
-    if (s.id) {
-      id = String(s.id);
-    } else if (s._id) {
-      try {
-        id = typeof s._id === "string" ? s._id : String(s._id);
-      } catch {
-        id = "";
-      }
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/stocks").then(r => r.json()).then(setData).catch(() => {}).finally(() => setLoading(false));
     }
-    let lastUpdated = "";
-    if (s.updatedAt) {
-      try {
-        const d = new Date(s.updatedAt as string | number | Date);
-        if (!isNaN(d.getTime())) {
-          lastUpdated = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-        }
-      } catch {}
-    }
-    return {
-      id,
-      itemCode: String(s.itemCode ?? ""),
-      productName: String(s.productName ?? ""),
-      category: String(s.category ?? ""),
-      brand: String(s.brand ?? ""),
-      unit: String(s.unit ?? ""),
-      openingStock: Number(s.openingStock) || 0,
-      stockIn: Number(s.stockIn) || 0,
-      stockOut: Number(s.stockOut) || 0,
-      availableStock: Number(s.availableStock) || 0,
-      reorderLevel: Number(s.reorderLevel) || 0,
-      purchasePrice: Number(s.purchasePrice) || 0,
-      sellingPrice: Number(s.sellingPrice) || 0,
-      supplier: String(s.supplier ?? ""),
-      warehouse: String(s.warehouse ?? ""),
-      status: String(s.status ?? "Active"),
-      lastUpdated,
-      image: String(s.image ?? ""),
-      projectId: s.projectId ? String(s.projectId) : undefined,
-      projectName: s.projectName ? String(s.projectName) : undefined,
-    };
-  });
+  }, [status, router]);
 
-  return <StocksPage initialStocks={stocks} />;
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
+
+  return <StocksPage {...(data || {})} />;
 }

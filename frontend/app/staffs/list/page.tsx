@@ -1,125 +1,40 @@
-import Link from "next/link";
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import Stats07 from "@/components/stats-07";
 
-export const metadata = {
-  title: "Staff Directory",
-};
-export const dynamic = "force-dynamic";
+export default function StaffListPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-
-const statusStyles: Record<string, string> = {
-  active: "bg-red-100 text-red-700 border-red-300",
-  on_leave: "bg-gray-100 text-gray-700 border-gray-300",
-};
-
-export default async function StaffListPage() {
-  const session = await auth();
-  const orgId = session?.user?.id ? await getUserOrgId(session.user.id) : null;
-
-  let staff: Array<{ id: string; name: string; email: string; role: string; department: string; status: string; avatar: string }> = [];
-
-  try {
-    if (orgId) {
-      const members = await db.collection(collections.orgMembers).find({ orgId }).toArray();
-      const userIds = members.map((m: Record<string, unknown>) => m.userId as string);
-      if (userIds.length > 0) {
-        const users = await db.collection(collections.users)
-          .find({ id: { $in: userIds } })
-          .project({ id: 1, name: 1, email: 1, image: 1, status: 1, department: 1 })
-          .toArray();
-        const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
-        staff = members.map((m: Record<string, unknown>) => {
-          const user = userMap.get(m.userId as string) as Record<string, unknown> | undefined;
-          return {
-            id: (user?.id as string) || (user?._id as string) || "",
-            name: (user?.name as string) || "Unknown",
-            email: (user?.email as string) || "",
-            role: (m.role as string) || "staffs",
-            department: (user?.department as string) || "",
-            status: (user?.status as string) || "active",
-            avatar: (user?.image as string) || "",
-          };
-        });
-      }
+  useEffect(() => {
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") {
+      fetch("/api/staffs/list").then(r => r.json()).then(d => setEmployees(d.employees || [])).catch(() => {}).finally(() => setLoading(false));
     }
-  } catch {
-    // staff stays empty on error
-  }
+  }, [status, router]);
 
-  const totalStaff = staff.length;
-  const activeStaff = staff.filter((s) => s.status === "active").length;
-  const onLeave = staff.filter((s) => s.status === "on_leave").length;
+  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
-      <div>
-        <h1 className="text-2xl font-bold">Staff Directory</h1>
-        <p className="text-sm text-muted-foreground mt-1">{staff.length} staff members</p>
+    <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
+      <h1 className="text-2xl font-bold tracking-tight">Staff List</h1>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {employees.map((e) => (
+          <Card key={e.id}><CardContent className="p-4 flex items-center gap-4">
+            <Avatar><AvatarImage src={e.avatar} /><AvatarFallback>{e.name?.[0] || "U"}</AvatarFallback></Avatar>
+            <div className="flex-1 min-w-0"><p className="font-medium truncate">{e.name}</p><p className="text-sm text-muted-foreground truncate">{e.email}</p></div>
+            <Badge variant="outline">{e.role}</Badge>
+          </CardContent></Card>
+        ))}
       </div>
-
-      {/* Stats Overview */}
-      <Stats07
-        items={[
-          { name: 'Total Staff', value: totalStaff, subtitle: 'All members' },
-          { name: 'Active', value: activeStaff, subtitle: 'Currently active' },
-          { name: 'On Leave', value: onLeave, subtitle: 'Away from work' },
-        ]}
-      />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>All Staff</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
-            <div className="overflow-x-auto">
-              <table className="table-premium w-full text-sm text-left">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3.5 font-semibold">Name</th>
-                    <th className="px-4 py-3.5 font-semibold">Department</th>
-                    <th className="px-4 py-3.5 font-semibold">Role</th>
-                    <th className="px-4 py-3.5 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {staff.map((s) => (
-                  <tr key={s.email} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
-                    <td className="px-4 py-3">
-                      <Link href={`/staffs/profile?id=${s.id}`} className="flex items-center gap-3">
-                        <Avatar className="size-8">
-                          <AvatarImage src={s.avatar} alt={s.name} />
-                          <AvatarFallback>{getInitials(s.name)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-sm font-medium">{s.name}</p>
-                          <p className="text-xs text-muted-foreground">{s.email}</p>
-                        </div>
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-sm">{s.department}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{s.role}</td>
-                    <td className="px-4 py-3">
-                      <Badge className={statusStyles[s.status] || ""}>
-                        {s.status === "on_leave" ? "On Leave" : "Active"}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              </table>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </main>
   );
 }
