@@ -9,6 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
   type SortingState,
+  type Table,
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ export function DataTable<TData, TValue>({
   const [internalFilter, setInternalFilter] = useState("");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<Table<TData> | null>(null);
 
   const globalFilter = searchQuery ?? internalFilter;
   const setGlobalFilter = onSearchChange ?? setInternalFilter;
@@ -101,12 +103,14 @@ export function DataTable<TData, TValue>({
     meta,
   });
 
+  tableRef.current = table;
+
   useEffect(() => {
     if (onSelectionChange) {
-      const selectedRows = table.getSelectedRowModel().rows.map((r) => r.original);
+      const selectedRows = tableRef.current?.getSelectedRowModel().rows.map((r) => r.original) ?? [];
       onSelectionChange(selectedRows);
     }
-  }, [rowSelection, table, onSelectionChange]);
+  }, [rowSelection, onSelectionChange]);
 
   const rowCount = table.getFilteredRowModel().rows.length;
   const rows = table.getRowModel().rows;
