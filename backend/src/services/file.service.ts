@@ -279,7 +279,7 @@ function categorizeMime(mimeType: string): string {
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";
   if (mimeType.startsWith("audio/")) return "audio";
-  if (mimeType.includes("pdf") || mimeType.includes("document") || mimeType.includes("sheet") || mimeType.includes("presentation")) return "document";
+  if (mimeType.includes("pdf") || mimeType.includes("document") || mimeType.includes("sheet") || mimeType.includes("presentation") || mimeType.includes("excel") || mimeType.includes("powerpoint") || mimeType.includes("word") || mimeType.includes("opendocument")) return "document";
   if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return "archive";
   return "general";
 }

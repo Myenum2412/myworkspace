@@ -31,9 +31,10 @@ export async function seedOrgWithAdmin(opts: {
     role: "members",
     orgId,
     userNumber: Math.floor(Math.random() * 900000) + 100000,
+    createdBy: userId,
   });
-  await Organization.create({ id: orgId, name: `${name}'s Org`, slug: `slug-${userId.slice(0, 8)}`, plan: "free", ownerId: userId });
-  await OrgMember.create({ orgId, userId, role: "members" });
+  await Organization.create({ id: orgId, name: `${name}'s Org`, slug: `slug-${userId.slice(0, 8)}`, plan: "free", ownerId: userId, createdBy: userId });
+  await OrgMember.create({ orgId, userId, role: "members", createdBy: userId });
 
   const token = signToken({ userId, email, role: "members", permissions: [], orgId });
   return { userId, orgId, email, headers: { Authorization: `Bearer ${token}` } };

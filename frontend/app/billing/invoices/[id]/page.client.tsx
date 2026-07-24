@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   FileText, Info,
   GripVertical, PlusCircle, ChevronDown, Trash2,
-  Sparkles, X, LayoutTemplate, Loader2Icon
+  Sparkles, X, LayoutTemplate, Loader2Icon, Upload, PaperclipIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,7 @@ export default function InvoiceFormPage() {
   const [tdsTcsRate, setTdsTcsRate] = useState("");
   const [adjustmentValue, setAdjustmentValue] = useState(0);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   const toggleSelectItem = (id: string) => {
     setSelectedItems(prev => {
@@ -64,6 +65,16 @@ export default function InvoiceFormPage() {
     setItems(prev => prev.filter(i => i.id !== id));
     setSelectedItems(prev => { const next = new Set(prev); next.delete(id); return next; });
   };
+
+  function handleAttachmentUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(f => f.size <= 10 * 1024 * 1024);
+    setAttachments(prev => [...prev, ...validFiles].slice(0, 5));
+  }
+
+  function removeAttachment(index: number) {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  }
 
   const [clients, setClients] = useState<any[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
@@ -205,6 +216,29 @@ export default function InvoiceFormPage() {
       });
 
       if (res.ok) {
+        const savedData = await res.json();
+        const savedInvoice = savedData?.data;
+        const invoiceClientId = savedInvoice?.customerId || selectedClient;
+
+        if (attachments.length > 0 && invoiceClientId) {
+          try {
+            const foldersRes = await fetch(`/api/folders?clientId=${invoiceClientId}`, { credentials: "include" });
+            const foldersData = await foldersRes.json();
+            const folders = foldersData?.data || foldersData || [];
+            const invoicesFolder = Array.isArray(folders) ? folders.find((f: any) => f.name === "Invoices") : null;
+            const folderId = invoicesFolder?.id || "";
+
+            for (const file of attachments) {
+              const fd = new FormData();
+              fd.append("files", file);
+              fd.append("clientId", invoiceClientId);
+              fd.append("moduleName", "invoice");
+              if (folderId) fd.append("folderId", folderId);
+              await fetch("/api/files/upload", { method: "POST", body: fd }).catch(() => {});
+            }
+          } catch { /* silent */ }
+        }
+
         toast.success("Invoice saved successfully.");
         router.push("/billing");
       } else {
@@ -215,7 +249,7 @@ export default function InvoiceFormPage() {
     } finally {
       setSaving(false);
     }
-  }, [invoiceNumber, currentDate, items, discountPercent, tdsTcsType, tdsTcsRate, adjustmentValue, isSimplifiedView, router, selectedClient, clients, invoiceId, isEditing]);
+  }, [invoiceNumber, currentDate, items, discountPercent, tdsTcsType, tdsTcsRate, adjustmentValue, isSimplifiedView, router, selectedClient, clients, invoiceId, isEditing, attachments]);
 
   if (loading) {
     return (
@@ -530,6 +564,46 @@ export default function InvoiceFormPage() {
                   placeholder=""
                   className="min-h-[100px] text-sm w-full"
                 />
+              </div>
+
+              {/* Attachments */}
+              <div className="mt-6 sm:mt-8">
+                <Label className="text-xs text-muted-foreground mb-2 block flex items-center gap-1.5">
+                  <PaperclipIcon className="size-3.5" />
+                  Attachments
+                </Label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Button type="button" variant="outline" size="sm" className="relative" disabled={attachments.length >= 5}>
+                      <Upload className="size-4 mr-2" />
+                      Upload File
+                      <input
+                        type="file"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={handleAttachmentUpload}
+                        disabled={attachments.length >= 5}
+                        multiple
+                      />
+                    </Button>
+                  </div>
+                  {attachments.length > 0 && (
+                    <div className="space-y-1">
+                      {attachments.map((file, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-50 rounded-sm px-3 py-1.5">
+                          <FileText className="size-4 shrink-0" />
+                          <span className="flex-1 truncate">{file.name}</span>
+                          <span className="text-xs shrink-0">{(file.size / 1024).toFixed(1)} KB</span>
+                          <button onClick={() => removeAttachment(i)} className="text-destructive hover:text-destructive/80 shrink-0">
+                            <X className="size-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-[11px] text-gray-500">
+                    Maximum: 5 files. Maximum size: 10 MB each. Files will appear in the Files page under Invoices folder.
+                  </p>
+                </div>
               </div>
             </div>
 
