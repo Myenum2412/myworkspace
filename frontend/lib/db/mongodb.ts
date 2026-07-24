@@ -71,10 +71,16 @@ function createCursorPromise(promise: Promise<any>) {
       if (prop === "then") {
         return (...args: any[]) => promise.then(...args);
       }
+      if (prop === "catch" || prop === "finally") {
+        return (...args: any[]) => promise[prop](...args);
+      }
       if (TERMINAL_METHODS.has(prop as string)) {
         return (...args: any[]) => promise.then((c: any) => (c as any)[prop](...args));
       }
       if (prop === Symbol.toPrimitive || prop === Symbol.iterator || prop === Symbol.toStringTag) {
+        return undefined;
+      }
+      if (typeof prop === "symbol") {
         return undefined;
       }
       return (...args: any[]) => createCursorPromise(

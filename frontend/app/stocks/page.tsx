@@ -39,7 +39,16 @@ export default async function StocksServerPage() {
   }
 
   const stocks: Stock[] = rawStocks.map((s) => {
-    const id = String(s.id ?? (s._id instanceof ObjectId ? s._id.toString() : s._id ?? ""));
+    let id = "";
+    if (s.id) {
+      id = String(s.id);
+    } else if (s._id) {
+      try {
+        id = typeof s._id === "string" ? s._id : String(s._id);
+      } catch {
+        id = "";
+      }
+    }
     let lastUpdated = "";
     if (s.updatedAt) {
       try {
