@@ -52,4 +52,5 @@ export const collections = {
   webhookConfigs: "webhook_configs",
   uploadApprovals: "upload_approvals",
   contractors: "contractors",
+  services: "services",
 } as const;

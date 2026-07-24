@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -16,10 +16,25 @@ export default function NewServicePage() {
   const [description, setDescription] = useState("");
   const [rate, setRate] = useState(0);
   const [unit, setUnit] = useState("Hour");
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    // TODO: persist to backend
-    router.push("/billing/services");
+  const handleSave = async () => {
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/billing/services", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description, rate, unit, category: "General", status: "Active" }),
+      });
+      if (res.ok) {
+        router.push("/billing/services");
+      }
+    } catch (error) {
+      console.error("Failed to create service:", error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -81,7 +96,10 @@ export default function NewServicePage() {
           </div>
 
           <div className="flex items-center gap-3 mt-10">
-            <Button onClick={handleSave} className="px-6">Save Service</Button>
+            <Button onClick={handleSave} disabled={saving || !name.trim()} className="px-6">
+              {saving ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
+              Save Service
+            </Button>
             <Button variant="outline" className="px-6" asChild>
               <Link href="/billing/services">Cancel</Link>
             </Button>

@@ -10,18 +10,33 @@ import type { Stock } from "./columns";
 export const dynamic = "force-dynamic";
 
 export default async function StocksServerPage() {
-  const session = await auth();
+  let session;
+  try {
+    session = await auth();
+  } catch {
+    redirect("/login");
+  }
   if (!session?.user?.id) redirect("/login");
 
-  const orgId = await getUserOrgId(session.user.id, session.user.email);
+  let orgId;
+  try {
+    orgId = await getUserOrgId(session.user.id, session.user.email);
+  } catch {
+    orgId = null;
+  }
   if (!orgId) redirect("/login");
 
-  const rawStocks = (await db
-    .collection(collections.stocks)
-    .find({ orgId })
-    .sort({ createdAt: -1 })
-    .limit(100)
-    .toArray()) as Record<string, unknown>[];
+  let rawStocks: Record<string, unknown>[] = [];
+  try {
+    rawStocks = (await db
+      .collection(collections.stocks)
+      .find({ orgId })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .toArray()) as Record<string, unknown>[];
+  } catch {
+    rawStocks = [];
+  }
 
   const stocks: Stock[] = rawStocks.map((s) => {
     const id = (s.id ?? (s._id instanceof ObjectId ? s._id.toString() : String(s._id ?? ""))) as string;

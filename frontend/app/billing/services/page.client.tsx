@@ -1,16 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircleIcon, Search, X, Trash2, Pencil } from "lucide-react";
+import { PlusCircleIcon, Search, X, Trash2, Pencil, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { type Service, defaultServices } from "@/lib/data/services";
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  rate: number;
+  unit: string;
+  status: string;
+  created: string;
+}
 
 export default function BillingServicesPage() {
-  const [services, setServices] = useState<Service[]>(defaultServices);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  async function fetchServices() {
+    try {
+      const res = await fetch("/api/billing/services");
+      if (res.ok) {
+        const data = await res.json();
+        setServices(data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const toggleSelectItem = (id: string) => {
     setSelectedItems(prev => {
@@ -28,14 +58,41 @@ export default function BillingServicesPage() {
     }
   };
 
-  const deleteSelected = () => {
-    setServices(prev => prev.filter(s => !selectedItems.has(s.id)));
-    setSelectedItems(new Set());
+  const deleteSelected = async () => {
+    if (selectedItems.size === 0) return;
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/billing/services", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedItems) }),
+      });
+      if (res.ok) {
+        setServices(prev => prev.filter(s => !selectedItems.has(s.id)));
+        setSelectedItems(new Set());
+      }
+    } catch (error) {
+      console.error("Failed to delete services:", error);
+    } finally {
+      setDeleting(false);
+    }
   };
 
-  const deleteItem = (id: string) => {
-    setServices(prev => prev.filter(s => s.id !== id));
-    setSelectedItems(prev => { const next = new Set(prev); next.delete(id); return next; });
+  const deleteItem = async (id: string) => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/billing/services/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setServices(prev => prev.filter(s => s.id !== id));
+        setSelectedItems(prev => { const next = new Set(prev); next.delete(id); return next; });
+      }
+    } catch (error) {
+      console.error("Failed to delete service:", error);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const filtered = services.filter(s =>
@@ -44,13 +101,21 @@ export default function BillingServicesPage() {
     s.category.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Services</h1>
         <div className="flex items-center gap-3">
           {selectedItems.size > 0 && (
-            <Button variant="destructive" size="sm" onClick={deleteSelected}>
+            <Button variant="destructive" size="sm" onClick={deleteSelected} disabled={deleting}>
               <Trash2 className="size-4 mr-1.5" />
               Delete ({selectedItems.size})
             </Button>
@@ -140,7 +205,13 @@ export default function BillingServicesPage() {
                         <Link href={`/billing/services/${service.id}/edit`}>
                           <Pencil className="size-4 text-blue-500 hover:text-blue-700 cursor-pointer" />
                         </Link>
-                        <Trash2 onClick={() => deleteItem(service.id)} className="size-4 text-red-400 hover:text-red-600 cursor-pointer" />
+                        <button
+                          onClick={() => deleteItem(service.id)}
+                          disabled={deleting}
+                          className="p-1 text-red-400 hover:text-red-600 disabled:opacity-50"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>

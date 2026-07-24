@@ -36,8 +36,33 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
     try {
       const res = await fetch("/api/stocks", { credentials: "include" });
       const data = await res.json();
-      const list = data.data || [];
-      setStocks(Array.isArray(list) ? list : []);
+      const list = (data.data || []) as Record<string, unknown>[];
+      setStocks(
+        Array.isArray(list)
+          ? list.map((s) => ({
+              id: String(s._id ?? s.id ?? ""),
+              itemCode: String(s.itemCode ?? ""),
+              productName: String(s.productName ?? ""),
+              category: String(s.category ?? ""),
+              brand: String(s.brand ?? ""),
+              unit: String(s.unit ?? ""),
+              openingStock: Number(s.openingStock) || 0,
+              stockIn: Number(s.stockIn) || 0,
+              stockOut: Number(s.stockOut) || 0,
+              availableStock: Number(s.availableStock) || 0,
+              reorderLevel: Number(s.reorderLevel) || 0,
+              purchasePrice: Number(s.purchasePrice) || 0,
+              sellingPrice: Number(s.sellingPrice) || 0,
+              supplier: String(s.supplier ?? ""),
+              warehouse: String(s.warehouse ?? ""),
+              status: String(s.status ?? "Active"),
+              lastUpdated: "",
+              image: String(s.image ?? ""),
+              projectId: s.projectId ? String(s.projectId) : undefined,
+              projectName: s.projectName ? String(s.projectName) : undefined,
+            }))
+          : []
+      );
     } catch {
     } finally {
       setLoading(false);

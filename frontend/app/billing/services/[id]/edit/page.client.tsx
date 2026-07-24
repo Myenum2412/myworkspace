@@ -1,17 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, use } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function EditServicePage() {
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  rate: number;
+  unit: string;
+  status: string;
+}
+
+export default function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -19,10 +32,58 @@ export default function EditServicePage() {
   const [unit, setUnit] = useState("Hour");
   const [status, setStatus] = useState("Active");
 
-  const handleSave = () => {
-    // TODO: persist to backend
-    router.push("/billing/services");
+  useEffect(() => {
+    fetchService();
+  }, [id]);
+
+  async function fetchService() {
+    try {
+      const res = await fetch("/api/billing/services");
+      if (res.ok) {
+        const data = await res.json();
+        const service = data.data?.find((s: Service) => s.id === id);
+        if (service) {
+          setName(service.name);
+          setDescription(service.description);
+          setCategory(service.category);
+          setRate(service.rate);
+          setUnit(service.unit);
+          setStatus(service.status);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch service:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSave = async () => {
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/billing/services/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description, category, rate, unit, status }),
+      });
+      if (res.ok) {
+        router.push("/billing/services");
+      }
+    } catch (error) {
+      console.error("Failed to update service:", error);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white text-sm font-sans flex flex-col">
@@ -105,7 +166,10 @@ export default function EditServicePage() {
           </div>
 
           <div className="flex items-center gap-3 mt-10">
-            <Button onClick={handleSave} className="px-6">Save Changes</Button>
+            <Button onClick={handleSave} disabled={saving || !name.trim()} className="px-6">
+              {saving ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
+              Save Changes
+            </Button>
             <Button variant="outline" className="px-6" asChild>
               <Link href="/billing/services">Cancel</Link>
             </Button>
