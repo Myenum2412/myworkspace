@@ -172,7 +172,7 @@ function TimeReportsView({ data }: { data: Summary | null }) {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{data.activeProjects}</div>
-                <p className="text-xs text-muted-foreground mt-1">{data.teamMembers} team members</p>
+                <p className="text-xs text-muted-foreground mt-1">{data.teamMembers} Staffs members</p>
               </CardContent>
             </Card>
 

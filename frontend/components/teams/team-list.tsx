@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  UsersIcon, PlusIcon, UserPlusIcon, SearchIcon, XIcon,
+  UsersIcon, PlusIcon, SearchIcon, XIcon,
   MoreHorizontalIcon, PencilIcon, Trash2Icon,
 } from "lucide-react";
 import {
@@ -17,12 +17,9 @@ import {
 import { type Team } from "@/app/teams/columns";
 import { DataTable } from "@/app/teams/data-table";
 import { columns } from "@/app/teams/columns";
-import { TeamStatsCard } from "./team-card";
 
 type TeamListProps = {
   teams: Team[];
-  totalMembers: number;
-  avgTeamSize: string;
   onCreateTeam: () => void;
   onViewTeam: (team: Team) => void;
   onEditTeam: (team: Team) => void;
@@ -30,7 +27,7 @@ type TeamListProps = {
 };
 
 export function TeamList({
-  teams, totalMembers, avgTeamSize,
+  teams,
   onCreateTeam, onViewTeam, onEditTeam, onDeleteTeam,
 }: TeamListProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -90,12 +87,6 @@ export function TeamList({
             <XIcon className="size-4" />
           </button>
         )}
-      </div>
-
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-        <TeamStatsCard icon={<UsersIcon className="size-4" />} label="Total Teams" value={teams.length} />
-        <TeamStatsCard icon={<UserPlusIcon className="size-4" />} label="Total Members" value={totalMembers} valueClassName="text-red-500" />
-        <TeamStatsCard icon={<UsersIcon className="size-4" />} label="Avg Team Size" value={avgTeamSize} valueClassName="text-red-500" />
       </div>
 
       <DataTable

@@ -257,8 +257,6 @@ export default function TeamsInteractive({ teams: initialTeams, members: initial
       ) : (
         <TeamList
           teams={teams}
-          totalMembers={totalMembers}
-          avgTeamSize={avgTeamSize}
           onCreateTeam={openCreateForm}
           onViewTeam={openTeamDetail}
           onEditTeam={openEditForm}

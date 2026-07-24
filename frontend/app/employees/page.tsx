@@ -8,6 +8,30 @@ import EmployeesClient from "./employees-client";
 export const metadata = { title: "Employees" };
 export const dynamic = "force-dynamic";
 
+type TeamMember = {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  avatar: string;
+  status: string;
+  department: string;
+  designation: string;
+  role: string;
+};
+
+type TeamInfo = {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  leadName: string;
+  leadAvatar: string;
+  leadId?: string;
+  members: TeamMember[];
+  createdAt: string;
+};
+
 type EmployeeInfo = {
   id: string;
   name: string;
@@ -72,6 +96,7 @@ export default async function EmployeesPage() {
   };
 
   let employees: EmployeeInfo[] = [];
+  let orgId: string | null = session?.user?.orgId || null;
 
   if (session?.user?.id) {
     try {
@@ -96,8 +121,6 @@ export default async function EmployeesPage() {
       }
       possibleUserIds.push(sessionUserIdStr);
       const uniqueIds = [...new Set(possibleUserIds)];
-
-      let orgId: string | null = session.user.orgId || null;
 
       if (!orgId) {
         const userOrgMembers = await (await db.collection(collections.orgMembers).find({ userId: { $in: uniqueIds } }).toArray()) as Record<string, unknown>[];
@@ -129,7 +152,7 @@ export default async function EmployeesPage() {
       }
 
       if (!orgId) {
-        return <EmployeesClient employees={[]} user={user} />;
+        return <EmployeesClient employees={[]} user={user} teams={[]} teamMembers={[]} orgId="" />;
       }
 
       const allOrgMembers: Record<string, unknown>[] = [];
@@ -263,5 +286,112 @@ export default async function EmployeesPage() {
     }
   }
 
-  return <EmployeesClient employees={employees} user={user} />;
+  // Fetch teams
+  let teams: TeamInfo[] = [];
+  let teamMembers: { userId: string; name: string; email: string; avatar: string; role: string; designation?: string; department?: string }[] = [];
+
+  if (orgId) {
+    try {
+      const [teamDocs, orgMemberDocs] = await Promise.all([
+        db.collection(collections.teams).aggregate([
+          { $match: { orgId } },
+          { $addFields: { _teamIdStr: { $toString: "$_id" } } },
+          {
+            $lookup: {
+              from: collections.teamMembers,
+              let: { teamIdStr: "$_teamIdStr" },
+              pipeline: [{ $match: { $expr: { $eq: ["$teamId", "$$teamIdStr"] } } }],
+              as: "members",
+            },
+          },
+          {
+            $addFields: {
+              memberCount: { $size: "$members" },
+              memberIds: "$members.userId",
+            },
+          },
+          { $project: { _id: 0, _teamIdStr: 0 } },
+          { $sort: { createdAt: -1 } },
+        ]).toArray(),
+        db.collection(collections.orgMembers).find({ orgId }).toArray(),
+      ]);
+
+      const allTeamMemberIds = (teamDocs as Record<string, unknown>[])
+        .flatMap((t) => (t.memberIds as string[]) || [])
+        .filter(Boolean);
+      const uniqueMemberIds = [...new Set(allTeamMemberIds)];
+
+      let memberUserMap = new Map<string, Record<string, unknown>>();
+      if (uniqueMemberIds.length > 0) {
+        const memberUserDocs = await db.collection(collections.users).find({ id: { $in: uniqueMemberIds } }).toArray();
+        for (const u of memberUserDocs) {
+          if (u.id) memberUserMap.set(u.id as string, u);
+        }
+      }
+
+      teams = (teamDocs as Record<string, unknown>[]).map((t) => {
+        const members = (t.members as Record<string, unknown>[] || []).map((m) => {
+          const uid = m.userId as string;
+          const u = memberUserMap.get(uid);
+          return {
+            id: String(m._id || m.id || ""),
+            userId: uid,
+            name: (u?.name as string) || "Unknown",
+            email: (u?.email as string) || "",
+            avatar: (u?.image as string) || "",
+            status: (u?.status as string) || "offline",
+            department: (u?.department as string) || "",
+            designation: (u?.designation as string) || "",
+            role: (m.role as string) || "team_staff",
+          };
+        });
+
+        const lead = members.find((m) => m.role === "team_lead");
+
+        return {
+          id: String(t.id || t._id || ""),
+          name: (t.name as string) || "",
+          description: (t.description as string) || "",
+          memberCount: (t.memberCount as number) || 0,
+          leadName: lead?.name || "",
+          leadAvatar: lead?.avatar || "",
+          leadId: lead?.userId,
+          members,
+          createdAt: t.createdAt ? new Date(t.createdAt as string).toISOString() : "",
+        };
+      });
+
+      // Build team members list for the form
+      const orgMemberUserIds = (orgMemberDocs as Record<string, unknown>[]).map((m) => m.userId as string).filter(Boolean);
+      if (orgMemberUserIds.length > 0) {
+        const orgUsers = await db.collection(collections.users).find({ id: { $in: orgMemberUserIds } }).toArray();
+        const orgUserMap = new Map(orgUsers.map((u) => [u.id as string, u]));
+        teamMembers = (orgMemberDocs as Record<string, unknown>[]).map((m) => {
+          const uid = m.userId as string;
+          const u = orgUserMap.get(uid);
+          return {
+            userId: uid,
+            name: (u?.name as string) || "",
+            email: (u?.email as string) || "",
+            avatar: (u?.image as string) || "",
+            role: (m.role as string) || "staffs",
+            designation: (u?.designation as string) || "",
+            department: (u?.department as string) || "",
+          };
+        });
+      }
+    } catch {
+      teams = [];
+    }
+  }
+
+  return (
+    <EmployeesClient
+      employees={employees}
+      user={user}
+      teams={teams}
+      teamMembers={teamMembers}
+      orgId={orgId || ""}
+    />
+  );
 }

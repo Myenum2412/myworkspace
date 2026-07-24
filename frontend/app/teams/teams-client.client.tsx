@@ -267,8 +267,6 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
       ) : (
         <TeamList
           teams={teams}
-          totalMembers={totalMembers}
-          avgTeamSize={avgTeamSize}
           onCreateTeam={openCreateForm}
           onViewTeam={openTeamDetail}
           onEditTeam={openEditForm}

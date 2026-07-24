@@ -8,7 +8,7 @@ export type UserInfo = {
 
 export type SortField = "name" | "email" | "department" | "designation" | "role" | "status" | "joiningDate";
 export type SortDir = "asc" | "desc";
-export type PageView = "list" | "add" | "view" | "edit";
+export type PageView = "list" | "add" | "view" | "edit" | "teams";
 
 export const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {
   active:     { label: "Active",     dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400" },
