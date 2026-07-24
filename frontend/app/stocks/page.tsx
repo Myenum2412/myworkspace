@@ -39,7 +39,7 @@ export default async function StocksServerPage() {
   }
 
   const stocks: Stock[] = rawStocks.map((s) => {
-    const id = (s.id ?? (s._id instanceof ObjectId ? s._id.toString() : String(s._id ?? ""))) as string;
+    const id = String(s.id ?? (s._id instanceof ObjectId ? s._id.toString() : s._id ?? ""));
     let lastUpdated = "";
     if (s.updatedAt) {
       try {
@@ -51,11 +51,11 @@ export default async function StocksServerPage() {
     }
     return {
       id,
-      itemCode: (s.itemCode as string) || "",
-      productName: (s.productName as string) || "",
-      category: (s.category as string) || "",
-      brand: (s.brand as string) || "",
-      unit: (s.unit as string) || "",
+      itemCode: String(s.itemCode ?? ""),
+      productName: String(s.productName ?? ""),
+      category: String(s.category ?? ""),
+      brand: String(s.brand ?? ""),
+      unit: String(s.unit ?? ""),
       openingStock: Number(s.openingStock) || 0,
       stockIn: Number(s.stockIn) || 0,
       stockOut: Number(s.stockOut) || 0,
@@ -63,11 +63,11 @@ export default async function StocksServerPage() {
       reorderLevel: Number(s.reorderLevel) || 0,
       purchasePrice: Number(s.purchasePrice) || 0,
       sellingPrice: Number(s.sellingPrice) || 0,
-      supplier: (s.supplier as string) || "",
-      warehouse: (s.warehouse as string) || "",
-      status: (s.status as string) || "Active",
+      supplier: String(s.supplier ?? ""),
+      warehouse: String(s.warehouse ?? ""),
+      status: String(s.status ?? "Active"),
       lastUpdated,
-      image: (s.image as string) || "",
+      image: String(s.image ?? ""),
     };
   });
 
