@@ -19,6 +19,7 @@ import { DataTable } from "@/components/data-table";
 import { columns as baseColumns, type Task } from "./columns";
 import TaskGanttView from "@/components/task-gantt-view";
 import Stats07 from "@/components/stats-07";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 export interface OverviewInteractiveProps {
   tasks: Task[];
@@ -47,7 +48,6 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   const completionRate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
   async function handleDeleteTask(taskId: string) {
-    if (!confirm("Delete this task? This cannot be undone.")) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/tasks/${taskId}`, { method: "DELETE", credentials: "include" });
@@ -151,7 +151,15 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
                           <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
                           <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive" disabled={deleting} onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDeleteTask(t._id); }}><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
+                          <DeleteConfirmDialog
+                            title="Delete Task"
+                            description="Are you sure you want to delete this task? This action cannot be undone."
+                            confirmLabel="Delete"
+                            disabled={deleting}
+                            onConfirm={() => handleDeleteTask(t._id)}
+                          >
+                            <DropdownMenuItem className="text-destructive" disabled={deleting}><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
+                          </DeleteConfirmDialog>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     );

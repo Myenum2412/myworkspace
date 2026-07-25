@@ -139,6 +139,7 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
         ref={videoRef}
         src={src}
         className="max-w-full max-h-full"
+        preload="metadata"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={() => { handleLoadedMetadata(); setLoading(false); }}
         onError={() => { setLoading(false); setError(true); }}

@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { Upload, FileText, Copy, ExternalLink, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 interface UploadedFile {
   name: string;
@@ -19,93 +22,6 @@ interface UploadThingDropzoneProps {
   maxSize?: number;
   disabled?: boolean;
   className?: string;
-}
-
-function UploadCloudIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
-      <path d="M12 12v9" />
-      <path d="m16 16-4-4-4 4" />
-    </svg>
-  );
-}
-
-function FileIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-    </svg>
-  );
-}
-
-function CopyIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-    </svg>
-  );
-}
-
-function ExternalLinkIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M15 3h6v6" />
-      <path d="M10 14 21 3" />
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-    </svg>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  );
 }
 
 function formatFileSize(bytes: number): string {
@@ -234,34 +150,37 @@ export function UploadThingDropzone({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          "relative border-2 border-dashed rounded-sm p-8",
-          "flex flex-col items-center justify-center gap-4",
-          "transition-all duration-200 cursor-pointer",
-          "hover:border-primary/50 hover:bg-muted/30",
-          isDragOver && "border-primary bg-primary/5",
-          disabled && "opacity-50 cursor-not-allowed hover:border-border hover:bg-transparent",
+          "group flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed px-6 py-10 text-center transition-colors outline-none",
+          "focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          isDragOver
+            ? "border-primary bg-primary/5"
+            : "border-border bg-muted/40 hover:bg-muted/60",
+          disabled && "opacity-50 cursor-not-allowed",
           isUploading && "pointer-events-none"
         )}
       >
-        <div className="flex flex-col items-center gap-2 text-center">
-          <UploadCloudIcon className={cn(
-            "w-10 h-10 text-muted-foreground transition-colors",
-            isDragOver && "text-primary"
-          )} />
-          
+        <div className={cn(
+          "flex size-12 items-center justify-center border transition-colors rounded-sm",
+          isDragOver
+            ? "border-primary bg-background text-primary"
+            : "border-border bg-background text-muted-foreground"
+        )}>
+          {isUploading ? (
+            <Loader2 className="size-6 animate-spin" />
+          ) : (
+            <Upload className="size-6" />
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1">
           {isUploading ? (
             <div className="w-48 space-y-2">
-              <div className="w-full bg-muted rounded-sm h-2 overflow-hidden">
-                <div
-                  className="bg-primary h-2 rounded-sm transition-all duration-300 ease-out"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+              <Progress value={progress} className="h-2" />
               <p className="text-sm text-muted-foreground">{progress}% uploading...</p>
             </div>
           ) : (
             <>
-              <p className="text-sm font-medium">
+              <p className="text-sm font-medium text-foreground">
                 {isDragOver ? "Drop files here" : "Drop files here or click to browse"}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -270,6 +189,21 @@ export function UploadThingDropzone({
             </>
           )}
         </div>
+
+        {!isUploading && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              inputRef.current?.click();
+            }}
+          >
+            <Upload className="mr-1.5 size-3.5" />
+            Browse Files
+          </Button>
+        )}
 
         <input
           ref={inputRef}
@@ -284,11 +218,14 @@ export function UploadThingDropzone({
       </div>
 
       {error && (
-        <p className="text-sm text-destructive">{error}</p>
+        <div className="flex items-center gap-2 text-sm text-destructive">
+          <AlertCircle className="size-4 shrink-0" />
+          {error}
+        </div>
       )}
 
       {uploadedFiles.length > 0 && (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium">Uploaded Files</h4>
             <button
@@ -299,29 +236,26 @@ export function UploadThingDropzone({
               Clear all
             </button>
           </div>
-          <div className="grid gap-2 max-h-48 overflow-y-auto">
+          <div className="divide-y max-h-48 overflow-y-auto">
             {uploadedFiles.map((file, index) => (
-              <div
-                key={`${file.name}-${index}`}
-                className="flex items-center justify-between p-3 bg-muted/50 rounded-sm border border-border"
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <FileIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatFileSize(file.size)} • {file.type || "unknown"}
-                    </p>
-                  </div>
+              <div key={`${file.name}-${index}`} className="group flex items-center gap-3 py-2.5">
+                <div className="grid size-9 shrink-0 place-content-center rounded border bg-muted">
+                  <FileText className="size-4 text-muted-foreground" />
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{file.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatFileSize(file.size)}{file.type ? ` • ${file.type}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     type="button"
                     onClick={() => copyUrl(file.url)}
                     className="p-1.5 hover:bg-muted rounded-sm text-muted-foreground hover:text-foreground transition-colors"
                     title="Copy URL"
                   >
-                    <CopyIcon className="w-4 h-4" />
+                    <Copy className="size-3.5" />
                   </button>
                   <a
                     href={file.url}
@@ -330,7 +264,7 @@ export function UploadThingDropzone({
                     className="p-1.5 hover:bg-muted rounded-sm text-muted-foreground hover:text-foreground transition-colors"
                     title="Open file"
                   >
-                    <ExternalLinkIcon className="w-4 h-4" />
+                    <ExternalLink className="size-3.5" />
                   </a>
                   <button
                     type="button"
@@ -338,7 +272,7 @@ export function UploadThingDropzone({
                     className="p-1.5 hover:bg-destructive/10 rounded-sm text-muted-foreground hover:text-destructive transition-colors"
                     title="Remove"
                   >
-                    <XIcon className="w-4 h-4" />
+                    <X className="size-3.5" />
                   </button>
                 </div>
               </div>

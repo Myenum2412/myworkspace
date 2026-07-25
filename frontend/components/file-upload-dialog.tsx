@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
-  UploadIcon, XIcon, FileIcon, Loader2Icon, AlertCircleIcon, CheckCircle2Icon,
+  UploadIcon, XIcon, FileText, Loader2Icon, AlertCircleIcon, CheckCircleIcon,
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 interface UploadFile {
   file: File;
@@ -215,24 +216,36 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
           </div>
 
           {files.length > 0 && (
-            <div className="space-y-2 max-h-52 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted-foreground/20">
+            <div className="space-y-1 max-h-52 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted-foreground/20 divide-y">
               {files.map((f) => (
-                <div key={f.id} className="flex items-center gap-3 p-3 rounded-sm border bg-card shadow-sm text-sm group transition-all hover:border-primary/30">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-sm bg-primary/10">
-                    <FileIcon className="size-5 text-primary" />
+                <div key={f.id} className="group flex items-center gap-3 py-3 text-sm transition-all">
+                  <div className="grid size-9 shrink-0 place-content-center rounded border bg-muted">
+                    {f.status === "uploading" ? (
+                      <Loader2Icon className="size-4 text-primary animate-spin" />
+                    ) : f.status === "done" ? (
+                      <CheckCircleIcon className="size-4 text-green-500" />
+                    ) : f.status === "error" ? (
+                      <AlertCircleIcon className="size-4 text-destructive" />
+                    ) : f.status === "duplicate" ? (
+                      <Badge variant="secondary" className="text-[10px] px-1"> dup</Badge>
+                    ) : (
+                      <FileText className="size-4 text-muted-foreground" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="truncate font-medium text-foreground">{f.file.name}</p>
                     <p className="text-xs text-muted-foreground">{formatSize(f.file.size)}</p>
+                    {(f.status === "uploading" || f.status === "pending") && f.progress > 0 && (
+                      <Progress className="mt-1 h-1.5" value={f.progress} />
+                    )}
+                    {f.status === "error" && f.error && (
+                      <p className="text-xs text-destructive mt-0.5">{f.error}</p>
+                    )}
                   </div>
-                  {f.status === "uploading" && <Loader2Icon className="size-5 text-primary animate-spin" />}
-                  {f.status === "done" && <CheckCircle2Icon className="size-5 text-green-500" />}
-                  {f.status === "duplicate" && <Badge variant="secondary" className="text-xs">Duplicate</Badge>}
-                  {f.status === "error" && <span title={f.error}><AlertCircleIcon className="size-5 text-destructive" /></span>}
-                  {!uploading && f.status === "pending" && (
+                  {!uploading && (f.status === "pending" || f.status === "error") && (
                     <button 
                       onClick={(e) => { e.stopPropagation(); removeFile(f.id); }} 
-                      className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-sm hover:bg-destructive/10"
+                      className="text-muted-foreground hover:text-destructive p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                       title="Remove file"
                     >
                       <XIcon className="size-4" />

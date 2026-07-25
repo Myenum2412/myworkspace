@@ -1,7 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
+import { PolarAngleAxis, RadialBar, RadialBarChart } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
+import { type ChartConfig, ChartContainer } from '@/components/ui/chart';
 
 export type Stats07Item = {
   name: string;
@@ -23,42 +25,46 @@ const defaultColors = [
   'var(--chart-5)',
 ];
 
+const chartConfig = {
+  capacity: {
+    label: 'Capacity',
+    color: 'hsl(var(--primary))',
+  },
+} satisfies ChartConfig;
+
 function StatCard({ item, maxValue, index }: { item: Stats07Item; maxValue: number; index: number }) {
   const percentage = maxValue > 0 ? Math.round((item.value / maxValue) * 100) : 0;
   const fill = item.fill || defaultColors[index % defaultColors.length];
-  // SVG radial bar — no recharts, no ResizeObserver, no runtime state
-  const size = 80;
-  const strokeWidth = 6;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const dashOffset = circumference - (percentage / 100) * circumference;
 
   return (
     <Card className="p-4 shadow-2xs">
       <CardContent className="flex items-center space-x-4 p-0">
-        <div className="relative flex items-center justify-center size-20 shrink-0">
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={strokeWidth}
-              className="text-muted/50"
-            />
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              fill="none"
-              stroke={fill}
-              strokeWidth={strokeWidth}
-              strokeDasharray={circumference}
-              strokeDashoffset={dashOffset}
-              strokeLinecap="round"
-            />
-          </svg>
+        <div className="relative flex items-center justify-center">
+          <ChartContainer className="h-[80px] w-[80px]" config={chartConfig}>
+            <RadialBarChart
+              barSize={6}
+              data={[{ capacity: percentage, fill }]}
+              endAngle={-270}
+              innerRadius={30}
+              outerRadius={60}
+              startAngle={90}
+            >
+              <PolarAngleAxis
+                angleAxisId={0}
+                axisLine={false}
+                domain={[0, 100]}
+                tick={false}
+                type="number"
+              />
+              <RadialBar
+                angleAxisId={0}
+                background
+                cornerRadius={10}
+                dataKey="capacity"
+                fill={fill}
+              />
+            </RadialBarChart>
+          </ChartContainer>
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <span className="font-medium text-base text-foreground">
               {item.value}

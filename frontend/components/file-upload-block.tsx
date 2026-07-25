@@ -1,23 +1,9 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import {
-  RiAlertLine,
-  RiCheckLine,
-  RiCloseLine,
-  RiUploadCloud2Line,
-} from "@remixicon/react"
+import { CheckCircle, FileText, Loader2, Upload, X, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 
-import {
-  Attachment,
-  AttachmentAction,
-  AttachmentActions,
-  AttachmentContent,
-  AttachmentDescription,
-  AttachmentMedia,
-  AttachmentTitle,
-} from "@/components/ui/attachment"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -26,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Spinner } from "@/components/ui/spinner"
+import { Progress } from "@/components/ui/progress"
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 
@@ -56,32 +42,13 @@ function validate(file: File) {
   return undefined
 }
 
-const seedFiles: UploadItem[] = [
-  {
-    id: "seed-1",
-    name: "Acme-brand-guidelines.pdf",
-    size: 4_812_345,
-    progress: 100,
-    status: "done",
-  },
-  {
-    id: "seed-2",
-    name: "homepage-hero@2x.png",
-    size: 1_204_576,
-    progress: 64,
-    status: "uploading",
-  },
-]
-
 export default function FileUploadBlock() {
-  const [items, setItems] = useState<UploadItem[]>(seedFiles)
+  const [items, setItems] = useState<UploadItem[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const dragDepth = useRef(0)
   const hasActiveUploads = items.some((i) => i.status === "uploading")
-  const toastedRef = useRef<Set<string>>(
-    new Set(seedFiles.filter((f) => f.status === "done").map((f) => f.id))
-  )
+  const toastedRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     if (!hasActiveUploads) return
@@ -139,6 +106,10 @@ export default function FileUploadBlock() {
     [addFiles]
   )
 
+  const activeUploads = items.filter((i) => i.status === "uploading")
+  const completedUploads = items.filter((i) => i.status === "done")
+  const failedUploads = items.filter((i) => i.status === "error")
+
   return (
     <section className="flex w-full items-center justify-center bg-muted/30 px-6 py-16 text-foreground">
       <Toaster />
@@ -146,7 +117,7 @@ export default function FileUploadBlock() {
         <CardHeader>
           <CardTitle>Upload assets</CardTitle>
           <CardDescription>
-            Drag and drop your files or browse to attach them to Acme.
+            Drag and drop your files or browse to attach them.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
@@ -160,9 +131,7 @@ export default function FileUploadBlock() {
                 inputRef.current?.click()
               }
             }}
-            onDragOver={(event) => {
-              event.preventDefault()
-            }}
+            onDragOver={(event) => { event.preventDefault() }}
             onDragEnter={(event) => {
               event.preventDefault()
               dragDepth.current += 1
@@ -178,7 +147,7 @@ export default function FileUploadBlock() {
             }}
             onDrop={onDrop}
             className={cn(
-              "flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed px-6 py-12 text-center transition-colors outline-none",
+              "group flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed px-6 py-10 text-center transition-colors outline-none",
               "focus-visible:ring-[3px] focus-visible:ring-ring/50",
               isDragging
                 ? "border-primary bg-primary/5"
@@ -196,16 +165,7 @@ export default function FileUploadBlock() {
                 event.target.value = ""
               }}
             />
-            <div
-              className={cn(
-                "flex size-12 items-center justify-center border transition-colors",
-                isDragging
-                  ? "border-primary bg-background text-primary"
-                  : "border-border bg-background text-muted-foreground"
-              )}
-            >
-              <RiUploadCloud2Line className="size-6" aria-hidden="true" />
-            </div>
+            <Upload className={cn("size-6 transition-colors", isDragging ? "text-primary" : "text-muted-foreground")} />
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium text-foreground">
                 {isDragging
@@ -225,71 +185,97 @@ export default function FileUploadBlock() {
                 inputRef.current?.click()
               }}
             >
-              <RiUploadCloud2Line data-icon="inline-start" aria-hidden="true" />
+              <Upload className="mr-1.5 size-3.5" />
               Browse Files
             </Button>
           </div>
 
           {items.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground tabular-nums">
-                  <span className="font-medium text-foreground">
-                    {items.length}
-                  </span>{" "}
-                  {items.length === 1 ? "File" : "Files"}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setItems([])}
-                  className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Clear All
-                </button>
-              </div>
+            <div className="flex flex-col gap-4">
+              {activeUploads.length > 0 && (
+                <div>
+                  <h3 className="mb-3 flex items-center text-xs font-mono font-normal uppercase text-muted-foreground">
+                    <Loader2 className="mr-1 size-3.5 animate-spin" />
+                    Uploading
+                  </h3>
+                  <div className="-mt-1 divide-y">
+                    {activeUploads.map((item) => (
+                      <div key={item.id} className="group flex items-center gap-3 py-3">
+                        <div className="grid size-9 shrink-0 place-content-center rounded border bg-muted">
+                          <FileText className="size-4 text-muted-foreground group-hover:hidden" />
+                          <button
+                            className="hidden size-4 items-center justify-center group-hover:flex"
+                            onClick={() => removeItem(item.id)}
+                          >
+                            <X className="size-3.5" />
+                          </button>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-sm truncate">{item.name}</span>
+                            <span className="text-xs text-muted-foreground tabular-nums shrink-0">{Math.round(item.progress)}%</span>
+                          </div>
+                          <Progress className="mt-1 h-1.5" value={item.progress} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              <ul className="flex flex-col gap-2">
-                {items.map((item) => (
-                  <li key={item.id}>
-                    <Attachment
-                      state={item.status}
-                      size="sm"
-                      className="w-full"
-                    >
-                      <AttachmentMedia>
-                        {item.status === "error" ? (
-                          <RiAlertLine aria-hidden="true" />
-                        ) : item.status === "done" ? (
-                          <RiCheckLine
-                            className="text-primary"
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <Spinner />
-                        )}
-                      </AttachmentMedia>
-                      <AttachmentContent>
-                        <AttachmentTitle>{item.name}</AttachmentTitle>
-                        <AttachmentDescription className="tabular-nums">
-                          {item.status === "error"
-                            ? item.error
-                            : item.status === "done"
-                              ? `Uploaded ${formatSize(item.size)}`
-                              : `Uploading ${Math.round(item.progress)}%`}
-                        </AttachmentDescription>
-                      </AttachmentContent>
-                      <AttachmentActions>
-                        <AttachmentAction
-                          aria-label={`Remove ${item.name}`}
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <RiCloseLine aria-hidden="true" />
-                        </AttachmentAction>
-                      </AttachmentActions>
-                    </Attachment>
-                  </li>
-                ))}
-              </ul>
+              {failedUploads.length > 0 && (
+                <div>
+                  <h3 className="mb-3 flex items-center text-xs font-mono font-normal uppercase text-muted-foreground">
+                    <AlertCircle className="mr-1 size-3.5 text-destructive" />
+                    Failed
+                  </h3>
+                  <div className="-mt-1 divide-y">
+                    {failedUploads.map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 py-3">
+                        <div className="grid size-9 shrink-0 place-content-center rounded border bg-destructive/10">
+                          <AlertCircle className="size-4 text-destructive" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm truncate">{item.name}</p>
+                          {item.error && <p className="text-xs text-destructive">{item.error}</p>}
+                        </div>
+                        <button onClick={() => removeItem(item.id)} className="text-muted-foreground hover:text-destructive p-1">
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(activeUploads.length > 0 || failedUploads.length > 0) && completedUploads.length > 0 && (
+                <hr className="border-t" />
+              )}
+
+              {completedUploads.length > 0 && (
+                <div>
+                  <h3 className="mb-3 flex items-center text-xs font-mono font-normal uppercase text-muted-foreground">
+                    <CheckCircle className="mr-1 size-3.5 text-green-500" />
+                    Finished
+                  </h3>
+                  <div className="-mt-1 divide-y">
+                    {completedUploads.map((item) => (
+                      <div key={item.id} className="group flex items-center gap-3 py-3">
+                        <div className="grid size-9 shrink-0 place-content-center rounded border bg-muted">
+                          <FileText className="size-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">{formatSize(item.size)}</p>
+                        </div>
+                        <button onClick={() => removeItem(item.id)} className="text-muted-foreground hover:text-destructive p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

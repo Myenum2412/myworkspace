@@ -4,30 +4,9 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { cn } from "@/lib/utils";
-import {
-  RiAlertLine,
-  RiCheckLine,
-  RiCloseLine,
-  RiUploadCloud2Line,
-} from "@remixicon/react";
+import { Upload, FileText, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Attachment,
-  AttachmentAction,
-  AttachmentActions,
-  AttachmentContent,
-  AttachmentDescription,
-  AttachmentMedia,
-  AttachmentTitle,
-} from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +14,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Spinner } from "@/components/ui/spinner";
+import { Progress } from "@/components/ui/progress";
 import { apiFetch } from "@/lib/api";
 
 let uploadConfig = {
@@ -449,7 +428,7 @@ export function UploadDialog() {
                   : "border-border bg-background text-muted-foreground"
               )}
             >
-              <RiUploadCloud2Line className="size-6" aria-hidden="true" />
+              <Upload className="size-6" />
             </div>
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium text-foreground">
@@ -468,13 +447,13 @@ export function UploadDialog() {
                 inputRef.current?.click();
               }}
             >
-              <RiUploadCloud2Line data-icon="inline-start" aria-hidden="true" />
+              <Upload className="mr-1.5 size-3.5" />
               Browse Files
             </Button>
           </div>
 
           {items.length > 0 && (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted-foreground tabular-nums">
                   <span className="font-medium text-foreground">{items.length}</span>{" "}
@@ -489,41 +468,40 @@ export function UploadDialog() {
                 </button>
               </div>
 
-              <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+              <div className="divide-y max-h-48 overflow-y-auto">
                 {items.map((item) => (
-                  <li key={item.id}>
-                    <Attachment state={item.status} size="sm" className="w-full">
-                      <AttachmentMedia>
-                        {item.status === "error" ? (
-                          <RiAlertLine aria-hidden="true" />
-                        ) : item.status === "done" ? (
-                          <RiCheckLine className="text-primary" aria-hidden="true" />
-                        ) : (
-                          <Spinner />
-                        )}
-                      </AttachmentMedia>
-                      <AttachmentContent>
-                        <AttachmentTitle>{item.name}</AttachmentTitle>
-                        <AttachmentDescription className="tabular-nums">
-                          {item.status === "error"
-                            ? item.error
-                            : item.status === "done"
-                              ? `Uploaded ${formatSize(item.size)}`
-                              : `Uploading ${Math.round(item.progress)}%`}
-                        </AttachmentDescription>
-                      </AttachmentContent>
-                      <AttachmentActions>
-                        <AttachmentAction
-                          aria-label={`Remove ${item.name}`}
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <RiCloseLine aria-hidden="true" />
-                        </AttachmentAction>
-                      </AttachmentActions>
-                    </Attachment>
-                  </li>
+                  <div key={item.id} className="group flex items-center gap-3 py-2.5">
+                    <div className="grid size-9 shrink-0 place-content-center rounded border bg-muted">
+                      {item.status === "uploading" ? (
+                        <Loader2 className="size-4 text-primary animate-spin" />
+                      ) : item.status === "done" ? (
+                        <CheckCircle className="size-4 text-green-500" />
+                      ) : (
+                        <AlertCircle className="size-4 text-destructive" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.name}</p>
+                      {item.status === "uploading" ? (
+                        <>
+                          <p className="text-xs text-muted-foreground">Uploading {Math.round(item.progress)}%</p>
+                          <Progress className="mt-1 h-1.5" value={item.progress} />
+                        </>
+                      ) : item.status === "done" ? (
+                        <p className="text-xs text-muted-foreground">Uploaded {formatSize(item.size)}</p>
+                      ) : (
+                        <p className="text-xs text-destructive">{item.error || "Upload failed"}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="text-muted-foreground hover:text-destructive p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
         </div>

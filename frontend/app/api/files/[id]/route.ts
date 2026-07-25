@@ -7,6 +7,23 @@ import fs from "fs";
 import path from "path";
 
 const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
+const CHUNK_SIZE = 10 * 1024 * 1024;
+
+function nodeStreamToWebStream(nodeStream: fs.ReadStream): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      nodeStream.on("data", (chunk: string | Buffer) => {
+        const buf = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+        controller.enqueue(new Uint8Array(buf));
+      });
+      nodeStream.on("end", () => controller.close());
+      nodeStream.on("error", (err) => controller.error(err));
+    },
+    cancel() {
+      nodeStream.destroy();
+    },
+  });
+}
 
 export async function GET(
   request: Request,
@@ -25,6 +42,7 @@ export async function GET(
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const download = searchParams.get("download") === "true";
+  const preview = searchParams.get("preview") === "true";
 
   try {
     const file = await db.collection(collections.fileAttachments).findOne({ id });
@@ -41,22 +59,55 @@ export async function GET(
     }
 
     const mime = file.mimeType || "application/octet-stream";
-
     const localPath = path.join(UPLOADS_DIR, file.storagePath);
     if (!fs.existsSync(localPath)) {
       return NextResponse.json({ error: "File not found on disk" }, { status: 404 });
     }
-    const buffer = fs.readFileSync(localPath);
+
+    const stat = fs.statSync(localPath);
+    const fileSize = stat.size;
+    const rangeHeader = request.headers.get("range");
+
+    if (rangeHeader && !download) {
+      const parts = rangeHeader.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : Math.min(start + CHUNK_SIZE - 1, fileSize - 1);
+      const contentLength = end - start + 1;
+
+      const nodeStream = fs.createReadStream(localPath, { start, end });
+      const webStream = nodeStreamToWebStream(nodeStream);
+
+      return new Response(webStream, {
+        status: 206,
+        headers: {
+          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": String(contentLength),
+          "Content-Type": mime,
+          "Content-Disposition": `inline; filename="${file.originalName}"`,
+          "Cache-Control": "public, max-age=3600",
+        },
+      });
+    }
+
+    const nodeStream = fs.createReadStream(localPath);
+    const webStream = nodeStreamToWebStream(nodeStream);
+
     const headers: Record<string, string> = {
       "Content-Type": mime,
-      "Content-Length": String(buffer.length),
+      "Content-Length": String(fileSize),
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "public, max-age=3600",
     };
     if (download) {
       headers["Content-Disposition"] = `attachment; filename="${file.originalName}"`;
     } else {
-      headers["Content-Disposition"] = `inline; filename="${file.originalName}"`;
+      headers["Content-Disposition"] = preview
+        ? "inline"
+        : `inline; filename="${file.originalName}"`;
     }
-    return new NextResponse(new Uint8Array(buffer), { headers });
+
+    return new Response(webStream, { headers });
   } catch {
     return NextResponse.json({ error: "Failed to read file" }, { status: 500 });
   }

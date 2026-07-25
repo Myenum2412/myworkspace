@@ -17,3 +17,4 @@ backend/dist/
 *.tsbuildinfo
 *.log
 .DS_Store
+.next
