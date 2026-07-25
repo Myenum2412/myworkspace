@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusIcon, Loader2, FilterIcon, CheckIcon, XIcon, SearchIcon } from "lucide-react";
@@ -17,13 +19,11 @@ import { columns } from "@/app/stocks/columns";
 import { StockForm } from "@/app/stocks/stock-form";
 import Stats07 from "@/components/stats-07";
 
-type StocksPageProps = {
-  initialStocks: Stock[];
-};
-
-export default function StocksPage({ initialStocks }: StocksPageProps) {
-  const [stocks, setStocks] = useState<Stock[]>(initialStocks);
-  const [loading, setLoading] = useState(false);
+export default function StocksPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [viewingStock, setViewingStock] = useState<Stock | null>(null);
@@ -70,8 +70,12 @@ export default function StocksPage({ initialStocks }: StocksPageProps) {
   }
 
   useEffect(() => {
-    refreshStocks();
-  }, []);
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "authenticated") refreshStocks();
+  }, [status, router]);
+
+  if (status === "loading") return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (!session?.user) return null;
 
   async function handleSave(formData: Omit<Stock, "id">) {
     try {
