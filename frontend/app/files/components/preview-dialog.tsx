@@ -13,14 +13,25 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DownloadIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export function PreviewDialog() {
   const { previewFile, setPreviewFile, files } = useFileSystemStore();
+  const [previewUrl, setPreviewUrl] = useState("");
   const file = previewFile;
+
+  useEffect(() => {
+    if (!file) { setPreviewUrl(""); return; }
+    setPreviewUrl("");
+    fetch(`/api/files/preview-url/${file.id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.success && d.data?.url) setPreviewUrl(d.data.url); })
+      .catch(() => {});
+  }, [file?.id]);
 
   if (!file) return null;
 
-  const src = `/api/files/${file.id}/download?preview=true`;
+  const src = previewUrl || `/api/files/${file.id}/download?preview=true`;
   const currentIndex = files.findIndex((f) => f.id === file.id);
   const prevFile = currentIndex > 0 ? files[currentIndex - 1] : null;
   const nextFile = currentIndex < files.length - 1 ? files[currentIndex + 1] : null;

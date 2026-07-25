@@ -13,7 +13,7 @@ import {
   InfoIcon,
   PanelLeftIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileInfoPanel } from "@/components/files/viewers/file-info-panel";
 
 interface PreviewPaneProps {
@@ -27,9 +27,19 @@ export function PreviewPane({ onClose }: PreviewPaneProps) {
     files,
   } = useFileSystemStore();
   const [showInfo, setShowInfo] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
 
   const file = previewPaneFile;
   const src = file ? `/api/files/${file.id}/download?preview=true` : "";
+
+  useEffect(() => {
+    if (!file) { setPreviewUrl(""); return; }
+    setPreviewUrl("");
+    fetch(`/api/files/preview-url/${file.id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.success && d.data?.url) setPreviewUrl(d.data.url); })
+      .catch(() => {});
+  }, [file?.id]);
 
   if (!file) return null;
 
@@ -105,7 +115,7 @@ export function PreviewPane({ onClose }: PreviewPaneProps) {
         </div>
       ) : (
         <div className="flex-1 min-h-0 flex flex-col">
-          <FileViewer file={file} src={src} />
+          <FileViewer file={file} src={previewUrl || src} />
         </div>
       )}
     </div>

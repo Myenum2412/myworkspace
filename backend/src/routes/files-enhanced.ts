@@ -601,6 +601,25 @@ router.get("/:id/download", async (req: AuthRequest, res: Response) => {
   res.send(result.buffer);
 });
 
+router.get("/preview-url/:id", async (req: AuthRequest, res: Response) => {
+  const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId storagePath originalName mimeType size").lean();
+  if (!file) return void res.status(404).json({ error: "File not found" });
+  await verifyAccess(req.user!.userId, file.orgId);
+
+  const signedUrlService = new SignedUrlService();
+  const url = await signedUrlService.getDownloadUrl(file.storagePath, 3600);
+
+  res.json({
+    success: true,
+    data: {
+      url,
+      originalName: file.originalName,
+      mimeType: file.mimeType,
+      size: file.size,
+    },
+  });
+});
+
 router.get("/:id/versions", async (req: AuthRequest, res: Response) => {
   const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null }).select("orgId").lean();
   if (!file) throw new AppError(404, "File not found");
