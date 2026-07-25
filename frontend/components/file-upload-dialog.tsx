@@ -276,7 +276,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
             {uploading ? (
               <><Loader2Icon className="mr-2 size-4 animate-spin" /> Uploading...</>
             ) : allDone ? (
-              <><CheckCircle2Icon className="mr-2 size-4" /> Done</>
+              <><CheckCircleIcon className="mr-2 size-4" /> Done</>
             ) : (
               <><UploadIcon className="mr-2 size-4" /> Upload {files.length} file{files.length > 1 ? "s" : ""}</>
             )}
