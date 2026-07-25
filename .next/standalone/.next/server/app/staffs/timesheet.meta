@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/staffs/layout,_N_T_/staffs/timesheet/layout,_N_T_/staffs/timesheet/page,_N_T_/staffs/timesheet"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/staffs/timesheet/__PAGE__",
+    "/staffs/timesheet",
+    "/staffs",
+    "/_index",
+    "/_head"
+  ]
+}

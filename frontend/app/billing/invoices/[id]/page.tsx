@@ -1,4 +1,3 @@
-"use client";
 
 import InvoiceFormPageClient from "./page.client";
 

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "functions": {
+    "/_middleware": {
+      "runtime": "nodejs",
+      "matchers": [
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!api\\/auth|_next\\/static|_next\\/image|favicon\\.ico|_vercel|.*\\.(?:js|json|css|png|jpg|jpeg|svg|ico|webmanifest)).*))(\\.json|\\.rsc|\\.segments\\/.+\\.segment\\.rsc)?[\\/#\\?]?$",
+          "originalSource": "/((?!api/auth|_next/static|_next/image|favicon\\.ico|_vercel|.*\\.(?:js|json|css|png|jpg|jpeg|svg|ico|webmanifest)).*)"
+        }
+      ]
+    },
+    "/api/files/upload": {}
+  }
+}

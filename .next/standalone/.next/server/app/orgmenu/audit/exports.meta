@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/orgmenu/layout,_N_T_/orgmenu/audit/layout,_N_T_/orgmenu/audit/exports/layout,_N_T_/orgmenu/audit/exports/page,_N_T_/orgmenu/audit/exports"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/orgmenu/audit/exports/__PAGE__",
+    "/orgmenu/audit/exports",
+    "/orgmenu/audit",
+    "/orgmenu",
+    "/_index",
+    "/_head"
+  ]
+}

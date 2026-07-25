@@ -1,0 +1,507 @@
+{
+  "app": {
+    "[project]/app/_not-found/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/about/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/addemployees/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/addons/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/addprojects/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/admin/analytics/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/admin/attribution/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/admin/consent/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/admin/notifications/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/admin/profile/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/admin/security/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/alltasks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/appointments/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/approvals/approved/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/approvals/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/approvals/rejected/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/attendance/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/attendance/reports/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/auth/not-found/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/auth/role-redirect/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/billing/invoices/[id]/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/billing/invoices/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/billing/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/billing/quotations/[id]/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/billing/quotations/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/billing/receipts/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/billing/services/[id]/edit/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/billing/services/new/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/billing/services/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/blog/[slug]/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/blog/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/calendar/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/chat/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/client/bills/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/client/dashboard/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/client/file-manager/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/client/forgot-password/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/client/login/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/client/reset-password/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/clients/[id]/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/clients/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/createproject/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/createtask/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/dashboard/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/dashboard/reports/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/departments/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/employees/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/engagement/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/features/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/files/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/forgot-password/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/gallery/access/[token]/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/gallery/view/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/login/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/my-time/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/mytasks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/new-update/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/notifications/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/onboarding/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/audit/exports/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/audit/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/blog/editor/[id]/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/blog/editor/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/blog/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/files/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/members/invite/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/members/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/members/roles/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/notifications/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/org/billing/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/org/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/plans/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/profile/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/security/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/security/policies/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/security/sso/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/orgmenu/settings/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/overview/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/photography/galleries/[id]/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/photography/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/platform/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/pricing/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/privacy/cookies/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/profile/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/projects/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/reports/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/reset-password/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/reworks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/savedtasks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/settings/email-automation/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/settings/integrations/calendar/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/settings/notifications/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/settings/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/share/[token]/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/signup/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/solutions/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/activity/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/add/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/files/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/list/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/performance/goals/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/performance/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/profile/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/projects/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/reworks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/settings/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/settings/roles/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/tasks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/time-off/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/timesheet/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/staffs/upcoming-tasks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/stocks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/team-time/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/teams/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/teamtasks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/terminated/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/time-reports/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/time-tracker/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/timesheet/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/upcomingtasks/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/upload/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ],
+    "[project]/app/verify-email/page": [
+      "static/media/345b029bff63acdd-s.p.3w2qxf8a26hc2.woff2",
+      "static/media/ce62453a442c7f35-s.p.0a0h245ktd4x0.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

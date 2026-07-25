@@ -1,0 +1,4 @@
+;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="55d62f35-bb25-366f-d9d3-fceddc288879")}catch(e){}}();
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,619357,t=>{"use strict";var e=t.i(843476);t.s(["default",0,function(){return(0,e.jsx)("div",{className:"p-6 max-w-7xl mx-auto space-y-6",children:(0,e.jsxs)("div",{children:[(0,e.jsx)("h1",{className:"text-2xl font-bold text-gray-900 dark:text-gray-100",children:"Security Administration"}),(0,e.jsx)("p",{className:"text-sm text-gray-500 mt-1",children:"Security monitoring and audit logs"})]})})}])}]);
+
+//# debugId=55d62f35-bb25-366f-d9d3-fceddc288879

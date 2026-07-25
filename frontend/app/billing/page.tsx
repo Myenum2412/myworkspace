@@ -1,4 +1,3 @@
-"use client";
 
 import BillingClient from "./billing-client"
 

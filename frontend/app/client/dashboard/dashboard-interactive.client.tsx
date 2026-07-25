@@ -48,32 +48,41 @@ export default function DashboardInteractive() {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-      return;
+    if (status === "unauthenticated") { router.push("/login"); }
+    if (status === "authenticated" && localStorage.getItem("must_change_password") === "true") {
+      router.push("/client/login");
     }
-    if (status === "authenticated") {
-      const storedFlag = localStorage.getItem("must_change_password");
-      if (storedFlag === "true") {
-        router.push("/client/login");
-        return;
-      }
-      const token = localStorage.getItem("client_token") || "";
-      if (session.user) {
-        setUser({
-          id: session.user.id,
-          name: session.user.name || "Client",
-          email: session.user.email || "",
-          role: session.user.role || "client",
-          mustChangePassword: false,
-          emailVerified: true
-        });
-      }
-      fetchMe(token);
-      fetchStats(token);
-      fetchBillingStatus(token);
+  }, [status, router]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    const token = localStorage.getItem("client_token") || "";
+    if (session?.user) {
+      setUser({
+        id: session.user.id,
+        name: session.user.name || "Client",
+        email: session.user.email || "",
+        role: session.user.role || "client",
+        mustChangePassword: false,
+        emailVerified: true
+      });
     }
-  }, [status, router, session]);
+  }, [status, session]);
+
+  useEffect(() => {
+    const { token } = { token: localStorage.getItem("client_token") || "" };
+    fetchMe(token);
+  }, []);
+
+  useEffect(() => {
+    const { token } = { token: localStorage.getItem("client_token") || "" };
+    fetchStats(token);
+  }, []);
+
+  useEffect(() => {
+    const { token } = { token: localStorage.getItem("client_token") || "" };
+    fetchBillingStatus(token);
+  }, []);
 
   async function fetchMe(token: string) {
     try {

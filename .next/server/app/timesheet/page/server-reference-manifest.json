@@ -1,0 +1,17 @@
+{
+  "node": {
+    "0077c84aa8d67753509df355a30f2545e21bc4771d": {
+      "workers": {
+        "app/timesheet/page": {
+          "moduleId": 683351,
+          "async": false,
+          "exportedName": "logoutAction",
+          "filename": "lib/auth/actions.ts"
+        }
+      },
+      "exportedName": "logoutAction",
+      "filename": "lib/auth/actions.ts"
+    }
+  },
+  "edge": {}
+}

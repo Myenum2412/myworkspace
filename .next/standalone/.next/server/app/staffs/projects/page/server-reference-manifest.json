@@ -1,0 +1,29 @@
+{
+  "node": {
+    "0077c84aa8d67753509df355a30f2545e21bc4771d": {
+      "workers": {
+        "app/staffs/projects/page": {
+          "moduleId": 415395,
+          "async": false,
+          "exportedName": "logoutAction",
+          "filename": "lib/auth/actions.ts"
+        }
+      },
+      "exportedName": "logoutAction",
+      "filename": "lib/auth/actions.ts"
+    },
+    "40f75b3042ca5cfa2bbc05b2929e4754cf9a5cfa15": {
+      "workers": {
+        "app/staffs/projects/page": {
+          "moduleId": 415395,
+          "async": false,
+          "exportedName": "createProjectAction",
+          "filename": "actions/projects.ts"
+        }
+      },
+      "exportedName": "createProjectAction",
+      "filename": "actions/projects.ts"
+    }
+  },
+  "edge": {}
+}

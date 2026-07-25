@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/staffs/layout,_N_T_/staffs/performance/layout,_N_T_/staffs/performance/goals/layout,_N_T_/staffs/performance/goals/page,_N_T_/staffs/performance/goals"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/staffs/performance/goals/__PAGE__",
+    "/staffs/performance/goals",
+    "/staffs/performance",
+    "/staffs",
+    "/_index",
+    "/_head"
+  ]
+}

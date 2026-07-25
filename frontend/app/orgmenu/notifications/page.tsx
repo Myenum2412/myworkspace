@@ -1,4 +1,3 @@
-"use client";
 
 import NotificationsPage from "@/app/notifications/page";
 

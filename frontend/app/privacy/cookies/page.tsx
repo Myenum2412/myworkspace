@@ -1,4 +1,3 @@
-"use client";
 
 import { PreferencesCenter } from "@/components/consent/preferences-center";
 import { CookieBanner } from "@/components/consent/cookie-banner";

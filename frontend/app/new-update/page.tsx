@@ -1,4 +1,3 @@
-"use client";
 
 import ChangelogBlock from "@/components/changelog-block";
 

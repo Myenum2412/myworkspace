@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "debugId": "921cc88c-2a61-991a-e7a2-a7940af1decf",
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/login/layout.tsx"],"sourcesContent":["import type { Metadata } from \"next\";\nimport { getLoginMetadata } from \"@/lib/seo/seo-config\";\n\nexport const metadata: Metadata = getLoginMetadata();\n\nexport default function LoginLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  return <>{children}</>;\n}\n"],"names":["metadata","LoginLayout","children"],"mappings":"0DAGO,IAAMA,EAAqB,CAAA,EAAA,AAFlC,EAAA,CAAA,CAAA,QAEkC,gBAAA,AAAgB,qBAEnC,SAASC,AAAY,UAClCC,CAAQ,CAGT,EACC,MAAO,CAAA,EAAA,EAAA,GAAA,EAAA,EAAA,QAAA,CAAA,UAAGA,GACZ"}}]
+}

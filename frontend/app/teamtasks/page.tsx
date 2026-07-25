@@ -13,11 +13,18 @@ export default function TeamTasksPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/login"); return; }
-    if (status === "authenticated") {
-      fetch("/api/teamtasks").then(r => r.json()).then(d => setTasks(d.tasks || [])).catch(() => {}).finally(() => setLoading(false));
-    }
+    if (status === "unauthenticated") { router.push("/login"); }
   }, [status, router]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/teamtasks")
+      .then(r => r.json())
+      .then(d => { if (!cancelled) setTasks(d.tasks || []); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;

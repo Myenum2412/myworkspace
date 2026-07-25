@@ -1,4 +1,3 @@
-"use client";
 
 import { DashboardOverviewClient } from "./dashboard-overview-client";
 

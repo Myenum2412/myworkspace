@@ -1,0 +1,3 @@
+{
+  "/api/orgmenu/blog/editor/[id]/route": "app/api/orgmenu/blog/editor/[id]/route.js"
+}

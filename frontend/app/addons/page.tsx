@@ -1,4 +1,3 @@
-"use client";
 
 import { RiPuzzle2Line } from "@remixicon/react";
 import IntegrationsBlock from "@/components/integrations-block";

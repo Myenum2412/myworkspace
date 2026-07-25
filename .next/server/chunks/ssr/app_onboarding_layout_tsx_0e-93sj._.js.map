@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "debugId": "f3106f1c-be0a-403f-0a05-bec57d2d1faf",
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/onboarding/layout.tsx"],"sourcesContent":["import type { Metadata } from \"next\";\n\nexport const metadata: Metadata = {\n  title: \"Onboarding\",\n  description: \"Complete your account setup\",\n};\n\nexport default function OnboardingLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  return <>{children}</>;\n}\n"],"names":["metadata","title","description","OnboardingLayout","children"],"mappings":"2EAOe,SAASG,AAAiB,CACvCC,UAAQ,CAGT,EACC,MAAO,CAAA,EAAA,EAAA,GAAA,EAAA,EAAA,QAAA,CAAA,UAAGA,GACZ,eAXkC,CAChCH,MAAO,aACPC,YAAa,6BACf"}}]
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "debugId": "8ae66d0e-a490-03fe-ab79-1085e5713ed7",
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/client/login/page.tsx"],"sourcesContent":["\"use client\";\n\nimport { useRouter } from \"next/navigation\";\nimport { useEffect } from \"react\";\n\nexport default function ClientLoginPage() {\n  const router = useRouter();\n  useEffect(() => {\n    router.replace(\"/login\");\n  }, [router]);\n  return null;\n}\n"],"names":["ClientLoginPage","router","replace"],"mappings":"wCAEA,IAAA,EAAA,EAAA,CAAA,CAAA,OACA,EAAA,EAAA,CAAA,CAAA,yBAEe,SAASA,EACtB,IAAMC,EAAS,CAAA,EAAA,EAAA,SAAA,AAAS,IAIxB,MAHA,CAAA,EAAA,EAAA,SAAA,AAAS,EAAC,KACRA,EAAOC,OAAO,CAAC,SACjB,EAAG,CAACD,EAAO,EACJ,IACT"}}]
+}

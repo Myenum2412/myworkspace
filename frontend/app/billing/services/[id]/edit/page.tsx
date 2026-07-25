@@ -1,4 +1,3 @@
-"use client";
 
 import EditServicePageClient from "./page.client";
 

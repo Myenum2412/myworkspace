@@ -1,4 +1,3 @@
-"use client";
 
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 

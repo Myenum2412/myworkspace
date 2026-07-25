@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "debugId": "b04a0547-f0a5-cbe2-5a93-bbdff1c20bc3",
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/files/error.tsx"],"sourcesContent":["\"use client\";\n\nexport default function FilesError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {\n  return (\n    <div className=\"flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center\">\n      <h2 className=\"text-lg font-semibold\">Something went wrong</h2>\n      <p className=\"text-sm text-muted-foreground max-w-md\">\n        {error.message || \"An unexpected error occurred. Please try again.\"}\n      </p>\n      <div className=\"flex gap-3\">\n        <button onClick={() => reset()} className=\"inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90\">\n          Try again\n        </button>\n      </div>\n    </div>\n  );\n}\n"],"names":["FilesError","error","reset","className","message","onClick"],"mappings":"2EAEe,SAAoB,AAAXA,OAAaC,CAAK,OAAEC,CAAK,CAA6D,EAC5G,MACE,CAAA,EAAA,EAAA,IAAA,EAAC,MAAA,CAAIC,UAAU,mFACb,CAAA,EAAA,EAAA,GAAA,EAAC,KAAA,CAAGA,UAAU,iCAAwB,yBACtC,CAAA,EAAA,EAAA,GAAA,EAAC,IAAA,CAAEA,UAAU,kDACVF,EAAMG,OAAO,EAAI,oDAEpB,CAAA,EAAA,EAAA,GAAA,EAAC,MAAA,CAAID,UAAU,sBACb,CAAA,EAAA,EAAA,GAAA,EAAC,SAAA,CAAOE,QAAS,IAAMH,IAASC,UAAU,mJAA0I,kBAM5L"}}]
+}

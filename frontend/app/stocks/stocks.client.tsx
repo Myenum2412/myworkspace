@@ -70,9 +70,12 @@ export default function StocksPage() {
   }
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/login"); return; }
-    if (status === "authenticated") refreshStocks();
+    if (status === "unauthenticated") { router.push("/login"); }
   }, [status, router]);
+
+  useEffect(() => {
+    refreshStocks();
+  }, []);
 
   if (status === "loading") return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "debugId": "144927f9-a525-f3a3-9acf-295756a56c31",
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/features/page.tsx"],"sourcesContent":["\"use client\";\n\nimport { Metadata } from \"next\";\n\nexport default function FeaturesPage() {\n  return (\n    <main className=\"flex min-h-screen flex-col items-center justify-center p-8\">\n      <h1 className=\"text-3xl font-bold\">Features</h1>\n      <p className=\"mt-4 text-muted-foreground\">Coming soon.</p>\n    </main>\n  );\n}\n"],"names":["FeaturesPage","className"],"mappings":"2EAIe,SAASA,EACtB,MACE,CAAA,EAAA,EAAA,IAAA,EAAC,OAAA,CAAKC,UAAU,uEACd,CAAA,EAAA,EAAA,GAAA,EAAC,KAAA,CAAGA,UAAU,8BAAqB,aACnC,CAAA,EAAA,EAAA,GAAA,EAAC,IAAA,CAAEA,UAAU,sCAA6B,mBAGhD"}}]
+}

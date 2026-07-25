@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "debugId": "d04b98a9-5e1a-22b3-925b-d1e0ae919154",
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../lib/db/counter.ts"],"sourcesContent":["import { db } from \"./mongodb\";\nimport { collections } from \"./schema\";\n\nexport async function getNextSequence(name: string): Promise<number> {\n  const result = await db\n    .collection(collections.counters)\n    .findOneAndUpdate(\n      { name },\n      { $inc: { seq: 1 } },\n      { upsert: true, returnDocument: \"after\" }\n    );\n  return result?.seq ?? 1;\n}\n\nexport async function getNextEmployeeDisplayId(orgId: string): Promise<string> {\n  const seq = await getNextSequence(`empDisplayId_${orgId}`);\n  return seq >= 1000 ? `EMP${seq}` : `EMP${String(seq).padStart(3, \"0\")}`;\n}\n"],"names":["getNextSequence","name","result","collection","counters","findOneAndUpdate","$inc","seq","upsert","returnDocument","getNextEmployeeDisplayId","orgId","String","padStart"],"mappings":"wCAAA,IAAA,EAAA,EAAA,CAAA,CAAA,OACA,EAAA,EAAA,CAAA,CAAA,QAEO,eAAeA,EAAgBC,CAAY,EAChD,IAAMC,EAAS,MAAM,EAAA,EAAE,CACpBC,UAAU,CAAC,EAAA,WAAW,CAACC,QAAQ,EAC/BC,gBAAgB,CACf,MAAEJ,CAAK,EACP,CAAEK,KAAM,CAAEC,IAAK,CAAE,CAAE,EACnB,CAAEC,QAAQ,EAAMC,eAAgB,OAAQ,GAE5C,OAAOP,GAAQK,KAAO,CACxB"}}]
+}

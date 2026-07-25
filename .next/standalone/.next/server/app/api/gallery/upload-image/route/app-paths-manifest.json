@@ -1,0 +1,3 @@
+{
+  "/api/gallery/upload-image/route": "app/api/gallery/upload-image/route.js"
+}

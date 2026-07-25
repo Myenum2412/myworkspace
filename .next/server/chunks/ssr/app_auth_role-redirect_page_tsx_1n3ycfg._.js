@@ -1,0 +1,5 @@
+;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="d8fdc752-f63b-99cc-5cd0-f300bdf14163")}catch(e){}}();
+module.exports=[897290,a=>{"use strict";var b=a.i(187924),c=a.i(718402),d=a.i(50944),e=a.i(572131),f=a.i(660128);a.s(["default",0,function(){let{data:a,status:g}=(0,c.useSession)(),h=(0,d.useRouter)();return(0,e.useEffect)(()=>{if("unauthenticated"===g)return void h.replace("/login?error=Session+not+found.+Please+sign+in+again.");if("authenticated"===g&&a?.user){let b=a.user.role?.toLowerCase()||"";b===f.ROLES.ORG_ADMIN?h.replace("/orgmenu"):b===f.ROLES.MEMBERS?h.replace("/dashboard"):h.replace("/staffs")}},[g,a,h]),(0,b.jsx)("div",{className:"flex flex-1 items-center justify-center p-8",children:(0,b.jsx)("div",{className:"size-6 animate-spin rounded-full border-2 border-current border-t-transparent"})})}])}];
+
+//# debugId=d8fdc752-f63b-99cc-5cd0-f300bdf14163
+//# sourceMappingURL=app_auth_role-redirect_page_tsx_1n3ycfg._.js.map

@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/settings/layout,_N_T_/settings/integrations/layout,_N_T_/settings/integrations/calendar/layout,_N_T_/settings/integrations/calendar/page,_N_T_/settings/integrations/calendar"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/settings/integrations/calendar/__PAGE__",
+    "/settings/integrations/calendar",
+    "/settings/integrations",
+    "/settings",
+    "/_index",
+    "/_head"
+  ]
+}

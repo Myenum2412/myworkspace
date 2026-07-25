@@ -1,4 +1,3 @@
-"use client";
 
 import QuotationFormPageClient from "./page.client";
 

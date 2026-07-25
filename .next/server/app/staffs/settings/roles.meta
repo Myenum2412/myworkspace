@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/staffs/layout,_N_T_/staffs/settings/layout,_N_T_/staffs/settings/roles/layout,_N_T_/staffs/settings/roles/page,_N_T_/staffs/settings/roles"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/staffs/settings/roles/__PAGE__",
+    "/staffs/settings/roles",
+    "/staffs/settings",
+    "/staffs",
+    "/_index",
+    "/_head"
+  ]
+}

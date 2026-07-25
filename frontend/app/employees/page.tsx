@@ -1,4 +1,3 @@
-"use client";
 
 import EmployeesClient from "./employees-client";
 

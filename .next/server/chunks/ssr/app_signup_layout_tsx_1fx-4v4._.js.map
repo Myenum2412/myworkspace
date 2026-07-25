@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "debugId": "7fcc4d1d-c732-1b45-5d86-d476bf068c11",
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/signup/layout.tsx"],"sourcesContent":["import type { Metadata } from \"next\";\nimport { getSignupMetadata } from \"@/lib/seo/seo-config\";\n\nexport const metadata: Metadata = getSignupMetadata();\n\nexport default function SignupLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  return <>{children}</>;\n}\n"],"names":["metadata","SignupLayout","children"],"mappings":"0DAGO,IAAMA,EAAqB,CAAA,EAAA,AAFlC,EAAA,CAAA,CAAA,QAEkC,iBAAA,AAAiB,qBAEpC,SAASC,AAAa,UACnCC,CAAQ,CAGT,EACC,MAAO,CAAA,EAAA,EAAA,GAAA,EAAA,EAAA,QAAA,CAAA,UAAGA,GACZ"}}]
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "debugId": "a938b460-5098-7091-65e4-6f1d073648a2",
+  "sections": [
+    {"offset": {"line": 179, "column": 0}, "map": {"version":3,"sources":["file:///root/myworkspace/frontend/app/global-error.tsx"],"sourcesContent":["\"use client\";\n\nimport * as Sentry from \"@sentry/nextjs\";\nimport NextError from \"next/error\";\nimport { useEffect } from \"react\";\n\nexport default function GlobalError({\n  error,\n}: {\n  error: Error & { digest?: string };\n}) {\n  useEffect(() => {\n    Sentry.captureException(error);\n  }, [error]);\n\n  return (\n    <html>\n      <body>\n        <NextError statusCode={0} />\n      </body>\n    </html>\n  );\n}\n"],"names":["GlobalError","error","statusCode"],"mappings":";;;;;AAEA;AACA;AACA;AAJA;;;;;AAMe,SAASA,YAAY,EAClCC,KAAK,EAGN;IACC,IAAA,kNAAS,EAAC;QACR,yLAAuB,CAACA;IAC1B,GAAG;QAACA;KAAM;IAEV,qBACE,8OAAC;kBACC,cAAA,8OAAC;sBACC,cAAA,8OAAC,wIAAS;gBAACC,YAAY;;;;;;;;;;;;;;;;AAI/B"}}]
+}
