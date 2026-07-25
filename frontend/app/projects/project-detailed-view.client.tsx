@@ -102,7 +102,12 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
       .then((r) => r.json())
       .then((d) => {
         const all = d.data || [];
-        setProjectTasks(all.filter((t: any) => t.project === project.name || t.project === project.id));
+        setProjectTasks(all.filter((t: any) => {
+          const taskProject = t.project?.trim().toLowerCase();
+          const projName = project.name?.trim().toLowerCase();
+          const projId = project.id?.trim().toLowerCase();
+          return taskProject && (taskProject === projName || taskProject === projId);
+        }));
       })
       .catch(() => {});
 
@@ -115,11 +120,15 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
 
     fetch(`/api/billing/invoices?orgId=${orgIdProp}`, { credentials: "include", signal: controller.signal })
       .then((r) => r.json())
-      .then((d) => setInvoices(d.data || []))
+      .then((d) => {
+        const allInvoices = d.data || [];
+        const clientName = project.client?.trim().toLowerCase();
+        setInvoices(allInvoices.filter((inv: any) => inv.customerName?.trim().toLowerCase() === clientName));
+      })
       .catch(() => {});
 
     return () => controller.abort();
-  }, [orgIdProp]);
+  }, [orgIdProp, project.client]);
 
   const progressColor =
     project.progress >= 100 ? "bg-green-500" : project.progress >= 50 ? "bg-blue-500" : project.progress > 0 ? "bg-amber-500" : "bg-muted-foreground/30";

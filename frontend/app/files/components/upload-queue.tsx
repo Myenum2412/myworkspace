@@ -108,7 +108,7 @@ export function UploadDialog() {
           prev.map((i) => (i.id === item.id ? { ...i, progress: 0 } : i))
         );
 
-        const initRes = await apiFetch("/api/files/presigned/multipart/init", {
+        const initRes = await apiFetch("/api/files/multipart/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -125,7 +125,7 @@ export function UploadDialog() {
 
         const partUrls: string[] = [];
         for (let i = 0; i < totalChunks; i++) {
-          const urlRes = await apiFetch("/api/files/presigned/multipart/part-url", {
+          const urlRes = await apiFetch("/api/files/multipart/part-url", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ uploadId, partNumber: i + 1, fileName: file.name }),
@@ -188,7 +188,7 @@ export function UploadDialog() {
 
         if (!aborted) {
           uploadedParts.sort((a, b) => a.PartNumber - b.PartNumber);
-          const completeRes = await apiFetch("/api/files/presigned/multipart/complete", {
+          const completeRes = await apiFetch("/api/files/multipart/complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

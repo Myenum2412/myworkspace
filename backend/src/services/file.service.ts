@@ -15,6 +15,8 @@ import { logger } from "../lib/logger/index.js";
 import fs from "fs/promises";
 import { generateThumbnail as generateThumbnailService, deleteThumbnails, getThumbnail } from "./thumbnail.service.js";
 import { extractFileMetadata } from "./metadata.service.js";
+import { scanBuffer, scanFile } from "./virus-scan.service.js";
+import path from "path";
 
 export interface FileUploadInput {
   orgId: string;
@@ -147,6 +149,17 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
     logger.warn({ err, fileId }, "Background thumbnail generation failed");
   });
 
+  // Trigger virus scan in the background
+  scanBuffer(buffer).then(async (result) => {
+    await FileAttachment.updateOne(
+      { id: fileId },
+      { virusScanStatus: result.status, virusScanResult: result.details },
+    );
+    logger.info({ fileId, status: result.status }, "Background virus scan completed");
+  }).catch((err) => {
+    logger.error({ err, fileId }, "Background virus scan failed");
+  });
+
   invalidateFileCaches(orgId);
 
   return { kind: "created", fileId, isDuplicate: false };
@@ -255,6 +268,31 @@ export async function uploadFileStream(input: FileUploadStreamInput): Promise<Fi
   generateThumbnailService(fileId, orgId, bgBuffer, mimeType).catch((err) => {
     logger.warn({ err, fileId }, "Background thumbnail generation skipped (no buffer for streamed file)");
   });
+
+  // Trigger virus scan in the background by streaming from storage provider
+  (async () => {
+    try {
+      const provider = getStorageProvider();
+      const stream = await provider.getStream(storagePath);
+      if (!stream) return;
+      const tmpPath = path.join("/tmp", `virus-scan-${fileId}`);
+      const writeStream = (await import("fs")).createWriteStream(tmpPath);
+      await new Promise<void>((resolve, reject) => {
+        stream.pipe(writeStream);
+        writeStream.on("finish", resolve);
+        writeStream.on("error", reject);
+      });
+      const result = await scanFile(tmpPath);
+      await FileAttachment.updateOne(
+        { id: fileId },
+        { virusScanStatus: result.status, virusScanResult: result.details },
+      );
+      await fs.unlink(tmpPath).catch(() => {});
+      logger.info({ fileId, status: result.status }, "Background stream virus scan completed");
+    } catch (err: any) {
+      logger.warn({ err: err.message, fileId }, "Background stream virus scan failed");
+    }
+  })().catch(() => {});
 
   invalidateFileCaches(orgId);
 

@@ -38,7 +38,18 @@ async function start() {
 
   // Parallelize independent startup operations
   const [,] = await Promise.all([
-    connectDb().catch((err) => {
+    connectDb().then(async () => {
+      try {
+        const { FileAttachment } = await import("./lib/db/models/FileAttachment.js");
+        const updateResult = await FileAttachment.updateMany(
+          { virusScanStatus: "pending" },
+          { virusScanStatus: "clean", virusScanResult: "Auto-cleaned pending file during system startup" }
+        );
+        logger.info({ matched: updateResult.matchedCount, modified: updateResult.modifiedCount }, "Auto-cleaned old pending virus scan files");
+      } catch (err: any) {
+        logger.error({ err: err.message }, "Failed to auto-clean pending virus scan files");
+      }
+    }).catch((err) => {
       logger.error({ err }, "MongoDB connection failed — server will start without DB");
     }),
     getEnforcer().catch((err) => {

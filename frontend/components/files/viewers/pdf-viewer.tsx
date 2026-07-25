@@ -161,7 +161,6 @@ export function PDFViewer({ src, fileName }: PDFViewerProps) {
           }}
           onLoad={() => setLoading(false)}
           onError={() => { setLoading(false); setLoadError(true); }}
-          sandbox="allow-scripts allow-same-origin allow-forms"
         />
       </div>
     </div>

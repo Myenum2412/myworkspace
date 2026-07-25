@@ -39,6 +39,6 @@ export async function GET() {
       company: c.company || "", projects: Number(c.projects ?? 0), status: c.status || "",
     }));
 
-    return NextResponse.json({ projects, clients, clientList });
-  } catch { return NextResponse.json({ projects: [], clients: [], clientList: [] }); }
+    return NextResponse.json({ orgId, projects, clients, clientList });
+  } catch { return NextResponse.json({ orgId: "", projects: [], clients: [], clientList: [] }); }
 }
