@@ -362,25 +362,25 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 </div>
               </div>
             ) : (
-              <div className="border rounded-sm overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="responsive-table overflow-x-auto">
+                <table className="table-premium w-full text-sm text-left">
                   <thead>
-                    <tr className="border-b bg-muted/50">
-                      <th className="text-left px-3 py-2 font-semibold">Task</th>
-                      <th className="text-left px-3 py-2 font-semibold">Status</th>
-                      <th className="text-left px-3 py-2 font-semibold">Priority</th>
-                      <th className="text-left px-3 py-2 font-semibold">Assignee</th>
-                      <th className="text-left px-3 py-2 font-semibold">Due Date</th>
+                    <tr>
+                      <th>Task</th>
+                      <th>Status</th>
+                      <th>Priority</th>
+                      <th>Assignee</th>
+                      <th>Due Date</th>
                     </tr>
                   </thead>
                   <tbody>
                     {projectTasks.map((t: any) => (
-                      <tr key={t._id || t.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="px-3 py-2 font-medium">{t.title}</td>
-                        <td className="px-3 py-2"><span className="text-xs capitalize">{t.status?.replace(/_/g, " ")}</span></td>
-                        <td className="px-3 py-2"><span className="text-xs capitalize">{t.priority}</span></td>
-                        <td className="px-3 py-2 text-muted-foreground">{t.assigneeName || "\u2014"}</td>
-                        <td className="px-3 py-2 text-muted-foreground">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "\u2014"}</td>
+                      <tr key={t._id || t.id}>
+                        <td className="font-medium">{t.title}</td>
+                        <td><span className="text-xs capitalize">{t.status?.replace(/_/g, " ")}</span></td>
+                        <td><span className="text-xs capitalize">{t.priority}</span></td>
+                        <td className="text-muted-foreground">{t.assigneeName || "\u2014"}</td>
+                        <td className="text-muted-foreground">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "\u2014"}</td>
                       </tr>
                     ))}
                   </tbody>
