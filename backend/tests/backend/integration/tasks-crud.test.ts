@@ -44,7 +44,7 @@ describe("tasks CRUD (with Mongo)", () => {
     const { headers, orgId } = await seedOrgWithAdmin({ email: `tu-${Date.now()}@ex.com` });
     const created = await agent().post("/api/tasks").set(headers).send({ orgId, title: "Before", priority: "low" });
     const id = created.body.data.taskId;
-    // Valid transition: draft → assigned (for individual tasks)
+    // Valid transition: assigned → pending (for individual tasks)
     const res = await agent().put(`/api/tasks/${id}`).set(headers).send({ title: "After", status: "assigned" });
     expect(res.status).toBe(200);
     const fetch = await agent().get(`/api/tasks?orgId=${orgId}`).set(headers);

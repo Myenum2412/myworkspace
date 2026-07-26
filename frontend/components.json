@@ -35,6 +35,10 @@
     "@kibo-ui": "https://www.kibo-ui.com/r/{name}.json",
     "@blocks-so": "https://blocks.so/r/{name}.json",
     "@magicui": "https://magicui.design/r/{name}",
-    "@tour": "https://onboarding-tour.vercel.app/r/{name}.json"
+    "@tour": "https://onboarding-tour.vercel.app/r/{name}.json",
+    "@ui-layouts": "https://ui-layouts.com/r/{name}.json",
+    "@soundcn": "https://soundcn.xyz/r/{name}.json",
+    "@shadcnstore": "https://shadcnstore.com/r/{name}.json",
+    "@nexus-labs": "https://nexus-ui.com/r/{name}.json"
   }
 }

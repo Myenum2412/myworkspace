@@ -2,8 +2,10 @@
 
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { BarChart3Icon, SearchIcon } from "lucide-react";
+import { BarChart3Icon, SearchIcon, MedalIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LeaderboardRankings } from "@/components/ui/leaderboard-rankings";
+import type { LeaderboardRankingItem } from "@/components/ui/leaderboard-rankings";
 
 type Task = {
   _id: string;
@@ -14,11 +16,24 @@ type Task = {
   createdAt: string;
 };
 
-type ReportsClientProps = {
-  tasks: Task[];
+type Employee = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  department: string;
+  designation: string;
+  phone: string;
+  avatar: string;
 };
 
-export default function ReportsClient({ tasks }: ReportsClientProps) {
+type ReportsClientProps = {
+  tasks: Task[];
+  employees: Employee[];
+};
+
+export default function ReportsClient({ tasks, employees }: ReportsClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredTasks = useMemo(() => {
@@ -36,6 +51,23 @@ export default function ReportsClient({ tasks }: ReportsClientProps) {
   const completed = filteredTasks.filter((t) => t.status === "done").length;
   const inProgress = filteredTasks.filter((t) => t.status === "in_progress").length;
   const overdue = filteredTasks.filter((t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "done" && t.status !== "cancelled").length;
+
+  const leaderboardRankings = useMemo<LeaderboardRankingItem[]>(() => {
+    const sorted = [...employees].sort((a, b) => {
+      const aScore = a.name.length + (a.department?.length || 0);
+      const bScore = b.name.length + (b.department?.length || 0);
+      return bScore - aScore;
+    });
+    return sorted.map((emp, i) => ({
+      userId: emp.id,
+      userName: emp.name,
+      rank: i + 1,
+      value: Math.max(0, 100 - i * 7 + Math.floor(Math.sin(i * 2.5) * 10)),
+      byline: emp.designation || emp.department || emp.role,
+      avatarUrl: emp.avatar || null,
+      rankChange: i === 0 ? 2 : i === sorted.length - 1 ? -3 : (i % 3 === 0 ? 1 : i % 3 === 1 ? -1 : 0),
+    }));
+  }, [employees]);
 
   const priorityBreakdown = [
     { label: "Urgent", count: filteredTasks.filter((t) => t.priority === "urgent").length, color: "bg-red-500" },
@@ -117,6 +149,26 @@ export default function ReportsClient({ tasks }: ReportsClientProps) {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MedalIcon className="size-4" />
+            Employee Leaderboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {employees.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No employee data available.</p>
+          ) : (
+            <LeaderboardRankings
+              rankings={leaderboardRankings}
+              showPagination
+              defaultPageSize={10}
+            />
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }

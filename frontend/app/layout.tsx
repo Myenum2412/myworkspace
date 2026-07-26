@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Roboto } from "next/font/google";
+import { Roboto, Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { AppLayout } from "@/components/app-layout";
 import { ContextMenuProvider } from "@/components/context-menu-provider";
@@ -13,6 +13,9 @@ import { PerformanceMonitor } from "@/components/performance-monitor";
 import CookieConsentBlock from "@/components/cookie-consent-block";
 import { siteConfig, organizationJsonLd, webSiteJsonLd, softwareApplicationJsonLd } from "@/lib/seo/seo-config";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -164,7 +167,7 @@ export default function RootLayout({
   return (
     <html
       lang={siteConfig.language}
-      className={`${roboto.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", roboto.variable, inter.variable)}
       suppressHydrationWarning
     >
       <head>

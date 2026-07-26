@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { TextEffect } from '@/components/motion-primitives/text-effect'
 import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
-import { HeroHeader } from './hero-header'
+
 import { Spotify } from '@/components/ui/svgs/spotify'
 import { SupabaseFull } from '@/components/ui/svgs/supabase'
 import { Hulu } from '@/components/ui/svgs/hulu'
@@ -38,7 +38,7 @@ const transitionVariants = {
 export default function HeroSection() {
     return (
         <>
-            <HeroHeader />
+
             <main className="overflow-hidden">
                 <div
                     aria-hidden

@@ -26,7 +26,7 @@ export {
   notifyTeamTaskRejected,
   notifyCommonTaskPublished,
   notifyUpcomingTaskActivated,
-  notifyDraftPublished,
+
   notifyTaskDueSoon,
   notifyBillingReminder,
   notifyApprovalRequest,

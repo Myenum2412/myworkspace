@@ -81,6 +81,8 @@ const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; ico
     { value: "completed", label: "Completed", icon: CheckCircleIcon, color: "text-green-500" },
     { value: "hold", label: "Hold", icon: AlertCircleIcon, color: "text-orange-500" },
     { value: "cancelled", label: "Cancelled", icon: XCircleIcon, color: "text-red-500" },
+    { value: "closed", label: "Closed", icon: XCircleIcon, color: "text-gray-500" },
+    { value: "rejected", label: "Rejected", icon: XCircleIcon, color: "text-red-500" },
     { value: "reopened", label: "Reopened", icon: AlertCircleIcon, color: "text-purple-500" },
   ],
   team: [
@@ -91,6 +93,15 @@ const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; ico
     { value: "completed", label: "Completed", icon: CheckCircleIcon, color: "text-green-500" },
     { value: "rejected", label: "Rejected", icon: XCircleIcon, color: "text-red-500" },
     { value: "cancelled", label: "Cancelled", icon: XCircleIcon, color: "text-red-500" },
+    { value: "closed", label: "Closed", icon: XCircleIcon, color: "text-gray-500" },
+    { value: "reopened", label: "Reopened", icon: AlertCircleIcon, color: "text-purple-500" },
+  ],
+  common: [
+    { value: "published", label: "Published", icon: CheckCircleIcon, color: "text-teal-500" },
+    { value: "accepted", label: "Accepted", icon: CheckCircleIcon, color: "text-green-500" },
+    { value: "in_progress", label: "In Progress", icon: ClockIcon, color: "text-blue-500" },
+    { value: "completed", label: "Completed", icon: CheckCircleIcon, color: "text-green-500" },
+    { value: "closed", label: "Closed", icon: XCircleIcon, color: "text-gray-500" },
   ],
   upcoming: [
     { value: "scheduled", label: "Scheduled", icon: ClockIcon, color: "text-blue-500" },
@@ -98,6 +109,7 @@ const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; ico
     { value: "in_progress", label: "In Progress", icon: ClockIcon, color: "text-blue-500" },
     { value: "completed", label: "Completed", icon: CheckCircleIcon, color: "text-green-500" },
     { value: "cancelled", label: "Cancelled", icon: XCircleIcon, color: "text-red-500" },
+    { value: "closed", label: "Closed", icon: XCircleIcon, color: "text-gray-500" },
   ],
 };
 

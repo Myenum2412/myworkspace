@@ -160,7 +160,7 @@ export class ReportingEngine {
         const total = await Task.countDocuments({ ...baseFilter, ...match });
         return {
           summary: { dimension: "tasks_by_status", appliedFilters: filters },
-          dimensions: { statuses: ["draft", "assigned", "in_progress", "completed", "cancelled"] },
+          dimensions: { statuses: ["assigned", "in_progress", "completed", "cancelled"] },
           detail: results,
           total,
           page,

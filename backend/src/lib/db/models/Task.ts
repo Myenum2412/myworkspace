@@ -11,12 +11,10 @@ export interface ITask extends Document {
   description?: string;
   project?: string;
 
-  // Task type: individual | team | common | upcoming | draft
-  type: "individual" | "team" | "common" | "upcoming" | "draft";
+  type: "individual" | "team" | "common" | "upcoming";
 
-  // Unified status across all types
   status:
-    | "draft" | "assigned" | "pending" | "in_progress"
+    | "assigned" | "pending" | "in_progress"
     | "completed" | "closed" | "hold" | "cancelled"
     | "rejected" | "reopened" | "submitted" | "approved"
     | "published" | "accepted" | "scheduled" | "activated";
@@ -61,7 +59,7 @@ const taskSchema = new Schema<ITask>(
 
     type: {
       type: String,
-      enum: ["individual", "team", "common", "upcoming", "draft"],
+      enum: ["individual", "team", "common", "upcoming"],
       default: "individual",
       required: true,
     },
@@ -69,12 +67,12 @@ const taskSchema = new Schema<ITask>(
     status: {
       type: String,
       enum: [
-        "draft", "assigned", "pending", "in_progress",
+        "assigned", "pending", "in_progress",
         "completed", "closed", "hold", "cancelled",
         "rejected", "reopened", "submitted", "approved",
         "published", "accepted", "scheduled", "activated",
       ],
-      default: "draft",
+      default: "assigned",
     },
 
     priority: {

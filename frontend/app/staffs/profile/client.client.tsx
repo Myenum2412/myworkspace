@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AchievementBadge } from "@/components/ui/achievement-badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -44,6 +45,8 @@ import {
   HeartIcon,
   FileTextIcon,
   UploadIcon,
+  Trophy,
+  BarChart3Icon,
 } from "lucide-react";
 
 import nextDynamic from "next/dynamic";
@@ -1604,6 +1607,98 @@ export default function ProfileClient({ data }: Props) {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Achievements & Performance */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Trophy className="size-4" />
+                Achievements
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <AchievementBadge
+                  achievement={{
+                    id: "1",
+                    name: "Team Player",
+                    trigger: "metric",
+                    achievedAt: dbUser?.joiningDate || null,
+                    progress: 100,
+                    rarity: 65,
+                  }}
+                  badgeSize="sm"
+                />
+                <AchievementBadge
+                  achievement={{
+                    id: "2",
+                    name: "Veteran",
+                    trigger: "metric",
+                    achievedAt: dbUser && dbUser.totalExperience && parseInt(dbUser.totalExperience) >= 5
+                      ? dbUser.joiningDate : null,
+                    progress: dbUser && dbUser.totalExperience
+                      ? Math.min(100, (parseInt(dbUser.totalExperience) / 10) * 100) : 0,
+                    rarity: dbUser && dbUser.totalExperience && parseInt(dbUser.totalExperience) >= 5 ? 30 : undefined,
+                  }}
+                  badgeSize="sm"
+                />
+                <AchievementBadge
+                  achievement={{
+                    id: "3",
+                    name: "Innovator",
+                    trigger: "api",
+                    achievedAt: null,
+                    progress: 0,
+                  }}
+                  badgeSize="sm"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <BarChart3Icon className="size-4" />
+                Performance Report
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-sm border p-3 text-center">
+                  <p className="text-2xl font-bold text-primary">
+                    {dbUser?.totalExperience || "0"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Years Exp.</p>
+                </div>
+                <div className="rounded-sm border p-3 text-center">
+                  <p className="text-2xl font-bold text-green-600">
+                    {dbUser?.workExperience?.length || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Positions</p>
+                </div>
+                <div className="rounded-sm border p-3 text-center">
+                  <p className="text-2xl font-bold text-blue-600">
+                    {dbUser?.educationDetails?.length || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Degrees</p>
+                </div>
+                <div className="rounded-sm border p-3 text-center">
+                  <p className="text-2xl font-bold text-amber-600">
+                    {dbUser?.joiningDate
+                      ? Math.floor((Date.now() - new Date(dbUser.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+                      : 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Tenure (yrs)</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" className="w-full text-xs" asChild>
+                <a href="/staffs/performance">View Full Report</a>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Banner editor modal */}

@@ -133,6 +133,7 @@
   --inset-shadow-md: none;
   --inset-shadow-lg: none;
   --inset-shadow-xl: none;
+  --font-heading: var(--font-sans);
 }
 
 :root {
@@ -282,7 +283,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;

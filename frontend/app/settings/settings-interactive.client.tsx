@@ -419,7 +419,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 <h2 className="text-lg font-semibold">General Settings</h2>
                 <p className="text-sm text-muted-foreground">Manage workspace-wide configurations and dropdown options.</p>
               </div>
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+               <div className="grid gap-4 grid-cols-2">
                 {Object.entries(sectionLabels).map(([key, label]) => {
                   const items = dropdownOptions[key] || DEFAULT_DROPDOWN_OPTIONS[key as keyof typeof DEFAULT_DROPDOWN_OPTIONS] || []
                   const limit = sectionLimits[key] ?? DEFAULT_SECTION_LIMITS[key] ?? 20

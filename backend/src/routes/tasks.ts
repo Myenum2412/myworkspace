@@ -16,7 +16,6 @@ import {
   rejectTeamTask,
   publishCommonTask,
   activateUpcomingTask,
-  publishDraft,
   autoActivateScheduledTasks,
 } from "../services/task.service.js";
 import { logger } from "../lib/logger/index.js";
@@ -363,41 +362,6 @@ router.post("/:id/activate", async (req: AuthRequest, res: Response) => {
   } catch (err: any) {
     if (err instanceof AppError) throw err;
     throw new AppError(500, err.message || "Failed to activate task");
-  }
-});
-
-// ─────────────────────────────────────────────
-// DRAFT: Publish as a specific task type
-// ─────────────────────────────────────────────
-router.post("/:id/publish-draft", async (req: AuthRequest, res: Response) => {
-  try {
-    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can publish draft tasks");
-    const { targetType, assigneeId, teamId, selectedUserIds, scheduledDate } = req.body;
-    if (!targetType) throw new AppError(400, "targetType is required");
-    const orgId = await requireOrgMembership(req.user!.userId);
-    await publishDraft(req.params.id, req.user!.userId, targetType, {
-      assigneeId, teamId, selectedUserIds,
-      scheduledDate: scheduledDate ? new Date(scheduledDate) : undefined,
-    });
-    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
-
-    if (task) {
-      const targetUserId = assigneeId || task.assigneeId || task.creatorId || "";
-      createNotification({
-        type: "draft_published",
-        userId: targetUserId,
-        orgId,
-        createdBy: req.user!.userId,
-        title: "Draft Published",
-        message: `Draft "${task.title}" has been published as ${targetType}`,
-        link: `/alltasks?id=${req.params.id}`,
-      }).catch(() => {});
-    }
-
-    res.json({ success: true });
-  } catch (err: any) {
-    if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "Failed to publish draft");
   }
 });
 

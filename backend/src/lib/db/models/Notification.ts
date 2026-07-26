@@ -195,7 +195,6 @@ export const NOTIFICATION_TYPES = [
   "status_change",
   "billing_reminder",
   "invite",
-  "draft_published",
   "task_published",
   "task_activated",
   "task_due_soon",

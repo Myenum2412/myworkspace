@@ -5,6 +5,8 @@ import { getSocketIO } from "@/lib/socketio-client";
 import { useNotificationPermission } from "./use-notification-permission";
 import { subscribeToPush } from "@/lib/push-subscription";
 import { useNotificationStore } from "../stores/notification-store";
+import { playSound } from "@/lib/sound-engine";
+import { drop004Sound } from "@/lib/drop-004";
 
 export interface NotificationAction {
   label: string;
@@ -53,6 +55,7 @@ export function useNotifications(userId?: string) {
   const notifiedRef = useRef<Set<string>>(new Set());
   const userIdRef = useRef(userId);
   userIdRef.current = userId;
+  const soundEnabledRef = useRef(true);
 
   const fetchNotifications = useCallback(async (reset = false, signal?: AbortSignal, filters?: Record<string, string>) => {
     if (!userIdRef.current) return;
@@ -105,6 +108,19 @@ export function useNotifications(userId?: string) {
     if (!userId) return;
     const controller = new AbortController();
     fetchNotifications(true, controller.signal);
+
+    // Fetch user notification settings to determine if sound is enabled
+    fetch("/api/notifications/settings", { credentials: "include", signal: controller.signal })
+      .then((res) => {
+        if (res.ok) return res.json();
+      })
+      .then((d) => {
+        if (d?.data && typeof d.data.soundEnabled === "boolean") {
+          soundEnabledRef.current = d.data.soundEnabled;
+        }
+      })
+      .catch(() => {});
+
     return () => controller.abort();
   }, [userId, fetchNotifications]);
 
@@ -124,7 +140,12 @@ export function useNotifications(userId?: string) {
         if (prev.some((existing) => existing.id === notif.id)) return prev;
         return [notif, ...prev];
       });
-      if (!notif.read) setUnreadCount((c) => c + 1);
+      if (!notif.read) {
+        setUnreadCount((c) => c + 1);
+        if (soundEnabledRef.current) {
+          playSound(drop004Sound.dataUri).catch(() => {});
+        }
+      }
 
       if (!notif.read && "Notification" in window && Notification.permission === "granted") {
         if (!notifiedRef.current.has(notif.id)) {

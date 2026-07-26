@@ -21,7 +21,6 @@ import {
   notifyTeamTaskRejected,
   notifyCommonTaskPublished,
   notifyUpcomingTaskActivated,
-  notifyDraftPublished,
 } from "../lib/notifications/index.js";
 import {
   sendTaskAssigned,
@@ -63,7 +62,6 @@ export interface TaskListResult {
 // ─────────────────────────────────────────────
 
 const INDIVIDUAL_TRANSITIONS: Record<string, string[]> = {
-  draft: ["assigned"],
   assigned: ["pending", "hold", "cancelled"],
   pending: ["in_progress", "hold", "cancelled"],
   in_progress: ["completed", "hold", "cancelled"],
@@ -76,7 +74,6 @@ const INDIVIDUAL_TRANSITIONS: Record<string, string[]> = {
 };
 
 const TEAM_TRANSITIONS: Record<string, string[]> = {
-  draft: ["pending"],
   pending: ["in_progress", "cancelled"],
   in_progress: ["submitted", "cancelled"],
   submitted: ["approved", "rejected"],
@@ -88,7 +85,6 @@ const TEAM_TRANSITIONS: Record<string, string[]> = {
 };
 
 const COMMON_TRANSITIONS: Record<string, string[]> = {
-  draft: ["published"],
   published: ["accepted", "completed", "in_progress"],
   in_progress: ["completed"],
   accepted: ["completed"],
@@ -96,7 +92,6 @@ const COMMON_TRANSITIONS: Record<string, string[]> = {
 };
 
 const UPCOMING_TRANSITIONS: Record<string, string[]> = {
-  draft: ["scheduled"],
   scheduled: ["activated", "cancelled"],
   activated: ["in_progress", "completed"],
   in_progress: ["completed"],
@@ -104,25 +99,18 @@ const UPCOMING_TRANSITIONS: Record<string, string[]> = {
   cancelled: [],
 };
 
-const DRAFT_TRANSITIONS: Record<string, string[]> = {
-  draft: ["assigned", "pending", "in_progress", "published", "scheduled"],
-};
-
 const TYPE_TRANSITIONS: Record<string, Record<string, string[]>> = {
   individual: INDIVIDUAL_TRANSITIONS,
   team: TEAM_TRANSITIONS,
   common: COMMON_TRANSITIONS,
   upcoming: UPCOMING_TRANSITIONS,
-  draft: DRAFT_TRANSITIONS,
 };
 
-// Default initial status per type
 const TYPE_INITIAL_STATUS: Record<string, string> = {
-  individual: "draft",
-  team: "draft",
-  common: "draft",
-  upcoming: "draft",
-  draft: "draft",
+  individual: "assigned",
+  team: "pending",
+  common: "published",
+  upcoming: "scheduled",
 };
 
 // ─────────────────────────────────────────────
@@ -155,9 +143,6 @@ async function buildVisibilityFilter(orgId: string, userId: string, type?: strin
 
   // Upcoming: only creator sees upcoming
   conditions.push({ type: "upcoming", creatorId: userId });
-
-  // Draft: only creator sees drafts
-  conditions.push({ type: "draft", creatorId: userId });
 
   const filter: Record<string, any> = { orgId, $or: conditions };
 
@@ -469,7 +454,7 @@ export async function createTask(data: {
     return { taskId: existing._id, type: existing.type, status: existing.status, restored: true };
   }
 
-  const initialStatus = (taskType === "individual" && assigneeId) ? "assigned" : TYPE_INITIAL_STATUS[taskType];
+  const initialStatus = TYPE_INITIAL_STATUS[taskType] || "assigned";
 
   const resolvedAssigneeId = (taskType === "individual" && assigneeId) ? assigneeId : undefined;
 
@@ -607,11 +592,6 @@ export async function deleteTask(id: string, userId: string, scope?: string): Pr
   if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to delete this task");
 
   await checkModifyPermission(existing, userId, scope);
-
-  // Drafts: only creator can delete
-  if (existing.type === "draft" && existing.creatorId !== userId) {
-    throw new AppError(403, "Only the creator can delete drafts");
-  }
 
   await Task.findByIdAndDelete(id);
   await audit(userOrgId, userId, "task.deleted", id, `Task "${existing.title}" deleted`);
@@ -910,63 +890,6 @@ export async function activateUpcomingTask(id: string, userId: string): Promise<
     activator?.name || "System",
     userOrgId,
   ).catch((err) => logger.error({ err }, "Failed to notify activation"));
-}
-
-// ─────────────────────────────────────────────
-// DRAFT WORKFLOW
-// ─────────────────────────────────────────────
-
-export async function publishDraft(id: string, userId: string, targetType: TaskType, targetData?: {
-  assigneeId?: string;
-  teamId?: string;
-  selectedUserIds?: string[];
-  scheduledDate?: Date;
-}): Promise<void> {
-  const userOrgId = await requireOrgMembership(userId);
-  const existing = await Task.findById(id).lean();
-  if (!existing) throw new AppError(404, "Task not found");
-  if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized");
-  if (existing.type !== "draft") throw new AppError(400, "Not a draft task");
-  if (existing.creatorId !== userId) throw new AppError(403, "Only the creator can publish drafts");
-
-  const validTargets: TaskType[] = ["individual", "team", "common", "upcoming"];
-  if (!validTargets.includes(targetType)) {
-    throw new AppError(400, `Cannot publish draft as type "${targetType}"`);
-  }
-
-  // Validate target-type requirements
-  if (targetType === "individual" && !targetData?.assigneeId) {
-    throw new AppError(400, "assigneeId required to publish as individual task");
-  }
-  if (targetType === "team" && !targetData?.teamId) {
-    throw new AppError(400, "teamId required to publish as team task");
-  }
-  if (targetType === "upcoming" && !targetData?.scheduledDate && !existing.dueDate) {
-    throw new AppError(400, "scheduledDate required to publish as upcoming task");
-  }
-
-  const initialStatus = TYPE_INITIAL_STATUS[targetType];
-
-  const updates: Record<string, any> = {
-    type: targetType,
-    status: targetType === "individual" ? "assigned" : initialStatus,
-  };
-  if (targetData?.assigneeId) updates.assigneeId = targetData.assigneeId;
-  if (targetData?.teamId) updates.teamId = targetData.teamId;
-  if (targetData?.selectedUserIds) updates.selectedUserIds = targetData.selectedUserIds;
-  if (targetData?.scheduledDate) updates.scheduledDate = targetData.scheduledDate;
-
-  await Task.findByIdAndUpdate(id, updates);
-  await audit(userOrgId, userId, "task.published", id, `Draft published as ${targetType} task`);
-
-  const publisher = await User.findOne({ id: userId }).lean().catch(() => null);
-  notifyDraftPublished(
-    { id, title: existing.title || "" },
-    userId,
-    publisher?.name || "System",
-    userOrgId,
-    targetType,
-  ).catch((err) => logger.error({ err }, "Failed to notify draft publish"));
 }
 
 // ─────────────────────────────────────────────

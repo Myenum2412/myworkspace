@@ -2,7 +2,6 @@ import { AppError } from "../middleware/error.js";
 
 // Mongoose model enum types
 export type TaskStatus =
-  | "draft"
   | "assigned"
   | "pending"
   | "in_progress"
@@ -19,7 +18,7 @@ export type TaskStatus =
   | "scheduled"
   | "activated";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
-export type TaskType = "individual" | "team" | "common" | "upcoming" | "draft";
+export type TaskType = "individual" | "team" | "common" | "upcoming";
 
 /**
  * Field validation helpers. Fail fast with 400 + field list so the existing
@@ -76,11 +75,11 @@ export function optionalArray(value: unknown, path: string, { max = 1000 }: { ma
 
 // Common enums for the hot routes.
 export const TASK_STATUSES = [
-  "draft", "assigned", "pending", "in_progress", "completed", "closed",
+  "assigned", "pending", "in_progress", "completed", "closed",
   "hold", "cancelled", "rejected", "reopened", "submitted", "approved",
   "published", "accepted", "scheduled", "activated",
 ] as const;
 export const TASK_PRIORITIES = ["low", "medium", "high", "urgent"] as const;
-export const TASK_TYPES = ["individual", "team", "common", "upcoming", "draft"] as const;
+export const TASK_TYPES = ["individual", "team", "common", "upcoming"] as const;
 export const PROJECT_STATUSES = ["Active", "Inactive"] as const;
 export const PROJECT_ACCESS = ["Public", "Private"] as const;

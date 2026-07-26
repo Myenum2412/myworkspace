@@ -195,24 +195,6 @@ export async function notifyUpcomingTaskActivated(
   });
 }
 
-export async function notifyDraftPublished(
-  task: { id: string; title: string },
-  userId: string,
-  publishedByName: string,
-  orgId: string,
-  targetType: string,
-) {
-  return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "draft_published", category: "tasks",
-    title: "Draft Published",
-    message: `${publishedByName} published "${task.title}" as a ${targetType} task`,
-    link: `/alltasks?id=${task.id}`,
-    actions: [{ label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true }],
-    metadata: { taskId: task.id, targetType },
-  });
-}
-
 export async function notifyTaskDueSoon(
   task: { id: string; title: string; dueDate: Date },
   assigneeId: string,

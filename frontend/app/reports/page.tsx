@@ -9,6 +9,7 @@ export default function ReportsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [tasks, setTasks] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,9 +18,16 @@ export default function ReportsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/reports")
-      .then(r => r.json())
-      .then(d => { if (!cancelled) setTasks(d.tasks || []); })
+    Promise.all([
+      fetch("/api/reports").then(r => r.json()),
+      fetch("/api/staffs/list").then(r => r.json()),
+    ])
+      .then(([reportsData, staffData]) => {
+        if (!cancelled) {
+          setTasks(reportsData.tasks || []);
+          setEmployees(staffData.employees || []);
+        }
+      })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -28,5 +36,5 @@ export default function ReportsPage() {
   if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;
 
-  return <ReportsClient tasks={tasks} />;
+  return <ReportsClient tasks={tasks} employees={employees} />;
 }

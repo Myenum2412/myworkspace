@@ -9,7 +9,7 @@ function csrfHeaders(): Record<string, string> {
   return token ? { "x-csrf-token": token } : {};
 }
 
-export type TaskType = "individual" | "team" | "upcoming";
+export type TaskType = "individual" | "team" | "common" | "upcoming";
 
 export type Task = {
   id: string;
@@ -126,12 +126,4 @@ export const taskService = {
     if (!res.ok) throw new Error("Failed to activate task");
   },
 
-  async publishDraft(taskId: string, targetType: TaskType, data?: Record<string, any>): Promise<void> {
-    const res = await fetch(`/api/tasks/${taskId}/publish-draft`, {
-      method: "POST", headers: { "Content-Type": "application/json", ...csrfHeaders() },
-      credentials: "include",
-      body: JSON.stringify({ targetType, ...data }),
-    });
-    if (!res.ok) throw new Error("Failed to publish draft");
-  },
 };

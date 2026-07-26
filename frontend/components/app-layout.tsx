@@ -101,13 +101,15 @@ export function AppLayout({ children }: AppLayoutProps) {
       );
     }
 
+    const isHomePage = pathname === "/";
+
     return (
       <SubscriptionGuard>
         <div className="flex min-h-screen flex-col">
           <Suspense fallback={null}>
             <NewNav />
           </Suspense>
-          <main className="flex-1 pt-16">
+          <main className={`flex-1 ${!isHomePage ? "pt-16" : ""}`}>
             {children}
           </main>
           <Suspense fallback={null}>
