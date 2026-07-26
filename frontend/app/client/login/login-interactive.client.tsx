@@ -141,7 +141,7 @@ export default function LoginInteractive() {
                   Forgot password?
                 </Link>
               </div>
-              <Button type="submit" className="" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? <><Loader2 className="mr-2 size-4 animate-spin" /> Signing in...</> : "Sign In"}
               </Button>
             </form>

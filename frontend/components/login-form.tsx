@@ -107,7 +107,7 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
             </button>
           </div>
         </div>
-        <Button type="submit" className="mt-1 font-semibold" disabled={loading}>
+        <Button type="submit" className="w-full mt-1 font-semibold" disabled={loading}>
           {loading ? "Signing in..." : "Sign in"}
         </Button>
       </form>
