@@ -39,6 +39,7 @@
     "@ui-layouts": "https://ui-layouts.com/r/{name}.json",
     "@soundcn": "https://soundcn.xyz/r/{name}.json",
     "@shadcnstore": "https://shadcnstore.com/r/{name}.json",
-    "@nexus-labs": "https://nexus-ui.com/r/{name}.json"
+    "@nexus-labs": "https://nexus-ui.com/r/{name}.json",
+    "@svgl": "https://svgl.app/r/{name}.json"
   }
 }

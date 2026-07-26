@@ -1,9 +1,9 @@
 import { ChevronRight } from 'lucide-react'
-import { Vercel } from '@/components/ui/svgs/vercel'
-import { Supabase } from '@/components/ui/svgs/supabase'
-import { Linear } from '@/components/ui/svgs/linear'
+import { Gmail } from '@/components/ui/svgs/gmail'
+import { GoogleCalendar } from '@/components/ui/svgs/googleCalendar'
+import { WhatsappIcon as Whatsapp } from '@/components/ui/svgs/whatsappIcon'
+import { MicrosoftWord as Word } from '@/components/ui/svgs/microsoftWord'
 import { Slack } from '@/components/ui/svgs/slack'
-import { Firebase } from '@/components/ui/svgs/firebase'
 import { ClerkIconDark as Clerk } from '@/components/ui/svgs/clerk'
 import { Logo } from '@/components/logo'
 
@@ -43,7 +43,7 @@ const IntegrationsIllustration = () => {
                 <div className="bg-border absolute inset-0 my-auto h-px"></div>
 
                 <div className="bg-card shadow-black/6.5 ring-border relative flex h-8 items-center rounded-sm px-3 shadow-sm ring">
-                    <Vercel className="size-3.5" />
+                    <Gmail className="size-3.5" />
                 </div>
                 <div className="bg-card shadow-black/6.5 ring-border relative flex h-8 items-center rounded-sm px-3 shadow-sm ring">
                     <Slack className="size-3.5" />
@@ -63,17 +63,17 @@ const IntegrationsIllustration = () => {
                     </div>
                 </div>
                 <div className="bg-card shadow-black/6.5 ring-border relative flex h-8 items-center rounded-sm px-3 shadow-sm ring">
-                    <Linear className="size-3.5" />
+                    <Word className="size-3.5" />
                 </div>
             </div>
             <div className="@lg:px-6 relative flex h-10 items-center justify-between gap-12">
                 <div className="bg-border absolute inset-0 my-auto h-px"></div>
 
                 <div className="bg-card shadow-black/6.5 ring-border relative flex h-8 items-center rounded-sm px-3 shadow-sm ring">
-                    <Supabase className="size-3.5" />
+                    <GoogleCalendar className="size-3.5" />
                 </div>
                 <div className="bg-card shadow-black/6.5 ring-border relative flex h-8 items-center rounded-sm px-3 shadow-sm ring">
-                    <Firebase className="size-3.5" />
+                    <Whatsapp className="size-3.5" />
                 </div>
             </div>
         </div>
