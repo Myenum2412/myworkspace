@@ -69,6 +69,30 @@ export default function StocksPage() {
     }
   }
 
+  const handleView = useCallback((stock: Stock) => setViewingStock(stock), []);
+
+  const stats = useMemo(() => {
+    const totalItems = stocks.length;
+    const totalStock = stocks.reduce((sum, s) => sum + (s.availableStock || 0), 0);
+    const lowStock = stocks.filter((s) => s.availableStock <= s.reorderLevel).length;
+    const outOfStock = stocks.filter((s) => (s.availableStock || 0) === 0).length;
+    const stockIn = stocks.reduce((sum, s) => sum + (s.stockIn || 0), 0);
+    const stockOut = stocks.reduce((sum, s) => sum + (s.stockOut || 0), 0);
+    return { totalItems, totalStock, lowStock, outOfStock, stockIn, stockOut };
+  }, [stocks]);
+
+  const statuses = [...new Set(stocks.map((s) => s.status).filter(Boolean))];
+  const filteredData = statusFilter.length > 0 ? stocks.filter((s) => statusFilter.includes(s.status)) : stocks;
+
+  const statsItems = useMemo(() => [
+    { name: 'Total Items', value: stats.totalItems, subtitle: 'All inventory' },
+    { name: 'Total Stock', value: stats.totalStock, subtitle: 'Units available' },
+    { name: 'Low Stock', value: stats.lowStock, subtitle: 'Below reorder' },
+    { name: 'Out of Stock', value: stats.outOfStock, subtitle: 'Zero available' },
+    { name: 'Stock In', value: stats.stockIn, subtitle: 'Received today' },
+    { name: 'Stock Out', value: stats.stockOut, subtitle: 'Dispatched today' },
+  ], [stats]);
+
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); }
   }, [status, router]);
@@ -117,8 +141,6 @@ export default function StocksPage() {
     }
   }
 
-  const handleView = useCallback((stock: Stock) => setViewingStock(stock), []);
-
   if (loading && stocks.length === 0) {
     return (
       <main className="flex flex-1 flex-col gap-4 min-w-0 w-full">
@@ -128,29 +150,6 @@ export default function StocksPage() {
       </main>
     );
   }
-
-  // Stats summary
-  const stats = useMemo(() => {
-    const totalItems = stocks.length;
-    const totalStock = stocks.reduce((sum, s) => sum + (s.availableStock || 0), 0);
-    const lowStock = stocks.filter((s) => s.availableStock <= s.reorderLevel).length;
-    const outOfStock = stocks.filter((s) => (s.availableStock || 0) === 0).length;
-    const stockIn = stocks.reduce((sum, s) => sum + (s.stockIn || 0), 0);
-    const stockOut = stocks.reduce((sum, s) => sum + (s.stockOut || 0), 0);
-    return { totalItems, totalStock, lowStock, outOfStock, stockIn, stockOut };
-  }, [stocks]);
-
-  const statuses = [...new Set(stocks.map((s) => s.status).filter(Boolean))];
-  const filteredData = statusFilter.length > 0 ? stocks.filter((s) => statusFilter.includes(s.status)) : stocks;
-
-  const statsItems = useMemo(() => [
-    { name: 'Total Items', value: stats.totalItems, subtitle: 'All inventory' },
-    { name: 'Total Stock', value: stats.totalStock, subtitle: 'Units available' },
-    { name: 'Low Stock', value: stats.lowStock, subtitle: 'Below reorder' },
-    { name: 'Out of Stock', value: stats.outOfStock, subtitle: 'Zero available' },
-    { name: 'Stock In', value: stats.stockIn, subtitle: 'Received today' },
-    { name: 'Stock Out', value: stats.stockOut, subtitle: 'Dispatched today' },
-  ], [stats]);
 
   return (
     <>

@@ -70,7 +70,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
     fetch("/api/employees", { credentials: "include", signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
-        const all = (d?.data || []) as { id?: string; _id?: string; name: string; image?: string }[];
+        const all = (d?.employees || []) as { id?: string; _id?: string; name: string; image?: string }[];
         const filtered = all.filter((e) => project.members!.includes(e.id || e._id || ""));
         setMemberNames(filtered.map((e) => ({ id: e.id || e._id || "", name: e.name, image: e.image })));
         const map: Record<string, string> = {};
@@ -208,7 +208,6 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 <FieldRow label="Category" value={project.category || "\u2014"} />
                 <FieldRow label="Deadline" value={project.deadline ? new Date(project.deadline).toLocaleDateString() : "No deadline"} />
                 <FieldRow label="Start Date" value={project.startDate ? new Date(project.startDate).toLocaleDateString() : "\u2014"} />
-                <FieldRow label="Description" value={project.description || "No description"} />
               </div>
             </div>
 
@@ -228,6 +227,13 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                    <ArrowDownIcon className="size-3 text-red-500" />}
                   {health === "on-track" ? "On Track" : health === "at-risk" ? "At Risk" : "Delayed"}
                 </span>
+              </div>
+            </div>
+
+            <div className="rounded-sm border p-4 space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description</h3>
+              <div className="h-24 overflow-y-auto text-sm text-muted-foreground">
+                {project.description || "No description"}
               </div>
             </div>
           </div>

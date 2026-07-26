@@ -118,7 +118,7 @@ export default function ProjectsInteractive({
     fetch("/api/employees", { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
-        const arr = d?.data || [];
+        const arr = d?.employees || [];
         setEmployees(arr.map((e: { id?: string; _id?: string; name: string; email: string; image?: string }) => ({
           id: e.id || e._id || "",
           name: e.name,
