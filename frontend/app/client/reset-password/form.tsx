@@ -21,7 +21,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-sm text-center">
           <p className="text-sm text-muted-foreground mb-4">Invalid or missing reset link. Please request a new one.</p>
-          <Button asChild><Link href="/client/forgot-password">Request reset link</Link></Button>
+          <Button asChild className="w-full"><Link href="/client/forgot-password">Request reset link</Link></Button>
         </div>
       </div>
     );
@@ -36,7 +36,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
           </div>
           <h1 className="text-2xl font-bold tracking-tight mb-2">Password reset!</h1>
           <p className="text-sm text-muted-foreground mb-6">Your password has been updated successfully.</p>
-          <Button asChild><Link href="/client/login">Sign in</Link></Button>
+          <Button asChild className="w-full"><Link href="/client/login">Sign in</Link></Button>
         </div>
       </div>
     );
@@ -112,7 +112,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
               onChange={(e) => setConfirm(e.target.value)}
             />
           </div>
-          <Button type="submit" className="font-semibold" disabled={loading}>
+          <Button type="submit" className="w-full font-semibold" disabled={loading}>
             {loading ? <Loader2Icon className="size-4 mr-1.5 animate-spin" /> : <LockIcon className="size-4 mr-1.5" />}
             Reset password
           </Button>

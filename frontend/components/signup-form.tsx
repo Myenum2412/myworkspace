@@ -90,7 +90,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
               maxLength={6}
             />
           </div>
-          <Button type="submit" className="mt-1 font-semibold" disabled={loading || otp.length !== 6}>
+          <Button type="submit" className="w-full mt-1 font-semibold" disabled={loading || otp.length !== 6}>
             {loading ? "Verifying..." : "Verify & Create Account"}
           </Button>
         </form>
@@ -111,7 +111,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
           <Separator className="flex-1" />
         </div>
 
-        <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span>Google</span></Button>
+        <Button variant="outline" type="button" className="w-full flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span>Google</span></Button>
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
@@ -150,7 +150,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
           <Label className="text-xs text-muted-foreground">Email address</Label>
           <Input id="signup-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required autoComplete="email" />
         </div>
-        <Button type="submit" className="mt-1 font-semibold" disabled={loading}>
+        <Button type="submit" className="w-full mt-1 font-semibold" disabled={loading}>
           {loading ? "Sending..." : "Send verification code"}
         </Button>
       </form>
@@ -161,7 +161,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
         <Separator className="flex-1" />
       </div>
 
-      <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span>Google</span></Button>
+      <Button variant="outline" type="button" className="w-full flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span>Google</span></Button>
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}

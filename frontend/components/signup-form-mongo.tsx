@@ -69,7 +69,7 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
           <Label className="text-xs text-muted-foreground">Confirm password</Label>
           <PasswordInput id="mongo-confirm" name="confirm" placeholder="" required autoComplete="new-password" />
         </div>
-        <Button type="submit" className="mt-1 font-semibold">
+        <Button type="submit" className="w-full mt-1 font-semibold">
           Create account
         </Button>
       </form>
@@ -81,9 +81,9 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span className="hidden sm:inline">Google</span></Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}><GitHubIcon /><span className="hidden sm:inline">GitHub</span></Button>
-        <Button variant="outline" type="button" className="flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}><LinkedInIcon /><span className="hidden sm:inline">LinkedIn</span></Button>
+        <Button variant="outline" type="button" className="w-full flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with Google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}><GoogleIcon /><span className="hidden sm:inline">Google</span></Button>
+        <Button variant="outline" type="button" className="w-full flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with GitHub" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}><GitHubIcon /><span className="hidden sm:inline">GitHub</span></Button>
+        <Button variant="outline" type="button" className="w-full flex items-center justify-center text-sm font-medium gap-2" aria-label="Sign up with LinkedIn" onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}><LinkedInIcon /><span className="hidden sm:inline">LinkedIn</span></Button>
       </div>
 
       <p className="text-center text-sm text-muted-foreground">

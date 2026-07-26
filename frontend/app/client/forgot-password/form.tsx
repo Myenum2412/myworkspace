@@ -42,7 +42,7 @@ export function ClientForgotPasswordForm() {
             <Label className="text-xs text-muted-foreground">Email address</Label>
             <Input id="email" name="email" type="email" required autoComplete="email" />
           </div>
-          <Button type="submit" className="font-semibold" disabled={loading}>
+          <Button type="submit" className="w-full font-semibold" disabled={loading}>
             Send reset link
           </Button>
         </form>
