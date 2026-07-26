@@ -122,7 +122,7 @@ export function GalleryDetailClient({
     <main className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => router.push("/photography")}>
-          <ArrowLeftIcon className="size-4" />
+          <ArrowLeftIcon className="" />
         </Button>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">{gallery.name}</h1>
@@ -154,7 +154,7 @@ export function GalleryDetailClient({
               <div key={img.id} className="group relative aspect-square rounded-sm border overflow-hidden bg-muted">
                 <img src={img.url} alt={img.filename} className="size-full object-cover" />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
-                  <Button size="icon" variant="ghost" className="size-7 text-white" onClick={() => handleDeleteImage(img.id)}>
+                  <Button size="icon" variant="ghost" className="text-white" onClick={() => handleDeleteImage(img.id)}>
                     <Trash2Icon className="size-3" />
                   </Button>
                 </div>
@@ -171,7 +171,7 @@ export function GalleryDetailClient({
 
         <TabsContent value="qr" className="space-y-4">
           <Button onClick={handleGenerateToken} disabled={generatingToken}>
-            {generatingToken ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <QrCodeIcon className="size-4 mr-1" />}
+            {generatingToken ? <Loader2Icon className="animate-spin mr-1" /> : <QrCodeIcon className="size-4 mr-1" />}
             {generatingToken ? "Generating..." : "Generate Access Token"}
           </Button>
 
@@ -185,7 +185,7 @@ export function GalleryDetailClient({
                 <img src={qrImageUrl} alt="QR Code" className="rounded-sm border" width={300} height={300} />
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => copyToken(selectedToken)}>
-                    <CopyIcon className="size-3 mr-1" /> Copy Link
+                    <CopyIcon className="mr-1" /> Copy Link
                   </Button>
                 </div>
               </CardContent>
@@ -203,10 +203,10 @@ export function GalleryDetailClient({
                 </div>
                 <div className="flex gap-1">
                   <Button size="sm" variant="ghost" onClick={() => showQr(t.token)}>
-                    <QrCodeIcon className="size-3" />
+                    <QrCodeIcon className="" />
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => copyToken(t.token)}>
-                    <CopyIcon className="size-3" />
+                    <CopyIcon className="" />
                   </Button>
                 </div>
               </div>

@@ -453,7 +453,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                   )}
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="size-8" onClick={() => setEditingMember(member)}>
+                      <Button variant="ghost" size="icon" className="" onClick={() => setEditingMember(member)}>
                         <PencilIcon className="size-4" />
                       </Button>
                       <form action={deleteMember}>
@@ -463,7 +463,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                           type="submit"
                           variant="ghost"
                           size="icon"
-                          className="size-8 text-black hover:text-gray-600 hover:bg-blue-50"
+                          className="text-black hover:text-gray-600 hover:bg-blue-50"
                           onClick={(e) => {
                             if (!confirm(`Delete member "${member.name}"?`)) e.preventDefault();
                           }}

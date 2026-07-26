@@ -154,8 +154,8 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
       </fieldset>
 
       <div className="flex justify-end gap-3 pt-2 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} className="h-10 px-5">Cancel</Button>
-        <Button type="submit" disabled={saving || !customerName.trim()} className="h-10 px-5">
+        <Button type="button" variant="outline" onClick={onCancel} className="px-5">Cancel</Button>
+        <Button type="submit" disabled={saving || !customerName.trim()} className="px-5">
           {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
           {engagement ? "Update" : "Save"}
         </Button>

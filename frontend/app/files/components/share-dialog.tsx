@@ -158,7 +158,7 @@ export function ShareDialog() {
               </div>
             </div>
 
-            <Button onClick={handleCreateLink} disabled={creating} className="w-full">
+            <Button onClick={handleCreateLink} disabled={creating} className="">
               <LinkIcon className="size-3.5 mr-1.5" />
               {creating ? "Creating..." : "Generate Share Link"}
             </Button>
@@ -166,7 +166,7 @@ export function ShareDialog() {
             {shareLink && (
               <div className="flex items-center gap-2 p-2 bg-muted rounded-sm">
                 <Input value={shareLink} readOnly className="text-xs h-8 bg-transparent border-0" />
-                <Button variant="ghost" size="sm" onClick={copyLink} className="h-8 shrink-0">
+                <Button variant="ghost" size="sm" onClick={copyLink} className="shrink-0">
                   {copied ? <CheckIcon className="size-3.5" /> : <CopyIcon className="size-3.5" />}
                 </Button>
               </div>
@@ -194,7 +194,7 @@ export function ShareDialog() {
                   </SelectContent>
                 </Select>
                 <Button onClick={handleInternalShare}>
-                  <UserPlusIcon className="size-3.5 mr-1" /> Share
+                  <UserPlusIcon className="mr-1" /> Share
                 </Button>
               </div>
             </div>

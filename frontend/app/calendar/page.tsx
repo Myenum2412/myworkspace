@@ -271,7 +271,7 @@ export default function CalendarPage() {
                 title="Sync calendars"
               >
                 {syncing ? (
-                  <Loader2Icon className="size-4 animate-spin" />
+                  <Loader2Icon className="animate-spin" />
                 ) : (
                   <RiRefreshLine className="size-4" />
                 )}
@@ -281,7 +281,7 @@ export default function CalendarPage() {
                 size="icon"
                 onClick={() => setShowCalendarSettings(!showCalendarSettings)}
               >
-                <RiSettings3Line className="size-4" />
+                <RiSettings3Line className="" />
               </Button>
             </>
           )}
@@ -292,7 +292,7 @@ export default function CalendarPage() {
             disabled={connecting}
           >
             {connecting ? (
-              <Loader2Icon className="size-4 animate-spin mr-1" />
+              <Loader2Icon className="animate-spin mr-1" />
             ) : (
               <RiGoogleLine className="size-4 mr-1" />
             )}

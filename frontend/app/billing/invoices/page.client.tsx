@@ -93,7 +93,7 @@ export default function BillingInvoicesPage() {
         </div>
         <Button asChild>
           <Link href="/billing/invoices/new">
-            <PlusIcon className="mr-2 size-4" />
+            <PlusIcon className="mr-2" />
             New Invoice
           </Link>
         </Button>

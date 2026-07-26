@@ -75,7 +75,7 @@ export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) 
             <Button
               variant={isSelected ? "default" : "outline"}
               className={cn(
-                "w-full h-11",
+                "",
                 isSelected && "shadow-md"
               )}
               onClick={(e) => {
@@ -86,7 +86,7 @@ export function PricingCards({ selectedPlan, onSelectPlan }: PricingCardsProps) 
               {isSelected ? (
                 <>
                   Selected
-                  <Check className="ml-2 size-4" />
+                  <Check className="ml-2" />
                 </>
               ) : (
                 <>

@@ -62,7 +62,7 @@ export function PhotographyPageClient({ orgId, galleries: initialGalleries }: { 
           <p className="text-sm text-muted-foreground">Manage QR-based face gallery access</p>
         </div>
         <Button onClick={() => setShowCreate(!showCreate)}>
-          <PlusIcon className="size-4 mr-1" />
+          <PlusIcon className="mr-1" />
           Create Gallery
         </Button>
       </div>
@@ -98,7 +98,7 @@ export function PhotographyPageClient({ orgId, galleries: initialGalleries }: { 
         </Card>
       )}
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         {galleries.map((gallery) => (
           <Card key={gallery.id}>
             <CardHeader className="pb-2">

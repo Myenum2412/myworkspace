@@ -510,7 +510,7 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-8"
+                  className=""
                   onClick={() => window.open(`/api/files/${file.id}/download?preview=true`, "_blank")}
                   title="View"
                 >
@@ -519,7 +519,7 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-8"
+                  className=""
                   onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}
                   title="Download"
                 >

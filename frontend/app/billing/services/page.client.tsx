@@ -116,13 +116,13 @@ export default function BillingServicesPage() {
         <div className="flex items-center gap-3">
           {selectedItems.size > 0 && (
             <Button variant="destructive" size="sm" onClick={deleteSelected} disabled={deleting}>
-              <Trash2 className="size-4 mr-1.5" />
+              <Trash2 className="mr-1.5" />
               Delete ({selectedItems.size})
             </Button>
           )}
           <Button asChild>
             <Link href="/billing/services/new">
-              <PlusCircleIcon className="mr-2 h-4 w-4" />
+              <PlusCircleIcon className="mr-2" />
               New Service
             </Link>
           </Button>

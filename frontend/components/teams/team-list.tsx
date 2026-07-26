@@ -98,7 +98,7 @@ export function TeamList({
                     return (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
+                          <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); onViewTeam(team); }}><UsersIcon className="mr-2 size-4" />View Members</DropdownMenuItem>

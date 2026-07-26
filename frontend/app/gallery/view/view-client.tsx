@@ -154,13 +154,13 @@ export function GalleryViewClient({
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}>
-                  <ChevronLeftIcon className="size-4" />
+                  <ChevronLeftIcon className="" />
                 </Button>
                 <span className="text-sm text-muted-foreground">
                   Page {page + 1} of {totalPages}
                 </span>
                 <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1}>
-                  <ChevronRightIcon className="size-4" />
+                  <ChevronRightIcon className="" />
                 </Button>
               </div>
             )}

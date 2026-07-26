@@ -104,7 +104,7 @@ export const columns: ColumnDef<Team>[] = [
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon-sm">
-              <MoreHorizontalIcon className="size-4" />
+              <MoreHorizontalIcon className="" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

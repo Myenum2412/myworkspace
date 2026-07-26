@@ -195,7 +195,7 @@ export default function CalendarIntegrationClient() {
                       title="Sync now"
                     >
                       {syncing === conn.id ? (
-                        <Loader2Icon className="size-4 animate-spin" />
+                        <Loader2Icon className="animate-spin" />
                       ) : (
                         <RiRefreshLine className="size-4" />
                       )}
@@ -207,7 +207,7 @@ export default function CalendarIntegrationClient() {
                       disabled={connecting === conn.provider}
                       title="Disconnect"
                     >
-                      <RiDeleteBinLine className="size-4 text-destructive" />
+                      <RiDeleteBinLine className="text-destructive" />
                     </Button>
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export default function CalendarIntegrationClient() {
               disabled={connecting === "google"}
             >
               {connecting === "google" ? (
-                <Loader2Icon className="size-4 animate-spin mr-2" />
+                <Loader2Icon className="animate-spin mr-2" />
               ) : connections.some((c) => c.provider === "google") ? (
                 <RiCheckLine className="size-4 mr-2" />
               ) : null}
@@ -274,7 +274,7 @@ export default function CalendarIntegrationClient() {
               disabled={connecting === "microsoft"}
             >
               {connecting === "microsoft" ? (
-                <Loader2Icon className="size-4 animate-spin mr-2" />
+                <Loader2Icon className="animate-spin mr-2" />
               ) : connections.some((c) => c.provider === "microsoft") ? (
                 <RiCheckLine className="size-4 mr-2" />
               ) : null}

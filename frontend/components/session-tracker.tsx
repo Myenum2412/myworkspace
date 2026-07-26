@@ -36,7 +36,7 @@ export function SessionTracker() {
         <Button
           variant="outline"
           size="sm"
-          className={`gap-1.5 h-8 ${isOnBreak ? "border-blue-300 text-black" : "border-blue-300 text-black"}`}
+          className={`gap-1.5 ${isOnBreak ? "border-blue-300 text-black" : "border-blue-300 text-black"}`}
         >
           <Clock className={`size-3.5 ${isOnBreak ? "animate-pulse" : ""}`} />
           <span className="font-mono text-xs">{formatDuration(elapsed)}</span>
@@ -88,7 +88,7 @@ export function SessionTracker() {
             <Button
               variant="default"
               size="sm"
-              className="w-full gap-2"
+              className="gap-2"
               onClick={endBreak}
             >
               <Play className="size-4" />
@@ -98,7 +98,7 @@ export function SessionTracker() {
             <Button
               variant="outline"
               size="sm"
-              className="w-full gap-2 border-blue-300 text-black hover:bg-gray-800"
+              className="gap-2 border-blue-300 text-black hover:bg-gray-800"
               onClick={startBreak}
             >
               <Coffee className="size-4" />

@@ -43,7 +43,7 @@ export default function HeroBlock() {
           </Button>
         </div>
 
-        <Separator className="mt-12 w-full max-w-md" />
+        <Separator className="mt-12" />
 
         <p className="mt-6 text-sm text-muted-foreground">
           Trusted by thousands of teams around the world.

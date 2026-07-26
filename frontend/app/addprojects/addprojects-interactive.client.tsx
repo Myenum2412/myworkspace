@@ -161,9 +161,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
                       type="button"
                       onClick={() => setColor(c)}
                       disabled={submitting}
-                      className={`size-7 rounded-sm ring-offset-2 ring-offset-background transition-all ${
-                        color === c ? "ring-2 ring-foreground scale-110" : ""
-                      }`}
+                      className={`rounded-sm ring-offset-2 ring-offset-background transition-all ${ color === c ? "ring-2 ring-foreground scale-110" : "" }`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
@@ -183,7 +181,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
                 Cancel
               </Button>
               <Button type="submit" disabled={!name || !client || submitting}>
-                {submitting ? <Loader2Icon className="size-4 animate-spin" /> : "Create Project"}
+                {submitting ? <Loader2Icon className="animate-spin" /> : "Create Project"}
               </Button>
             </div>
           </form>

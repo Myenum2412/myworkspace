@@ -37,10 +37,10 @@ export function ModelViewer({ src, fileName, mimeType }: ModelViewerProps) {
           <span className="text-sm font-medium">{fileName}</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={toggleFullscreen}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={toggleFullscreen}>
             {isFullscreen ? <MinimizeIcon className="size-3.5" /> : <MaximizeIcon className="size-3.5" />}
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(src, "_blank")}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
             <DownloadIcon className="size-3.5" />
           </Button>
         </div>
@@ -54,7 +54,7 @@ export function ModelViewer({ src, fileName, mimeType }: ModelViewerProps) {
             {mimeType} &middot; Download to view in a 3D application
           </p>
           <Button variant="secondary" size="sm" onClick={() => window.open(src, "_blank")}>
-            <DownloadIcon className="size-3.5 mr-1.5" /> Download Model
+            <DownloadIcon className="mr-1.5" /> Download Model
           </Button>
         </div>
       </div>

@@ -247,7 +247,7 @@ export function CreateTaskPageInteractive() {
       <div className="px-6 py-4 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="size-8" onClick={() => { router.back(); }}>
+            <Button variant="ghost" size="icon" className="" onClick={() => { router.back(); }}>
               <ArrowLeftIcon className="size-4" />
             </Button>
             <div>
@@ -296,11 +296,7 @@ export function CreateTaskPageInteractive() {
                     key={id}
                     type="button"
                     onClick={() => setTaskType(id)}
-                    className={`flex flex-col items-center justify-center gap-1 rounded-sm border p-2 text-[11px] font-medium transition-colors ${
-                      taskType === id
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:bg-muted"
-                    }`}
+                    className={`flex flex-col items-center justify-center gap-1 rounded-sm border p-2 text-[11px] font-medium transition-colors ${ taskType === id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted" }`}
                   >
                     <Icon className="size-4" />
                     <span className="text-center leading-tight">{name}</span>
@@ -369,7 +365,7 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Due Date">
                   <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
+                      <Button variant="outline" className="justify-between text-sm font-normal">
                         {dueDate ? (
                           <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
@@ -409,7 +405,7 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Due Date">
                   <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
+                      <Button variant="outline" className="justify-between text-sm font-normal">
                         {dueDate ? (
                           <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
@@ -448,7 +444,7 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Scheduled Date" required>
                   <Popover open={scheduledDateOpen} onOpenChange={setScheduledDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
+                      <Button variant="outline" className="justify-between text-sm font-normal">
                         {dueDate ? (
                           <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
@@ -466,7 +462,7 @@ export function CreateTaskPageInteractive() {
                 <FormField label="Due Date">
                   <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
+                      <Button variant="outline" className="justify-between text-sm font-normal">
                         {dueDate ? (
                           <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         ) : (
@@ -542,7 +538,7 @@ export function CreateTaskPageInteractive() {
           disabled={isSubmitting || !title.trim() || !description.trim() || !priority}
         >
           {isSubmitting ? (
-            <><Loader2 className="size-3.5 animate-spin mr-1.5" />Creating...</>
+            <><Loader2 className="animate-spin mr-1.5" />Creating...</>
           ) : (
             <>
               <TaskTypeIcon className="size-3.5 mr-1.5" />

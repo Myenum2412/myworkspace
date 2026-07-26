@@ -299,7 +299,7 @@ export default function SettingsBlock() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Member</TableHead>
-                      <TableHead className="hidden sm:table-cell">
+                      <TableHead className="hidden md:table-cell">
                         Email
                       </TableHead>
                       <TableHead className="text-right">Role</TableHead>

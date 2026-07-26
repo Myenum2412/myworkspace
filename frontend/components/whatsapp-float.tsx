@@ -150,13 +150,13 @@ export function WhatsAppFloat() {
                   Start the client and scan the QR code with your phone's WhatsApp
                   (Linked Devices → Link a Device).
                 </p>
-                <Button onClick={handleStart} disabled={starting} className="w-full">
+                <Button onClick={handleStart} disabled={starting} className="">
                   {starting && <Loader2 className="mr-2 size-4 animate-spin" />}
                   Start & Show QR Code
                 </Button>
                 <Button variant="outline" size="sm" asChild>
                   <a href="/settings">
-                    <Settings2Icon className="mr-2 size-4" />
+                    <Settings2Icon className="mr-2" />
                     Settings
                   </a>
                 </Button>

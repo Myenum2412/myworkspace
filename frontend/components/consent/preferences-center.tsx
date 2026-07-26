@@ -105,15 +105,15 @@ export function PreferencesCenter() {
 
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={handleSave} disabled={loading || updating}>
-          <Check className="size-4 mr-1.5" />
+          <Check className="mr-1.5" />
           {loading ? "Saving..." : "Save Preferences"}
         </Button>
         <Button onClick={handleWithdraw} variant="outline" disabled={loading}>
-          <Trash2 className="size-4 mr-1.5" />
+          <Trash2 className="mr-1.5" />
           Withdraw Consent
         </Button>
         <Button onClick={loadHistory} variant="ghost" size="sm">
-          <RotateCcw className="size-3.5 mr-1.5" />
+          <RotateCcw className="mr-1.5" />
           {showHistory ? "Hide History" : "View History"}
         </Button>
       </div>

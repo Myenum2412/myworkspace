@@ -21,7 +21,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 max-w-3xl mx-auto">
-      <Button variant="ghost" asChild className="w-fit"><Link href="/blog"><ArrowLeftIcon className="size-4 mr-2" />Back to Blog</Link></Button>
+      <Button variant="ghost" asChild className=""><Link href="/blog"><ArrowLeftIcon className="size-4 mr-2" />Back to Blog</Link></Button>
       <h1 className="text-3xl font-bold">{post.title}</h1>
       {post.excerpt && <p className="text-muted-foreground text-lg">{post.excerpt}</p>}
       <div className="prose prose-neutral dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />

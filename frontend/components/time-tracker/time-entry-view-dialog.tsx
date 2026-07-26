@@ -88,7 +88,7 @@ export function TimeEntryViewDialog({ entry, open, onOpenChange }: TimeEntryView
         </div>
 
         <DialogFooter className="shrink-0 border-t px-4 sm:px-6 py-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto touch-target">Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="touch-target">Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

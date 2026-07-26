@@ -209,7 +209,7 @@ export function BlogDataTable({ initialPosts, categories, orgId }: BlogDataTable
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" disabled={loading === post.id}>
-                          <MoreHorizontal className="h-4 w-4" />
+                          <MoreHorizontal className="" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">

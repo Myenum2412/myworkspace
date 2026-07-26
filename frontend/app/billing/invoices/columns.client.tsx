@@ -144,7 +144,7 @@ export const columns: ColumnDef<Invoice>[] = [
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${inv.id}`}>
-                <RiMoreLine className="size-4" aria-hidden="true" />
+                <RiMoreLine className="" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">

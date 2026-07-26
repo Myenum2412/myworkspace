@@ -139,7 +139,7 @@ export function FileList() {
               <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100">
+                    <Button variant="ghost" size="sm" className="p-0 opacity-0 group-hover:opacity-100">
                       <MoreHorizontalIcon className="size-3.5" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -216,7 +216,7 @@ export function FileList() {
               <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100">
+                    <Button variant="ghost" size="sm" className="p-0 opacity-0 group-hover:opacity-100">
                       <MoreHorizontalIcon className="size-3.5" />
                     </Button>
                   </DropdownMenuTrigger>

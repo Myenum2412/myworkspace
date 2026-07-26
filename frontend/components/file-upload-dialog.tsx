@@ -265,13 +265,13 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
         </div>
 
         <DialogFooter className="bg-muted/40 p-4 border-t border-border/50 flex flex-col sm:flex-row gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => { onOpenChange(false); setTimeout(reset, 300); }} className="w-full sm:w-auto">
+          <Button variant="outline" onClick={() => { onOpenChange(false); setTimeout(reset, 300); }} className="">
             Cancel
           </Button>
           <Button 
             onClick={startUpload} 
             disabled={!files.length || uploading}
-            className="w-full sm:w-auto shadow-md transition-all active:scale-95 bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="shadow-md transition-all active:scale-95 bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {uploading ? (
               <><Loader2Icon className="mr-2 size-4 animate-spin" /> Uploading...</>

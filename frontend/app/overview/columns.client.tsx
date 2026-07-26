@@ -140,7 +140,7 @@ export const columns: ColumnDef<Task>[] = [
         <DropdownMenu>
           <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
             <Button variant="ghost" size="icon-sm">
-              <MoreHorizontalIcon className="size-4" />
+              <MoreHorizontalIcon className="" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

@@ -162,7 +162,7 @@ export default function DashboardInteractive() {
           )}
         </div>
         <Button variant="ghost" size="sm" onClick={handleLogout}>
-          <LogOut className="size-4 mr-1" /> Logout
+          <LogOut className="mr-1" /> Logout
         </Button>
       </div>
 

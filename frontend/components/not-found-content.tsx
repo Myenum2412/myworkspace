@@ -29,11 +29,11 @@ export function NotFoundContent() {
           </h1>
         </div>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button variant="outline" className="group w-full sm:w-auto" onClick={() => router.back()}>
+          <Button variant="outline" className="group" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 size-4 transition-transform group-hover:-translate-x-0.5" />
             Go back
           </Button>
-          <Button className="w-full sm:w-auto" asChild>
+          <Button className="" asChild>
             <Link href="/">
               <Home className="mr-2 size-4" />
               Take me home

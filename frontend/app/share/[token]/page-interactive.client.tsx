@@ -100,7 +100,7 @@ export function ShareTokenPageInteractive({ token, fileInfo }: { token: string; 
             </div>
           )}
 
-          <Button className="w-full" onClick={verifyAndDownload} disabled={downloading || (needsPassword && !password)}>
+          <Button className="" onClick={verifyAndDownload} disabled={downloading || (needsPassword && !password)}>
             {downloading ? (
               <><Loader2Icon className="mr-2 size-4 animate-spin" /> Downloading...</>
             ) : (

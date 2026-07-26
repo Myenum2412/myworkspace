@@ -158,7 +158,7 @@ export default function FileUpload06({
             <div>
               Drop files here or{' '}
               <Button
-                className="h-auto p-0 font-normal text-primary"
+                className="p-0 font-normal text-primary"
                 onClick={openFilePicker}
                 variant="link"
               >
@@ -195,7 +195,7 @@ export default function FileUpload06({
                     <FileText className="inline size-4 group-hover:hidden" />
                     <Button
                       aria-label="Cancel"
-                      className="hidden size-4 h-auto p-0 group-hover:inline"
+                      className="hidden p-0 group-hover:inline"
                       onClick={() => removeUploadById(file.id)}
                       size="icon"
                       variant="ghost"
@@ -277,7 +277,7 @@ export default function FileUpload06({
                     <FileText className="inline size-4 group-hover:hidden" />
                     <Button
                       aria-label="Remove"
-                      className="hidden size-4 h-auto p-0 group-hover:inline"
+                      className="hidden p-0 group-hover:inline"
                       onClick={() => removeUploadById(file.id)}
                       size="icon"
                       variant="ghost"

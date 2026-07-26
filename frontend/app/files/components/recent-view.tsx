@@ -51,10 +51,10 @@ export function RecentView() {
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setPreviewFile(file)}>
+              <Button variant="ghost" size="sm" className="p-0" onClick={() => setPreviewFile(file)}>
                 <EyeIcon className="size-3.5" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}>
+              <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}>
                 <DownloadIcon className="size-3.5" />
               </Button>
             </div>

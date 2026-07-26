@@ -109,7 +109,7 @@ export function ArchiveViewer({ src, fileName, fileSize }: ArchiveViewerProps) {
         </div>
         <p className="text-xs">Archive preview not available for this format</p>
         <Button variant="outline" size="sm" onClick={() => window.open(src, "_blank")}>
-          <DownloadIcon className="size-3.5 mr-1.5" /> Download Archive
+          <DownloadIcon className="mr-1.5" /> Download Archive
         </Button>
       </div>
     );
@@ -125,7 +125,7 @@ export function ArchiveViewer({ src, fileName, fileSize }: ArchiveViewerProps) {
             {entries.filter((e) => !e.isDirectory).length} files &middot; {formatSize(fileSize)}
           </span>
         </div>
-        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(src, "_blank")}>
+        <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
           <DownloadIcon className="size-3.5" />
         </Button>
       </div>

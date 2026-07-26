@@ -358,7 +358,7 @@ export default function ChatPage() {
             <div className="flex items-center justify-between mb-3">
               <h1 className="text-lg font-bold">Chat</h1>
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="size-8" onClick={() => setCreateConvOpen(true)}><PlusIcon className="size-4" /></Button>
+                <Button variant="ghost" size="icon" className="" onClick={() => setCreateConvOpen(true)}><PlusIcon className="size-4" /></Button>
               </div>
             </div>
             <div className="relative">
@@ -450,7 +450,7 @@ export default function ChatPage() {
                           <p className="text-[11px] text-muted-foreground truncate">{contact.role} {contact.department ? `· ${contact.department}` : ""}</p>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <Button variant="ghost" size="icon" className="size-7" onClick={(e) => { e.stopPropagation(); setShowProfile(true); setSelectedContact(contact); }}>
+                          <Button variant="ghost" size="icon" className="" onClick={(e) => { e.stopPropagation(); setShowProfile(true); setSelectedContact(contact); }}>
                             <InfoIcon className="size-3.5 text-muted-foreground" />
                           </Button>
                         </div>
@@ -504,7 +504,7 @@ export default function ChatPage() {
             <>
               {/* Chat Header */}
               <div className="flex items-center gap-3 px-4 py-2 border-b shrink-0">
-                <Button variant="ghost" size="icon" className="size-8 md:hidden" onClick={() => setShowMobileChat(false)}><ChevronLeftIcon className="size-4" /></Button>
+                <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setShowMobileChat(false)}><ChevronLeftIcon className="size-4" /></Button>
                 {(() => { const contact = getContactForUser(selectedConv); return (
                   <>
                     <Avatar className="size-9">
@@ -518,8 +518,8 @@ export default function ChatPage() {
                   </>
                 ); })()}
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" className="size-8" onClick={() => setShowMsgSearch(!showMsgSearch)}><SearchIcon className="size-4" /></Button>
-                  <Button variant="ghost" size="icon" className="size-8" onClick={() => { const c = getContactForUser(selectedConv); if (c) { setSelectedContact(c); setShowProfile(true); } }}><InfoIcon className="size-4" /></Button>
+                  <Button variant="ghost" size="icon" className="" onClick={() => setShowMsgSearch(!showMsgSearch)}><SearchIcon className="size-4" /></Button>
+                  <Button variant="ghost" size="icon" className="" onClick={() => { const c = getContactForUser(selectedConv); if (c) { setSelectedContact(c); setShowProfile(true); } }}><InfoIcon className="size-4" /></Button>
                 </div>
               </div>
 
@@ -569,21 +569,21 @@ export default function ChatPage() {
                 <div className="px-4 py-2 border-t bg-muted/30 flex items-center gap-2 shrink-0">
                   <ReplyIcon className="size-4 text-muted-foreground" />
                   <div className="flex-1 min-w-0"><p className="text-xs font-medium">{replyTo.senderName}</p><p className="text-xs text-muted-foreground truncate">{replyTo.text}</p></div>
-                  <Button variant="ghost" size="icon" className="size-6" onClick={() => setReplyTo(null)}><XCircleIcon className="size-3" /></Button>
+                  <Button variant="ghost" size="icon" className="" onClick={() => setReplyTo(null)}><XCircleIcon className="size-3" /></Button>
                 </div>
               )}
 
               {/* Input */}
               <div className="px-4 py-3 border-t shrink-0">
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="size-9 shrink-0"><PaperclipIcon className="size-4" /></Button>
-                  <Button variant="ghost" size="icon" className="size-9 shrink-0"><ImageIcon className="size-4" /></Button>
+                  <Button variant="ghost" size="icon" className="shrink-0"><PaperclipIcon className="size-4" /></Button>
+                  <Button variant="ghost" size="icon" className="shrink-0"><ImageIcon className="size-4" /></Button>
                   <Input placeholder="" value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                     className="flex-1" />
-                  <Button variant="ghost" size="icon" className="size-9 shrink-0"><SmileIcon className="size-4" /></Button>
-                  <Button size="icon" className="size-9 shrink-0" onClick={sendMessage} disabled={!chatInput.trim()}><SendIcon className="size-4" /></Button>
+                  <Button variant="ghost" size="icon" className="shrink-0"><SmileIcon className="size-4" /></Button>
+                  <Button size="icon" className="shrink-0" onClick={sendMessage} disabled={!chatInput.trim()}><SendIcon className="size-4" /></Button>
                 </div>
               </div>
             </>
@@ -592,7 +592,7 @@ export default function ChatPage() {
               <MessageSquareIcon className="size-16 mb-4 opacity-20" />
               <h2 className="text-xl font-semibold mb-1">Welcome to Chat</h2>
               <p className="text-sm mb-4">Select a contact to start messaging</p>
-              <Button onClick={() => setActiveTab("contacts")}><UsersIcon className="size-4 mr-2" /> View Contacts</Button>
+              <Button onClick={() => setActiveTab("contacts")}><UsersIcon className="mr-2" /> View Contacts</Button>
             </div>
           )}
         </div>
@@ -647,7 +647,7 @@ export default function ChatPage() {
                   <label className="text-sm font-medium">Participant IDs (comma-separated)</label>
                   <Input placeholder="" value={newConvParticipant} onChange={(e) => setNewConvParticipant(e.target.value)} className="mt-1" />
                 </div>
-                <Button onClick={createGroupConversation} className="w-full">Create</Button>
+                <Button onClick={createGroupConversation} className="">Create</Button>
               </div>
             </div>
           </div>

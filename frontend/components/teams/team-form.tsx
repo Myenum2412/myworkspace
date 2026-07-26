@@ -174,7 +174,7 @@ export function TeamForm({
         <DialogFooter className="shrink-0 border-t px-6 py-4 gap-2">
           <Button variant="outline" onClick={onCancel} disabled={submitting}>Cancel</Button>
           <Button disabled={!teamName.trim() || submitting} onClick={onSubmit}>
-            {submitting ? <Loader2Icon className="size-4 animate-spin" /> : editingTeam ? "Save Changes" : "Create Team"}
+            {submitting ? <Loader2Icon className="animate-spin" /> : editingTeam ? "Save Changes" : "Create Team"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -283,10 +283,10 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
 
       <div className="flex items-center justify-between pt-4 border-t">
         <Button type="button" variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 size-4" />
+          <ArrowLeft className="mr-2" />
           Back
         </Button>
-        <Button type="submit" disabled={isSubmitting} className="min-w-[160px]">
+        <Button type="submit" disabled={isSubmitting} className="">
           {isSubmitting ? (
             <div className="flex items-center gap-2">
               <div className="size-4 animate-spin rounded-sm border-2 border-current border-t-transparent" />

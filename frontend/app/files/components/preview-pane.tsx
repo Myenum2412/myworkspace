@@ -51,14 +51,14 @@ export function PreviewPane({ onClose }: PreviewPaneProps) {
     <div className="flex-1 flex flex-col min-w-0 bg-background">
       <div className="flex items-center justify-between px-4 h-12 border-b shrink-0 bg-background">
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onClose}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={onClose}>
             <PanelLeftIcon className="size-4" />
           </Button>
           <div className="w-px h-4 bg-border mx-1" />
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="p-0"
             disabled={!prevFile}
             onClick={() => prevFile && setPreviewPaneFile(prevFile)}
           >
@@ -67,7 +67,7 @@ export function PreviewPane({ onClose }: PreviewPaneProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="p-0"
             disabled={!nextFile}
             onClick={() => nextFile && setPreviewPaneFile(nextFile)}
           >
@@ -90,7 +90,7 @@ export function PreviewPane({ onClose }: PreviewPaneProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="p-0"
             onClick={() => setShowInfo(!showInfo)}
           >
             <InfoIcon className="size-4" />
@@ -98,12 +98,12 @@ export function PreviewPane({ onClose }: PreviewPaneProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="p-0"
             onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}
           >
             <DownloadIcon className="size-4" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onClose}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={onClose}>
             <XIcon className="size-4" />
           </Button>
         </div>

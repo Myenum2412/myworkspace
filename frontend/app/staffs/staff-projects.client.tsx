@@ -111,7 +111,7 @@ export default function StaffProjects({
             Projects ({projects.length})
           </CardTitle>
           <Button size="sm" onClick={() => { resetForm(); setOpen(true); }}>
-            <PlusIcon className="size-4 mr-1" />
+            <PlusIcon className="mr-1" />
             Add Project
           </Button>
         </CardHeader>

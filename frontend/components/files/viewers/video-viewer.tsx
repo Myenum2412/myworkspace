@@ -130,7 +130,7 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
           <div className="flex flex-col items-center gap-3 text-white/60">
             <p className="text-sm">Failed to load video</p>
             <Button variant="secondary" size="sm" onClick={() => window.open(src, "_blank")}>
-              <DownloadIcon className="size-3.5 mr-1.5" /> Download to view
+              <DownloadIcon className="mr-1.5" /> Download to view
             </Button>
           </div>
         </div>
@@ -148,9 +148,7 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
       />
 
       <div
-        className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 ${
-          playing ? "opacity-0" : "opacity-100"
-        }`}
+        className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 ${ playing ? "opacity-0" : "opacity-100" }`}
       >
         <div className="size-16 rounded-sm bg-black/60 flex items-center justify-center pointer-events-auto cursor-pointer" onClick={togglePlay}>
           <PlayIcon className="size-8 text-white ml-1" />
@@ -172,10 +170,10 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
         />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/20" onClick={togglePlay}>
+            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={togglePlay}>
               {playing ? <PauseIcon className="size-4" /> : <PlayIcon className="size-4" />}
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/20" onClick={toggleMute}>
+            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={toggleMute}>
               {muted ? <VolumeXIcon className="size-4" /> : <Volume2Icon className="size-4" />}
             </Button>
             <Slider
@@ -190,16 +188,16 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="h-7 text-xs text-white hover:bg-white/20 px-2" onClick={changeSpeed}>
+            <Button variant="ghost" size="sm" className="text-xs text-white hover:bg-white/20 px-2" onClick={changeSpeed}>
               {playbackRate}x
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/20" onClick={togglePiP}>
+            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={togglePiP}>
               <PictureInPicture2Icon className="size-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/20" onClick={() => window.open(src, "_blank")}>
+            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={() => window.open(src, "_blank")}>
               <DownloadIcon className="size-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/20" onClick={toggleFullscreen}>
+            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={toggleFullscreen}>
               {isFullscreen ? <MinimizeIcon className="size-4" /> : <MaximizeIcon className="size-4" />}
             </Button>
           </div>

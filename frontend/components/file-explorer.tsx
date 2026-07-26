@@ -330,7 +330,7 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="sm" onClick={() => setConfirmDelete(null)}>Cancel</Button>
               <Button size="sm" variant="destructive" onClick={() => handleDelete(confirmDelete.id, confirmDelete.type)}>
-                <Trash2Icon className="mr-1 size-4" /> Delete
+                <Trash2Icon className="mr-1" /> Delete
               </Button>
             </div>
           </div>

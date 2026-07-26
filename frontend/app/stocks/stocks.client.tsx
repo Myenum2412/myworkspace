@@ -171,7 +171,7 @@ export default function StocksPage() {
             {statuses.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-9 gap-1.5">
+                  <Button variant="outline" size="sm" className="gap-1.5">
                     <FilterIcon className="size-3.5" />
                     Filter
                     {statusFilter.length > 0 && (
@@ -214,7 +214,7 @@ export default function StocksPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            <Button onClick={() => setShowForm(true)} className="h-9">
+            <Button onClick={() => setShowForm(true)} className="">
               <PlusIcon className="mr-1.5 size-4" />
               Add Inventory
             </Button>

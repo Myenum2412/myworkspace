@@ -333,7 +333,7 @@ export default function CalendarBlock() {
                     day.isToday && "bg-primary/5"
                   )}
                 >
-                  <div className="flex w-11 shrink-0 flex-col items-center gap-1 pt-1">
+                  <div className="flex shrink-0 flex-col items-center gap-1 pt-1">
                     <span
                       className={cn(
                         "text-[10px] font-semibold tracking-widest uppercase",

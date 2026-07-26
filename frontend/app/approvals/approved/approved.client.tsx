@@ -87,7 +87,7 @@ export default function Approved({ initialItems }: ApprovedProps) {
               </div>
 
               <DialogFooter className="shrink-0 border-t px-4 sm:px-6 py-4">
-                <Button variant="outline" onClick={() => { setViewOpen(false); setSelectedItem(null); }} className="w-full sm:w-auto touch-target">Close</Button>
+                <Button variant="outline" onClick={() => { setViewOpen(false); setSelectedItem(null); }} className="touch-target">Close</Button>
               </DialogFooter>
             </>
           )}

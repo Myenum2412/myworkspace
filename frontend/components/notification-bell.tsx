@@ -76,7 +76,7 @@ export function NotificationBell() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative size-9" aria-label="Open notifications">
+        <Button variant="ghost" size="icon" className="relative" aria-label="Open notifications">
           <NotificationsActiveIcon className="size-4" aria-hidden="true" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex min-w-[16px] h-4 items-center justify-center bg-primary text-[10px] font-semibold text-primary-foreground px-1">
@@ -123,7 +123,7 @@ export function NotificationBell() {
                     <button
                       onClick={() => handleNotificationClick(item)}
                       className={cn(
-                        "w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/50 relative",
+                        "text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/50 relative",
                         !item.read && "bg-muted/30"
                       )}
                     >

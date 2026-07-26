@@ -70,7 +70,7 @@ export function DeleteConfirmDialog({
             disabled={disabled || loading}
           >
             {loading ? (
-              <><span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent mr-1.5" />Deleting...</>
+              <><span className="animate-spin rounded-full border-2 border-current border-t-transparent mr-1.5" />Deleting...</>
             ) : (
               <><Trash2Icon className="size-3.5 mr-1.5" />{confirmLabel}</>
             )}

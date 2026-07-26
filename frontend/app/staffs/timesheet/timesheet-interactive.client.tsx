@@ -383,7 +383,7 @@ export default function TimesheetInteractive({
             <span className="font-medium">Total: {formatDuration(totalMinutes)}</span>
           </div>
           <Button onClick={handleSave} disabled={saving} size="sm">
-            <SaveIcon className="mr-2 size-4" />
+            <SaveIcon className="mr-2" />
             {saving ? "Saving..." : "Save"}
           </Button>
         </div>
@@ -495,7 +495,7 @@ export default function TimesheetInteractive({
                         onClick={() => removeRow(row.id)}
                         disabled={rows.length <= 1}
                       >
-                        <Trash2Icon className="size-4 text-muted-foreground" />
+                        <Trash2Icon className="text-muted-foreground" />
                       </Button>
                     </td>
                   </tr>
@@ -506,7 +506,7 @@ export default function TimesheetInteractive({
         </CardContent>
         <div className="border-t p-3 shrink-0">
           <Button variant="outline" size="sm" onClick={addRow}>
-            <PlusIcon className="mr-2 size-4" />
+            <PlusIcon className="mr-2" />
             Add Row
           </Button>
         </div>

@@ -48,7 +48,7 @@ function ViewMoreFooter({ href, label = "View More" }: { href: string; label?: s
       <Button asChild variant="outline" size="sm">
         <Link href={href}>
           {label}
-          <ArrowRightIcon className="size-3.5" />
+          <ArrowRightIcon className="" />
         </Link>
       </Button>
     </div>
@@ -108,7 +108,7 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
           <DashboardCalendarPopup />
           <Button asChild size="sm">
             <Link href="/createtask">
-              <ListTodo className="mr-1 size-4" />
+              <ListTodo className="mr-1" />
               New Task
             </Link>
           </Button>

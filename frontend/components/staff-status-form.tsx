@@ -191,7 +191,7 @@ export function StaffStatusForm({
         <Button
           onClick={handleUpdate}
           disabled={saving || (selectedStatus === "custom" && !customStatus.trim())}
-          className="w-full gap-2"
+          className="gap-2"
           size="lg"
         >
           {saving ? (

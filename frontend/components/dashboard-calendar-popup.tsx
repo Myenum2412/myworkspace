@@ -151,7 +151,7 @@ export default function DashboardCalendarPopup() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9">
+        <Button variant="ghost" size="icon" className="">
           <RiCalendarLine className="size-4" />
         </Button>
       </PopoverTrigger>
@@ -200,7 +200,7 @@ export default function DashboardCalendarPopup() {
 
           <Separator />
 
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="overflow-y-auto">
             {weekDays.map((day, dayIdx) => (
               <div key={day.date}>
                 <div

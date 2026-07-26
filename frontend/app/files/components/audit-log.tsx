@@ -108,7 +108,7 @@ export function AuditLogView() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => handleExport("csv")}>
-            <DownloadIcon className="size-3.5 mr-1" /> Export CSV
+            <DownloadIcon className="mr-1" /> Export CSV
           </Button>
         </div>
       </div>
@@ -189,13 +189,13 @@ export function AuditLogView() {
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
-                <ChevronLeftIcon className="size-3.5" />
+                <ChevronLeftIcon className="" />
               </Button>
               <span className="text-xs text-muted-foreground">
                 Page {page} of {totalPages}
               </span>
               <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
-                <ChevronRightIcon className="size-3.5" />
+                <ChevronRightIcon className="" />
               </Button>
             </div>
           )}

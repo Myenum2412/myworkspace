@@ -88,18 +88,18 @@ export function InviteMemberFormInteractive() {
           </div>
           {emails.length > 1 && (
             <Button type="button" variant="ghost" size="icon" onClick={() => removeEmail(index)}>
-              <XIcon className="size-4" />
+              <XIcon className="" />
             </Button>
           )}
         </div>
       ))}
       <Button type="button" variant="outline" size="sm" onClick={addEmail}>
-        <PlusIcon className="size-4 mr-1" /> Add another
+        <PlusIcon className="mr-1" /> Add another
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="pt-2">
         <Button type="submit" disabled={sending || emails.every((e) => !e)}>
-          {sending ? <Loader2Icon className="size-4 animate-spin mr-1" /> : null}
+          {sending ? <Loader2Icon className="animate-spin mr-1" /> : null}
           {sending ? "Sending..." : "Send invitations"}
         </Button>
       </div>

@@ -174,13 +174,13 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                 Cancel
               </Button>
               <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? <Loader2Icon className="size-4 animate-spin" /> : <CheckIcon className="size-4" />}
+                {saving ? <Loader2Icon className="animate-spin" /> : <CheckIcon className="size-4" />}
                 Save
               </Button>
             </div>
           ) : (
             <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-              <PencilIcon className="size-4" />
+              <PencilIcon className="" />
               Edit Profile
             </Button>
           )}
@@ -192,11 +192,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
-              activeTab === tab.id
-                ? "bg-background border border-b-0 border-border text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${ activeTab === tab.id ? "bg-background border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground" }`}
           >
             <tab.icon className="size-4" />
             {tab.label}
@@ -1133,7 +1129,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                 />
                 <Button
                   size="sm"
-                  className="h-8 text-xs shrink-0"
+                  className="text-xs shrink-0"
                   disabled={!urlInput}
                   onClick={() => updateBanner(urlInput)}
                 >
@@ -1165,7 +1161,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   </div>
                   <Button
                     variant="ghost"
-                    className="w-full h-8 text-xs text-destructive hover:text-destructive"
+                    className="text-xs text-destructive hover:text-destructive"
                     onClick={() => updateBanner("")}
                   >
                     Remove banner
@@ -1207,7 +1203,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                   </div>
                   <Button
                     variant="ghost"
-                    className="w-full h-8 text-xs text-destructive hover:text-destructive"
+                    className="text-xs text-destructive hover:text-destructive"
                     onClick={removeProfileImage}
                   >
                     Remove photo

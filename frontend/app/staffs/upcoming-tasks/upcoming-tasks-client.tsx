@@ -196,7 +196,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
           )}
         </div>
         <Button onClick={() => router.push('/createtask')}>
-          <PlusIcon className="mr-2 size-4" />
+          <PlusIcon className="mr-2" />
           Allocate Task
         </Button>
       </div>
@@ -218,13 +218,13 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
           {/* Month Navigation */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" className="size-8" onClick={prevMonth}>
+              <Button variant="outline" size="icon" className="" onClick={prevMonth}>
                 <ChevronLeftIcon className="size-4" />
               </Button>
               <h2 className="text-lg font-semibold min-w-[180px] text-center">
                 {MONTHS[month]} {year}
               </h2>
-              <Button variant="outline" size="icon" className="size-8" onClick={nextMonth}>
+              <Button variant="outline" size="icon" className="" onClick={nextMonth}>
                 <ChevronRightIcon className="size-4" />
               </Button>
             </div>
@@ -277,13 +277,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                 <button
                   key={day}
                   onClick={() => setSelectedDate(date)}
-                  className={`min-h-[80px] rounded-sm border p-1.5 text-left transition-all hover:border-primary/50 ${
-                    isSelected
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : today
-                      ? "border-primary/30 bg-primary/5"
-                      : "border-border hover:bg-accent/50"
-                  }`}
+                  className={`rounded-sm border p-1.5 text-left transition-all hover:border-primary/50 ${ isSelected ? "border-primary bg-primary/5 ring-1 ring-primary/30" : today ? "border-primary/30 bg-primary/5" : "border-border hover:bg-accent/50" }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span
@@ -358,7 +352,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-6"
+                  className=""
                   onClick={() => setSelectedDate(null)}
                 >
                   <XCircleIcon className="size-4" />
@@ -382,7 +376,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h4 className="text-sm font-medium line-clamp-1">{task.title}</h4>
-                    <div className={`size-2 rounded-full shrink-0 mt-1.5 ${PRIORITY_COLORS[task.priority] || "bg-gray-400"}`} />
+                    <div className={`rounded-full shrink-0 mt-1.5 ${PRIORITY_COLORS[task.priority] || "bg-gray-400"}`} />
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
                     {task.description || "No description"}

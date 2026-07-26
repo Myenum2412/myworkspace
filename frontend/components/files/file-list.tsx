@@ -79,7 +79,7 @@ export function FileList({
         <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-sm">
           <span className="text-sm font-medium">{selectedIds.size} selected</span>
           <Button variant="outline" size="sm" onClick={onBulkDelete}>
-            <Trash2Icon className="mr-1 size-4" /> Delete
+            <Trash2Icon className="mr-1" /> Delete
           </Button>
           <Button variant="outline" size="sm" onClick={onClearSelection}>
             Clear
@@ -120,7 +120,7 @@ export function FileList({
                 </CardContent>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                    <Button variant="ghost" size="sm" className="absolute top-1 right-1 size-6 opacity-0 group-hover:opacity-100">
+                    <Button variant="ghost" size="sm" className="absolute top-1 right-1 opacity-0 group-hover:opacity-100">
                       <MoreHorizontalIcon className="size-3" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -137,9 +137,7 @@ export function FileList({
           {files.map((file) => (
             <Card
               key={file.id}
-              className={`group cursor-pointer hover:border-primary/50 transition-colors relative ${
-                selectedIds.has(file.id) ? "ring-2 ring-primary" : ""
-              }`}
+              className={`group cursor-pointer hover:border-primary/50 transition-colors relative ${ selectedIds.has(file.id) ? "ring-2 ring-primary" : "" }`}
             >
               <CardContent className="p-3">
                 <div className="absolute top-2 left-2 z-10">
@@ -179,7 +177,7 @@ export function FileList({
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="absolute top-1 right-1 size-6 opacity-0 group-hover:opacity-100">
+                    <Button variant="ghost" size="sm" className="absolute top-1 right-1 opacity-0 group-hover:opacity-100">
                       <MoreHorizontalIcon className="size-3" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -247,7 +245,7 @@ export function FileList({
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" className="size-6"><MoreHorizontalIcon className="size-3" /></Button>
+                        <Button variant="ghost" size="sm" className=""><MoreHorizontalIcon className="size-3" /></Button>
                       </DropdownMenuTrigger>
                       <FileContextMenu
                         type="folder"
@@ -298,7 +296,7 @@ export function FileList({
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="size-6"><MoreHorizontalIcon className="size-3" /></Button>
+                        <Button variant="ghost" size="sm" className=""><MoreHorizontalIcon className="size-3" /></Button>
                       </DropdownMenuTrigger>
                       <FileContextMenu
                         type="file"

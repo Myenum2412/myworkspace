@@ -210,7 +210,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
 
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" disabled={submitting}>
-          {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+          {submitting && <Loader2 className="mr-2 animate-spin" />}
           {initialData ? "Update Appointment" : "Book Appointment"}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>

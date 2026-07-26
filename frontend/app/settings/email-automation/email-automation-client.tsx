@@ -253,7 +253,7 @@ export default function EmailAutomationClient() {
           size="sm"
           onClick={() => setActiveTab("admin")}
         >
-          <RiSettings3Line className="size-4 mr-2" />
+          <RiSettings3Line className="mr-2" />
           Scheduler Settings
         </Button>
         <Button
@@ -261,7 +261,7 @@ export default function EmailAutomationClient() {
           size="sm"
           onClick={() => setActiveTab("preferences")}
         >
-          <RiUserLine className="size-4 mr-2" />
+          <RiUserLine className="mr-2" />
           My Preferences
         </Button>
         <Button
@@ -269,7 +269,7 @@ export default function EmailAutomationClient() {
           size="sm"
           onClick={() => setActiveTab("history")}
         >
-          <RiHistoryLine className="size-4 mr-2" />
+          <RiHistoryLine className="mr-2" />
           Email History
         </Button>
       </div>
@@ -317,7 +317,7 @@ export default function EmailAutomationClient() {
             <CardFooter className="gap-2">
               <Button onClick={handleRunNow} disabled={running}>
                 {running ? (
-                  <Loader2Icon className="size-4 animate-spin mr-2" />
+                  <Loader2Icon className="animate-spin mr-2" />
                 ) : (
                   <RiPlayLine className="size-4 mr-2" />
                 )}
@@ -325,7 +325,7 @@ export default function EmailAutomationClient() {
               </Button>
               <Button variant="outline" onClick={handleRetryFailed} disabled={retrying}>
                 {retrying ? (
-                  <Loader2Icon className="size-4 animate-spin mr-2" />
+                  <Loader2Icon className="animate-spin mr-2" />
                 ) : (
                   <RiRefreshLine className="size-4 mr-2" />
                 )}
@@ -484,7 +484,7 @@ export default function EmailAutomationClient() {
             <CardFooter>
               <Button onClick={handleSaveSettings} disabled={saving}>
                 {saving ? (
-                  <Loader2Icon className="size-4 animate-spin mr-2" />
+                  <Loader2Icon className="animate-spin mr-2" />
                 ) : (
                   <RiCheckLine className="size-4 mr-2" />
                 )}
@@ -550,7 +550,7 @@ export default function EmailAutomationClient() {
           <CardFooter>
             <Button onClick={handleSavePreferences} disabled={saving}>
               {saving ? (
-                <Loader2Icon className="size-4 animate-spin mr-2" />
+                <Loader2Icon className="animate-spin mr-2" />
               ) : (
                 <RiCheckLine className="size-4 mr-2" />
               )}

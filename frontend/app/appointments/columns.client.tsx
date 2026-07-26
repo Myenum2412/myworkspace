@@ -109,7 +109,7 @@ export function makeActionsCell(
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8">
+            <Button variant="ghost" size="icon" className="">
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>

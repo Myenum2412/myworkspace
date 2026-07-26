@@ -163,7 +163,7 @@ export default function Appointments({ initialDoctors }: { initialDoctors: Docto
         <div className="flex items-center justify-between gap-2">
           <h1 className="text-xl sm:text-2xl font-bold">Booking Appointments</h1>
           <Button onClick={() => setPageView("book")}>
-            <PlusIcon className="mr-2 size-4" />
+            <PlusIcon className="mr-2" />
             Book Appointment
           </Button>
         </div>

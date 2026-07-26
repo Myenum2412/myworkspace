@@ -56,43 +56,43 @@ export function PDFViewer({ src, fileName }: PDFViewerProps) {
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-4 py-2 border-b shrink-0 gap-1">
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setZoom((z) => Math.max(25, z - 10))}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setZoom((z) => Math.max(25, z - 10))}>
             <ZoomOutIcon className="size-3.5" />
           </Button>
           <span className="text-xs text-muted-foreground w-12 text-center">{zoom}%</span>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setZoom((z) => Math.min(200, z + 10))}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setZoom((z) => Math.min(200, z + 10))}>
             <ZoomInIcon className="size-3.5" />
           </Button>
           <div className="w-px h-4 bg-border mx-1" />
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setPage((p) => Math.max(1, p - 1))}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setPage((p) => Math.max(1, p - 1))}>
             <ChevronLeftIcon className="size-3.5" />
           </Button>
           <span className="text-xs text-muted-foreground">
             {page}{totalPages > 0 ? ` / ${totalPages}` : ""}
           </span>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setPage((p) => Math.min(totalPages || p + 1, p + 1))}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setPage((p) => Math.min(totalPages || p + 1, p + 1))}>
             <ChevronRightIcon className="size-3.5" />
           </Button>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setShowSearch(!showSearch)}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setShowSearch(!showSearch)}>
             <SearchIcon className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setRotation((r) => r + 90)}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setRotation((r) => r + 90)}>
             <RotateCwIcon className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => {
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => {
             setShowThumbnails(!showThumbnails);
           }}>
             <FileTextIcon className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setDarkMode(!darkMode)}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setDarkMode(!darkMode)}>
             {darkMode ? <SunIcon className="size-3.5" /> : <MoonIcon className="size-3.5" />}
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={toggleFullscreen}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={toggleFullscreen}>
             {isFullscreen ? <MinimizeIcon className="size-3.5" /> : <MaximizeIcon className="size-3.5" />}
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(src, "_blank")}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
             <DownloadIcon className="size-3.5" />
           </Button>
         </div>
@@ -106,7 +106,7 @@ export function PDFViewer({ src, fileName }: PDFViewerProps) {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-8 text-sm bg-white"
           />
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setShowSearch(false)}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setShowSearch(false)}>
             <XIcon className="size-3.5" />
           </Button>
         </div>
@@ -118,9 +118,7 @@ export function PDFViewer({ src, fileName }: PDFViewerProps) {
             {Array.from({ length: Math.max(totalPages, 1) }).map((_, i) => (
               <div
                 key={i}
-                className={`aspect-[3/4] rounded-sm border cursor-pointer transition-colors ${
-                  page === i + 1 ? "border-primary ring-1 ring-primary" : "border-border hover:border-muted-foreground/30"
-                }`}
+                className={`aspect-[3/4] rounded-sm border cursor-pointer transition-colors ${ page === i + 1 ? "border-primary ring-1 ring-primary" : "border-border hover:border-muted-foreground/30" }`}
                 onClick={() => setPage(i + 1)}
               >
                 <div className="w-full h-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground">
@@ -145,7 +143,7 @@ export function PDFViewer({ src, fileName }: PDFViewerProps) {
               <AlertCircleIcon className="size-8" />
               <p className="text-sm">Failed to load PDF</p>
               <Button variant="outline" size="sm" onClick={() => window.open(src, "_blank")}>
-                <DownloadIcon className="size-3.5 mr-1.5" /> Download to view
+                <DownloadIcon className="mr-1.5" /> Download to view
               </Button>
             </div>
           </div>

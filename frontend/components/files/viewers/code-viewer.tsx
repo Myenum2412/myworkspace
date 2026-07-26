@@ -119,7 +119,7 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
       <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground p-8">
         <p className="text-sm">Failed to load file preview</p>
         <Button variant="outline" size="sm" onClick={() => window.open(src, "_blank")}>
-          <DownloadIcon className="size-3.5 mr-1.5" /> Download to view
+          <DownloadIcon className="mr-1.5" /> Download to view
         </Button>
       </div>
     );
@@ -133,16 +133,16 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
           <span className="text-xs text-muted-foreground">{lines.length} lines</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setShowSearch(!showSearch)}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setShowSearch(!showSearch)}>
             <SearchIcon className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setWordWrap(!wordWrap)}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setWordWrap(!wordWrap)}>
             <WrapTextIcon className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleCopy}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={handleCopy}>
             {copied ? <CheckIcon className="size-3.5 text-green-500" /> : <CopyIcon className="size-3.5" />}
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(src, "_blank")}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
             <DownloadIcon className="size-3.5" />
           </Button>
         </div>
@@ -162,7 +162,7 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
               {currentMatch + 1} / {searchMatches.length}
             </span>
           )}
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setShowSearch(false)}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setShowSearch(false)}>
             <XIcon className="size-3.5" />
           </Button>
         </div>
@@ -174,15 +174,7 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
             {lines.map((line, i) => (
               <tr
                 key={i}
-                className={`hover:bg-accent/30 ${
-                  searchMatches.length > 0 &&
-                  searchMatches.some((m) => {
-                    const lineStart = content.split("\n").slice(0, i).join("\n").length + (i > 0 ? 1 : 0);
-                    return m >= lineStart && m < lineStart + line.length + 1;
-                  })
-                    ? "bg-yellow-300/10"
-                    : ""
-                }`}
+                className={`hover:bg-accent/30 ${ searchMatches.length > 0 && searchMatches.some((m) => { const lineStart = content.split("\n").slice(0, i).join("\n").length + (i > 0 ? 1 : 0); return m >= lineStart && m < lineStart + line.length + 1; }) ? "bg-yellow-300/10" : "" }`}
               >
                 <td className="px-3 py-0 text-right text-muted-foreground/50 select-none w-12 border-r border-border align-top">
                   <span className="text-[11px] leading-5">{i + 1}</span>

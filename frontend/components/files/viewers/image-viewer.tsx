@@ -53,32 +53,32 @@ export function ImageViewer({ src, fileName, fileSize, mimeType }: ImageViewerPr
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-4 py-2 border-b shrink-0 gap-1">
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleZoomOut} disabled={zoom <= minZoom}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={handleZoomOut} disabled={zoom <= minZoom}>
             <ZoomOutIcon className="size-3.5" />
           </Button>
           <span className="text-xs text-muted-foreground w-10 text-center">{Math.round(zoom * 100)}%</span>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleZoomIn} disabled={zoom >= maxZoom}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={handleZoomIn} disabled={zoom >= maxZoom}>
             <ZoomInIcon className="size-3.5" />
           </Button>
           <div className="w-px h-4 bg-border mx-1" />
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleRotateCcw}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={handleRotateCcw}>
             <RotateCcwIcon className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleRotateCw}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={handleRotateCw}>
             <RotateCwIcon className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={handleReset}>
+          <Button variant="ghost" size="sm" className="text-xs px-2" onClick={handleReset}>
             Reset
           </Button>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setShowInfo(!showInfo)}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setShowInfo(!showInfo)}>
             <InfoIcon className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={toggleFullscreen}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={toggleFullscreen}>
             {isFullscreen ? <MinimizeIcon className="size-3.5" /> : <MaximizeIcon className="size-3.5" />}
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(src, "_blank")}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
             <DownloadIcon className="size-3.5" />
           </Button>
         </div>
@@ -105,7 +105,7 @@ export function ImageViewer({ src, fileName, fileSize, mimeType }: ImageViewerPr
             <ImageIcon className="size-12 text-muted-foreground/30" />
             <p className="text-sm">Failed to load image</p>
             <Button variant="outline" size="sm" onClick={() => window.open(src, "_blank")}>
-              <DownloadIcon className="size-3.5 mr-1.5" /> Open in new tab
+              <DownloadIcon className="mr-1.5" /> Open in new tab
             </Button>
           </div>
         )}
@@ -117,7 +117,7 @@ export function ImageViewer({ src, fileName, fileSize, mimeType }: ImageViewerPr
             transition: "transform 0.15s ease-out",
             maxWidth: "none",
           }}
-          className={`max-w-full max-h-full object-contain ${loading || error ? "hidden" : ""}`}
+          className={`object-contain ${loading || error ? "hidden" : ""}`}
           onLoad={(e) => {
             const img = e.currentTarget;
             setImgDimensions({ w: img.naturalWidth, h: img.naturalHeight });

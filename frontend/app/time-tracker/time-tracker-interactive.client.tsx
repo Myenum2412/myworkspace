@@ -252,7 +252,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
           </div>
 
           <Button
-            className="bg-primary hover:bg-accent text-primary-foreground rounded-sm h-9 px-4 font-semibold text-xs flex-1"
+            className="bg-primary hover:bg-accent text-primary-foreground rounded-sm px-4 font-semibold text-xs flex-1"
             onClick={handleAdd}
             disabled={saving || !description.trim()}
           >
@@ -409,7 +409,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
           </div>
 
           <Button
-            className="bg-primary hover:bg-accent text-primary-foreground rounded-none h-[34px] px-[22px] font-semibold shadow-none tracking-wide text-[13px] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-primary hover:bg-accent text-primary-foreground rounded-none px-[22px] font-semibold shadow-none tracking-wide text-[13px] disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAdd}
             disabled={saving || !description.trim()}
           >
@@ -446,7 +446,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                     Cancel
                   </Button>
                   <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
-                    <Trash2 className="size-3.5 mr-1.5" />
+                    <Trash2 className="mr-1.5" />
                     Delete
                   </Button>
                 </div>

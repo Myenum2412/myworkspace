@@ -172,7 +172,7 @@ function AssignPlanDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Plus className="h-4 w-4 mr-1" />
+          <Plus className="mr-1" />
           Assign
         </Button>
       </DialogTrigger>
@@ -363,7 +363,7 @@ function CreatePlanDialog({ onCreated }: { onCreated: () => void }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2" />
           Create Custom Plan
         </Button>
       </DialogTrigger>
@@ -467,7 +467,7 @@ function EditPlanDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm">
-          <Pencil className="h-4 w-4" />
+          <Pencil className="" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
@@ -622,11 +622,7 @@ export function PlansDataTable({
       <div className="flex gap-1 border-b">
         <button
           onClick={() => setActiveTab("pricing")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === "pricing"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${ activeTab === "pricing" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground" }`}
         >
           <Zap className="h-4 w-4 mr-1 inline" />
           Pricing Plans
@@ -678,7 +674,7 @@ export function PlansDataTable({
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4 mr-1" />
+              <RefreshCw className="mr-1" />
               Refresh
             </Button>
           </div>
@@ -781,7 +777,7 @@ export function PlansDataTable({
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
+                                <MoreHorizontal className="" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -820,7 +816,7 @@ export function PlansDataTable({
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4 mr-1" />
+              <RefreshCw className="mr-1" />
               Refresh
             </Button>
           </div>
@@ -920,7 +916,7 @@ export function PlansDataTable({
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
+                              <MoreHorizontal className="" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">

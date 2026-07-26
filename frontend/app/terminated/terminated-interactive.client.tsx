@@ -199,7 +199,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 text-xs"
+                            className="text-xs"
                             onClick={() => setViewEmployee(emp)}
                           >
                             <EyeIcon className="size-3 mr-1" />
@@ -208,7 +208,7 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-7 text-xs"
+                            className="text-xs"
                             onClick={() => handleReactivateClick(emp)}
                           >
                             <Undo2 className="size-3 mr-1" />

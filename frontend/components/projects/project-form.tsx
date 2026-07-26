@@ -84,7 +84,7 @@ export function ProjectCreateForm({
             <p className="text-sm text-muted-foreground">Fill in the details below to create a new project.</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={onCancel} disabled={submitting} className="size-8">
+        <Button variant="ghost" size="icon" onClick={onCancel} disabled={submitting} className="">
           <XIcon className="size-4" />
         </Button>
       </div>
@@ -162,7 +162,7 @@ export function ProjectCreateForm({
             <Label className="text-xs text-muted-foreground">Team Members</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start font-normal" disabled={submitting}>
+                <Button variant="outline" className="justify-start font-normal" disabled={submitting}>
                   <UsersIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
                   {projectMembers.length === 0
                     ? "Select team members"
@@ -288,9 +288,7 @@ export function ProjectCreateForm({
                     type="button"
                     onClick={() => onProjectColorChange(c)}
                     disabled={submitting}
-                    className={`size-8 rounded-sm ring-offset-2 ring-offset-background transition-all ${
-                      projectColor === c ? "ring-2 ring-foreground scale-110 shadow-md" : "hover:scale-105"
-                    }`}
+                    className={`rounded-sm ring-offset-2 ring-offset-background transition-all ${ projectColor === c ? "ring-2 ring-foreground scale-110 shadow-md" : "hover:scale-105" }`}
                     style={{ backgroundColor: c }}
                   />
                 ))}
@@ -366,10 +364,10 @@ export function ProjectCreateForm({
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t">
-        <Button variant="outline" onClick={onCancel} disabled={submitting} className="w-full sm:w-auto">
+        <Button variant="outline" onClick={onCancel} disabled={submitting} className="">
           Cancel
         </Button>
-        <Button disabled={!projectName || !selectedClient || submitting} onClick={onSubmit} className="w-full sm:w-auto touch-target">
+        <Button disabled={!projectName || !selectedClient || submitting} onClick={onSubmit} className="touch-target">
           {submitting ? (
             <span className="flex items-center gap-2">
               <span className="size-4 animate-spin rounded-sm border-2 border-background border-t-transparent" />
@@ -434,7 +432,7 @@ export function ProjectEditForm({
       )}
 
       <div className="flex items-center gap-3 px-6 shrink-0">
-        <Button variant="ghost" size="icon" className="size-8" onClick={onCancel}>
+        <Button variant="ghost" size="icon" className="" onClick={onCancel}>
           <ArrowLeftIcon className="size-4" />
         </Button>
         <div>
@@ -541,7 +539,7 @@ export function ProjectEditForm({
                   <Label className="text-xs text-muted-foreground">Team Members</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-sm font-normal">
+                      <Button variant="outline" className="justify-start text-sm font-normal">
                         <UsersIcon className="size-3.5 mr-2 text-muted-foreground" />
                         {editMembers.length === 0
                           ? "Select team members"
@@ -648,7 +646,7 @@ export function ProjectEditForm({
                           type="button"
                           onClick={() => onEditColorChange(c)}
                           className={cn(
-                            "size-7 rounded-sm ring-offset-2 ring-offset-background transition-all",
+                            "rounded-sm ring-offset-2 ring-offset-background transition-all",
                             editColor === c ? "ring-2 ring-foreground scale-110" : ""
                           )}
                           style={{ backgroundColor: c }}
@@ -729,10 +727,10 @@ export function ProjectEditForm({
       </div>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-6 py-4 border-t bg-muted/10">
-        <Button variant="ghost" onClick={onCancel} className="order-2 sm:order-1">
+        <Button variant="ghost" onClick={onCancel} className="order-2 md:order-1">
           Cancel
         </Button>
-        <Button className="bg-primary hover:bg-primary/80 w-full sm:w-32 touch-target order-1 sm:order-2" onClick={onSubmit} disabled={submitting}>
+        <Button className="bg-primary hover:bg-primary/80 touch-target order-1 md:order-2" onClick={onSubmit} disabled={submitting}>
           {submitting ? "Saving..." : "Save"}
         </Button>
       </div>

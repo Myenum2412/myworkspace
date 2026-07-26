@@ -108,7 +108,7 @@ export function FileViewer({ file, src, showInfo = false }: FileViewerProps) {
             </div>
             <p className="text-xs">Preview not available for this file type</p>
             <Button variant="outline" size="sm" onClick={() => window.open(src, "_blank")}>
-              <DownloadIcon className="size-3.5 mr-1.5" /> Download to view
+              <DownloadIcon className="mr-1.5" /> Download to view
             </Button>
           </div>
         );

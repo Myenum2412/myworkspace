@@ -131,12 +131,10 @@ export function Pricing() {
                 <Button
                   onClick={() => handleClick(plan.id)}
                   variant={plan.popular ? "default" : "outline"}
-                  className={`mb-6 h-11 w-full text-base font-medium ${
-                    plan.popular ? "" : "border-brand-200 text-brand-800 hover:bg-brand-50"
-                  }`}
+                  className={`mb-6 text-base font-medium ${ plan.popular ? "" : "border-brand-200 text-brand-800 hover:bg-brand-50" }`}
                 >
                   {plan.cta}
-                  <ArrowRight className="ml-2 size-4" />
+                  <ArrowRight className="ml-2" />
                 </Button>
 
                 {plan.limits.length > 0 && (

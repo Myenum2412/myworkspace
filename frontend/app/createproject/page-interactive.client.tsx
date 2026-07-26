@@ -117,7 +117,7 @@ export function CreateProjectPageInteractive() {
     <>
       <div className="px-6 py-4 shrink-0">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="size-8" onClick={() => { router.back(); }}>
+          <Button variant="ghost" size="icon" className="" onClick={() => { router.back(); }}>
             <ArrowLeftIcon className="size-4" />
           </Button>
           <div>
@@ -168,7 +168,7 @@ export function CreateProjectPageInteractive() {
             <FormField label="Deadline">
               <Popover open={deadlineOpen} onOpenChange={setDeadlineOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between text-sm font-normal">
+                  <Button variant="outline" className="justify-between text-sm font-normal">
                     {deadline ? (
                       <span>{deadline.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                     ) : (
@@ -191,9 +191,7 @@ export function CreateProjectPageInteractive() {
                       key={c}
                       type="button"
                       onClick={() => setColor(c)}
-                      className={`size-7 rounded-sm ring-offset-2 ring-offset-background transition-all ${
-                        color === c ? "ring-2 ring-foreground scale-110" : ""
-                      }`}
+                      className={`rounded-sm ring-offset-2 ring-offset-background transition-all ${ color === c ? "ring-2 ring-foreground scale-110" : "" }`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
@@ -235,7 +233,7 @@ export function CreateProjectPageInteractive() {
           disabled={isSubmitting || !name.trim() || !client.trim()}
         >
           {isSubmitting ? (
-            <><Loader2 className="size-3.5 animate-spin mr-1.5" />Creating...</>
+            <><Loader2 className="animate-spin mr-1.5" />Creating...</>
           ) : (
             "Create Project"
           )}

@@ -60,13 +60,13 @@ export default function CookieConsentBlock() {
           <Button
             variant="outline"
             onClick={() => handleConsent("declined")}
-            className="flex-1 sm:flex-none"
+            className="flex-1 md:flex-none"
           >
             Decline
           </Button>
           <Button
             onClick={() => handleConsent("accepted")}
-            className="flex-1 sm:flex-none"
+            className="flex-1 md:flex-none"
           >
             Accept all
           </Button>

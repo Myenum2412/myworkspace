@@ -114,11 +114,11 @@ export function VersionHistory({ file, open, onOpenChange }: VersionHistoryProps
                     {version.comment && <p className="text-xs text-muted-foreground mt-1 italic">{version.comment}</p>}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"
+                    <Button variant="ghost" size="sm" className="p-0"
                       onClick={() => window.open(`/api/files/${file.id}?version=${version.versionNumber}`, "_blank")}>
                       <DownloadIcon className="size-3" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"
+                    <Button variant="ghost" size="sm" className="p-0"
                       onClick={() => handleRollback(version.id, version.versionNumber)}
                       disabled={rollingBack === version.versionNumber}>
                       <RotateCcwIcon className="size-3" />

@@ -39,7 +39,7 @@ export default function CtaBlock({
             <Button
               asChild
               variant="default"
-              className="w-full sm:w-auto"
+              className=""
             >
               <a href={buttonHref}>
                 {buttonText}

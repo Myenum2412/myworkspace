@@ -105,7 +105,7 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
       <td className="px-4 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8">
+            <Button variant="ghost" size="icon" className="">
               <MoreHorizontalIcon className="size-4" />
             </Button>
           </DropdownMenuTrigger>

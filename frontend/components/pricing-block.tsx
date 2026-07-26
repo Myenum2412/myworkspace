@@ -216,7 +216,7 @@ export default function PricingBlock() {
                   asChild
                   variant={tier.featured ? "default" : "outline"}
                   size="lg"
-                  className="w-full"
+                  className=""
                 >
                   {tier.name === "Enterprise" ? (
                     <a href="mailto:sales@myenum.in?subject=Enterprise Plan Inquiry">{tier.cta}</a>

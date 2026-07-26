@@ -70,7 +70,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
             <h1 className="text-xl sm:text-2xl font-bold">Team Tasks</h1>
             <Badge variant="secondary" className="text-[10px] sm:text-xs whitespace-nowrap">{localTasks.length} tasks</Badge>
           </div>
-          <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/createtask')} className="touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -103,7 +103,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
                 size="sm"
                 onClick={() => setViewMode("table")}
               >
-                <LayoutGridIcon className="mr-2 size-4" />
+                <LayoutGridIcon className="mr-2" />
                 Table
               </Button>
               <Button
@@ -111,7 +111,7 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
                 size="sm"
                 onClick={() => setViewMode("gantt")}
               >
-                <CalendarIcon className="mr-2 size-4" />
+                <CalendarIcon className="mr-2" />
                 Gantt
               </Button>
             </div>

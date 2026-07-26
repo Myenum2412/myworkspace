@@ -99,7 +99,7 @@ export function AppointmentDeleteDialog({ appointment: propAppointment, open, on
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-            {deleting && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {deleting && <Loader2 className="mr-2 animate-spin" />}
             Delete
           </Button>
         </DialogFooter>
@@ -150,7 +150,7 @@ export function AppointmentCancelDialog({ appointment: propAppointment, open, on
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>No, Keep It</Button>
           <Button variant="destructive" onClick={handleCancel} disabled={loading}>
-            {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {loading && <Loader2 className="mr-2 animate-spin" />}
             Yes, Cancel Appointment
           </Button>
         </DialogFooter>

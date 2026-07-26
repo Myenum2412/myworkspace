@@ -122,7 +122,7 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
                       <span className="text-gray-500 italic text-xs">\u2014</span>
                     </td>
                     <td className="px-4 py-3">
-                      <Button variant="ghost" size="icon" className="size-8" onClick={(e) => { e.stopPropagation(); setViewRecord(t); }} title="View">
+                      <Button variant="ghost" size="icon" className="" onClick={(e) => { e.stopPropagation(); setViewRecord(t); }} title="View">
                         <EyeIcon className="size-4" />
                       </Button>
                     </td>

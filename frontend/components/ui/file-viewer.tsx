@@ -267,30 +267,30 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
                   {category === "image" && (
                     <>
                       <Button variant="ghost" size="icon-sm" onClick={handleZoomOut} disabled={zoom <= 0.25} aria-label="Zoom out">
-                        <ZoomOutIcon className="size-4" />
+                        <ZoomOutIcon className="" />
                       </Button>
                       <span className="text-xs text-muted-foreground w-10 text-center">{Math.round(zoom * 100)}%</span>
                       <Button variant="ghost" size="icon-sm" onClick={handleZoomIn} disabled={zoom >= 5} aria-label="Zoom in">
-                        <ZoomInIcon className="size-4" />
+                        <ZoomInIcon className="" />
                       </Button>
                       <Button variant="ghost" size="icon-sm" onClick={handleRotate} aria-label="Rotate">
-                        <RotateCwIcon className="size-4" />
+                        <RotateCwIcon className="" />
                       </Button>
                     </>
                   )}
                   <Button variant="ghost" size="icon-sm" onClick={toggleFullscreen} aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
-                    {isFullscreen ? <Minimize2Icon className="size-4" /> : <Maximize2Icon className="size-4" />}
+                    {isFullscreen ? <Minimize2Icon className="" /> : <Maximize2Icon className="size-4" />}
                   </Button>
                 </>
               )}
               <Button variant="ghost" size="icon-sm" onClick={handlePrint} aria-label="Print">
-                <PrinterIcon className="size-4" />
+                <PrinterIcon className="" />
               </Button>
               <Button variant="ghost" size="icon-sm" onClick={handleOpenInNewTab} aria-label="Open in new tab">
-                <ExternalLinkIcon className="size-4" />
+                <ExternalLinkIcon className="" />
               </Button>
               <Button variant="ghost" size="icon-sm" onClick={handleDownload} aria-label="Download">
-                <DownloadIcon className="size-4" />
+                <DownloadIcon className="" />
               </Button>
             </div>
           </div>
@@ -316,7 +316,7 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
 
             {!loading && !error && category === "image" && (
               <div
-                className="w-full h-full flex items-center justify-center overflow-hidden"
+                className="flex items-center justify-center overflow-hidden"
                 onMouseDown={handleImageMouseDown}
                 onMouseMove={handleImageMouseMove}
                 onMouseUp={handleImageMouseUp}
@@ -387,7 +387,7 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
             {!loading && !error && (category === "text" || category === "code") && (
               <div className="w-full h-full overflow-auto p-4">
                 <pre className={cn(
-                  "text-sm leading-relaxed border bg-card p-4 overflow-x-auto min-h-full",
+                  "text-sm leading-relaxed border bg-card p-4 overflow-x-auto",
                   category === "code" && "font-mono"
                 )}>
                   <code>{textContent || "Empty file"}</code>
@@ -407,7 +407,7 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
                 <div className="shrink-0 p-3 bg-card border-t flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">Preview may not support all Office features</p>
                   <Button variant="outline" size="sm" onClick={handleDownload}>
-                    <DownloadIcon className="size-3.5 mr-1" /> Download to view in full
+                    <DownloadIcon className="mr-1" /> Download to view in full
                   </Button>
                 </div>
               </div>
@@ -422,7 +422,7 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
                 </div>
                 <p className="text-xs text-muted-foreground">Archive files cannot be previewed inline.</p>
                 <Button onClick={handleDownload}>
-                  <DownloadIcon className="size-4 mr-1.5" /> Download Archive
+                  <DownloadIcon className="mr-1.5" /> Download Archive
                 </Button>
               </div>
             )}
@@ -436,7 +436,7 @@ export function FileViewer({ file, open, onOpenChange }: FileViewerProps) {
                 </div>
                 <p className="text-xs text-muted-foreground">Preview not available for this file type.</p>
                 <Button onClick={handleDownload}>
-                  <DownloadIcon className="size-4 mr-1.5" /> Download File
+                  <DownloadIcon className="mr-1.5" /> Download File
                 </Button>
               </div>
             )}

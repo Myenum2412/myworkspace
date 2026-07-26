@@ -64,7 +64,7 @@ export function RecycleBin() {
         </div>
         {(files?.length || 0) > 0 && (
           <Button variant="destructive" size="sm" onClick={handleEmptyBin}>
-            <Trash2Icon className="size-3.5 mr-1.5" /> Empty Bin
+            <Trash2Icon className="mr-1.5" /> Empty Bin
           </Button>
         )}
       </div>
@@ -124,7 +124,7 @@ export function RecycleBin() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 text-xs"
+                        className="text-xs"
                         onClick={() => handleRestore(file.id)}
                         disabled={restoring === file.id}
                       >
@@ -134,7 +134,7 @@ export function RecycleBin() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 text-xs text-destructive"
+                        className="text-xs text-destructive"
                         onClick={() => handlePermanentDelete(file.id)}
                         disabled={deleting === file.id}
                       >

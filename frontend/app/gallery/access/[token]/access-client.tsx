@@ -233,7 +233,7 @@ export function GalleryAccessClient({
                 {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
               </div>
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="">
                 Continue
               </Button>
             </form>
@@ -249,7 +249,7 @@ export function GalleryAccessClient({
                 <>
                   {!cameraActive ? (
                     <div className="flex flex-col gap-3">
-                      <Button onClick={startCamera} className="w-full">
+                      <Button onClick={startCamera} className="">
                         <CameraIcon className="size-4 mr-1" /> Use Camera
                       </Button>
                       <div className="relative">
@@ -260,7 +260,7 @@ export function GalleryAccessClient({
                           <span className="bg-background px-2 text-muted-foreground">or</span>
                         </div>
                       </div>
-                      <Button variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                      <Button variant="outline" className="" onClick={() => fileInputRef.current?.click()}>
                         <UploadIcon className="size-4 mr-1" /> Upload Photo
                       </Button>
                       <input
@@ -276,7 +276,7 @@ export function GalleryAccessClient({
                       <div className="relative aspect-[3/4] rounded-sm overflow-hidden bg-muted">
                         <video ref={videoRef} className="size-full object-cover" playsInline />
                       </div>
-                      <Button onClick={captureSelfie} className="w-full">
+                      <Button onClick={captureSelfie} className="">
                         <CameraIcon className="size-4 mr-1" /> Capture
                       </Button>
                     </div>
@@ -306,5 +306,5 @@ export function GalleryAccessClient({
 }
 
 function Separator({ className }: { className?: string }) {
-  return <div className={`h-px bg-border ${className || ""}`} />;
+  return <div className={`bg-border ${className || ""}`} />;
 }

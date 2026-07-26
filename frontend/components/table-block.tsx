@@ -472,7 +472,7 @@ const columns: ColumnDef<Invoice>[] = [
               size="icon-sm"
               aria-label={`Actions for ${row.original.id}`}
             >
-              <RiMoreLine className="size-4" aria-hidden="true" />
+              <RiMoreLine className="" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-36">
@@ -596,7 +596,7 @@ export default function TableBlock() {
                   })
                 }
               >
-                <RiDownloadLine className="size-3.5" aria-hidden="true" />
+                <RiDownloadLine className="" aria-hidden="true" />
                 Download
               </Button>
               <Button
@@ -608,7 +608,7 @@ export default function TableBlock() {
                   })
                 }
               >
-                <RiMailLine className="size-3.5" aria-hidden="true" />
+                <RiMailLine className="" aria-hidden="true" />
                 Send reminder
               </Button>
               <Button
@@ -620,7 +620,7 @@ export default function TableBlock() {
                   })
                 }
               >
-                <RiCheckLine className="size-3.5" aria-hidden="true" />
+                <RiCheckLine className="" aria-hidden="true" />
                 Mark as paid
               </Button>
             </div>
@@ -641,9 +641,9 @@ export default function TableBlock() {
                       <TableHead
                         key={header.id}
                         className={cn(
-                          "h-9",
-                          id === "select" && "w-10 pl-4",
-                          id === "project" && "hidden sm:table-cell",
+                          "",
+                          id === "select" && "pl-4",
+                          id === "project" && "hidden md:table-cell",
                           (id === "method" || id === "due") &&
                             "hidden md:table-cell",
                           id === "amount" && "text-right",
@@ -713,7 +713,7 @@ export default function TableBlock() {
               <Button
                 variant="outline"
                 size="icon"
-                className="size-7"
+                className=""
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
                 aria-label="Previous page"
@@ -727,7 +727,7 @@ export default function TableBlock() {
               <Button
                 variant="outline"
                 size="icon"
-                className="size-7"
+                className=""
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
                 aria-label="Next page"

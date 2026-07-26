@@ -177,7 +177,7 @@ export function BlogEditorClient({
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setPreview(false)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2" />
             Back to Editor
           </Button>
         </div>
@@ -219,7 +219,7 @@ export function BlogEditorClient({
         </TabsList>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setPreview(true)}>
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye className="mr-2" />
             Preview
           </Button>
           <Button
@@ -227,14 +227,14 @@ export function BlogEditorClient({
             onClick={() => handleSave()}
             disabled={saving}
           >
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="mr-2" />
             Save Draft
           </Button>
           <Button
             onClick={() => handleSave("publish")}
             disabled={publishing || !title || !content}
           >
-            <Send className="h-4 w-4 mr-2" />
+            <Send className="mr-2" />
             Publish
           </Button>
         </div>

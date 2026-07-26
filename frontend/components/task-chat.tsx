@@ -279,7 +279,7 @@ export function TaskChat({
         </div>
         <div className="flex items-center gap-1 shrink-0 ml-2">
           {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose} className="size-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+            <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
               <XIcon className="size-5" />
             </Button>
           )}
@@ -306,7 +306,7 @@ export function TaskChat({
             const isConsecutive = prevMessage && prevMessage.senderId === c.senderId;
             
             return (
-              <div key={c.id} className={`flex gap-3 w-full group ${isMe ? "flex-row-reverse" : ""}`}>
+              <div key={c.id} className={`flex gap-3 group ${isMe ? "flex-row-reverse" : ""}`}>
                 {/* Avatar */}
                 <div className={`shrink-0 ${isConsecutive ? "opacity-0" : "opacity-100"}`}>
                   <Avatar className="size-9 border border-gray-200">
@@ -347,15 +347,15 @@ export function TaskChat({
 
                     {/* Hover Actions */}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200 rounded-sm p-0.5">
-                      <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900">
+                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-900">
                         <ReplyIcon className="size-3.5" />
                       </Button>
                       {isMe && (
                         <>
-                          <Button variant="ghost" size="icon" className="size-6 text-gray-500 hover:text-gray-900" onClick={() => { setEditingId(c.id); setInput(c.content); }}>
+                          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-900" onClick={() => { setEditingId(c.id); setInput(c.content); }}>
                             <PencilIcon className="size-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="size-6 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => deleteComment(c.id)}>
+                          <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => deleteComment(c.id)}>
                             <Trash2Icon className="size-3.5" />
                           </Button>
                         </>
@@ -365,7 +365,7 @@ export function TaskChat({
 
                   {/* Attachments */}
                   {c.attachments && c.attachments.length > 0 && (
-                    <div className={`flex flex-col gap-2 mt-2 w-full max-w-[280px]`}>
+                    <div className={`flex flex-col gap-2 mt-2`}>
                       {c.attachments.map(att => (
                          <div key={att.id} className="flex items-center gap-3 p-3 rounded-sm border border-gray-200 bg-white hover:border-gray-300 transition-colors group/att cursor-pointer">
                           <div className="shrink-0 bg-gray-50 p-2 rounded-sm">
@@ -453,7 +453,7 @@ export function TaskChat({
                 type="button" 
                 variant="ghost" 
                 size="icon" 
-                className="size-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-2xl"
+                className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-2xl"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <PaperclipIcon className="size-4" />
@@ -462,15 +462,11 @@ export function TaskChat({
             <Button 
               type="submit" 
               size="sm" 
-              className={`rounded-2xl px-4 font-semibold transition-all ${
-                (!input.trim() && pendingAttachments.length === 0) 
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100" 
-                  : "bg-gray-900 text-white hover:bg-gray-800"
-              }`}
+              className={`rounded-2xl px-4 font-semibold transition-all ${ (!input.trim() && pendingAttachments.length === 0) ? "bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100" : "bg-gray-900 text-white hover:bg-gray-800" }`}
               disabled={(!input.trim() && pendingAttachments.length === 0) || isUploading}
             >
               {isUploading ? (
-                <Loader2Icon className="size-4 animate-spin mr-1.5" />
+                <Loader2Icon className="animate-spin mr-1.5" />
               ) : (
                 <SendIcon className="size-4 mr-1.5" />
               )}

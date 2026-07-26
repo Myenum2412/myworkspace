@@ -95,7 +95,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               />
             </div>
           </div>
-          <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/createtask')} className="touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -121,7 +121,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               size="sm"
               onClick={() => setViewMode("table")}
             >
-              <LayoutGridIcon className="mr-2 size-4" />
+              <LayoutGridIcon className="mr-2" />
               Table
             </Button>
             <Button
@@ -129,7 +129,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               size="sm"
               onClick={() => setViewMode("gantt")}
             >
-              <CalendarIcon className="mr-2 size-4" />
+              <CalendarIcon className="mr-2" />
               Gantt
             </Button>
           </div>
@@ -145,7 +145,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
                     return (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="size-4" /></Button>
+                          <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>

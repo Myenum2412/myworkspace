@@ -150,7 +150,7 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
             </div>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
             {preview && (
-              <Button type="button" variant="ghost" size="sm" className="mt-1 h-6 w-full text-xs" onClick={clearImage}>
+              <Button type="button" variant="ghost" size="sm" className="mt-1 text-xs" onClick={clearImage}>
                 <X className="mr-1 size-3" /> Remove
               </Button>
             )}
@@ -247,8 +247,8 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
       </fieldset>
 
       <div className="flex justify-end gap-3 pt-2 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} className="h-10 px-5">Cancel</Button>
-        <Button type="submit" disabled={saving || !productName.trim()} className="h-10 px-5">
+        <Button type="button" variant="outline" onClick={onCancel} className="px-5">Cancel</Button>
+        <Button type="submit" disabled={saving || !productName.trim()} className="px-5">
           {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
           {stock ? "Update" : "Save"}
         </Button>

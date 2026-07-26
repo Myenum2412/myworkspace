@@ -90,7 +90,7 @@ export default function ReworksInteractive() {
           <h1 className="text-2xl font-bold">Reworks</h1>
         </div>
         <Button size="sm" onClick={() => setAddOpen(true)}>
-          <PlusIcon className="size-4 mr-1" />
+          <PlusIcon className="mr-1" />
           Add Rework
         </Button>
       </div>
@@ -162,21 +162,21 @@ export default function ReworksInteractive() {
                             size="icon-sm"
                             onClick={() => setViewItem(item)}
                           >
-                            <EyeIcon className="size-4 text-muted-foreground" />
+                            <EyeIcon className="text-muted-foreground" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => setEditItem(item)}
                           >
-                            <PencilIcon className="size-4 text-muted-foreground" />
+                            <PencilIcon className="text-muted-foreground" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => handleDelete(item.id)}
                           >
-                            <Trash2Icon className="size-4 text-muted-foreground" />
+                            <Trash2Icon className="text-muted-foreground" />
                           </Button>
                         </div>
                       </td>
@@ -223,7 +223,7 @@ export default function ReworksInteractive() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editItem} onOpenChange={(open) => { if (!open) setEditItem(null); }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="">
           <DialogHeader>
             <DialogTitle>Edit Rework</DialogTitle>
           </DialogHeader>
@@ -284,7 +284,7 @@ export default function ReworksInteractive() {
 
       {/* Add Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="">
           <DialogHeader>
             <DialogTitle>Add Rework</DialogTitle>
           </DialogHeader>

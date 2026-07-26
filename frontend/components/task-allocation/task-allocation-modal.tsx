@@ -391,7 +391,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Due Date">
                 <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                    <Button variant="outline" className="justify-between text-sm font-normal">
                       {dueDate ? (
                         <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -431,7 +431,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Due Date">
                 <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                    <Button variant="outline" className="justify-between text-sm font-normal">
                       {dueDate ? (
                         <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -470,7 +470,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Scheduled Date" required>
                 <Popover open={scheduledDateOpen} onOpenChange={setScheduledDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                    <Button variant="outline" className="justify-between text-sm font-normal">
                       {scheduledDate ? (
                         <span>{scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -488,7 +488,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Due Date">
                 <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-9 w-full justify-between text-sm font-normal">
+                    <Button variant="outline" className="justify-between text-sm font-normal">
                       {dueDate ? (
                         <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       ) : (
@@ -521,7 +521,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-8 text-xs"
+                  className="text-xs"
                   onClick={() => {
                     const el = document.querySelector<HTMLInputElement>('[data-file-trigger]');
                     if (el) el.click();
@@ -566,7 +566,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             disabled={isSubmitting || !title.trim() || !description.trim() || !priority}
           >
             {isSubmitting ? (
-              <><Loader2 className="size-3.5 animate-spin mr-1.5" />Creating...</>
+              <><Loader2 className="animate-spin mr-1.5" />Creating...</>
             ) : (
               <>
                 <TaskTypeIcon className="size-3.5 mr-1.5" />

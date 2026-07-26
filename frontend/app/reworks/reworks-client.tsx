@@ -73,7 +73,7 @@ export default function ReworksClient() {
           <h1 className="text-2xl font-bold">Reworks</h1>
         </div>
         <Button size="sm">
-          <PlusIcon className="size-4 mr-1" />
+          <PlusIcon className="mr-1" />
           Add Rework
         </Button>
       </div>
@@ -129,11 +129,7 @@ export default function ReworksClient() {
                       }
                     >
                       <SelectTrigger
-                        className={`h-8 w-36 ${
-                          item.status === "Completed"
-                            ? "text-green-700"
-                            : "text-yellow-700"
-                        }`}
+                        className={`${ item.status === "Completed" ? "text-green-700" : "text-yellow-700" }`}
                       >
                         <SelectValue />
                       </SelectTrigger>

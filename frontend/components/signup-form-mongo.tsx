@@ -69,7 +69,7 @@ export function SignupFormMongo({ className, error, ...props }: React.ComponentP
           <Label className="text-xs text-muted-foreground">Confirm password</Label>
           <PasswordInput id="mongo-confirm" name="confirm" placeholder="" required autoComplete="new-password" />
         </div>
-        <Button type="submit" className="w-full mt-1 font-semibold">
+        <Button type="submit" className="mt-1 font-semibold">
           Create account
         </Button>
       </form>

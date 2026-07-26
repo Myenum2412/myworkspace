@@ -88,7 +88,7 @@ function QuickLink({ href, icon: Icon, label }: { href: string; icon: React.Comp
   return (
     <Button variant="outline" size="sm" asChild>
       <Link href={href}>
-        <Icon className="size-3.5" />
+        <Icon className="" />
         {label}
       </Link>
     </Button>
@@ -152,7 +152,7 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
-          <Button asChild variant="ghost" size="sm" className="w-fit px-0">
+          <Button asChild variant="ghost" size="sm" className="px-0">
             <Link href="/clients">
               <ArrowLeft className="mr-2 size-4" />
               My Clients

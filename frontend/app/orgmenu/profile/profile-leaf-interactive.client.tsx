@@ -319,13 +319,13 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 Cancel
               </Button>
               <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? <Loader2Icon className="size-4 animate-spin" /> : <CheckIcon className="size-4" />}
+                {saving ? <Loader2Icon className="animate-spin" /> : <CheckIcon className="size-4" />}
                 Save
               </Button>
             </div>
           ) : (
             <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-              <PencilIcon className="size-4" />
+              <PencilIcon className="" />
               Edit Profile
             </Button>
           )}
@@ -587,7 +587,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 />
                 <Button
                   size="sm"
-                  className="h-8 text-xs shrink-0"
+                  className="text-xs shrink-0"
                   disabled={!urlInput}
                   onClick={() => updateBanner(urlInput)}
                 >
@@ -619,7 +619,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                   </div>
                   <Button
                     variant="ghost"
-                    className="w-full h-8 text-xs text-destructive hover:text-destructive"
+                    className="text-xs text-destructive hover:text-destructive"
                     onClick={() => updateBanner("")}
                   >
                     Remove banner
@@ -661,7 +661,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                   </div>
                   <Button
                     variant="ghost"
-                    className="w-full h-8 text-xs text-destructive hover:text-destructive"
+                    className="text-xs text-destructive hover:text-destructive"
                     onClick={removeProfileImage}
                   >
                     Remove photo

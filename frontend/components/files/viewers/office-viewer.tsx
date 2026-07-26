@@ -39,11 +39,11 @@ export function OfficeViewer({ src, fileName, mimeType }: OfficeViewerProps) {
           <span className="text-xs font-medium text-muted-foreground uppercase">{ext}</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setUseGoogleViewer(!useGoogleViewer)}>
+          <Button variant="outline" size="sm" className="text-xs" onClick={() => setUseGoogleViewer(!useGoogleViewer)}>
             <ExternalLinkIcon className="size-3 mr-1" />
             {useGoogleViewer ? "Raw" : "Google Docs"}
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => window.open(src, "_blank")}>
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
             <DownloadIcon className="size-3.5" />
           </Button>
         </div>
@@ -72,7 +72,7 @@ export function OfficeViewer({ src, fileName, mimeType }: OfficeViewerProps) {
           {isWord && "Word Document"} {isExcel && "Spreadsheet"} {isPowerPoint && "Presentation"}
           {" "}&mdash; Read-only preview
         </span>
-        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => window.open(src, "_blank")}>
+        <Button variant="outline" size="sm" className="text-xs" onClick={() => window.open(src, "_blank")}>
           <DownloadIcon className="size-3 mr-1" /> Download
         </Button>
       </div>

@@ -210,7 +210,7 @@ export function DashboardSignupsTable({
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <EditSignupDialog user={{ ...u, createdAt: u.createdAt || u.joinedAt || new Date().toISOString() }}>
-                          <Button variant="ghost" size="icon" className="size-8">
+                          <Button variant="ghost" size="icon" className="">
                             <PencilIcon className="size-4" />
                           </Button>
                         </EditSignupDialog>

@@ -23,14 +23,14 @@ export default function ErrorBlock() {
       </div>
 
       <div className="flex flex-col items-center gap-2 sm:flex-row">
-        <Button className="w-full sm:w-auto">
+        <Button className="">
           <RiRefreshLine className="size-4 mr-1" aria-hidden="true" />
           Try Again
         </Button>
         <Button
           variant="outline"
           asChild
-          className="w-full sm:w-auto"
+          className=""
         >
           <a href="#">Contact Support</a>
         </Button>

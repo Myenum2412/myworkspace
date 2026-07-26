@@ -190,7 +190,7 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
             {!search && (
               <Button asChild size="sm">
                 <Link href="/clients">
-                  <PlusIcon className="mr-2 size-4" /> Create Client
+                  <PlusIcon className="mr-2" /> Create Client
                 </Link>
               </Button>
             )}

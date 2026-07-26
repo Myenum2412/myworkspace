@@ -420,14 +420,14 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             {file.url && (
-                              <Button variant="ghost" size="icon" className="size-8" asChild>
+                              <Button variant="ghost" size="icon" className="" asChild>
                                 <a href={file.url} download>
                                   <DownloadIcon className="size-4" />
                                 </a>
                               </Button>
                             )}
                             {file.url && (
-                              <Button variant="ghost" size="icon" className="size-8" asChild>
+                              <Button variant="ghost" size="icon" className="" asChild>
                                 <a href={file.url} target="_blank" rel="noreferrer">
                                   <ExternalLinkIcon className="size-4" />
                                 </a>

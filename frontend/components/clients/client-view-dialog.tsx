@@ -331,7 +331,7 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
             disabled={sending || !credentials}
           >
             {sending ? (
-              <><Loader2 className="mr-2 size-4 animate-spin" /> Sending...</>
+              <><Loader2 className="mr-2 animate-spin" /> Sending...</>
             ) : (
               <><Send className="mr-2 size-4" /> Send Invite</>
             )}

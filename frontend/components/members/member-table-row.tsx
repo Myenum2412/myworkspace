@@ -110,7 +110,7 @@ export function MemberTableRow({ member: m, selected, onToggleSelect, onView, on
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
               onClick={() => onDelete(m)}
             >
               <Trash2Icon className="size-4" />
@@ -118,7 +118,7 @@ export function MemberTableRow({ member: m, selected, onToggleSelect, onView, on
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8">
+              <Button variant="ghost" size="icon" className="">
                 <MoreHorizontalIcon className="size-4" />
               </Button>
             </DropdownMenuTrigger>

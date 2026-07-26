@@ -28,7 +28,7 @@ export function ResetPasswordForm({ token, email }: { token?: string; email?: st
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="flex items-center justify-center p-4">
         <div className="w-full max-w-sm text-center">
           <div className="flex justify-center mb-4">
             <CheckCircleIcon className="size-12 text-success" />
@@ -75,7 +75,7 @@ export function ResetPasswordForm({ token, email }: { token?: string; email?: st
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-2 text-center mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Set new password</h1>
@@ -111,7 +111,7 @@ export function ResetPasswordForm({ token, email }: { token?: string; email?: st
               onChange={(e) => setConfirm(e.target.value)}
             />
           </div>
-          <Button type="submit" className="w-full font-semibold" disabled={loading}>
+          <Button type="submit" className="font-semibold" disabled={loading}>
             {loading ? <Loader2Icon className="size-4 mr-1.5 animate-spin" /> : <LockIcon className="size-4 mr-1.5" />}
             Reset password
           </Button>

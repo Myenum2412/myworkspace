@@ -113,7 +113,7 @@ export default function QuotationsPageClient() {
         </div>
         <Button asChild>
           <Link href="/billing/quotations/new">
-            <PlusIcon className="mr-2 size-4" />
+            <PlusIcon className="mr-2" />
             New Quotation
           </Link>
         </Button>
@@ -182,7 +182,7 @@ export default function QuotationsPageClient() {
                       <td className="px-4 py-3 text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="size-8">
+                            <Button variant="ghost" size="icon" className="">
                               <MoreHorizontalIcon className="size-4" />
                             </Button>
                           </DropdownMenuTrigger>

@@ -200,7 +200,7 @@ export function UploadThingDropzone({
               inputRef.current?.click();
             }}
           >
-            <Upload className="mr-1.5 size-3.5" />
+            <Upload className="mr-1.5" />
             Browse Files
           </Button>
         )}

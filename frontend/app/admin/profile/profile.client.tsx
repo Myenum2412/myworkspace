@@ -154,13 +154,13 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                   Cancel
                 </Button>
                 <Button size="sm" onClick={handleSave} disabled={saving}>
-                  {saving ? <Loader2Icon className="size-4 animate-spin" /> : <CheckIcon className="size-4" />}
+                  {saving ? <Loader2Icon className="animate-spin" /> : <CheckIcon className="size-4" />}
                   Save
                 </Button>
               </div>
             ) : (
               <Button size="sm" variant="outline" onClick={() => { setSaveError(""); setSaveSuccess(""); setEditing(true); }}>
-                <PencilIcon className="size-4" />
+                <PencilIcon className="" />
                 Edit
               </Button>
             )}
@@ -625,7 +625,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                       <span className="bg-background px-2 text-muted-foreground">or</span>
                     </span>
                   </div>
-                  <Button variant="ghost" className="w-full text-xs text-destructive hover:text-destructive" onClick={() => updateBanner("")}>
+                  <Button variant="ghost" className="text-xs text-destructive hover:text-destructive" onClick={() => updateBanner("")}>
                     Remove banner
                   </Button>
                 </>
@@ -658,7 +658,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                       <span className="bg-background px-2 text-muted-foreground">or</span>
                     </span>
                   </div>
-                  <Button variant="ghost" className="w-full text-xs text-destructive hover:text-destructive" onClick={removeProfileImage}>
+                  <Button variant="ghost" className="text-xs text-destructive hover:text-destructive" onClick={removeProfileImage}>
                     Remove photo
                   </Button>
                 </>

@@ -90,7 +90,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
               maxLength={6}
             />
           </div>
-          <Button type="submit" className="w-full mt-1 font-semibold" disabled={loading || otp.length !== 6}>
+          <Button type="submit" className="mt-1 font-semibold" disabled={loading || otp.length !== 6}>
             {loading ? "Verifying..." : "Verify & Create Account"}
           </Button>
         </form>
@@ -150,7 +150,7 @@ export function SignupForm({ className, error: _error, plan, ...props }: React.C
           <Label className="text-xs text-muted-foreground">Email address</Label>
           <Input id="signup-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required autoComplete="email" />
         </div>
-        <Button type="submit" className="w-full mt-1 font-semibold" disabled={loading}>
+        <Button type="submit" className="mt-1 font-semibold" disabled={loading}>
           {loading ? "Sending..." : "Send verification code"}
         </Button>
       </form>

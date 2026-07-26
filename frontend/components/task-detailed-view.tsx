@@ -345,21 +345,21 @@ export function TaskDetailedView({
 
             <div className="flex flex-wrap items-center gap-2 sm:ml-4">
               {taskType === "team" && task.status === "in_progress" && (
-                <Button size="sm" variant="default" className="h-9 px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => handleAction("submit-verification")} disabled={actionLoading}>
+                <Button size="sm" variant="default" className="px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => handleAction("submit-verification")} disabled={actionLoading}>
                   {actionLoading ? <Loader2Icon className="size-3.5 animate-spin mr-1.5" /> : <AlertCircleIcon className="size-3.5 mr-1.5" />}
                   Submit for Verification
                 </Button>
               )}
               {taskType === "team" && task.status === "submitted" && (
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="default" className="h-9 px-4 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={() => {
+                  <Button size="sm" variant="default" className="px-4 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={() => {
                     const note = prompt("Approval note (optional):");
                     handleAction("approve", { note });
                   }} disabled={actionLoading}>
                     <CheckCircleIcon className="size-3.5 mr-1.5" />
                     Approve
                   </Button>
-                  <Button size="sm" variant="destructive" className="h-9 px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => {
+                  <Button size="sm" variant="destructive" className="px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => {
                     const reason = prompt("Rejection reason (required):");
                     if (reason) handleAction("reject", { reason });
                   }} disabled={actionLoading}>
@@ -369,7 +369,7 @@ export function TaskDetailedView({
                 </div>
               )}
               {taskType === "upcoming" && task.status === "scheduled" && (
-                <Button size="sm" variant="default" className="h-9 px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => handleAction("activate")} disabled={actionLoading}>
+                <Button size="sm" variant="default" className="px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => handleAction("activate")} disabled={actionLoading}>
                   {actionLoading ? <Loader2Icon className="size-3.5 animate-spin mr-1.5" /> : <ClockIcon className="size-3.5 mr-1.5" />}
                   Activate Now
                 </Button>

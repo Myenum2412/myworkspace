@@ -96,7 +96,7 @@ export default function NotificationsBlock() {
       <Sheet defaultOpen>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" aria-label="Open notifications">
-            <NotificationsActiveIcon className="size-4" aria-hidden="true" />
+            <NotificationsActiveIcon className="" aria-hidden="true" />
           </Button>
         </SheetTrigger>
 

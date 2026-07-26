@@ -152,7 +152,7 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
             </div>
 
             {!shareUrl ? (
-              <Button onClick={createLink} disabled={loading} className="w-full">
+              <Button onClick={createLink} disabled={loading} className="">
                 {loading ? <Loader2Icon className="mr-2 size-4 animate-spin" /> : <Link2Icon className="mr-2 size-4" />}
                 Generate Share Link
               </Button>
@@ -161,10 +161,10 @@ export function FileShareDialog({ open, onOpenChange, fileId, orgId }: FileShare
                 <div className="flex items-center gap-2 p-2 rounded-sm border bg-muted/30">
                   <Input value={shareUrl} readOnly className="border-0 bg-transparent text-sm" />
                   <Button variant="outline" size="sm" onClick={copyToClipboard}>
-                    {copied ? <CheckCircle2Icon className="size-4 text-success" /> : <CopyIcon className="size-4" />}
+                    {copied ? <CheckCircle2Icon className="text-success" /> : <CopyIcon className="size-4" />}
                   </Button>
                 </div>
-                <Button variant="outline" size="sm" className="w-full" onClick={() => setShareUrl("")}>
+                <Button variant="outline" size="sm" className="" onClick={() => setShareUrl("")}>
                   Generate New Link
                 </Button>
               </div>

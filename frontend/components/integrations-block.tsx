@@ -436,7 +436,7 @@ export default function IntegrationsBlock() {
                           title="Sync now"
                         >
                           {isSyncing ? (
-                            <Loader2Icon className="size-4 animate-spin" />
+                            <Loader2Icon className="animate-spin" />
                           ) : (
                             <RiRefreshLine className="size-4" />
                           )}
@@ -452,7 +452,7 @@ export default function IntegrationsBlock() {
                         className={cn(isOn && "text-muted-foreground")}
                       >
                         {isConnecting ? (
-                          <Loader2Icon className="size-4 animate-spin" />
+                          <Loader2Icon className="animate-spin" />
                         ) : isOn ? (
                           "Disconnect"
                         ) : (
@@ -508,7 +508,7 @@ export default function IntegrationsBlock() {
                   Start the client and scan the QR code with your phone's WhatsApp
                   (Linked Devices → Link a Device).
                 </p>
-                <Button onClick={handleWhatsAppStart} disabled={whatsappStarting} className="w-full">
+                <Button onClick={handleWhatsAppStart} disabled={whatsappStarting} className="">
                   {whatsappStarting && <Loader2Icon className="mr-2 size-4 animate-spin" />}
                   Start & Show QR Code
                 </Button>

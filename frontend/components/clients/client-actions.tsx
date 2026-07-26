@@ -116,7 +116,7 @@ export function ClientEditDialog({ client, open, onOpenChange, onClientUpdated, 
         <DialogFooter className="flex items-center justify-between px-6 py-4 border-t shrink-0">
           <Button variant="outline" onClick={() => handleCloseEdit(false)}>Cancel</Button>
           <Button disabled={editSaving} onClick={handleEditSubmit}>
-            {editSaving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</> : "Save Changes"}
+            {editSaving ? <><Loader2 className="mr-2 animate-spin" /> Saving...</> : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -204,8 +204,8 @@ export function ClientDeleteDialog({ client, open, onOpenChange, onClientDeleted
         </div>
 
         <DialogFooter className="bg-muted/50 p-4 flex sm:justify-between border-t border-border/50 gap-2 sm:gap-0">
-          <Button variant="ghost" onClick={() => onOpenChange(false)} className="w-full sm:w-auto hover:bg-background">Cancel</Button>
-          <Button variant="destructive" onClick={handleDeleteConfirm} className="w-full sm:w-auto shadow-md hover:shadow-lg transition-all active:scale-95 bg-gradient-to-r from-blue-300 to-blue-400 hover:from-blue-400 hover:to-blue-500">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="hover:bg-background">Cancel</Button>
+          <Button variant="destructive" onClick={handleDeleteConfirm} className="shadow-md hover:shadow-lg transition-all active:scale-95 bg-gradient-to-r from-blue-300 to-blue-400 hover:from-blue-400 hover:to-blue-500">
             <Trash2 className="mr-2 size-4" />
             Yes, delete client
           </Button>

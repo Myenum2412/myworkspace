@@ -402,7 +402,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                       <Button
                         variant={plan.popular ? "default" : "outline"}
                         size="sm"
-                        className="w-full"
+                        className=""
                       >
                         {plan.price === "Contact Us" ? "Contact Sales" : "Select Plan"}
                       </Button>
@@ -438,7 +438,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                           <Button
                             variant="outline"
                             size="icon"
-                            className="size-6"
+                            className=""
                             onClick={() => updateSectionLimit(key, limit - 1)}
                             disabled={limit <= 1}
                           >
@@ -448,7 +448,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                           <Button
                             variant="outline"
                             size="icon"
-                            className="size-6"
+                            className=""
                             onClick={() => updateSectionLimit(key, limit + 1)}
                             disabled={limit >= 100}
                           >
@@ -481,7 +481,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                           variant="outline"
                           onClick={() => addDropdownItem(key)}
                           disabled={atLimit || !newItems[key]?.trim()}
-                          className="h-8 shrink-0"
+                          className="shrink-0"
                         >
                           <PlusIcon className="size-3" />
                         </Button>

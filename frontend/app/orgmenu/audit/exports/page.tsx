@@ -37,7 +37,7 @@ export default function AuditExportsPage() {
         {exports.length === 0 ? <p className="text-sm text-muted-foreground">No exports</p> : exports.map((e) => (
           <div key={e.id} className="flex items-center justify-between py-2 border-b last:border-0">
             <div className="flex items-center gap-2"><FileTextIcon className="size-4" /><span>{e.format.toUpperCase()}</span></div>
-            <Button variant="outline" size="sm"><DownloadIcon className="size-4 mr-1" />Download</Button>
+            <Button variant="outline" size="sm"><DownloadIcon className="mr-1" />Download</Button>
           </div>
         ))}
       </CardContent></Card>

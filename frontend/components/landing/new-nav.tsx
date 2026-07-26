@@ -43,11 +43,11 @@ export function NewNav() {
       </nav>
 
       <div className="ml-auto flex shrink-0 items-center gap-3">
-        <Button asChild variant="ghost" size="sm" className="hidden text-muted-foreground hover:text-foreground sm:inline-flex">
+        <Button asChild variant="ghost" size="sm" className="hidden text-muted-foreground hover:text-foreground md:inline-flex">
           <Link href="/login">Sign In</Link>
         </Button>
         <Separator orientation="vertical" className="hidden h-5 sm:block" />
-        <Button asChild size="sm" className="hidden sm:inline-flex">
+        <Button asChild size="sm" className="hidden md:inline-flex">
           <Link href="/signup">
             Start Free Trial
             <RiArrowRightLine data-icon="inline-end" aria-hidden="true" />
@@ -79,10 +79,10 @@ export function NewNav() {
               ))}
             </nav>
             <SheetFooter>
-              <Button asChild variant="ghost" className="w-full">
+              <Button asChild variant="ghost" className="">
                 <Link href="/login">Sign In</Link>
               </Button>
-              <Button asChild className="w-full">
+              <Button asChild className="">
                 <Link href="/signup">
                   Start Free Trial
                   <RiArrowRightLine data-icon="inline-end" aria-hidden="true" />

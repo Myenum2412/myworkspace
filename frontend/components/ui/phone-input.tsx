@@ -69,7 +69,7 @@ export function PhoneInput({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="h-10 shrink-0 rounded-r-none border-r-0 px-2 gap-1 font-normal min-w-[90px]"
+            className="shrink-0 rounded-r-none border-r-0 px-2 gap-1 font-normal"
           >
             {selectedCountry ? (
               <>
@@ -107,7 +107,7 @@ export function PhoneInput({
                   key={`${country.code}-${country.iso}`}
                   onClick={() => handleCountrySelect(country)}
                   className={cn(
-                    "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                    "flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
                     selectedCountry?.iso === country.iso && "bg-accent font-medium"
                   )}
                 >

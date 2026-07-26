@@ -637,7 +637,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     <div key={cp.id} className="rounded-sm border p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Contact Person</span>
-                        <Button type="button" variant="ghost" size="icon" className="size-8 text-destructive" onClick={() => removeContactPerson(cp.id)}>
+                        <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => removeContactPerson(cp.id)}>
                           <Trash2 className="size-4" />
                         </Button>
                       </div>
@@ -677,7 +677,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                     </div>
                   ))}
                   <Button type="button" variant="outline" size="sm" onClick={addContactPerson}>
-                    <Plus className="size-4 mr-2" />
+                    <Plus className="mr-2" />
                     Add Contact Person
                   </Button>
                 </div>
@@ -699,13 +699,13 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                         onChange={(e) => updateCustomField(index, "value", e.target.value)}
                         className="flex-1"
                       />
-                      <Button type="button" variant="ghost" size="icon" className="size-8 shrink-0 text-destructive" onClick={() => removeCustomField(index)}>
+                      <Button type="button" variant="ghost" size="icon" className="shrink-0 text-destructive" onClick={() => removeCustomField(index)}>
                         <Trash2 className="size-4" />
                       </Button>
                     </div>
                   ))}
                   <Button type="button" variant="outline" size="sm" onClick={addCustomField}>
-                    <Plus className="size-4 mr-2" />
+                    <Plus className="mr-2" />
                     Add Custom Field
                   </Button>
                 </div>
@@ -735,7 +735,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
           Cancel
         </Button>
         <div className="flex gap-3">
-          <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSubmit} disabled={saving}>
+          <Button className="bg-primary hover:bg-primary/80" onClick={handleSubmit} disabled={saving}>
             {saving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</> : "Save"}
           </Button>
         </div>

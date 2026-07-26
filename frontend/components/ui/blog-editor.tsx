@@ -67,9 +67,9 @@ export function BlogEditor({ value, onChange, placeholder }: BlogEditorProps) {
   return (
     <div className="border-2 border-black overflow-hidden bg-background flex flex-col focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 h-full min-h-0">
       <div className="flex items-center gap-1 p-1 border-b border-black bg-muted/50 shrink-0">
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('bold')}><BoldIcon className="size-4" /></Button>
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('italic')}><ItalicIcon className="size-4" /></Button>
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('underline')}><UnderlineIcon className="size-4" /></Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('bold')}><BoldIcon className="" /></Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('italic')}><ItalicIcon className="" /></Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('underline')}><UnderlineIcon className="" /></Button>
         <div className="w-px h-4 bg-border mx-1" />
         <label className="flex items-center justify-center h-8 w-8 rounded-sm hover:bg-muted cursor-pointer relative text-muted-foreground hover:text-foreground transition-colors" title="Highlight Color">
           <HighlighterIcon className="size-4" />
@@ -81,8 +81,8 @@ export function BlogEditor({ value, onChange, placeholder }: BlogEditorProps) {
           />
         </label>
         <div className="w-px h-4 bg-border mx-1" />
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('insertUnorderedList')}><ListIcon className="size-4" /></Button>
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('insertOrderedList')}><ListIcon className="size-4" /></Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('insertUnorderedList')}><ListIcon className="" /></Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('insertOrderedList')}><ListIcon className="" /></Button>
       </div>
       <div
         ref={editorRef}

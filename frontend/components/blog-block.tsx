@@ -83,7 +83,7 @@ export default function BlogBlock() {
           <Button
             variant="outline"
             size="sm"
-            className="group w-fit gap-1.5 transition-colors"
+            className="group gap-1.5 transition-colors"
             asChild
           >
             <Link href="/blog">

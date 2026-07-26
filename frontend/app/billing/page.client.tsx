@@ -83,8 +83,8 @@ export default function BillingPage() {
           <h1 className="text-xl sm:text-2xl font-bold">Billing</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild size="sm"><Link href="/billing/receipts"><ReceiptIcon className="size-4 mr-1" />My Receipts</Link></Button>
-          <Button asChild size="sm"><Link href="/billing/invoices"><FileTextIcon className="size-4 mr-1" />Invoices</Link></Button>
+          <Button asChild size="sm"><Link href="/billing/receipts"><ReceiptIcon className="mr-1" />My Receipts</Link></Button>
+          <Button asChild size="sm"><Link href="/billing/invoices"><FileTextIcon className="mr-1" />Invoices</Link></Button>
         </div>
       </div>
 
@@ -120,8 +120,8 @@ export default function BillingPage() {
                       <td className="px-4 py-3">{inv.status}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          {inv.pdfUrl && <Button variant="ghost" size="sm" asChild><Link href={inv.pdfUrl} target="_blank"><FileTextIcon className="size-4" /></Link></Button>}
-                          {inv.hostedUrl && <Button variant="ghost" size="sm" asChild><Link href={inv.hostedUrl} target="_blank"><ExternalLinkIcon className="size-4" /></Link></Button>}
+                          {inv.pdfUrl && <Button variant="ghost" size="sm" asChild><Link href={inv.pdfUrl} target="_blank"><FileTextIcon className="" /></Link></Button>}
+                          {inv.hostedUrl && <Button variant="ghost" size="sm" asChild><Link href={inv.hostedUrl} target="_blank"><ExternalLinkIcon className="" /></Link></Button>}
                         </div>
                       </td>
                     </tr>

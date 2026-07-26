@@ -307,7 +307,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <p className="text-xs text-muted-foreground">Email</p>
                   <p className="text-sm font-medium">{firstSlideData.email}</p>
                 </div>
-                <Button size="icon" variant="ghost" className="size-8" onClick={() => navigator.clipboard.writeText(firstSlideData.email)}>
+                <Button size="icon" variant="ghost" className="" onClick={() => navigator.clipboard.writeText(firstSlideData.email)}>
                   <CopyIcon className="size-3.5" />
                 </Button>
               </div>
@@ -317,20 +317,14 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <p className="text-xs text-muted-foreground">Password</p>
                   <p className="text-sm font-medium font-mono">{firstSlideData.password}</p>
                 </div>
-                <Button size="icon" variant="ghost" className="size-8" onClick={() => navigator.clipboard.writeText(firstSlideData.password)}>
+                <Button size="icon" variant="ghost" className="" onClick={() => navigator.clipboard.writeText(firstSlideData.password)}>
                   <CopyIcon className="size-3.5" />
                 </Button>
               </div>
             </div>
 
             {/* Email notification status */}
-            <div className={`rounded-sm border p-3 flex items-start gap-3 ${
-              emailStatus === "sent"
-                ? "border-green-200 bg-green-50"
-                : emailStatus === "failed"
-                  ? "border-red-200 bg-red-50"
-                  : "border-yellow-200 bg-yellow-50"
-            }`}>
+            <div className={`rounded-sm border p-3 flex items-start gap-3 ${ emailStatus === "sent" ? "border-green-200 bg-green-50" : emailStatus === "failed" ? "border-red-200 bg-red-50" : "border-yellow-200 bg-yellow-50" }`}>
               {emailStatus === "sent" ? (
                 <CheckCircleIcon className="size-4 text-green-600 mt-0.5 shrink-0" />
               ) : emailStatus === "failed" ? (
@@ -354,11 +348,11 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
                   <Button
                     variant="link"
                     size="sm"
-                    className="h-auto p-0 mt-1 text-xs"
+                    className="p-0 mt-1 text-xs"
                     onClick={handleResendEmail}
                     disabled={isResending}
                   >
-                    <RefreshCwIcon className={`size-3 mr-1 ${isResending ? "animate-spin" : ""}`} />
+                    <RefreshCwIcon className={`mr-1 ${isResending ? "animate-spin" : ""}`} />
                     {isResending ? "Resending..." : "Resend credentials email"}
                   </Button>
                 )}
@@ -366,7 +360,7 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" className="w-full" onClick={completeAndClose}>
+            <Button type="button" className="" onClick={completeAndClose}>
               Done
             </Button>
           </DialogFooter>
@@ -569,11 +563,11 @@ export function AddEmployeeForm({ onCancel, onEmployeeAdded }: AddEmployeeFormPr
       </div>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t bg-muted/10">
-        <Button variant="ghost" onClick={onCancel} className="order-2 sm:order-1">
+        <Button variant="ghost" onClick={onCancel} className="order-2 md:order-1">
           Cancel
         </Button>
         <div className="flex gap-3 order-1 sm:order-2">
-          <Button className="bg-primary hover:bg-primary/80 w-full sm:w-32 touch-target" onClick={handleSave} disabled={createEmployeeMutation.isPending}>
+          <Button className="bg-primary hover:bg-primary/80 touch-target" onClick={handleSave} disabled={createEmployeeMutation.isPending}>
             {createEmployeeMutation.isPending ? "Saving..." : "Save Employee"}
           </Button>
         </div>

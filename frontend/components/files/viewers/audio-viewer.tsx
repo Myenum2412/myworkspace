@@ -162,13 +162,13 @@ export function AudioViewer({ src, fileName, fileSize, mimeType }: AudioViewerPr
           {Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, "0")}
         </span>
 
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+        <Button variant="ghost" size="sm" className="p-0">
           <SkipBackIcon className="size-4" />
         </Button>
-        <Button variant="default" size="icon" className="size-12 rounded-sm" onClick={handlePlay}>
+        <Button variant="default" size="icon" className="rounded-sm" onClick={handlePlay}>
           {playing ? <PauseIcon className="size-5" /> : <PlayIcon className="size-5 ml-0.5" />}
         </Button>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+        <Button variant="ghost" size="sm" className="p-0">
           <SkipForwardIcon className="size-4" />
         </Button>
 
@@ -178,7 +178,7 @@ export function AudioViewer({ src, fileName, fileSize, mimeType }: AudioViewerPr
       </div>
 
       <Button variant="outline" size="sm" onClick={() => window.open(src, "_blank")}>
-        <DownloadIcon className="size-3.5 mr-1.5" /> Download
+        <DownloadIcon className="mr-1.5" /> Download
       </Button>
     </div>
   );

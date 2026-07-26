@@ -97,15 +97,15 @@ export function FileToolbar({
           />
         </div>
         <Button variant="outline" size="sm" onClick={onNavigateUp} disabled={!currentFolderId}>
-          <ArrowUpIcon className="size-4" />
+          <ArrowUpIcon className="" />
         </Button>
         <Button variant="outline" size="sm" onClick={onToggleNewFolder}>
-          <PlusIcon className="mr-1 size-4" /> Folder
+          <PlusIcon className="mr-1" /> Folder
         </Button>
         <Popover open={clientPickerOpen} onOpenChange={(o) => { setClientPickerOpen(o); if (o && clients.length === 0) fetchClients(); }}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm">
-              <Building2Icon className="mr-1 size-4" /> New Client Folder
+              <Building2Icon className="mr-1" /> New Client Folder
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-64 p-2" align="start">
@@ -131,7 +131,7 @@ export function FileToolbar({
           </PopoverContent>
         </Popover>
         <Button size="sm" onClick={onToggleUpload} variant={showUpload ? "secondary" : "default"}>
-          <UploadIcon className="mr-1 size-4" /> {showUpload ? "Close Upload" : "Upload"}
+          <UploadIcon className="mr-1" /> {showUpload ? "Close Upload" : "Upload"}
         </Button>
         <div className="flex border rounded-sm">
           <button

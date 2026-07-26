@@ -50,7 +50,7 @@ export function ClientSuccessDialog({ open, onOpenChange, credentials }: ClientS
                 <Label className="text-xs text-muted-foreground">Login URL</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <code className="flex-1 rounded-sm bg-muted px-2 py-1 text-sm break-all">{credentials.loginUrl}</code>
-                  <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => copyToClipboard(credentials.loginUrl, "url")}>
+                  <Button variant="ghost" size="icon" className="shrink-0" onClick={() => copyToClipboard(credentials.loginUrl, "url")}>
                     <Copy className="size-4" />
                   </Button>
                 </div>
@@ -63,7 +63,7 @@ export function ClientSuccessDialog({ open, onOpenChange, credentials }: ClientS
                 <Label className="text-xs text-muted-foreground">Username / Email</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <code className="flex-1 rounded-sm bg-muted px-2 py-1 text-sm">{credentials.email}</code>
-                  <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => copyToClipboard(credentials.email, "email")}>
+                  <Button variant="ghost" size="icon" className="shrink-0" onClick={() => copyToClipboard(credentials.email, "email")}>
                     <Copy className="size-4" />
                   </Button>
                 </div>
@@ -78,10 +78,10 @@ export function ClientSuccessDialog({ open, onOpenChange, credentials }: ClientS
                   <code className="flex-1 rounded-sm bg-muted px-2 py-1 text-sm">
                     {showPassword ? credentials.password : "••••••••••••"}
                   </code>
-                  <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => setShowPassword(!showPassword)}>
+                  <Button variant="ghost" size="icon" className="shrink-0" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </Button>
-                  <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => copyToClipboard(credentials.password, "password")}>
+                  <Button variant="ghost" size="icon" className="shrink-0" onClick={() => copyToClipboard(credentials.password, "password")}>
                     <Copy className="size-4" />
                   </Button>
                 </div>

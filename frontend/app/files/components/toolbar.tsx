@@ -81,17 +81,17 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
         <div className="flex items-center gap-1">
           {!readonly && (
             <Button size="sm" variant="default" onClick={() => setShowUpload(true)}>
-              <UploadIcon className="size-3.5 mr-1.5" /> Upload
+              <UploadIcon className="mr-1.5" /> Upload
             </Button>
           )}
           {!readonly && (
             <Button size="sm" variant="outline" onClick={() => setIsCreatingFolder(true)}>
-              <FolderPlusIcon className="size-3.5 mr-1.5" /> New Folder
+              <FolderPlusIcon className="mr-1.5" /> New Folder
             </Button>
           )}
           {currentFolderId && (
             <Button size="sm" variant="ghost" onClick={() => setCurrentFolder(null)}>
-              <ArrowUpIcon className="size-3.5" />
+              <ArrowUpIcon className="" />
             </Button>
           )}
         </div>
@@ -126,7 +126,7 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+              <Button variant="outline" size="sm" className="p-0">
                 <SlidersHorizontalIcon className="size-3.5" />
               </Button>
             </PopoverTrigger>
@@ -157,18 +157,18 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
           <Button
             variant="ghost"
             size="sm"
-            className={cn("h-8 w-8 p-0", viewMode === "grid" && "bg-accent")}
+            className={cn("p-0", viewMode === "grid" && "bg-accent")}
             onClick={() => setViewMode("grid")}
           >
-            <Grid3X3Icon className="size-3.5" />
+            <Grid3X3Icon className="" />
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className={cn("h-8 w-8 p-0", viewMode === "list" && "bg-accent")}
+            className={cn("p-0", viewMode === "list" && "bg-accent")}
             onClick={() => setViewMode("list")}
           >
-            <ListIcon className="size-3.5" />
+            <ListIcon className="" />
           </Button>
         </div>
       </div>
@@ -198,14 +198,14 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
           <span className="font-medium text-foreground">{selectedIds.size}</span> selected
           <div className="flex items-center gap-1 ml-2">
             {!readonly && (
-              <Button size="sm" variant="ghost" className="h-7 text-xs gap-1"
+              <Button size="sm" variant="ghost" className="text-xs gap-1"
                 onClick={() => setClipboard({ ids: Array.from(selectedIds), action: "copy" })}
               >
                 <CopyIcon className="size-3" /> Copy
               </Button>
             )}
             {!readonly && (
-              <Button size="sm" variant="ghost" className="h-7 text-xs gap-1"
+              <Button size="sm" variant="ghost" className="text-xs gap-1"
                 onClick={() => setClipboard({ ids: Array.from(selectedIds), action: "cut" })}
               >
                 <ScissorsIcon className="size-3" /> Cut
@@ -224,11 +224,11 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
           <span className="font-medium text-foreground">{clipboard.ids.length}</span> item{clipboard.ids.length !== 1 ? "s" : ""} on clipboard ({clipboard.action === "cut" ? "Cut" : "Copy"})
           <div className="flex items-center gap-1 ml-2">
             {!readonly && (
-              <Button size="sm" variant="secondary" className="h-7 text-xs gap-1" onClick={handlePaste}>
+              <Button size="sm" variant="secondary" className="text-xs gap-1" onClick={handlePaste}>
                 <ClipboardPasteIcon className="size-3" /> Paste here
               </Button>
             )}
-            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setClipboard(null)}>
+            <Button size="sm" variant="ghost" className="text-xs" onClick={() => setClipboard(null)}>
               Clear
             </Button>
           </div>

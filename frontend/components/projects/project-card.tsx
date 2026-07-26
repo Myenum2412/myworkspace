@@ -31,12 +31,12 @@ export default function ProjectDeleteDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex flex-col sm:flex-row gap-2">
-          <Button variant="outline" className="w-full sm:flex-1 touch-target" onClick={() => setDeleteConfirm(null)} disabled={deleting}>
+          <Button variant="outline" className="md:flex-1 touch-target" onClick={() => setDeleteConfirm(null)} disabled={deleting}>
             Cancel
           </Button>
           <Button
             variant="destructive"
-            className="w-full sm:flex-1 touch-target"
+            className="md:flex-1 touch-target"
             onClick={() => deleteConfirm && onDelete(deleteConfirm)}
             disabled={deleting}
           >

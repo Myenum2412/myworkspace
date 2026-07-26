@@ -55,7 +55,7 @@ export function PreviewDialog() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="p-0"
                 disabled={!prevFile}
                 onClick={() => prevFile && setPreviewFile(prevFile)}
               >
@@ -64,7 +64,7 @@ export function PreviewDialog() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="p-0"
                 disabled={!nextFile}
                 onClick={() => nextFile && setPreviewFile(nextFile)}
               >
@@ -75,7 +75,7 @@ export function PreviewDialog() {
                 size="sm"
                 onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}
               >
-                <DownloadIcon className="size-3.5 mr-1.5" /> Download
+                <DownloadIcon className="mr-1.5" /> Download
               </Button>
             </div>
           </div>

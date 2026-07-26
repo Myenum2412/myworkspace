@@ -152,7 +152,7 @@ export function ContractorEditDialog({ contractor, open, onOpenChange, onContrac
                 <div key={i} className="rounded-sm border p-3 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium">Contact {i + 1}</span>
-                    <Button type="button" variant="ghost" size="icon" className="size-8 text-destructive" onClick={() => {
+                    <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => {
                       const updated = form.emergencyContacts?.filter((_, idx) => idx !== i);
                       setForm({ ...form, emergencyContacts: updated });
                     }}>
@@ -191,7 +191,7 @@ export function ContractorEditDialog({ contractor, open, onOpenChange, onContrac
                 const updated = [...(form.emergencyContacts || []), { name: "", phoneNumber: "", email: "" }];
                 setForm({ ...form, emergencyContacts: updated });
               }}>
-                <Plus className="size-4 mr-2" />
+                <Plus className="mr-2" />
                 Add Contact
               </Button>
             </fieldset>
@@ -200,7 +200,7 @@ export function ContractorEditDialog({ contractor, open, onOpenChange, onContrac
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</> : "Save"}
+            {saving ? <><Loader2 className="mr-2 animate-spin" /> Saving...</> : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -244,7 +244,7 @@ export function ContractorDeleteDialog({ contractor, open, onOpenChange, onContr
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-            {deleting ? <><Loader2 className="mr-2 size-4 animate-spin" /> Deleting...</> : "Delete"}
+            {deleting ? <><Loader2 className="mr-2 animate-spin" /> Deleting...</> : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

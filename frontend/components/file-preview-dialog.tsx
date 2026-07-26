@@ -154,7 +154,7 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
                 <FileIcon className="size-16" />
                 <p className="text-sm">Preview not available for this file type</p>
                 <Button variant="outline" onClick={() => window.open(downloadUrl, "_blank")}>
-                  <DownloadIcon className="mr-2 size-4" />
+                  <DownloadIcon className="mr-2" />
                   Download to view
                 </Button>
               </div>
@@ -180,28 +180,28 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
 
         <div className="px-6 pb-4 flex items-center gap-2 border-t pt-3 shrink-0">
           <Button variant="outline" size="sm" onClick={() => window.open(downloadUrl, "_blank")}>
-            <DownloadIcon className="mr-1 size-4" /> Download
+            <DownloadIcon className="mr-1" /> Download
           </Button>
 
           {!trashed && (
             <>
               {onDuplicate && (
                 <Button variant="outline" size="sm" onClick={() => onDuplicate(file.id)}>
-                  <CopyIcon className="mr-1 size-4" /> Duplicate
+                  <CopyIcon className="mr-1" /> Duplicate
                 </Button>
               )}
               {onLockToggle && (
                 <Button variant="outline" size="sm" onClick={() => onLockToggle(file.id, !!file.isLocked)}>
-                  {file.isLocked ? <><UnlockIcon className="mr-1 size-4" /> Unlock</> : <><LockIcon className="mr-1 size-4" /> Lock</>}
+                  {file.isLocked ? <><UnlockIcon className="mr-1" /> Unlock</> : <><LockIcon className="mr-1 size-4" /> Lock</>}
                 </Button>
               )}
               {onShare && (
                 <Button variant="outline" size="sm" onClick={() => onShare(file)}>
-                  <Share2Icon className="mr-1 size-4" /> Share
+                  <Share2Icon className="mr-1" /> Share
                 </Button>
               )}
               <Button variant="outline" size="sm" onClick={loadVersions} disabled={loadingVersions}>
-                <HistoryIcon className="mr-1 size-4" /> Versions
+                <HistoryIcon className="mr-1" /> Versions
               </Button>
               {onDelete && (
                 <Button variant="destructive" size="sm" className="ml-auto" onClick={() => onDelete(file.id)}>

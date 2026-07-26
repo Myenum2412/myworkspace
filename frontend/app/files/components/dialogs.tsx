@@ -111,7 +111,7 @@ export function RenameDialog() {
 
   return (
     <Dialog open={!!renameTarget} onOpenChange={(o) => { if (!o) setRenameTarget(null); }}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="">
         <DialogHeader>
           <DialogTitle>Rename</DialogTitle>
           <DialogDescription>
@@ -167,7 +167,7 @@ export function MoveDialog() {
 
   return (
     <Dialog open={!!moveTarget} onOpenChange={(o) => { if (!o) setMoveTarget(null); }}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FolderInputIcon className="size-4" /> Move to Folder

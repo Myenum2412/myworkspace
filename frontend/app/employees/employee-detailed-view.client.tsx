@@ -163,12 +163,12 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
-                        <Button variant="ghost" size="icon" className="size-8" asChild>
+                        <Button variant="ghost" size="icon" className="" asChild>
                           <a href={`/api/files/${f.id}`} target="_blank" rel="noopener noreferrer" title="View">
                             <ExternalLinkIcon className="size-4" />
                           </a>
                         </Button>
-                        <Button variant="ghost" size="icon" className="size-8" asChild>
+                        <Button variant="ghost" size="icon" className="" asChild>
                           <a href={`/api/files/${f.id}?download=true`} title="Download">
                             <DownloadIcon className="size-4" />
                           </a>

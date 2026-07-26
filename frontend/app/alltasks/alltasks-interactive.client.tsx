@@ -148,7 +148,7 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
               />
             </div>
           </div>
-          <Button onClick={() => router.push('/createtask')} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => router.push('/createtask')} className="touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>

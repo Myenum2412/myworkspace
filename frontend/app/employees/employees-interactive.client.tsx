@@ -173,8 +173,8 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
           />
         </div>
         <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
-          <Button variant="outline" onClick={() => setTerminatingEmployee(null)} className="w-full sm:w-auto touch-target">Cancel</Button>
-          <Button variant="destructive" onClick={handleTerminateConfirm} disabled={!terminateReason.trim()} className="w-full sm:w-auto touch-target">
+          <Button variant="outline" onClick={() => setTerminatingEmployee(null)} className="touch-target">Cancel</Button>
+          <Button variant="destructive" onClick={handleTerminateConfirm} disabled={!terminateReason.trim()} className="touch-target">
             Terminate
           </Button>
         </div>

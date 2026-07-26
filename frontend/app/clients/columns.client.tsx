@@ -144,7 +144,7 @@ export const columns: ColumnDef<Client>[] = [
       return (
         <div className="flex items-center gap-1">
           {links.map(({ href, label, icon: Icon }) => (
-            <Button key={label} asChild variant="ghost" size="icon" className="size-8" title={label}>
+            <Button key={label} asChild variant="ghost" size="icon" className="" title={label}>
               <Link href={href} aria-label={label}>
                 <Icon className="size-4" />
               </Link>
@@ -175,7 +175,7 @@ export function makeActionsCell(
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8">
+            <Button variant="ghost" size="icon" className="">
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>

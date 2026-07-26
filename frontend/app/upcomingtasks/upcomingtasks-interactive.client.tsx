@@ -57,7 +57,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
             <Badge variant="secondary">{tasks.length} upcoming</Badge>
           </div>
           <Button onClick={() => router.push('/createtask')}>
-            <PlusIcon className="mr-2 size-4" />
+            <PlusIcon className="mr-2" />
             New Task
           </Button>
         </div>
@@ -102,7 +102,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
                   size="sm"
                   onClick={() => setViewMode("table")}
                 >
-                  <LayoutGridIcon className="mr-2 size-4" />
+                  <LayoutGridIcon className="mr-2" />
                   Table
                 </Button>
                 <Button
@@ -110,7 +110,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
                   size="sm"
                   onClick={() => setViewMode("gantt")}
                 >
-                  <CalendarIcon className="mr-2 size-4" />
+                  <CalendarIcon className="mr-2" />
                   Gantt
                 </Button>
               </div>

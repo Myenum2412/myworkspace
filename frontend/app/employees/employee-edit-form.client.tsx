@@ -438,16 +438,16 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
 
       <div className="shrink-0 border-t px-4 sm:px-6 py-4 flex flex-col sm:flex-row gap-2 sm:gap-2 justify-end bg-white mt-4">
         {isViewMode ? (
-          <Button onClick={() => onSwitchToEdit && onSwitchToEdit()} className="w-full sm:w-auto touch-target">
+          <Button onClick={() => onSwitchToEdit && onSwitchToEdit()} className="touch-target">
             <PencilIcon className="size-3.5 mr-1.5" />
             Edit Employee
           </Button>
         ) : (
           <>
-            <Button variant="outline" onClick={onCancel} disabled={submitting} className="w-full sm:w-auto touch-target">
+            <Button variant="outline" onClick={onCancel} disabled={submitting} className="touch-target">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()} className="w-full sm:w-auto touch-target">
+            <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()} className="touch-target">
               {submitting ? <Loader2Icon className="size-4 animate-spin" /> : <><SaveIcon className="size-3.5 mr-1.5" />Save Changes</>}
             </Button>
           </>

@@ -83,8 +83,8 @@ export function TeamMembers({
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{team.members.length} members</Badge>
-          <Button variant="outline" size="sm" onClick={() => onShowAddMemberChange(true)}><UserPlusIcon className="mr-2 size-4" />Add Member</Button>
-          <Button variant="destructive" size="sm" onClick={() => onDelete(team.id)}><Trash2Icon className="mr-2 size-4" />Delete Team</Button>
+          <Button variant="outline" size="sm" onClick={() => onShowAddMemberChange(true)}><UserPlusIcon className="mr-2" />Add Member</Button>
+          <Button variant="destructive" size="sm" onClick={() => onDelete(team.id)}><Trash2Icon className="mr-2" />Delete Team</Button>
         </div>
       </div>
 

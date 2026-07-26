@@ -97,7 +97,7 @@ function DeleteFileButton({ file, onDeleted }: { file: FileItem; onDeleted: () =
       onClick={handleDelete}
       variant="ghost"
       size="icon"
-      className="size-7 text-black hover:text-gray-600 hover:bg-blue-50"
+      className="text-black hover:text-gray-600 hover:bg-blue-50"
     >
       <Trash2Icon className="size-3.5" />
     </Button>
@@ -211,11 +211,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
               <button
                 key={cat}
                 onClick={() => { setActiveCategory(cat); setSelectedUserId(null); setSearch(""); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${
-                  activeCategory === cat
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${ activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground" }`}
               >
                 {icon}
                 {label}
@@ -294,7 +290,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
               setSearch("");
             }}
           >
-            <ChevronLeftIcon className="size-4 mr-1" />
+            <ChevronLeftIcon className="mr-1" />
             Back
           </Button>
           <Breadcrumb>
@@ -331,11 +327,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${
-                  activeCategory === cat
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${ activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground" }`}
               >
                 {icon}
                 {label}
@@ -403,7 +395,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="size-7"
+                        className=""
                         onClick={() => window.open(`/api/files/${f.id}?download=true`, "_blank")}
                       >
                         <DownloadIcon className="size-3.5" />
@@ -447,7 +439,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
                     <FileIcon className="size-12" />
                     <p className="text-sm">Preview not available for this file type</p>
                     <Button variant="outline" onClick={() => window.open(`/api/files/${previewFile.id}?download=true`, "_blank")}>
-                      <DownloadIcon className="mr-2 size-4" />
+                      <DownloadIcon className="mr-2" />
                       Download to view
                     </Button>
                   </div>

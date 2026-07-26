@@ -428,7 +428,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Contact</span>
                       {emergencyContacts.length > 1 && (
-                        <Button type="button" variant="ghost" size="icon" className="size-8 text-destructive" onClick={() => removeContact(contact.id)}>
+                        <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => removeContact(contact.id)}>
                           <Trash2 className="size-4" />
                         </Button>
                       )}
@@ -450,7 +450,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
                   </div>
                 ))}
                 <Button type="button" variant="outline" size="sm" onClick={addContact}>
-                  <Plus className="size-4 mr-2" />
+                  <Plus className="mr-2" />
                   Add Another Contact
                 </Button>
               </div>
@@ -462,7 +462,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
 
       <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/10">
         <Button variant="ghost" onClick={onCancel}>Cancel</Button>
-        <Button className="bg-primary hover:bg-primary/80 w-32" onClick={handleSubmit} disabled={saving}>
+        <Button className="bg-primary hover:bg-primary/80" onClick={handleSubmit} disabled={saving}>
           {saving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</> : "Save"}
         </Button>
       </div>

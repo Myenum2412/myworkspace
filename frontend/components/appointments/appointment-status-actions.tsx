@@ -76,7 +76,7 @@ export function AppointmentStatusDialog({ appointment: propAppointment, open, on
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={handleUpdate} disabled={loading}>
-            {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {loading && <Loader2 className="mr-2 animate-spin" />}
             Update Status
           </Button>
         </DialogFooter>

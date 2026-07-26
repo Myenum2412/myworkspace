@@ -167,7 +167,7 @@ export default function NotificationsPage() {
             </Button>
           )}
           <Link href="/settings/notifications">
-            <Button variant="ghost" size="icon" className="size-8">
+            <Button variant="ghost" size="icon" className="">
               <SettingsIcon className="size-4" />
             </Button>
           </Link>
@@ -233,11 +233,7 @@ export default function NotificationsPage() {
             {filtered.map((n) => (
               <div
                 key={n.id}
-                className={`group relative flex items-start gap-4 rounded-sm border p-4 transition-colors cursor-pointer ${
-                  selectMode
-                    ? selectedIds.has(n.id) ? "ring-2 ring-primary bg-accent/50" : "hover:bg-accent/20"
-                    : !n.read ? "bg-accent/20 border-accent hover:bg-accent/30" : "bg-card hover:bg-accent/20"
-                }`}
+                className={`group relative flex items-start gap-4 rounded-sm border p-4 transition-colors cursor-pointer ${ selectMode ? selectedIds.has(n.id) ? "ring-2 ring-primary bg-accent/50" : "hover:bg-accent/20" : !n.read ? "bg-accent/20 border-accent hover:bg-accent/30" : "bg-card hover:bg-accent/20" }`}
                 onClick={() => handleNotificationClick(n)}
               >
                 {selectMode && (
@@ -316,7 +312,7 @@ export default function NotificationsPage() {
                       {n.actions.map((a) => (
                         <Button key={a.action}
                           variant={a.primary ? "default" : "outline"}
-                          size="sm" className="h-7 text-[11px] px-2 gap-1"
+                          size="sm" className="text-[11px] px-2 gap-1"
                           onClick={() => { if (a.url) window.location.href = a.url; }}>
                           <ExternalLinkIcon className="size-3" />
                           {a.label}

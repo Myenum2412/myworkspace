@@ -129,7 +129,7 @@ export default function LoginInteractive() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 size-8"
+                    className="absolute right-1 top-1/2 -translate-y-1/2"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -141,7 +141,7 @@ export default function LoginInteractive() {
                   Forgot password?
                 </Link>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="" disabled={loading}>
                 {loading ? <><Loader2 className="mr-2 size-4 animate-spin" /> Signing in...</> : "Sign In"}
               </Button>
             </form>

@@ -84,7 +84,7 @@ export function SharedWithMe() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0"
+                      className="p-0"
                       onClick={() => share.file && window.open(`/api/files/${share.file.id}/download`, "_blank")}
                     >
                       <DownloadIcon className="size-3.5" />

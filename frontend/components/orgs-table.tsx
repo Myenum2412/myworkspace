@@ -122,7 +122,7 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-8">
+        <Button variant="ghost" size="icon" className="">
           <PencilIcon className="size-4" />
         </Button>
       </DialogTrigger>
@@ -235,7 +235,7 @@ function DeleteOrgButton({ org }: { org: OrgRow }) {
         type="submit"
         variant="ghost"
         size="icon"
-        className="size-8 text-black hover:text-gray-600 hover:bg-blue-50"
+        className="text-black hover:text-gray-600 hover:bg-blue-50"
         onClick={(e) => {
           if (!confirm(`Delete organization "${org.name}"? This will also remove all its members.`)) {
             e.preventDefault();

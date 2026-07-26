@@ -69,13 +69,13 @@ export function SearchableSelect({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between font-normal h-10",
+              "justify-between font-normal",
               !value && "text-muted-foreground",
               error && "border-destructive"
             )}
           >
             {value || placeholder}
-            <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+            <ChevronsUpDown className="ml-2 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start" collisionPadding={16}>
