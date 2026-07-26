@@ -94,19 +94,20 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-0.5">
-        <h1 className="text-xl sm:text-2xl font-bold">Dashboard Overview</h1>
+        <h1 className="text-xl sm:text-2xl font-bold" data-tour-step-id="step-dashboard">Dashboard Overview</h1>
         <div className="flex-1 flex justify-center max-w-md mx-4">
           <div className="relative w-full">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search tasks, projects..."
               className="pl-9 h-9 bg-white"
+              data-tour-step-id="step-search"
             />
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <DashboardCalendarPopup />
-          <Button asChild size="sm">
+          <div className="inline-flex" data-tour-step-id="step-calendar"><DashboardCalendarPopup /></div>
+          <Button asChild size="sm" data-tour-step-id="step-new-task">
             <Link href="/createtask">
               <ListTodo className="mr-1" />
               New Task
@@ -115,16 +116,18 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
         </div>
       </div>
 
-      <Stats07
-        items={[
-          { name: 'Total Tasks', value: totalTasks, subtitle: `${completedTasks} completed` },
+      <div data-tour-step-id="step-stats">
+        <Stats07
+          items={[
+            { name: 'Total Tasks', value: totalTasks, subtitle: `${completedTasks} completed` },
           { name: 'In Progress', value: inProgressTasks, subtitle: 'Active tasks' },
               { name: 'Overdue', value: overdueTasks, subtitle: 'Past due date', fill: '#ef4444' },
           { name: 'Today', value: todayTasks, subtitle: 'Created today' },
           { name: 'Pending Approval', value: pendingApproval, subtitle: 'Awaiting review' },
           { name: 'Projects', value: projects.length, subtitle: 'Active projects' },
         ]}
-      />
+        />
+      </div>
 
       <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 lg:grid-cols-2">
         <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px]">

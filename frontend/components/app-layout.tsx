@@ -16,6 +16,7 @@ const MobileBottomNav = lazy(() => import("@/components/mobile-bottom-nav").then
 const SubscriptionStatusBanner = lazy(() => import("@/components/subscription-status-banner").then(m => ({ default: m.SubscriptionStatusBanner })));
 const NewNav = lazy(() => import("@/components/landing/new-nav").then(m => ({ default: m.NewNav })));
 const NewFooter = lazy(() => import("@/components/landing/new-footer").then(m => ({ default: m.NewFooter })));
+const ProductTourProvider = lazy(() => import("@/components/product-tour").then(m => ({ default: m.ProductTourProvider })));
 
 const AUTH_ROUTES_WITHOUT_HEADER = [
   "/login", "/signup", "/signup-mongo", "/forgot-password", "/auth/not-found",
@@ -132,7 +133,11 @@ export function AppLayout({ children }: AppLayoutProps) {
           <Header context={effectiveContext} />
         </Suspense>
         <main className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 lg:p-6 pb-16 sm:pb-3 md:pb-4 lg:p-6 min-w-0 max-w-full">
-          <SubscriptionGuard>{children}</SubscriptionGuard>
+          <Suspense fallback={null}>
+            <ProductTourProvider>
+              <SubscriptionGuard>{children}</SubscriptionGuard>
+            </ProductTourProvider>
+          </Suspense>
         </main>
         <Suspense fallback={null}>
           <MobileBottomNav context={effectiveContext} />

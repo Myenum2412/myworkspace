@@ -469,7 +469,7 @@ export default function ProjectsInteractive({
         ) : (
           <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl sm:text-2xl font-bold shrink-0">Projects</h1>
+              <h1 className="text-xl sm:text-2xl font-bold shrink-0" data-tour-step-id="step-projects">Projects</h1>
               <div className="flex-1 flex justify-center">
                 <div className="relative w-full max-w-sm">
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />

@@ -80,7 +80,7 @@ export default function BillingPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <IndianRupee className="size-6" />
-          <h1 className="text-xl sm:text-2xl font-bold">Billing</h1>
+          <h1 className="text-xl sm:text-2xl font-bold" data-tour-step-id="step-billing">Billing</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild size="sm"><Link href="/billing/receipts"><ReceiptIcon className="mr-1" />My Receipts</Link></Button>

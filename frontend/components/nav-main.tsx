@@ -22,6 +22,29 @@ import Link from "next/link"
 import { ChevronRightIcon } from "lucide-react"
 import { useRoutePrefetcher } from "@/components/route-prefetcher"
 
+const navUnderlineStyles = `
+  .nav-underline {
+    position: relative;
+  }
+  .nav-underline::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 60%;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    transition: transform 0.3s ease;
+    opacity: 0.7;
+  }
+  .nav-underline:hover::after,
+  .nav-underline[data-active="true"]::after {
+    transform: translateX(-50%) scaleX(1);
+  }
+`
+
 export function NavMain({
   items,
   label = "Platform",
@@ -57,17 +80,28 @@ export function NavMain({
     [pathname]
   )
 
+  const isActive = useCallback(
+    (item: typeof items[number]) => {
+      if (pathname === item.url) return true
+      if (item.items?.some((sub) => pathname === sub.url)) return true
+      return false
+    },
+    [pathname]
+  )
+
   const handleMouseEnter = useCallback((url: string) => {
     prefetchRoute(url)
   }, [prefetchRoute])
 
   return (
     <SidebarGroup className={className}>
+      <style>{navUnderlineStyles}</style>
       {label && <SidebarGroupLabel className="text-sm font-semibold mb-1">{label}</SidebarGroupLabel>}
       <SidebarMenu>
-        {items.map((item) =>
-          item.items?.length ? (
-              <Collapsible
+        {items.map((item) => {
+          const active = isActive(item)
+          return item.items?.length ? (
+            <Collapsible
               key={item.title}
               asChild
               open={isOpen(item)}
@@ -75,7 +109,7 @@ export function NavMain({
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton size="lg" tooltip={item.title} className="text-base" asChild>
+                  <SidebarMenuButton size="lg" tooltip={item.title} className="text-base nav-underline relative" asChild data-active={active}>
                     <Link href={item.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(item.url)} prefetch={true}>
                       {item.icon}
                       <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
@@ -85,22 +119,25 @@ export function NavMain({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {item.items.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild className="text-sm py-2" data-active={pathname === subItem.url}>
-                          <Link href={subItem.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(subItem.url)} prefetch={true}>
-                            <span>{subItem.title}</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
+                    {item.items.map((subItem) => {
+                      const subActive = pathname === subItem.url
+                      return (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton asChild className="text-sm py-2 nav-underline relative" data-active={subActive}>
+                            <Link href={subItem.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(subItem.url)} prefetch={true}>
+                              <span>{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      )
+                    })}
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
           ) : (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton size="lg" tooltip={item.title} className="text-base" asChild>
+              <SidebarMenuButton size="lg" tooltip={item.title} className="text-base nav-underline relative" asChild data-active={active}>
                 <Link href={item.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(item.url)} prefetch={true}>
                   {item.icon}
                   <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
@@ -108,7 +145,7 @@ export function NavMain({
               </SidebarMenuButton>
             </SidebarMenuItem>
           )
-        )}
+        })}
       </SidebarMenu>
     </SidebarGroup>
   )

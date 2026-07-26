@@ -30,7 +30,7 @@ export default function StaffsPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
-      <h1 className="text-2xl font-bold tracking-tight">Staff</h1>
+      <h1 className="text-2xl font-bold tracking-tight" data-tour-step-id="step-staffs">Staff</h1>
       <div className="grid gap-4 md:grid-cols-2">
         <Card><CardHeader><CardTitle>Employees</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold">{data?.employees?.length || 0}</p></CardContent></Card>
         <Card><CardHeader><CardTitle>Teams</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold">{data?.teams?.length || 0}</p></CardContent></Card>

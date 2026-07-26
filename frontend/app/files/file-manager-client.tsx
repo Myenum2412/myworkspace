@@ -99,6 +99,7 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
   return (
     <div
       className="flex h-[calc(100vh-3.5rem)] relative"
+      data-tour-step-id="step-files"
       onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
       onDragOver={onDragOver}

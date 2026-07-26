@@ -11,6 +11,7 @@ declare module "next-auth" {
       permissions?: string[];
       orgId?: string;
       onboardingCompleted?: boolean;
+      tourCompleted?: boolean;
       plan?: string;
       subscriptionStatus?: string;
       trialEnd?: string | null;

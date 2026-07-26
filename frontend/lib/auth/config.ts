@@ -16,6 +16,7 @@ declare module "next-auth" {
       permissions?: string[];
       orgId?: string;
       onboardingCompleted?: boolean;
+      tourCompleted?: boolean;
     };
   }
   interface User {
@@ -23,6 +24,7 @@ declare module "next-auth" {
     permissions?: string[];
     orgId?: string;
     onboardingCompleted?: boolean;
+    tourCompleted?: boolean;
   }
 }
 
@@ -41,6 +43,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         token.permissions = (user as { permissions?: string[] }).permissions;
         token.orgId = (user as { orgId?: string }).orgId;
         token.onboardingCompleted = (user as { onboardingCompleted?: boolean }).onboardingCompleted;
+        token.tourCompleted = (user as { tourCompleted?: boolean }).tourCompleted;
         (token as any).lastVerified = 0;
         return token;
       }
@@ -81,6 +84,10 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           // Sync tokenVersion for backend revocation checks
           if (dbUser?.tokenVersion !== undefined) {
             (token as any).tokenVersion = dbUser.tokenVersion;
+          }
+
+          if (dbUser?.tourCompleted !== undefined) {
+            token.tourCompleted = dbUser.tourCompleted === true;
           }
 
           if (!token.orgId && dbUser?.orgId) {
@@ -130,6 +137,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         session.user.permissions = token.permissions as string[];
         session.user.orgId = token.orgId as string;
         session.user.onboardingCompleted = token.onboardingCompleted as boolean;
+        session.user.tourCompleted = token.tourCompleted as boolean;
         (session.user as any).plan = (token as any).plan as string;
         (session.user as any).subscriptionStatus = (token as any).subscriptionStatus as string;
         (session.user as any).trialEnd = (token as any).trialEnd as string | null;
@@ -180,6 +188,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
               image: user.image || null, provider: account.provider,
               providerAccountId: account.providerAccountId,
               orgId: newOrgId, role: ROLES.MEMBERS,
+              tourCompleted: false,
               status: "online", lastLogin: now, createdAt: now, updatedAt: now,
             }),
             db.collection("organizations").insertOne({
@@ -195,6 +204,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           user.id = userId;
           (user as { orgId?: string }).orgId = newOrgId;
           (user as { role?: string }).role = ROLES.MEMBERS;
+          (user as { tourCompleted?: boolean }).tourCompleted = false;
           return true;
         }
 
@@ -292,6 +302,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             permissions: user.permissions || [],
             orgId,
             onboardingCompleted: true,
+            tourCompleted: user.tourCompleted !== undefined ? user.tourCompleted : true,
           };
         } catch (e) {
           console.error("[AUTH authorize] Error:", e);

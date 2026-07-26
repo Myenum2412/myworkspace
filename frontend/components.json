@@ -33,6 +33,8 @@
     "@motion-primitives": "https://motion-primitives.com/r/{name}.json",
     "@animate-ui": "https://animate-ui.com/r/{name}.json",
     "@kibo-ui": "https://www.kibo-ui.com/r/{name}.json",
-    "@blocks-so": "https://blocks.so/r/{name}.json"
+    "@blocks-so": "https://blocks.so/r/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}",
+    "@tour": "https://onboarding-tour.vercel.app/r/{name}.json"
   }
 }

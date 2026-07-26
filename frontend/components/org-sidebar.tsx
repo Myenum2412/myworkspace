@@ -20,7 +20,6 @@ import {
   ClipboardListIcon,
   BrainIcon,
   WorkflowIcon,
-  BookOpenIcon,
   Code2Icon,
   PuzzleIcon,
   ActivityIcon,
@@ -80,15 +79,6 @@ export const defaultOrgNavData = [
     icon: <CreditCardIcon className="size-6" />,
     items: [
       { title: "All Plans", url: "/orgmenu/plans" },
-    ],
-  },
-  {
-    title: "Blog",
-    url: "/orgmenu/blog",
-    icon: <BookOpenIcon className="size-6" />,
-    items: [
-      { title: "All Posts", url: "/orgmenu/blog" },
-      { title: "New Post", url: "/orgmenu/blog/editor" },
     ],
   },
   {

@@ -105,7 +105,7 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
   if (!data || !stats) {
     return (
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
-        <h1 className="text-xl sm:text-2xl font-bold">Time Tracker</h1>
+        <h1 className="text-xl sm:text-2xl font-bold" data-tour-step-id="step-time-tracker">Time Tracker</h1>
         <p className="text-sm text-muted-foreground">Weekly overview of your tracked time</p>
         <div className="flex items-center justify-center py-20">
           <div className="text-center space-y-2">
@@ -121,7 +121,7 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Time Tracker</h1>
+        <h1 className="text-xl sm:text-2xl font-bold" data-tour-step-id="step-time-tracker">Time Tracker</h1>
         <p className="text-sm text-muted-foreground mt-1">Weekly overview of your tracked time</p>
       </div>
 

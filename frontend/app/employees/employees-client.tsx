@@ -55,6 +55,7 @@ export default function EmployeesClient({
   }
 
   return (
+    <div data-tour-step-id="step-employees">
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
         <TabsTrigger value="employees" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Employees</TabsTrigger>
@@ -67,5 +68,6 @@ export default function EmployeesClient({
         <TeamsClient teams={teams} members={teamMembers} orgId={orgId} />
       </TabsContent>
     </Tabs>
+    </div>
   )
 }

@@ -8,12 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { resetTourAction } from "@/lib/actions/tour";
+import { ROLES } from "@/lib/rbac";
 
 export default function MembersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resettingUserId, setResettingUserId] = useState<string | null>(null);
+
+  const isAdmin = session?.user?.role === ROLES.ORG_ADMIN;
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); }
@@ -29,6 +34,12 @@ export default function MembersPage() {
     return () => { cancelled = true; };
   }, []);
 
+  const handleResetTour = async (userId: string) => {
+    setResettingUserId(userId);
+    await resetTourAction(userId);
+    setResettingUserId(null);
+  };
+
   if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;
 
@@ -43,7 +54,19 @@ export default function MembersPage() {
           <Card key={m.userId}><CardContent className="p-4 flex items-center gap-4">
             <Avatar><AvatarImage src={m.avatar} /><AvatarFallback>{m.name?.[0] || "U"}</AvatarFallback></Avatar>
             <div className="flex-1 min-w-0"><p className="font-medium truncate">{m.name}</p><p className="text-sm text-muted-foreground truncate">{m.email}</p></div>
-            <Badge variant={m.status === "online" ? "default" : "secondary"}>{m.role}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={m.status === "online" ? "default" : "secondary"}>{m.role}</Badge>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={() => handleResetTour(m.userId)}
+                  disabled={resettingUserId === m.userId}
+                >
+                  {resettingUserId === m.userId ? "Resetting..." : "Reset Tour"}
+                </Button>
+              )}
+            </div>
           </CardContent></Card>
         ))}
       </div>

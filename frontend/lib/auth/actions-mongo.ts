@@ -45,6 +45,7 @@ export async function signupActionMongo(formData: FormData) {
     email,
     password: hashedPassword,
     company: company || null,
+    tourCompleted: false,
     status: "online",
     role: ROLES.MEMBERS,
     emailVerified: false,

@@ -201,6 +201,7 @@ export async function signupAction(formData: FormData) {
     name,
     email,
     password: hashedPassword,
+    tourCompleted: false,
     status: "online",
     role: ROLES.MEMBERS,
     emailVerified: true,

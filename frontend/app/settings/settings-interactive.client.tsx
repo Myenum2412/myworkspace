@@ -255,7 +255,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
     <div className="min-h-svh w-full text-foreground p-6">
       <div className="flex w-full flex-col gap-8">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+          <h1 className="text-2xl font-bold tracking-tight" data-tour-step-id="step-settings">Settings</h1>
           <p className="text-sm text-muted-foreground">
             Manage your account, billing, and team settings.
           </p>
