@@ -35,7 +35,9 @@ export default function TimeOffPage() {
       <Card><CardHeader><CardTitle>Requests</CardTitle></CardHeader><CardContent>
         {requests.length === 0 ? <p className="text-sm text-muted-foreground">No requests</p> : requests.map((r) => (
           <div key={r.id} className="flex items-center justify-between py-2 border-b last:border-0">
-            <span>{r.type} - {r.startDate} to {r.endDate}</span>
+            <span>
+              <span className="font-semibold">{r.requesterName}</span>: {r.type} ({r.startDate} to {r.endDate})
+            </span>
             <Badge>{r.status}</Badge>
           </div>
         ))}

@@ -12,9 +12,18 @@ export async function GET() {
   if (!orgId) return NextResponse.json({ requests: [] });
   try {
     const raw = await db.collection("time_off_requests").find({ orgId }).sort({ createdAt: -1 }).toArray();
+    const userIds = (raw as any[]).map((r) => r.userId).filter(Boolean);
+    const users = userIds.length > 0 ? await db.collection(collections.users).find({ id: { $in: userIds } }).toArray() : [];
+    const userMap = new Map((users as any[]).map((u) => [u.id, u.name || u.email]));
+
     const requests = (raw as any[]).map((r) => ({
-      id: r.id || r._id?.toString() || "", userId: r.userId || "", type: r.type || "",
-      startDate: r.startDate || "", endDate: r.endDate || "", status: r.status || "",
+      id: r.id || r._id?.toString() || "",
+      userId: r.userId || "",
+      requesterName: userMap.get(r.userId) || "Unknown Staff",
+      type: r.type || "",
+      startDate: r.startDate || "",
+      endDate: r.endDate || "",
+      status: r.status || "",
       reason: r.reason || "",
     }));
     return NextResponse.json({ requests });

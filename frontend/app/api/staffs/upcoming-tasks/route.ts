@@ -12,10 +12,27 @@ export async function GET() {
   if (!orgId) return NextResponse.json({ tasks: [] });
   try {
     const now = new Date();
-    const raw = await db.collection(collections.tasks).find({ orgId, dueDate: { $gte: now }, status: { $nin: ["done", "cancelled"] } }).sort({ dueDate: 1 }).toArray();
+    const raw = await db.collection(collections.tasks).aggregate([
+      { $match: { orgId, dueDate: { $gte: now }, status: { $nin: ["done", "cancelled"] } } },
+      { $sort: { dueDate: 1 } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "assigneeId",
+          foreignField: "id",
+          as: "assigneeUser",
+        },
+      },
+      { $unwind: { path: "$assigneeUser", preserveNullAndEmptyArrays: true } },
+    ]).toArray();
+
     const tasks = (raw as any[]).map((t) => ({
-      _id: t._id?.toString() || "", title: t.title || "", status: t.status || "", priority: t.priority || "",
-      assignee: t.assignee || "", dueDate: t.dueDate || null,
+      _id: t._id?.toString() || "",
+      title: t.title || "",
+      status: t.status || "",
+      priority: t.priority || "",
+      assignee: t.assigneeUser?.name || "",
+      dueDate: t.dueDate || null,
     }));
     return NextResponse.json({ tasks });
   } catch { return NextResponse.json({ tasks: [] }); }

@@ -35,7 +35,7 @@ export default function PerformancePage() {
       <Card><CardHeader><CardTitle>Reviews</CardTitle></CardHeader><CardContent>
         {reviews.length === 0 ? <p className="text-sm text-muted-foreground">No reviews</p> : reviews.map((r) => (
           <div key={r.id} className="flex items-center justify-between py-2 border-b last:border-0">
-            <span>{r.employeeId}</span>
+            <span>{r.employeeName || r.employeeId}</span>
             <Badge>{r.score}/10</Badge>
           </div>
         ))}

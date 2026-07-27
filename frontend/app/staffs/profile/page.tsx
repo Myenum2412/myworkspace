@@ -17,9 +17,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/staffs/profile")
+    fetch("/api/user/profile")
       .then(r => r.json())
-      .then(d => { if (!cancelled) setData(d); })
+      .then(d => { if (!cancelled) setData(d.data); })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -28,5 +28,5 @@ export default function ProfilePage() {
   if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;
 
-  return <ProfileClient {...(data || {})} />;
+  return <ProfileClient data={data} />;
 }
