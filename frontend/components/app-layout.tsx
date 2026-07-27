@@ -20,7 +20,7 @@ const ProductTourProvider = lazy(() => import("@/components/product-tour").then(
 
 const AUTH_ROUTES_WITHOUT_HEADER = [
   "/login", "/signup", "/signup-mongo", "/forgot-password", "/auth/not-found",
-  "/client/login", "/client/forgot-password", "/client/reset-password",
+  "/client/forgot-password", "/client/reset-password",
   "/reset-password", "/verify-email",
 ];
 

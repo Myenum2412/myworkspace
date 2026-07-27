@@ -210,17 +210,15 @@ function clearFailedAttempts(user: any): void {
 }
 
 async function saveUserChange(user: any): Promise<void> {
-  if (user.password !== undefined) {
-    await (User as any).updateOne({ id: user.id }, {
-      $set: {
-        failedLoginAttempts: user.failedLoginAttempts,
-        lockedUntil: user.lockedUntil,
-        lastLogin: user.lastLogin,
-        status: user.status,
-      },
-    });
+  if (user.clientId) {
+    const update: Record<string, unknown> = {
+      failedLoginAttempts: user.failedLoginAttempts,
+      lockedUntil: user.lockedUntil,
+      lastLogin: user.lastLogin,
+    };
+    await (ClientUser as any).updateOne({ id: user.id }, { $set: update });
   } else {
-    await (ClientUser as any).updateOne({ id: user.id }, {
+    await (User as any).updateOne({ id: user.id }, {
       $set: {
         failedLoginAttempts: user.failedLoginAttempts,
         lockedUntil: user.lockedUntil,

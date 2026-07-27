@@ -49,14 +49,10 @@ export default function DashboardInteractive() {
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); }
-    if (status === "authenticated" && localStorage.getItem("must_change_password") === "true") {
-      router.push("/client/login");
-    }
   }, [status, router]);
 
   useEffect(() => {
     if (status !== "authenticated") return;
-    const token = localStorage.getItem("client_token") || "";
     if (session?.user) {
       setUser({
         id: session.user.id,
@@ -70,25 +66,15 @@ export default function DashboardInteractive() {
   }, [status, session]);
 
   useEffect(() => {
-    const { token } = { token: localStorage.getItem("client_token") || "" };
-    fetchMe(token);
-  }, []);
+    if (status !== "authenticated") return;
+    fetchMe();
+    fetchStats();
+    fetchBillingStatus();
+  }, [status]);
 
-  useEffect(() => {
-    const { token } = { token: localStorage.getItem("client_token") || "" };
-    fetchStats(token);
-  }, []);
-
-  useEffect(() => {
-    const { token } = { token: localStorage.getItem("client_token") || "" };
-    fetchBillingStatus(token);
-  }, []);
-
-  async function fetchMe(token: string) {
+  async function fetchMe() {
     try {
-      const headers: Record<string, string> = {};
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const res = await fetch(`/api/client-auth/me`, { headers });
+      const res = await fetch(`/api/client-auth/me`);
       const data = await res.json();
       if (data.success && data.data) {
         setUser(data.data.user);
@@ -101,11 +87,9 @@ export default function DashboardInteractive() {
     }
   }
 
-  async function fetchStats(token: string) {
+  async function fetchStats() {
     try {
-      const headers: Record<string, string> = {};
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const res = await fetch(`/api/client-auth/workspace-stats`, { headers });
+      const res = await fetch(`/api/client-auth/workspace-stats`);
       const data = await res.json();
       if (data.success && data.data) {
         setStats(data.data);
@@ -115,11 +99,9 @@ export default function DashboardInteractive() {
     }
   }
 
-  async function fetchBillingStatus(token: string) {
+  async function fetchBillingStatus() {
     try {
-      const headers: Record<string, string> = {};
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const res = await fetch(`/api/client-auth/billing-status`, { headers });
+      const res = await fetch(`/api/client-auth/billing-status`);
       const data = await res.json();
       if (data.success && data.data) {
         setBillingStatus(data.data);
@@ -130,9 +112,6 @@ export default function DashboardInteractive() {
   }
 
   function handleLogout() {
-    localStorage.removeItem("client_token");
-    localStorage.removeItem("client_user");
-    localStorage.removeItem("must_change_password");
     signOut({ callbackUrl: "/login" });
   }
 

@@ -122,7 +122,7 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
       client.name,
       credentials.username,
       "",
-      `${appUrl}/client/login`,
+      `${appUrl}/login`,
       staffInfo.length > 0 ? staffInfo : undefined,
       documentsInfo.length > 0 ? documentsInfo : undefined
     );

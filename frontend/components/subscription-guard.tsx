@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 const PUBLIC_ROUTES = [
-  "/pricing", "/login", "/signup", "/signup-mongo", "/forgot-password", "/client/login",
+  "/pricing", "/login", "/signup", "/signup-mongo", "/forgot-password",
   "/features", "/solutions", "/platform", "/about", "/blog", "/contact", "/careers",
   "/changelog", "/docs", "/guides", "/new-update", "/notifications",
 ];

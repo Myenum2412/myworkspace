@@ -46,7 +46,7 @@ export function ClientForgotPasswordForm() {
             Send reset link
           </Button>
         </form>
-        <Link href="/client/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6">
+        <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6">
           <ArrowLeftIcon className="size-3.5" />
           Back to sign in
         </Link>

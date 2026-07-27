@@ -9,6 +9,7 @@
     "start": "AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE=1 node --env-file=.env --disable-warning=DEP0169 dist/index.js",
     "db:seed": "tsx --env-file=.env src/lib/db/seed.ts",
     "db:seed-admin": "tsx --env-file=.env src/lib/db/seed-admin.ts",
+    "db:seed-client": "tsx --env-file=.env src/lib/db/seed-client.ts",
     "db:migrate-plans": "tsx --env-file=.env src/scripts/migrate-plans.ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --runInBand",

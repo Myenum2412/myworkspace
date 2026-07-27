@@ -17,7 +17,7 @@ const CLIENT_PREFIXES = ["/client"];
 const PUBLIC_PATHS = new Set([
   "/login", "/signup", "/signup-mongo", "/forgot-password",
   "/reset-password", "/verify-email",
-  "/pricing", "/client/login", "/auth/not-found", "/",
+  "/pricing", "/auth/not-found", "/",
   "/features", "/solutions", "/platform", "/about", "/blog", "/contact",
   "/careers", "/changelog", "/docs", "/guides", "/new-update",
 ]);

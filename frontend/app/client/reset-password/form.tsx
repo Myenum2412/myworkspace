@@ -36,7 +36,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
           </div>
           <h1 className="text-2xl font-bold tracking-tight mb-2">Password reset!</h1>
           <p className="text-sm text-muted-foreground mb-6">Your password has been updated successfully.</p>
-          <Button asChild className="w-full"><Link href="/client/login">Sign in</Link></Button>
+          <Button asChild className="w-full"><Link href="/login">Sign in</Link></Button>
         </div>
       </div>
     );
@@ -118,7 +118,7 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
           </Button>
         </form>
 
-        <Link href="/client/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6">
+        <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6">
           <ArrowLeftIcon className="size-3.5" />
           Back to sign in
         </Link>

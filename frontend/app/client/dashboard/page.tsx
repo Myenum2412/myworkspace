@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircleIcon, FileText } from "lucide-react";
@@ -30,17 +31,18 @@ function getGreeting() {
 
 export default function ClientDashboardPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [name, setName] = useState("");
   const [billing, setBilling] = useState<{ pendingCount: number; totalDue: number } | null>(null);
   const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const controller = new AbortController();
-    const token = localStorage.getItem("client_token") || "";
-    if (!token) { router.push("/client/login"); return; }
+    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status !== "authenticated") return;
 
-    const opts = { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal };
+    const controller = new AbortController();
+    const opts = { signal: controller.signal };
 
     Promise.all([
       fetch("/api/client-auth/me", opts).then(r => r.json()),
@@ -56,7 +58,7 @@ export default function ClientDashboardPage() {
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
 
     return () => controller.abort();
-  }, [router]);
+  }, [router, status]);
 
   if (loading) {
     return (

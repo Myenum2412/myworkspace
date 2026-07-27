@@ -161,15 +161,19 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
   const email = requireEmail(data.email, "email");
   const primaryContact = requireString(data.primaryContact, "primaryContact", { min: 1, max: 500 });
 
-  const [existingClient, existingUser] = await Promise.all([
+  const [existingClient, existingClientUser, existingAppUser] = await Promise.all([
     Client.findOne({ email, orgId }).lean(),
     ClientUser.findOne({ email }).lean(),
+    User.findOne({ email }).lean(),
   ]);
   if (existingClient) {
     throw new AppError(409, "A client with this email already exists in your organization");
   }
-  if (existingUser) {
+  if (existingClientUser) {
     throw new AppError(409, "A client user with this email already exists");
+  }
+  if (existingAppUser) {
+    throw new AppError(409, "A user with this email already exists in the system");
   }
 
   const clientId = uuid();

@@ -35,7 +35,7 @@ export function ClientForgotPasswordClient() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight mb-2">Check your email</h1>
           <p className="text-sm text-muted-foreground mb-6">{success}</p>
-          <Link href="/client/login" className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
+          <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
             Back to sign in
           </Link>
         </div>
