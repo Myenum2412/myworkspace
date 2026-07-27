@@ -98,7 +98,7 @@ router.use(async (req: AuthRequest, res: Response) => {
   }
 
   // Hand off to the TUS protocol server. Its handle() writes/resolves the response.
-  return tus.handle(req, res);
+  return tus.handle(req as any, res);
 });
 
 // After the TUS server successfully POST-created an upload, capture its TUS id

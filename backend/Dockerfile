@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json* .npmrc tsconfig.json ./
 RUN apk add --no-cache curl=8.21.0-r0
 
-RUN npm ci --only=production --ignore-scripts && \
+RUN npm ci --ignore-scripts && \
     npm cache clean --force
 
 FROM node:22-alpine AS builder
