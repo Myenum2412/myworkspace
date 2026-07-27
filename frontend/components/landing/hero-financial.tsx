@@ -220,7 +220,7 @@ export const HeroFinancial = () => {
             New
           </span>
           <span className="text-xs font-semibold text-neutral-700">
-            Announcing our latest product launch
+            All-in-one workspace for modern teams
           </span>
         </TimelineAnimation>
 
@@ -230,7 +230,7 @@ export const HeroFinancial = () => {
           timelineRef={timelineRef}
           className="sm:text-6xl text-4xl md:text-7xl font-bold tracking-tight text-neutral-900 max-w-5xl leading-[1.1]"
         >
-          Make your financial <br /> operations seamless.
+          Manage your workspace, <br /> effortlessly.
         </TimelineAnimation>
 
         <TimelineAnimation
@@ -239,9 +239,9 @@ export const HeroFinancial = () => {
           timelineRef={timelineRef}
           className="text-lg md:text-xl text-neutral-500 font-medium max-w-3xl mx-auto leading-relaxed px-4"
         >
-          Take control of your finances with MyWorkspace, the next-generation
-          workspace software built to simplify, automate, and elevate your
-          financial and team operations.
+          MyWorkspace brings together task management, team collaboration, file
+          storage, client portal, and billing into one seamless platform built
+          for growing businesses.
         </TimelineAnimation>
 
         <div className="flex gap-4 justify-center mt-4">

@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Zap, BookOpen, Rocket, ArrowRight, PlayCircle } from 'lucide-react'
+import { Sparkles, BookOpen, Rocket, ArrowRight, PlayCircle } from 'lucide-react'
 
 export default function CtaSection3() {
   return (
@@ -16,26 +16,30 @@ export default function CtaSection3() {
                   <div className='flex flex-col gap-6'>
                     <Badge variant='default' className="h-auto px-2.5 py-0.5 font-semibold bg-primary rounded-md text-primary-foreground w-fit">
                       <Rocket className='me-2 size-3' />
-                      Launch Your Success
+                      Get Started Free
                     </Badge>
 
                     <div className='flex flex-col gap-4'>
                       <h2 className='text-3xl font-bold tracking-tight text-balance lg:text-4xl text-neutral-900'>
-                        Accelerate your digital transformation journey
+                        Ready to streamline your workspace?
                       </h2>
                       <p className='text-neutral-500 lg:text-lg'>
-                        Join thousands of innovative companies using our cutting-edge platform to automate workflows,
-                        boost team productivity, and deliver exceptional results faster than ever before.
+                        Join thousands of teams using MyWorkspace to manage projects, collaborate in real-time,
+                        and deliver results faster.
                       </p>
                     </div>
 
                     <div className='flex flex-col gap-3 sm:flex-row'>
-                      <Button size='lg' className='h-10 cursor-pointer px-8'>
-                        <Zap />
-                        Start Free Trial
+                      <Button size='lg' className='h-10 cursor-pointer px-8' asChild>
+                        <a href="/signup">
+                          <Sparkles />
+                          Start Free Trial
+                        </a>
                       </Button>
-                      <Button variant='outline' size='lg' className='h-10 cursor-pointer px-8'>
-                        Watch Demo
+                      <Button variant='outline' size='lg' className='h-10 cursor-pointer px-8' asChild>
+                        <a href="/features">
+                          Explore Features
+                        </a>
                       </Button>
                     </div>
                   </div>

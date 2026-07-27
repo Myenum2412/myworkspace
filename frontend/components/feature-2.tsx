@@ -1,4 +1,4 @@
-import { Heart, Zap, Clock, Users } from 'lucide-react'
+import { Shield, Zap, RefreshCw, Headphones } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FeatureItem {
@@ -9,28 +9,28 @@ interface FeatureItem {
 
 const features: FeatureItem[] = [
   {
-    icon: Heart,
-    title: 'Quality Assurance',
+    icon: Shield,
+    title: 'Enterprise Security',
     description:
-      'Every product in our catalog undergoes rigorous quality checks to meet the highest standards of excellence and performance.',
+      'Role-based access control, audit logs, and encrypted storage keep your business data safe and compliant.',
   },
   {
     icon: Zap,
-    title: 'Fast Service',
+    title: 'Fast Performance',
     description:
-      'Experience lightning-fast order processing and delivery with our advanced logistics network and efficient service protocols.',
+      'Lightning-fast load times and real-time updates ensure your team stays productive without waiting.',
   },
   {
-    icon: Clock,
-    title: 'Timely Updates',
+    icon: RefreshCw,
+    title: 'Seamless Sync',
     description:
-      'Get real-time notifications and detailed tracking for all your orders, keeping you informed throughout the delivery process.',
+      'Real-time synchronization across devices and team members keeps everyone on the same page.',
   },
   {
-    icon: Users,
-    title: 'Expert Team',
+    icon: Headphones,
+    title: 'Dedicated Support',
     description:
-      'Our team of dedicated professionals is available 24/7 to assist you with personalized support and expert advice.',
+      'Our expert support team is available around the clock to help you get the most out of MyWorkspace.',
   },
 ]
 
@@ -45,10 +45,9 @@ export default function Feature2({ className, ...props }: Feature2Props) {
         <div className='grid gap-12 lg:grid-cols-2 lg:gap-16'>
           <div className='flex flex-col gap-10'>
             <header className='flex flex-col gap-4'>
-              <h2 className='text-3xl font-bold tracking-tight text-balance sm:text-4xl lg:text-5xl'>Why Choose Us</h2>
+              <h2 className='text-3xl font-bold tracking-tight text-balance sm:text-4xl lg:text-5xl'>Why MyWorkspace</h2>
               <p className='text-muted-foreground text-base text-pretty md:text-lg'>
-                We deliver exceptional quality and service that sets us apart. Experience the difference with our
-                dedicated approach.
+                Purpose-built for modern teams to collaborate, manage projects, and scale operations seamlessly.
               </p>
             </header>
 
@@ -71,9 +70,9 @@ export default function Feature2({ className, ...props }: Feature2Props) {
             <div className='bg-muted relative z-10 overflow-hidden rounded-lg shadow-sm transition-all duration-300 hover:shadow-md'>
               <div className='aspect-[4/3] w-full'>
                 <img
-                  src='https://assets.shadcnstore.com/shadcnstore.com/stock/marketing/modern-living-room-with-pendant-light-and.500w.30f855.avif'
-                  alt='Modern living room with pendant light and minimalist furniture'
-                  className='size-full object-cover grayscale'
+                  src='https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1740&auto=format&fit=crop'
+                  alt='Team collaborating in a modern workspace'
+                  className='size-full object-cover'
                   loading='lazy'
                   decoding='async'
                 />
