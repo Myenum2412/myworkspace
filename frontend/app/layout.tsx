@@ -8,7 +8,7 @@ import { OfflineSyncManager } from "@/components/offline-sync-manager";
 import { Toaster } from "sonner";
 import { NotificationInitializer } from "@/components/notification-initializer";
 import { CsrfInterceptor } from "@/components/csrf-interceptor";
-import { DataPreloader } from "@/hooks/use-data-preloader";
+import { GlobalLoader } from "@/components/global-loader";
 import { PerformanceMonitor } from "@/components/performance-monitor";
 import CookieConsentBlock from "@/components/cookie-consent-block";
 import { siteConfig, organizationJsonLd, webSiteJsonLd, softwareApplicationJsonLd } from "@/lib/seo/seo-config";
@@ -221,11 +221,11 @@ export default function RootLayout({
           <ContextMenuProvider />
           <NotificationInitializer />
           <PerformanceMonitor />
-          <DataPreloader>
+          <GlobalLoader>
             <AppLayout>
               {children}
             </AppLayout>
-          </DataPreloader>
+          </GlobalLoader>
           <OfflineBanner />
           <OfflineSyncManager />
           <CookieConsentBlock />

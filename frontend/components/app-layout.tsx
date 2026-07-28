@@ -121,7 +121,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   if (status === "loading") {
-    return <div className="flex h-screen w-full bg-background" />;
+    return null;
   }
 
   return (

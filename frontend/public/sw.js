@@ -1,15 +1,15 @@
-self.addEventListener("install", (_event) => {
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (_event) => {
+self.addEventListener("activate", () => {
   // Nothing to clean up
 });
 
-self.addEventListener("push", (event: any) => {
+self.addEventListener("push", (event) => {
   const data = event.data?.json() || {};
   const title = data.title || "Notification";
-  const options: NotificationOptions = {
+  const options = {
     body: data.body || data.message || "",
     icon: data.icon || "/web-app-manifest-192x192.png",
     badge: data.badge || "/web-app-manifest-192x192.png",
@@ -20,7 +20,7 @@ self.addEventListener("push", (event: any) => {
     },
     vibrate: [200, 100, 200],
     requireInteraction: true,
-    actions: data.actions?.map((a: any) => ({
+    actions: data.actions?.map((a) => ({
       action: a.action || "view",
       title: a.title || "View",
     })),
@@ -29,14 +29,14 @@ self.addEventListener("push", (event: any) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-self.addEventListener("notificationclick", (event: any) => {
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const urlToOpen = event.notification.data?.url || "/notifications";
 
   if (event.action) {
     const action = event.notification.data?.actions?.find(
-      (a: any) => a.action === event.action
+      (a) => a.action === event.action
     );
     if (action?.url) {
       event.waitUntil(clients.openWindow(action.url));
@@ -56,6 +56,6 @@ self.addEventListener("notificationclick", (event: any) => {
   );
 });
 
-self.addEventListener("notificationclose", (_event) => {
+self.addEventListener("notificationclose", () => {
   // Analytics tracking could go here
 });

@@ -8,7 +8,7 @@ const ROUTE_QUERY_MAP: Record<string, { queryKey: string[]; url: string }[]> = {
     { queryKey: ["dashboard", "metrics"], url: "/api/dashboard/metrics" },
   ],
   "/employees": [
-    { queryKey: ["employees"], url: "/api/users?page=1&limit=20" },
+    { queryKey: ["employees"], url: "/api/employees" },
   ],
   "/projects": [
     { queryKey: ["projects"], url: "/api/projects?page=1&limit=20" },
@@ -19,14 +19,12 @@ const ROUTE_QUERY_MAP: Record<string, { queryKey: string[]; url: string }[]> = {
   "/tasks": [
     { queryKey: ["tasks"], url: "/api/tasks?page=1&limit=20" },
   ],
-  "/files": [
-    { queryKey: ["files"], url: "/api/files?page=1&limit=20" },
-  ],
+  "/files": [],
   "/notifications": [
     { queryKey: ["notifications"], url: "/api/notifications?page=1&limit=20" },
   ],
   "/approvals": [
-    { queryKey: ["approvals"], url: "/api/file-approval?page=1&limit=20" },
+    { queryKey: ["approvals"], url: "/api/approvals" },
   ],
 };
 
