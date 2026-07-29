@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useMemo } from "react";
+import { useActionState, useState, useMemo, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -307,6 +308,8 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
   const [editingMember, setEditingMember] = useState<MemberData | null>(null);
   const [viewMember, setViewMember] = useState<MemberData | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(30);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return members;
@@ -321,6 +324,11 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
     );
   }, [search, members]);
 
+  const paginated = useMemo(() => {
+    const start = page * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -332,10 +340,15 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
 
   const toggleAll = () => {
     setSelected((prev) => {
-      if (prev.size === filtered.length) return new Set();
-      return new Set(filtered.map((m) => m.id));
+      if (prev.size === paginated.length) return new Set();
+      return new Set(paginated.map((m) => m.id));
     });
   };
+
+  const handlePageSizeChange = useCallback((value: string) => {
+    setPageSize(Number(value));
+    setPage(0);
+  }, []);
 
   const colSpan = isSuperAdmin ? 11 : 10;
 
@@ -377,7 +390,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
             <tr>
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-10">
                 <Checkbox
-                  checked={selected.size === filtered.length && filtered.length > 0}
+                    checked={selected.size === paginated.length && paginated.length > 0}
                   onCheckedChange={toggleAll}
                 />
               </th>
@@ -403,82 +416,125 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                   </div>
                 </td>
               </tr>
-            ) : (
-              filtered.map((member) => (
-                <tr key={member.id} className={`bg-white group hover:bg-slate-50 transition-colors cursor-pointer ${selected.has(member.id) ? "bg-muted/30" : ""}`} onClick={() => setViewMember(member)}>
-                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                    <Checkbox
-                      checked={selected.has(member.id)}
-                      onCheckedChange={() => toggle(member.id)}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="size-7">
-                        <AvatarImage src={member.avatar} alt={member.name} />
-                        <AvatarFallback className="text-[10px]">{member.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium text-sm">{member.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm">{member.email}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant={member.role === ROLES.MEMBERS ? "default" : "outline"} className="text-xs">
-                      {member.role}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={statusVariant[member.status] || "outline"} className="text-xs capitalize">
-                      {member.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-medium capitalize ${providerColors[member.provider] || "text-muted-foreground"}`}>
-                      {member.provider}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {member.emailVerified ? (
-                      <CheckCircle2Icon className="size-4 text-success" />
-                    ) : (
-                      <XCircleIcon className="size-4 text-muted-foreground" />
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.createdAt || member.joinedAt)}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.lastLogin)}</td>
-                  {isSuperAdmin && (
-                    <td className="px-4 py-3">
-                      <Badge variant="outline" className="text-xs">{member.orgName}</Badge>
+              ) : (
+                paginated.map((member) => (
+                  <tr key={member.id} className={`bg-white group hover:bg-slate-50 transition-colors cursor-pointer ${selected.has(member.id) ? "bg-muted/30" : ""}`} onClick={() => setViewMember(member)}>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selected.has(member.id)}
+                        onCheckedChange={() => toggle(member.id)}
+                      />
                     </td>
-                  )}
-                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="" onClick={() => setEditingMember(member)}>
-                        <PencilIcon className="size-4" />
-                      </Button>
-                      <form action={deleteMember}>
-                        <input type="hidden" name="userId" value={member.userId} />
-                        <input type="hidden" name="orgId" value={member.orgId} />
-                        <Button
-                          type="submit"
-                          variant="ghost"
-                          size="icon"
-                          className="text-black hover:text-gray-600 hover:bg-blue-50"
-                          onClick={(e) => {
-                            if (!confirm(`Delete member "${member.name}"?`)) e.preventDefault();
-                          }}
-                        >
-                          <Trash2Icon className="size-4" />
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="size-7">
+                          <AvatarImage src={member.avatar} alt={member.name} />
+                          <AvatarFallback className="text-[10px]">{member.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium text-sm">{member.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">{member.email}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant={member.role === ROLES.MEMBERS ? "default" : "outline"} className="text-xs">
+                        {member.role}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={statusVariant[member.status] || "outline"} className="text-xs capitalize">
+                        {member.status}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium capitalize ${providerColors[member.provider] || "text-muted-foreground"}`}>
+                        {member.provider}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {member.emailVerified ? (
+                        <CheckCircle2Icon className="size-4 text-success" />
+                      ) : (
+                        <XCircleIcon className="size-4 text-muted-foreground" />
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.createdAt || member.joinedAt)}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.lastLogin)}</td>
+                    {isSuperAdmin && (
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className="text-xs">{member.orgName}</Badge>
+                      </td>
+                    )}
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="" onClick={() => setEditingMember(member)}>
+                          <PencilIcon className="size-4" />
                         </Button>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                        <form action={deleteMember}>
+                          <input type="hidden" name="userId" value={member.userId} />
+                          <input type="hidden" name="orgId" value={member.orgId} />
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="icon"
+                            className="text-black hover:text-gray-600 hover:bg-blue-50"
+                            onClick={(e) => {
+                              if (!confirm(`Delete member "${member.name}"?`)) e.preventDefault();
+                            }}
+                          >
+                            <Trash2Icon className="size-4" />
+                          </Button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border border-gray-200 rounded-lg mt-2">
+          <span className="text-sm text-muted-foreground">
+            {filtered.length === 0
+              ? "0 items"
+              : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
+          </span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="60">60</SelectItem>
+                  <SelectItem value="90">90</SelectItem>
+                  <SelectItem value="120">120</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={(page + 1) * pageSize >= filtered.length}
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
     </>
   );
 }

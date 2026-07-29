@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,8 @@ import {
   Clock,
   ExternalLink,
   CreditCard,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 // ── Types ──
@@ -597,6 +599,10 @@ export function PlansDataTable({
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"pricing" | "custom" | "subscriptions">("pricing");
+  const [plansPage, setPlansPage] = useState(0);
+  const [plansPageSize, setPlansPageSize] = useState(30);
+  const [subsPage, setSubsPage] = useState(0);
+  const [subsPageSize, setSubsPageSize] = useState(30);
 
   const handleRefresh = async () => {
     window.location.reload();
@@ -610,11 +616,31 @@ export function PlansDataTable({
     } catch {}
   };
 
-  const filteredPlans = plans.filter(
+  const filteredPlans = useMemo(() => plans.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.slug.toLowerCase().includes(search.toLowerCase())
-  );
+  ), [plans, search]);
+
+  const paginatedPlans = useMemo(() => {
+    const start = plansPage * plansPageSize;
+    return filteredPlans.slice(start, start + plansPageSize);
+  }, [filteredPlans, plansPage, plansPageSize]);
+
+  const paginatedSubs = useMemo(() => {
+    const start = subsPage * subsPageSize;
+    return subscriptions.slice(start, start + subsPageSize);
+  }, [subscriptions, subsPage, subsPageSize]);
+
+  const handlePlansPageSizeChange = useCallback((value: string) => {
+    setPlansPageSize(Number(value));
+    setPlansPage(0);
+  }, []);
+
+  const handleSubsPageSizeChange = useCallback((value: string) => {
+    setSubsPageSize(Number(value));
+    setSubsPage(0);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -738,7 +764,7 @@ export function PlansDataTable({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredPlans.map((plan) => (
+                  paginatedPlans.map((plan) => (
                     <TableRow key={plan.id}>
                       <TableCell>
                         <div>
@@ -801,6 +827,49 @@ export function PlansDataTable({
                 )}
               </TableBody>
             </Table>
+            <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+              <span className="text-sm text-muted-foreground">
+                {filteredPlans.length === 0
+                  ? "0 items"
+                  : `${plansPage * plansPageSize + 1}–${Math.min((plansPage + 1) * plansPageSize, filteredPlans.length)} of ${filteredPlans.length}`}
+              </span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                  <Select value={String(plansPageSize)} onValueChange={handlePlansPageSizeChange}>
+                    <SelectTrigger className="h-8 w-[70px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="30">30</SelectItem>
+                      <SelectItem value="60">60</SelectItem>
+                      <SelectItem value="90">90</SelectItem>
+                      <SelectItem value="120">120</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setPlansPage((p) => Math.max(0, p - 1))}
+                    disabled={plansPage === 0}
+                  >
+                    <ChevronLeft className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setPlansPage((p) => p + 1)}
+                    disabled={(plansPage + 1) * plansPageSize >= filteredPlans.length}
+                  >
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -888,7 +957,7 @@ export function PlansDataTable({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  subscriptions.map((sub) => (
+                  paginatedSubs.map((sub) => (
                     <TableRow key={sub.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -931,6 +1000,49 @@ export function PlansDataTable({
                 )}
               </TableBody>
             </Table>
+            <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+              <span className="text-sm text-muted-foreground">
+                {subscriptions.length === 0
+                  ? "0 items"
+                  : `${subsPage * subsPageSize + 1}–${Math.min((subsPage + 1) * subsPageSize, subscriptions.length)} of ${subscriptions.length}`}
+              </span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                  <Select value={String(subsPageSize)} onValueChange={handleSubsPageSizeChange}>
+                    <SelectTrigger className="h-8 w-[70px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="30">30</SelectItem>
+                      <SelectItem value="60">60</SelectItem>
+                      <SelectItem value="90">90</SelectItem>
+                      <SelectItem value="120">120</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setSubsPage((p) => Math.max(0, p - 1))}
+                    disabled={subsPage === 0}
+                  >
+                    <ChevronLeft className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setSubsPage((p) => p + 1)}
+                    disabled={(subsPage + 1) * subsPageSize >= subscriptions.length}
+                  >
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

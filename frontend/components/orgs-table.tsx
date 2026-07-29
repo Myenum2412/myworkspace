@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useState, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -256,6 +257,8 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [viewOrg, setViewOrg] = useState<OrgRow | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(30);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return orgs;
@@ -269,6 +272,11 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
     );
   }, [search, orgs]);
 
+  const paginated = useMemo(() => {
+    const start = page * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -280,10 +288,15 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
 
   const toggleAll = () => {
     setSelected((prev) => {
-      if (prev.size === filtered.length) return new Set();
-      return new Set(filtered.map((o) => o.id));
+      if (prev.size === paginated.length) return new Set();
+      return new Set(paginated.map((o) => o.id));
     });
   };
+
+  const handlePageSizeChange = useCallback((value: string) => {
+    setPageSize(Number(value));
+    setPage(0);
+  }, []);
 
   return (
     <>
@@ -324,7 +337,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
               <tr>
                 <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-10">
                   <Checkbox
-                    checked={selected.size === filtered.length && filtered.length > 0}
+                    checked={selected.size === paginated.length && paginated.length > 0}
                     onCheckedChange={toggleAll}
                   />
                 </th>
@@ -347,7 +360,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
                   </td>
                 </tr>
               ) : (
-                filtered.map((o) => (
+                paginated.map((o) => (
                   <tr key={o.id} className={`bg-white group hover:bg-slate-50 transition-colors cursor-pointer ${selected.has(o.id) ? "bg-muted/30" : ""}`} onClick={() => setViewOrg(o)}>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
@@ -380,6 +393,49 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border border-gray-200 rounded-lg">
+          <span className="text-sm text-muted-foreground">
+            {filtered.length === 0
+              ? "0 items"
+              : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
+          </span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="60">60</SelectItem>
+                  <SelectItem value="90">90</SelectItem>
+                  <SelectItem value="120">120</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={(page + 1) * pageSize >= filtered.length}
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

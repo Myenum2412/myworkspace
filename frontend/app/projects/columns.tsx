@@ -1,3 +1,5 @@
+"use client";
+
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import FolderIcon from "@mui/icons-material/Folder";
 import { PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon, ClockIcon } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
+import type { TermKey } from "@/lib/industry-terms";
 
 function getProjectDueStatus(project: Project): "overdue" | "due-soon" | "normal" {
   if (!project.deadline) return "normal";
@@ -23,26 +26,27 @@ function getProjectDueStatus(project: Project): "overdue" | "due-soon" | "normal
   return "normal";
 }
 
-export const columns: ColumnDef<Project>[] = [
+export function buildProjectColumns(t: (key: TermKey) => string): ColumnDef<Project>[] {
+  return [
   {
     id: "sno",
-    header: "S.No",
+    header: t("common.sno"),
     cell: ({ row }) => <span className="text-muted-foreground">{row.index + 1}</span>,
     enableSorting: false,
   },
   {
     accessorKey: "name",
-    header: "Project Name",
+    header: t("common.name"),
     cell: ({ row }) => <span className="font-medium">{row.getValue("name")}</span>,
   },
   {
     accessorKey: "client",
-    header: "Client",
+    header: t("page.projects.columnClient"),
     cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("client") || "—"}</span>,
   },
   {
     id: "color",
-    header: () => <span className="flex items-center gap-1"><PaletteIcon className="size-3" /> Color</span>,
+    header: () => <span className="flex items-center gap-1"><PaletteIcon className="size-3" /> {t("common.color")}</span>,
     cell: ({ row }) => {
       const color = row.original.color;
       return color
@@ -52,7 +56,7 @@ export const columns: ColumnDef<Project>[] = [
   },
   {
     accessorKey: "priority",
-    header: "Priority",
+    header: t("common.priority"),
     cell: ({ row }) => {
       const priority = row.getValue<string>("priority") || "medium";
       const colors: Record<string, string> = {
@@ -71,7 +75,7 @@ export const columns: ColumnDef<Project>[] = [
   },
   {
     accessorKey: "category",
-    header: "Category",
+    header: t("common.category"),
     cell: ({ row }) => {
       const category = row.getValue<string>("category");
       return category
@@ -81,7 +85,7 @@ export const columns: ColumnDef<Project>[] = [
   },
   {
     id: "description",
-    header: () => <span className="flex items-center gap-1"><TextIcon className="size-3" /> Description</span>,
+    header: () => <span className="flex items-center gap-1"><TextIcon className="size-3" /> {t("common.description")}</span>,
     cell: ({ row }) => {
       const desc = row.original.description;
       return <span className="text-muted-foreground truncate max-w-[200px] block" title={desc}>{desc || "—"}</span>;
@@ -89,7 +93,7 @@ export const columns: ColumnDef<Project>[] = [
   },
   {
     id: "deadline",
-    header: () => <span className="flex items-center gap-1"><CalendarIcon className="size-3" /> Deadline</span>,
+    header: () => <span className="flex items-center gap-1"><CalendarIcon className="size-3" /> {t("common.deadline")}</span>,
     cell: ({ row }) => {
       const project = row.original;
       const dueStatus = getProjectDueStatus(project);
@@ -112,12 +116,12 @@ export const columns: ColumnDef<Project>[] = [
   },
   {
     accessorKey: "tracked",
-    header: "Tracked",
+    header: t("common.tracked"),
     cell: ({ row }) => <span>{row.getValue<number>("tracked")}h</span>,
   },
   {
     accessorKey: "progress",
-    header: "Progress",
+    header: t("common.progress"),
     cell: ({ row }) => {
       const project = row.original;
       if (project.headName) {
@@ -151,7 +155,7 @@ export const columns: ColumnDef<Project>[] = [
   },
   {
     accessorKey: "access",
-    header: "Access",
+    header: t("common.access"),
     cell: ({ row }) => {
       const access = row.getValue<string>("access");
       return (
@@ -167,7 +171,7 @@ export const columns: ColumnDef<Project>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: t("common.status"),
     cell: ({ row }) => {
       const status = row.getValue<string>("status");
       const active = status === "Active";
@@ -214,4 +218,7 @@ export const columns: ColumnDef<Project>[] = [
       );
     },
   },
-];
+  ];
+}
+
+export type { ColumnDef, Row };

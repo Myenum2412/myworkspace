@@ -31,7 +31,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
   const [viewMember, setViewMember] = useState<TeamDetail["members"][0] | null>(null);
 
   const [memberPage, setMemberPage] = useState(0);
-  const [memberRowsPerPage, setMemberRowsPerPage] = useState(10);
+  const [memberRowsPerPage, setMemberRowsPerPage] = useState(30);
 
   const fetchTeams = useCallback(async (oid?: string) => {
     try {

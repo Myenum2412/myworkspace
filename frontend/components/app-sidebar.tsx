@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { NavMain } from "@/components/nav-main";
@@ -27,6 +29,7 @@ import {
   RotateCcwIcon,
   BarChart3Icon,
 } from "lucide-react";
+import { useIndustry } from "@/components/industry-provider";
 
 const AddonsIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
@@ -36,6 +39,7 @@ const AddonsIcon = ({ className }: { className?: string }) => (
 import { ROLES, isAdminRole } from "@/lib/rbac";
 import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
 import { canAccessPath, filterNavByRole } from "@/lib/rbac/navigation";
+import type { TermKey } from "@/lib/industry-terms";
 
 export interface NavItem {
   title: string;
@@ -45,88 +49,6 @@ export interface NavItem {
   items?: { title: string; url: string }[];
 }
 
-const platformItems: NavItem[] = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: <LayoutDashboardIcon className="size-6" />,
-    isActive: true,
-  },
-  {
-    title: "Assign Tasks",
-    url: "/overview",
-    icon: <ListChecksIcon className="size-6" />,
-  },
-  {
-    title: "Employees",
-    url: "/employees",
-    icon: <UsersIcon className="size-6" />,
-  },
-  {
-    title: "Projects",
-    url: "/projects",
-    icon: <WorkflowIcon className="size-6" />,
-  },
-  {
-    title: "Approvals",
-    url: "/approvals",
-    icon: <CheckCheckIcon className="size-6" />,
-  },
-  {
-    title: "Time Tracker",
-    url: "/time-tracker",
-    icon: <ClockIcon className="size-6" />,
-  },
-  {
-    title: "File Manager",
-    url: "/files",
-    icon: <MuiFolderIcon className="size-6" />,
-  },
-  {
-    title: "Billing",
-    url: "/billing",
-    icon: <AttachMoneyIcon className="size-6" />,
-  },
-  {
-    title: "Interaction Followups",
-    url: "/engagement",
-    icon: <HeartHandshakeIcon className="size-6" />,
-  },
-  {
-    title: "Inventory",
-    url: "/stocks",
-    icon: <PackageIcon className="size-6" />,
-  },
-
-  {
-    title: "Reworks",
-    url: "/reworks",
-    icon: <RotateCcwIcon className="size-6" />,
-  },
-  {
-    title: "Addons",
-    url: "/addons",
-    icon: <AddonsIcon className="size-6" />,
-  },
-  {
-    title: "Reports",
-    url: "/dashboard/reports",
-    icon: <BarChart3Icon className="size-6" />,
-  }
-];
-
-const photographyItem: NavItem = {
-  title: "Photography",
-  url: "/photography",
-  icon: <CameraAltIcon className="size-6" />,
-};
-
-const settingsItem: NavItem = {
-  title: "Settings",
-  url: "/settings",
-  icon: <Settings2Icon className="size-6" />,
-};
-
 interface NavUserData {
   name: string;
   email: string;
@@ -134,12 +56,11 @@ interface NavUserData {
   role?: string;
 }
 
-
-
 export function AppSidebar({
   user,
   ...props
 }: React.ComponentProps<typeof Sidebar> & { user: NavUserData }) {
+  const { t } = useIndustry();
   const [photographyInstalled, setPhotographyInstalled] = useState(false);
   const [hiddenFeatures, setHiddenFeatures] = useState<string[]>([]);
 
@@ -150,38 +71,53 @@ export function AppSidebar({
     ]);
   }, []);
 
+  const platformItems: NavItem[] = [
+    { title: t("nav.dashboard"), url: "/dashboard", icon: <LayoutDashboardIcon className="size-6" />, isActive: true },
+    { title: t("nav.overview"), url: "/overview", icon: <ListChecksIcon className="size-6" /> },
+    { title: t("nav.employees"), url: "/employees", icon: <UsersIcon className="size-6" /> },
+    { title: t("nav.projects"), url: "/projects", icon: <WorkflowIcon className="size-6" /> },
+    { title: t("nav.approvals"), url: "/approvals", icon: <CheckCheckIcon className="size-6" /> },
+    { title: t("nav.timeTracker"), url: "/time-tracker", icon: <ClockIcon className="size-6" /> },
+    { title: t("nav.fileManager"), url: "/files", icon: <MuiFolderIcon className="size-6" /> },
+    { title: t("nav.billing"), url: "/billing", icon: <AttachMoneyIcon className="size-6" /> },
+    { title: t("nav.engagement"), url: "/engagement", icon: <HeartHandshakeIcon className="size-6" /> },
+    { title: t("nav.inventory"), url: "/stocks", icon: <PackageIcon className="size-6" /> },
+    { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-6" /> },
+    { title: t("nav.addons"), url: "/addons", icon: <AddonsIcon className="size-6" /> },
+    { title: t("nav.reports"), url: "/dashboard/reports", icon: <BarChart3Icon className="size-6" /> },
+  ];
+
+  const photographyItem: NavItem = {
+    title: t("nav.photography"), url: "/photography", icon: <CameraAltIcon className="size-6" />,
+  };
+
+  const settingsItem: NavItem = {
+    title: t("nav.settings"), url: "/settings", icon: <Settings2Icon className="size-6" />,
+  };
+
   const role = user.role || "";
   const roleFilteredItems = filterNavByRole(platformItems, role);
 
   const visibleItems = [
     ...roleFilteredItems.filter((item) => !hiddenFeatures.includes(item.title)),
-    ...(photographyInstalled && !hiddenFeatures.includes("Photography") ? [photographyItem] : []),
+    ...(photographyInstalled && !hiddenFeatures.includes(t("nav.photography")) ? [photographyItem] : []),
   ];
 
-  const settingsItems: NavItem[] = [
-    settingsItem,
-  ];
+  const settingsItems: NavItem[] = [settingsItem];
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="h-20 border-b justify-center">
         <div className="flex items-center gap-2 px-1 group-data-[collapsible=icon]:justify-center">
-          <Image
-            src="/logo.jpeg"
-            alt="MyWorkSpace Logo"
-            width={32}
-            height={32}
-            className="size-8 rounded-full object-cover shadow-sm shrink-0"
-          />
+          <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-8 rounded-full object-cover shadow-sm shrink-0" />
           <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">
-            My WorkSpace
+            {t("app.name")}
           </h1>
-
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={visibleItems} label="Platform" />
-        <NavMain items={settingsItems} label="Settings" className="mt-auto" />
+        <NavMain items={visibleItems} label={t("nav.dashboard")} />
+        <NavMain items={settingsItems} label={t("nav.settings")} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

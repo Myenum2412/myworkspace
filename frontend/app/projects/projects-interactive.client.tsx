@@ -9,6 +9,7 @@ import { PROJECT_COLORS } from "@/components/projects/project-types";
 import { ProjectDetailedView } from "./project-detailed-view";
 import ProjectList from "@/components/projects/project-list";
 import ProjectsDashboard from "./projects-dashboard";
+import { useIndustry } from "@/components/industry-provider";
 
 import { ProjectCreateForm, ProjectEditForm } from "@/components/projects/project-form";
 import ProjectDeleteDialog from "@/components/projects/project-card";
@@ -29,6 +30,7 @@ export default function ProjectsInteractive({
   searchQuery: externalSearchQuery,
   onSearchChange,
 }: ProjectsInteractiveProps) {
+  const { t } = useIndustry();
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
   const [showForm, setShowForm] = useState(false);
   const [projectName, setProjectName] = useState("");
@@ -469,12 +471,12 @@ export default function ProjectsInteractive({
         ) : (
           <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl sm:text-2xl font-bold shrink-0" data-tour-step-id="step-projects">Projects</h1>
+              <h1 className="text-xl sm:text-2xl font-bold shrink-0" data-tour-step-id="step-projects">{t("page.projects.title")}</h1>
               <div className="flex-1 flex justify-center">
                 <div className="relative w-full max-w-sm">
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search projects..."
+                    placeholder={t("page.projects.searchPlaceholder")}
                     value={externalSearchQuery || ""}
                     onChange={(e) => onSearchChange?.(e.target.value)}
                     className="pl-9 h-9 bg-white"
@@ -482,7 +484,7 @@ export default function ProjectsInteractive({
                 </div>
               </div>
               <Button onClick={() => setShowForm(true)} size="sm" className="shrink-0">
-                New Project
+                {t("page.projects.newProject")}
               </Button>
             </div>
             <ProjectsDashboard projects={filteredProjects} />

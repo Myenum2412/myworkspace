@@ -2,6 +2,7 @@
 import { FolderIcon } from "lucide-react";
 import { DataTable as SharedDataTable } from "@/components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useIndustry } from "@/components/industry-provider";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,13 +39,14 @@ export function DataTable<TData, TValue>({
   data,
   meta,
 }: DataTableProps<TData, TValue>) {
+  const { t } = useIndustry();
   return (
     <SharedDataTable
       columns={columns}
       data={data}
-      searchPlaceholder="Search projects..."
-      label="project(s)"
-      emptyMessage="No projects yet."
+      searchPlaceholder={t("page.projects.searchPlaceholder")}
+      label={t("page.projects.title").toLowerCase()}
+      emptyMessage={t("common.noResults")}
       emptyIcon={<FolderIcon className="size-6 text-muted-foreground/50" />}
       meta={meta}
       getRowProps={(row) => {

@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useIndustry } from "@/components/industry-provider";
 
 export default function TimeOffPage() {
+  const { t } = useIndustry();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [requests, setRequests] = useState<any[]>([]);
@@ -31,9 +33,9 @@ export default function TimeOffPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
-      <h1 className="text-2xl font-bold tracking-tight">Time Off</h1>
-      <Card><CardHeader><CardTitle>Requests</CardTitle></CardHeader><CardContent>
-        {requests.length === 0 ? <p className="text-sm text-muted-foreground">No requests</p> : requests.map((r) => (
+      <h1 className="text-2xl font-bold tracking-tight">{t("page.staffs.timeOff")}</h1>
+      <Card><CardHeader><CardTitle>{t("nav.staffTasks")}</CardTitle></CardHeader><CardContent>
+        {requests.length === 0 ? <p className="text-sm text-muted-foreground">{t("common.noResults")}</p> : requests.map((r) => (
           <div key={r.id} className="flex items-center justify-between py-2 border-b last:border-0">
             <span>
               <span className="font-semibold">{r.requesterName}</span>: {r.type} ({r.startDate} to {r.endDate})

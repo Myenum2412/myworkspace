@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  UsersIcon, UserPlusIcon, Trash2Icon, XIcon, Loader2Icon, CrownIcon,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  UsersIcon, UserPlusIcon, Trash2Icon, XIcon, Loader2Icon, CrownIcon, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import {
   Dialog,
@@ -42,7 +49,7 @@ type TeamMembersProps = {
 
 export function TeamMembers({
   team, members, tableView,
-  memberPage = 0, memberRowsPerPage = 10,
+  memberPage = 0, memberRowsPerPage = 30,
   onMemberPageChange, onMemberRowsPerPageChange,
   onBack, onDelete, showAddMember, onShowAddMemberChange,
   addingMember, onAddMember, onRemoveMember, onSetLead,
@@ -158,6 +165,52 @@ export function TeamMembers({
           </div>
 
 
+          {team.members.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+              <span className="text-sm text-muted-foreground">
+                {`${memberPage * memberRowsPerPage + 1}–${Math.min((memberPage + 1) * memberRowsPerPage, team.members.length)} of ${team.members.length}`}
+              </span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                  <Select
+                    value={String(memberRowsPerPage)}
+                    onValueChange={(value) => { onMemberRowsPerPageChange?.(Number(value)); }}
+                  >
+                    <SelectTrigger className="h-8 w-[70px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="30">30</SelectItem>
+                      <SelectItem value="60">60</SelectItem>
+                      <SelectItem value="90">90</SelectItem>
+                      <SelectItem value="120">120</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onMemberPageChange?.(memberPage - 1)}
+                    disabled={memberPage === 0}
+                  >
+                    <ChevronLeft className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onMemberPageChange?.(memberPage + 1)}
+                    disabled={(memberPage + 1) * memberRowsPerPage >= team.members.length}
+                  >
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col rounded-lg" style={{ maxHeight: 'calc(100vh - 220px)' }}>

@@ -7,6 +7,7 @@ import Clients from "@/app/clients/clients.client"
 import ContractorsPage from "@/app/contractors/contractors-page"
 import type { Project } from "@/components/projects/project-types"
 import type { Client } from "@/app/clients/columns"
+import { useIndustry } from "@/components/industry-provider";
 
 type Props = {
   orgId?: string
@@ -23,6 +24,7 @@ export default function ProjectsClient({
   initialClients = [],
   user: initialUser,
 }: Props) {
+  const { t } = useIndustry();
   const [activeTab, setActiveTab] = useState("projects");
   const [searchQuery, setSearchQuery] = useState("");
   const [orgId, setOrgId] = useState(initialOrgId || "");
@@ -59,9 +61,9 @@ export default function ProjectsClient({
     <div className="flex flex-col h-full">
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSearchQuery(""); }} className="w-full">
         <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
-          <TabsTrigger value="projects" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">All Projects</TabsTrigger>
-          <TabsTrigger value="clients" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Clients</TabsTrigger>
-          <TabsTrigger value="contractors" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Contractors</TabsTrigger>
+          <TabsTrigger value="projects" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">{t("page.projects.allProjects")}</TabsTrigger>
+          <TabsTrigger value="clients" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">{t("nav.clients")}</TabsTrigger>
+          <TabsTrigger value="contractors" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">{t("page.projects.contractors")}</TabsTrigger>
         </TabsList>
       </Tabs>
       <div className="flex-1 overflow-auto">

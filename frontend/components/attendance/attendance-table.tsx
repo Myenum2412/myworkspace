@@ -1,10 +1,17 @@
 "use client"
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EyeIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AttendanceViewDialog } from "./attendance-view-dialog";
 
 type AttendanceRecord = {
@@ -27,15 +34,28 @@ const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").
 export function AttendanceTable({ data }: AttendanceTableProps) {
   const [viewRecord, setViewRecord] = useState<AttendanceRecord | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(30);
 
-  const allSelected = data.length > 0 && data.every((_, i) => selectedRows.has(i));
-  const someSelected = data.some((_, i) => selectedRows.has(i));
+  const paginated = useMemo(() => {
+    const start = page * pageSize;
+    return data.slice(start, start + pageSize);
+  }, [data, page, pageSize]);
+
+  const allSelected = paginated.length > 0 && paginated.every((_, i) => selectedRows.has(i));
+  const someSelected = paginated.some((_, i) => selectedRows.has(i));
+
+  const handlePageSizeChange = useCallback((value: string) => {
+    setPageSize(Number(value));
+    setPage(0);
+  }, []);
 
   function toggleAllRows() {
     if (allSelected) {
       setSelectedRows(new Set());
     } else {
-      setSelectedRows(new Set(data.map((_, i) => i)));
+      const indices = paginated.map((_, i) => i);
+      setSelectedRows(new Set(indices));
     }
   }
 
@@ -81,7 +101,7 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
                 </tr>
               </thead>
               <tbody>
-                {data.map((t, i) => (
+                {paginated.map((t, i) => (
                   <tr key={i} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer" onClick={() => setViewRecord(t)}>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
@@ -130,6 +150,49 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border border-gray-200 rounded-lg mt-2">
+            <span className="text-sm text-muted-foreground">
+              {data.length === 0
+                ? "0 items"
+                : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, data.length)} of ${data.length}`}
+            </span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="60">60</SelectItem>
+                    <SelectItem value="90">90</SelectItem>
+                    <SelectItem value="120">120</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={(page + 1) * pageSize >= data.length}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -3,8 +3,10 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useIndustry } from "@/components/industry-provider";
 
 export default function StaffsPage() {
+  const { t } = useIndustry();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [data, setData] = useState<any>(null);
@@ -29,7 +31,7 @@ export default function StaffsPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
-      <h1 className="text-2xl font-bold tracking-tight" data-tour-step-id="step-staffs">Staff</h1>
+      <h1 className="text-2xl font-bold tracking-tight" data-tour-step-id="step-staffs">{t("page.staffs.title")}</h1>
     </main>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RotateCcwIcon, PlusIcon, EyeIcon, PencilIcon, Trash2Icon, CheckCircleIcon, AlertCircleIcon, ListTodoIcon } from "lucide-react";
+import { RotateCcwIcon, PlusIcon, EyeIcon, PencilIcon, Trash2Icon, CheckCircleIcon, AlertCircleIcon, ListTodoIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import Stats07 from "@/components/stats-07";
 
 type ReworkItem = {
@@ -43,6 +43,8 @@ export default function ReworksInteractive() {
     { id: 2, description: "Fix login redirect issue", selectedFiles: "auth.ts", remarks: "Verified by QA", status: "Completed" },
     { id: 3, description: "Add pagination to reports", selectedFiles: "reports-table.tsx", remarks: "", status: "InCompleted" },
   ]);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(30);
   const [viewItem, setViewItem] = useState<ReworkItem | null>(null);
   const [editItem, setEditItem] = useState<ReworkItem | null>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -75,6 +77,16 @@ export default function ReworksInteractive() {
   function handleDelete(id: number) {
     setItems((prev) => prev.filter((i) => i.id !== id));
   }
+
+  const paginated = useMemo(() => {
+    const start = page * pageSize;
+    return items.slice(start, start + pageSize);
+  }, [items, page, pageSize]);
+
+  const handlePageSizeChange = useCallback((value: string) => {
+    setPageSize(Number(value));
+    setPage(0);
+  }, []);
 
   const summary = useMemo(() => {
     const completed = items.filter((i) => i.status === "Completed").length;
@@ -131,7 +143,7 @@ export default function ReworksInteractive() {
                     </td>
                   </tr>
                 ) : (
-                  items.map((item, index) => (
+                  paginated.map((item, index) => (
                     <tr key={item.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
                       <td className="px-4 py-3 font-medium">{item.description}</td>
@@ -185,6 +197,49 @@ export default function ReworksInteractive() {
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+            <span className="text-sm text-muted-foreground">
+              {items.length === 0
+                ? "0 items"
+                : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, items.length)} of ${items.length}`}
+            </span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="60">60</SelectItem>
+                    <SelectItem value="90">90</SelectItem>
+                    <SelectItem value="120">120</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={(page + 1) * pageSize >= items.length}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   UsersIcon,
   PlusIcon,
   SearchIcon,
@@ -12,8 +19,8 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   XIcon,
-  EyeIcon,
-  PencilIcon,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import type { Employee } from "@/app/employees/columns";
 import type { SortField, SortDir } from "./employee-types";
@@ -244,8 +251,52 @@ export function EmployeeList({
               </tbody>
             </table>
           </div>
-          {/* Pagination */}
-
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+            <span className="text-sm text-muted-foreground">
+              {filteredCount === 0
+                ? "0 items"
+                : `${page * rowsPerPage + 1}–${Math.min((page + 1) * rowsPerPage, filteredCount)} of ${filteredCount}`}
+            </span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <Select
+                  value={String(rowsPerPage)}
+                  onValueChange={(value) => onRowsPerPageChange(Number(value))}
+                >
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="60">60</SelectItem>
+                    <SelectItem value="90">90</SelectItem>
+                    <SelectItem value="120">120</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onPageChange(page - 1)}
+                  disabled={page === 0}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onPageChange(page + 1)}
+                  disabled={(page + 1) * rowsPerPage >= filteredCount}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </>

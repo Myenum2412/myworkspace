@@ -12,30 +12,18 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { ROLES } from "@/lib/rbac";
+import { useIndustry } from "@/components/industry-provider";
 import FolderIcon from "@mui/icons-material/Folder";
 import {
   LayoutDashboardIcon,
   ReceiptIcon,
 } from "lucide-react";
 
-function buildClientNavData(orgId: string) {
+function buildClientNavData(t: (key: any) => string) {
   return [
-    {
-      title: "Dashboard",
-      url: "/client/dashboard",
-      icon: <LayoutDashboardIcon className="size-6" />,
-      isActive: true,
-    },
-    {
-      title: "File Management",
-      url: "/client/file-manager",
-      icon: <FolderIcon className="size-6" />,
-    },
-    {
-      title: "Bills",
-      url: "/client/bills",
-      icon: <ReceiptIcon className="size-6" />,
-    },
+    { title: t("nav.dashboard"), url: "/client/dashboard", icon: <LayoutDashboardIcon className="size-6" />, isActive: true },
+    { title: t("nav.fileManager"), url: "/client/file-manager", icon: <FolderIcon className="size-6" /> },
+    { title: t("nav.clientBills"), url: "/client/bills", icon: <ReceiptIcon className="size-6" /> },
   ];
 }
 
@@ -52,12 +40,12 @@ export function ClientSidebar({
   user: NavUserData;
 }) {
   const { data: session } = useSession();
+  const { t } = useIndustry();
   const currentRole = (session?.user as Record<string, unknown>)?.role as string || "";
   if (currentRole !== ROLES.CLIENTS) {
     return null;
   }
-  const orgId = (session?.user as Record<string, unknown>)?.orgId as string || "";
-  const navItems = buildClientNavData(orgId);
+  const navItems = buildClientNavData(t);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -71,7 +59,7 @@ export function ClientSidebar({
             className="size-8 rounded-full object-cover shadow-sm shrink-0"
           />
           <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">
-            Client Portal
+            {t("app.name")}
           </h1>
         </div>
       </SidebarHeader>

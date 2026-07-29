@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Loader2Icon, AlertCircleIcon } from "lucide-react";
 import { DataTable } from "@/components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useIndustry } from "@/components/industry-provider";
 
 type Invoice = {
   id: string;
@@ -75,6 +76,7 @@ const columns: ColumnDef<Invoice>[] = [
 ];
 
 export default function ClientBillsPage() {
+  const { t } = useIndustry();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,13 +122,13 @@ export default function ClientBillsPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
-      <h1 className="text-xl sm:text-2xl font-bold">Bills</h1>
+      <h1 className="text-xl sm:text-2xl font-bold">{t("page.client.bills")}</h1>
       <DataTable
         columns={columns}
         data={invoices}
-        searchPlaceholder="Search invoices..."
-        label="invoice(s)"
-        emptyMessage="No invoices found."
+        searchPlaceholder={t("common.search")}
+        label={t("page.client.bills")}
+        emptyMessage={t("common.noResults")}
       />
     </div>
   );

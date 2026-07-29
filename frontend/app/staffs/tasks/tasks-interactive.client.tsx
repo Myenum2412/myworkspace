@@ -12,6 +12,7 @@ import { TaskDataTable } from "@/components/task-data-table";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import Stats07 from "@/components/stats-07";
+import { useIndustry } from "@/components/industry-provider";
 
 type UiTask = {
   _id: string;
@@ -65,6 +66,7 @@ export type StaffTasksProps = {
 };
 
 export default function TasksInteractive({ initialTasks, orgId, sessionUserId }: StaffTasksProps) {
+  const { t } = useIndustry();
   const queryClient = useQueryClient();
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
@@ -135,14 +137,14 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
       <main className="flex flex-1 flex-col gap-4 p-4 min-h-0">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="w-full sm:w-auto">
-            <h1 className="text-xl sm:text-2xl font-bold">My Tasks</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Tasks assigned to you and your teams</p>
+            <h1 className="text-xl sm:text-2xl font-bold">{t("page.staffs.tasks")}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">{t("nav.staffTasks")}</p>
           </div>
         </div>
 
         <Stats07
           items={[
-            { name: 'Total Tasks', value: filteredTasks.length, subtitle: 'All tasks' },
+            { name: t("page.dashboard.totalTasks"), value: filteredTasks.length, subtitle: t("common.active") },
             ...Object.entries(summary).map(([status, count]) => ({
               name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
               value: count,
@@ -153,7 +155,7 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
 
         <div className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center gap-4 mb-4">
-            <h2 className="text-lg font-semibold shrink-0">All Tasks</h2>
+            <h2 className="text-lg font-semibold shrink-0">{t("nav.tasks")}</h2>
             <div className="flex-1 flex justify-center">
               <div className="relative w-full max-w-md">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />

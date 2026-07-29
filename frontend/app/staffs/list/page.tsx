@@ -6,8 +6,10 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useIndustry } from "@/components/industry-provider";
 
 export default function StaffListPage() {
+  const { t } = useIndustry();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [employees, setEmployees] = useState<any[]>([]);
@@ -32,7 +34,7 @@ export default function StaffListPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
-      <h1 className="text-2xl font-bold tracking-tight" data-tour-step-id="step-staffs-list">Staff List</h1>
+      <h1 className="text-2xl font-bold tracking-tight" data-tour-step-id="step-staffs-list">{t("page.staffs.list")}</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {employees.map((e) => (
           <Card key={e.id}><CardContent className="p-4 flex items-center gap-4">

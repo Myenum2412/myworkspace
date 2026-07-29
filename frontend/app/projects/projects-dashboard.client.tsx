@@ -3,12 +3,14 @@
 import { useMemo } from "react";
 import Stats07 from "@/components/stats-07";
 import type { Project } from "@/components/projects/project-types";
+import { useIndustry } from "@/components/industry-provider";
 
 interface DashboardProps {
   projects: Project[];
 }
 
 export default function ProjectsDashboard({ projects }: DashboardProps) {
+  const { t } = useIndustry();
   const stats = useMemo(() => {
     const total = projects.length;
     const active = projects.filter((p) => p.status === "Active").length;
@@ -34,12 +36,12 @@ export default function ProjectsDashboard({ projects }: DashboardProps) {
   return (
     <Stats07
       items={[
-        { name: 'Total Projects', value: stats.total, subtitle: 'All projects' },
-        { name: 'Active', value: stats.active, subtitle: 'In progress' },
-        { name: 'Completed', value: stats.completed, subtitle: '100% done' },
-        { name: 'In Progress', value: stats.inProgress, subtitle: 'Partially done' },
-        { name: 'Overdue', value: stats.overdue, subtitle: 'Past deadline' },
-        { name: 'Avg Progress', value: stats.avgProgress, subtitle: 'Overall progress' },
+        { name: t("page.projects.statsTotal"), value: stats.total, subtitle: t("page.projects.statsTotalSub") },
+        { name: t("common.active"), value: stats.active, subtitle: t("page.dashboard.inProgress") },
+        { name: t("page.projects.statsCompleted"), value: stats.completed, subtitle: t("page.projects.statsCompletedSub") },
+        { name: t("page.dashboard.inProgress"), value: stats.inProgress, subtitle: t("page.projects.statsInProgressSub") },
+        { name: t("page.dashboard.overdue"), value: stats.overdue, subtitle: t("page.projects.statsOverdueSub") },
+        { name: t("page.projects.statsAvgProgress"), value: stats.avgProgress, subtitle: t("page.projects.statsAvgProgressSub") },
       ]}
     />
   );

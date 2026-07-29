@@ -28,6 +28,7 @@ import {
 import Link from "next/link"
 import DashboardCalendarPopup from "@/components/dashboard-calendar-popup"
 import Stats07 from "@/components/stats-07"
+import { useIndustry } from "@/components/industry-provider"
 
 const ROWS_PER_CARD = 5
 
@@ -60,6 +61,7 @@ type Props = {
 }
 
 export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
+  const { t } = useIndustry();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(initialData || null);
   const [loading, setLoading] = useState(!initialData);
 
@@ -94,12 +96,12 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-0.5">
-        <h1 className="text-xl sm:text-2xl font-bold" data-tour-step-id="step-dashboard">Dashboard Overview</h1>
+        <h1 className="text-xl sm:text-2xl font-bold" data-tour-step-id="step-dashboard">{t("page.dashboard.title")}</h1>
         <div className="flex-1 flex justify-center max-w-md mx-4">
           <div className="relative w-full">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search tasks, projects..."
+              placeholder={t("page.dashboard.searchPlaceholder")}
               className="pl-9 h-9 bg-white"
               data-tour-step-id="step-search"
             />
@@ -110,7 +112,7 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
           <Button asChild size="sm" data-tour-step-id="step-new-task">
             <Link href="/createtask">
               <ListTodo className="mr-1" />
-              New Task
+              {t("page.dashboard.newTask")}
             </Link>
           </Button>
         </div>
@@ -119,12 +121,12 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
       <div data-tour-step-id="step-stats">
         <Stats07
           items={[
-            { name: 'Total Tasks', value: totalTasks, subtitle: `${completedTasks} completed` },
-          { name: 'In Progress', value: inProgressTasks, subtitle: 'Active tasks' },
-              { name: 'Overdue', value: overdueTasks, subtitle: 'Past due date', fill: '#ef4444' },
-          { name: 'Today', value: todayTasks, subtitle: 'Created today' },
-          { name: 'Pending Approval', value: pendingApproval, subtitle: 'Awaiting review' },
-          { name: 'Projects', value: projects.length, subtitle: 'Active projects' },
+            { name: t("page.dashboard.totalTasks"), value: totalTasks, subtitle: `${completedTasks} ${t("common.active").toLowerCase()}` },
+          { name: t("page.dashboard.inProgress"), value: inProgressTasks, subtitle: t("common.active") },
+              { name: t("page.dashboard.overdue"), value: overdueTasks, subtitle: 'Past due date', fill: '#ef4444' },
+          { name: t("page.dashboard.today"), value: todayTasks, subtitle: 'Created today' },
+          { name: t("page.dashboard.pendingApproval"), value: pendingApproval, subtitle: 'Awaiting review' },
+          { name: t("page.dashboard.projects"), value: projects.length, subtitle: `${t("common.active")} ${t("page.dashboard.projects").toLowerCase()}` },
         ]}
         />
       </div>
@@ -133,7 +135,7 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
         <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px]">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <CalendarIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Upcoming Deadlines</span>
+              <CalendarIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">{t("page.dashboard.upcomingDeadlines")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col min-h-0">
@@ -188,7 +190,7 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
         <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px]">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <TrendingUpIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Top Progress Projects</span>
+              <TrendingUpIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">{t("page.dashboard.topProgressProjects")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col min-h-0">
@@ -245,7 +247,7 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
         <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <FolderKanbanIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Active Projects</span>
+              <FolderKanbanIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">{t("page.dashboard.activeProjects")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col min-h-0">
@@ -310,7 +312,7 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
         <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <Users className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Team Members</span>
+              <Users className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">{t("page.dashboard.teamMembers")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col min-h-0">
@@ -372,7 +374,7 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
         <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <Building2Icon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Recent Clients</span>
+              <Building2Icon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">{t("page.dashboard.recentClients")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col min-h-0">
@@ -416,7 +418,7 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
         <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">
           <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <IndianRupeeIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">Pending Payments</span>
+              <IndianRupeeIcon className="size-3.5 sm:size-4 shrink-0" /> <span className="truncate">{t("page.dashboard.pendingPayments")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col min-h-0">

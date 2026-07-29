@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { AppInitProvider } from "@/components/app-init-provider";
+import { IndustryProvider } from "@/components/industry-provider";
 import { createIndexedDbPersister } from "@/lib/offline/query-persister";
 
 let persister: ReturnType<typeof createIndexedDbPersister> | null = null;
@@ -94,7 +95,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <TooltipProvider>
           <AppInitProvider>
-            {children}
+            <IndustryProvider>
+              {children}
+            </IndustryProvider>
           </AppInitProvider>
         </TooltipProvider>
       </PersistQueryClientProvider>

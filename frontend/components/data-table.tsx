@@ -10,13 +10,23 @@ import {
   useReactTable,
   type SortingState,
   type Table,
+  type PaginationState,
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   SearchIcon,
   ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
@@ -50,7 +60,7 @@ export function DataTable<TData, TValue>({
   meta,
   searchQuery,
   onSearchChange,
-  pageSize = 10,
+  pageSize = 30,
   getRowProps,
   hideSearchBar,
   showCheckboxes = true,
@@ -59,6 +69,10 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [internalFilter, setInternalFilter] = useState("");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: pageSize,
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<Table<TData> | null>(null);
 
@@ -145,8 +159,8 @@ export function DataTable<TData, TValue>({
     onSortingChange: handleSortingChange,
     onGlobalFilterChange: handleFilterChange,
     onRowSelectionChange: handleRowSelectionChange,
-    state: { sorting, globalFilter, rowSelection },
-    initialState: { pagination: { pageSize } },
+    onPaginationChange: setPagination,
+    state: { sorting, globalFilter, rowSelection, pagination },
     meta,
   });
 
@@ -275,6 +289,54 @@ export function DataTable<TData, TValue>({
           </table>
         </div>
 
+        <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+          <span className="text-sm text-muted-foreground">
+            {rowCount === 0
+              ? "0 items"
+              : `${table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–${Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, rowCount)} of ${rowCount}`}
+          </span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+              <Select
+                value={String(pagination.pageSize)}
+                onValueChange={(value) => {
+                  table.setPageSize(Number(value));
+                }}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="60">60</SelectItem>
+                  <SelectItem value="90">90</SelectItem>
+                  <SelectItem value="120">120</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

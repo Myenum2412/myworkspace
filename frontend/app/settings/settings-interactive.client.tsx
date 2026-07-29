@@ -48,6 +48,8 @@ import {
 } from "@/components/ui/select"
 import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options"
 import IntegrationsBlock from "@/components/integrations-block"
+import { INDUSTRIES, type Industry } from "@/lib/industry-terms"
+import { useIndustry } from "@/components/industry-provider"
 import {
   Loader2Icon,
   PlusIcon,
@@ -165,6 +167,30 @@ const defaultNotifSettings = {
   pushTaskUpdates: true,
   pushCalendarEvents: true,
   pushTeamMessages: true,
+}
+
+function WorkspaceIndustrySelect() {
+  const { industry, setIndustry } = useIndustry()
+  const [saving, setSaving] = useState(false)
+
+  const handleChange = async (value: string) => {
+    setSaving(true)
+    await setIndustry(value as Industry)
+    setSaving(false)
+  }
+
+  return (
+    <Select value={industry} onValueChange={handleChange} disabled={saving}>
+      <SelectTrigger className="w-full sm:w-[300px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {INDUSTRIES.map((ind) => (
+          <SelectItem key={ind.value} value={ind.value}>{ind.label}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
 }
 
 export function SettingsPageClient({ orgId, user: initialUser, initialSettings }: SettingsPageClientProps) {
@@ -419,6 +445,15 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 <h2 className="text-lg font-semibold">General Settings</h2>
                 <p className="text-sm text-muted-foreground">Manage workspace-wide configurations and dropdown options.</p>
               </div>
+
+              <div className="border rounded-sm p-4 space-y-3">
+                <div>
+                  <h3 className="text-sm font-medium">Workspace Industry</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Select the industry for your workspace. This customizes the terminology used across the application.</p>
+                </div>
+                <WorkspaceIndustrySelect />
+              </div>
+              <Separator />
                <div className="grid gap-4 grid-cols-2">
                 {Object.entries(sectionLabels).map(([key, label]) => {
                   const items = dropdownOptions[key] || DEFAULT_DROPDOWN_OPTIONS[key as keyof typeof DEFAULT_DROPDOWN_OPTIONS] || []

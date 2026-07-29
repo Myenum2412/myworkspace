@@ -28,7 +28,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(30);
 
   // Terminate state
   const [terminatingEmployee, setTerminatingEmployee] = useState<Employee | null>(null);

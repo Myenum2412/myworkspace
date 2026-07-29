@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIndustry } from "@/components/industry-provider";
 
 interface NavItem {
   href: string;
@@ -56,6 +57,7 @@ export function MobileBottomNav({ context }: { context?: string }) {
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const { data: session } = useSession();
+  const { t } = useIndustry();
   const role = (session?.user as Record<string, unknown>)?.role as string || "";
 
   let navItems: NavItem[] = [];
@@ -73,6 +75,19 @@ export function MobileBottomNav({ context }: { context?: string }) {
   }
 
   if (!isMobile) return null;
+
+  const labelMap: Record<string, string> = {
+    "Dashboard": t("nav.dashboard"),
+    "Tasks": t("nav.tasks"),
+    "Time": t("nav.time"),
+    "Team": t("nav.team"),
+    "Invoices": t("nav.invoices"),
+    "Home": t("nav.dashboard"),
+    "Bills": t("nav.invoices"),
+    "Members": t("nav.members"),
+    "Org": t("nav.organization"),
+    "Settings": t("nav.settings"),
+  };
 
   return (
     <nav
@@ -98,7 +113,7 @@ export function MobileBottomNav({ context }: { context?: string }) {
             >
               <Icon className="size-5 shrink-0" />
               <span className="text-[10px] leading-tight font-medium truncate max-w-full">
-                {item.label}
+                {labelMap[item.label] || item.label}
               </span>
             </Link>
           );

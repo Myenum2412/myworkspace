@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import FolderIcon from "@mui/icons-material/Folder";
 import { LogOut, Receipt, FileText, Loader2, AlertCircleIcon, ClockIcon } from "lucide-react";
 import Link from "next/link";
+import { useIndustry } from "@/components/industry-provider";
 
 type ClientUser = {
   id: string;
@@ -38,6 +39,7 @@ type BillingStatus = {
 };
 
 export default function DashboardInteractive() {
+  const { t } = useIndustry();
   const router = useRouter();
   const [user, setUser] = useState<ClientUser | null>(null);
   const [client, setClient] = useState<ClientInfo | null>(null);
@@ -135,7 +137,7 @@ export default function DashboardInteractive() {
     <div className="max-w-6xl mx-auto w-full space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Welcome, {user?.name || "Client"}</h1>
+          <h1 className="text-2xl font-bold">{t("page.client.dashboard")}</h1>
           {client?.company && (
             <p className="text-muted-foreground text-sm mt-1">{client.company}</p>
           )}
@@ -161,13 +163,13 @@ export default function DashboardInteractive() {
       )}
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-        <QuickActionCard icon={FolderIcon} title="File Manager" description={`${stats?.fileCount ?? 0} files`} href="/client/file-manager" />
-        <QuickActionCard icon={Receipt} title="Bills" description="View invoices & billing" href="/client/bills" />
+        <QuickActionCard icon={FolderIcon} title={t("nav.fileManager")} description={`${stats?.fileCount ?? 0} ${t("nav.tasks").toLowerCase()}`} href="/client/file-manager" />
+        <QuickActionCard icon={Receipt} title={t("nav.clientBills")} description={t("page.client.bills")} href="/client/bills" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Recent Files</CardTitle>
+          <CardTitle className="text-base">{t("page.client.recentFiles")}</CardTitle>
         </CardHeader>
         <CardContent>
           {!stats || stats.recentFiles.length === 0 ? (

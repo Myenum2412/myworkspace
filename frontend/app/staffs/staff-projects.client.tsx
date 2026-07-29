@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FolderKanbanIcon, PlusIcon } from "lucide-react";
+import { FolderKanbanIcon, PlusIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +63,18 @@ export default function StaffProjects({
   const router = useRouter();
   const [projects, setProjects] = useState(initialProjects);
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(30);
+
+  const paginated = useMemo(() => {
+    const start = page * pageSize;
+    return projects.slice(start, start + pageSize);
+  }, [projects, page, pageSize]);
+
+  const handlePageSizeChange = useCallback((value: string) => {
+    setPageSize(Number(value));
+    setPage(0);
+  }, []);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -134,7 +146,7 @@ export default function StaffProjects({
                   </TableCell>
                 </TableRow>
               ) : (
-                projects.map((p) => (
+                paginated.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell>
                       <span className="block size-4 rounded-full" style={{ backgroundColor: p.color }} />
@@ -158,6 +170,49 @@ export default function StaffProjects({
               )}
             </TableBody>
           </Table>
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+            <span className="text-sm text-muted-foreground">
+              {projects.length === 0
+                ? "0 items"
+                : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, projects.length)} of ${projects.length}`}
+            </span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="60">60</SelectItem>
+                    <SelectItem value="90">90</SelectItem>
+                    <SelectItem value="120">120</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={(page + 1) * pageSize >= projects.length}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

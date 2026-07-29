@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useIndustry } from "@/components/industry-provider";
 
 export default function PerformancePage() {
+  const { t } = useIndustry();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [reviews, setReviews] = useState<any[]>([]);
@@ -31,9 +33,9 @@ export default function PerformancePage() {
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 min-w-0 max-w-full">
-      <h1 className="text-2xl font-bold tracking-tight">Performance</h1>
-      <Card><CardHeader><CardTitle>Reviews</CardTitle></CardHeader><CardContent>
-        {reviews.length === 0 ? <p className="text-sm text-muted-foreground">No reviews</p> : reviews.map((r) => (
+      <h1 className="text-2xl font-bold tracking-tight">{t("page.staffs.performance")}</h1>
+      <Card><CardHeader><CardTitle>{t("nav.staffPerformance")}</CardTitle></CardHeader><CardContent>
+        {reviews.length === 0 ? <p className="text-sm text-muted-foreground">{t("common.noResults")}</p> : reviews.map((r) => (
           <div key={r.id} className="flex items-center justify-between py-2 border-b last:border-0">
             <span>{r.employeeName || r.employeeId}</span>
             <Badge>{r.score}/10</Badge>
