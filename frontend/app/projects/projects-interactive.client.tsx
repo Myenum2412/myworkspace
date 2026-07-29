@@ -355,7 +355,7 @@ export default function ProjectsInteractive({
               <h1 className="text-lg font-semibold text-black">New Project</h1>
             </div>
             <div className="flex-1 overflow-auto bg-white">
-              <div className="max-w-5xl mx-auto py-6 bg-white my-6">
+              <div className="w-full py-6 bg-white my-6">
                 <ProjectCreateForm
                   projectName={projectName}
                   onProjectNameChange={setProjectName}
@@ -407,7 +407,7 @@ export default function ProjectsInteractive({
               <h1 className="text-lg font-semibold text-black">Edit Project — {editingProject.name}</h1>
             </div>
             <div className="flex-1 overflow-auto bg-white">
-              <div className="max-w-5xl mx-auto py-6 bg-white my-6">
+              <div className="w-full py-6 bg-white my-6">
                 <ProjectEditForm
                   editName={editName}
                   onEditNameChange={setEditName}

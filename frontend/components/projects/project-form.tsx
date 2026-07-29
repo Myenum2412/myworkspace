@@ -108,12 +108,13 @@ export function ProjectCreateForm({
                 value={projectName}
                 onChange={(e) => onProjectNameChange(e.target.value)}
                 disabled={submitting}
+                className="bg-white"
               />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Client <span className="text-destructive">*</span></Label>
               <Select value={selectedClient} onValueChange={onSelectedClientChange} disabled={submitting}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -132,6 +133,7 @@ export function ProjectCreateForm({
               onChange={(e) => onProjectDescriptionChange(e.target.value)}
               disabled={submitting}
               rows={2}
+              className="bg-white"
             />
           </div>
         </fieldset>
@@ -146,6 +148,7 @@ export function ProjectCreateForm({
                 value={projectStartDate}
                 onChange={(e) => onProjectStartDateChange(e.target.value)}
                 disabled={submitting}
+                className="bg-white"
               />
             </div>
             <div className="space-y-1.5">
@@ -155,6 +158,7 @@ export function ProjectCreateForm({
                 value={projectDeadline}
                 onChange={(e) => onProjectDeadlineChange(e.target.value)}
                 disabled={submitting}
+                className="bg-white"
               />
             </div>
           </div>
@@ -175,7 +179,7 @@ export function ProjectCreateForm({
                     placeholder=""
                     value={memberSearch}
                     onChange={(e) => onMemberSearchChange(e.target.value)}
-                    className="pl-8 h-8"
+                    className="pl-8 h-8 bg-white"
                   />
                   <svg
                     className="absolute left-2.5 top-2 size-4 text-muted-foreground"
@@ -229,7 +233,7 @@ export function ProjectCreateForm({
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Priority</Label>
               <Select value={projectPriority} onValueChange={onProjectPriorityChange} disabled={submitting}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -243,7 +247,7 @@ export function ProjectCreateForm({
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Category</Label>
               <Select value={projectCategory} onValueChange={onProjectCategoryChange} disabled={submitting}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -271,6 +275,7 @@ export function ProjectCreateForm({
                 value={projectBudget || ""}
                 onChange={(e) => onProjectBudgetChange(e.target.value ? Number(e.target.value) : 0)}
                 disabled={submitting}
+                className="bg-white"
               />
             </div>
           </div>
@@ -443,18 +448,18 @@ export function ProjectEditForm({
 
       <div className="relative flex-1 overflow-hidden px-1">
         <ScrollArea className="h-full px-5">
-          <div className="space-y-8 py-6 max-w-4xl mx-auto">
+          <div className="space-y-8 py-6 w-full">
             <fieldset className="rounded-sm border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">General</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Project Name</Label>
-                  <Input value={editName} onChange={(e) => onEditNameChange(e.target.value)} />
+                  <Input value={editName} onChange={(e) => onEditNameChange(e.target.value)} className="bg-white" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Client</Label>
                   <Select value={editClient} onValueChange={onEditClientChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white">
                       <SelectValue placeholder="Select a client" />
                     </SelectTrigger>
                     <SelectContent>
@@ -474,16 +479,17 @@ export function ProjectEditForm({
                     value={editDescription}
                     onChange={(e) => onEditDescriptionChange(e.target.value)}
                     rows={3}
+                    className="bg-white"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Deadline</Label>
-                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} />
+                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="bg-white" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Status</Label>
                   <Select value={editStatus} onValueChange={(v) => onEditStatusChange(v as "Active" | "Inactive")}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -502,16 +508,16 @@ export function ProjectEditForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Start Date</Label>
-                  <Input type="date" value={editStartDate} onChange={(e) => onEditStartDateChange(e.target.value)} />
+                  <Input type="date" value={editStartDate} onChange={(e) => onEditStartDateChange(e.target.value)} className="bg-white" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Deadline</Label>
-                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} />
+                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="bg-white" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Health</Label>
                   <Select value={editHealth} onValueChange={onEditHealthChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -524,7 +530,7 @@ export function ProjectEditForm({
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Priority</Label>
                   <Select value={editPriority} onValueChange={onEditPriorityChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -594,7 +600,7 @@ export function ProjectEditForm({
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Category</Label>
                   <Select value={editCategory} onValueChange={onEditCategoryChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -614,6 +620,7 @@ export function ProjectEditForm({
                     min={0}
                     value={editBudget}
                     onChange={(e) => onEditBudgetChange(Number(e.target.value))}
+                    className="bg-white"
                   />
                 </div>
               </div>
@@ -627,7 +634,7 @@ export function ProjectEditForm({
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Access</Label>
                   <Select value={editAccess} onValueChange={(v) => onEditAccessChange(v as "Public" | "Private")}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
