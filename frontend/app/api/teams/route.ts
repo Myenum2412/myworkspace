@@ -4,6 +4,22 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 
+export async function POST(req: Request) {
+  let session;
+  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  if (!orgId) return NextResponse.json({ error: "No org found" }, { status: 400 });
+  try {
+    const body = await req.json();
+    const name = (body.name || "").trim();
+    if (!name) return NextResponse.json({ error: "Team name is required" }, { status: 400 });
+    const description = (body.description || "").trim();
+    const result = await db.collection(collections.teams).insertOne({ orgId, name, description, createdBy: session.user.id, createdAt: new Date(), updatedAt: new Date() });
+    return NextResponse.json({ success: true, data: { id: result.insertedId.toString(), name } }, { status: 201 });
+  } catch { return NextResponse.json({ error: "Failed to create team" }, { status: 500 }); }
+}
+
 export async function GET() {
   let session;
   try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
