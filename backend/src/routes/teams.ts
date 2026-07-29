@@ -271,7 +271,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 
 // Create a team
 router.post("/", async (req: AuthRequest, res: Response) => {
-  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create teams");
+  // All org members can create teams
   const name = requireString(req.body.name, "name", { min: 1, max: 200 });
   const description = optionalString(req.body.description, "description", { max: 5000 }) ?? "";
   // Enforce workspace isolation: resolve orgId from membership, not from request body
