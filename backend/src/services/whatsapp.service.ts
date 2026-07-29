@@ -81,14 +81,14 @@ class WhatsAppService {
     try {
       await loadWhatsAppWebjs();
 
-      const chromePath = process.env.CHROME_PATH || "/usr/bin/chromium";
-      logger.info({ chromePath }, "Starting WhatsApp client with Chrome");
+      const chromePath = process.env.CHROME_PATH;
+      logger.info({ chromePath: chromePath || "default" }, "Starting WhatsApp client with Chrome");
 
       this.client = new WhatsAppClient({
         authStrategy: new WhatsAppLocalAuth({ dataPath: AUTH_DIR }),
         puppeteer: {
           headless: true,
-          executablePath: chromePath,
+          ...(chromePath ? { executablePath: chromePath } : {}),
           args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
