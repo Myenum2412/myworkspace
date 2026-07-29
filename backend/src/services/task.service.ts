@@ -372,6 +372,9 @@ export async function createTask(data: {
   selectedUserIds?: string[];
   isSaved?: boolean;
   isActive?: boolean;
+  repeatType?: "daily" | "weekly";
+  repeatStartDate?: Date;
+  repeatEndDate?: Date;
 }): Promise<any> {
   const { orgId, userId } = data;
   const title = requireString(data.title, "title", { min: 1, max: 500 });
@@ -407,6 +410,20 @@ export async function createTask(data: {
     const d = new Date(data.scheduledDate);
     if (isNaN(d.getTime())) throw new AppError(400, "Invalid scheduledDate", { scheduledDate: "must be a valid date" });
     scheduledDate = d;
+  }
+
+  let repeatStartDate: Date | undefined;
+  if (data.repeatStartDate) {
+    const d = new Date(data.repeatStartDate);
+    if (isNaN(d.getTime())) throw new AppError(400, "Invalid repeatStartDate", { repeatStartDate: "must be a valid date" });
+    repeatStartDate = d;
+  }
+
+  let repeatEndDate: Date | undefined;
+  if (data.repeatEndDate) {
+    const d = new Date(data.repeatEndDate);
+    if (isNaN(d.getTime())) throw new AppError(400, "Invalid repeatEndDate", { repeatEndDate: "must be a valid date" });
+    repeatEndDate = d;
   }
 
   // Per-type validation
@@ -476,6 +493,10 @@ export async function createTask(data: {
     selectedUserIds: taskType === "common" ? (data.selectedUserIds || []) : undefined,
     isSaved: data.isSaved,
     isActive: data.isActive,
+
+    repeatType: data.repeatType,
+    repeatStartDate,
+    repeatEndDate,
   });
 
   await audit(orgId, userId, "task.created", task._id.toString(), `Task "${title}" created (${taskType})`);

@@ -41,6 +41,13 @@ export interface ITask extends Document {
   dueDate?: Date;
   isSaved?: boolean;
   isActive?: boolean;
+
+  // Repeat / recurring task fields
+  repeatType?: "daily" | "weekly";
+  repeatStartDate?: Date;
+  repeatEndDate?: Date;
+  lastRepeatGeneratedAt?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -98,6 +105,11 @@ const taskSchema = new Schema<ITask>(
     dueDate: Date,
     isSaved: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+
+    repeatType: { type: String, enum: ["daily", "weekly"] },
+    repeatStartDate: Date,
+    repeatEndDate: Date,
+    lastRepeatGeneratedAt: Date,
   },
   { timestamps: true }
 );

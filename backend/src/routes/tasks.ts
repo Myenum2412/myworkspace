@@ -82,6 +82,9 @@ router.post("/", async (req: AuthRequest, res: Response) => {
       selectedUserIds: req.body.selectedUserIds,
       isSaved: req.body.isSaved,
       isActive: req.body.isActive,
+      repeatType: req.body.repeatType,
+      repeatStartDate: req.body.repeatStartDate ? new Date(req.body.repeatStartDate) : undefined,
+      repeatEndDate: req.body.repeatEndDate ? new Date(req.body.repeatEndDate) : undefined,
     });
 
     notifyTaskCreatedAndAssignees({

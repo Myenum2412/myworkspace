@@ -13,6 +13,7 @@ import {
   UserIcon,
   UsersIcon,
   ClockIcon,
+  RefreshCwIcon,
 } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -62,7 +63,6 @@ interface TaskAllocationModalProps {
 const TASK_TYPES = [
   { id: "individual", name: "Individual Task", icon: UserIcon, desc: "Assigned to one person" },
   { id: "team", name: "Team Task", icon: UsersIcon, desc: "Collaborative team work" },
-  { id: "upcoming", name: "Upcoming Task", icon: ClockIcon, desc: "Future scheduled task" },
 ];
 
 const priorities = [
@@ -116,8 +116,13 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
   const [isLoadingData, setIsLoadingData] = useState(false);
 
   const [dueDateOpen, setDueDateOpen] = useState(false);
-  const [scheduledDateOpen, setScheduledDateOpen] = useState(false);
   const [userOrgId, setUserOrgId] = useState("");
+  const [repeatEnabled, setRepeatEnabled] = useState(false);
+  const [repeatType, setRepeatType] = useState<"daily" | "weekly">("daily");
+  const [repeatStartDate, setRepeatStartDate] = useState<Date | undefined>(undefined);
+  const [repeatEndDate, setRepeatEndDate] = useState<Date | undefined>(undefined);
+  const [repeatStartDateOpen, setRepeatStartDateOpen] = useState(false);
+  const [repeatEndDateOpen, setRepeatEndDateOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -190,7 +195,6 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
     setDescription("");
     setPriority("");
     setDueDate(undefined);
-    setScheduledDate(undefined);
     setSelectedAssignee(null);
     setSelectedAssigneeType(null);
     setSelectedTeam("");
@@ -198,6 +202,10 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
     setFormError("");
     setIsSaved(false);
     setIsActive(true);
+    setRepeatEnabled(false);
+    setRepeatType("daily");
+    setRepeatStartDate(undefined);
+    setRepeatEndDate(undefined);
   };
 
   const handleClose = () => {
@@ -227,8 +235,12 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
         isActive,
       };
 
-      if (taskType === "upcoming") {
-        payload.scheduledDate = scheduledDate?.toISOString() || dueDate?.toISOString();
+      if (repeatEnabled && repeatStartDate) {
+        payload.repeatType = repeatType;
+        payload.repeatStartDate = repeatStartDate.toISOString();
+        if (repeatType === "weekly" && repeatEndDate) {
+          payload.repeatEndDate = repeatEndDate.toISOString();
+        }
       }
 
       if (selectedAssignee && taskType === "individual") {
@@ -465,45 +477,74 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             </div>
           )}
 
-          {taskType === "upcoming" && (
-            <div className="grid grid-cols-2 gap-3">
-              <FormField label="Scheduled Date" required>
-                <Popover open={scheduledDateOpen} onOpenChange={setScheduledDateOpen}>
+          {/* Repeated section */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setRepeatEnabled(!repeatEnabled)}
+              className={`flex items-center gap-2 rounded-sm border px-3 py-2 text-xs font-medium transition-colors ${repeatEnabled ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+            >
+              <RefreshCwIcon className="size-3.5" />
+              Repeated
+            </button>
+            {repeatEnabled && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRepeatType("daily")}
+                  className={`rounded-sm border px-2.5 py-1.5 text-xs font-medium ${repeatType === "daily" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}
+                >
+                  Daily
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setRepeatType("weekly"); if (repeatStartDate) { const end = new Date(repeatStartDate); end.setDate(end.getDate() + 6); setRepeatEndDate(end); } }}
+                  className={`rounded-sm border px-2.5 py-1.5 text-xs font-medium ${repeatType === "weekly" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}
+                >
+                  Weekly
+                </button>
+                <Popover open={repeatStartDateOpen} onOpenChange={setRepeatStartDateOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="justify-between text-sm font-normal">
-                      {scheduledDate ? (
-                        <span>{scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                      ) : (
-                        <span className="text-muted-foreground">Pick start date</span>
-                      )}
-                      <CalendarIcon className="size-3.5 text-muted-foreground" />
+                    <Button variant="outline" size="sm" className="text-xs font-normal">
+                      {repeatStartDate ? repeatStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Start date"}
+                      <CalendarIcon className="size-3 ml-1" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 rounded-sm" align="start">
-                    <Calendar mode="single" selected={scheduledDate} onSelect={(d) => { setScheduledDate(d); setScheduledDateOpen(false); }} />
+                    <Calendar
+                      mode="single"
+                      selected={repeatStartDate}
+                      onSelect={(d) => {
+                        setRepeatStartDate(d);
+                        if (repeatType === "weekly" && d) {
+                          const end = new Date(d);
+                          end.setDate(end.getDate() + 6);
+                          setRepeatEndDate(end);
+                        }
+                        setRepeatStartDateOpen(false);
+                      }}
+                    />
                   </PopoverContent>
                 </Popover>
-              </FormField>
-
-              <FormField label="Due Date">
-                <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="justify-between text-sm font-normal">
-                      {dueDate ? (
-                        <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                      ) : (
-                        <span className="text-muted-foreground">Due date</span>
-                      )}
-                      <CalendarIcon className="size-3.5 text-muted-foreground" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-sm" align="start">
-                    <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
-                  </PopoverContent>
-                </Popover>
-              </FormField>
-            </div>
-          )}
+                {repeatType === "weekly" && (
+                  <span className="text-xs text-muted-foreground">to</span>
+                )}
+                {repeatType === "weekly" && (
+                  <Popover open={repeatEndDateOpen} onOpenChange={setRepeatEndDateOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-xs font-normal">
+                        {repeatEndDate ? repeatEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "End date"}
+                        <CalendarIcon className="size-3 ml-1" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 rounded-sm" align="start">
+                      <Calendar mode="single" selected={repeatEndDate} onSelect={(d) => { setRepeatEndDate(d); setRepeatEndDateOpen(false); }} />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Attachments */}
           <div>
@@ -570,7 +611,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             ) : (
               <>
                 <TaskTypeIcon className="size-3.5 mr-1.5" />
-                Create {taskType === "individual" ? "Task" : taskType === "team" ? "Team Task" : "Upcoming Task"}
+                Create {taskType === "individual" ? "Task" : "Team Task"}
               </>
             )}
           </Button>

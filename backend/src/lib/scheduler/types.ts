@@ -37,6 +37,7 @@ export const JOB_TYPES = [
   "metadata_extraction",
   "daily_task_email",
   "system_maintenance",
+  "repeat_task_generation",
 ] as const;
 export type JobType = (typeof JOB_TYPES)[number];
 
@@ -183,4 +184,5 @@ export const JOB_TYPE_LABELS: Record<JobType, string> = {
   metadata_extraction: "Metadata Extraction",
   daily_task_email: "Daily Task Email",
   system_maintenance: "System Maintenance",
+  repeat_task_generation: "Repeat Task Generation",
 };

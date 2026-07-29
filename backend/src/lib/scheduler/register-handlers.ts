@@ -179,6 +179,82 @@ export function registerAllHandlers(): void {
     logger.info("Log rotation triggered");
   });
 
+  jobRegistry.register("repeat_task_generation", async () => {
+    const { Task } = await import("../db/models/Task.js");
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+
+    const repeatTemplates = await Task.find({
+      repeatType: { $in: ["daily", "weekly"] },
+      isActive: { $ne: false },
+      $or: [
+        { repeatEndDate: { $exists: false } },
+        { repeatEndDate: null },
+        { repeatEndDate: { $gte: now } },
+      ],
+    }).lean();
+
+    let created = 0;
+    let skipped = 0;
+
+    for (const template of repeatTemplates) {
+      const repeatStart = template.repeatStartDate ? new Date(template.repeatStartDate) : null;
+      if (repeatStart && repeatStart > now) { skipped++; continue; }
+
+      const lastGenerated = template.lastRepeatGeneratedAt
+        ? new Date(template.lastRepeatGeneratedAt)
+        : null;
+
+      let shouldGenerate = false;
+
+      if (template.repeatType === "daily") {
+        const todayStr = todayStart.toISOString().slice(0, 10);
+        const lastGenStr = lastGenerated ? lastGenerated.toISOString().slice(0, 10) : null;
+        shouldGenerate = lastGenStr !== todayStr;
+      } else if (template.repeatType === "weekly" && repeatStart) {
+        const daysSinceStart = Math.floor((now.getTime() - repeatStart.getTime()) / (1000 * 60 * 60 * 24));
+        const currentWeekIndex = Math.floor(daysSinceStart / 7);
+        if (lastGenerated) {
+          const lastGenWeekIndex = Math.floor(
+            (lastGenerated.getTime() - repeatStart.getTime()) / (1000 * 60 * 60 * 24) / 7
+          );
+          shouldGenerate = lastGenWeekIndex < currentWeekIndex;
+        } else {
+          shouldGenerate = true;
+        }
+      }
+
+      if (!shouldGenerate) { skipped++; continue; }
+
+      await Task.create({
+        orgId: template.orgId,
+        type: template.type,
+        teamId: template.teamId,
+        assigneeId: template.assigneeId,
+        creatorId: template.creatorId,
+        createdBy: template.createdBy,
+        title: template.title,
+        description: template.description,
+        project: template.project,
+        status: "assigned",
+        priority: template.priority || "medium",
+        selectedUserIds: template.selectedUserIds,
+        isSaved: false,
+        isActive: true,
+      });
+
+      await Task.updateOne(
+        { _id: template._id },
+        { $set: { lastRepeatGeneratedAt: now } }
+      );
+
+      created++;
+    }
+
+    logger.info({ created, skipped, total: repeatTemplates.length }, "Repeated task instances generated");
+  });
+
   const emptyHandlers: string[] = [];
   for (const type of emptyHandlers) {
     jobRegistry.register(type as any, async () => {

@@ -292,4 +292,114 @@ router.get("/evening-reminder", async (_req: Request, res: Response) => {
   }
 });
 
+router.get("/generate-repeated-tasks", async (_req: Request, res: Response) => {
+  try {
+    const { Task } = await import("../lib/db/models/Task.js");
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+
+    // Find all tasks with repeatType that need a new instance generated
+    const repeatTemplates = await Task.find({
+      repeatType: { $in: ["daily", "weekly"] },
+      isActive: { $ne: false },
+      $or: [
+        { repeatEndDate: { $exists: false } },
+        { repeatEndDate: null },
+        { repeatEndDate: { $gte: now } },
+      ],
+    }).lean();
+
+    let created = 0;
+    let skipped = 0;
+
+    for (const template of repeatTemplates) {
+      const repeatStart = template.repeatStartDate ? new Date(template.repeatStartDate) : null;
+
+      // Skip if repeatStartDate is in the future
+      if (repeatStart && repeatStart > now) {
+        skipped++;
+        continue;
+      }
+
+      // Determine if we should generate today
+      const lastGenerated = template.lastRepeatGeneratedAt
+        ? new Date(template.lastRepeatGeneratedAt)
+        : null;
+
+      let shouldGenerate = false;
+
+      if (template.repeatType === "daily") {
+        // Generate once per day
+        const todayStr = todayStart.toISOString().slice(0, 10);
+        const lastGenStr = lastGenerated ? lastGenerated.toISOString().slice(0, 10) : null;
+        shouldGenerate = lastGenStr !== todayStr;
+      } else if (template.repeatType === "weekly") {
+        // Generate once per week (the week starts on repeatStartDate)
+        if (repeatStart) {
+          const daysSinceStart = Math.floor((now.getTime() - repeatStart.getTime()) / (1000 * 60 * 60 * 24));
+          const currentWeekIndex = Math.floor(daysSinceStart / 7);
+          const weekStart = new Date(repeatStart.getTime() + currentWeekIndex * 7 * 24 * 60 * 60 * 1000);
+
+          if (lastGenerated) {
+            const lastGenWeekIndex = Math.floor(
+              (lastGenerated.getTime() - repeatStart.getTime()) / (1000 * 60 * 60 * 24) / 7
+            );
+            shouldGenerate = lastGenWeekIndex < currentWeekIndex;
+          } else {
+            shouldGenerate = true;
+          }
+
+          // Also skip if we're before repeatStartDate
+          if (now < repeatStart) shouldGenerate = false;
+        }
+      }
+
+      if (!shouldGenerate) {
+        skipped++;
+        continue;
+      }
+
+      // Create a new task instance
+      const newTask = {
+        orgId: template.orgId,
+        type: template.type,
+        teamId: template.teamId,
+        assigneeId: template.assigneeId,
+        creatorId: template.creatorId,
+        createdBy: template.createdBy,
+        title: template.title,
+        description: template.description,
+        project: template.project,
+        status: "assigned" as const,
+        priority: template.priority || "medium",
+        selectedUserIds: template.selectedUserIds,
+        isSaved: false,
+        isActive: true,
+      };
+
+      await Task.create(newTask);
+
+      // Update lastRepeatGeneratedAt on the template
+      await Task.updateOne(
+        { _id: template._id },
+        { $set: { lastRepeatGeneratedAt: now } }
+      );
+
+      created++;
+    }
+
+    logger.info({ created, skipped, total: repeatTemplates.length }, "Repeated task instances generated");
+
+    res.json({
+      success: true,
+      data: { created, skipped, total: repeatTemplates.length },
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Repeated task generation failed");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;

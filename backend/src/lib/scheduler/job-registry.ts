@@ -137,6 +137,12 @@ export const SYSTEM_JOBS: SystemJobDefinition[] = [
     cron: "0 0 * * 0",
     description: "Weekly log rotation",
   },
+  {
+    name: "repeat-task-generation",
+    type: "repeat_task_generation",
+    cron: "0 2 * * *",
+    description: "Generates daily and weekly repeated task instances",
+  },
 ];
 
 export const jobRegistry = {
