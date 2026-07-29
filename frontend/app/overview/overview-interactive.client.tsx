@@ -1,25 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, ListTodoIcon, SearchIcon, LayoutGridIcon, CalendarIcon } from "lucide-react";
+import { PlusIcon, ListTodoIcon, SearchIcon, AlertCircleIcon, ChevronUpIcon, ChevronDownIcon, CrownIcon, UserIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import { EyeIcon, PencilIcon, Trash2Icon, MoreHorizontalIcon } from "lucide-react";
-import { DataTable } from "@/components/data-table";
-import { columns as baseColumns, type Task } from "./columns";
-import TaskGanttView from "@/components/task-gantt-view";
+import type { Task } from "./columns";
 import Stats07 from "@/components/stats-07";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 export interface OverviewInteractiveProps {
   tasks: Task[];
@@ -32,8 +23,6 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   const [viewOpen, setViewOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [viewMode, setViewMode] = useState<"table" | "gantt">("table");
   const [searchQuery, setSearchQuery] = useState("");
 
   const total = tasks.length;
@@ -47,34 +36,34 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   const completedCount = tasks.filter((t) => t.status === "done").length;
   const completionRate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
-  async function handleDeleteTask(taskId: string) {
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/tasks/${taskId}`, { method: "DELETE", credentials: "include" });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Delete failed" }));
-        alert(err.error || "Failed to delete task");
-        return;
-      }
-      setTasks((prev) => prev.filter((t) => t._id !== taskId));
-      if (selectedTask?._id === taskId) { setSelectedTask(null); setViewOpen(false); }
-    } catch (e) {
-      alert("Network error while deleting task");
-    } finally {
-      setDeleting(false);
-    }
-  }
+  // Overdue tasks
+  const overdueTasks = useMemo(() =>
+    tasks.filter((t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "done" && t.status !== "cancelled")
+      .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime()),
+    [tasks]
+  );
 
-  const filteredTasks = searchQuery
-    ? tasks.filter((t) =>
+  // Employee leaderboard (ranked by completed tasks)
+  const leaderboard = useMemo(() => {
+    const counts = new Map<string, { name: string; avatar: string; completed: number }>();
+    for (const t of tasks) {
+      if (t.status === "done" && t.assigneeId) {
+        const existing = counts.get(t.assigneeId) || { name: t.assigneeName || "Unknown", avatar: t.assigneeAvatar || "", completed: 0 };
+        existing.completed++;
+        counts.set(t.assigneeId, existing);
+      }
+    }
+    return [...counts.entries()]
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => b.completed - a.completed);
+  }, [tasks]);
+
+  const filteredOverdue = searchQuery
+    ? overdueTasks.filter((t) =>
         t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.assigneeName?.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : tasks;
-
-  const recentTasks = [...filteredTasks]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 10);
+    : overdueTasks;
 
   return (
     <>
@@ -88,7 +77,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             <div className="relative w-full">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
-                placeholder="Search tasks..."
+                placeholder="Search overdue tasks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-9 bg-white"
@@ -101,7 +90,6 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
           </Button>
         </div>
 
-        {/* Stats Overview */}
         <Stats07
           items={[
             { name: 'Total Tasks', value: total, subtitle: 'All tasks' },
@@ -113,81 +101,102 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
           ]}
         />
 
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold">Recent Tasks</h2>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={viewMode === "table" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("table")}
-            >
-              <LayoutGridIcon className="mr-2" />
-              Table
-            </Button>
-            <Button
-              variant={viewMode === "gantt" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("gantt")}
-            >
-              <CalendarIcon className="mr-2" />
-              Gantt
-            </Button>
-          </div>
-        </div>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 flex-1 min-h-0">
+          {/* Overdue Tasks */}
+          <Card className="flex flex-col min-h-0 border-0 shadow-none">
+            <CardHeader className="pb-3 shrink-0 px-0">
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertCircleIcon className="size-4 text-red-500" />
+                Overdue Tasks
+                <Badge variant="destructive" className="ml-1 text-xs">{overdueTasks.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <div className="grid grid-cols-[40px_1fr_1fr_80px] gap-2 px-0 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b">
+              <span></span>
+              <span>Task</span>
+              <span>Assignee</span>
+              <span className="text-right">Overdue</span>
+            </div>
+            <CardContent className="flex-1 min-h-0 overflow-y-auto p-0 space-y-1">
+              {filteredOverdue.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <AlertCircleIcon className="size-8 mb-2 text-muted-foreground/30" />
+                  <p className="text-sm">No overdue tasks</p>
+                </div>
+              ) : filteredOverdue.map((t) => (
+                <div
+                  key={t._id}
+                  className="grid grid-cols-[40px_1fr_1fr_80px] gap-2 items-center p-2.5 border cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => { setSelectedTask(t); setViewOpen(true); }}
+                >
+                  <div className="flex items-center justify-center size-8 bg-red-50 shrink-0">
+                    <AlertCircleIcon className="size-4 text-red-500" />
+                  </div>
+                  <span className="text-sm font-medium truncate">{t.title}</span>
+                  <span className="text-sm truncate">{t.assigneeName || "Unassigned"}</span>
+                  <span className="text-xs text-red-500 font-semibold text-right shrink-0">
+                    {t.dueDate ? `${Math.ceil((new Date().getTime() - new Date(t.dueDate).getTime()) / (1000 * 60 * 60 * 24))}d` : "—"}
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
 
-        {viewMode === "table" ? (
-          <DataTable
-            columns={baseColumns.map((col) => ({
-              ...col,
-              cell: col.id === "actions"
-                ? ({ row }: { row: { original: Task } }) => {
-                    const t = row.original;
-                    return (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon className="" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); }}><EyeIcon className="mr-2 size-4" />View</DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(true); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DeleteConfirmDialog
-                            title="Delete Task"
-                            description="Are you sure you want to delete this task? This action cannot be undone."
-                            confirmLabel="Delete"
-                            disabled={deleting}
-                            onConfirm={() => handleDeleteTask(t._id)}
-                          >
-                            <DropdownMenuItem className="text-destructive" disabled={deleting}><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
-                          </DeleteConfirmDialog>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    );
-                  }
-                : col.cell,
-            }))}
-            data={recentTasks}
-            onRowClick={(t) => { setSelectedTask(t); setViewOpen(true); }}
-            searchPlaceholder="Search tasks..."
-            title="Recent Tasks"
-            label="task(s)"
-            emptyMessage="No tasks yet."
-            emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
-            hideSearchBar
-          />
-        ) : (
-          <div className="flex-1 min-h-0">
-            <TaskGanttView
-              tasks={tasks}
-              onViewTask={(t) => { setSelectedTask(t as unknown as Task); setViewOpen(true); setEditMode(false); }}
-            />
-          </div>
-        )}
+          {/* Employee Leaderboard */}
+          <Card className="flex flex-col min-h-0 border-0 shadow-none">
+            <CardHeader className="pb-3 shrink-0 px-0">
+              <CardTitle className="text-base flex items-center gap-2">
+                <CrownIcon className="size-4 text-yellow-500" />
+                Employee Leaderboard
+                <span className="text-xs font-normal text-muted-foreground ml-1">by completed tasks</span>
+              </CardTitle>
+            </CardHeader>
+            <div className="grid grid-cols-[32px_36px_1fr_80px_50px] gap-2 px-0 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b">
+              <span>#</span>
+              <span></span>
+              <span>Employee</span>
+              <span className="text-right">Completed</span>
+              <span className="text-right">Rank</span>
+            </div>
+            <CardContent className="flex-1 min-h-0 overflow-y-auto p-0 space-y-1">
+              {leaderboard.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <UserIcon className="size-8 mb-2 text-muted-foreground/30" />
+                  <p className="text-sm">No completed tasks yet</p>
+                </div>
+              ) : leaderboard.map((emp, index) => (
+                <div
+                  key={emp.id}
+                  className="grid grid-cols-[32px_36px_1fr_80px_50px] gap-2 items-center p-2.5 border"
+                >
+                  <span className="text-xs font-mono text-muted-foreground">{index + 1}</span>
+                  <Avatar className="size-8">
+                    <AvatarImage src={emp.avatar} alt={emp.name} />
+                    <AvatarFallback className="text-[10px]">{emp.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium truncate">{emp.name}</span>
+                  <span className="text-sm text-right">{emp.completed}</span>
+                  <div className="flex justify-end shrink-0">
+                    {index === 0 ? (
+                      <span className="text-[10px] font-semibold text-yellow-600">1st</span>
+                    ) : index === 1 ? (
+                      <span className="text-[10px] font-semibold text-gray-500">2nd</span>
+                    ) : index === 2 ? (
+                      <span className="text-[10px] font-semibold text-amber-700">3rd</span>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-muted-foreground">#{index + 1}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </main>
 
       {viewOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="relative w-[95vw] h-[95vh] bg-card rounded-sm shadow-xl overflow-hidden flex flex-col">
+          <div className="relative w-[95vw] h-[95vh] bg-card shadow-xl overflow-hidden flex flex-col">
             <TaskDetailedView
               task={selectedTask}
               editable
@@ -199,7 +208,6 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
           </div>
         </div>
       )}
-
     </>
   );
 }
