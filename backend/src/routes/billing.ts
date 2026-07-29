@@ -4,23 +4,11 @@ import { Quotation } from "../lib/db/models/Quotation.js";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { isAdminRole } from "../lib/rbac/index.js";
-import { requireOrgMembership } from "../lib/org-utils.js";
 import { Counter } from "../lib/db/models/Counter.js";
 import { v4 as uuid } from "uuid";
-import { notifyBilling } from "../lib/notifications/notification-wiring.js";
-
 const router = Router();
 
 router.use(authenticate);
-
-async function nextInvoiceNumber(orgId: string): Promise<string> {
-  const counter = await Counter.findByIdAndUpdate(
-    `invoice_${orgId}`,
-    { $inc: { seq: 1 } },
-    { upsert: true, new: true }
-  );
-  return `INV-${String(counter.seq).padStart(6, "0")}`;
-}
 
 // GET /api/billing/invoices — List invoices for the organization
 router.get("/invoices", async (req: AuthRequest, res: Response) => {
@@ -66,48 +54,6 @@ router.get("/invoices/:id", async (req: AuthRequest, res: Response) => {
   } catch (err: any) {
     if (err instanceof AppError) throw err;
     throw new AppError(500, err.message || "Could not load invoice");
-  }
-});
-
-// POST /api/billing/invoices — Create invoice
-router.post("/invoices", async (req: AuthRequest, res: Response) => {
-  try {
-    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create invoices");
-    const orgId = req.user!.orgId!;
-
-    const number = req.body.number && (req.body.number as string).trim() ? req.body.number : await nextInvoiceNumber(orgId);
-    const invoice = await Invoice.create({
-      id: uuid(),
-      orgId,
-      number,
-      customerId: req.body.customerId || "",
-      customerName: req.body.customerName || "",
-      customerEmail: req.body.customerEmail || "",
-      amountPaid: req.body.amountPaid || 0,
-      currency: req.body.currency || "inr",
-      status: req.body.status || "open",
-      pdfUrl: req.body.pdfUrl || "",
-      hostedUrl: req.body.hostedUrl || "",
-      periodStart: req.body.periodStart ? new Date(req.body.periodStart) : new Date(),
-      periodEnd: req.body.periodEnd ? new Date(req.body.periodEnd) : new Date(),
-      items: req.body.items || [],
-      subTotal: req.body.subTotal || 0,
-      discountPercent: req.body.discountPercent || 0,
-      discountAmount: req.body.discountAmount || 0,
-      tdsTcsType: req.body.tdsTcsType || "",
-      tdsTcsRate: req.body.tdsTcsRate || "0",
-      tdsTcsAmount: req.body.tdsTcsAmount || 0,
-      adjustmentValue: req.body.adjustmentValue || 0,
-      total: req.body.total || 0,
-      isSimplifiedView: req.body.isSimplifiedView !== false,
-    });
-
-    notifyBilling.invoiceGenerated(req.user!.userId, orgId, invoice.number, String(invoice.total)).catch(() => {});
-
-    res.status(201).json({ success: true, data: invoice });
-  } catch (err: any) {
-    if (err instanceof AppError) throw err;
-    throw new AppError(500, err.message || "Failed to create invoice");
   }
 });
 
