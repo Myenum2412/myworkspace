@@ -33,7 +33,9 @@ export async function GET() {
         { $addFields: { _teamIdStr: { $toString: "$_id" } } },
         { $lookup: { from: collections.teamMembers, let: { teamIdStr: "$_teamIdStr" }, pipeline: [{ $match: { $expr: { $eq: ["$teamId", "$$teamIdStr"] } } }], as: "members" } },
         { $addFields: { memberCount: { $size: "$members" } } },
-        { $project: { _id: 0, _teamIdStr: 0 } }, { $sort: { createdAt: -1 } },
+        { $addFields: { id: "$_teamIdStr" } },
+        { $project: { _id: 0, _teamIdStr: 0 } },
+        { $sort: { createdAt: -1 } },
       ]).toArray(),
       db.collection(collections.orgMembers).find({ orgId }).toArray(),
     ]);

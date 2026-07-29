@@ -41,11 +41,14 @@ class SchedulerService {
     this.startupTime = new Date();
     logger.info("Initializing scheduler service with Bree (JobScheduler.NET)");
 
+    const isTs = import.meta.url.endsWith(".ts");
+    const ext = isTs ? "ts" : "js";
+
     this.bree = new Bree({
       logger: false,
       root: false,
       doRootCheck: false,
-      defaultExtension: "js",
+      defaultExtension: ext,
       timeout: false,
       interval: 0,
       removeCompleted: false,
@@ -63,7 +66,7 @@ class SchedulerService {
           name: "scheduler-heartbeat",
           cron: "* * * * *",
           timeout: false,
-          path: path.join(__dirname, "workers", "scheduler-heartbeat.js"),
+          path: path.join(__dirname, "workers", `scheduler-heartbeat.${ext}`),
         },
       ],
     });

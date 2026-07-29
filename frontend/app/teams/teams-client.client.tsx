@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { type Team } from "./columns";
 import { type OrgMember, type TeamDetail } from "@/components/teams/team-types";
@@ -11,8 +11,12 @@ import { TeamMembers } from "@/components/teams/team-members";
 
 export default function TeamsClient({ teams: initialTeams, members: initialMembers, orgId: initialOrgId }: { teams: Team[]; members: OrgMember[]; orgId?: string }) {
   const [teams, setTeams] = useState<Team[]>(initialTeams);
-  const [members] = useState<OrgMember[]>(initialMembers);
-  const [orgId] = useState(initialOrgId || "");
+  const members = initialMembers;
+  const orgId = initialOrgId || "";
+
+  useEffect(() => {
+    setTeams(initialTeams);
+  }, [initialTeams]);
   const [showForm, setShowForm] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [teamName, setTeamName] = useState("");
@@ -183,16 +187,31 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
       if (!res.ok) return;
       const data = await res.json();
       const detail = data.data || data;
-      setSelectedTeam({
+      const updatedMembers = detail.members || [];
+      const leadMember = updatedMembers.find((m: any) => m.role === "team_lead");
+      const updatedLeadName = leadMember?.name || "";
+      const updatedLeadAvatar = leadMember?.avatar || "";
+      const updatedLeadId = leadMember?.userId || "";
+      const updatedTeam = {
         ...team,
         id: detail.id || team.id,
         name: detail.name || team.name,
         description: detail.description || team.description,
-        memberCount: (detail.members || []).length,
-        leadName: team.leadName, leadAvatar: team.leadAvatar,
+        memberCount: updatedMembers.length,
+        leadName: updatedLeadName,
+        leadAvatar: updatedLeadAvatar,
+        leadId: updatedLeadId,
         createdAt: detail.createdAt || team.createdAt,
-        members: detail.members || [],
-      });
+        members: updatedMembers,
+      };
+      setSelectedTeam(updatedTeam);
+      setTeams((prev) =>
+        prev.map((t) =>
+          t.id === updatedTeam.id
+            ? { ...t, name: updatedTeam.name, description: updatedTeam.description, memberCount: updatedTeam.memberCount, leadName: updatedLeadName, leadAvatar: updatedLeadAvatar, leadId: updatedLeadId }
+            : t
+        )
+      );
       setMemberPage(0);
     } catch (_) {}
   }

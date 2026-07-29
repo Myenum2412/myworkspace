@@ -136,7 +136,7 @@ export function TeamMembers({
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-gray-900">{m.name}</span>
-                              {m.role === "team_lead" && <Badge className="bg-gray-700 text-gray-700 text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5" /> Lead</Badge>}
+                              {m.role === "team_lead" && <Badge className="bg-amber-500 text-white text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5 fill-white" /> Lead</Badge>}
                             </div>
                             <span className="text-xs text-gray-500 block mt-0.5">{m.email}</span>
                           </div>
@@ -228,7 +228,7 @@ export function TeamMembers({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-sm">{m.name}</span>
-                          {m.role === "team_lead" && <Badge className="bg-gray-700 text-gray-700 text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5" /> Lead</Badge>}
+                           {m.role === "team_lead" && <Badge className="bg-amber-500 text-white text-[10px] px-1.5 py-0"><CrownIcon className="size-3 mr-0.5 fill-white" /> Lead</Badge>}
                         </div>
                         <p className="text-xs text-muted-foreground">{m.email}{m.department ? ` · ${m.department}` : ""}{m.designation ? ` · ${m.designation}` : ""}</p>
                       </div>

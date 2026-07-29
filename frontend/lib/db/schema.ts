@@ -4,7 +4,7 @@ export const collections = {
   organizations: "organizations",
   orgMembers: "org_members",
   teams: "teams",
-  teamMembers: "team_members",
+  teamMembers: "teammembers",
   tasks: "tasks",
   notifications: "notifications",
   activityLogs: "activity_logs",

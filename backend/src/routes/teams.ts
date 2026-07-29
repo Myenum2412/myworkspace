@@ -316,7 +316,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   await Promise.all([
-    TeamMember.deleteMany({ teamId: team._id }),
+    TeamMember.deleteMany({ teamId: team._id.toString() }),
     Team.findByIdAndDelete(req.params.id),
   ]);
 
@@ -338,14 +338,15 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
   await requireOrgMembership(userId, team.orgId.toString());
 
   // Check not already in team
-  const existing = await TeamMember.findOne({ teamId: team._id, userId }).select("_id").lean();
+  const existing = await TeamMember.findOne({ teamId: team._id.toString(), userId }).select("_id").lean();
   if (existing) throw new AppError(400, "User is already a member of this team");
 
   const teamMember = await TeamMember.create({
     orgId: team.orgId,
-    teamId: team._id,
+    teamId: team._id.toString(),
     userId,
     role: role || "team_staff",
+    createdBy: req.user!.userId,
   });
 
   processEvent({ type: "department_access_changed", category: "permissions", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team member added" }).catch(() => {});
@@ -360,7 +361,7 @@ router.delete("/:teamId/members/:userId", async (req: AuthRequest, res: Response
 
   await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
-  await TeamMember.deleteOne({ teamId: team._id, userId: req.params.userId });
+  await TeamMember.deleteOne({ teamId: team._id.toString(), userId: req.params.userId });
   processEvent({ type: "permission_revoked", category: "permissions", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team member removed" }).catch(() => {});
   res.json({ success: true });
 });
@@ -376,7 +377,12 @@ router.patch("/:teamId/members/:userId/role", async (req: AuthRequest, res: Resp
   const { role } = req.body;
   if (!role || !["team_lead", "team_staff"].includes(role)) throw new AppError(400, "Valid role required (team_lead or team_staff)");
 
-  await TeamMember.updateOne({ teamId: team._id, userId: req.params.userId }, { role });
+  if (role === "team_lead") {
+    // Demote any existing team lead to team_staff
+    await TeamMember.updateMany({ teamId: team._id.toString(), role: "team_lead" }, { role: "team_staff" });
+  }
+
+  await TeamMember.updateOne({ teamId: team._id.toString(), userId: req.params.userId }, { role });
   processEvent({ type: "role_changed", category: "permissions", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team role changed" }).catch(() => {});
   res.json({ success: true });
 });

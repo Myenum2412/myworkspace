@@ -134,7 +134,7 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
       <main className="flex flex-1 flex-col gap-4 p-4 min-h-0">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="w-full sm:w-auto">
-            <h1 className="text-xl sm:text-2xl font-bold">My Tasks</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">All Tasks</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Tasks assigned to you and your teams</p>
           </div>
           <div className="flex-1 flex justify-center max-w-md mx-4">

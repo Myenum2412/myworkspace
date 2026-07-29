@@ -20,9 +20,9 @@ export async function createIndexes(): Promise<void> {
   await c("organizations").createIndex({ ownerId: 1 }, { name: "idx_orgs_owner" });
 
   // Org Members
-  await c("orgmembers").createIndex({ userId: 1, orgId: 1 }, { unique: true, name: "idx_orgmembers_user_org" });
-  await c("orgmembers").createIndex({ orgId: 1 }, { name: "idx_orgmembers_org" });
-  await c("orgmembers").createIndex({ userId: 1 }, { name: "idx_orgmembers_user" });
+  await c("org_members").createIndex({ userId: 1, orgId: 1 }, { unique: true, name: "idx_orgmembers_user_org" });
+  await c("org_members").createIndex({ orgId: 1 }, { name: "idx_orgmembers_org" });
+  await c("org_members").createIndex({ userId: 1 }, { name: "idx_orgmembers_user" });
 
   // Tasks
   await c("tasks").createIndex({ orgId: 1, createdAt: -1 }, { name: "idx_tasks_org_created" });
@@ -45,10 +45,10 @@ export async function createIndexes(): Promise<void> {
   await c("teammembers").createIndex({ orgId: 1, createdBy: 1 }, { name: "idx_teammembers_org_createdby" });
 
   // Time Entries
-  await c("timeentries").createIndex({ orgId: 1, date: -1 }, { name: "idx_timeentries_org_date" });
-  await c("timeentries").createIndex({ orgId: 1, userId: 1, date: -1 }, { name: "idx_timeentries_org_user_date" });
-  await c("timeentries").createIndex({ orgId: 1, status: 1 }, { name: "idx_timeentries_org_status" });
-  await c("timeentries").createIndex({ orgId: 1, createdBy: 1 }, { name: "idx_timeentries_org_createdby" });
+  await c("time_entries").createIndex({ orgId: 1, date: -1 }, { name: "idx_timeentries_org_date" });
+  await c("time_entries").createIndex({ orgId: 1, userId: 1, date: -1 }, { name: "idx_timeentries_org_user_date" });
+  await c("time_entries").createIndex({ orgId: 1, status: 1 }, { name: "idx_timeentries_org_status" });
+  await c("time_entries").createIndex({ orgId: 1, createdBy: 1 }, { name: "idx_timeentries_org_createdby" });
 
   // Upload Sessions
   await c("uploadsessions").createIndex({ updatedAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60, name: "idx_uploadsessions_ttl" });
