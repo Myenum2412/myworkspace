@@ -124,12 +124,27 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
     });
   }, [tasks]);
 
+  const COMPLETED_STATUSES = new Set(["completed", "done", "cancelled", "closed", "rejected"]);
+
   const summary = useMemo(() => {
     const counts: Record<string, number> = {};
+    let overdue = 0, dueToday = 0, dueWeek = 0;
+    const now = new Date();
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    const weekEnd = new Date(todayEnd.getTime() + 7 * 24 * 60 * 60 * 1000);
+
     for (const t of filteredTasks) {
       counts[t.status] = (counts[t.status] || 0) + 1;
+
+      if (t.dueDate && !COMPLETED_STATUSES.has(t.status)) {
+        const due = new Date(t.dueDate);
+        if (due < now) overdue++;
+        else if (due <= todayEnd) dueToday++;
+        else if (due <= weekEnd) dueWeek++;
+      }
     }
-    return counts;
+
+    return { counts, overdue, dueToday, dueWeek };
   }, [filteredTasks]);
 
   return (
@@ -144,8 +159,11 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
 
         <Stats07
           items={[
-            { name: t("page.dashboard.totalTasks"), value: filteredTasks.length, subtitle: t("common.active") },
-            ...Object.entries(summary).map(([status, count]) => ({
+            { name: "Total Tasks", value: filteredTasks.length, subtitle: "All tasks" },
+            { name: "Overdue", value: summary.overdue, subtitle: "Past due date" },
+            { name: "Due Today", value: summary.dueToday, subtitle: "Due by today" },
+            { name: "Due This Week", value: summary.dueWeek, subtitle: "Due within 7 days" },
+            ...Object.entries(summary.counts).map(([status, count]) => ({
               name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
               value: count,
               subtitle: `${status.replace(/_/g, ' ')} tasks`,

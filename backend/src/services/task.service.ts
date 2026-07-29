@@ -613,7 +613,15 @@ export async function updateTaskStatus(id: string, status: TaskStatus, userId: s
   const isAdmin = isAdminRole(userRecord?.role || "");
   const isAssignee = existing.assigneeId?.toString() === userId;
   const isCreator = existing.creatorId === userId;
-  if (!isAdmin && !isAssignee && !isCreator) {
+
+  let isTeamTask = false;
+  if (!isAdmin && !isAssignee && !isCreator && existing.teamId) {
+    const userTeams = await TeamMember.find({ userId }).lean();
+    const teamIds = userTeams.map(t => t.teamId);
+    isTeamTask = teamIds.some(tid => tid.toString() === existing.teamId!.toString());
+  }
+
+  if (!isAdmin && !isAssignee && !isCreator && !isTeamTask) {
     throw new AppError(403, "Not authorized to modify this task");
   }
 

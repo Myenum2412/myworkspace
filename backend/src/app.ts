@@ -59,6 +59,7 @@ import plansRoutes from "./routes/plans.js";
 import dailyTaskEmailSchedulerRoutes from "./routes/daily-task-email-scheduler.js";
 import schedulerRoutes from "./routes/scheduler.js";
 import timesheetRoutes from "./routes/timesheet.js";
+import cronRunnerRoutes from "./routes/cron-runner.js";
 
 const app = express();
 
@@ -207,7 +208,7 @@ app.use("/api", (req, res, next) => {
 // will simply skip resolution since req.user won't be set yet
 app.use("/api", (req, res, next) => {
   // Skip org context for public/unauthenticated routes
-  const publicPaths = ["/api/health", "/api/config/public", "/api/metrics"];
+  const publicPaths = ["/api/health", "/api/config/public", "/api/metrics", "/api/cron"];
   const skipPaths = ["/api/auth", "/api/client-auth"];
   const path = req.path;
 
@@ -357,6 +358,7 @@ app.use("/api/plans", plansRoutes);
 app.use("/api/daily-task-email-scheduler", dailyTaskEmailSchedulerRoutes);
 app.use("/api/scheduler", schedulerRoutes);
 app.use("/api/timesheet", timesheetRoutes);
+app.use("/api/cron", cronRunnerRoutes);
 
 // ── Public config endpoint (unauthenticated, exposes safe values) ──
 app.get("/api/config/public", (_req, res) => {
