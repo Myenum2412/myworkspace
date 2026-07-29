@@ -73,22 +73,7 @@ export function ProjectCreateForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="rounded-sm border bg-card shadow-sm">
-      <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-sm bg-primary/10">
-            <PlusIcon className="size-5 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold">New Project</h2>
-            <p className="text-sm text-muted-foreground">Fill in the details below to create a new project.</p>
-          </div>
-        </div>
-        <Button variant="ghost" size="icon" onClick={onCancel} disabled={submitting} className="">
-          <XIcon className="size-4" />
-        </Button>
-      </div>
-
+    <div className="rounded-sm border bg-white shadow-sm">
       {formError && (
         <div className="mx-6 mt-4 flex items-center gap-2.5 rounded-sm bg-destructive/10 px-4 py-3 text-sm text-destructive border border-destructive/20">
           <AlertCircleIcon className="size-4 shrink-0 mt-0.5" />

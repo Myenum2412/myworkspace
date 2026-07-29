@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2Icon, ChevronLeftIcon, SearchIcon } from "lucide-react";
+import { Trash2Icon, ChevronLeftIcon, SearchIcon, XIcon } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
 import { PROJECT_COLORS } from "@/components/projects/project-types";
 import { ProjectDetailedView } from "./project-detailed-view";
@@ -353,6 +353,10 @@ export default function ProjectsInteractive({
               </Button>
               <div className="h-5 w-px bg-border" />
               <h1 className="text-lg font-semibold text-black">New Project</h1>
+              <div className="ml-auto" />
+              <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); resetForm(); }}>
+                <XIcon className="size-4" />
+              </Button>
             </div>
             <div className="flex-1 overflow-auto bg-white">
               <div className="w-full py-6 bg-white my-6">
