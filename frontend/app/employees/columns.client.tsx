@@ -154,11 +154,6 @@ export function getColumns(
       },
     },
     {
-      accessorKey: "role",
-      header: "Role",
-      cell: ({ row }) => <Badge variant="outline" className="capitalize">{row.getValue("role") as string}</Badge>,
-    },
-    {
       accessorKey: "employmentType",
       header: "Type",
       cell: ({ row }) => {

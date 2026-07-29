@@ -104,7 +104,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="fixed inset-0 top-0 left-0 translate-none w-full h-full max-w-full max-h-full rounded-none p-0 overflow-y-auto">
-        <div className="mx-auto w-full max-w-4xl p-6 space-y-5">
+        <div className="mx-auto w-full p-6 space-y-5">
         <DialogHeader>
           <DialogTitle>Edit Member</DialogTitle>
         </DialogHeader>
@@ -133,7 +133,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
           )}
 
           {/* Personal info */}
-          <fieldset className="rounded-sm border p-4 space-y-4">
+          <fieldset className="border p-4 space-y-4">
             <legend className="text-sm font-semibold px-2">Personal</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -148,7 +148,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
           </fieldset>
 
           {/* Work info */}
-          <fieldset className="rounded-sm border p-4 space-y-4">
+          <fieldset className="border p-4 space-y-4">
             <legend className="text-sm font-semibold px-2">Work</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -188,7 +188,7 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
           </fieldset>
 
           {/* Contact info */}
-          <fieldset className="rounded-sm border p-4 space-y-4">
+          <fieldset className="border p-4 space-y-4">
             <legend className="text-sm font-semibold px-2">Contact</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -233,8 +233,8 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
           </div>
 
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save Changes"}</Button>
+            <Button type="button" variant="outline" onClick={onClose} className="w-32 h-10">Cancel</Button>
+            <Button type="submit" disabled={pending} className="w-32 h-10">{pending ? "Saving..." : "Save Changes"}</Button>
           </div>
         </form>
         </div>

@@ -134,7 +134,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 max-w-4xl mx-auto w-full px-6 pt-4">
+        <div className="flex flex-col gap-2 w-full px-6 pt-4">
           {saveError && (
             <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <AlertCircleIcon className="size-3.5 shrink-0" />
@@ -150,10 +150,10 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
           <div className="flex justify-end">
             {editing ? (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving}>
+                <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving} className="w-32 h-10">
                   Cancel
                 </Button>
-                <Button size="sm" onClick={handleSave} disabled={saving}>
+                <Button size="sm" onClick={handleSave} disabled={saving} className="w-32 h-10">
                   {saving ? <Loader2Icon className="animate-spin" /> : <CheckIcon className="size-4" />}
                   Save
                 </Button>
@@ -167,7 +167,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
           </div>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-2 p-6 max-w-5xl mx-auto w-full">
+        <div className="grid gap-6 xl:grid-cols-2 p-6 w-full [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -409,7 +409,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                   </div>
 
-                  <fieldset className="rounded-sm border p-4 space-y-4">
+                  <fieldset className="border p-4 space-y-4">
                     <legend className="text-sm font-semibold px-2">Contact Information</legend>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
@@ -431,7 +431,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                   </fieldset>
 
-                  <fieldset className="rounded-sm border p-4 space-y-4">
+                  <fieldset className="border p-4 space-y-4">
                     <legend className="text-sm font-semibold px-2">Address</legend>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="sm:col-span-2 space-y-1.5">
@@ -461,7 +461,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                   </fieldset>
 
-                  <fieldset className="rounded-sm border p-4 space-y-4">
+                  <fieldset className="border p-4 space-y-4">
                     <legend className="text-sm font-semibold px-2">Authorized Person</legend>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
@@ -483,7 +483,7 @@ export function AdminProfilePageClient({ data: initialData }: AdminProfilePageCl
                     </div>
                   </fieldset>
 
-                  <fieldset className="rounded-sm border p-4 space-y-4">
+                  <fieldset className="border p-4 space-y-4">
                     <legend className="text-sm font-semibold px-2">Additional Information</legend>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">

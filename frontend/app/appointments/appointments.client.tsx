@@ -145,7 +145,7 @@ export default function Appointments({ initialDoctors }: { initialDoctors: Docto
           <h1 className="text-lg font-semibold">Book Appointment</h1>
         </div>
         <div className="flex-1 overflow-auto">
-          <div className="max-w-3xl mx-auto py-6 px-3 sm:px-4 md:px-6">
+          <div className="w-full py-6 px-3 sm:px-4 md:px-6">
             <AppointmentForm
               doctors={doctors}
               onSubmit={handleBookAppointment}

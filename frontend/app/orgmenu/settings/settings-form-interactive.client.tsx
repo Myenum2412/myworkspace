@@ -27,7 +27,7 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
   const [state, formAction, pending] = useActionState(saveSettings, null);
 
   return (
-    <form action={formAction}>
+    <form action={formAction} className="[&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
       {state?.success && (
         <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400 rounded-sm px-3 py-2 mb-4">
           <CheckCircle2Icon className="size-4" />
@@ -110,7 +110,7 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
       </div>
 
       <div className="mt-6 flex justify-end">
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending} className="w-32 h-10">
           {pending ? "Saving..." : "Save Settings"}
         </Button>
       </div>

@@ -169,7 +169,7 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
           <h1 className="text-lg font-semibold text-black">Add New Customer</h1>
         </div>
         <div className="flex-1 overflow-auto bg-white">
-          <div className="max-w-5xl mx-auto py-6 bg-white my-6">
+          <div className="w-full py-6 bg-white my-6">
             <ClientForm
               onCancel={handleBack}
               onClientAdded={() => {
@@ -204,7 +204,7 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
           <div className="px-3 sm:px-4 md:px-6 py-2 bg-destructive/10 text-destructive text-sm">{editErrors._api}</div>
         )}
         <div className="flex-1 overflow-auto bg-white">
-          <div className="max-w-5xl mx-auto py-6 bg-white my-6 px-3 sm:px-4 md:px-6">
+          <div className="w-full py-6 bg-white my-6 px-3 sm:px-4 md:px-6">
             <EditClientFormFields v={editValues} set={setEdit} errors={editErrors} members={members} />
           </div>
         </div>

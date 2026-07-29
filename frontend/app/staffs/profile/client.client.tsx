@@ -633,7 +633,7 @@ export default function ProfileClient({ data }: Props) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 max-w-4xl mx-auto w-full px-6 pt-4">
+          <div className="flex flex-col gap-2 w-full px-6 pt-4 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
             {saveError && (
               <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 <AlertCircleIcon className="size-3.5 shrink-0" />
@@ -649,10 +649,10 @@ export default function ProfileClient({ data }: Props) {
             <div className="flex justify-end">
               {editing ? (
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving}>
+                  <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving} className="w-32 h-10">
                     Cancel
                   </Button>
-                  <Button size="sm" onClick={handleSave} disabled={saving}>
+                  <Button size="sm" onClick={handleSave} disabled={saving} className="w-32 h-10">
                     {saving ? <Loader2Icon className="animate-spin" /> : <CheckIcon className="size-4" />}
                     Save
                   </Button>
@@ -666,7 +666,7 @@ export default function ProfileClient({ data }: Props) {
             </div>
           </div>
 
-          <div className="grid gap-6 p-6 max-w-5xl mx-auto w-full">
+          <div className="grid gap-6 p-6 w-full [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
             {/* ─── User Details Card ─── */}
             <Card>
               <CardHeader>
@@ -1146,7 +1146,7 @@ export default function ProfileClient({ data }: Props) {
                 {editing ? (
                   <div className="space-y-6">
                     {/* Work Info */}
-                    <fieldset className="rounded-sm border p-4 space-y-4">
+                    <fieldset className="border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <BriefcaseIcon className="size-3.5" />
                         Work Info
@@ -1198,7 +1198,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* Personal Info */}
-                    <fieldset className="rounded-sm border p-4 space-y-4">
+                    <fieldset className="border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <UserIcon className="size-3.5" />
                         Personal Info
@@ -1222,7 +1222,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* Contact */}
-                    <fieldset className="rounded-sm border p-4 space-y-4">
+                    <fieldset className="border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <PhoneIcon className="size-3.5" />
                         Contact
@@ -1238,7 +1238,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* History - Work Experience */}
-                    <fieldset className="rounded-sm border p-4 space-y-4">
+                    <fieldset className="border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <HistoryIcon className="size-3.5" />
                         Work Experience
@@ -1290,7 +1290,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* History - Education */}
-                    <fieldset className="rounded-sm border p-4 space-y-4">
+                    <fieldset className="border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <GraduationCapIcon className="size-3.5" />
                         Education
@@ -1330,7 +1330,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* History - Dependents */}
-                    <fieldset className="rounded-sm border p-4 space-y-4">
+                    <fieldset className="border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <HeartIcon className="size-3.5" />
                         Dependents
@@ -1366,7 +1366,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* Offer Letter */}
-                    <fieldset className="rounded-sm border p-4 space-y-4">
+                    <fieldset className="border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <FileTextIcon className="size-3.5" />
                         Documents
@@ -1393,7 +1393,7 @@ export default function ProfileClient({ data }: Props) {
                 ) : (
                   <div className="space-y-6">
                     {/* Work Info */}
-                    <fieldset className="rounded-sm border p-4 space-y-4">
+                    <fieldset className="border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <BriefcaseIcon className="size-3.5" />
                         Work Info
@@ -1449,7 +1449,7 @@ export default function ProfileClient({ data }: Props) {
                     <Separator />
 
                     {/* Personal Info */}
-                    <fieldset className="rounded-sm border p-4 space-y-4">
+                    <fieldset className="border p-4 space-y-4">
                       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                         <UserIcon className="size-3.5" />
                         Personal Info
@@ -1478,7 +1478,7 @@ export default function ProfileClient({ data }: Props) {
                     {dbUser?.workExperience && dbUser.workExperience.length > 0 && (
                       <>
                         <Separator />
-                        <fieldset className="rounded-sm border p-4 space-y-4">
+                        <fieldset className="border p-4 space-y-4">
                           <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                             <HistoryIcon className="size-3.5" />
                             Work Experience
@@ -1529,7 +1529,7 @@ export default function ProfileClient({ data }: Props) {
                     {dbUser?.educationDetails && dbUser.educationDetails.length > 0 && (
                       <>
                         <Separator />
-                        <fieldset className="rounded-sm border p-4 space-y-4">
+                        <fieldset className="border p-4 space-y-4">
                           <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                             <GraduationCapIcon className="size-3.5" />
                             Education
@@ -1570,7 +1570,7 @@ export default function ProfileClient({ data }: Props) {
                     {dbUser?.dependentDetails && dbUser.dependentDetails.length > 0 && (
                       <>
                         <Separator />
-                        <fieldset className="rounded-sm border p-4 space-y-4">
+                        <fieldset className="border p-4 space-y-4">
                           <legend className="text-sm font-semibold px-2 flex items-center gap-2">
                             <HeartIcon className="size-3.5" />
                             Dependents

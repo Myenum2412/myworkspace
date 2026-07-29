@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import OverviewInteractive from "./overview-interactive.client"
-import TeamTasksInteractive from "../teamtasks/teamtasks-interactive.client"
+import TeamTasksOverview from "@/components/team-tasks-overview"
 import AllTasksInteractive from "../alltasks/alltasks-interactive.client"
 import MyTasksInteractive from "../mytasks/mytasks-interactive.client"
 import SavedTasksInteractive from "../savedtasks/savedtasks-interactive.client"
@@ -83,7 +83,7 @@ export default function OverviewClient({
       </TabsContent>
 
       <TabsContent value="team_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
-        <TeamTasksInteractive tasks={teamTasks} />
+        <TeamTasksOverview tasks={teamTasks} />
       </TabsContent>
 
       <TabsContent value="all_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">

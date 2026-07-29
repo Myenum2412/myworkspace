@@ -43,7 +43,7 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
               <div className="mb-4 rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Full Name</Label>
                 <Input name="name" required placeholder="" />
@@ -77,8 +77,8 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                <Button type="submit" disabled={pending}>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-32 h-10">Cancel</Button>
+                <Button type="submit" disabled={pending} className="w-32 h-10">
                   {pending ? "Adding..." : "Add Employee"}
                 </Button>
               </div>

@@ -233,7 +233,7 @@ export function GalleryAccessClient({
                 {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
               </div>
 
-              <Button type="submit" className="">
+              <Button type="submit" className="w-32 h-10">
                 Continue
               </Button>
             </form>

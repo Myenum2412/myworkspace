@@ -260,7 +260,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
       <div
         className="relative h-[200px] bg-gradient-to-b from-primary/90 via-primary/40 to-background bg-cover bg-center"
         style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
@@ -305,7 +305,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 max-w-4xl mx-auto w-full px-6 pt-4">
+      <div className="flex flex-col gap-2 w-full px-6 pt-4">
         {saveError && (
           <div className="rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">{saveError}</div>
         )}
@@ -332,7 +332,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2 p-6 max-w-5xl mx-auto w-full">
+      <div className="grid gap-6 xl:grid-cols-2 p-6 w-full">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">

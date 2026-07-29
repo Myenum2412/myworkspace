@@ -136,7 +136,7 @@ export function CreateProjectPageInteractive() {
         </div>
       )}
 
-      <div className="flex-1 grid grid-cols-[32%_68%]">
+      <div className="flex-1 grid grid-cols-[32%_68%] [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
         <ScrollArea className="h-full border-r px-5 py-4">
           <div className="space-y-6">
             <FormField label="Project Name" required>
@@ -209,7 +209,7 @@ export function CreateProjectPageInteractive() {
           </div>
         </ScrollArea>
 
-        <fieldset className="rounded-sm border p-4 space-y-4 flex flex-col h-full">
+        <fieldset className="border p-4 space-y-4 flex flex-col h-full">
           <legend className="text-sm font-semibold px-2">Description</legend>
           <div className="flex-1 min-h-0">
             <GoogleDocsEditor

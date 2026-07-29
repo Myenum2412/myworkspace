@@ -203,7 +203,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-hidden">
+    <div className="flex flex-1 flex-col gap-6 overflow-hidden [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
       {apiError && (
         <div className="mx-6 mt-4 flex items-start gap-3 rounded-sm border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 px-4 py-3 shadow-sm">
           <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
@@ -216,7 +216,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
           <div className="space-y-8 py-6 w-full">
 
             {/* 1. Basic Information */}
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">1. Basic Information</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -271,7 +271,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 2. Contractor Details */}
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">2. Contractor Details</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -324,7 +324,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 3. License & Insurance */}
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">3. License & Insurance</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -350,7 +350,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 4. Work Information */}
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">4. Work Information</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -383,7 +383,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 5. Payment Details */}
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">5. Payment Details</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -419,7 +419,7 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             </fieldset>
 
             {/* 6. Emergency Contact */}
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">6. Emergency Contact</legend>
               {fieldError("emergencyContacts") && <p className="text-xs text-red-500">{fieldError("emergencyContacts")}</p>}
               <div className="space-y-3">
@@ -461,8 +461,8 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
       </div>
 
       <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/10">
-        <Button variant="ghost" onClick={onCancel}>Cancel</Button>
-        <Button className="bg-primary hover:bg-primary/80" onClick={handleSubmit} disabled={saving}>
+        <Button variant="ghost" onClick={onCancel} className="w-32 h-10">Cancel</Button>
+        <Button className="w-32 h-10 bg-primary hover:bg-primary/80" onClick={handleSubmit} disabled={saving}>
           {saving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</> : "Save"}
         </Button>
       </div>

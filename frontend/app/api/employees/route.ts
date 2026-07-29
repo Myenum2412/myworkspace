@@ -54,25 +54,33 @@ export async function GET() {
 
     const allTeamMemberIds = (teamDocs as any[]).flatMap((t) => t.memberIds || []).filter(Boolean);
     const uniqueMemberIds = [...new Set(allTeamMemberIds)];
+    const allOrgUserIds = [...new Set(allOrgMembers.map((m: any) => m.userId).filter(Boolean))];
+    const allUserIdsToFetch = [...new Set([...uniqueMemberIds, ...allOrgUserIds])];
     let memberUserMap = new Map<string, any>();
-    if (uniqueMemberIds.length > 0) {
-      const memberUserDocs = await db.collection(collections.users).find({ id: { $in: uniqueMemberIds } }).toArray();
+    if (allUserIdsToFetch.length > 0) {
+      const memberUserDocs = await db.collection(collections.users).find({ id: { $in: allUserIdsToFetch } }).toArray();
       for (const u of memberUserDocs) { if (u.id) memberUserMap.set(u.id, u); }
     }
 
-    const teams = (teamDocs as any[]).map((t) => ({
-      id: String(t.id || ""), name: t.name || "", description: t.description || "", memberCount: t.memberCount || 0,
-      members: (t.members || []).map((m: any) => ({
+    const teams = (teamDocs as any[]).map((t) => {
+      const memberList = (t.members || []).map((m: { userId: string; role: string }) => ({
         userId: m.userId, name: memberUserMap.get(m.userId)?.name || "Unknown",
         email: memberUserMap.get(m.userId)?.email || "", avatar: memberUserMap.get(m.userId)?.image || "",
         role: m.role || "team_staff",
-      })),
-      createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : "",
-    }));
+      }));
+      const lead = memberList.find((m: { role: string }) => m.role === "team_lead");
+      return {
+        id: String(t.id || ""), name: t.name || "", description: t.description || "", memberCount: t.memberCount || 0,
+        leadName: lead?.name || "",
+        leadAvatar: lead?.avatar || "",
+        members: memberList,
+        createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : "",
+      };
+    });
 
     const teamMembers = (orgMemberDocs as any[]).map((m) => {
       const u = memberUserMap.get(m.userId) || {};
-      return { userId: m.userId, name: u.name || "", email: u.email || "", avatar: u.image || "", role: m.role || "staffs" };
+      return { userId: m.userId, name: u.name || "", email: u.email || "", avatar: u.image || "", role: m.role || "staffs", department: u.department || "", designation: u.designation || "" };
     });
 
     return NextResponse.json({ employees, user, teams, teamMembers, orgId });

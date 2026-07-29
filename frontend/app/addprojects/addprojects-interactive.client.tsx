@@ -103,7 +103,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
           <CardDescription>Enter the details for the new project</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 [&_input]:border-black [&_input]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
             {error && (
               <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 <AlertCircleIcon className="size-4 shrink-0" />
@@ -177,10 +177,10 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
             </div>
 
             <div className="flex gap-2 justify-end">
-              <Button type="button" variant="outline" onClick={() => router.push("/projects")} disabled={submitting}>
+              <Button type="button" variant="outline" onClick={() => router.push("/projects")} disabled={submitting} className="w-32 h-10">
                 Cancel
               </Button>
-              <Button type="submit" disabled={!name || !client || submitting}>
+              <Button type="submit" disabled={!name || !client || submitting} className="w-32 h-10">
                 {submitting ? <Loader2Icon className="animate-spin" /> : "Create Project"}
               </Button>
             </div>

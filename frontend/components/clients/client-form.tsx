@@ -252,7 +252,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-hidden [&_input]:border-black [&_select>button]:border-black [&_textarea]:border-black">
+    <div className="flex flex-1 flex-col gap-6 overflow-hidden [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
       {apiError && (
         <div className="mx-6 mt-4 flex items-start gap-3 rounded-sm border-2 border-red-300 bg-gradient-to-r from-red-50 to-amber-50 px-4 py-3 shadow-sm">
           <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
@@ -262,8 +262,8 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
 
       <div className="relative flex-1 overflow-hidden px-1">
         <ScrollArea className="h-full px-5">
-          <div className="space-y-8 py-6 max-w-4xl mx-auto">
-            <fieldset className="rounded-sm border p-4 space-y-4">
+          <div className="space-y-8 py-6 w-full">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Customer Information</legend>
               <fieldset className="space-y-3 border-0 p-0">
                 <legend className="text-xs font-medium text-muted-foreground px-0">Customer Type</legend>
@@ -293,7 +293,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-sm border p-4 space-y-4">
+              <fieldset className="border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Primary Contact</legend>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
@@ -318,7 +318,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-sm border p-4 space-y-4">
+              <fieldset className="border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Company Details</legend>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -334,7 +334,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-sm border p-4 space-y-4">
+              <fieldset className="border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Financial Details</legend>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Currency</Label>
@@ -345,7 +345,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-sm border p-4 space-y-4">
+              <fieldset className="border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Contact Information</legend>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -377,7 +377,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
               </TabsList>
 
               <TabsContent value="other-details" className="space-y-6 pt-4">
-                <fieldset className="rounded-sm border p-4 space-y-4">
+                <fieldset className="border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Tax Information</legend>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -437,7 +437,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-sm border p-4 space-y-4">
+              <fieldset className="border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Payment</legend>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Payment Terms</Label>
@@ -445,7 +445,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-sm border p-4 space-y-4">
+              <fieldset className="border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Portal Access</legend>
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -475,7 +475,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                 )}
               </fieldset>
 
-              <fieldset className="rounded-sm border p-4 space-y-4">
+              <fieldset className="border p-4 space-y-4">
                 <legend className="text-sm font-semibold px-2">Documents</legend>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
@@ -511,7 +511,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
               </TabsContent>
 
               <TabsContent value="address" className="space-y-6 pt-4">
-                <fieldset className="rounded-sm border p-4 space-y-4">
+                <fieldset className="border p-4 space-y-4">
                   <legend className="text-sm font-semibold px-2">Billing Address</legend>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
@@ -556,7 +556,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
                   </div>
                 </fieldset>
 
-                <fieldset className="rounded-sm border p-4 space-y-4">
+                <fieldset className="border p-4 space-y-4">
                   <legend className="text-sm font-semibold px-2">Shipping Address</legend>
                   <div className="flex items-center gap-2 mb-4">
                     <Checkbox
@@ -712,7 +712,7 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
               </TabsContent>
 
               <TabsContent value="remarks" className="pt-4">
-                <fieldset className="rounded-sm border p-4 space-y-4">
+                <fieldset className="border p-4 space-y-4">
                   <legend className="text-sm font-semibold px-2">Remarks</legend>
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Remarks</Label>
@@ -731,11 +731,11 @@ export function ClientForm({ onCancel, onClientAdded }: ClientFormProps) {
       </div>
 
       <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/10">
-        <Button variant="ghost" onClick={onCancel}>
+        <Button variant="ghost" onClick={onCancel} className="w-32 h-10">
           Cancel
         </Button>
         <div className="flex gap-3">
-          <Button className="bg-primary hover:bg-primary/80" onClick={handleSubmit} disabled={saving}>
+          <Button className="w-32 h-10 bg-primary hover:bg-primary/80" onClick={handleSubmit} disabled={saving}>
             {saving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</> : "Save"}
           </Button>
         </div>

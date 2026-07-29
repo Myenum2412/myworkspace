@@ -97,8 +97,8 @@ export function EditSignupDialog({
             </Select>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save"}</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-32 h-10">Cancel</Button>
+            <Button type="submit" disabled={pending} className="w-32 h-10">{pending ? "Saving..." : "Save"}</Button>
           </div>
         </form>
       </DialogContent>

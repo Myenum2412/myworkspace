@@ -90,11 +90,16 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
     [queryClient, queryKey],
   );
 
-  // Filter to the current user's assigned tasks.
-  const myTasks = useMemo(
-    () => (userId ? tasks.filter((t: UiTask) => t.assigneeId === userId) : tasks),
-    [tasks, userId],
-  );
+  // Filter to the current user's assigned tasks, deduplicated by _id.
+  const myTasks = useMemo(() => {
+    const filtered = userId ? tasks.filter((t: UiTask) => t.assigneeId === userId) : tasks;
+    const seen = new Set<string>();
+    return filtered.filter((t: UiTask) => {
+      if (seen.has(t._id)) return false;
+      seen.add(t._id);
+      return true;
+    });
+  }, [tasks, userId]);
 
   // Stats summary
   const stats = useMemo(() => {

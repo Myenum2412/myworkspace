@@ -73,7 +73,7 @@ export function ProjectCreateForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="rounded-sm border bg-white shadow-sm">
+    <div className="border-black bg-white">
       {formError && (
         <div className="mx-6 mt-4 flex items-center gap-2.5 rounded-sm bg-destructive/10 px-4 py-3 text-sm text-destructive border border-destructive/20">
           <AlertCircleIcon className="size-4 shrink-0 mt-0.5" />
@@ -83,7 +83,7 @@ export function ProjectCreateForm({
 
       <div className="px-4 sm:px-6 py-5 space-y-6">
 
-        <fieldset className="rounded-sm border p-4 space-y-4">
+        <fieldset className="border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Basic Information</legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -93,13 +93,13 @@ export function ProjectCreateForm({
                 value={projectName}
                 onChange={(e) => onProjectNameChange(e.target.value)}
                 disabled={submitting}
-                className="bg-white"
+                className="border-black bg-white"
               />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Client <span className="text-destructive">*</span></Label>
               <Select value={selectedClient} onValueChange={onSelectedClientChange} disabled={submitting}>
-                <SelectTrigger className="bg-white">
+                <SelectTrigger className="border-black bg-white">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -118,14 +118,14 @@ export function ProjectCreateForm({
               onChange={(e) => onProjectDescriptionChange(e.target.value)}
               disabled={submitting}
               rows={2}
-              className="bg-white"
+              className="border-black bg-white"
             />
           </div>
         </fieldset>
 
-        <fieldset className="rounded-sm border p-4 space-y-4">
+        <fieldset className="border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Timeline & Team</legend>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Start Date</Label>
               <Input
@@ -133,7 +133,7 @@ export function ProjectCreateForm({
                 value={projectStartDate}
                 onChange={(e) => onProjectStartDateChange(e.target.value)}
                 disabled={submitting}
-                className="bg-white"
+                className="border-black bg-white"
               />
             </div>
             <div className="space-y-1.5">
@@ -143,13 +143,12 @@ export function ProjectCreateForm({
                 value={projectDeadline}
                 onChange={(e) => onProjectDeadlineChange(e.target.value)}
                 disabled={submitting}
-                className="bg-white"
+                className="border-black bg-white"
               />
             </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Team Members</Label>
-            <Popover>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Team Members</Label>
+              <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="justify-start font-normal" disabled={submitting}>
                   <UsersIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
@@ -208,17 +207,18 @@ export function ProjectCreateForm({
                   })}
                 </div>
               </PopoverContent>
-            </Popover>
+              </Popover>
+            </div>
           </div>
         </fieldset>
 
-        <fieldset className="rounded-sm border p-4 space-y-4">
+        <fieldset className="border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Classification</legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Priority</Label>
               <Select value={projectPriority} onValueChange={onProjectPriorityChange} disabled={submitting}>
-                <SelectTrigger className="bg-white">
+                <SelectTrigger className="border-black bg-white">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -232,7 +232,7 @@ export function ProjectCreateForm({
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Category</Label>
               <Select value={projectCategory} onValueChange={onProjectCategoryChange} disabled={submitting}>
-                <SelectTrigger className="bg-white">
+                <SelectTrigger className="border-black bg-white">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -248,7 +248,7 @@ export function ProjectCreateForm({
           </div>
         </fieldset>
 
-        <fieldset className="rounded-sm border p-4 space-y-4">
+        <fieldset className="border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Budget & Planning</legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -260,13 +260,13 @@ export function ProjectCreateForm({
                 value={projectBudget || ""}
                 onChange={(e) => onProjectBudgetChange(e.target.value ? Number(e.target.value) : 0)}
                 disabled={submitting}
-                className="bg-white"
+                className="border-black bg-white"
               />
             </div>
           </div>
         </fieldset>
 
-        <fieldset className="rounded-sm border p-4 space-y-4">
+        <fieldset className="border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Branding</legend>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Project Color</Label>
@@ -294,7 +294,7 @@ export function ProjectCreateForm({
           </div>
         </fieldset>
 
-        <fieldset className="rounded-sm border p-4 space-y-4">
+        <fieldset className="border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Attachments</legend>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Project File</Label>
@@ -354,10 +354,10 @@ export function ProjectCreateForm({
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t">
-        <Button variant="outline" onClick={onCancel} disabled={submitting} className="">
+        <Button variant="outline" onClick={onCancel} disabled={submitting} className="w-32 h-10">
           Cancel
         </Button>
-        <Button disabled={!projectName || !selectedClient || submitting} onClick={onSubmit} className="touch-target">
+        <Button disabled={!projectName || !selectedClient || submitting} onClick={onSubmit} className="w-32 h-10 touch-target">
           {submitting ? (
             <span className="flex items-center gap-2">
               <span className="size-4 animate-spin rounded-sm border-2 border-background border-t-transparent" />
@@ -434,17 +434,17 @@ export function ProjectEditForm({
       <div className="relative flex-1 overflow-hidden px-1">
         <ScrollArea className="h-full px-5">
           <div className="space-y-8 py-6 w-full">
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">General</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Project Name</Label>
-                  <Input value={editName} onChange={(e) => onEditNameChange(e.target.value)} className="bg-white" />
+                  <Input value={editName} onChange={(e) => onEditNameChange(e.target.value)} className="border-black bg-white" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Client</Label>
                   <Select value={editClient} onValueChange={onEditClientChange}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger className="border-black bg-white">
                       <SelectValue placeholder="Select a client" />
                     </SelectTrigger>
                     <SelectContent>
@@ -464,17 +464,17 @@ export function ProjectEditForm({
                     value={editDescription}
                     onChange={(e) => onEditDescriptionChange(e.target.value)}
                     rows={3}
-                    className="bg-white"
+                    className="border-black bg-white"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Deadline</Label>
-                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="bg-white" />
+                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="border-black bg-white" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Status</Label>
                   <Select value={editStatus} onValueChange={(v) => onEditStatusChange(v as "Active" | "Inactive")}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger className="border-black bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -488,21 +488,21 @@ export function ProjectEditForm({
 
             <Separator />
 
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Timeline &amp; Team</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Start Date</Label>
-                  <Input type="date" value={editStartDate} onChange={(e) => onEditStartDateChange(e.target.value)} className="bg-white" />
+                  <Input type="date" value={editStartDate} onChange={(e) => onEditStartDateChange(e.target.value)} className="border-black bg-white" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Deadline</Label>
-                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="bg-white" />
+                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="border-black bg-white" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Health</Label>
                   <Select value={editHealth} onValueChange={onEditHealthChange}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger className="border-black bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -515,7 +515,7 @@ export function ProjectEditForm({
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Priority</Label>
                   <Select value={editPriority} onValueChange={onEditPriorityChange}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger className="border-black bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -579,13 +579,13 @@ export function ProjectEditForm({
 
             <Separator />
 
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Budget &amp; Category</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Category</Label>
                   <Select value={editCategory} onValueChange={onEditCategoryChange}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger className="border-black bg-white">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -605,7 +605,7 @@ export function ProjectEditForm({
                     min={0}
                     value={editBudget}
                     onChange={(e) => onEditBudgetChange(Number(e.target.value))}
-                    className="bg-white"
+                    className="border-black bg-white"
                   />
                 </div>
               </div>
@@ -613,13 +613,13 @@ export function ProjectEditForm({
 
             <Separator />
 
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Access &amp; Branding</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Access</Label>
                   <Select value={editAccess} onValueChange={(v) => onEditAccessChange(v as "Public" | "Private")}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger className="border-black bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -658,7 +658,7 @@ export function ProjectEditForm({
 
             <Separator />
 
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Attachments</legend>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Project File</Label>
@@ -719,10 +719,10 @@ export function ProjectEditForm({
       </div>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-6 py-4 border-t bg-muted/10">
-        <Button variant="ghost" onClick={onCancel} className="order-2 md:order-1">
+        <Button variant="ghost" onClick={onCancel} className="w-32 h-10 order-2 md:order-1">
           Cancel
         </Button>
-        <Button className="bg-primary hover:bg-primary/80 touch-target order-1 md:order-2" onClick={onSubmit} disabled={submitting}>
+        <Button className="w-32 h-10 bg-primary hover:bg-primary/80 touch-target order-1 md:order-2" onClick={onSubmit} disabled={submitting}>
           {submitting ? "Saving..." : "Save"}
         </Button>
       </div>

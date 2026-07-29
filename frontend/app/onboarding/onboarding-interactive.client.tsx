@@ -49,7 +49,7 @@ export function OnboardingInteractive() {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="mx-auto max-w-5xl px-4 py-4">
+        <div className="mx-auto w-full px-4 py-4">
           <div className="flex items-center justify-center gap-2 sm:gap-8">
             {steps.map((step, index) => {
               const Icon = step.icon;
@@ -86,7 +86,7 @@ export function OnboardingInteractive() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:py-12">
+      <div className="mx-auto w-full px-4 py-8 sm:py-12">
         {currentStep === 1 && (
           <div className="space-y-8">
             <div className="text-center space-y-2">

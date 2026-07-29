@@ -93,8 +93,8 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <fieldset className="rounded-sm border p-4 space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+      <fieldset className="border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Patient Information</legend>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1.5">
@@ -133,7 +133,7 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
         </div>
       </fieldset>
 
-      <fieldset className="rounded-sm border p-4 space-y-4">
+      <fieldset className="border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Appointment Information</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -209,11 +209,11 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
       </fieldset>
 
       <div className="flex items-center gap-3 pt-2">
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" disabled={submitting} className="w-32 h-10">
           {submitting && <Loader2 className="mr-2 animate-spin" />}
           {initialData ? "Update Appointment" : "Book Appointment"}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} className="w-32 h-10">
           {initialData ? "Cancel" : "Reset"}
         </Button>
       </div>

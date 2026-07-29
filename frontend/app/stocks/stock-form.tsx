@@ -133,8 +133,8 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <fieldset className="rounded-sm border p-4 space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+      <fieldset className="border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Product Details</legend>
         <div className="flex gap-6">
           <div className="shrink-0">
@@ -224,7 +224,7 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
         </div>
       </fieldset>
 
-      <fieldset className="rounded-sm border p-4 space-y-4">
+      <fieldset className="border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Stock & Pricing</legend>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5">
           <div className="space-y-1.5">
@@ -247,8 +247,8 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
       </fieldset>
 
       <div className="flex justify-end gap-3 pt-2 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} className="px-5">Cancel</Button>
-        <Button type="submit" disabled={saving || !productName.trim()} className="px-5">
+        <Button type="button" variant="outline" onClick={onCancel} className="w-32 h-10">Cancel</Button>
+        <Button type="submit" disabled={saving || !productName.trim()} className="w-32 h-10">
           {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
           {stock ? "Update" : "Save"}
         </Button>

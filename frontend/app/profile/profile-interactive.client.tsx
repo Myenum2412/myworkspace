@@ -122,7 +122,7 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
   const displayAvatar = profileImage || session?.user?.image || dbUser?.image || "";
 
   return (
-    <div className="-m-4 w-[calc(100%+32px)] h-[calc(100%+32px)] flex flex-col">
+    <div className="-m-4 w-[calc(100%+32px)] h-[calc(100%+32px)] flex flex-col [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
       <div
         className="relative h-[200px] shrink-0 bg-gradient-to-b from-primary/90 via-primary/40 to-background bg-cover bg-center"
         style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}

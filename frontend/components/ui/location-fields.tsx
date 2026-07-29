@@ -21,8 +21,28 @@ interface PincodeInputProps {
 
 export function PincodeInput({ value, onChange, onResult, className }: PincodeInputProps) {
   const [loading, setLoading] = useState(false);
+  const [detecting, setDetecting] = useState(true);
   const [error, setError] = useState("");
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const detectedRef = useRef(false);
+
+  useEffect(() => {
+    if (detectedRef.current) return;
+    detectedRef.current = true;
+    fetch("http://ip-api.com/json/")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.status === "success" && data.city) {
+          onResult?.({
+            cities: [data.city],
+            states: [data.regionName],
+            countries: [data.country],
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setDetecting(false));
+  }, [onResult]);
 
   const handleChange = (val: string) => {
     const digits = val.replace(/\D/g, "").slice(0, 6);
@@ -66,7 +86,7 @@ export function PincodeInput({ value, onChange, onResult, className }: PincodeIn
         placeholder=""
         className={cn("text-sm", error && "border-destructive", className)}
       />
-      {loading && (
+      {(loading || detecting) && (
         <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 size-4 animate-spin text-muted-foreground" />
       )}
       {error && <p className="text-xs text-destructive mt-1">{error}</p>}

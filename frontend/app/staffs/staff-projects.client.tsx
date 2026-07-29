@@ -217,7 +217,7 @@ export default function StaffProjects({
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
           <DialogHeader>
             <DialogTitle>Add Project</DialogTitle>
           </DialogHeader>
@@ -287,8 +287,8 @@ export default function StaffProjects({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!name.trim() || creating}>
+            <Button variant="outline" onClick={() => setOpen(false)} className="w-32 h-10">Cancel</Button>
+            <Button onClick={handleCreate} disabled={!name.trim() || creating} className="w-32 h-10">
               {creating ? "Creating..." : "Create Project"}
             </Button>
           </DialogFooter>

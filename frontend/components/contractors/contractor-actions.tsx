@@ -146,7 +146,7 @@ export function ContractorEditDialog({ contractor, open, onOpenChange, onContrac
               </div>
             </div>
 
-            <fieldset className="rounded-sm border p-4 space-y-4">
+            <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">Emergency Contacts</legend>
               {form.emergencyContacts?.map((c, i) => (
                 <div key={i} className="rounded-sm border p-3 space-y-3">

@@ -30,6 +30,18 @@ function buildTaskLookupPipeline(match: Record<string, any>, sort: Record<string
     },
     { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
     {
+      $lookup: {
+        from: "teams",
+        let: { tid: "$teamId" },
+        pipeline: [
+          { $match: { $expr: { $eq: [{ $toString: "$_id" }, "$$tid"] } } },
+          { $project: { _id: 1, name: 1 } },
+        ],
+        as: "team",
+      },
+    },
+    { $unwind: { path: "$team", preserveNullAndEmptyArrays: true } },
+    {
       $project: {
         _id: 1,
         title: 1,
@@ -44,6 +56,8 @@ function buildTaskLookupPipeline(match: Record<string, any>, sort: Record<string
         creatorName: { $ifNull: ["$creator.name", ""] },
         createdAt: 1,
         isSaved: { $ifNull: ["$isSaved", false] },
+        teamId: 1,
+        teamName: { $ifNull: ["$team.name", ""] },
       },
     },
   ];
@@ -63,6 +77,8 @@ const mapTask = (t: any) => ({
   creatorName: t.creatorName || "",
   createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : "",
   isSaved: t.isSaved ?? false,
+  teamId: t.teamId || "",
+  teamName: t.teamName || "",
 });
 
 export async function GET() {
@@ -77,7 +93,7 @@ export async function GET() {
     const coll = db.collection(collections.tasks);
     const [tasksRaw, teamTasksRaw, myTasksRaw, savedTasksRaw, upcomingRaw] = await Promise.all([
       coll.aggregate(buildTaskLookupPipeline({ orgId }, { createdAt: -1 }, 10)).toArray(),
-      coll.aggregate(buildTaskLookupPipeline({ orgId }, { createdAt: -1 }, 10)).toArray(),
+      coll.aggregate(buildTaskLookupPipeline({ orgId, teamId: { $exists: true, $nin: [null, ""] } }, { createdAt: -1 }, 50)).toArray(),
       coll.aggregate(buildTaskLookupPipeline({ orgId, assigneeId: userId }, { createdAt: -1 }, 10)).toArray(),
       coll.aggregate(buildTaskLookupPipeline({ orgId, isSaved: true }, { createdAt: -1 }, 10)).toArray(),
       coll.aggregate(buildTaskLookupPipeline({ orgId, dueDate: { $gte: now }, status: { $nin: ["done", "cancelled"] } }, { dueDate: 1 }, 10)).toArray(),

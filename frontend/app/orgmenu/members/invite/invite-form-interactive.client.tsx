@@ -69,7 +69,7 @@ export function InviteMemberFormInteractive() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
       <p className="text-sm text-muted-foreground">
         Enter email addresses to invite new members to your organization.
       </p>
@@ -98,7 +98,7 @@ export function InviteMemberFormInteractive() {
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="pt-2">
-        <Button type="submit" disabled={sending || emails.every((e) => !e)}>
+        <Button type="submit" disabled={sending || emails.every((e) => !e)} className="w-32 h-10">
           {sending ? <Loader2Icon className="animate-spin mr-1" /> : null}
           {sending ? "Sending..." : "Send invitations"}
         </Button>

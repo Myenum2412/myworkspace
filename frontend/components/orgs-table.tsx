@@ -205,10 +205,10 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
           </div>
 
           <div className="flex items-center justify-end gap-3 px-6 py-4 bg-muted/30 border-t">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="px-5">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-32 h-10">
               Cancel
             </Button>
-            <Button type="submit" disabled={pending} className="px-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+            <Button type="submit" disabled={pending} className="w-32 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
               {pending ? (
                 <>
                   <span className="animate-spin size-4 border-2 border-white/30 border-t-white rounded-sm mr-2" />

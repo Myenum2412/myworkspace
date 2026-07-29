@@ -76,8 +76,8 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <fieldset className="rounded-sm border p-4 space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+      <fieldset className="border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Customer Details</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -125,7 +125,7 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
         </div>
       </fieldset>
 
-      <fieldset className="rounded-sm border p-4 space-y-4">
+      <fieldset className="border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Status & Remarks</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -154,8 +154,8 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
       </fieldset>
 
       <div className="flex justify-end gap-3 pt-2 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} className="px-5">Cancel</Button>
-        <Button type="submit" disabled={saving || !customerName.trim()} className="px-5">
+        <Button type="button" variant="outline" onClick={onCancel} className="w-32 h-10">Cancel</Button>
+        <Button type="submit" disabled={saving || !customerName.trim()} className="w-32 h-10">
           {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
           {engagement ? "Update" : "Save"}
         </Button>

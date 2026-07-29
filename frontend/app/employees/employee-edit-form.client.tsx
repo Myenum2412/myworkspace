@@ -37,7 +37,7 @@ function toRow(arr: any[] | undefined, defaults: Record<string, any>): Row[] {
 
 function Section({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) {
   return (
-    <fieldset className="rounded-sm border p-4 space-y-4">
+    <fieldset className="border p-4 space-y-4">
       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
         <Icon className="size-3.5" />
         {title}
@@ -224,7 +224,7 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
       <div className={`flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-5 ${
         isViewMode ? "[&_input:disabled]:bg-white [&_input:disabled]:text-black [&_input:disabled]:opacity-100 [&_select:disabled]:bg-white [&_select:disabled]:text-black [&_select:disabled]:opacity-100 [&_textarea:disabled]:bg-white [&_textarea:disabled]:text-black [&_textarea:disabled]:opacity-100" : ""
       }`}>
-        <fieldset disabled={isViewMode} className="space-y-5 border-0 p-0 m-0 min-w-0">
+        <fieldset disabled={isViewMode} className="space-y-5 border-0 p-0 m-0 min-w-0 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
         {/* Profile */}
         <Section icon={UserIcon} title="Profile">
           <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start">
@@ -438,16 +438,16 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
 
       <div className="shrink-0 border-t px-4 sm:px-6 py-4 flex flex-col sm:flex-row gap-2 sm:gap-2 justify-end bg-white mt-4">
         {isViewMode ? (
-          <Button onClick={() => onSwitchToEdit && onSwitchToEdit()} className="touch-target">
+          <Button onClick={() => onSwitchToEdit && onSwitchToEdit()} className="w-32 h-10">
             <PencilIcon className="size-3.5 mr-1.5" />
             Edit Employee
           </Button>
         ) : (
           <>
-            <Button variant="outline" onClick={onCancel} disabled={submitting} className="touch-target">
+            <Button variant="outline" onClick={onCancel} disabled={submitting} className="w-32 h-10">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()} className="touch-target">
+            <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()} className="w-32 h-10">
               {submitting ? <Loader2Icon className="size-4 animate-spin" /> : <><SaveIcon className="size-3.5 mr-1.5" />Save Changes</>}
             </Button>
           </>

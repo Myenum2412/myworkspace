@@ -275,7 +275,6 @@ export function WorkInfoSection({ formData, onChange, options }: WorkInfoSection
               <SelectValue placeholder="" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="team_staff">Team Staff</SelectItem>
               <OptionList options={[]} value={formData.roleName || undefined} />
             </SelectContent>
           </Select>
