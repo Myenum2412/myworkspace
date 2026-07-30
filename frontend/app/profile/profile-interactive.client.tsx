@@ -326,13 +326,19 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
                 <div>
                   <p className="text-sm text-muted-foreground">Member since</p>
                   <p className="text-sm font-medium">
-                    {dbUser?.createdAt
-                      ? new Date(dbUser.createdAt).toLocaleDateString("en-GB", {
+                    {dbUser?.joiningDate
+                      ? new Date(dbUser.joiningDate).toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
                         })
-                      : "\u2014"}
+                      : dbUser?.createdAt
+                        ? new Date(dbUser.createdAt).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "\u2014"}
                   </p>
                 </div>
               </div>

@@ -124,6 +124,7 @@ export async function GET() {
           role: user.role || "staffs",
           image: user.image || "",
           bannerUrl: user.bannerUrl || "",
+          joiningDate: user.joiningDate || "",
           createdAt: user.createdAt || new Date().toISOString(),
         },
         org: org ? {
