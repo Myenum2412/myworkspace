@@ -18,7 +18,7 @@ export default function OverviewPage() {
   useEffect(() => {
     let cancelled = false;
     fetch("/api/overview")
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : null)
       .then(d => { if (!cancelled) setData(d); })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false); });
@@ -28,5 +28,7 @@ export default function OverviewPage() {
   if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;
 
-  return <OverviewClient {...(data || {})} />;
+  const defaults = { overviewTasks: [], currentUserId: "", teamTasks: [], allTasks: [], orgId: "", myTasks: [], userId: "", savedTasks: [], upcomingTasks: [] };
+
+  return <OverviewClient {...(data || defaults)} />;
 }

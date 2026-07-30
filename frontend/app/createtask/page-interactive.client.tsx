@@ -274,8 +274,8 @@ export function CreateTaskPageInteractive() {
               const selected = localTaskDefs.find((d) => d.id === val);
               if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
             }}>
-              <SelectTrigger className="w-fit gap-1 border text-xs font-medium text-muted-foreground shadow-none">
-                <FileTextIcon className="size-3" />
+              <SelectTrigger className="w-fit gap-1 border text-xs font-medium text-muted-foreground shadow-none truncate">
+                <FileTextIcon className="size-3 shrink-0" />
                 <span className="max-w-[100px] truncate">Template</span>
               </SelectTrigger>
               <SelectContent align="end" className="text-xs shadow-none">
@@ -400,11 +400,11 @@ export function CreateTaskPageInteractive() {
               <FormField label="Client">
                 <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
                   <SelectTrigger className="text-sm shadow-none">
-                    <SelectValue placeholder="" />
+                    <SelectValue placeholder="" className="truncate" />
                   </SelectTrigger>
                   <SelectContent className="shadow-none">
                     {clientList.map((c) => (
-                      <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
+                      <SelectItem key={c} value={c} className="text-sm truncate">{c}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -413,15 +413,15 @@ export function CreateTaskPageInteractive() {
               <FormField label="Project">
                 <Select value={projectName} onValueChange={setProjectName}>
                   <SelectTrigger className="text-sm shadow-none">
-                    <SelectValue placeholder="" />
+                    <SelectValue placeholder="" className="truncate" />
                   </SelectTrigger>
                   <SelectContent className="shadow-none">
                     {selectedClient
                       ? projectList.filter((p) => p.client === selectedClient).map((p) => (
-                          <SelectItem key={p.id} value={p.name} className="text-sm">{p.name}</SelectItem>
+                          <SelectItem key={p.id} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
                         ))
                       : projectList.map((p) => (
-                          <SelectItem key={p.id} value={p.name} className="text-sm">{p.name}</SelectItem>
+                          <SelectItem key={p.id} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
                         ))}
                   </SelectContent>
                 </Select>
@@ -502,17 +502,17 @@ export function CreateTaskPageInteractive() {
 
                 <FormField label="Assign Team" required>
                   <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                    <SelectTrigger className="text-sm shadow-none">
-                      <SelectValue placeholder="Select a team" />
-                    </SelectTrigger>
-                    <SelectContent className="shadow-none">
-                      {teams.length === 0 ? (
-                        <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
-                      ) : (
-                        teams.map((t) => (
-                          <SelectItem key={t.id} value={t.id} className="text-sm">{t.name} ({t.memberCount} members)</SelectItem>
-                        ))
-                      )}
+                  <SelectTrigger className="text-sm shadow-none">
+                    <SelectValue placeholder="Select a team" className="truncate" />
+                  </SelectTrigger>
+                  <SelectContent className="shadow-none">
+                    {teams.length === 0 ? (
+                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
+                    ) : (
+                      teams.map((t) => (
+                        <SelectItem key={t.id} value={t.id} className="text-sm truncate">{t.name} ({t.memberCount} members)</SelectItem>
+                      ))
+                    )}
                     </SelectContent>
                   </Select>
                 </FormField>

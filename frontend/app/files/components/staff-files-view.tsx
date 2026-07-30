@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
-import { UserIcon, FileIcon, Loader2Icon, SearchIcon, BriefcaseIcon, ArrowLeftIcon, FolderIcon, DownloadIcon, Trash2Icon } from "lucide-react";
+import { UserIcon, FileIcon, Loader2Icon, SearchIcon, ArrowLeftIcon, FolderIcon, DownloadIcon, FolderOpenIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,12 @@ type FileRecord = {
   size: number;
   createdAt: string;
   uploaderName: string;
-  uploaderId: string;
+};
+
+type FolderRecord = {
+  id: string;
+  name: string;
+  path: string;
 };
 
 function getFileIcon(mimeType: string): string {
@@ -43,8 +48,18 @@ export function StaffFilesView() {
   const [search, setSearch] = useState("");
   const [selectedStaff, setSelectedStaff] = useState<StaffRecord | null>(null);
   const [staffFiles, setStaffFiles] = useState<FileRecord[]>([]);
+  const [staffFolders, setStaffFolders] = useState<FolderRecord[]>([]);
   const [filesLoading, setFilesLoading] = useState(false);
+  const setCurrentFolder = useFileSystemStore((s) => s.setCurrentFolder);
+  const setCurrentNav = useFileSystemStore((s) => s.setCurrentNav);
+  const setBreadcrumbs = useFileSystemStore((s) => s.setBreadcrumbs);
   const { orgId } = useFileSystemStore();
+
+  const openFolder = useCallback((folder: FolderRecord) => {
+    setBreadcrumbs([{ id: null, name: "My Files" }, { id: folder.id, name: folder.name }]);
+    setCurrentFolder(folder.id);
+    setCurrentNav("files");
+  }, [setBreadcrumbs, setCurrentFolder, setCurrentNav]);
 
   useEffect(() => {
     if (!orgId) return;
@@ -52,7 +67,7 @@ export function StaffFilesView() {
     fetch(`/api/employees?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
-        const arr: Record<string, unknown>[] = d.data || d || [];
+        const arr: Record<string, unknown>[] = d.data || d.employees || [];
         setStaff(arr.map((s: any) => ({
           id: s.id || s._id,
           name: s.name || s.fullName || `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.email,
@@ -68,10 +83,13 @@ export function StaffFilesView() {
   useEffect(() => {
     if (!selectedStaff || !orgId) return;
     setFilesLoading(true);
-    fetch(`/api/files?orgId=${encodeURIComponent(orgId)}&uploaderId=${encodeURIComponent(selectedStaff.id)}`, { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => {
-        setStaffFiles(d.data || []);
+    Promise.all([
+      fetch(`/api/files?orgId=${encodeURIComponent(orgId)}&uploaderId=${encodeURIComponent(selectedStaff.id)}`, { credentials: "include" }).then(r => r.json()),
+      fetch(`/api/folders?orgId=${encodeURIComponent(orgId)}&createdBy=${encodeURIComponent(selectedStaff.id)}`, { credentials: "include" }).then(r => r.json()),
+    ])
+      .then(([filesRes, foldersRes]) => {
+        setStaffFiles(filesRes.data || []);
+        setStaffFolders(foldersRes.data || foldersRes || []);
       })
       .catch(() => {})
       .finally(() => setFilesLoading(false));
@@ -105,36 +123,68 @@ export function StaffFilesView() {
           <div className="flex items-center justify-center py-12">
             <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
           </div>
-        ) : staffFiles.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
-            <FileIcon className="size-12 text-muted-foreground/20" />
-            <p className="text-sm font-medium">No files uploaded</p>
-            <p className="text-xs">This staff member hasn&apos;t uploaded any files yet</p>
-          </div>
         ) : (
-          <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {staffFiles.map((f) => (
-              <div
-                key={f.id}
-                className="flex items-center gap-3 p-3 rounded-sm border bg-card hover:border-primary/30 hover:shadow-sm transition-all group"
-              >
-                <span className="text-xl shrink-0">{getFileIcon(f.mimeType)}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{f.originalName}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatSize(f.size)} &middot; {new Date(f.createdAt).toLocaleDateString()}
-                  </p>
+          <>
+            {staffFolders.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <FolderOpenIcon className="size-3.5" />
+                  Folders
+                </h3>
+                <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                  {staffFolders.map((f) => (
+                    <div
+                      key={f.id}
+                      className="flex items-center gap-2 p-3 rounded-sm border bg-card cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all"
+                      onDoubleClick={() => openFolder(f)}
+                      title="Double-click to open"
+                    >
+                      <FolderIcon className="size-5 text-amber-500 shrink-0" />
+                      <span className="text-sm font-medium truncate">{f.name}</span>
+                    </div>
+                  ))}
                 </div>
-                <a
-                  href={`/api/files/${f.id}/download`}
-                  className="size-8 rounded-sm hover:bg-accent flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Download"
-                >
-                  <DownloadIcon className="size-4 text-muted-foreground" />
-                </a>
               </div>
-            ))}
-          </div>
+            )}
+
+            <div>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <FileIcon className="size-3.5" />
+                Files {staffFiles.length > 0 && `(${staffFiles.length})`}
+              </h3>
+              {staffFiles.length === 0 && staffFolders.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
+                  <FileIcon className="size-12 text-muted-foreground/20" />
+                  <p className="text-sm font-medium">No files or folders</p>
+                  <p className="text-xs">This staff member hasn&apos;t created any files or folders yet</p>
+                </div>
+              ) : staffFiles.length === 0 ? null : (
+                <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {staffFiles.map((f) => (
+                    <div
+                      key={f.id}
+                      className="flex items-center gap-3 p-3 rounded-sm border bg-card hover:border-primary/30 hover:shadow-sm transition-all group"
+                    >
+                      <span className="text-xl shrink-0">{getFileIcon(f.mimeType)}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{f.originalName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatSize(f.size)} &middot; {new Date(f.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <a
+                        href={`/api/files/${f.id}/download`}
+                        className="size-8 rounded-sm hover:bg-accent flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Download"
+                      >
+                        <DownloadIcon className="size-4 text-muted-foreground" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     );

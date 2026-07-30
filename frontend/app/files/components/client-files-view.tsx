@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { Building2Icon, FolderIcon, FileIcon, ChevronRightIcon, Loader2Icon, SearchIcon, ArrowLeftIcon, DownloadIcon, FolderOpenIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,16 @@ export function ClientFilesView() {
   const [clientFiles, setClientFiles] = useState<FileRecord[]>([]);
   const [clientFolders, setClientFolders] = useState<FolderRecord[]>([]);
   const [filesLoading, setFilesLoading] = useState(false);
+  const setCurrentFolder = useFileSystemStore((s) => s.setCurrentFolder);
+  const setCurrentNav = useFileSystemStore((s) => s.setCurrentNav);
+  const setBreadcrumbs = useFileSystemStore((s) => s.setBreadcrumbs);
   const { orgId } = useFileSystemStore();
+
+  const openFolder = useCallback((folder: FolderRecord) => {
+    setBreadcrumbs([{ id: null, name: "My Files" }, { id: folder.id, name: folder.name }]);
+    setCurrentFolder(folder.id);
+    setCurrentNav("files");
+  }, [setBreadcrumbs, setCurrentFolder, setCurrentNav]);
 
   useEffect(() => {
     if (!orgId) return;
@@ -47,7 +56,7 @@ export function ClientFilesView() {
     fetch(`/api/clients?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
-        const arr: Record<string, unknown>[] = d.data || d || [];
+        const arr: Record<string, unknown>[] = d.data || d.initialClients || d.clients || [];
         setClients(arr.map((c: any) => ({ id: c.id, name: c.name, company: c.company || "", email: c.email || "", status: c.status || "Active" })));
       })
       .catch(() => {})
@@ -109,7 +118,9 @@ export function ClientFilesView() {
                   {clientFolders.map((f) => (
                     <div
                       key={f.id}
-                      className="flex items-center gap-2 p-3 rounded-sm border bg-card"
+                      className="flex items-center gap-2 p-3 rounded-sm border bg-card cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all"
+                      onDoubleClick={() => openFolder(f)}
+                      title="Double-click to open"
                     >
                       <FolderIcon className="size-5 text-amber-500 shrink-0" />
                       <span className="text-sm font-medium truncate">{f.name}</span>

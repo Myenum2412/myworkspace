@@ -5,6 +5,7 @@ import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { ObjectId } from "mongodb";
 import { randomUUID } from "crypto";
+import { v4 as uuid } from "uuid";
 
 export async function GET() {
   let session;
@@ -102,6 +103,50 @@ export async function POST(req: Request) {
     };
 
     await db.collection(collections.clients).insertOne(clientDoc);
+
+    // Create a root folder for the client in the files section
+    const folderName = clientDoc.displayName || clientDoc.name || clientDoc.company || "Client";
+    const rootFolderId = uuid();
+    await db.collection("folders").insertOne({
+      id: rootFolderId,
+      orgId,
+      parentId: null,
+      name: folderName,
+      path: `/${folderName}`,
+      clientId: id,
+      createdBy: session.user.id,
+      deletedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const subfolders = ["Documents", "Contracts", "Invoices", "Quotations", "Projects", "Drawings", "Images", "Reports", "Attachments", "Other"];
+    for (const sub of subfolders) {
+      const subId = uuid();
+      await db.collection("folders").insertOne({
+        id: subId,
+        orgId,
+        parentId: rootFolderId,
+        name: sub,
+        path: `/${folderName}/${sub}`,
+        clientId: id,
+        createdBy: session.user.id,
+        deletedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    await db.collection(collections.activityLogs).insertOne({
+      id: uuid(),
+      orgId,
+      userId: session.user.id,
+      action: "folder.created",
+      entityType: "folder",
+      entityId: rootFolderId,
+      description: `Folder "${folderName}" created for client ${clientDoc.name}`,
+    });
+
     return NextResponse.json({ success: true, data: { client: { id, name: clientDoc.name, email: clientDoc.email, company: clientDoc.company, status: clientDoc.status } } }, { status: 201 });
   } catch (err) {
     console.error("[POST /api/clients]", err);

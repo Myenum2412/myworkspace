@@ -16,11 +16,12 @@ import { ShareDialog } from "./components/share-dialog";
 import { PropertiesPanel } from "./components/properties-panel";
 import { RecycleBin } from "./components/recycle-bin";
 import { AuditLogView } from "./components/audit-log";
-import { SharedWithMe } from "./components/shared-view";
+
 import { FavoritesView } from "./components/favorites-view";
 import { RecentView } from "./components/recent-view";
 import { ClientFilesView } from "./components/client-files-view";
 import { StaffFilesView } from "./components/staff-files-view";
+import { TeamFilesView } from "./components/team-files-view";
 import { ROLES } from "@/lib/rbac";
 import { CreateFolderDialog, RenameDialog, MoveDialog } from "./components/dialogs";
 import { UploadDialog } from "./components/upload-queue";
@@ -133,12 +134,12 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
                 </>
               )}
 
-              {currentNav === "shared" && <SharedWithMe />}
               {currentNav === "favorites" && <FavoritesView />}
               {currentNav === "approvals" && <ApprovalFilesView />}
               {currentNav === "recent" && <RecentView />}
               {currentNav === "recycle" && <RecycleBin />}
               {currentNav === "audit" && <AuditLogView />}
+              {currentNav === "team" && <TeamFilesView />}
               {currentNav === "client-files" && <ClientFilesView />}
               {currentNav === "staff-files" && <StaffFilesView />}
               {currentNav === "storage" && <StorageDashboard orgId={orgId} />}

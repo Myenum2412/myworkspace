@@ -88,7 +88,7 @@ async function getAllEmployees(): Promise<Array<Record<string, unknown>>> {
     return [];
   }
   const data = await res.json();
-  return data.data || data || [];
+  return data.employees || data.data || data || [];
 }
 
 async function resendCredentialsEmail(userId: string): Promise<{ success: boolean; emailStatus: string; error?: string; newTempPassword?: string }> {

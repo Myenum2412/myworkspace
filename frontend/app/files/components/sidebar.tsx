@@ -4,7 +4,6 @@ import { useFileSystemStore } from "@/lib/file-system/store";
 import { cn } from "@/lib/utils";
 import {
   FolderIcon,
-  Share2Icon,
   ClockIcon,
   StarIcon,
   Trash2Icon,
@@ -28,12 +27,12 @@ type NavItem = {
 
 const mainNav: NavItem[] = [
   { id: "files", label: "Files", icon: <FolderIcon className="size-4" />, shortcut: "1" },
-  { id: "shared", label: "Shared with Me", icon: <Share2Icon className="size-4" />, shortcut: "2" },
-  { id: "recent", label: "Recent", icon: <ClockIcon className="size-4" />, shortcut: "3" },
+  { id: "recent", label: "Recent", icon: <ClockIcon className="size-4" />, shortcut: "2" },
+  { id: "favorites", label: "Favorites", icon: <StarIcon className="size-4" />, shortcut: "3" },
   { id: "favorites", label: "Favorites", icon: <StarIcon className="size-4" />, shortcut: "4" },
-  { id: "approvals", label: "Approvals", icon: <ClipboardCheckIcon className="size-4" />, shortcut: "5" },
-  { id: "recycle", label: "Recycle Bin", icon: <Trash2Icon className="size-4" />, shortcut: "6" },
-  { id: "audit", label: "Audit Log", icon: <HistoryIcon className="size-4" />, shortcut: "7" },
+  { id: "approvals", label: "Approvals", icon: <ClipboardCheckIcon className="size-4" />, shortcut: "4" },
+  { id: "recycle", label: "Recycle Bin", icon: <Trash2Icon className="size-4" />, shortcut: "5" },
+  { id: "audit", label: "Audit Log", icon: <HistoryIcon className="size-4" />, shortcut: "6" },
 ];
 
 const extraNav: NavItem[] = [
@@ -77,7 +76,7 @@ export function Sidebar() {
 
         <p className="text-[11px] font-medium text-muted-foreground px-2 pt-4 pb-1 uppercase tracking-wider">More</p>
         {extraNav.map((item) => {
-          const navId = item.id === "starred" ? "favorites" : item.id === "team" ? "shared" : item.id;
+          const navId = item.id === "starred" ? "favorites" : item.id;
           return (
             <button
               key={item.id}

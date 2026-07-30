@@ -152,7 +152,7 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
         created_by: t.headUserId || "",
         memberCount: t.memberIds?.length || 0,
       })));
-      const clientArr = Array.isArray(clientsRes) ? clientsRes : clientsRes?.data || [];
+      const clientArr = Array.isArray(clientsRes) ? clientsRes : clientsRes?.initialClients || clientsRes?.data || [];
       const clientNames = clientArr.map((c: { name?: string }) => c.name).filter(Boolean);
       const projectArr = Array.isArray(projectsRes) ? projectsRes : projectsRes?.data || [];
       const mappedProjects = projectArr.map((p: { id?: string; name?: string; client?: string }) => ({
@@ -284,8 +284,8 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
                 const selected = localTaskDefs.find((d) => d.id === val);
                 if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
               }}>
-                <SelectTrigger className="h-7 w-fit gap-1 border text-xs font-medium text-muted-foreground">
-                  <FileTextIcon className="size-3" />
+                <SelectTrigger className="h-7 w-fit gap-1 border text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  <FileTextIcon className="size-3 shrink-0" />
                   <span className="max-w-[100px] truncate">Template</span>
                 </SelectTrigger>
                 <SelectContent align="end" className="text-xs">
@@ -357,11 +357,11 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             <FormField label="Client">
               <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
                 <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="" />
+                  <SelectValue placeholder="" className="truncate" />
                 </SelectTrigger>
                 <SelectContent>
                   {clientList.map((c) => (
-                    <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
+                    <SelectItem key={c} value={c} className="text-sm truncate">{c}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -370,15 +370,15 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
             <FormField label="Project">
               <Select value={projectName} onValueChange={setProjectName}>
                 <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="" />
+                  <SelectValue placeholder="" className="truncate" />
                 </SelectTrigger>
                 <SelectContent>
                   {selectedClient
                     ? projectList.filter((p) => p.client === selectedClient).map((p) => (
-                        <SelectItem key={p.id} value={p.name} className="text-sm">{p.name}</SelectItem>
+                        <SelectItem key={p.id} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
                       ))
                     : projectList.map((p) => (
-                        <SelectItem key={p.id} value={p.name} className="text-sm">{p.name}</SelectItem>
+                        <SelectItem key={p.id} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
                       ))}
                 </SelectContent>
               </Select>
@@ -461,14 +461,14 @@ export function TaskAllocationModal({ open, onClose, taskDefinitions = [] }: Tas
               <FormField label="Assign Team" required>
                 <Select value={selectedTeam} onValueChange={setSelectedTeam}>
                   <SelectTrigger className="text-sm">
-                    <SelectValue placeholder="Select a team" />
+                    <SelectValue placeholder="Select a team" className="truncate" />
                   </SelectTrigger>
                   <SelectContent>
                     {teams.length === 0 ? (
                       <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
                     ) : (
                       teams.map((t) => (
-                        <SelectItem key={t.id} value={t.id} className="text-sm">{t.name} ({t.memberCount} members)</SelectItem>
+                        <SelectItem key={t.id} value={t.id} className="text-sm truncate">{t.name} ({t.memberCount} members)</SelectItem>
                       ))
                     )}
                   </SelectContent>

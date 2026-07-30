@@ -11,6 +11,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import type { Task } from "./columns";
 import Stats07 from "@/components/stats-07";
+import { DataTable } from "@/components/data-table";
+import type { ColumnDef } from "@tanstack/react-table";
 
 export interface OverviewInteractiveProps {
   tasks: Task[];
@@ -57,6 +59,42 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
       .map(([id, data]) => ({ id, ...data }))
       .sort((a, b) => b.completed - a.completed);
   }, [tasks]);
+
+  type LeaderboardEntry = { id: string; name: string; avatar: string; completed: number };
+
+  const leaderboardColumns: ColumnDef<LeaderboardEntry>[] = [
+    {
+      id: "employee",
+      header: "Employee",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Avatar className="size-7">
+            <AvatarImage src={row.original.avatar} alt={row.original.name} />
+            <AvatarFallback className="text-[10px]">
+              {row.original.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-medium">{row.original.name}</span>
+        </div>
+      ),
+    },
+    {
+      id: "completed",
+      header: "Completed",
+      cell: ({ row }) => <span className="font-semibold">{row.original.completed}</span>,
+    },
+    {
+      id: "rank",
+      header: "Rank",
+      cell: ({ row }) => {
+        const index = row.index;
+        if (index === 0) return <span className="text-[10px] font-semibold text-yellow-600">1st</span>;
+        if (index === 1) return <span className="text-[10px] font-semibold text-gray-500">2nd</span>;
+        if (index === 2) return <span className="text-[10px] font-semibold text-amber-700">3rd</span>;
+        return <span className="text-[10px] font-semibold text-muted-foreground">#{index + 1}</span>;
+      },
+    },
+  ];
 
   const filteredOverdue = searchQuery
     ? overdueTasks.filter((t) =>
@@ -151,44 +189,16 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
                 <span className="text-xs font-normal text-muted-foreground ml-1">by completed tasks</span>
               </CardTitle>
             </CardHeader>
-            <div className="grid grid-cols-[32px_36px_1fr_80px_50px] gap-2 px-0 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b">
-              <span>#</span>
-              <span></span>
-              <span>Employee</span>
-              <span className="text-right">Completed</span>
-              <span className="text-right">Rank</span>
-            </div>
-            <CardContent className="flex-1 min-h-0 overflow-y-auto p-0 space-y-1">
-              {leaderboard.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                  <UserIcon className="size-8 mb-2 text-muted-foreground/30" />
-                  <p className="text-sm">No completed tasks yet</p>
-                </div>
-              ) : leaderboard.map((emp, index) => (
-                <div
-                  key={emp.id}
-                  className="grid grid-cols-[32px_36px_1fr_80px_50px] gap-2 items-center p-2.5 border"
-                >
-                  <span className="text-xs font-mono text-muted-foreground">{index + 1}</span>
-                  <Avatar className="size-8">
-                    <AvatarImage src={emp.avatar} alt={emp.name} />
-                    <AvatarFallback className="text-[10px]">{emp.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium truncate">{emp.name}</span>
-                  <span className="text-sm text-right">{emp.completed}</span>
-                  <div className="flex justify-end shrink-0">
-                    {index === 0 ? (
-                      <span className="text-[10px] font-semibold text-yellow-600">1st</span>
-                    ) : index === 1 ? (
-                      <span className="text-[10px] font-semibold text-gray-500">2nd</span>
-                    ) : index === 2 ? (
-                      <span className="text-[10px] font-semibold text-amber-700">3rd</span>
-                    ) : (
-                      <span className="text-[10px] font-semibold text-muted-foreground">#{index + 1}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <CardContent className="flex-1 min-h-0 p-0">
+              <DataTable
+                columns={leaderboardColumns}
+                data={leaderboard}
+                hideSearchBar
+                label="employee(s)"
+                emptyMessage="No completed tasks yet"
+                emptyIcon={<UserIcon className="size-6 text-muted-foreground/50" />}
+                showCheckboxes={false}
+              />
             </CardContent>
           </Card>
         </div>
