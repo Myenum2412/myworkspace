@@ -4,8 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BillingPageOverview from "./page.client"
 import BillingServicesPage from "./services/page.client"
 import BillingInvoicesPage from "./invoices/page.client"
-import ReceiptsPageClient from "./receipts/page.client"
 import QuotationsPageClient from "./quotations/page.client"
+import ReceiptsPageClient from "./receipts/page.client"
 
 export default function BillingClient() {
   return (

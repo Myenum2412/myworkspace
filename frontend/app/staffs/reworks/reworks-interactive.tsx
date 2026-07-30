@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -18,13 +19,23 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RotateCcwIcon, PlusIcon, EyeIcon, PencilIcon, Trash2Icon, CheckCircleIcon, AlertCircleIcon, ListTodoIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  RotateCcwIcon,
+  PlusIcon,
+  EyeIcon,
+  PencilIcon,
+  Trash2Icon,
+  ChevronLeft,
+  ChevronRight,
+  SearchIcon,
+  XIcon,
+} from "lucide-react";
 import Stats07 from "@/components/stats-07";
 
-type ReworkItem = {
+type RevisionItem = {
   id: number;
   description: string;
   selectedFiles: string;
@@ -37,20 +48,41 @@ const statusStyles: Record<string, string> = {
   InCompleted: "bg-yellow-100 text-yellow-700",
 };
 
-export default function ReworksInteractive() {
-  const [items, setItems] = useState<ReworkItem[]>([
+const PAGE_SIZE_OPTIONS = [30, 60, 90, 120] as const;
+
+export default function RevisionsInteractive() {
+  const [items, setItems] = useState<RevisionItem[]>([
     { id: 1, description: "Update dashboard UI colors", selectedFiles: "dashboard.tsx, theme.css", remarks: "Need client approval", status: "InCompleted" },
     { id: 2, description: "Fix login redirect issue", selectedFiles: "auth.ts", remarks: "Verified by QA", status: "Completed" },
     { id: 3, description: "Add pagination to reports", selectedFiles: "reports-table.tsx", remarks: "", status: "InCompleted" },
   ]);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(30);
-  const [viewItem, setViewItem] = useState<ReworkItem | null>(null);
-  const [editItem, setEditItem] = useState<ReworkItem | null>(null);
+  const [viewItem, setViewItem] = useState<RevisionItem | null>(null);
+  const [editItem, setEditItem] = useState<RevisionItem | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [newDescription, setNewDescription] = useState("");
   const [newFiles, setNewFiles] = useState("");
   const [newRemarks, setNewRemarks] = useState("");
+
+  function toggleSelect(id: number) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selected.size === paginated.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(paginated.map((i) => i.id)));
+    }
+  }
 
   function updateStatus(id: number, status: "Completed" | "InCompleted") {
     setItems((prev) =>
@@ -60,7 +92,7 @@ export default function ReworksInteractive() {
 
   function handleAdd() {
     if (!newDescription.trim()) return;
-    const newItem: ReworkItem = {
+    const newItem: RevisionItem = {
       id: Math.max(0, ...items.map((i) => i.id)) + 1,
       description: newDescription.trim(),
       selectedFiles: newFiles.trim(),
@@ -78,10 +110,22 @@ export default function ReworksInteractive() {
     setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
+  const filtered = useMemo(() =>
+    items.filter((i) =>
+      !searchQuery.trim() ||
+      i.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      i.selectedFiles.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      i.remarks.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [items, searchQuery]
+  );
+
   const paginated = useMemo(() => {
     const start = page * pageSize;
-    return items.slice(start, start + pageSize);
-  }, [items, page, pageSize]);
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
+  const allSelected = paginated.length > 0 && selected.size === paginated.length;
 
   const handlePageSizeChange = useCallback((value: string) => {
     setPageSize(Number(value));
@@ -95,160 +139,218 @@ export default function ReworksInteractive() {
   }, [items]);
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <RotateCcwIcon className="size-6" />
-          <h1 className="text-2xl font-bold">Reworks</h1>
+    <main className="flex flex-1 flex-col gap-0 p-4 sm:p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
+        <div className="flex items-center gap-3 min-w-0 shrink-0">
+          <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
+            <RotateCcwIcon className="size-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold tracking-tight">Revisions</h1>
+            <p className="text-sm text-muted-foreground">
+              {items.length} {items.length === 1 ? "item" : "items"} total
+            </p>
+          </div>
         </div>
-        <Button size="sm" onClick={() => setAddOpen(true)}>
-          <PlusIcon className="mr-1" />
-          Add Rework
+
+        <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">
+          <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder=""
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 border-0 shadow-none focus-visible:ring-0 w-full"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+              >
+                <XIcon className="size-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <Button size="sm" onClick={() => setAddOpen(true)} className="gap-2 shrink-0 touch-target">
+          <PlusIcon className="size-4" />
+          Add Revision
         </Button>
+      </div>
+
+      {/* Search (mobile) */}
+      <div className="relative w-full mb-4 sm:hidden">
+        <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder=""
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-10 border-0 shadow-none focus-visible:ring-0 w-full"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+            >
+              <XIcon className="size-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <Stats07
         items={[
-          { name: 'Total Reworks', value: summary.total, subtitle: 'All reworks' },
-          { name: 'Completed', value: summary.completed, subtitle: 'Done reworks' },
-          { name: 'In Progress', value: summary.inCompleted, subtitle: 'Pending reworks' },
+          { name: 'Total Revisions', value: summary.total, subtitle: 'All revision' },
+          { name: 'Completed', value: summary.completed, subtitle: 'Done revision' },
+          { name: 'In Progress', value: summary.inCompleted, subtitle: 'Pending revision' },
         ]}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <RotateCcwIcon className="size-4" />
-            Reworks ({items.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
-            <table className="table-premium w-full text-sm text-left">
-              <thead>
+      {/* Table */}
+      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)] rounded-lg mt-4">
+        <div className="overflow-x-auto overflow-y-auto flex-1">
+          <table className="table-premium w-full text-sm text-left" style={{ minWidth: 750 }}>
+            <thead className="sticky top-0 z-10 bg-primary">
+              <tr>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10 text-white">
+                  <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} aria-label="Select all" />
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap text-white">#</th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap text-white">Description</th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap text-white">Selected Files</th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap text-white">Remarks</th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-40 text-white">Status</th>
+                <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap w-24 text-white">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.length === 0 ? (
                 <tr>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-12">#</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Description</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Selected Files</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Remarks</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-40">Status</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-24">Actions</th>
+                  <td colSpan={7} className="text-center py-16 bg-white">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
+                        <RotateCcwIcon className="size-6 text-muted-foreground/50" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {searchQuery ? "No items match your search" : "No revisions yet"}
+                        </p>
+                        <p className="text-xs text-muted-foreground/60 mt-1">
+                          {searchQuery
+                            ? "Try adjusting your search criteria"
+                            : "Click 'Add Revision' to get started"}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {items.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                      No reworks found
+              ) : (
+                paginated.map((item, index) => (
+                  <tr key={item.id} className="border-b border-gray-200 hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <Checkbox
+                        checked={selected.has(item.id)}
+                        onCheckedChange={() => toggleSelect(item.id)}
+                        aria-label={`Select item ${item.id}`}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{page * pageSize + index + 1}</td>
+                    <td className="px-4 py-3 font-medium">{item.description}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                      {item.selectedFiles || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-sm">{item.remarks || "—"}</td>
+                    <td className="px-4 py-3">
+                      <Select
+                        value={item.status}
+                        onValueChange={(val) =>
+                          updateStatus(item.id, val as "Completed" | "InCompleted")
+                        }
+                      >
+                        <SelectTrigger
+                          className={`h-8 w-36 ${item.status === "Completed" ? "text-green-700" : "text-yellow-700"}`}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                          <SelectItem value="InCompleted">InCompleted</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon-sm" onClick={() => setViewItem(item)}>
+                          <EyeIcon className="size-4 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="icon-sm" onClick={() => setEditItem(item)}>
+                          <PencilIcon className="size-4 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="icon-sm" onClick={() => handleDelete(item.id)}>
+                          <Trash2Icon className="size-4 text-muted-foreground" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  paginated.map((item, index) => (
-                    <tr key={item.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
-                      <td className="px-4 py-3 font-medium">{item.description}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                        {item.selectedFiles || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-sm">{item.remarks || "—"}</td>
-                      <td className="px-4 py-3">
-                        <Select
-                          value={item.status}
-                          onValueChange={(val) =>
-                            updateStatus(item.id, val as "Completed" | "InCompleted")
-                          }
-                        >
-                          <SelectTrigger className="h-8 w-36">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                            <SelectItem value="InCompleted">InCompleted</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => setViewItem(item)}
-                          >
-                            <EyeIcon className="text-muted-foreground" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => setEditItem(item)}
-                          >
-                            <PencilIcon className="text-muted-foreground" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => handleDelete(item.id)}
-                          >
-                            <Trash2Icon className="text-muted-foreground" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
-            <span className="text-sm text-muted-foreground">
-              {items.length === 0
-                ? "0 items"
-                : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, items.length)} of ${items.length}`}
-            </span>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
-                <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-                  <SelectTrigger className="h-8 w-[70px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">30</SelectItem>
-                    <SelectItem value="60">60</SelectItem>
-                    <SelectItem value="90">90</SelectItem>
-                    <SelectItem value="120">120</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  disabled={page === 0}
-                >
-                  <ChevronLeft className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={(page + 1) * pageSize >= items.length}
-                >
-                  <ChevronRight className="size-4" />
-                </Button>
-              </div>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+          <span className="text-sm text-muted-foreground">
+            {filtered.length === 0
+              ? "0 items"
+              : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
+          </span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={(page + 1) * pageSize >= filtered.length}
+              >
+                <ChevronRight className="size-4" />
+              </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* View Dialog */}
       <Dialog open={!!viewItem} onOpenChange={(open) => { if (!open) setViewItem(null); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Rework Details</DialogTitle>
+            <DialogTitle>Revision Details</DialogTitle>
           </DialogHeader>
           {viewItem && (
             <div className="space-y-4">
@@ -278,9 +380,9 @@ export default function ReworksInteractive() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editItem} onOpenChange={(open) => { if (!open) setEditItem(null); }}>
-        <DialogContent className="">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Rework</DialogTitle>
+            <DialogTitle>Edit Revision</DialogTitle>
           </DialogHeader>
           {editItem && (
             <div className="space-y-4">
@@ -339,9 +441,9 @@ export default function ReworksInteractive() {
 
       {/* Add Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Rework</DialogTitle>
+            <DialogTitle>Add Revision</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-2">
@@ -350,7 +452,7 @@ export default function ReworksInteractive() {
                 id="description"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
-                placeholder="Enter rework description"
+                placeholder="Enter revision description"
               />
             </div>
             <div className="grid gap-2">

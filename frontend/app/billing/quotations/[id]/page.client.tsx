@@ -15,7 +15,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { defaultServices } from "@/lib/data/services";
+
 import { toast } from "sonner";
 
 export default function QuotationFormPageClient() {
@@ -66,6 +66,7 @@ export default function QuotationFormPageClient() {
   }
 
   const [clients, setClients] = useState<any[]>([]);
+  const [services, setServices] = useState<{ id: string; name: string; description: string; rate: number; unit: string; category: string; status: string }[]>([]);
   const [quotationNumber, setQuotationNumber] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
@@ -120,8 +121,13 @@ export default function QuotationFormPageClient() {
         .finally(() => setLoading(false));
     }
 
-    fetch("/api/clients").then(res => res.json()).then(data => {
-      if (data.success && data.data) setClients(data.data);
+    fetch("/api/clients", { credentials: "include" }).then(res => res.json()).then(data => {
+      const arr = data?.initialClients || data?.data || data?.clients || [];
+      setClients(Array.isArray(arr) ? arr : []);
+    }).catch(console.error);
+
+    fetch("/api/services", { credentials: "include" }).then(res => res.json()).then(data => {
+      setServices(Array.isArray(data?.data) ? data.data : []);
     }).catch(console.error);
   }, []);
 
@@ -332,13 +338,13 @@ export default function QuotationFormPageClient() {
                             placeholder=""
                             value={item.details}
                             onValueChange={(val) => {
-                              const service = defaultServices.find(s => `${s.name} - ${s.description}` === val);
+                              const service = services.find(s => `${s.name} - ${s.description}` === val);
                               if (service) {
                                 updateItem(item.id, 'details', val);
                                 updateItem(item.id, 'rate', service.rate);
                               }
                             }}
-                            options={defaultServices.filter(s => s.status === "Active").map(s => `${s.name} - ${s.description}`)}
+                            options={services.filter(s => s.status === "Active").map(s => `${s.name} - ${s.description}`)}
                           />
                           <Textarea
                             placeholder=""
@@ -399,7 +405,7 @@ export default function QuotationFormPageClient() {
           </div>
 
           {/* Bottom Section: Notes, Terms, Attachments & Summary */}
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-12">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 justify-between">
             <div className="flex-1 w-full lg:max-w-[500px]">
               {/* Notes */}
               <div className="mb-6 sm:mb-8">
@@ -465,7 +471,7 @@ export default function QuotationFormPageClient() {
             </div>
 
             {/* Summary */}
-            <div className="w-full lg:max-w-[450px] bg-[#f9fafb] p-4 sm:p-6 rounded-sm border border-gray-200">
+            <div className="w-full lg:w-[450px] lg:ml-auto bg-[#f9fafb] p-4 sm:p-6 rounded-sm border border-gray-200">
               <div className="flex justify-end items-center mb-4 sm:mb-5 text-sm gap-3">
                 <span className="text-gray-700 font-semibold">Sub Total</span>
                 <span className="font-semibold text-gray-900">{subTotal.toFixed(2)}</span>

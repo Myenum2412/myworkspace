@@ -45,6 +45,7 @@ interface DataTableProps<TData, TValue> {
   getRowProps?: (row: TData) => { className?: string; style?: React.CSSProperties };
   hideSearchBar?: boolean;
   showCheckboxes?: boolean;
+  hidePageSizeSelector?: boolean;
   onSelectionChange?: (selectedRows: TData[]) => void;
 }
 
@@ -64,6 +65,7 @@ export function DataTable<TData, TValue>({
   getRowProps,
   hideSearchBar,
   showCheckboxes = true,
+  hidePageSizeSelector,
   onSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -177,8 +179,8 @@ export function DataTable<TData, TValue>({
   const rows = table.getRowModel().rows;
 
   return (
-    <div className="space-y-2 sm:space-y-3">
-      <div className="border rounded-sm bg-card shadow-sm overflow-hidden">
+    <div className="space-y-2 sm:space-y-3 w-full">
+      <div className="border rounded-sm bg-card shadow-sm overflow-hidden w-full">
         {!hideSearchBar && (
           <div className="bg-muted/30 px-3 sm:px-4 py-2.5 sm:py-3 border-b">
             <div className="flex items-center gap-4">
@@ -296,25 +298,27 @@ export function DataTable<TData, TValue>({
               : `${table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–${Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, rowCount)} of ${rowCount}`}
           </span>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
-              <Select
-                value={String(pagination.pageSize)}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value));
-                }}
-              >
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="30">30</SelectItem>
-                  <SelectItem value="60">60</SelectItem>
-                  <SelectItem value="90">90</SelectItem>
-                  <SelectItem value="120">120</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {!hidePageSizeSelector && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <Select
+                  value={String(pagination.pageSize)}
+                  onValueChange={(value) => {
+                    table.setPageSize(Number(value));
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="60">60</SelectItem>
+                    <SelectItem value="90">90</SelectItem>
+                    <SelectItem value="120">120</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex items-center gap-1">
               <Button
                 variant="outline"

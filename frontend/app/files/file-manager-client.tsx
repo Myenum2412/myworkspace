@@ -17,7 +17,6 @@ import { PropertiesPanel } from "./components/properties-panel";
 import { RecycleBin } from "./components/recycle-bin";
 import { AuditLogView } from "./components/audit-log";
 
-import { FavoritesView } from "./components/favorites-view";
 import { RecentView } from "./components/recent-view";
 import { ClientFilesView } from "./components/client-files-view";
 import { StaffFilesView } from "./components/staff-files-view";
@@ -134,7 +133,6 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
                 </>
               )}
 
-              {currentNav === "favorites" && <FavoritesView />}
               {currentNav === "approvals" && <ApprovalFilesView />}
               {currentNav === "recent" && <RecentView />}
               {currentNav === "recycle" && <RecycleBin />}
