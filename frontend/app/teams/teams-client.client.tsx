@@ -128,7 +128,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
 
           if (teamHeadId) {
             try {
-              await fetch(`/api/teams/${teamId}/members/${teamHeadId}/role`, {
+              await fetch(`/api/teams/${teamId}/members/${teamHeadId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -250,7 +250,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
   async function handleSetLead(userId: string) {
     if (!selectedTeam) return;
     try {
-      const res = await fetch(`/api/teams/${selectedTeam.id}/members/${userId}/role`, {
+      const res = await fetch(`/api/teams/${selectedTeam.id}/members/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
