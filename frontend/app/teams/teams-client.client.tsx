@@ -15,7 +15,9 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
   const orgId = initialOrgId || "";
 
   useEffect(() => {
-    setTeams(initialTeams);
+    if (initialTeams && initialTeams.length > 0) {
+      setTeams(initialTeams);
+    }
   }, [initialTeams]);
   const [showForm, setShowForm] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
@@ -42,7 +44,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
       const query = oid ? `?orgId=${oid}` : "";
       const res = await fetch(`/api/teams${query}`, { credentials: "include" });
       const data = await res.json();
-      const result = Array.isArray(data) ? data : data.data || [];
+      const result = Array.isArray(data) ? data : (data.teams || data.data || []);
       setTeams(result);
     } catch (error) {
       toast.error("Could not load teams. Please try again.");
@@ -146,6 +148,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
       if (!hasError) {
         setShowForm(false); setEditingTeam(null);
         setTeamName(""); setTeamDescription(""); setTeamHeadId(""); setTeamHeadName(""); setSelectedMemberIds([]);
+        fetchTeams(orgId);
       }
     } catch {
       setTeams((prev) => {
@@ -177,6 +180,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
       if (res.ok) {
         setTeams((prev) => prev.filter((t) => t.id !== teamId));
         if (selectedTeam?.id === teamId) setSelectedTeam(null);
+        fetchTeams(orgId);
       }
     } catch (_) {}
   }
