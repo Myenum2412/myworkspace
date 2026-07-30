@@ -21,6 +21,7 @@ export type ProfileData = {
     website: string;
     status: string;
     role: string;
+    joiningDate?: string;
     createdAt: string;
     bannerUrl?: string;
     image?: string;
