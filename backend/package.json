@@ -10,6 +10,7 @@
     "db:seed": "tsx --env-file=.env src/lib/db/seed.ts",
     "db:seed-admin": "tsx --env-file=.env src/lib/db/seed-admin.ts",
     "db:seed-client": "tsx --env-file=.env src/lib/db/seed-client.ts",
+    "db:seed-all-users": "tsx --env-file=.env src/lib/db/seed-all-users.ts",
     "db:migrate-plans": "tsx --env-file=.env src/scripts/migrate-plans.ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --runInBand",
