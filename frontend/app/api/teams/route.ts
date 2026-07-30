@@ -39,13 +39,30 @@ export async function GET() {
       ]).toArray(),
       db.collection(collections.orgMembers).find({ orgId }).toArray(),
     ]);
-    const teams = (teamDocs as any[]).map((t) => ({
-      id: String(t.id || ""), name: t.name || "", description: t.description || "",
-      memberCount: t.memberCount || 0, createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : "",
-    }));
-    const memberUserIds = (memberDocs as any[]).map((m) => m.userId).filter(Boolean);
-    const users = memberUserIds.length > 0 ? await db.collection(collections.users).find({ id: { $in: memberUserIds } }).toArray() : [];
-    const userMap = new Map((users as any[]).map((u) => [u.id, u]));
+
+    const allTeamMemberIds = (teamDocs as any[]).flatMap((t) => (t.members || []).map((m: any) => m.userId)).filter(Boolean);
+    const allOrgMemberIds = (memberDocs as any[]).map((m) => m.userId).filter(Boolean);
+    const allUserIds = [...new Set([...allTeamMemberIds, ...allOrgMemberIds])];
+    let userMap = new Map<string, any>();
+    if (allUserIds.length > 0) {
+      const users = await db.collection(collections.users).find({ id: { $in: allUserIds } }).toArray();
+      for (const u of users) { if (u.id) userMap.set(u.id, u); }
+    }
+
+    const teams = (teamDocs as any[]).map((t) => {
+      const memberList = (t.members || []).map((m: any) => ({
+        userId: m.userId, name: userMap.get(m.userId)?.name || "Unknown",
+        email: userMap.get(m.userId)?.email || "", avatar: userMap.get(m.userId)?.image || "",
+        role: m.role || "team_staff",
+      }));
+      const lead = memberList.find((m: any) => m.role === "team_lead");
+      return {
+        id: String(t.id || ""), name: t.name || "", description: t.description || "",
+        memberCount: t.memberCount || 0, leadName: lead?.name || "", leadAvatar: lead?.avatar || "",
+        members: memberList,
+        createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : "",
+      };
+    });
     const members = (memberDocs as any[]).map((m) => {
       const u = userMap.get(m.userId) || {} as any;
       return { userId: m.userId, name: u.name || "Unknown", email: u.email || "", avatar: u.image || "", role: m.role || "staffs" };

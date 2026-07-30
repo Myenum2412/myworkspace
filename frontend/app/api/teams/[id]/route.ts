@@ -18,8 +18,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const teamIdStr = team._id.toString();
   const members = await db.collection(collections.teamMembers).find({ teamId: teamIdStr }).toArray() as any[];
   const userIds = members.map((m: any) => m.userId).filter(Boolean);
-  const users = userIds.length > 0 ? await db.collection(collections.users).find({ id: { $in: userIds } }).toArray() : [];
-  const userMap = new Map(users.map((u: any) => [u.id, u]));
+  const objectIds = userIds.map((id: string) => { try { return new ObjectId(id); } catch { return null; } }).filter((id: ObjectId | null): id is ObjectId => id !== null);
+  const query = objectIds.length > 0 ? { $or: [{ id: { $in: userIds } }, { _id: { $in: objectIds } }] } : { id: { $in: userIds } };
+  const users = userIds.length > 0 ? await db.collection(collections.users).find(query).toArray() : [];
+  const userMap = new Map<string, any>();
+  for (const u of users as any[]) {
+    if (u.id) userMap.set(u.id, u);
+    if (u._id) userMap.set(u._id.toString(), u);
+  }
   const enrichedMembers = members.map((m: any) => {
     const u = userMap.get(m.userId) || {};
     return { id: m._id.toString(), userId: m.userId, name: u.name || "Unknown", email: u.email || "", avatar: u.image || "", status: u.status || "offline", department: u.department || "", designation: u.designation || "", role: m.role || "team_staff" };
