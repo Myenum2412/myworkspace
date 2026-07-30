@@ -33,61 +33,36 @@ export const defaultOrgNavData = [
     url: "/orgmenu",
     icon: <LayoutDashboardIcon className="size-6" />,
     isActive: true,
-    items: [
-      { title: "Overview", url: "/orgmenu" },
-    ],
   },
   {
     title: "Organization",
     url: "/orgmenu/org",
     icon: <Building2Icon className="size-6" />,
-    items: [
-      { title: "Details", url: "/orgmenu/org" },
-    ],
   },
   {
     title: "Members",
     url: "/orgmenu/members",
     icon: <UsersIcon className="size-6" />,
-    items: [
-      { title: "All Members", url: "/orgmenu/members" },
-      { title: "Invite", url: "/orgmenu/members/invite" },
-      { title: "Roles", url: "/orgmenu/members/roles" },
-    ],
   },
   {
     title: "Audit Logs",
     url: "/orgmenu/audit",
     icon: <ClipboardListIcon className="size-6" />,
-    items: [
-      { title: "All Logs", url: "/orgmenu/audit" },
-      { title: "Exports", url: "/orgmenu/audit/exports" },
-    ],
   },
   {
     title: "Security",
     url: "/orgmenu/security",
     icon: <ShieldIcon className="size-6" />,
-    items: [
-      { title: "Policies", url: "/orgmenu/security/policies" },
-      { title: "SSO", url: "/orgmenu/security/sso" },
-    ],
   },
   {
     title: "Plans",
     url: "/orgmenu/plans",
     icon: <CreditCardIcon className="size-6" />,
-    items: [
-      { title: "All Plans", url: "/orgmenu/plans" },
-    ],
   },
   {
     title: "Settings",
     url: "/orgmenu/settings",
     icon: <Settings2Icon className="size-6" />,
-    items: [
-      { title: "General", url: "/orgmenu/settings" },
-    ],
   },
 ];
 
