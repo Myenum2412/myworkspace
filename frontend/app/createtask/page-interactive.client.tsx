@@ -142,15 +142,17 @@ export function CreateTaskPageInteractive() {
         id: t.id,
         name: t.name,
         created_by: t.headUserId || "",
-        memberCount: t.memberIds?.length || 0,
+        memberCount: t.memberCount || t.memberIds?.length || 0,
       })));
-      const clientArr = Array.isArray(clientsRes) ? clientsRes : clientsRes?.data || [];
+      const clientArr = Array.isArray(clientsRes)
+        ? clientsRes
+        : clientsRes?.initialClients || clientsRes?.data || [];
       const clientNames = clientArr.map((c: { name?: string }) => c.name).filter(Boolean);
       const projectArr = Array.isArray(projectsRes) ? projectsRes : projectsRes?.data || [];
-      const mappedProjects = projectArr.map((p: { id?: string; name?: string; client?: string }) => ({
+      const mappedProjects = projectArr.map((p: { id?: string; name?: string; client?: string; clientName?: string }) => ({
         id: p.id || "",
         name: p.name || "",
-        client: p.client || "",
+        client: p.client || p.clientName || "",
       }));
       setProjectList(mappedProjects);
       const projectClientNames = [...new Set(mappedProjects.map((p: { client: string }) => p.client).filter(Boolean))];

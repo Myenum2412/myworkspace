@@ -457,7 +457,7 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
     fetch(`/api/files?projectId=${projectId}&orgId=${orgId}`, { credentials: "include", signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) setFiles(d.data || []);
+        setFiles(d.data || []);
       })
       .catch(() => {})
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });

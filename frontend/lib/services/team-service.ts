@@ -12,6 +12,6 @@ export const teamService = {
     const res = await fetch("/api/teams", { credentials: "include" });
     if (!res.ok) return [];
     const data = await res.json();
-    return data.data || data || [];
+    return data.teams || data.data || [];
   },
 };
