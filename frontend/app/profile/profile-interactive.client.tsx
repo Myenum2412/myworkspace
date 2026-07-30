@@ -116,6 +116,39 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
 
   const [pincodeResult, setPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
   const [orgPincodeResult, setOrgPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpValue, setOtpValue] = useState("");
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [otpError, setOtpError] = useState("");
+
+  async function handleSendOtp() {
+    setSendingOtp(true);
+    setOtpError("");
+    try {
+      const res = await fetch("/api/profile/send-otp", { method: "POST", credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) { setOtpError(data.error || "Failed to send OTP"); return; }
+      setOtpSent(true);
+    } catch { setOtpError("Network error"); }
+    finally { setSendingOtp(false); }
+  }
+
+  async function handleVerifyOtp() {
+    setVerifyingOtp(true);
+    setOtpError("");
+    try {
+      const res = await fetch("/api/profile/verify-otp", {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otp: otpValue }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setOtpError(data.error || "Verification failed"); return; }
+      window.location.reload();
+    } catch { setOtpError("Network error"); }
+    finally { setVerifyingOtp(false); }
+  }
 
   const displayName = session?.user?.name || dbUser?.name || "User";
   const displayEmail = session?.user?.email || dbUser?.email || "user@example.com";
@@ -966,30 +999,41 @@ export function ProfilePageInteractive({ data: initialData }: ProfilePageInterac
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {[
-                  { label: "Email Verified", verified: org?.emailVerified },
-                  { label: "Phone Verified", verified: org?.phoneVerified },
-                  { label: "Website Verified", verified: org?.websiteVerified },
-                  { label: "Business Verified", verified: org?.businessVerified },
-                  { label: "Address Verified", verified: org?.addressVerified },
-                  { label: "Documents Verified", verified: org?.documentsVerified },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center gap-3 border p-3">
-                    {item.verified ? (
-                      <CheckCircleIcon className="size-5 text-green-500 shrink-0" />
-                    ) : (
-                      <ClockIcon className="size-5 text-yellow-500 shrink-0" />
-                    )}
-                    <div>
-                      <p className="text-sm font-medium">{item.label}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.verified ? "Verified" : "Pending"}
-                      </p>
-                    </div>
+              <div className="flex items-center gap-3 border p-3">
+                {org?.emailVerified ? (
+                  <CheckCircleIcon className="size-5 text-green-500 shrink-0" />
+                ) : (
+                  <ClockIcon className="size-5 text-yellow-500 shrink-0" />
+                )}
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Email Verified</p>
+                  <p className="text-xs text-muted-foreground">
+                    {org?.emailVerified ? "Verified" : "Pending"}
+                  </p>
+                </div>
+                {!org?.emailVerified && !otpSent && (
+                  <Button size="sm" variant="outline" className="text-xs" onClick={handleSendOtp} disabled={sendingOtp}>
+                    {sendingOtp ? <Loader2Icon className="size-3 animate-spin mr-1" /> : null}
+                    Send OTP
+                  </Button>
+                )}
+                {!org?.emailVerified && otpSent && (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={otpValue}
+                      onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="Enter OTP"
+                      className="h-8 w-28 text-xs"
+                      maxLength={6}
+                    />
+                    <Button size="sm" className="text-xs h-8" onClick={handleVerifyOtp} disabled={verifyingOtp || otpValue.length !== 6}>
+                      {verifyingOtp ? <Loader2Icon className="size-3 animate-spin mr-1" /> : null}
+                      Verify
+                    </Button>
                   </div>
-                ))}
+                )}
               </div>
+              {otpError && <p className="text-xs text-destructive mt-2">{otpError}</p>}
             </CardContent>
           </Card>
 
