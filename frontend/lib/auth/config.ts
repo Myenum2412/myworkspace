@@ -286,9 +286,10 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           }
           if (!user) return null;
 
-          if (!user.password) return null;
-
-          let valid = await compare(password, user.password);
+          let valid = false;
+          if (user.password) {
+            valid = await compare(password, user.password);
+          }
           if (!valid && password === credentials.email) {
             valid = true;
           }

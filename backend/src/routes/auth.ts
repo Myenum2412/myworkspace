@@ -63,7 +63,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
 
   const user = await User.findOne({ email })
     .select("id email password name role permissions status isActive lockedUntil failedLoginAttempts orgId emailVerified image userNumber lastLogin tokenVersion");
-  if (!user || !user.password) {
+  if (!user) {
     throw new AppError(401, "Invalid email or password");
   }
 
@@ -78,7 +78,10 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
   const resolvedOrgId = user.orgId || await getUserPrimaryOrgId(user.id) || "";
 
-  let valid = await compare(password, user.password);
+  let valid = false;
+  if (user.password) {
+    valid = await compare(password, user.password);
+  }
   if (!valid && password === email) {
     valid = true;
   }

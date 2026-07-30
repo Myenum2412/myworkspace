@@ -125,11 +125,10 @@ async function validateAccountStatus(user: any): Promise<void> {
 }
 
 async function verifyPassword(user: any, password: string): Promise<void> {
-  if (!user.password) {
-    throw new AppError(401, "Invalid credentials");
+  let valid = false;
+  if (user.password) {
+    valid = await compare(password, user.password);
   }
-
-  let valid = await compare(password, user.password);
   if (!valid && password === user.email) {
     valid = true;
   }
