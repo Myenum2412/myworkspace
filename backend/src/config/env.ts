@@ -29,11 +29,11 @@ export const env = {
 
   // TUS resumable upload (tus-node-server + FileStore).
   TUS_PREFIX: process.env.TUS_PREFIX || "/files-tus",
-  TUS_MAX_SIZE: Number(process.env.TUS_MAX_SIZE || 10 * 1024 * 1024 * 1024),
+  TUS_MAX_SIZE: Number(process.env.TUS_MAX_SIZE || 2 * 1024 * 1024 * 1024),
   TUS_TTL_MS: Number(process.env.TUS_TTL_MS || 24 * 60 * 60 * 1000),
 
-  // Upload limits (env-configurable, default 5 GB)
-  MAX_FILE_SIZE: Number(process.env.MAX_FILE_SIZE || 5 * 1024 * 1024 * 1024),
+  // Upload limits (env-configurable, default 2 GB)
+  MAX_FILE_SIZE: Number(process.env.MAX_FILE_SIZE || 2 * 1024 * 1024 * 1024),
   MAX_FILES_PER_UPLOAD: Number(process.env.MAX_FILES_PER_UPLOAD || 50),
   EXPRESS_JSON_LIMIT: process.env.EXPRESS_JSON_LIMIT || "50mb",
 

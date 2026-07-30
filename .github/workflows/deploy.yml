@@ -120,18 +120,19 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
+          host: ${{ secrets.DEPLOY_HOST }}  # Update secret to: 172.31.27.140
+          username: ${{ secrets.DEPLOY_USER }}  # Update secret to: ubuntu
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd /opt/myworkspace
+            cd /var/www/myworkspace-backend/current
             git pull
 
             # Update image tags for rolling deploy
             export IMAGE_TAG=${{ github.sha }}
 
-            # Zero-downtime deploy
-            bash scripts/zero-downtime-deploy.sh $IMAGE_TAG
+            # PM2 deploy (not Docker)
+            cd backend && npm run build
+            pm2 restart myworkspace-backend
 
   verify:
     name: Post-deployment Verification

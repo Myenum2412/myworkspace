@@ -16,11 +16,11 @@ export interface IStorageQuota extends Document {
 const storageQuotaSchema = new Schema<IStorageQuota>(
   {
     orgId: { type: String, required: true, unique: true },
-    maxStorageBytes: { type: Number, default: 1 * 1024 * 1024 * 1024 },
+    maxStorageBytes: { type: Number, default: 2 * 1024 * 1024 * 1024 },
     usedStorageBytes: { type: Number, default: 0 },
-    maxFileSizeBytes: { type: Number, default: 100 * 1024 * 1024 },
+    maxFileSizeBytes: { type: Number, default: 2 * 1024 * 1024 * 1024 },
     allowedMimeTypes: { type: [String], default: [] },
-    userStorageLimitBytes: { type: Number, default: 1024 * 1024 * 1024 },
+    userStorageLimitBytes: { type: Number, default: 2 * 1024 * 1024 * 1024 },
     versioningEnabled: { type: Boolean, default: true },
     retentionDays: { type: Number, default: 30 },
   },
@@ -37,29 +37,29 @@ export interface PlanLimits {
 
 const planToStorageLimits: Record<string, PlanLimits> = {
   free: {
-    maxStorageBytes: 1 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 100 * 1024 * 1024,
-    userStorageLimitBytes: 1 * 1024 * 1024 * 1024,
+    maxStorageBytes: 2 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
+    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
   },
   trial: {
-    maxStorageBytes: 1 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 100 * 1024 * 1024,
-    userStorageLimitBytes: 1 * 1024 * 1024 * 1024,
+    maxStorageBytes: 2 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
+    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
   },
   starter: {
-    maxStorageBytes: 100 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 10 * 1024 * 1024 * 1024,
-    userStorageLimitBytes: 10 * 1024 * 1024 * 1024,
+    maxStorageBytes: 2 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
+    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
   },
   professional: {
-    maxStorageBytes: 1024 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 10 * 1024 * 1024 * 1024,
-    userStorageLimitBytes: 50 * 1024 * 1024 * 1024,
+    maxStorageBytes: 2 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
+    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
   },
   enterprise: {
-    maxStorageBytes: 9999 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 10 * 1024 * 1024 * 1024,
-    userStorageLimitBytes: 100 * 1024 * 1024 * 1024,
+    maxStorageBytes: 2 * 1024 * 1024 * 1024,
+    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
+    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
   },
 };
 

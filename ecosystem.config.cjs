@@ -26,7 +26,7 @@ module.exports = {
   deploy: {
     backend_production_server: {
       user: "ubuntu",
-      host: "16.171.239.167",
+      host: "172.31.27.140",
       ref: "origin/main",
       repo: "git@github.com:Myenum2412/myworkspace.git",
       path: "/var/www/myworkspace-backend",

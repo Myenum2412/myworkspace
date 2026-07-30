@@ -22,6 +22,7 @@ import {
   ActivityIcon,
   RotateCcwIcon,
   FolderKanbanIcon,
+  SendIcon,
 } from "lucide-react";
 
 function buildStaffNavData(t: (key: any) => string) {
@@ -34,6 +35,7 @@ function buildStaffNavData(t: (key: any) => string) {
     { title: t("nav.fileManager"), url: "/staffs/files", icon: <FolderIcon className="size-6" /> },
     { title: t("nav.staffActivity"), url: "/staffs/activity", icon: <ActivityIcon className="size-6" /> },
     { title: t("nav.reworks"), url: "/staffs/reworks", icon: <RotateCcwIcon className="size-6" /> },
+    { title: "Submissions", url: "/staffs/submissions", icon: <SendIcon className="size-6" /> },
   ];
 }
 

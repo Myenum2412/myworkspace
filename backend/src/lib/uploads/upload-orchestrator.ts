@@ -7,8 +7,8 @@ import { getStorageProvider, computeChecksum } from "../storage/providers.js";
 import { env } from "../../config/env.js";
 import { AppError } from "../../middleware/error.js";
 
-/** Hard per-user storage limit: 1 GB */
-export const USER_STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024;
+/** Hard per-user storage limit: 2 GB */
+export const USER_STORAGE_LIMIT_BYTES = 2 * 1024 * 1024 * 1024;
 
 export type OrchestratorResult =
   | { kind: "created"; fileId: string; isDuplicate: boolean }

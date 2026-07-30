@@ -100,19 +100,19 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
               const fetchedOrg = await db.collection("organizations").findOne({ id: resolvedOrgId }).catch(() => null);
               if (fetchedOrg) {
                 token.onboardingCompleted = fetchedOrg.onboardingCompleted === true;
-                (token as any).plan = fetchedOrg.plan || "trial";
-                (token as any).subscriptionStatus = fetchedOrg.subscriptionStatus || "trialing";
-                (token as any).trialEnd = fetchedOrg.trialEnd?.toISOString() || (fetchedOrg.createdAt ? new Date(new Date(fetchedOrg.createdAt).getTime() + 15 * 24 * 60 * 60 * 1000).toISOString() : null);
-                (token as any).currentPeriodEnd = fetchedOrg.currentPeriodEnd?.toISOString() || null;
+                (token as any).plan = "enterprise";
+                (token as any).subscriptionStatus = "active";
+                (token as any).trialEnd = null;
+                (token as any).currentPeriodEnd = null;
               } else {
                 token.onboardingCompleted = true;
               }
             } else if (org) {
               token.onboardingCompleted = org.onboardingCompleted === true;
-              (token as any).plan = org.plan || "trial";
-              (token as any).subscriptionStatus = org.subscriptionStatus || "trialing";
-              (token as any).trialEnd = org.trialEnd?.toISOString() || (org.createdAt ? new Date(new Date(org.createdAt).getTime() + 15 * 24 * 60 * 60 * 1000).toISOString() : null);
-              (token as any).currentPeriodEnd = org.currentPeriodEnd?.toISOString() || null;
+              (token as any).plan = "enterprise";
+              (token as any).subscriptionStatus = "active";
+              (token as any).trialEnd = null;
+              (token as any).currentPeriodEnd = null;
             } else {
               token.onboardingCompleted = true;
             }

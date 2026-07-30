@@ -350,7 +350,7 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
   ]);
 
   const userUsedStorage = userStorage[0]?.total || 0;
-  const userStorageLimit = 1024 * 1024 * 1024; // 1 GB per user
+  const userStorageLimit = 2 * 1024 * 1024 * 1024; // 2 GB per user
 
   res.json({
     success: true,
@@ -358,7 +358,7 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
       totalFiles,
       totalSize: totalSize[0]?.total || 0,
       usedStorage: quota?.usedStorageBytes || 0,
-      maxStorage: quota?.maxStorageBytes || 1 * 1024 * 1024 * 1024,
+      maxStorage: quota?.maxStorageBytes || 2 * 1024 * 1024 * 1024,
       deletedFiles,
       mimeTypeBreakdown,
       userStorage: {
@@ -375,7 +375,7 @@ router.get("/storage-stats", async (req: AuthRequest, res: Response) => {
   await verifyAccess(req.user!.userId, orgId);
 
   const userId = req.user!.userId;
-  const USER_STORAGE_LIMIT = 1024 * 1024 * 1024;
+  const USER_STORAGE_LIMIT = 2 * 1024 * 1024 * 1024;
 
   const [userFiles, allUserFiles, fileTypeBreakdown, extensionBreakdown, largestFile, recentUploads, monthlyStats] = await Promise.all([
     FileAttachment.find({ orgId, uploaderId: userId, deletedAt: null }).sort({ size: -1 }).select("id orgId name originalName mimeType size category uploaderId createdAt").lean(),

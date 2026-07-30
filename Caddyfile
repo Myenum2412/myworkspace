@@ -14,7 +14,7 @@ myworkspace.myenum.in {
 
     # ── API routes → Express backend ──
     handle /api/* {
-        reverse_proxy backend:4000 {
+        reverse_proxy localhost:4000 {
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-Host {host}
@@ -24,36 +24,36 @@ myworkspace.myenum.in {
     # ── Static uploads and banners → Express backend ──
     handle /uploads/* {
         header Cache-Control "public, max-age=604800, stale-while-revalidate=86400"
-        reverse_proxy backend:4000
+        reverse_proxy localhost:4000
     }
     handle /banners/* {
         header Cache-Control "public, max-age=86400"
-        reverse_proxy backend:4000
+        reverse_proxy localhost:4000
     }
 
     # ── Service worker (no cache) ──
     handle /sw.js {
         header Cache-Control "public, max-age=0, must-revalidate"
         header Service-Worker-Allowed "/"
-        reverse_proxy frontend:3000
+        reverse_proxy localhost:3000
     }
 
     # ── Offline page ──
     handle /offline.html {
         header Cache-Control "public, max-age=0, must-revalidate"
-        reverse_proxy frontend:3000
+        reverse_proxy localhost:3000
     }
 
     # ── Manifest ──
     handle /manifest.json {
         header Cache-Control "public, max-age=86400"
         header Content-Type "application/manifest+json"
-        reverse_proxy frontend:3000
+        reverse_proxy localhost:3000
     }
 
     # ── Everything else → Next.js frontend ──
     handle {
-        reverse_proxy frontend:3000 {
+        reverse_proxy localhost:3000 {
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-Host {host}
