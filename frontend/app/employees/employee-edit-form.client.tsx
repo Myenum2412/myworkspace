@@ -182,10 +182,64 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
       if (formData.password) {
         payload.password = formData.password;
       }
-      const updated = await employeeService.updateEmployee(payload as any);
+      await employeeService.updateEmployee(payload as any);
+
+      // Fetch the full updated record including sub-collections
+      const fullRes = await fetch(`/api/employees/${employee.id}`);
+      let updatedEmployee: Employee;
+      if (fullRes.ok) {
+        const fullData = await fullRes.json();
+        const d = fullData.data || fullData;
+        updatedEmployee = {
+          ...employee,
+          ...d,
+          id: d.id || employee.id,
+          name: d.name || [formData.firstName, formData.lastName].filter(Boolean).join(" ") || employee.name,
+          workExperience: d.workExperience || workExperience.filter((w: any) => w.company || w.title),
+          educationDetails: d.educationDetails || educationDetails.filter((e: any) => e.institute || e.degree),
+          dependentDetails: d.dependentDetails || dependentDetails.filter((dep: any) => dep.name),
+        } as Employee;
+      } else {
+        // fallback: merge local state
+        updatedEmployee = {
+          ...employee,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          name: [formData.firstName, formData.lastName].filter(Boolean).join(" ") || employee.name,
+          nickname: formData.nickname,
+          email: formData.email,
+          role: formData.roleName || formData.designation || employee.role,
+          status: formData.status.toLowerCase(),
+          department: formData.department,
+          designation: formData.designation,
+          employmentType: formData.employmentType,
+          phone: formData.phone || "",
+          branchName: formData.branchName,
+          location: formData.location,
+          shift: formData.shift,
+          sourceOfHire: formData.sourceOfHire,
+          joiningDate: formData.joiningDate,
+          currentExperience: formData.currentExperience,
+          totalExperience: formData.totalExperience,
+          avatar: formData.avatar || employee.avatar,
+          alternateEmail: formData.secondaryPhone,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          country: formData.country,
+          zipCode: formData.postalCode,
+          linkedin: formData.linkedin,
+          github: formData.github,
+          twitter: formData.twitter,
+          website: formData.portfolio,
+          workExperience: workExperience.filter((w: any) => w.company || w.title),
+          educationDetails: educationDetails.filter((e: any) => e.institute || e.degree),
+          dependentDetails: dependentDetails.filter((dep: any) => dep.name),
+        } as Employee;
+      }
 
       setFormSuccess("Employee updated successfully.")
-      onSave(updated as Employee)
+      onSave(updatedEmployee)
     } catch (err: any) {
       const msg = err?.message === "Validation failed" ? "Please fill in all required fields correctly." : (err?.message || "Failed to update employee. Please try again.")
       setFormError(msg)

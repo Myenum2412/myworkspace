@@ -121,7 +121,7 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
         sellingPrice: Number(sellingPrice) || 0,
         supplier: supplier.trim(),
         warehouse: warehouse.trim(),
-        status: "",
+        status: stock?.status || "Active",
         lastUpdated: "",
         image,
         projectId,

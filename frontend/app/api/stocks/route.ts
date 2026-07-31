@@ -25,8 +25,8 @@ export async function GET() {
       lastUpdated: s.updatedAt ? new Date(s.updatedAt).toISOString() : new Date().toISOString(),
       image: s.image || "", projectId: s.projectId || "", projectName: s.projectName || "",
     }));
-    return NextResponse.json({ initialStocks: items });
-  } catch { return NextResponse.json({ items: [] }); }
+    return NextResponse.json({ data: items });
+  } catch { return NextResponse.json({ data: [] }); }
 }
 
 export async function POST(req: Request) {

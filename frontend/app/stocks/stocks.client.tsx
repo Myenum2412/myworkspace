@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, Loader2, FilterIcon, CheckIcon, XIcon, SearchIcon } from "lucide-react";
+import { PlusIcon, FilterIcon, CheckIcon, XIcon, SearchIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -98,10 +98,11 @@ export default function StocksPage() {
   }, [status, router]);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
     refreshStocks();
-  }, []);
+  }, [status]);
 
-  if (status === "loading") return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (status === "loading" || (loading && stocks.length === 0)) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;
 
   async function handleSave(formData: Omit<Stock, "id">) {
@@ -141,15 +142,7 @@ export default function StocksPage() {
     }
   }
 
-  if (loading && stocks.length === 0) {
-    return (
-      <main className="flex flex-1 flex-col gap-4 min-w-0 w-full">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
-        </div>
-      </main>
-    );
-  }
+
 
   return (
     <>

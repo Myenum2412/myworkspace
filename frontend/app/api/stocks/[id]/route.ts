@@ -40,6 +40,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         image: body.image || "",
         projectId: body.projectId || undefined,
         projectName: body.projectName || undefined,
+        ...(body.status ? { status: body.status } : {}),
         updatedAt: now,
         lastUpdated: now.toISOString(),
       },

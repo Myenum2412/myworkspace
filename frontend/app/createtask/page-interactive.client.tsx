@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -121,7 +122,10 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
   const [repeatEndDateOpen, setRepeatEndDateOpen] = useState(false);
   const [userOrgId, setUserOrgId] = useState("");
 
+  const { status } = useSession();
+
   useEffect(() => {
+    if (status !== "authenticated") return;
     setIsLoadingData(true);
     Promise.all([
       employeeService.getAllEmployees().catch(() => []),
@@ -177,7 +181,7 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
 
       setIsLoadingData(false);
     });
-  }, []);
+  }, [status]);
 
   const resetForm = () => {
     setTaskType("individual");

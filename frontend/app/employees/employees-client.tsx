@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import EmployeesInteractive from "./employees-interactive"
 import TeamsClient from "@/app/teams/teams-client.client"
@@ -29,10 +30,15 @@ export default function EmployeesClient({
   const [teams, setTeams] = useState<Team[]>(initialTeams);
   const [teamMembers, setTeamMembers] = useState<OrgMember[]>(initialTeamMembers);
   const [orgId, setOrgId] = useState(initialOrgId);
-  const [loading, setLoading] = useState(!initialOrgId);
+  const { status } = useSession();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (initialOrgId) return;
+    if (status !== "authenticated") return;
+    if (initialOrgId) {
+      setLoading(false);
+      return;
+    }
     fetch("/api/employees")
       .then((r) => r.json())
       .then((data) => {
@@ -44,7 +50,7 @@ export default function EmployeesClient({
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [initialOrgId]);
+  }, [status, initialOrgId]);
 
   if (loading) {
     return (

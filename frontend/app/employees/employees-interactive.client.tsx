@@ -104,15 +104,37 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
 
   const totalPages = Math.ceil(filteredEmployees.length / rowsPerPage);
 
-  const handleEdit = useCallback((emp: Employee) => {
-    setSelectedEmployee(emp);
-    setPageView("edit");
+  const fetchFullEmployee = useCallback(async (emp: Employee): Promise<Employee> => {
+    try {
+      const res = await fetch(`/api/employees/${encodeURIComponent(emp.id)}`);
+      if (res.ok) {
+        const data = await res.json();
+        const d = data.data || data;
+        return {
+          ...emp,
+          ...d,
+          id: d.id || emp.id,
+          name: d.name || emp.name,
+          workExperience: d.workExperience || emp.workExperience || [],
+          educationDetails: d.educationDetails || emp.educationDetails || [],
+          dependentDetails: d.dependentDetails || emp.dependentDetails || [],
+        } as Employee;
+      }
+    } catch { /* fallback to list data */ }
+    return emp;
   }, []);
 
-  const handleView = useCallback((emp: Employee) => {
-    setSelectedEmployee(emp);
+  const handleEdit = useCallback(async (emp: Employee) => {
+    const full = await fetchFullEmployee(emp);
+    setSelectedEmployee(full);
+    setPageView("edit");
+  }, [fetchFullEmployee]);
+
+  const handleView = useCallback(async (emp: Employee) => {
+    const full = await fetchFullEmployee(emp);
+    setSelectedEmployee(full);
     setPageView("view");
-  }, []);
+  }, [fetchFullEmployee]);
 
   const handleTerminate = useCallback((emp: Employee) => {
     setTerminatingEmployee(emp);
@@ -222,7 +244,11 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
         isViewMode={pageView === "view"}
         onBack={handleBack}
         onSwitchToEdit={() => setPageView("edit")}
-        onSave={() => {
+        onSave={(updatedEmployee) => {
+          // Update in local list immediately
+          setEmployees((prev) =>
+            prev.map((e) => e.id === updatedEmployee.id ? { ...e, ...updatedEmployee } : e)
+          );
           refreshEmployees();
           handleBack();
         }}
