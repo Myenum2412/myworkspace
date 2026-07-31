@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import Stats07 from "@/components/stats-07";
 import { StaffRecentAllocatedTasks } from "./staff-recent-allocated-tasks";
 import { StaffRecentRevisions } from "./staff-recent-revisions";
+import { StaffRecentSubmissions } from "./staff-recent-submissions";
 import { apiFetch } from "@/lib/api";
 
 function getGreeting() {
@@ -94,11 +95,18 @@ export default function StaffsPage() {
         ]}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <h2 className="text-lg font-semibold mb-3">Recently Allocated Tasks</h2>
           <StaffRecentAllocatedTasks tasks={tasks} />
         </div>
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Recently Submissions</h2>
+          <StaffRecentSubmissions tasks={tasks} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
         <div>
           <h2 className="text-lg font-semibold mb-3">Revision</h2>
           <StaffRecentRevisions />

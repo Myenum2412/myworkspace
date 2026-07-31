@@ -29,7 +29,7 @@ import Stats07 from "@/components/stats-07";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type SubmissionStatus = "FFU" | "APP" | "R&R";
+type SubmissionStatus = string;
 
 type AccessoryItem = {
   id: string;
@@ -98,56 +98,32 @@ type Submission = {
 
 type Project = { id: string; name: string };
 
-const statusStyles: Record<SubmissionStatus, string> = {
+const statusStyles: Record<string, string> = {
   FFU: "bg-blue-100 text-blue-700 border-blue-200",
   APP: "bg-green-100 text-green-700 border-green-200",
   "R&R": "bg-amber-100 text-amber-700 border-amber-200",
+  todo: "bg-slate-100 text-slate-700 border-slate-200",
+  assigned: "bg-blue-100 text-blue-700 border-blue-200",
+  pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  in_progress: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  review: "bg-violet-100 text-violet-700 border-violet-200",
+  completed: "bg-green-100 text-green-700 border-green-200",
+  done: "bg-green-100 text-green-700 border-green-200",
+  rejected: "bg-red-100 text-red-700 border-red-200",
+  cancelled: "bg-red-100 text-red-700 border-red-200",
+  closed: "bg-slate-100 text-slate-700 border-slate-200",
 };
 
-// ─── Demo Seed Data ───────────────────────────────────────────────────────────
-
-const INITIAL_DEMO_SUBMISSIONS: Submission[] = [
-  {
-    id: 1,
-    selected: false,
-    projectName: "Tower Block A",
-    drawNo: "DRW-001",
-    prefix: "TB",
-    element: "Column",
-    description: "Main structural column – Level 1",
-    weight: "2.4 t",
-    status: "APP",
-    accessories: true,
-    couplers: false,
-    meshList: true,
-    accessoriesList: [
-      { id: "1", element: "Bracket A", thickness: "10mm", height: "300mm", description: "Supporting bracket", qty: "24", remarks: "Galvanized" }
-    ],
-    couplersList: [],
-    meshListItems: [
-      { id: "1", element: "Slab", type: "A142 Mesh", sheetSize: "4.8x2.4m", area: "115.2", qty: "15", remarks: "Standard stock" }
-    ]
-  },
-  {
-    id: 2,
-    selected: false,
-    projectName: "Tower Block A",
-    drawNo: "DRW-002",
-    prefix: "TB",
-    element: "Beam",
-    description: "Transfer beam – Level 2",
-    weight: "1.8 t",
-    status: "FFU",
-    accessories: false,
-    couplers: true,
-    meshList: false,
-    accessoriesList: [],
-    couplersList: [
-      { id: "1", type: "Tension", barDia: "25mm", qty: "120", coating: "Epoxy", remarks: "High strength" }
-    ],
-    meshListItems: []
-  }
-];
+function normalizeSubmissionStatus(value?: string): SubmissionStatus {
+  const status = String(value || "").trim();
+  if (!status) return "FFU";
+  const upper = status.toUpperCase();
+  if (upper === "FFU" || upper === "APP" || upper === "R&R") return upper;
+  if (["TODO", "ASSIGNED", "PENDING", "IN_PROGRESS", "INPROGRESS", "NEW"].includes(upper)) return "FFU";
+  if (["DONE", "COMPLETED", "APPROVED", "ACCEPTED", "SUCCESS"].includes(upper)) return "APP";
+  if (["REVIEW", "REJECTED", "REVISION", "REREVIEW", "REVISE", "R&R"].includes(upper)) return "R&R";
+  return upper || "FFU";
+}
 
 // ─── Inline Add Form Component ────────────────────────────────────────────────
 
@@ -1375,8 +1351,47 @@ function OverviewTab({ submissions }: { submissions: Submission[] }) {
 // ─── Main Controller Component ────────────────────────────────────────────────
 
 export default function SubmissionsInteractive() {
-  const [items, setItems] = useState<Submission[]>(INITIAL_DEMO_SUBMISSIONS);
+  const [items, setItems] = useState<Submission[]>([]);
   const [pageView, setPageView] = useState<"list" | "add">("list");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    fetch("/api/staffs/tasks")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        const tasks = Array.isArray(data?.initialTasks) ? data.initialTasks : [];
+        const mapped = tasks.map((task: any, index: number) => ({
+          id: Number(task.id || task._id || index + 1),
+          selected: false,
+          projectName: task.project || task.teamName || "No project",
+          drawNo: String(task.id || task._id || `TASK-${index + 1}`),
+          prefix: "",
+          element: task.title || "Untitled task",
+          description: task.description || "",
+          weight: task.priority || "N/A",
+          status: normalizeSubmissionStatus(task.status),
+          accessories: false,
+          couplers: false,
+          meshList: false,
+          accessoriesList: [],
+          couplersList: [],
+          meshListItems: [],
+        }));
+        setItems(mapped);
+      })
+      .catch(() => {
+        if (!cancelled) setItems([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, []);
 
   const handleCreateSubmissions = (newRows: SubmissionRow[]) => {
     const nextSubmissions = newRows.map((r, index) => {
@@ -1413,6 +1428,17 @@ export default function SubmissionsInteractive() {
     );
   }
 
+  if (loading) {
+    return (
+      <main className="flex flex-1 items-center justify-center p-8">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Loader2Icon className="size-5 animate-spin" />
+          <span>Loading submissions...</span>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex items-center justify-between gap-2">
@@ -1439,7 +1465,15 @@ export default function SubmissionsInteractive() {
           <OverviewTab submissions={items} />
         </TabsContent>
         <TabsContent value="submissions" className="mt-6">
-          <SubmissionsTab items={items} setItems={setItems} onAddView={() => setPageView("add")} />
+          {items.length === 0 ? (
+            <Card>
+              <CardContent className="flex min-h-48 items-center justify-center text-center text-muted-foreground">
+                No submissions found for this user.
+              </CardContent>
+            </Card>
+          ) : (
+            <SubmissionsTab items={items} setItems={setItems} onAddView={() => setPageView("add")} />
+          )}
         </TabsContent>
       </Tabs>
     </main>
