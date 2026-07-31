@@ -28,6 +28,7 @@ export default function StaffUpcomingTasksPage() {
   }, [status, router]);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
     let cancelled = false;
     fetch("/api/staffs/upcoming-tasks")
       .then(r => r.json())
@@ -35,7 +36,7 @@ export default function StaffUpcomingTasksPage() {
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [status]);
 
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(30);

@@ -16,6 +16,7 @@ export default function StaffProjectsPage() {
   }, [status, router]);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
     let cancelled = false;
     fetch("/api/staffs/projects")
       .then(r => r.json())
@@ -23,7 +24,7 @@ export default function StaffProjectsPage() {
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [status]);
 
   if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;

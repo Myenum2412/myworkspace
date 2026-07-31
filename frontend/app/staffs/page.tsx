@@ -38,6 +38,7 @@ export default function StaffsPage() {
   }, [status, router]);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
     let cancelled = false;
     fetch("/api/staffs")
       .then(r => r.json())
@@ -45,7 +46,7 @@ export default function StaffsPage() {
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [status]);
 
   useEffect(() => {
     if (!session?.user?.orgId) return;

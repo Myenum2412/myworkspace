@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
@@ -27,10 +28,12 @@ interface RevisionRow {
 }
 
 export function StaffRecentRevisions() {
+  const { status } = useSession();
   const [revisions, setRevisions] = useState<RevisionRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
     let cancelled = false;
     fetch("/api/staffs/reworks")
       .then((r) => r.json())
@@ -38,7 +41,7 @@ export function StaffRecentRevisions() {
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [status]);
 
   const visible = useMemo(() => revisions.slice(0, MAX_ROWS), [revisions]);
 
