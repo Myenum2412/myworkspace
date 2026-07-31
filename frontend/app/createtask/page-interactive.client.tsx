@@ -120,23 +120,28 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
   const [repeatEndDate, setRepeatEndDate] = useState<Date | undefined>(undefined);
   const [repeatStartDateOpen, setRepeatStartDateOpen] = useState(false);
   const [repeatEndDateOpen, setRepeatEndDateOpen] = useState(false);
-  const [userOrgId, setUserOrgId] = useState("");
 
   const { status } = useSession();
 
   useEffect(() => {
     if (status !== "authenticated") return;
+    const controller = new AbortController();
+    const { signal } = controller;
+
     setIsLoadingData(true);
-    Promise.all([
+    Promise.allSettled([
       employeeService.getAllEmployees().catch(() => []),
       teamService.getAllTeams().catch(() => []),
-      fetch("/api/clients", { credentials: "include" }).then((r) => r.json()).catch(() => []),
-      fetch("/api/projects-list", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
-      fetch("/api/user/me", { credentials: "include" }).then((r) => r.json()).catch(() => ({})),
-      fetch("/api/settings", { credentials: "include" }).then((r) => r.json()).catch(() => null),
-      fetch("/api/tasks?limit=100", { credentials: "include" }).then((r) => r.json()).catch(() => ({ data: [] })),
-    ]).then(([staff, teamList, clientsRes, projectsRes, userRes, _settingsRes, tasksRes]) => {
-      setUserOrgId((userRes as any)?.orgId || "");
+      fetch("/api/clients", { credentials: "include", signal }).then((r) => r.json()).catch(() => []),
+      fetch("/api/projects-list", { credentials: "include", signal }).then((r) => r.json()).catch(() => ({ data: [] })),
+    ]).then((results) => {
+      if (signal.aborted) return;
+      const [staffResult, teamResult, clientsResult, projectsResult] = results;
+      const staff = staffResult.status === "fulfilled" ? staffResult.value : [];
+      const teamList = teamResult.status === "fulfilled" ? teamResult.value : [];
+      const clientsRes = clientsResult.status === "fulfilled" ? clientsResult.value : [];
+      const projectsRes = projectsResult.status === "fulfilled" ? projectsResult.value : { data: [] };
+
       setEmployees((staff as any[]).map((s) => ({
         id: s.id,
         name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || "Unknown",
@@ -162,25 +167,35 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
       const projectClientNames = [...new Set(mappedProjects.map((p: { client: string }) => p.client).filter(Boolean))];
       setClientList([...new Set([...clientNames, ...projectClientNames])]);
 
-      const tasksArr = Array.isArray(tasksRes?.data) ? tasksRes.data : [];
-      const savedDefs = tasksArr
-        .filter((t: any) => t.isSaved)
-        .map((t: any) => ({
-          id: t.id || t._id,
-          name: t.title,
-          description: t.description,
-          isActive: t.isActive !== false,
-        }));
-      const source = savedDefs.length > 0 ? savedDefs : ([] as TaskDefinition[]);
-      const seen = new Set<string>();
-      setLocalTaskDefs(source.filter((d: { id: string }) => {
-        if (seen.has(d.id)) return false;
-        seen.add(d.id);
-        return true;
-      }));
-
       setIsLoadingData(false);
+    }).catch(() => {
+      if (!signal.aborted) setIsLoadingData(false);
     });
+
+    fetch("/api/tasks?limit=100", { credentials: "include", signal })
+      .then((r) => r.json())
+      .then((tasksRes) => {
+        if (signal.aborted) return;
+        const tasksArr = Array.isArray(tasksRes?.data) ? tasksRes.data : [];
+        const savedDefs = tasksArr
+          .filter((t: any) => t.isSaved)
+          .map((t: any) => ({
+            id: t.id || t._id,
+            name: t.title,
+            description: t.description,
+            isActive: t.isActive !== false,
+          }));
+        const source = savedDefs.length > 0 ? savedDefs : ([] as TaskDefinition[]);
+        const seen = new Set<string>();
+        setLocalTaskDefs(source.filter((d: { id: string }) => {
+          if (seen.has(d.id)) return false;
+          seen.add(d.id);
+          return true;
+        }));
+      })
+      .catch(() => {});
+
+    return () => controller.abort();
   }, [status]);
 
   const resetForm = () => {
@@ -210,12 +225,15 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
       setFormError("Please fill in all required fields: Title, Description, and Priority.");
       return;
     }
+    if (taskType === "team" && !selectedTeam) {
+      setFormError("Please select a team before creating a team task.");
+      return;
+    }
     setFormError("");
     submittingRef.current = true;
     setIsSubmitting(true);
     try {
       const payload: Record<string, any> = {
-        orgId: userOrgId,
         title: title.trim(),
         description: description.trim(),
         project: projectName.trim() || undefined,
@@ -411,7 +429,11 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                     <SelectValue placeholder="" className="truncate" />
                   </SelectTrigger>
                   <SelectContent className="shadow-none">
-                    {clientList.map((c) => (
+                    {isLoadingData && clientList.length === 0 ? (
+                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading clients...</div>
+                    ) : clientList.length === 0 ? (
+                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">No clients</div>
+                    ) : clientList.map((c) => (
                       <SelectItem key={c} value={c} className="text-sm truncate">{c}</SelectItem>
                     ))}
                   </SelectContent>
@@ -424,13 +446,20 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                     <SelectValue placeholder="" className="truncate" />
                   </SelectTrigger>
                   <SelectContent className="shadow-none">
-                    {selectedClient
-                      ? projectList.filter((p) => p.client === selectedClient).map((p) => (
-                          <SelectItem key={p.id} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
-                        ))
-                      : projectList.map((p) => (
-                          <SelectItem key={p.id} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
-                        ))}
+                    {(() => {
+                      const visibleProjects = selectedClient
+                        ? projectList.filter((p) => p.client === selectedClient)
+                        : projectList;
+                      if (isLoadingData && visibleProjects.length === 0) {
+                        return <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading projects...</div>;
+                      }
+                      if (visibleProjects.length === 0) {
+                        return <div className="px-2 py-4 text-center text-xs text-muted-foreground">No projects</div>;
+                      }
+                      return visibleProjects.map((p) => (
+                        <SelectItem key={p.id || p.name} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
+                      ));
+                    })()}
                   </SelectContent>
                 </Select>
               </FormField>
@@ -474,6 +503,7 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                     selectedAssigneeType={selectedAssigneeType}
                     employees={employees}
                     teams={[]}
+                    isLoading={isLoadingData}
                     showTeamAsAssignee={false}
                     onSelect={(id: string) => {
                       setSelectedAssignee(id);
@@ -514,7 +544,9 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                     <SelectValue placeholder="Select a team" className="truncate" />
                   </SelectTrigger>
                   <SelectContent className="shadow-none">
-                    {teams.length === 0 ? (
+                    {isLoadingData && teams.length === 0 ? (
+                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading teams...</div>
+                    ) : teams.length === 0 ? (
                       <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
                     ) : (
                       teams.map((t) => (
@@ -583,7 +615,7 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={isSubmitting || !title.trim() || !description.trim() || !priority}
+          disabled={isSubmitting || !title.trim() || !description.trim() || !priority || (taskType === "team" && !selectedTeam)}
         >
           {isSubmitting ? (
             <><Loader2 className="animate-spin mr-1.5" />Creating...</>

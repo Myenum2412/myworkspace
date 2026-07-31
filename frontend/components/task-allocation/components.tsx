@@ -53,6 +53,7 @@ export function AssigneeSelector({
   onRemove,
   onQuickAdd,
   showTeamAsAssignee = false,
+  isLoading = false,
 }: {
   selectedAssignee: string | null;
   selectedAssigneeType: AssigneeType | null;
@@ -62,6 +63,7 @@ export function AssigneeSelector({
   onRemove: () => void;
   onQuickAdd?: (type: "staff" | "team") => void;
   showTeamAsAssignee?: boolean;
+  isLoading?: boolean;
 }) {
   const [mode, setMode] = useState<"staff" | "team">(showTeamAsAssignee ? "team" : "staff");
 
@@ -100,7 +102,9 @@ export function AssigneeSelector({
               {!showTeamAsAssignee && (
                 <SelectGroup>
                   <SelectLabel>Staff</SelectLabel>
-                  {employees.length === 0 ? (
+                  {isLoading && employees.length === 0 ? (
+                    <SelectItem value="loading_staff" disabled>Loading staff...</SelectItem>
+                  ) : employees.length === 0 ? (
                     <SelectItem value="no_staff" disabled>No staff available</SelectItem>
                   ) : (
                     employees.map((e) => (
@@ -114,7 +118,9 @@ export function AssigneeSelector({
               {showTeamAsAssignee && (
                 <SelectGroup>
                   <SelectLabel>Teams</SelectLabel>
-                  {teams.length === 0 ? (
+                  {isLoading && teams.length === 0 ? (
+                    <SelectItem value="loading_teams" disabled>Loading teams...</SelectItem>
+                  ) : teams.length === 0 ? (
                     <SelectItem value="no_teams" disabled>No teams available</SelectItem>
                   ) : (
                     teams.map((t) => (
