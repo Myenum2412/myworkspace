@@ -70,7 +70,7 @@ const INDIVIDUAL_TRANSITIONS: Record<string, string[]> = {
   hold: ["pending", "in_progress", "cancelled"],
   cancelled: ["reopened", "assigned"],
   rejected: ["pending", "in_progress"],
-  reopened: ["in_progress"],
+  reopened: ["in_progress", "completed"],
 };
 
 const TEAM_TRANSITIONS: Record<string, string[]> = {
