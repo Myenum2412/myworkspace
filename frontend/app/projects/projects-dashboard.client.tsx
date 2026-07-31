@@ -35,6 +35,7 @@ export default function ProjectsDashboard({ projects }: DashboardProps) {
 
   return (
     <Stats07
+      className="sm:grid-cols-3! lg:grid-cols-6! xl:grid-cols-6!"
       items={[
         { name: t("page.projects.statsTotal"), value: stats.total, subtitle: t("page.projects.statsTotalSub") },
         { name: t("common.active"), value: stats.active, subtitle: t("page.dashboard.inProgress") },

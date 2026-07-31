@@ -90,7 +90,7 @@ export default function Stats07({ items, className }: Stats07Props) {
   const maxValue = useMemo(() => Math.max(...items.map((x) => x.value), 1), [items]);
 
   return (
-    <dl className={`grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 ${className ?? ''}`}>
+    <dl className={`grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 ${className ?? ''}`}>
       {items.map((item, i) => (
         <StatCard key={item.name} item={item} maxValue={maxValue} index={i} />
       ))}

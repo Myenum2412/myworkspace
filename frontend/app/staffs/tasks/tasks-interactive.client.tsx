@@ -3,10 +3,12 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ListTodoIcon, SearchIcon,
+  ListTodoIcon, SearchIcon, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import { TaskDataTable } from "@/components/task-data-table";
 import { toast } from "sonner";
@@ -71,6 +73,21 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("tasks");
+  const [upcomingTasks, setUpcomingTasks] = useState<any[]>([]);
+  const [upcomingLoading, setUpcomingLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== "upcoming" || upcomingTasks.length > 0) return;
+    let cancelled = false;
+    setUpcomingLoading(true);
+    apiFetch("/api/staffs/upcoming-tasks")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled && d?.tasks) setUpcomingTasks(d.tasks); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setUpcomingLoading(false); });
+    return () => { cancelled = true; };
+  }, [activeTab, upcomingTasks.length]);
 
   const queryKey = useMemo(() => ["tasks", "staff", orgId, sessionUserId] as const, [orgId, sessionUserId]);
   const seeded = useRef(false);
@@ -157,50 +174,78 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
           </div>
         </div>
 
-        <Stats07
-          items={[
-            { name: "Total Tasks", value: filteredTasks.length, subtitle: "All tasks" },
-            { name: "Overdue", value: summary.overdue, subtitle: "Past due date" },
-            { name: "Due Today", value: summary.dueToday, subtitle: "Due by today" },
-            { name: "Due This Week", value: summary.dueWeek, subtitle: "Due within 7 days" },
-            ...Object.entries(summary.counts).map(([status, count]) => ({
-              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-              value: count,
-              subtitle: `${status.replace(/_/g, ' ')} tasks`,
-            })),
-          ]}
-        />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col gap-4 min-h-0 flex-1">
+          <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
+            <TabsTrigger value="tasks" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Tasks</TabsTrigger>
+            <TabsTrigger value="upcoming" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Upcoming Tasks</TabsTrigger>
+          </TabsList>
 
-        <div className="flex flex-col flex-1 min-h-0">
-          <div className="flex items-center gap-4 mb-4">
-            <h2 className="text-lg font-semibold shrink-0">{t("nav.tasks")}</h2>
-            <div className="flex-1 flex justify-center">
-              <div className="relative w-full max-w-md">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search tasks..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9 bg-white"
+          <TabsContent value="tasks" className="mt-0 flex flex-col gap-4 min-h-0 flex-1">
+            <Stats07
+              items={[
+                { name: "Total Tasks", value: filteredTasks.length, subtitle: "All tasks" },
+                { name: "Overdue", value: summary.overdue, subtitle: "Past due date" },
+                { name: "Due Today", value: summary.dueToday, subtitle: "Due by today" },
+                { name: "Due This Week", value: summary.dueWeek, subtitle: "Due within 7 days" },
+                ...Object.entries(summary.counts).map(([status, count]) => ({
+                  name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+                  value: count,
+                  subtitle: `${status.replace(/_/g, ' ')} tasks`,
+                })),
+              ]}
+            />
+
+            <div className="flex flex-col flex-1 min-h-0">
+              <div className="flex items-center gap-4 mb-4">
+                <h2 className="text-lg font-semibold shrink-0">{t("nav.tasks")}</h2>
+                <div className="flex-1 flex justify-center">
+                  <div className="relative w-full max-w-md">
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search tasks..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9 h-9 bg-white"
+                    />
+                  </div>
+                </div>
+                <span className="text-sm text-muted-foreground shrink-0">{filteredTasks.length} tasks</span>
+              </div>
+              <div className="flex-1 min-h-0">
+                <TaskDataTable
+                  data={filteredTasks}
+                  onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+                  onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+                  searchPlaceholder="Search tasks..."
+                  emptyMessage="No tasks found."
+                  label="task"
+                  hideSearchBar
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
                 />
               </div>
             </div>
-            <span className="text-sm text-muted-foreground shrink-0">{filteredTasks.length} tasks</span>
-          </div>
-          <div className="flex-1 min-h-0">
-            <TaskDataTable
-              data={filteredTasks}
-              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-              searchPlaceholder="Search tasks..."
-              emptyMessage="No tasks found."
-              label="task"
-              hideSearchBar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-            />
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="upcoming" className="mt-0 flex flex-col flex-1 min-h-0">
+            {upcomingLoading ? (
+              <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>
+            ) : upcomingTasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
+                <ListTodoIcon className="size-10 text-muted-foreground/50" />
+                <p className="text-sm font-medium">No upcoming tasks</p>
+              </div>
+            ) : (
+              <UpcomingTasksTable tasks={upcomingTasks} onView={(task) => {
+                const matching = filteredTasks.find((ft: UiTask) => ft._id === task._id || ft.id === task._id);
+                if (matching) {
+                  setSelectedTask(matching as unknown as UiTask);
+                  setViewOpen(true);
+                }
+              }} />
+            )}
+          </TabsContent>
+        </Tabs>
 
         {viewOpen && selectedTask && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -219,5 +264,82 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
         )}
       </main>
     </>
+  );
+}
+
+function UpcomingTasksTable({ tasks, onView }: { tasks: any[]; onView: (task: any) => void }) {
+  const [page, setPage] = useState(0);
+  const pageSize = 30;
+  const paginated = useMemo(() => {
+    const start = page * pageSize;
+    return tasks.slice(start, start + pageSize);
+  }, [tasks, page]);
+
+  return (
+    <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+      <table className="table-premium w-full text-sm text-left">
+        <thead>
+          <tr>
+            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-12">#</th>
+            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Title</th>
+            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Priority</th>
+            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
+            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Assignee</th>
+            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Due Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginated.map((task, index) => (
+            <tr key={task._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => onView(task)}>
+              <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
+              <td className="px-4 py-3 font-medium">{task.title}</td>
+              <td className="px-4 py-3">
+                <Badge className={
+                  task.priority === "high" ? "bg-red-100 text-red-700" :
+                  task.priority === "medium" ? "bg-blue-100 text-blue-700" :
+                  "bg-gray-100 text-gray-600"
+                }>
+                  {task.priority}
+                </Badge>
+              </td>
+              <td className="px-4 py-3">
+                <Badge variant="outline">{task.status}</Badge>
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">{task.assignee || "—"}</td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+        <span className="text-sm text-muted-foreground">
+          {tasks.length === 0
+            ? "0 items"
+            : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, tasks.length)} of ${tasks.length}`}
+        </span>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+          >
+            <ChevronLeft className="size-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={(page + 1) * pageSize >= tasks.length}
+          >
+            <ChevronRight className="size-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

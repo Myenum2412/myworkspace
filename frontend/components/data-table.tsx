@@ -46,6 +46,8 @@ interface DataTableProps<TData, TValue> {
   hideSearchBar?: boolean;
   showCheckboxes?: boolean;
   hidePageSizeSelector?: boolean;
+  hidePagination?: boolean;
+  footerAction?: ReactNode;
   onSelectionChange?: (selectedRows: TData[]) => void;
 }
 
@@ -66,6 +68,8 @@ export function DataTable<TData, TValue>({
   hideSearchBar,
   showCheckboxes = true,
   hidePageSizeSelector,
+  hidePagination,
+  footerAction,
   onSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -319,26 +323,29 @@ export function DataTable<TData, TValue>({
                 </Select>
               </div>
             )}
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
+            {!hidePagination && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            )}
+            {footerAction}
           </div>
         </div>
       </div>

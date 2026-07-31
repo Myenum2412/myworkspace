@@ -14,6 +14,7 @@ export type TermKey =
   | "nav.engagement"
   | "nav.inventory"
   | "nav.reworks"
+  | "nav.submissions"
   | "nav.reports"
   | "nav.settings"
   | "nav.photography"
@@ -140,6 +141,7 @@ const terms: Record<Industry, Record<TermKey, string>> = {
     "nav.engagement": "Interaction Followups",
     "nav.inventory": "Inventory",
     "nav.reworks": "Revision",
+    "nav.submissions": "Submissions",
     "nav.reports": "Reports",
     "nav.settings": "Settings",
     "nav.photography": "Photography",
@@ -265,6 +267,7 @@ const terms: Record<Industry, Record<TermKey, string>> = {
     "nav.engagement": "Followups",
     "nav.inventory": "Pharmacy",
     "nav.reworks": "Revision",
+    "nav.submissions": "Submissions",
     "nav.reports": "Reports",
     "nav.settings": "Settings",
     "nav.photography": "Imaging",

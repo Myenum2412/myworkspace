@@ -101,6 +101,9 @@ const NAV_ACCESS_CONTROL: Record<string, string[]> = {
   // ── Reworks ──
   "/reworks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE],
 
+  // ── Submissions ──
+  "/submissions": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE],
+
   // ── Platform Admin ──
   "/platform": [ROLES.ORG_ADMIN],
   "/admin": [ROLES.ORG_ADMIN],

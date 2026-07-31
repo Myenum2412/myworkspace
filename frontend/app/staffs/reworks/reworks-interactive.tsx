@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ import Stats07 from "@/components/stats-07";
 
 type RevisionItem = {
   id: number;
+  _id?: string;
   description: string;
   selectedFiles: string;
   remarks: string;
@@ -51,11 +52,8 @@ const statusStyles: Record<string, string> = {
 const PAGE_SIZE_OPTIONS = [30, 60, 90, 120] as const;
 
 export default function RevisionsInteractive() {
-  const [items, setItems] = useState<RevisionItem[]>([
-    { id: 1, description: "Update dashboard UI colors", selectedFiles: "dashboard.tsx, theme.css", remarks: "Need client approval", status: "InCompleted" },
-    { id: 2, description: "Fix login redirect issue", selectedFiles: "auth.ts", remarks: "Verified by QA", status: "Completed" },
-    { id: 3, description: "Add pagination to reports", selectedFiles: "reports-table.tsx", remarks: "", status: "InCompleted" },
-  ]);
+  const [items, setItems] = useState<RevisionItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
@@ -66,6 +64,16 @@ export default function RevisionsInteractive() {
   const [newDescription, setNewDescription] = useState("");
   const [newFiles, setNewFiles] = useState("");
   const [newRemarks, setNewRemarks] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/staffs/reworks")
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setItems(d.revisions || []); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   function toggleSelect(id: number) {
     setSelected((prev) => {
@@ -140,6 +148,10 @@ export default function RevisionsInteractive() {
 
   return (
     <main className="flex flex-1 flex-col gap-0 p-4 sm:p-6">
+      {loading ? (
+        <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>
+      ) : (
+      <>
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
         <div className="flex items-center gap-3 min-w-0 shrink-0">
@@ -481,6 +493,8 @@ export default function RevisionsInteractive() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </>
+      )}
     </main>
   );
 }

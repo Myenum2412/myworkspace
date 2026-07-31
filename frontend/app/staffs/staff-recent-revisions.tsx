@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
@@ -18,19 +18,6 @@ const statusStyles: Record<string, string> = {
   Rejected: "bg-red-100 text-red-700",
 };
 
-const MOCK_REVISIONS = [
-  { id: 1, description: "Update dashboard UI colors", status: "InCompleted" },
-  { id: 2, description: "Fix login redirect issue", status: "Completed" },
-  { id: 3, description: "Add pagination to reports", status: "InCompleted" },
-  { id: 4, description: "Refactor API error handling", status: "Completed" },
-  { id: 5, description: "Optimize database queries", status: "InCompleted" },
-  { id: 6, description: "Update user profile page", status: "Completed" },
-  { id: 7, description: "Fix mobile responsive layout", status: "InCompleted" },
-  { id: 8, description: "Add export to CSV feature", status: "Completed" },
-  { id: 9, description: "Implement dark mode toggle", status: "InCompleted" },
-  { id: 10, description: "Migrate to new auth system", status: "InCompleted" },
-];
-
 const MAX_ROWS = 8;
 
 interface RevisionRow {
@@ -40,7 +27,20 @@ interface RevisionRow {
 }
 
 export function StaffRecentRevisions() {
-  const visible = useMemo(() => MOCK_REVISIONS.slice(0, MAX_ROWS), []);
+  const [revisions, setRevisions] = useState<RevisionRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/staffs/reworks")
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setRevisions((d.revisions || []).map((r: any) => ({ id: r.id, description: r.description, status: r.status }))); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const visible = useMemo(() => revisions.slice(0, MAX_ROWS), [revisions]);
 
   const columns = useMemo<ColumnDef<RevisionRow>[]>(() => [
     {
@@ -73,23 +73,30 @@ export function StaffRecentRevisions() {
 
   return (
     <div className="space-y-2">
-      <DataTable
-        columns={columns}
-        data={visible}
-        label="revision(s)"
-        emptyMessage="No revisions yet"
-        emptyIcon={<RefreshCcwIcon className="size-6 text-muted-foreground/50" />}
-        hideSearchBar
-        hidePageSizeSelector
-        pageSize={MAX_ROWS}
-      />
-      {MOCK_REVISIONS.length > MAX_ROWS && (
-        <Link href="/staffs/reworks">
-          <Button variant="ghost" size="sm" className="w-full gap-1 text-sm font-medium">
-            View More
-            <ChevronRight className="size-4" />
-          </Button>
-        </Link>
+      {loading ? (
+        <div className="flex items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={visible}
+          label="revision(s)"
+          emptyMessage="No revisions yet"
+          emptyIcon={<RefreshCcwIcon className="size-6 text-muted-foreground/50" />}
+          hideSearchBar
+          hidePageSizeSelector
+          hidePagination
+          pageSize={MAX_ROWS}
+          footerAction={
+            revisions.length > MAX_ROWS ? (
+              <Link href="/staffs/reworks">
+                <Button variant="ghost" size="sm" className="gap-1 text-sm font-medium">
+                  View More
+                  <ChevronRight className="size-4" />
+                </Button>
+              </Link>
+            ) : undefined
+          }
+        />
       )}
     </div>
   );

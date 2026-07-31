@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
-import { useIndustry } from "@/components/industry-provider";
 import { Card } from "@/components/ui/card";
 import Stats07 from "@/components/stats-07";
 import { StaffRecentAllocatedTasks } from "./staff-recent-allocated-tasks";
@@ -21,7 +20,6 @@ function getGreeting() {
 const COMPLETED_STATUSES = new Set(["completed", "done", "cancelled", "closed", "rejected"]);
 
 export default function StaffsPage() {
-  const { t } = useIndustry();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [data, setData] = useState<any>(null);
@@ -96,18 +94,16 @@ export default function StaffsPage() {
         ]}
       />
 
-      <div className="flex flex-col gap-6 w-full">
-        <div className="w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
           <h2 className="text-lg font-semibold mb-3">Recently Allocated Tasks</h2>
           <StaffRecentAllocatedTasks tasks={tasks} />
         </div>
-        <div className="w-full">
+        <div>
           <h2 className="text-lg font-semibold mb-3">Revision</h2>
           <StaffRecentRevisions />
         </div>
       </div>
-
-      <h1 className="text-2xl font-bold tracking-tight" data-tour-step-id="step-staffs">{t("page.staffs.title")}</h1>
     </main>
   );
 }
