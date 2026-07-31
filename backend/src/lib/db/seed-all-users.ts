@@ -25,14 +25,17 @@ async function seedAllUsers() {
 
   const existingStaff = await User.findOne({ email: STAFF_USERS[0].email });
   if (existingStaff) {
-    console.log("Staff users already exist. Clearing and recreating all users...");
+    console.log("Users already seeded. Skipping (use db:seed-all-users --force to re-seed).");
+    await mongoose.disconnect();
+    return;
   }
 
-  await Promise.all([
-    User.deleteMany({ email: { $in: STAFF_USERS.map(u => u.email) } }),
-    ClientUser.deleteMany({ email: { $in: CLIENT_USERS.map(u => u.email) } }),
-    Client.deleteMany({ email: { $in: CLIENT_USERS.map(u => u.email) } }),
-  ]);
+  const existingClient = await ClientUser.findOne({ email: CLIENT_USERS[0].email });
+  if (existingClient) {
+    console.log("Client users already seeded. Skipping.");
+    await mongoose.disconnect();
+    return;
+  }
 
   let org = await Organization.findOne({}).sort({ createdAt: 1 }).lean();
   let targetOrgId = org?.id || org?._id?.toString();

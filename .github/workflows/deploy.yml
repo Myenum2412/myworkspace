@@ -134,6 +134,9 @@ jobs:
             cd backend && npm run build
             pm2 restart myworkspace-backend
 
+            # Seed demo users (safe: skips if already exist)
+            cd backend && npm run db:seed-all-users
+
   verify:
     name: Post-deployment Verification
     needs: deploy
