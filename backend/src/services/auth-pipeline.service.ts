@@ -86,7 +86,7 @@ export async function executeAuthPipeline(opts: AuthPipelineOptions): Promise<Au
     metadata: { authMethod: opts.authMethod },
   });
 
-  const [refreshFamily, jwtToken, refreshTokenStr] = await issueTokens(user, resolvedOrgId, ipAddress, userAgent, opts.deviceFingerprint);
+  const [jwtToken, refreshTokenStr, refreshFamily] = await issueTokens(user, resolvedOrgId, ipAddress, userAgent, opts.deviceFingerprint);
 
   return {
     success: true,
