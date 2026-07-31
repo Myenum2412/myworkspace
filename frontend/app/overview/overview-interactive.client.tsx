@@ -1,19 +1,22 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, ListTodoIcon, SearchIcon, AlertCircleIcon, ChevronUpIcon, ChevronDownIcon, CrownIcon, UserIcon } from "lucide-react";
+import { PlusIcon, ListTodoIcon, SearchIcon, AlertCircleIcon, CrownIcon, UserIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TaskDetailedView } from "@/components/task-detailed-view";
-import type { Task } from "./columns";
+import { createColumns } from "./columns.client";
+import type { Task } from "./columns.client";
 import Stats07 from "@/components/stats-07";
 import { DataTable } from "@/components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 import { employeeService } from "@/lib/services/employee-service";
+import { apiFetch } from "@/lib/api";
+import { toast } from "sonner";
 
 export interface OverviewInteractiveProps {
   tasks: Task[];
@@ -108,29 +111,29 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
     },
   ];
 
-  const overdueColumns: ColumnDef<Task>[] = [
-    {
-      id: "title",
-      header: "Task",
-      cell: ({ row }) => <span className="font-medium truncate block max-w-[200px]">{row.original.title}</span>,
-    },
-    {
-      id: "assignee",
-      header: "Assignee",
-      cell: ({ row }) => (
-        <span className="text-sm truncate block max-w-[120px]">{row.original.assigneeName || "Unassigned"}</span>
-      ),
-    },
-    {
-      id: "overdue",
-      header: "Overdue",
-      cell: ({ row }) => {
-        if (!row.original.dueDate) return <span className="text-muted-foreground">—</span>;
-        const days = Math.ceil((new Date().getTime() - new Date(row.original.dueDate).getTime()) / (1000 * 60 * 60 * 24));
-        return <span className="text-xs text-red-500 font-semibold">{days}d</span>;
-      },
-    },
-  ];
+  const handleDelete = useCallback(async (task: Task) => {
+    if (!confirm(`Are you sure you want to delete "${task.title}"?`)) return;
+    try {
+      const res = await apiFetch(`/api/tasks/${task._id}`, { method: "DELETE" });
+      if (res.ok) {
+        setTasks((prev) => prev.filter((t) => t._id !== task._id));
+        toast.success("Task deleted successfully");
+      } else {
+        toast.error("Failed to delete task");
+      }
+    } catch {
+      toast.error("Could not connect to server");
+    }
+  }, []);
+
+  const overdueColumns = useMemo(
+    () => createColumns({
+      onView: (task) => { setSelectedTask(task); setViewOpen(true); },
+      onEdit: (task) => { setSelectedTask(task); setViewOpen(true); setEditMode(true); },
+      onDelete: handleDelete,
+    }),
+    [handleDelete]
+  );
 
   const filteredOverdue = searchQuery
     ? overdueTasks.filter((t) =>
