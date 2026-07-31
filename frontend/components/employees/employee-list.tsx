@@ -165,7 +165,7 @@ export function EmployeeList({
         {/* Table View */}
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)] rounded-lg">
           <div className="overflow-x-auto overflow-y-auto flex-1">
-            <table className="table-premium w-full text-sm text-left" style={{ minWidth: 950 }}>
+            <table className="table-premium w-full text-sm text-left" style={{ minWidth: 1300 }}>
               <thead className="sticky top-0 z-10">
                 <tr>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10">
@@ -195,6 +195,26 @@ export function EmployeeList({
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button onClick={() => onSort("phone")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                      Phone {getSortIcon("phone", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button onClick={() => onSort("employmentType")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                      Type {getSortIcon("employmentType", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button onClick={() => onSort("branchName")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                      Branch {getSortIcon("branchName", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button onClick={() => onSort("location")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                      Location {getSortIcon("location", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
                     <button onClick={() => onSort("role")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
                       Role {getSortIcon("role", sortField, sortDir)}
                     </button>
@@ -217,7 +237,7 @@ export function EmployeeList({
               <tbody>
                 {paginatedEmployees.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="text-center py-16 bg-white">
+                    <td colSpan={14} className="text-center py-16 bg-white">
                       <div className="flex flex-col items-center gap-3">
                         <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
                           <UsersIcon className="size-6 text-muted-foreground/50" />

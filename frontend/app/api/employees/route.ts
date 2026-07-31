@@ -42,6 +42,13 @@ export async function GET() {
             designation: u.designation || "", employmentType: u.employmentType || "", phone: u.phone || "",
             branchName: u.branchName || "", joiningDate: u.joiningDate ? new Date(u.joiningDate).toISOString() : "",
             avatar: u.image || u.avatar || "",
+            displayId: u.displayId || "", firstName: u.firstName || "", lastName: u.lastName || "",
+            nickname: u.nickname || "", location: u.location || "", shift: u.shift || "",
+            sourceOfHire: u.sourceOfHire || "", currentExperience: u.currentExperience || "",
+            totalExperience: u.totalExperience || "", alternateEmail: u.alternateEmail || "",
+            address: u.address || "", city: u.city || "", state: u.state || "", country: u.country || "",
+            zipCode: u.zipCode || "", linkedin: u.linkedin || "", github: u.github || "",
+            twitter: u.twitter || "", website: u.website || "", company: u.company || "",
           };
         });
     }

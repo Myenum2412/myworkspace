@@ -37,16 +37,16 @@ function StatCard({ item, maxValue, index }: { item: Stats07Item; maxValue: numb
   const fill = item.fill || defaultColors[index % defaultColors.length];
 
   return (
-    <Card className="p-4 shadow-2xs">
-      <CardContent className="flex items-center space-x-4 p-0">
-        <div className="relative flex items-center justify-center">
-          <ChartContainer className="h-[80px] w-[80px]" config={chartConfig}>
+    <Card className="p-3 shadow-2xs h-full">
+      <CardContent className="flex items-center justify-center space-x-3 p-0">
+        <div className="relative flex items-center justify-center shrink-0">
+          <ChartContainer className="h-[64px] w-[64px]" config={chartConfig}>
             <RadialBarChart
-              barSize={6}
+              barSize={5}
               data={[{ capacity: percentage, fill }]}
               endAngle={-270}
-              innerRadius={30}
-              outerRadius={60}
+              innerRadius={24}
+              outerRadius={48}
               startAngle={90}
             >
               <PolarAngleAxis
@@ -66,7 +66,7 @@ function StatCard({ item, maxValue, index }: { item: Stats07Item; maxValue: numb
             </RadialBarChart>
           </ChartContainer>
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span className="font-medium text-base text-foreground">
+            <span className="font-medium text-sm text-foreground">
               {item.value}
             </span>
           </div>
@@ -90,9 +90,11 @@ export default function Stats07({ items, className }: Stats07Props) {
   const maxValue = useMemo(() => Math.max(...items.map((x) => x.value), 1), [items]);
 
   return (
-    <dl className={`grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 ${className ?? ''}`}>
+    <dl className={`flex flex-row items-stretch gap-3 overflow-x-auto pb-1 ${className ?? ''}`}>
       {items.map((item, i) => (
-        <StatCard key={item.name} item={item} maxValue={maxValue} index={i} />
+        <div key={item.name} className="flex-1 min-w-[160px]">
+          <StatCard item={item} maxValue={maxValue} index={i} />
+        </div>
       ))}
     </dl>
   );

@@ -47,6 +47,7 @@ import {
   UploadIcon,
   Trophy,
   BarChart3Icon,
+  ChevronDownIcon,
 } from "lucide-react";
 
 import nextDynamic from "next/dynamic";
@@ -260,6 +261,7 @@ export default function ProfileClient({ data }: Props) {
   const [editNumEmployees, setEditNumEmployees] = useState(org?.numberOfEmployees?.toString() || "");
   const [editCompanyDesc, setEditCompanyDesc] = useState(org?.companyDescription || "");
 
+  const [showCompanyDetails, setShowCompanyDetails] = useState(false);
   const [showBannerEditor, setShowBannerEditor] = useState(false);
   const [showImageEditor, setShowImageEditor] = useState(false);
   const [urlInput, setUrlInput] = useState("");
@@ -757,10 +759,53 @@ export default function ProfileClient({ data }: Props) {
                         className="h-8 text-sm mt-1"
                       />
                     ) : (
-                      <p className="text-sm font-medium">{dbUser?.company || "—"}</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowCompanyDetails((v) => !v)}
+                        className="flex items-center gap-1 text-sm font-medium hover:underline underline-offset-2 cursor-pointer"
+                      >
+                        {dbUser?.company || "—"}
+                        <ChevronDownIcon className={`size-3.5 text-muted-foreground transition-transform ${showCompanyDetails ? "rotate-180" : ""}`} />
+                      </button>
                     )}
                   </div>
                 </div>
+                {showCompanyDetails && !editing && (
+                  <div className="rounded-sm border bg-muted/30 p-4 space-y-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Company Name</p>
+                        <p className="text-sm font-medium">{org?.name || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Business Type</p>
+                        <p className="text-sm font-medium">{org?.businessType || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Industry</p>
+                        <p className="text-sm font-medium">{org?.industry || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Company Email</p>
+                        <p className="text-sm font-medium">{org?.companyEmail || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Mobile</p>
+                        <p className="text-sm font-medium">{org?.mobileNumber || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Website</p>
+                        <p className="text-sm font-medium">{org?.website || "—"}</p>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <p className="text-xs text-muted-foreground">Address</p>
+                        <p className="text-sm font-medium">
+                          {[org?.addressLine1, org?.addressLine2, org?.city, org?.state, org?.pincode, org?.country].filter(Boolean).join(", ") || "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <Separator />
 
                 {/* Role + Status (read-only) */}

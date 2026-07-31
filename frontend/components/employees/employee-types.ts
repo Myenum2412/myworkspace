@@ -6,7 +6,7 @@ export type UserInfo = {
   avatar: string;
 };
 
-export type SortField = "name" | "email" | "department" | "designation" | "role" | "status" | "joiningDate";
+export type SortField = "name" | "email" | "department" | "designation" | "role" | "status" | "joiningDate" | "phone" | "employmentType" | "branchName" | "location" | "shift";
 export type SortDir = "asc" | "desc";
 export type PageView = "list" | "add" | "view" | "edit" | "teams";
 

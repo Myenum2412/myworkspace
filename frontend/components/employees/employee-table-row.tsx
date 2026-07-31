@@ -82,6 +82,22 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
       </td>
 
       <td className="px-4 py-3">
+        <span className="text-gray-700 whitespace-nowrap">{emp.phone || <span className="text-gray-300">—</span>}</span>
+      </td>
+
+      <td className="px-4 py-3">
+        <span className="text-gray-700">{emp.employmentType || <span className="text-gray-300">—</span>}</span>
+      </td>
+
+      <td className="px-4 py-3">
+        <span className="text-gray-700">{emp.branchName || <span className="text-gray-300">—</span>}</span>
+      </td>
+
+      <td className="px-4 py-3">
+        <span className="text-gray-700">{emp.location || <span className="text-gray-300">—</span>}</span>
+      </td>
+
+      <td className="px-4 py-3">
         <span className="inline-flex items-center rounded-sm border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">
           {emp.role}
         </span>

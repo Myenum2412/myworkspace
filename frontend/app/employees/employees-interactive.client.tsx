@@ -66,6 +66,11 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
           e.email.toLowerCase().includes(q) ||
           (e.department || "").toLowerCase().includes(q) ||
           (e.designation || "").toLowerCase().includes(q) ||
+          (e.phone || "").toLowerCase().includes(q) ||
+          (e.employmentType || "").toLowerCase().includes(q) ||
+          (e.branchName || "").toLowerCase().includes(q) ||
+          (e.location || "").toLowerCase().includes(q) ||
+          (e.shift || "").toLowerCase().includes(q) ||
           (e.displayId || "").toLowerCase().includes(q)
       );
     }
@@ -133,7 +138,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
       const res = await fetch("/api/employees");
       if (res.ok) {
         const data = await res.json();
-        setEmployees((data.data || data || []) as Employee[]);
+        setEmployees((data?.employees || []) as Employee[]);
       }
     } catch {
       // fallback: keep current state
