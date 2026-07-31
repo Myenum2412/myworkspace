@@ -328,35 +328,61 @@ export async function updateClient(orgId: string, clientId: string, adminId: str
 }
 
 export async function deleteClient(orgId: string, clientId: string, adminId: string): Promise<void> {
-  const client = await Client.findOneAndDelete({ id: clientId, orgId }).lean();
+  const client = await Client.findOne({ id: clientId, orgId }).lean();
 
   if (!client) {
     throw new AppError(404, "Client not found");
   }
 
-  // Cascade: delete projects linked to this client by name, and their tasks
-  const projects = await Project.find({ orgId, client: client.name }).lean();
-  const projectNames = projects.map((p) => p.name);
+  const session = await Client.startSession();
+  try {
+    session.startTransaction();
 
-  await Promise.allSettled([
-    ClientUser.deleteOne({ clientId }),
-    ClientAuditLog.deleteMany({ clientId }),
-    ...(projectNames.length > 0
-      ? [Task.deleteMany({ orgId, project: { $in: projectNames } })]
-      : []),
-    ...(projects.length > 0
-      ? [Project.deleteMany({ orgId, client: client.name })]
-      : []),
-  ]);
+    const deleted = await Client.findOneAndDelete({ id: clientId, orgId }).session(session).lean();
+    if (!deleted) {
+      throw new AppError(404, "Client not found");
+    }
 
-  await ClientAuditLog.create({
-    orgId,
-    createdBy: adminId,
-    action: "client.deleted",
-    entityType: "client",
-    entityId: clientId,
-    description: `Client ${client.name} deleted (including ${projects.length} project(s) and associated tasks)`,
-  });
+    // Cascade: delete projects linked to this client by name, and their tasks
+    const projects = await Project.find({ orgId, client: client.name }).session(session).lean();
+    const projectNames = projects.map((p) => p.name);
+
+    await Promise.all([
+      ClientUser.deleteMany({ clientId }).session(session),
+      ClientWorkspace.deleteMany({ clientId }).session(session),
+      Folder.deleteMany({ orgId, clientId }).session(session),
+      FileAttachment.deleteMany({ orgId, clientId }).session(session),
+      ClientAuditLog.deleteMany({ clientId }).session(session),
+      ActivityLog.deleteMany({ orgId, entityId: clientId }).session(session),
+      ...(projectNames.length > 0
+        ? [Task.deleteMany({ orgId, project: { $in: projectNames } }).session(session)]
+        : []),
+      ...(projects.length > 0
+        ? [Project.deleteMany({ orgId, client: client.name }).session(session)]
+        : []),
+    ]);
+
+    await ClientAuditLog.create(
+      [
+        {
+          orgId,
+          createdBy: adminId,
+          action: "client.deleted",
+          entityType: "client",
+          entityId: clientId,
+          description: `Client ${client.name} deleted (including ${projects.length} project(s) and associated tasks)`,
+        },
+      ],
+      { session }
+    );
+
+    await session.commitTransaction();
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    session.endSession();
+  }
 
   cacheManager.invalidatePattern(`clients:${orgId}`);
   cacheManager.invalidatePattern(`client:${clientId}`);

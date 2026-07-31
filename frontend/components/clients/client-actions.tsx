@@ -133,25 +133,34 @@ type ClientDeleteDialogProps = {
 
 export function ClientDeleteDialog({ client, open, onOpenChange, onClientDeleted }: ClientDeleteDialogProps) {
   const [deleteError, setDeleteError] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (client) setDeleteError("");
+    if (client) {
+      setDeleteError("");
+      setDeleting(false);
+    }
   }, [client]);
 
   async function handleDeleteConfirm() {
-    if (!client) return;
+    if (!client || deleting) return;
+    setDeleting(true);
     setDeleteError("");
-    const res = await apiFetch(`/api/clients/${encodeURIComponent(client.id)}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      const result = await res.json().catch(() => ({}));
-      const deletedId = result?.id || client.id;
-      onClientDeleted(deletedId);
-      onOpenChange(false);
-    } else {
-      const result = await res.json().catch(() => ({}));
-      setDeleteError(result.error || "Failed to delete client");
+    try {
+      const res = await apiFetch(`/api/clients/${encodeURIComponent(client.id)}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        const result = await res.json().catch(() => ({}));
+        const deletedId = result?.id || client.id;
+        onClientDeleted(deletedId);
+        onOpenChange(false);
+      } else {
+        const result = await res.json().catch(() => ({}));
+        setDeleteError(result.error || "Failed to delete client");
+      }
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -205,9 +214,12 @@ export function ClientDeleteDialog({ client, open, onOpenChange, onClientDeleted
 
         <DialogFooter className="bg-muted/50 p-4 flex sm:justify-between border-t border-border/50 gap-2 sm:gap-0">
           <Button variant="ghost" onClick={() => onOpenChange(false)} className="hover:bg-background">Cancel</Button>
-          <Button variant="destructive" onClick={handleDeleteConfirm} className="shadow-md hover:shadow-lg transition-all active:scale-95 bg-gradient-to-r from-blue-300 to-blue-400 hover:from-blue-400 hover:to-blue-500">
-            <Trash2 className="mr-2 size-4" />
-            Yes, delete client
+          <Button variant="destructive" onClick={handleDeleteConfirm} disabled={deleting} className="shadow-md hover:shadow-lg transition-all active:scale-95 bg-gradient-to-r from-blue-300 to-blue-400 hover:from-blue-400 hover:to-blue-500">
+            {deleting ? (
+              <><Loader2 className="mr-2 size-4 animate-spin" /> Deleting...</>
+            ) : (
+              <><Trash2 className="mr-2 size-4" /> Yes, delete client</>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

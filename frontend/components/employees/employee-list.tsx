@@ -278,6 +278,9 @@ export function EmployeeList({
                 : `${page * rowsPerPage + 1}–${Math.min((page + 1) * rowsPerPage, filteredCount)} of ${filteredCount}`}
             </span>
             <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                {filteredCount} {filteredCount === 1 ? "employee" : "employees"}
+              </span>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
                 <Select
