@@ -63,6 +63,8 @@ interface TaskDataTableProps {
   title?: string;
   showTeamHead?: boolean;
   hideSearchBar?: boolean;
+  hidePageSizeSelector?: boolean;
+  pageSize?: number;
   searchQuery?: string;
   onSearchChange?: (value: string) => void;
 }
@@ -112,6 +114,8 @@ export function TaskDataTable({
   title,
   showTeamHead = false,
   hideSearchBar,
+  hidePageSizeSelector,
+  pageSize = 30,
   searchQuery,
   onSearchChange,
 }: TaskDataTableProps) {
@@ -291,6 +295,8 @@ export function TaskDataTable({
       emptyIcon={<ListTodoIcon className="size-6 text-muted-foreground/50" />}
       onRowClick={onView ? (row) => onView(row) : undefined}
       hideSearchBar={hideSearchBar}
+      hidePageSizeSelector={hidePageSizeSelector}
+      pageSize={pageSize}
       searchQuery={searchQuery}
       onSearchChange={onSearchChange}
       getRowProps={getRowProps}

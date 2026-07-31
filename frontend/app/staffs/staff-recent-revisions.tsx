@@ -1,15 +1,21 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
-import { Checkbox } from "@/components/ui/checkbox";
+import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, RefreshCcwIcon } from "lucide-react";
+import { DataTable } from "@/components/data-table";
 
 const statusStyles: Record<string, string> = {
   Completed: "bg-green-100 text-green-700",
   InCompleted: "bg-yellow-100 text-yellow-700",
+  Incomplete: "bg-yellow-100 text-yellow-700",
+  Pending: "bg-yellow-100 text-yellow-700",
+  InReview: "bg-purple-100 text-purple-700",
+  Approved: "bg-green-100 text-green-700",
+  Rejected: "bg-red-100 text-red-700",
 };
 
 const MOCK_REVISIONS = [
@@ -27,79 +33,63 @@ const MOCK_REVISIONS = [
 
 const MAX_ROWS = 8;
 
+interface RevisionRow {
+  id: number;
+  description: string;
+  status: string;
+}
+
 export function StaffRecentRevisions() {
-  const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [revisions] = useState(MOCK_REVISIONS);
+  const visible = useMemo(() => MOCK_REVISIONS.slice(0, MAX_ROWS), []);
 
-  const visible = useMemo(() => revisions.slice(0, MAX_ROWS), [revisions]);
-
-  const toggle = (id: number) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const columns = useMemo<ColumnDef<RevisionRow>[]>(() => [
+    {
+      id: "index",
+      header: "Rev #",
+      cell: ({ row }) => (
+        <span className="font-mono text-xs text-muted-foreground">
+          #{row.index + 1}
+        </span>
+      ),
+      size: 80,
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.description}</span>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <Badge className={statusStyles[row.original.status] || "bg-gray-100 text-gray-700"}>
+          {row.original.status}
+        </Badge>
+      ),
+    },
+  ], []);
 
   return (
-    <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead>
-            <tr className="border-b bg-muted/30">
-              <th className="w-10 px-3 py-3">
-                <Checkbox
-                  checked={visible.length > 0 && selected.size === visible.length}
-                  onCheckedChange={(checked) => {
-                    if (checked) setSelected(new Set(visible.map((r) => r.id)));
-                    else setSelected(new Set());
-                  }}
-                />
-              </th>
-              <th className="px-3 py-3 font-semibold">Description</th>
-              <th className="px-3 py-3 font-semibold">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((r) => (
-              <tr
-                key={r.id}
-                className={`border-b last:border-0 transition-colors hover:bg-slate-50 ${selected.has(r.id) ? "bg-blue-50/50" : ""}`}
-              >
-                <td className="w-10 px-3 py-2.5">
-                  <Checkbox
-                    checked={selected.has(r.id)}
-                    onCheckedChange={() => toggle(r.id)}
-                  />
-                </td>
-                <td className="px-3 py-2.5 text-sm font-medium">{r.description}</td>
-                <td className="px-3 py-2.5">
-                  <Badge className={(statusStyles[r.status] || "") + ""}>
-                    {r.status}
-                  </Badge>
-                </td>
-              </tr>
-            ))}
-            {visible.length === 0 && (
-              <tr>
-                <td colSpan={3} className="px-3 py-8 text-center text-sm text-muted-foreground">
-                  No revisions yet
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      {revisions.length > MAX_ROWS && (
-        <div className="border-t px-3 py-2.5">
-          <Link href="/staffs/reworks">
-            <Button variant="ghost" size="sm" className="w-full gap-1 text-sm font-medium">
-              View More
-              <ChevronRight className="size-4" />
-            </Button>
-          </Link>
-        </div>
+    <div className="space-y-2">
+      <DataTable
+        columns={columns}
+        data={visible}
+        label="revision(s)"
+        emptyMessage="No revisions yet"
+        emptyIcon={<RefreshCcwIcon className="size-6 text-muted-foreground/50" />}
+        hideSearchBar
+        hidePageSizeSelector
+        pageSize={MAX_ROWS}
+      />
+      {MOCK_REVISIONS.length > MAX_ROWS && (
+        <Link href="/staffs/reworks">
+          <Button variant="ghost" size="sm" className="w-full gap-1 text-sm font-medium">
+            View More
+            <ChevronRight className="size-4" />
+          </Button>
+        </Link>
       )}
     </div>
   );
