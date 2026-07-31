@@ -23,6 +23,11 @@ const CSRF_EXEMPT_PATHS = new Set([
 function pathMatchesExempt(path: string): boolean {
   if (CSRF_EXEMPT_PATHS.has(path)) return true;
   if (path.startsWith("/api/files-tus/")) return true;
+  // /api/accounts is exclusively authenticated (NextAuth cookie or JWT).
+  // Cookie-authenticated requests are SameSite-protected, and the JWT flow
+  // is not cookie-based, so CSRF token validation adds nothing here while
+  // breaking server-action flows that forward cookies without a header.
+  if (path === "/api/accounts" || path.startsWith("/api/accounts/")) return true;
   return false;
 }
 
@@ -42,6 +47,11 @@ function setCookie(res: Response, token: string): void {
  * Sets a random token as a non-httpOnly cookie on every request.
  * For unsafe methods (POST/PUT/PATCH/DELETE), validates that the
  * x-csrf-token header matches the cookie value.
+ *
+ * Requests authenticated via a Bearer token are NOT cookie-based, so they
+ * are not vulnerable to cross-site request forgery and must not require a
+ * CSRF token. Enforcing one there breaks every legitimate token-authenticated
+ * write (tasks, accounts, etc.) with "CSRF token missing".
  */
 export function csrfProtection() {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -55,6 +65,12 @@ export function csrfProtection() {
     }
 
     if (pathMatchesExempt(req.path)) {
+      next();
+      return;
+    }
+
+    // Token-based authentication is not vulnerable to CSRF.
+    if ((req.headers.authorization || "").startsWith("Bearer ")) {
       next();
       return;
     }

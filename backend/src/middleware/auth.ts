@@ -7,6 +7,7 @@ import { JwtPayload } from "../types/index.js";
 import type { AuthRequest } from "../types/index.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
+import { ClientUser } from "../lib/db/models/ClientUser.js";
 import { permissionCache } from "../lib/permission-cache.js";
 export type { AuthRequest };
 
@@ -40,6 +41,20 @@ function cacheEvictIfNeeded<K>(cache: Map<K, unknown>): void {
       cache.delete(iter.next().value as K);
     }
   }
+}
+
+/**
+ * Invalidate every in-memory auth cache entry for a user. Must be called
+ * whenever an account is terminated / deactivated / suspended so that no
+ * stale positive cache lets a revoked user keep access.
+ */
+export function invalidateUserAuthCache(userId: string): void {
+  for (const [key, hit] of jweCache.entries()) {
+    if (hit?.payload?.userId === userId) jweCache.delete(key);
+  }
+  resolveUserIdCache.delete(userId);
+  canonicalIdCache.delete(userId);
+  // Ensure org-context cache (org-context.ts) is also busted lazily via short TTL.
 }
 
 function jweCacheGet(key: string): JwtPayload | null {
@@ -209,6 +224,8 @@ export async function requireNextAuthSession(req: AuthRequest, res: Response, ne
   }
   req.user = user;
   await resolveStaleUserId(req);
+  const ok = await verifyActiveUser(req, res);
+  if (!ok) return;
   next();
 }
 
@@ -239,6 +256,11 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
 
       req.user = decoded;
       await resolveStaleUserId(req);
+      const bearerOk = await verifyActiveUser(req, res);
+      if (!bearerOk) {
+        dbg(`[BACKEND AUTH] Bearer principal failed active/org verification`);
+        return;
+      }
       dbg(`[BACKEND AUTH] ========== AUTHENTICATE SUCCESS (Bearer) ==========`);
       next();
       return;
@@ -259,6 +281,11 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
     dbg(`[BACKEND AUTH] Org ID from cookie: ${nextAuthUser.orgId}`);
     req.user = nextAuthUser;
     await resolveStaleUserId(req);
+    const cookieOk = await verifyActiveUser(req, res);
+    if (!cookieOk) {
+      dbg(`[BACKEND AUTH] Cookie principal failed active/org verification`);
+      return;
+    }
     dbg(`[BACKEND AUTH] ========== AUTHENTICATE SUCCESS (Cookie) ==========`);
     next();
     return;
@@ -288,6 +315,76 @@ async function resolveCanonicalUserId(userId: string, email?: string): Promise<s
     if (byEmail?.id) { canonicalCacheSet(userId, byEmail.id); return byEmail.id; }
   }
   return userId;
+}
+
+/**
+ * Verify, against MongoDB, that the authenticated principal still exists, is
+ * active, belongs to the organization encoded in the token, and has not been
+ * revoked (tokenVersion). If any check fails it writes the response
+ * (401/403) and returns false — the caller must stop the request.
+ *
+ * This runs on EVERY authenticated request so terminated / deactivated /
+ * suspended / removed accounts lose access immediately, even with a still
+ * cryptographically-valid token.
+ */
+export async function verifyActiveUser(req: AuthRequest, res: Response): Promise<boolean> {
+  const u = req.user;
+  if (!u) return true;
+
+  const role = (u.role || "").toLowerCase();
+
+  if (role === "clients") {
+    const client = await ClientUser.findOne({ id: u.userId })
+      .select("id orgId isActive tokenVersion")
+      .lean();
+    if (!client) {
+      res.status(401).json({ success: false, error: "Account no longer exists. Please sign in again." });
+      return false;
+    }
+    if (!client.isActive) {
+      res.status(403).json({ success: false, error: "Account is deactivated" });
+      return false;
+    }
+    if (u.orgId && client.orgId && String(u.orgId) !== String(client.orgId)) {
+      res.status(403).json({ success: false, error: "Access denied: organization mismatch" });
+      return false;
+    }
+    if (u.tokenVersion !== undefined && (client.tokenVersion ?? 0) > (u.tokenVersion ?? 0)) {
+      res.status(401).json({ success: false, error: "Session revoked. Please sign in again." });
+      return false;
+    }
+    return true;
+  }
+
+  const user = await User.findOne({ id: u.userId })
+    .select("id orgId isActive tokenVersion role")
+    .lean();
+
+  if (!user) {
+    res.status(401).json({ success: false, error: "Account no longer exists. Please sign in again." });
+    return false;
+  }
+
+  if (user.isActive === false) {
+    res.status(403).json({ success: false, error: "Account is deactivated" });
+    return false;
+  }
+
+  if (u.tokenVersion !== undefined && (user.tokenVersion ?? 0) > (u.tokenVersion ?? 0)) {
+    res.status(401).json({ success: false, error: "Session revoked. Please sign in again." });
+    return false;
+  }
+
+  // Tenant check: the token's orgId must match the account's org in MongoDB.
+  if (u.orgId) {
+    const dbOrgId = user.orgId || (await OrgMember.findOne({ userId: user.id }).select("orgId").lean())?.orgId;
+    if (dbOrgId && String(dbOrgId) !== String(u.orgId)) {
+      res.status(403).json({ success: false, error: "Access denied: organization mismatch" });
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**

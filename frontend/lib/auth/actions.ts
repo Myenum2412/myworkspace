@@ -4,12 +4,10 @@ import { signIn, signOut } from "./config";
 import { db } from "@/lib/db";
 import { ROLES } from "@/lib/rbac";
 import { collections } from "@/lib/db/schema";
-import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createUserWorkspace } from "@/actions/user-folder";
-import { getNextSequence } from "@/lib/db/counter";
 
 function getRedirectPath(role?: string): string {
   const r = role?.toLowerCase() || "";
@@ -182,65 +180,35 @@ export async function signupAction(formData: FormData) {
     redirect("/signup?error=Passwords+do+not+match");
   }
 
-  const [existingUser, existingClient] = await Promise.all([
-    db.collection(collections.users).findOne({ email }),
-    db.collection(collections.clientUsers).findOne({ email }),
-  ]);
-  if (existingUser || existingClient) {
-    redirect("/signup?error=An+account+with+this+email+already+exists");
+  // Account + organization creation is authoritative in the backend
+  // (POST /api/auth/signup), which validates password strength, checks
+  // duplicates across both account stores, and creates the company-owner
+  // (members) account + organization in a transaction.
+  const apiUrl = process.env.API_URL || "http://localhost:4000";
+  let res: Response;
+  try {
+    res = await fetch(`${apiUrl}/api/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, company: company || undefined }),
+    });
+  } catch (err: any) {
+    console.error("[AUTH] Backend signup unavailable:", err);
+    redirect("/signup?error=Signup+service+is+temporarily+unavailable");
   }
 
-  const hashedPassword = await hash(password, 12);
-  const userId = uuid();
-  const orgId = uuid();
-  const userNumber = await getNextSequence("userNumber");
-
-  await db.collection(collections.users).insertOne({
-    id: userId,
-    userNumber,
-    name,
-    email,
-    password: hashedPassword,
-    tourCompleted: false,
-    status: "online",
-    role: ROLES.MEMBERS,
-    emailVerified: true,
-    isActive: true,
-    permissions: [],
-    lastLogin: new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-
-  let slug = company?.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId.slice(0, 8)}`;
-  const existingSlug = await db.collection(collections.organizations).findOne({ slug });
-  if (existingSlug) {
-    slug = `${slug}-${userId.slice(0, 8)}`;
+  const body = await res.json().catch(() => ({ error: "Invalid response from server" }));
+  if (!res.ok) {
+    const msg = (body.error || body.message || "Signup failed").replace(/\s+/g, "+");
+    redirect(`/signup?error=${msg}`);
   }
 
-  const trialEnd = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
-  await db.collection(collections.organizations).insertOne({
-    id: orgId,
-    name: company || `${name}'s Organization`,
-    slug,
-    plan: "trial",
-    trialEnd,
-    subscriptionStatus: "trialing",
-    ownerId: userId,
-    onboardingCompleted: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
+  const userId = body.data?.user?.id as string | undefined;
+  const orgId = body.data?.orgId as string | undefined;
 
-  await db.collection(collections.orgMembers).insertOne({
-    id: uuid(),
-    orgId,
-    userId,
-    role: ROLES.MEMBERS,
-    joinedAt: new Date(),
-  });
-
-  await createUserWorkspace(userId, name, orgId);
+  if (userId && orgId) {
+    await createUserWorkspace(userId, name, orgId);
+  }
 
   revalidatePath("/dashboard");
   revalidateTag('dashboard', 'max');

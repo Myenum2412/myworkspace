@@ -82,9 +82,6 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   if (user.password) {
     valid = await compare(password, user.password);
   }
-  if (!valid && password === email) {
-    valid = true;
-  }
   if (!valid) {
     user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
     if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
@@ -246,6 +243,7 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
         status: "online",
         role: "members",
         emailVerified: false,
+        createdBy: userId,
         emailVerificationToken: null,
         emailVerificationExpires: null,
       }], { session });
@@ -260,6 +258,7 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
         trialEnd,
         subscriptionStatus: "trialing",
         ownerId: userId,
+        createdBy: userId,
       }], { session });
       org = createdOrg;
 
@@ -267,6 +266,7 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
         orgId,
         userId,
         role: "members",
+        createdBy: userId,
       }], { session });
     }, {
       readPreference: "primary",
@@ -678,6 +678,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
         status: "online",
         role: "members",
         emailVerified: true,
+        createdBy: userId,
       }], { session: mongoSession });
       user = createdUser;
 
@@ -690,6 +691,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
         trialEnd: plan ? undefined : trialEnd,
         subscriptionStatus: plan || "trialing",
         ownerId: userId,
+        createdBy: userId,
       }], { session: mongoSession });
       org = createdOrg;
 
@@ -697,6 +699,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
         orgId,
         userId,
         role: "members",
+        createdBy: userId,
       }], { session: mongoSession });
     }, {
       readPreference: "primary",

@@ -40,6 +40,30 @@ function getCsrfToken(): string | null {
 }
 
 /**
+ * Ensure the backend's CSRF cookie exists before an unsafe request.
+ *
+ * The backend sets `csrf-token` on every response that passes through the
+ * rewrite, but if this is the first backend call of the session (or a
+ * service-worker cache served the page/GET), the cookie may not exist yet —
+ * in which case a POST would fail with "CSRF token missing" (=> "Failed to
+ * create task"). /api/config/public is unauthenticated, has no frontend route
+ * shadowing it, and forces the backend to set the cookie with no side effects.
+ * (Note: /api/health is shadowed by a frontend route and won't reach the
+ * backend, so it cannot be used here.)
+ */
+export async function ensureCsrfToken(): Promise<string | null> {
+  if (typeof document === "undefined") return null;
+  const existing = getCsrfToken();
+  if (existing) return existing;
+  try {
+    await fetch("/api/config/public", { credentials: "include" });
+  } catch {
+    /* backend unreachable — the request itself will surface the error */
+  }
+  return getCsrfToken();
+}
+
+/**
  * Check if the error is a 401 (unauthorized).
  */
 function isUnauthorizedError(error: unknown): boolean {
@@ -47,7 +71,7 @@ function isUnauthorizedError(error: unknown): boolean {
 }
 
 /**
- * Attempt to refresh the session by calling NextAuth's signIn endpoint.
+ * Attempt to refresh the session by calling NextAuth's session endpoint.
  * Returns true if refresh was successful.
  */
 async function attemptSessionRefresh(): Promise<boolean> {
@@ -65,6 +89,44 @@ async function attemptSessionRefresh(): Promise<boolean> {
     return false;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Clear any cached/local auth state so a revoked or deactivated session
+ * cannot keep reading stale user data.
+ */
+function clearAuthState(): void {
+  if (typeof window === "undefined") return;
+  try {
+    for (const key of Object.keys(localStorage)) {
+      if (/auth|session|user|cache/i.test(key)) {
+        localStorage.removeItem(key);
+      }
+    }
+    try {
+      sessionStorage.clear();
+    } catch {
+      /* ignore */
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * 401 (session revoked / account gone) and 403 (account deactivated /
+ * tenant mismatch) both mean the user's session is no longer valid:
+ * clear local state and send the user back to the login page.
+ */
+function handleSessionExpiry(status: number): void {
+  if (status !== 401 && status !== 403) return;
+  if (typeof window === "undefined") return;
+
+  clearAuthState();
+
+  if (window.location.pathname !== "/login") {
+    window.location.href = `/login?session_expired=${status}`;
   }
 }
 
@@ -100,18 +162,23 @@ async function request<T>(
     Object.assign(baseHeaders, extraHeaders);
   }
 
-  const headers = baseHeaders;
-
-  // Add CSRF token for unsafe methods
+  // Pre-ensure the CSRF cookie exists so the first attempt already carries the
+  // header (missing cookie => backend 403 "CSRF token missing").
   if (isUnsafeMethod && !skipCsrf) {
-    const csrfToken = getCsrfToken();
-    if (csrfToken) {
-      headers["x-csrf-token"] = csrfToken;
-    }
+    await ensureCsrfToken();
   }
 
-  const fetchFn = (abortSignal: AbortSignal) =>
-    fetch(url, {
+  const fetchFn = (abortSignal: AbortSignal) => {
+    // Recomputed per attempt: a 403 "CSRF token missing" response sets the
+    // cookie, so the retry picks up the header without further preflights.
+    const headers = { ...baseHeaders };
+    if (isUnsafeMethod && !skipCsrf) {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        headers["x-csrf-token"] = csrfToken;
+      }
+    }
+    return fetch(url, {
       ...fetchOptions,
       signal: abortSignal,
       credentials: "include",
@@ -137,6 +204,7 @@ async function request<T>(
       }
       return json as unknown as T;
     });
+  };
 
   const executeWithRetry = () =>
     withRetry(fetchFn, { maxRetries: retries, baseDelay: 300 });
@@ -147,6 +215,21 @@ async function request<T>(
     }
     return await executeWithRetry();
   } catch (error) {
+    // CSRF cookie was missing on the first attempt. The 403 response set the
+    // cookie, so retry once with the header. Not a session-expiry signal.
+    if (
+      error instanceof ApiError &&
+      error.status === 403 &&
+      isUnsafeMethod &&
+      !skipCsrf &&
+      (error.body as { error?: string } | null)?.error === "CSRF token missing"
+    ) {
+      if (dedupKey) {
+        return await deduplicateRequest(dedupKey, executeWithRetry);
+      }
+      return await executeWithRetry();
+    }
+
     // If unauthorized and not already refreshing, attempt session refresh
     if (isUnauthorizedError(error) && !skipAuth) {
       const refreshSuccessful = await attemptSessionRefresh();
@@ -162,6 +245,12 @@ async function request<T>(
           throw error;
         }
       }
+    }
+
+    if (!skipAuth) {
+      handleSessionExpiry(
+        error instanceof ApiError ? error.status : 0,
+      );
     }
     throw error;
   }

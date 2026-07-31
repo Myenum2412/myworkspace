@@ -253,16 +253,31 @@ router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) =
   });
 });
 
+/**
+ * Resolve a target user's status record, but only if they belong to the
+ * caller's organization. Cross-org reads are tenant-escape attempts → 403.
+ */
+async function resolveOrgScopedUser(userId: string, actorOrgId: string) {
+  let user;
+  if (isObjectId(userId)) {
+    user = await User.findById(userId).select("id status orgId").lean();
+  } else {
+    user = await User.findOne({ id: userId }).select("id status orgId").lean();
+  }
+  if (!user) return null;
+
+  const dbOrgId = user.orgId || (await OrgMember.findOne({ userId: user.id }).select("orgId").lean())?.orgId;
+  if (dbOrgId && String(dbOrgId) !== String(actorOrgId)) {
+    throw new AppError(403, "Access denied: user is not in your organization");
+  }
+  return user;
+}
+
 router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {
   const userId = (req.query.userId as string) || req.user?.userId;
   if (!userId) throw new AppError(400, "userId is required");
 
-  let user;
-  if (isObjectId(userId)) {
-    user = await User.findById(userId).select("status").lean();
-  } else {
-    user = await User.findOne({ id: userId }).select("status").lean();
-  }
+  const user = await resolveOrgScopedUser(userId, req.user!.orgId!);
   res.json({ success: true, data: { status: user?.status || "offline" } });
 });
 
@@ -273,6 +288,12 @@ router.post("/status", authenticate, async (req: AuthRequest, res: Response) => 
 
   const targetUserId = bodyUserId || req.user?.userId;
   if (!targetUserId) throw new AppError(400, "userId is required");
+
+  // Only allow updating your own status; a different userId is only accepted
+  // if the target belongs to the caller's org (and even then, self-scoped).
+  if (bodyUserId && bodyUserId !== req.user?.userId) {
+    await resolveOrgScopedUser(targetUserId, req.user!.orgId!);
+  }
 
   if (isObjectId(targetUserId)) {
     await User.findByIdAndUpdate(targetUserId, { status });

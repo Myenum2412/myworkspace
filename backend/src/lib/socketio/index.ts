@@ -91,6 +91,39 @@ export class SocketIOManager {
     this.io?.to(`user:${userId}`).emit(event, data);
   }
 
+  /**
+   * Forcefully disconnect every live WebSocket / Socket.IO connection for a
+   * user. Used when an account is terminated / deactivated / suspended so that
+   * no live connection can retain access.
+   */
+  disconnectUser(userId: string, reason = "account_terminated") {
+    if (!this.io) return;
+    const room = `user:${userId}`;
+    try {
+      const sockets = this.io.sockets.adapter.rooms.get(room);
+      if (sockets) {
+        for (const socketId of sockets) {
+          const socket = this.io?.sockets.sockets.get(socketId);
+          if (socket) {
+            socket.emit("auth:revoked", { reason });
+            socket.disconnect(true);
+          }
+        }
+      }
+      // Disconnect any socket whose handshake auth tied it to this user.
+      const allSockets = this.io.sockets.sockets;
+      for (const socket of allSockets.values()) {
+        const s = socket as unknown as AuthenticatedSocket;
+        if (s.userId === userId) {
+          s.emit("auth:revoked", { reason });
+          s.disconnect(true);
+        }
+      }
+    } catch (err) {
+      logger.warn({ err, userId }, "Failed to disconnect sockets for user");
+    }
+  }
+
   emitToOrg<T = any>(orgId: string, event: string, data: T) {
     this.io?.to(`org:${orgId}`).emit(event, data);
   }

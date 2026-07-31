@@ -44,6 +44,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         token.orgId = (user as { orgId?: string }).orgId;
         token.onboardingCompleted = (user as { onboardingCompleted?: boolean }).onboardingCompleted;
         token.tourCompleted = (user as { tourCompleted?: boolean }).tourCompleted;
+        (token as any).tokenVersion = (user as { tokenVersion?: number }).tokenVersion || 0;
         (token as any).lastVerified = 0;
         return token;
       }
@@ -69,6 +70,20 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           let dbUser = await db.collection("users").findOne({ id: userId }).catch(() => null);
           if (!dbUser) {
             dbUser = await db.collection(collections.clientUsers).findOne({ id: userId }).catch(() => null);
+          }
+
+          // Terminated / deactivated / suspended accounts must be signed out
+          // immediately, even with a still-valid JWT. Returning null from the
+          // jwt callback invalidates the session (forces sign-out).
+          if (dbUser?.isActive === false) {
+            return null;
+          }
+
+          // A bumped tokenVersion means all sessions were revoked.
+          const dbTokenVersion = dbUser?.tokenVersion ?? 0;
+          const tokenTokenVersion = (token as any).tokenVersion ?? 0;
+          if (dbTokenVersion > tokenTokenVersion) {
+            return null;
           }
 
           const [org] = await Promise.all([
@@ -161,51 +176,20 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         // Skip if database is not available
         if (!db) {
           console.warn("[AUTH] Database not available, skipping sign-in processing");
-          return true;
+          return false;
         }
 
-        const { v4: uuid } = await import("uuid");
         const existing = await db.collection("users").findOne({ email: user.email });
 
+        // OAuth providers do NOT auto-create accounts. An account must have
+        // been created by an authorised workspace member first.
         if (!existing) {
-          const userId = uuid();
-          const now = new Date();
-          const userName = user.name || user.email.split("@")[0];
-          const { getNextSequence } = await import("@/lib/db/counter");
-          const newOrgId = uuid();
-          const userNumber = await getNextSequence("userNumber");
-          let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
+          return false;
+        }
 
-          const slugCheck = await db.collection("organizations").findOne({ slug });
-          if (slugCheck) slug = `${slug}-${userId}`;
-
-          const trialEnd = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
-
-          // Parallelize all three writes
-          await Promise.all([
-            db.collection("users").insertOne({
-              id: userId, userNumber, email: user.email, name: userName,
-              image: user.image || null, provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              orgId: newOrgId, role: ROLES.MEMBERS,
-              tourCompleted: false,
-              status: "online", lastLogin: now, createdAt: now, updatedAt: now,
-            }),
-            db.collection("organizations").insertOne({
-              id: newOrgId, name: `${userName}'s Organization`, slug,
-              plan: "trial", trialEnd, subscriptionStatus: "trialing",
-              ownerId: userId, onboardingCompleted: true, createdAt: now, updatedAt: now,
-            }),
-              db.collection("org_members").insertOne({
-                id: uuid(), orgId: newOrgId, userId, role: ROLES.MEMBERS, joinedAt: now,
-            }),
-          ]);
-
-          user.id = userId;
-          (user as { orgId?: string }).orgId = newOrgId;
-          (user as { role?: string }).role = ROLES.MEMBERS;
-          (user as { tourCompleted?: boolean }).tourCompleted = false;
-          return true;
+        // Terminated / deactivated / suspended accounts cannot sign in.
+        if (existing.isActive === false) {
+          return false;
         }
 
         const uid = existing.id || existing._id?.toString();
@@ -214,7 +198,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         if (existing.role) (user as { role?: string }).role = existing.role;
         return true;
       } catch (err) {
-        console.error("[AUTH] Failed to check/create user in database:", err);
+        console.error("[AUTH] Failed to verify user in database:", err);
         return false;
       }
     },
@@ -290,10 +274,11 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           if (user.password) {
             valid = await compare(password, user.password);
           }
-          if (!valid && password === credentials.email) {
-            valid = true;
-          }
           if (!valid) return null;
+
+          // Terminated / deactivated / suspended accounts cannot sign in.
+          if (user.isActive === false) return null;
+          if (user.lockedUntil && new Date(user.lockedUntil).getTime() > Date.now()) return null;
 
           const orgId = user.orgId || "";
 
@@ -307,6 +292,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             orgId,
             onboardingCompleted: true,
             tourCompleted: user.tourCompleted !== undefined ? user.tourCompleted : true,
+            tokenVersion: user.tokenVersion || 0,
           };
         } catch (e) {
           console.error("[AUTH authorize] Error:", e);

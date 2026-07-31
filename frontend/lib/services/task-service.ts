@@ -1,11 +1,7 @@
-function getCsrfToken(): string | undefined {
-  if (typeof document === "undefined") return undefined;
-  const match = document.cookie.match(new RegExp("(?:^|;\\s*)csrf-token=([^;]*)"));
-  return match ? decodeURIComponent(match[1]) : undefined;
-}
+import { ensureCsrfToken } from "@/lib/api/client";
 
-function csrfHeaders(): Record<string, string> {
-  const token = getCsrfToken();
+async function csrfHeaders(): Promise<Record<string, string>> {
+  const token = await ensureCsrfToken();
   return token ? { "x-csrf-token": token } : {};
 }
 
@@ -64,23 +60,35 @@ export const taskService = {
   },
 
   async createTask(task: Partial<Task>): Promise<Task> {
-    const res = await fetch("/api/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...csrfHeaders() },
-      credentials: "include",
-      body: JSON.stringify(task),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Failed to create task" }));
-      throw new Error(err.error === "Validation failed" ? "Please fill in all required fields." : (err.error || "Failed to create task"));
+    const attempt = async () => {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
+        credentials: "include",
+        body: JSON.stringify(task),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Failed to create task" }));
+        throw new Error(err.error === "Validation failed" ? "Please fill in all required fields." : (err.error || "Failed to create task"));
+      }
+      const data = await res.json();
+      return data.data || data;
+    };
+    try {
+      return await attempt();
+    } catch (error) {
+      // A 403 "CSRF token missing" response sets the csrf cookie, so the
+      // retry will carry the header. Not a validation/session failure.
+      if ((error as Error).message === "CSRF token missing") {
+        return await attempt();
+      }
+      throw error;
     }
-    const data = await res.json();
-    return data.data || data;
   },
 
   async assignTask(taskId: string, assigneeId: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/assign`, {
-      method: "POST", headers: { "Content-Type": "application/json", ...csrfHeaders() },
+      method: "POST", headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
       credentials: "include",
       body: JSON.stringify({ assigneeId }),
     });
@@ -89,14 +97,14 @@ export const taskService = {
 
   async submitForVerification(taskId: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/submit-verification`, {
-      method: "POST", headers: csrfHeaders(), credentials: "include",
+      method: "POST", headers: await csrfHeaders(), credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to submit for verification");
   },
 
   async approveTask(taskId: string, note?: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/approve`, {
-      method: "POST", headers: { "Content-Type": "application/json", ...csrfHeaders() },
+      method: "POST", headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
       credentials: "include",
       body: JSON.stringify({ note }),
     });
@@ -105,7 +113,7 @@ export const taskService = {
 
   async rejectTask(taskId: string, reason: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/reject`, {
-      method: "POST", headers: { "Content-Type": "application/json", ...csrfHeaders() },
+      method: "POST", headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
       credentials: "include",
       body: JSON.stringify({ reason }),
     });
@@ -114,14 +122,14 @@ export const taskService = {
 
   async publishCommonTask(taskId: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/publish`, {
-      method: "POST", headers: csrfHeaders(), credentials: "include",
+      method: "POST", headers: await csrfHeaders(), credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to publish task");
   },
 
   async activateUpcomingTask(taskId: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/activate`, {
-      method: "POST", headers: csrfHeaders(), credentials: "include",
+      method: "POST", headers: await csrfHeaders(), credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to activate task");
   },

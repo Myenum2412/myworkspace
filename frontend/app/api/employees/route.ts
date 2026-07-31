@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { getUserOrgId, ensureUserOrg } from "@/lib/org";
+import { getUserOrgId } from "@/lib/org";
 import { ObjectId } from "mongodb";
 import { v4 as uuid } from "uuid";
-import { hash } from "bcryptjs";
 import { isAdminRole } from "@/lib/rbac";
-import { getNextSequence, getNextEmployeeDisplayId } from "@/lib/db/counter";
+import { getNextEmployeeDisplayId } from "@/lib/db/counter";
 import { sendEmailDirect, buildEmployeeOnboardedHtml } from "@/lib/email";
+
+const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 export async function GET() {
   let session;
@@ -30,6 +31,24 @@ export async function GET() {
         ? { $or: [{ id: { $in: userIds } }, { _id: { $in: objectIds } }] }
         : { id: { $in: userIds } };
       const users = await db.collection(collections.users).find(query).toArray();
+
+      // Backfill displayId for legacy users who predate the displayId feature
+      const missingDisplayId = users.filter((u: any) => !u.displayId);
+      if (missingDisplayId.length > 0) {
+        const bulkOps = [];
+        for (const u of missingDisplayId) {
+          const newDisplayId = await getNextEmployeeDisplayId(orgId);
+          bulkOps.push({
+            updateOne: {
+              filter: { _id: u._id },
+              update: { $set: { displayId: newDisplayId, updatedAt: new Date() } },
+            },
+          });
+          u.displayId = newDisplayId;
+        }
+        await db.collection(collections.users).bulkWrite(bulkOps);
+      }
+
       const userMap = new Map(users.map((u: any) => [u.id || u._id?.toString(), u]));
 
       employees = allOrgMembers
@@ -113,82 +132,54 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const orgId = await ensureUserOrg(session.user.id, session.user.email);
     const body = await request.json();
 
-    const { email, firstName, lastName, password } = body;
-    if (!email || !firstName) {
-      return NextResponse.json({ error: "First name and email are required" }, { status: 400 });
-    }
-
-    // Check if email already exists in users
-    const existingUser = await db.collection(collections.users).findOne({ email });
-    if (existingUser) {
-      return NextResponse.json({ error: "User with this email already exists" }, { status: 400 });
-    }
-
-    const existingClient = await db.collection(collections.clientUsers || "client_users").findOne({ email });
-    if (existingClient) {
-      return NextResponse.json({ error: "User with this email already exists" }, { status: 400 });
-    }
-
-    const userId = uuid();
-    const plainPassword = password || Math.random().toString(36).slice(-8) + "A1!";
-    const hashedPassword = await hash(plainPassword, 12);
-    const userNumber = await getNextSequence("userNumber");
-    const displayId = await getNextEmployeeDisplayId(orgId);
-
-    const name = [firstName || "", lastName || ""].filter(Boolean).join(" ") || email.split("@")[0] || "Employee";
-
-    const allowedFields = [
-      "firstName", "lastName", "nickname", "email", "avatar",
-      "department", "designation", "location", "phone",
-      "role", "branchName", "shift", "employmentType", "status",
-      "sourceOfHire", "joiningDate", "currentExperience", "totalExperience",
-      "alternateEmail", "address", "city", "state", "country", "zipCode",
-      "offerLetter", "linkedin", "github", "twitter", "website",
-    ];
-
-    const newEmployee: Record<string, any> = {
-      id: userId,
-      userNumber,
-      displayId,
-      name,
-      password: hashedPassword,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    // Account creation is authoritative in the backend. We proxy to
+    // POST /api/accounts/staffs which derives orgId exclusively from the
+    // authenticated session and rejects any orgId sent by the client.
+    const csrfToken = request.headers.get("x-csrf-token") || "";
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      cookie: request.headers.get("cookie") || "",
     };
+    if (csrfToken) headers["x-csrf-token"] = csrfToken;
 
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        newEmployee[field] = body[field] || null;
-      }
-    }
-
-    // Ensure role matches body
-    newEmployee.role = body.role || body.roleName || "staffs";
-    newEmployee.status = (body.status || "active").toLowerCase();
-
-    // Insert user into users collection
-    await db.collection(collections.users).insertOne(newEmployee);
-
-    // Insert into orgMembers
-    await db.collection(collections.orgMembers).insertOne({
-      id: uuid(),
-      orgId,
-      userId,
-      role: newEmployee.role,
-      joinedAt: new Date(),
+    const backendRes = await fetch(`${API_URL}/api/accounts/staffs`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
     });
 
+    const backendBody = await backendRes.json().catch(() => ({ error: "Invalid response from server" }));
+
+    if (!backendRes.ok) {
+      return NextResponse.json(
+        { error: backendBody.error || backendBody.message || "Failed to create employee" },
+        { status: backendRes.status === 409 ? 400 : backendRes.status }
+      );
+    }
+
+    const account = backendBody.data || {};
+    const { email, firstName, tempPassword } = {
+      email: body.email || "",
+      firstName: body.firstName || "",
+      tempPassword: account.tempPassword,
+    };
+    const userId = account.user?.id || "";
+    const name = account.user?.name || [body.firstName || "", body.lastName || ""].filter(Boolean).join(" ") || email.split("@")[0] || "Employee";
+
     const now = new Date();
+
+    // Post-creation side effects (non-authoritative) run only after the
+    // backend has committed the account.
+
     // Handle workExperience, educationDetails, dependentDetails
-    if (Array.isArray(body.workExperience) && body.workExperience.length > 0) {
+    if (Array.isArray(body.workExperience) && body.workExperience.length > 0 && userId) {
       await db.collection(collections.workExperience).insertMany(
         body.workExperience.map((exp: any) => ({
           id: exp.id || uuid(),
           userId,
-          orgId,
+          orgId: account.user?.orgId || session.user.orgId,
           company: exp.company || "",
           title: exp.title || "",
           roles: exp.roles || "",
@@ -202,12 +193,12 @@ export async function POST(request: Request) {
       );
     }
 
-    if (Array.isArray(body.educationDetails) && body.educationDetails.length > 0) {
+    if (Array.isArray(body.educationDetails) && body.educationDetails.length > 0 && userId) {
       await db.collection(collections.educationDetails).insertMany(
         body.educationDetails.map((edu: any) => ({
           id: edu.id || uuid(),
           userId,
-          orgId,
+          orgId: account.user?.orgId || session.user.orgId,
           institute: edu.institute || "",
           degree: edu.degree || "",
           specialization: edu.specialization || "",
@@ -218,12 +209,12 @@ export async function POST(request: Request) {
       );
     }
 
-    if (Array.isArray(body.dependentDetails) && body.dependentDetails.length > 0) {
+    if (Array.isArray(body.dependentDetails) && body.dependentDetails.length > 0 && userId) {
       await db.collection(collections.dependentDetails).insertMany(
         body.dependentDetails.map((dep: any) => ({
           id: dep.id || uuid(),
           userId,
-          orgId,
+          orgId: account.user?.orgId || session.user.orgId,
           name: dep.name || "",
           relationship: dep.relationship || "",
           dob: dep.dob || null,
@@ -233,56 +224,61 @@ export async function POST(request: Request) {
       );
     }
 
-    // Insert welcome notification
-    await db.collection(collections.notifications).insertOne({
-      id: uuid(),
-      userId,
-      orgId,
-      createdBy: session.user.id,
-      type: "system",
-      title: "Welcome to MyWorkspace!",
-      message: "Your account has been created. You're now part of the organization.",
-      link: "/employees",
-      read: false,
-      createdAt: now,
-    });
-
-    // Notify other admins/members
-    const adminMembers = await db.collection(collections.orgMembers).find({
-      orgId,
-      role: { $in: ["org_admin", "members"] }
-    }).toArray();
-    const adminIds = [...new Set(adminMembers.map((m: any) => m.userId))].filter((id: string) => id !== userId);
-    if (adminIds.length > 0) {
-      const adminNotifs = adminIds.map((adminId: string) => ({
+    // Welcome notification
+    if (userId) {
+      await db.collection(collections.notifications).insertOne({
         id: uuid(),
-        userId: adminId,
-        orgId,
+        userId,
+        orgId: account.user?.orgId || session.user.orgId,
         createdBy: session.user.id,
         type: "system",
-        title: "New Employee Added",
-        message: `${name} (${email}) has been added.`,
+        title: "Welcome to MyWorkspace!",
+        message: "Your account has been created. You're now part of the organization.",
         link: "/employees",
         read: false,
         createdAt: now,
-      }));
-      await db.collection(collections.notifications).insertMany(adminNotifs);
+      });
+
+      // Notify other admins/members
+      const orgId = account.user?.orgId || session.user.orgId;
+      if (orgId) {
+        const adminMembers = await db.collection(collections.orgMembers).find({
+          orgId,
+          role: { $in: ["org_admin", "members"] }
+        }).toArray();
+        const adminIds = [...new Set(adminMembers.map((m: any) => m.userId))].filter((id: string) => id !== userId);
+        if (adminIds.length > 0) {
+          const adminNotifs = adminIds.map((adminId: string) => ({
+            id: uuid(),
+            userId: adminId,
+            orgId,
+            createdBy: session.user.id,
+            type: "system",
+            title: "New Employee Added",
+            message: `${name} (${email}) has been added.`,
+            link: "/employees",
+            read: false,
+            createdAt: now,
+          }));
+          await db.collection(collections.notifications).insertMany(adminNotifs);
+        }
+      }
     }
 
-    // Send credentials email
-    const workspaceName = "MyWorkspace";
-    const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
-    const htmlBody = buildEmployeeOnboardedHtml(firstName, email, workspaceName, loginUrl, plainPassword);
-    const subject = `Welcome to ${workspaceName} - Your Account is Ready`;
-    const emailResult = await sendEmailDirect(email, subject, htmlBody);
-
-    const createdUser = await db.collection(collections.users).findOne(
-      { id: userId },
-      { projection: { password: 0 } }
-    );
+    // Send credentials email (temp password comes from the backend)
+    let emailResult: { emailStatus: string; error?: string } = { emailStatus: "pending" };
+    if (email) {
+      const workspaceName = "MyWorkspace";
+      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
+      const htmlBody = buildEmployeeOnboardedHtml(body.firstName || name, email, workspaceName, loginUrl, tempPassword || "");
+      const subject = `Welcome to ${workspaceName} - Your Account is Ready`;
+      emailResult = await sendEmailDirect(email, subject, htmlBody);
+    }
 
     return NextResponse.json({
-      ...createdUser,
+      ...account,
+      id: userId,
+      email,
       emailStatus: emailResult.emailStatus,
       emailError: emailResult.error,
     });

@@ -18,6 +18,7 @@ import { provisionClientWorkspace } from "../lib/workspace/provision.js";
 import { requireString, requireEmail } from "../lib/validate.js";
 import { env } from "../config/env.js";
 import { logger } from "../lib/logger/index.js";
+import { revokeUserAccess } from "./account.service.js";
 import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
 import { hash } from "bcryptjs";
@@ -281,7 +282,7 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
   };
 }
 
-const CLIENT_ALLOWED_UPDATE_FIELDS = ["name", "email", "primaryContact", "phone", "company", "address", "notes", "isActive"];
+const CLIENT_ALLOWED_UPDATE_FIELDS = ["name", "email", "primaryContact", "phone", "company", "address", "notes", "isActive", "status"];
 
 export async function updateClient(orgId: string, clientId: string, adminId: string, adminEmail: string, body: any): Promise<any> {
   const safeUpdate: Record<string, any> = { updatedBy: adminId };
@@ -296,6 +297,19 @@ export async function updateClient(orgId: string, clientId: string, adminId: str
 
   if (!client) {
     throw new AppError(404, "Client not found");
+  }
+
+  // Deactivating a client must immediately revoke ALL of its access:
+  // tokens, refresh tokens, sessions and live WebSocket connections.
+  const deactivating = body.isActive === false || body.status === "inactive";
+  if (deactivating) {
+    const cu = await ClientUser.findOne({ clientId: client.id, orgId }).select("id").lean();
+    if (cu) {
+      await ClientUser.updateOne({ clientId: client.id, orgId }, { $set: { isActive: false } });
+      await revokeUserAccess(cu.id, orgId, "client_deactivated");
+    }
+  } else if (body.isActive === true || body.status === "active") {
+    await ClientUser.updateOne({ clientId: client.id, orgId }, { $set: { isActive: true } });
   }
 
   if (body.password) {
@@ -341,6 +355,11 @@ export async function deleteClient(orgId: string, clientId: string, adminId: str
     const deleted = await Client.findOneAndDelete({ id: clientId, orgId }).session(session).lean();
     if (!deleted) {
       throw new AppError(404, "Client not found");
+    }
+
+    // Revoke every credential and live connection of the client's login before removal.
+    if (client.clientUserId) {
+      await revokeUserAccess(client.clientUserId, orgId, "client_deleted");
     }
 
     // Cascade: delete projects linked to this client by name, and their tasks

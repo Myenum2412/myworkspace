@@ -179,12 +179,14 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     domain,
     plan: orgPlan,
     ownerId: req.user!.userId,
+    createdBy: req.user!.userId,
   });
 
   await OrgMember.create({
     orgId: org._id,
     userId: req.user!.userId,
     role: "members",
+    createdBy: req.user!.userId,
   });
 
   const limits = getPlanLimits(orgPlan);

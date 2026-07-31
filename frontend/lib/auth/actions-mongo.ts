@@ -1,13 +1,11 @@
 "use server";
 
-import { hash } from "bcryptjs";
-import { v4 as uuid } from "uuid";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { signIn } from "./config";
-import { db } from "@/lib/db";
 import { createUserWorkspace } from "@/actions/user-folder";
-import { ROLES } from "@/lib/rbac";
+
+const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 export async function signupActionMongo(formData: FormData) {
   const name = formData.get("name") as string;
@@ -23,63 +21,34 @@ export async function signupActionMongo(formData: FormData) {
     redirect("/signup-mongo?error=Password must be at least 8 characters");
   }
 
-  const existingUser = await db.collection("users").findOne({ email });
-  if (existingUser) {
-    redirect("/signup-mongo?error=An account with this email already exists");
+  // Account + organization creation is authoritative in the backend
+  // (POST /api/auth/signup). It validates password strength, checks
+  // duplicates across both account stores, and creates the company-owner
+  // (members) account + organization in a transaction.
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}/api/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, company: company || undefined }),
+    });
+  } catch (err: any) {
+    console.error("[AUTH] Backend signup unavailable:", err);
+    redirect("/signup-mongo?error=Signup service is temporarily unavailable");
   }
 
-  const existingClient = await db.collection("client_users").findOne({ email });
-  if (existingClient) {
-    redirect("/signup-mongo?error=An account with this email already exists");
+  const body = await res.json().catch(() => ({ error: "Invalid response from server" }));
+
+  if (!res.ok) {
+    redirect(`/signup-mongo?error=${encodeURIComponent(body.error || body.message || "Signup failed")}`);
   }
 
-  const hashedPassword = await hash(password, 12);
-  const userId = uuid();
-  const orgId = uuid();
+  const userId = body.data?.user?.id as string | undefined;
+  const orgId = body.data?.orgId as string | undefined;
 
-  const userDoc: Record<string, unknown> = {
-    _id: userId,
-    id: userId,
-    orgId,
-    name,
-    email,
-    password: hashedPassword,
-    company: company || null,
-    tourCompleted: false,
-    status: "online",
-    role: ROLES.MEMBERS,
-    emailVerified: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-  await db.collection("users").insertOne(userDoc as never);
-
-  const trialEnd = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
-  const organizations = db.collection("organizations");
-  const orgDoc: Record<string, unknown> = {
-    _id: orgId,
-    id: orgId,
-    name: company || `${name}'s Organization`,
-    slug: company?.toLowerCase().replace(/\s+/g, "-") || `org-${userId.slice(0, 8)}`,
-    ownerId: userId,
-    plan: "trial",
-    trialEnd,
-    subscriptionStatus: "trialing",
-    onboardingCompleted: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-  await organizations.insertOne(orgDoc as never);
-
-  await db.collection("org_members").insertOne({
-    id: uuid(),
-    orgId,
-    userId,
-    role: ROLES.MEMBERS,
-    joinedAt: new Date(),
-  });
-
-  await createUserWorkspace(userId, name, orgId);
+  if (userId && orgId) {
+    await createUserWorkspace(userId, name, orgId);
+  }
 
   const { sendWelcomeEmail } = await import("@/lib/mail");
   sendWelcomeEmail(email, name).catch((err) => {

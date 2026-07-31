@@ -19,6 +19,18 @@ const router = Router();
 
 router.use(authenticate);
 
+/**
+ * The orgId must always come from the authenticated session. If a caller
+ * sends one that does not match, it is a tenant-escape attempt → 403.
+ */
+function assertNoOrgOverride(req: AuthRequest): void {
+  const requestOrg = (req.body?.orgId as unknown) ?? (req.query?.orgId as unknown);
+  if (requestOrg === undefined || requestOrg === null || requestOrg === "") return;
+  if (String(requestOrg) !== String(req.user!.orgId)) {
+    throw new AppError(403, "Access denied: organization mismatch");
+  }
+}
+
 router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["clients"] }), async (req: AuthRequest, res: Response) => {
   const orgId = req.user!.orgId!;
   const data = await listClients(orgId);
@@ -40,6 +52,7 @@ router.get("/:id/workspace", async (req: AuthRequest, res: Response) => {
 
 router.post("/", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create clients");
+  assertNoOrgOverride(req);
   const orgId = req.user!.orgId!;
   const name = requireString(req.body.name, "name", { min: 1, max: 300 });
   const email = requireEmail(req.body.email, "email");
@@ -62,6 +75,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update clients");
+  assertNoOrgOverride(req);
   const orgId = req.user!.orgId!;
   const data = await updateClient(orgId, req.params.id, req.user!.userId, req.user!.email!, req.body);
   notifyClient.updated(req.user!.userId, orgId, req.user!.userId, data.name || "Client", req.params.id).catch(() => {});
@@ -70,6 +84,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete clients");
+  assertNoOrgOverride(req);
   const orgId = req.user!.orgId!;
   const deletedClient = await getClient(orgId, req.params.id);
   const deletedName = deletedClient?.name;
