@@ -51,6 +51,7 @@ export const collections = {
   stocks: "stocks",
   webhookConfigs: "webhook_configs",
   uploadApprovals: "upload_approvals",
+  departments: "departments",
   contractors: "contractors",
   services: "services",
 } as const;
