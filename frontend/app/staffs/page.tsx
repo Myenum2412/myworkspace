@@ -6,6 +6,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useIndustry } from "@/components/industry-provider";
 import { Card } from "@/components/ui/card";
 import Stats07 from "@/components/stats-07";
+import { StaffRecentAllocatedTasks } from "./staff-recent-allocated-tasks";
 import { apiFetch } from "@/lib/api";
 
 function getGreeting() {
@@ -93,6 +94,11 @@ export default function StaffsPage() {
           { name: "Due This Week", value: taskStats.dueWeek, subtitle: "Due within 7 days" },
         ]}
       />
+
+      <div>
+        <h2 className="text-lg font-semibold mb-3">Recently Allocated Tasks</h2>
+        <StaffRecentAllocatedTasks tasks={tasks} />
+      </div>
 
       <h1 className="text-2xl font-bold tracking-tight" data-tour-step-id="step-staffs">{t("page.staffs.title")}</h1>
     </main>
