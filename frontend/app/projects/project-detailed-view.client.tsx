@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import {
   TimerIcon, ListChecksIcon,
 } from "lucide-react";
 import type { Project } from "@/components/projects/project-types";
+import { DataTable } from "@/components/data-table";
+import { TaskDataTable } from "@/components/task-data-table";
+import { type ColumnDef } from "@tanstack/react-table";
 
 const TABS = [
   { id: "overview", label: "Overview", icon: InfoIcon },
@@ -149,7 +152,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
     : null;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-1 min-h-0 flex-col">
       <div className="flex items-center gap-2 px-4 sm:px-6 pt-2 pb-3 shrink-0 overflow-x-auto">
         {TABS.map((t, i) => {
           const Icon = t.icon;
@@ -286,40 +289,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 </div>
               </div>
             ) : (
-              <>
-                <div className="hidden sm:block border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
-                  <table className="table-premium w-full text-sm text-left">
-                    <thead>
-                      <tr>
-                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">User</th>
-                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Description</th>
-                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Date</th>
-                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Time</th>
-                        <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Duration</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {timeEntries.map((entry) => {
-                        const dur = entry.startTime && entry.endTime
-                          ? (() => { const [sh,sm]=entry.startTime.split(":").map(Number); const [eh,em]=entry.endTime.split(":").map(Number); return Math.max(0,(eh*60+em)-(sh*60+sm)); })()
-                          : entry.duration;
-                        return (
-                          <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
-                            <td className="px-3 py-2.5 text-sm font-medium">{userMap[entry.userId] || entry.userId.slice(0, 8)}</td>
-                            <td className="px-3 py-2.5 text-sm">{entry.description}</td>
-                            <td className="px-3 py-2.5 text-sm text-muted-foreground">{new Date(entry.date).toLocaleDateString()}</td>
-                            <td className="px-3 py-2.5 text-sm text-muted-foreground">
-                              {entry.startTime && entry.endTime ? `${entry.startTime} - ${entry.endTime}` : "\u2014"}
-                            </td>
-                            <td className="px-3 py-2.5 text-sm font-mono font-medium">{Math.floor(dur / 60)}h {dur % 60}m</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-              </>
+              <TimeEntriesTable timeEntries={timeEntries} userMap={userMap} />
             )}
           </div>
         )}
@@ -368,30 +338,14 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 </div>
               </div>
             ) : (
-              <div className="responsive-table overflow-x-auto">
-                <table className="table-premium w-full text-sm text-left">
-                  <thead>
-                    <tr>
-                      <th>Task</th>
-                      <th>Status</th>
-                      <th>Priority</th>
-                      <th>Assignee</th>
-                      <th>Due Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {projectTasks.map((t: any) => (
-                      <tr key={t._id || t.id}>
-                        <td className="font-medium">{t.title}</td>
-                        <td><span className="text-xs capitalize">{t.status?.replace(/_/g, " ")}</span></td>
-                        <td><span className="text-xs capitalize">{t.priority}</span></td>
-                        <td className="text-muted-foreground">{t.assigneeName || "\u2014"}</td>
-                        <td className="text-muted-foreground">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "\u2014"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <TaskDataTable
+                data={projectTasks}
+                hideSearchBar
+                hidePageSizeSelector
+                pageSize={10}
+                label="task"
+                emptyMessage="No tasks linked to this project"
+              />
             )}
           </div>
         )}
@@ -407,30 +361,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 </div>
               </div>
             ) : (
-              <div className="border rounded-sm overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b bg-muted/50">
-                      <th className="text-left px-3 py-2 font-semibold">Invoice</th>
-                      <th className="text-left px-3 py-2 font-semibold">Customer</th>
-                      <th className="text-left px-3 py-2 font-semibold">Amount</th>
-                      <th className="text-left px-3 py-2 font-semibold">Status</th>
-                      <th className="text-left px-3 py-2 font-semibold">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {invoices.map((inv: any) => (
-                      <tr key={inv.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="px-3 py-2 font-medium">{inv.number}</td>
-                        <td className="px-3 py-2 text-muted-foreground">{inv.customerName || "\u2014"}</td>
-                        <td className="px-3 py-2 font-mono font-medium">${(inv.amountPaid || 0).toLocaleString()}</td>
-                        <td className="px-3 py-2"><span className="text-xs capitalize">{inv.status}</span></td>
-                        <td className="px-3 py-2 text-muted-foreground">{inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "\u2014"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <InvoicesTable invoices={invoices} />
             )}
           </div>
         )}
@@ -446,6 +377,120 @@ interface ProjectFile {
   mimeType: string;
   size: number;
   createdAt: string;
+}
+
+function TimeEntriesTable({ timeEntries, userMap }: { timeEntries: TimeEntry[]; userMap: Record<string, string> }) {
+  const columns = useMemo<ColumnDef<TimeEntry>[]>(() => [
+    {
+      id: "index",
+      header: "#",
+      cell: ({ row }) => (
+        <span className="font-mono text-xs text-muted-foreground">
+          #{row.index + 1}
+        </span>
+      ),
+      size: 70,
+    },
+    {
+      accessorKey: "userId",
+      header: "User",
+      cell: ({ row }) => (
+        <span className="font-medium">{userMap[row.original.userId] || row.original.userId.slice(0, 8)}</span>
+      ),
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }) => <span className="text-sm">{row.original.description}</span>,
+    },
+    {
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">{new Date(row.original.date).toLocaleDateString()}</span>
+      ),
+    },
+    {
+      id: "time",
+      header: "Time",
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.startTime && row.original.endTime ? `${row.original.startTime} - ${row.original.endTime}` : "\u2014"}
+        </span>
+      ),
+    },
+    {
+      id: "duration",
+      header: "Duration",
+      cell: ({ row }) => {
+        const entry = row.original;
+        const dur = entry.startTime && entry.endTime
+          ? (() => { const [sh, sm] = entry.startTime.split(":").map(Number); const [eh, em] = entry.endTime.split(":").map(Number); return Math.max(0, (eh * 60 + em) - (sh * 60 + sm)); })()
+          : entry.duration;
+        return <span className="text-sm font-mono font-medium">{Math.floor(dur / 60)}h {dur % 60}m</span>;
+      },
+    },
+  ], [userMap]);
+
+  return (
+    <DataTable
+      columns={columns}
+      data={timeEntries}
+      label="time entry(ies)"
+      hideSearchBar
+      hidePageSizeSelector
+      pageSize={10}
+    />
+  );
+}
+
+function InvoicesTable({ invoices }: { invoices: any[] }) {
+  const columns = useMemo<ColumnDef<any>[]>(() => [
+    {
+      accessorKey: "number",
+      header: "Invoice",
+      cell: ({ row }) => <span className="font-medium">{row.original.number}</span>,
+    },
+    {
+      accessorKey: "customerName",
+      header: "Customer",
+      cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.customerName || "\u2014"}</span>,
+    },
+    {
+      accessorKey: "amountPaid",
+      header: "Amount",
+      cell: ({ row }) => <span className="text-sm font-mono font-medium">${(row.original.amountPaid || 0).toLocaleString()}</span>,
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <Badge className={row.original.status === "paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}>
+          <span className="capitalize">{row.original.status || "pending"}</span>
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Date",
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.createdAt ? new Date(row.original.createdAt).toLocaleDateString() : "\u2014"}
+        </span>
+      ),
+    },
+  ], []);
+
+  return (
+    <DataTable
+      columns={columns}
+      data={invoices}
+      label="invoice(s)"
+      hideSearchBar
+      hidePageSizeSelector
+      pageSize={10}
+    />
+  );
 }
 
 function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }) {

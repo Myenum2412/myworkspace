@@ -455,8 +455,8 @@ export default function ProjectsInteractive({
             </div>
           </>
         ) : viewProject ? (
-          <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full h-full">
+            <div className="flex items-center justify-between gap-2 flex-wrap shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <Button variant="ghost" size="sm" onClick={() => setViewProject(null)}>← Back</Button>
                 <h1 className="text-xl md:text-2xl font-bold truncate">{viewProject.name}</h1>
