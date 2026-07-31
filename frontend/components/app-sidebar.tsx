@@ -29,6 +29,7 @@ import {
   RotateCcwIcon,
   BarChart3Icon,
   SendIcon,
+  SquarePlusIcon,
 } from "lucide-react";
 import { useIndustry } from "@/components/industry-provider";
 
@@ -75,6 +76,7 @@ export function AppSidebar({
   const platformItems: NavItem[] = [
     { title: t("nav.dashboard"), url: "/dashboard", icon: <LayoutDashboardIcon className="size-6" />, isActive: true },
     { title: t("nav.overview"), url: "/overview", icon: <ListChecksIcon className="size-6" /> },
+    { title: t("nav.createTask"), url: "/createtask", icon: <SquarePlusIcon className="size-6" /> },
     { title: t("nav.employees"), url: "/employees", icon: <UsersIcon className="size-6" /> },
     { title: t("nav.projects"), url: "/projects", icon: <WorkflowIcon className="size-6" /> },
     { title: t("nav.approvals"), url: "/approvals", icon: <CheckCheckIcon className="size-6" /> },

@@ -82,7 +82,7 @@ function FormField({ label, required, className, children }: { label: string; re
   );
 }
 
-export function CreateTaskPageInteractive() {
+export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: () => void; onSuccess?: () => void }) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -242,6 +242,10 @@ export function CreateTaskPageInteractive() {
 
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       resetForm();
+      if (onSuccess) {
+        onSuccess();
+        return;
+      }
       router.refresh();
       router.push("/alltasks");
     } catch (err: any) {
@@ -259,7 +263,7 @@ export function CreateTaskPageInteractive() {
       <div className="px-6 py-4 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="" onClick={() => { router.back(); }}>
+            <Button variant="ghost" size="icon" className="" onClick={() => { onClose ? onClose() : router.back(); }}>
               <ArrowLeftIcon className="size-4" />
             </Button>
             <div>
@@ -568,7 +572,7 @@ export function CreateTaskPageInteractive() {
       <div className="flex items-center justify-between gap-3 px-6 py-4 border-t bg-muted/10 shrink-0">
         <Button
           variant="ghost"
-          onClick={() => { router.back(); }}
+          onClick={() => { onClose ? onClose() : router.back(); }}
           disabled={isSubmitting}
         >
           Cancel

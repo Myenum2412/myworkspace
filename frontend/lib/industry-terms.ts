@@ -4,6 +4,7 @@ export type TermKey =
   | "app.name"
   | "nav.dashboard"
   | "nav.overview"
+  | "nav.createTask"
   | "nav.employees"
   | "nav.projects"
   | "nav.clients"
@@ -131,6 +132,7 @@ const terms: Record<Industry, Record<TermKey, string>> = {
     "app.name": "My WorkSpace",
     "nav.dashboard": "Dashboard",
     "nav.overview": "Assign Tasks",
+    "nav.createTask": "Create Task",
     "nav.employees": "Employees",
     "nav.projects": "Projects",
     "nav.clients": "Clients",
@@ -257,6 +259,7 @@ const terms: Record<Industry, Record<TermKey, string>> = {
     "app.name": "MediCare Hub",
     "nav.dashboard": "Dashboard",
     "nav.overview": "Assign Tasks",
+    "nav.createTask": "Create Task",
     "nav.employees": "Doctors & Staff",
     "nav.projects": "Patients",
     "nav.clients": "Patient Details",

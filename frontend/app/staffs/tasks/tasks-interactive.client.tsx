@@ -8,6 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import { TaskDataTable } from "@/components/task-data-table";
@@ -15,6 +16,7 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import Stats07 from "@/components/stats-07";
 import { useIndustry } from "@/components/industry-provider";
+import { CreateTaskPageInteractive } from "@/app/createtask/page-interactive";
 
 type UiTask = {
   _id: string;
@@ -74,6 +76,7 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("tasks");
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [upcomingTasks, setUpcomingTasks] = useState<any[]>([]);
   const [upcomingLoading, setUpcomingLoading] = useState(false);
 
@@ -172,8 +175,18 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
             <h1 className="text-xl sm:text-2xl font-bold">{t("page.staffs.tasks")}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">{t("nav.staffTasks")}</p>
           </div>
+          {!showCreateForm && (
+            <Button size="sm" className="shrink-0" onClick={() => setShowCreateForm(true)}>
+              New Task
+            </Button>
+          )}
         </div>
 
+        {showCreateForm ? (
+          <div className="flex flex-col flex-1 min-h-0 -mx-4 sm:-mx-6 md:-mx-8 -mb-4">
+            <CreateTaskPageInteractive onClose={() => setShowCreateForm(false)} onSuccess={() => { setShowCreateForm(false); refetch(); }} />
+          </div>
+        ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col gap-4 min-h-0 flex-1">
           <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
             <TabsTrigger value="tasks" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Tasks</TabsTrigger>
@@ -246,6 +259,7 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
             )}
           </TabsContent>
         </Tabs>
+        )}
 
         {viewOpen && selectedTask && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -276,70 +290,80 @@ function UpcomingTasksTable({ tasks, onView }: { tasks: any[]; onView: (task: an
   }, [tasks, page]);
 
   return (
-    <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
-      <table className="table-premium w-full text-sm text-left">
-        <thead>
-          <tr>
-            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-12">#</th>
-            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Title</th>
-            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Priority</th>
-            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
-            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Assignee</th>
-            <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Due Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginated.map((task, index) => (
-            <tr key={task._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => onView(task)}>
-              <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
-              <td className="px-4 py-3 font-medium">{task.title}</td>
-              <td className="px-4 py-3">
-                <Badge className={
-                  task.priority === "high" ? "bg-red-100 text-red-700" :
-                  task.priority === "medium" ? "bg-blue-100 text-blue-700" :
-                  "bg-gray-100 text-gray-600"
-                }>
-                  {task.priority}
-                </Badge>
-              </td>
-              <td className="px-4 py-3">
-                <Badge variant="outline">{task.status}</Badge>
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">{task.assignee || "—"}</td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
-        <span className="text-sm text-muted-foreground">
-          {tasks.length === 0
-            ? "0 items"
-            : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, tasks.length)} of ${tasks.length}`}
-        </span>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-          >
-            <ChevronLeft className="size-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setPage((p) => p + 1)}
-            disabled={(page + 1) * pageSize >= tasks.length}
-          >
-            <ChevronRight className="size-4" />
-          </Button>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm flex items-center gap-2">
+          <ListTodoIcon className="size-4" />
+          Upcoming Tasks ({tasks.length})
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+          <table className="table-premium w-full text-sm text-left">
+            <thead>
+              <tr>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-12">#</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Title</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Priority</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Assignee</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Due Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((task, index) => (
+                <tr key={task._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => onView(task)}>
+                  <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
+                  <td className="px-4 py-3 font-medium">{task.title}</td>
+                  <td className="px-4 py-3">
+                    <Badge className={
+                      task.priority === "high" ? "bg-red-100 text-red-700" :
+                      task.priority === "medium" ? "bg-blue-100 text-blue-700" :
+                      "bg-gray-100 text-gray-600"
+                    }>
+                      {task.priority}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant="outline">{task.status}</Badge>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{task.assignee || "—"}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+            <span className="text-sm text-muted-foreground">
+              {tasks.length === 0
+                ? "0 items"
+                : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, tasks.length)} of ${tasks.length}`}
+            </span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={(page + 1) * pageSize >= tasks.length}
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

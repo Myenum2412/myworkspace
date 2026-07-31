@@ -76,6 +76,10 @@ export function isAdminRole(role: string): boolean {
   return role === ROLES.ORG_ADMIN || role === ROLES.MEMBERS || role === ROLES.MANAGER;
 }
 
+export function canCreateTask(role: string): boolean {
+  return isAdminRole(role) || role === ROLES.STAFFS;
+}
+
 export function isPlatformRole(role: string): boolean {
   return role === ROLES.ORG_ADMIN;
 }

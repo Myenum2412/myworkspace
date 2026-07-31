@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { isAdminRole } from "../lib/rbac/index.js";
+import { isAdminRole, canCreateTask } from "../lib/rbac/index.js";
 import { requireOrgMembership } from "../lib/org-utils.js";
 import {
   listTasks,
@@ -63,7 +63,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/", async (req: AuthRequest, res: Response) => {
   try {
-    if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create tasks");
+    if (!canCreateTask(req.user!.role)) throw new AppError(403, "Only admins and staff can create tasks");
     const orgId = await requireOrgMembership(req.user!.userId);
 
     const result = await createTask({
