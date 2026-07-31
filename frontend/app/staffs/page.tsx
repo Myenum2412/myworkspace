@@ -96,12 +96,12 @@ export default function StaffsPage() {
         ]}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
+      <div className="flex flex-col gap-6 w-full">
+        <div className="w-full">
           <h2 className="text-lg font-semibold mb-3">Recently Allocated Tasks</h2>
           <StaffRecentAllocatedTasks tasks={tasks} />
         </div>
-        <div>
+        <div className="w-full">
           <h2 className="text-lg font-semibold mb-3">Revision</h2>
           <StaffRecentRevisions />
         </div>
