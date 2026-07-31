@@ -22,7 +22,6 @@ const COMPLETED_STATUSES = new Set(["completed", "done", "cancelled", "closed", 
 export default function StaffsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState("");
   const [tasks, setTasks] = useState<any[]>([]);
@@ -40,23 +39,23 @@ export default function StaffsPage() {
   useEffect(() => {
     if (status !== "authenticated") return;
     let cancelled = false;
-    fetch("/api/staffs")
-      .then(r => r.json())
-      .then(d => { if (!cancelled) setData(d); })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
+    setLoading(true);
+    apiFetch("/api/staffs/tasks")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        if (cancelled) return;
+        const initialTasks = Array.isArray(d?.initialTasks) ? d.initialTasks : [];
+        const dataTasks = Array.isArray(d?.data) ? d.data : [];
+        setTasks(initialTasks.length > 0 ? initialTasks : dataTasks);
+      })
+      .catch(() => {
+        if (!cancelled) setTasks([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => { cancelled = true; };
   }, [status]);
-
-  useEffect(() => {
-    if (!session?.user?.orgId) return;
-    let cancelled = false;
-    apiFetch(`/api/tasks?orgId=${session.user.orgId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (!cancelled && d?.data) setTasks(d.data); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [session?.user?.orgId]);
 
   const taskStats = useMemo(() => {
     let total = 0, overdue = 0, dueToday = 0, dueWeek = 0;
