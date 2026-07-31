@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,7 +19,19 @@ import {
   XIcon,
   ChevronLeft,
   ChevronRight,
+  Trash2Icon,
+  Loader2Icon,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Member {
   userId: string;
@@ -39,9 +52,12 @@ export default function OrgPage() {
   const router = useRouter();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(30);
+  const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -73,6 +89,42 @@ export default function OrgPage() {
   const totalPages = Math.max(1, Math.ceil(filteredMembers.length / rowsPerPage));
   const paginatedMembers = filteredMembers.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   const hasActiveFilters = searchQuery.length > 0;
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedMembers.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedMembers.map(m => m.userId)));
+    }
+  };
+
+  const allSelected = paginatedMembers.length > 0 && selectedIds.size === paginatedMembers.length;
+
+  const handleDelete = async (member: Member) => {
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/orgmenu/members", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: member.userId }),
+      });
+      if (res.ok) {
+        setMembers(prev => prev.filter(m => m.userId !== member.userId));
+        setSelectedIds(prev => { const n = new Set(prev); n.delete(member.userId); return n; });
+      }
+    } catch {}
+    setDeleting(false);
+    setDeleteTarget(null);
+  };
 
   const getInitials = (name: string) => {
     if (!name) return "U";
@@ -160,6 +212,9 @@ export default function OrgPage() {
           <table className="table-premium w-full text-sm text-left" style={{ minWidth: 1200 }}>
             <thead className="sticky top-0 z-10">
               <tr>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10">
+                  <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} aria-label="Select all" className="border-white" />
+                </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Name</span></th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Company Name</span></th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Email ID</span></th>
@@ -175,7 +230,7 @@ export default function OrgPage() {
             <tbody>
               {paginatedMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-16 bg-white">
+                  <td colSpan={11} className="text-center py-16 bg-white">
                     <div className="flex flex-col items-center gap-3">
                       <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
                         <Building2Icon className="size-6 text-muted-foreground/50" />
@@ -189,8 +244,13 @@ export default function OrgPage() {
                   </td>
                 </tr>
               ) : (
-                paginatedMembers.map((m) => (
-                  <tr key={m.userId} className="group border-b bg-white hover:bg-slate-50 transition-colors">
+                paginatedMembers.map((m) => {
+                  const selected = selectedIds.has(m.userId);
+                  return (
+                  <tr key={m.userId} className={`group border-b bg-white hover:bg-slate-50 transition-colors${selected ? " selected" : ""}`}>
+                    <td className="px-4 py-3 w-10">
+                      <Checkbox checked={selected} onCheckedChange={() => toggleSelect(m.userId)} className="border-black" />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {m.avatar ? (
@@ -231,10 +291,18 @@ export default function OrgPage() {
                     </td>
                     <td className="px-4 py-3"><span className="text-gray-500 text-xs">{formatDate(m.registeredAt)}</span></td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
-                      <span className="text-gray-300">—</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => setDeleteTarget(m)}
+                      >
+                        <Trash2Icon className="size-4" />
+                      </Button>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -269,6 +337,27 @@ export default function OrgPage() {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove <strong>{deleteTarget?.name}</strong> ({deleteTarget?.email}) from the organization.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => { e.preventDefault(); if (deleteTarget) handleDelete(deleteTarget); }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? <><Loader2Icon className="size-4 animate-spin mr-1" /> Deleting...</> : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }

@@ -50,24 +50,26 @@ export async function DELETE(req: Request) {
   try {
     const { userId } = await req.json();
     if (!userId) return NextResponse.json({ error: "No userId provided" }, { status: 400 });
+    if (userId === session.user.id) return NextResponse.json({ error: "You cannot delete your own account" }, { status: 400 });
     const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
     if (!orgId) return NextResponse.json({ error: "No org found" }, { status: 400 });
 
-    const [memberInNextAuth, memberInMongoose] = await Promise.all([
-      db.collection(collections.orgMembers).findOne({ orgId, userId }) as any,
-      db.collection("orgmembers").findOne({ orgId, userId }) as any,
-    ]);
-    if (!memberInNextAuth && !memberInMongoose) return NextResponse.json({ error: "Member not found" }, { status: 404 });
+    const orConditions: Record<string, unknown>[] = [{ id: userId }];
+    if (ObjectId.isValid(userId)) orConditions.push({ _id: new ObjectId(userId) });
+    const user = await db.collection(collections.users).findOne({ $or: orConditions }) as any;
 
-    const org = await db.collection(collections.organizations).findOne({ id: orgId }) as any;
-    const user = await db.collection(collections.users).findOne({ id: userId }) as any;
+    const userDelete = user
+      ? db.collection(collections.users).deleteOne(user.id ? { id: user.id } : { _id: user._id })
+      : Promise.resolve();
 
     await Promise.all([
-      db.collection(collections.orgMembers).deleteOne({ orgId, userId }),
-      db.collection("orgmembers").deleteOne({ orgId, userId }),
+      db.collection(collections.orgMembers).deleteMany({ userId }),
+      db.collection("orgmembers").deleteMany({ userId }),
+      userDelete,
     ]);
 
     if (user?.email) {
+      const org = await db.collection(collections.organizations).findOne({ id: orgId }) as any;
       const companyName = org?.name || "MyWorkspace";
       const htmlBody = buildTerminationEmail(user.name || "User", companyName);
       sendEmailDirect(user.email, `Account Terminated - ${companyName}`, htmlBody).catch(() => {});

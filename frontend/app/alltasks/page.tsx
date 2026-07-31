@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AllTasksInteractive from "./alltasks-interactive";
+import { TaskTabs } from "@/components/task-tabs";
 
 export default function AllTasksPage() {
   const { data: session, status } = useSession();
@@ -28,5 +29,10 @@ export default function AllTasksPage() {
   if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;
 
-  return <AllTasksInteractive initialTasks={data.initialTasks} orgId={data.orgId} sessionUserId={data.sessionUserId} />;
+  return (
+    <div className="flex flex-1 flex-col min-h-0">
+      <TaskTabs />
+      <AllTasksInteractive initialTasks={data.initialTasks} orgId={data.orgId} sessionUserId={data.sessionUserId} />
+    </div>
+  );
 }
