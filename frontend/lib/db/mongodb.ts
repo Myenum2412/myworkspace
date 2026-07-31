@@ -28,8 +28,8 @@ export async function connectToMongo() {
           ? uri
           : uri + (uri.includes("?") ? "&" : "?") + "retryWrites=true&w=majority",
         {
-          serverSelectionTimeoutMS: 5000,
-          connectTimeoutMS: 5000,
+          serverSelectionTimeoutMS: 30000,
+          connectTimeoutMS: 30000,
           maxPoolSize: 20,
           minPoolSize: 2,
           maxIdleTimeMS: 30000,

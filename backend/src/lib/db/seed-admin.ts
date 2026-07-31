@@ -4,7 +4,7 @@ import { User } from "./models/User.js";
 import { Organization } from "./models/Organization.js";
 import { OrgMember } from "./models/OrgMember.js";
 import { ActivityLog } from "./models/ActivityLog.js";
-import { Counter } from "./models/Counter.js";
+import { getNextSequence } from "./models/Counter.js";
 import { env } from "../../config/env.js";
 import bcrypt from "bcryptjs";
 
@@ -27,10 +27,11 @@ async function seedAdmin() {
 
   const userId = uuid();
   const orgId = uuid();
+  const userNumber = await getNextSequence("userNumber");
 
   const admin = await User.create({
     id: userId,
-    userNumber: 1,
+    userNumber,
     orgId,
     name: "Super Admin",
     email,
@@ -41,6 +42,7 @@ async function seedAdmin() {
     permissions: [],
     isActive: true,
     failedLoginAttempts: 0,
+    createdBy: userId,
   });
 
   const org = await Organization.create({
@@ -49,6 +51,7 @@ async function seedAdmin() {
     slug: "system-admin",
     plan: "enterprise",
     ownerId: userId,
+    createdBy: userId,
   });
 
   await OrgMember.create({
@@ -56,9 +59,8 @@ async function seedAdmin() {
     userId,
     role: "members",
     joinedAt: new Date(),
+    createdBy: userId,
   });
-
-  await Counter.create({ name: "userNumber", seq: 1 });
 
   await ActivityLog.create({
     orgId: org.id,

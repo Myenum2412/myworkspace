@@ -14,8 +14,8 @@ export async function connectDb() {
 
   try {
     await mongoose.connect(env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 30000,
+      connectTimeoutMS: 30000,
       tls: true,
       tlsAllowInvalidCertificates: true,
       maxPoolSize: 50,
