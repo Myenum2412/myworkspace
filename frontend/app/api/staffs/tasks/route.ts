@@ -12,7 +12,7 @@ export async function GET() {
   if (!orgId) return NextResponse.json({ initialTasks: [], orgId: "", sessionUserId: session.user.id });
   try {
     const raw = await db.collection(collections.tasks).aggregate([
-      { $match: { orgId } },
+      { $match: { orgId, assigneeId: session.user.id } },
       { $sort: { createdAt: -1 } },
       {
         $lookup: {

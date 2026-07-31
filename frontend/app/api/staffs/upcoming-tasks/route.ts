@@ -13,7 +13,7 @@ export async function GET() {
   try {
     const now = new Date();
     const raw = await db.collection(collections.tasks).aggregate([
-      { $match: { orgId, dueDate: { $gte: now }, status: { $nin: ["done", "cancelled"] } } },
+      { $match: { orgId, assigneeId: session.user.id, dueDate: { $gte: now }, status: { $nin: ["done", "cancelled"] } } },
       { $sort: { dueDate: 1 } },
       {
         $lookup: {
