@@ -256,13 +256,13 @@ export function TaskDataTable({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {onView && (
-              <DropdownMenuItem onClick={() => onView(row.original)}>
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView(row.original); }}>
                 <EyeIcon className="mr-2 size-4" />
                 View
               </DropdownMenuItem>
             )}
             {onEdit && (
-              <DropdownMenuItem onClick={() => onEdit(row.original)}>
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(row.original); }}>
                 <PencilIcon className="mr-2 size-4" />
                 Edit
               </DropdownMenuItem>
@@ -271,7 +271,7 @@ export function TaskDataTable({
             {onDelete && (
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => onDelete(row.original)}
+                onClick={(e) => { e.stopPropagation(); onDelete(row.original); }}
               >
                 <Trash2Icon className="mr-2 size-4" />
                 Delete
