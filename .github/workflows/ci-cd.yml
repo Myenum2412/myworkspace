@@ -9,7 +9,7 @@ on:
 env:
   NODE_VERSION: "22"
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ lower(github.repository) }}
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   lint-and-type-check:
