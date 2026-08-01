@@ -7,7 +7,6 @@ import { ObjectId } from "mongodb";
 import { v4 as uuid } from "uuid";
 import { isAdminRole } from "@/lib/rbac";
 import { getNextEmployeeDisplayId } from "@/lib/db/counter";
-import { sendEmailDirect, buildEmployeeOnboardedHtml } from "@/lib/email";
 
 const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -160,11 +159,7 @@ export async function POST(request: Request) {
     }
 
     const account = backendBody.data || {};
-    const { email, firstName, tempPassword } = {
-      email: body.email || "",
-      firstName: body.firstName || "",
-      tempPassword: account.tempPassword,
-    };
+    const email = (body.email as string) || "";
     const userId = account.user?.id || "";
     const name = account.user?.name || [body.firstName || "", body.lastName || ""].filter(Boolean).join(" ") || email.split("@")[0] || "Employee";
 
@@ -265,22 +260,15 @@ export async function POST(request: Request) {
       }
     }
 
-    // Send credentials email (temp password comes from the backend)
-    let emailResult: { emailStatus: string; error?: string } = { emailStatus: "pending" };
-    if (email) {
-      const workspaceName = "MyWorkspace";
-      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`;
-      const htmlBody = buildEmployeeOnboardedHtml(body.firstName || name, email, workspaceName, loginUrl, tempPassword || "");
-      const subject = `Welcome to ${workspaceName} - Your Account is Ready`;
-      emailResult = await sendEmailDirect(email, subject, htmlBody);
-    }
+    const emailStatus = (account.emailStatus as string) || "skipped";
+    const emailError = (account.emailError as string) || undefined;
 
     return NextResponse.json({
       ...account,
       id: userId,
       email,
-      emailStatus: emailResult.emailStatus,
-      emailError: emailResult.error,
+      emailStatus,
+      emailError,
     });
 
   } catch (err: any) {

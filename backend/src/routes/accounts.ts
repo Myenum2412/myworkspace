@@ -51,7 +51,9 @@ router.post("/staffs", async (req: AuthRequest, res: Response) => {
     data: {
       user: result.user,
       tempPassword: result.tempPassword,
-      credentialsDeliveredByEmail: false,
+      credentialsDeliveredByEmail: result.emailStatus === "sent",
+      emailStatus: result.emailStatus,
+      emailError: result.emailError,
     },
   });
 });

@@ -12,6 +12,10 @@ import { socketIOManager } from "../lib/socketio/index.js";
 import { invalidateUserAuthCache } from "../middleware/auth.js";
 import { requireEmail, optionalString } from "../lib/validate.js";
 import { validatePasswordStrength } from "./validation.service.js";
+import { Organization } from "../lib/db/models/Organization.js";
+import { env } from "../config/env.js";
+import { sendEmployeeOnboarded } from "../lib/mail/index.js";
+import { logger } from "../lib/logger/index.js";
 
 /**
  * Account Service
@@ -99,6 +103,8 @@ function generateTempPassword(length = 12): string {
 export async function createStaffAccount(actor: AccountActor, data: CreateStaffInput): Promise<{
   user: { id: string; userNumber: number; name: string; email: string; role: string; orgId: string; isActive: boolean };
   tempPassword: string;
+  emailStatus: "sent" | "failed" | "skipped";
+  emailError?: string;
 }> {
   assertActor(actor);
   assertNoOrgIdOverride(actor, data.orgId);
@@ -177,6 +183,23 @@ export async function createStaffAccount(actor: AccountActor, data: CreateStaffI
     description: `Staff account ${email} (${role}) created in ${actor.orgId}`,
   });
 
+  let emailStatus: "sent" | "failed" | "skipped" = "skipped";
+  let emailError: string | undefined;
+  try {
+    let workspaceName = "MyWorkspace";
+    const org = await Organization.findOne({ id: actor.orgId }).select("name").lean();
+    if (org?.name) workspaceName = org.name;
+    const loginUrl = `${env.APP_URL}/login`;
+    const firstName = name.split(" ")[0] || name;
+    await sendEmployeeOnboarded(email, firstName, email, workspaceName, loginUrl, tempPassword);
+    emailStatus = "sent";
+  } catch (err: any) {
+    const msg = err?.message || "Failed to send credentials email";
+    emailStatus = msg.includes("Neither SMTP nor RESEND_API_KEY configured") ? "skipped" : "failed";
+    emailError = msg;
+    logger.error({ err, email }, "Failed to send credentials email after staff account creation");
+  }
+
   return {
     user: {
       id: userId,
@@ -188,6 +211,8 @@ export async function createStaffAccount(actor: AccountActor, data: CreateStaffI
       isActive: allowedFields.isActive as boolean,
     },
     tempPassword,
+    emailStatus,
+    emailError,
   };
 }
 
