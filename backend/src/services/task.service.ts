@@ -1,6 +1,6 @@
 import { Task } from "../lib/db/models/Task.js";
+import { Team } from "../lib/db/models/Team.js";
 import { TeamMember } from "../lib/db/models/TeamMember.js";
-import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { User } from "../lib/db/models/User.js";
 import mongoose from "mongoose";
 import { AppError } from "../middleware/error.js";
@@ -10,7 +10,7 @@ import {
   TASK_STATUSES, TASK_PRIORITIES, TASK_TYPES,
 } from "../lib/validate.js";
 import type { TaskStatus, TaskPriority, TaskType } from "../lib/validate.js";
-import { requireOrgMembership } from "../lib/org-utils.js";
+import { requireOrgMembership, isUserInOrg } from "../lib/org-utils.js";
 import { logger } from "../lib/logger/index.js";
 import { isAdminRole } from "../lib/rbac/index.js";
 import {
@@ -432,12 +432,9 @@ export async function createTask(data: {
 
   if (taskType === "individual" && assigneeId) {
     checks.push((async () => {
-      const assigneeMember = await OrgMember.findOne({ userId: assigneeId, orgId }).lean();
-      if (!assigneeMember) {
-        const assigneeUser = await User.findOne({ id: assigneeId, orgId }).lean();
-        if (!assigneeUser) {
-          throw new AppError(403, "Cannot assign individual task to a user outside this workspace");
-        }
+      const inOrg = await isUserInOrg(assigneeId, orgId);
+      if (!inOrg) {
+        throw new AppError(403, "Cannot assign individual task to a user outside this workspace");
       }
     })());
   }
@@ -448,8 +445,10 @@ export async function createTask(data: {
 
   if (taskType === "team" && teamId) {
     checks.push((async () => {
-      const teamMembers = await TeamMember.find({ teamId, orgId }).lean();
-      if (teamMembers.length === 0) {
+      const team = mongoose.Types.ObjectId.isValid(teamId)
+        ? await Team.findOne({ _id: teamId, orgId }).lean()
+        : null;
+      if (!team) {
         throw new AppError(404, "Team not found in this workspace");
       }
     })());
@@ -459,8 +458,8 @@ export async function createTask(data: {
     // Validate all selected users belong to the org
     const selectedUserIds = data.selectedUserIds;
     checks.push((async () => {
-      const members = await OrgMember.find({ userId: { $in: selectedUserIds }, orgId }).lean();
-      if (members.length !== selectedUserIds.length) {
+      const results = await Promise.all(selectedUserIds.map((id: string) => isUserInOrg(id, orgId)));
+      if (results.some((ok) => !ok)) {
         throw new AppError(403, "One or more selected users are outside this workspace");
       }
     })());
@@ -559,19 +558,16 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
         throw new AppError(403, "Only the task creator can reassign individual tasks");
       }
     }
-    const assigneeMember = await OrgMember.findOne({ userId: assigneeId, orgId: userOrgId }).lean();
-    if (!assigneeMember) {
-      const assigneeUser = await User.findOne({ id: assigneeId, orgId: userOrgId }).lean();
-      if (!assigneeUser) {
-        throw new AppError(403, "Cannot assign task to a user outside this workspace");
-      }
+    const assigneeInOrg = await isUserInOrg(assigneeId, userOrgId);
+    if (!assigneeInOrg) {
+      throw new AppError(403, "Cannot assign task to a user outside this workspace");
     }
   }
 
   // Validate selectedUserIds for common tasks
   if (selectedUserIds !== undefined && existing.type === "common") {
-    const members = await OrgMember.find({ userId: { $in: selectedUserIds }, orgId: userOrgId }).lean();
-    if (members.length !== selectedUserIds.length) {
+    const results = await Promise.all(selectedUserIds.map((id: string) => isUserInOrg(id, userOrgId)));
+    if (results.some((ok) => !ok)) {
       throw new AppError(403, "One or more selected users are outside this workspace");
     }
   }
@@ -725,8 +721,8 @@ export async function assignIndividualTask(id: string, assigneeId: string, userI
 
   validateTransition(existing.type, existing.status, "assigned");
 
-  const assigneeMember = await OrgMember.findOne({ userId: assigneeId, orgId: userOrgId }).lean();
-  if (!assigneeMember) {
+  const assigneeInOrg = await isUserInOrg(assigneeId, userOrgId);
+  if (!assigneeInOrg) {
     throw new AppError(403, "Cannot assign to a user outside this workspace");
   }
 

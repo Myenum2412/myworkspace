@@ -105,7 +105,7 @@ export function makeActionsCell(
       const engagement = row.original;
       return (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
             <Button variant="ghost" size="icon" className="">
               <MoreHorizontal className="size-4" />
             </Button>

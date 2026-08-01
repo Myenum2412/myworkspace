@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
+import { enrichTasks } from "@/lib/tasks";
 
 export async function GET() {
   let session;
@@ -14,16 +15,13 @@ export async function GET() {
     const userId = session.user.id;
     const now = new Date();
     const [tasksRaw, overdueRaw] = await Promise.all([
-      db.collection(collections.tasks).find({ orgId, assignee: userId }).sort({ createdAt: -1 }).toArray(),
+      db.collection(collections.tasks).find({ orgId, assigneeId: userId }).sort({ createdAt: -1 }).toArray(),
       db.collection(collections.tasks).find({
-        orgId, assignee: userId, dueDate: { $lt: now },
+        orgId, assigneeId: userId, dueDate: { $lt: now },
         status: { $nin: ["done", "cancelled", "completed", "closed", "rejected"] },
       }).project({ title: 1, dueDate: 1 }).sort({ dueDate: 1 }).limit(10).toArray(),
     ]);
-    const initialTasks = (tasksRaw as any[]).map((t) => ({
-      _id: t._id?.toString() || "", title: t.title || "", status: t.status || "", priority: t.priority || "",
-      dueDate: t.dueDate || null, createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : "",
-    }));
+    const initialTasks = await enrichTasks(tasksRaw);
     const overdueTasks = (overdueRaw as any[]).map((t) => ({
       _id: t._id?.toString() || "", title: t.title || "",
       dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : null,

@@ -249,7 +249,7 @@ export function TaskDataTable({
       id: "actions",
       cell: ({ row }) => (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
             <Button variant="ghost" size="icon-sm">
               <MoreHorizontalIcon className="" />
             </Button>

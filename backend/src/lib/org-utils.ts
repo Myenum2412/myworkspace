@@ -119,6 +119,47 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
 }
 
 /**
+ * Check whether a user belongs to an organization, tolerating the various
+ * shapes membership data takes across this app:
+ *   - `org_members` rows keyed by the user's business `id` or MongoDB `_id`
+ *   - legacy `orgmembers` rows keyed by the MongoDB `_id`
+ *   - `users.orgId` fallback for accounts created without a member row
+ *
+ * This mirrors the semantics of `requireOrgMembership` so that assignment
+ * validation never rejects a legitimate in-org member just because their
+ * membership record stores a differently-typed id.
+ */
+export async function isUserInOrg(userId: string, orgId: string): Promise<boolean> {
+  if (!userId || !orgId) return false;
+
+  const isOid = mongoose.Types.ObjectId.isValid(userId);
+  const filters: Array<{ userId: any; orgId: string }> = [{ userId, orgId }];
+  if (isOid) filters.push({ userId: new mongoose.Types.ObjectId(userId), orgId });
+
+  // 1) Primary membership collection (string or ObjectId reference).
+  const member = await OrgMember.findOne({ $or: filters }).lean();
+  if (member) return true;
+
+  // 2) Legacy "orgmembers" collection (userId historically stored as ObjectId).
+  try {
+    const db = mongoose.connection.db;
+    if (db) {
+      const legacy = await db.collection("orgmembers").findOne({ $or: filters });
+      if (legacy) return true;
+    }
+  } catch {}
+
+  // 3) users.orgId fallback for accounts without a member row.
+  const user = await User.findOne({
+    $or: [{ id: userId }, ...(isOid ? [{ _id: userId }] : [])],
+    orgId,
+  }).lean();
+  if (user) return true;
+
+  return false;
+}
+
+/**
  * Get orgId from AuthRequest. Trusts req.user.orgId from the JWT first.
  */
 export function getOrgIdFromRequest(req: AuthRequest, strict = false): string {
