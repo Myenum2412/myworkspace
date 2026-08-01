@@ -268,7 +268,6 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
         onSuccess();
         return;
       }
-      router.refresh();
       router.push("/alltasks");
     } catch (err: any) {
       setFormError(err?.message || "An error occurred while creating the task.");

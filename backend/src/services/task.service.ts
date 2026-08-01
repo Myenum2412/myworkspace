@@ -426,15 +426,20 @@ export async function createTask(data: {
     repeatEndDate = d;
   }
 
-  // Per-type validation
+  // Per-type validation — run in parallel with the duplicate check so the
+  // create path makes fewer sequential round-trips.
+  const checks: Promise<unknown>[] = [];
+
   if (taskType === "individual" && assigneeId) {
-    const assigneeMember = await OrgMember.findOne({ userId: assigneeId, orgId }).lean();
-    if (!assigneeMember) {
-      const assigneeUser = await User.findOne({ id: assigneeId, orgId }).lean();
-      if (!assigneeUser) {
-        throw new AppError(403, "Cannot assign individual task to a user outside this workspace");
+    checks.push((async () => {
+      const assigneeMember = await OrgMember.findOne({ userId: assigneeId, orgId }).lean();
+      if (!assigneeMember) {
+        const assigneeUser = await User.findOne({ id: assigneeId, orgId }).lean();
+        if (!assigneeUser) {
+          throw new AppError(403, "Cannot assign individual task to a user outside this workspace");
+        }
       }
-    }
+    })());
   }
 
   if (taskType === "team" && !teamId) {
@@ -442,18 +447,23 @@ export async function createTask(data: {
   }
 
   if (taskType === "team" && teamId) {
-    const teamMembers = await TeamMember.find({ teamId, orgId }).lean();
-    if (teamMembers.length === 0) {
-      throw new AppError(404, "Team not found in this workspace");
-    }
+    checks.push((async () => {
+      const teamMembers = await TeamMember.find({ teamId, orgId }).lean();
+      if (teamMembers.length === 0) {
+        throw new AppError(404, "Team not found in this workspace");
+      }
+    })());
   }
 
   if (taskType === "common" && data.selectedUserIds && data.selectedUserIds.length > 0) {
     // Validate all selected users belong to the org
-    const members = await OrgMember.find({ userId: { $in: data.selectedUserIds }, orgId }).lean();
-    if (members.length !== data.selectedUserIds.length) {
-      throw new AppError(403, "One or more selected users are outside this workspace");
-    }
+    const selectedUserIds = data.selectedUserIds;
+    checks.push((async () => {
+      const members = await OrgMember.find({ userId: { $in: selectedUserIds }, orgId }).lean();
+      if (members.length !== selectedUserIds.length) {
+        throw new AppError(403, "One or more selected users are outside this workspace");
+      }
+    })());
   }
 
   if (taskType === "upcoming" && !scheduledDate && !dueDate) {
@@ -461,12 +471,15 @@ export async function createTask(data: {
   }
 
   // Prevent duplicates: same title within 30s by the same creator in the same org
-  const existing = await Task.findOne({
-    orgId,
-    creatorId: userId,
-    title,
-    createdAt: { $gte: new Date(Date.now() - 30000) },
-  }).lean();
+  const [existing] = await Promise.all([
+    Task.findOne({
+      orgId,
+      creatorId: userId,
+      title,
+      createdAt: { $gte: new Date(Date.now() - 30000) },
+    }).lean(),
+    ...checks,
+  ]);
   if (existing) {
     return { taskId: existing._id, type: existing.type, status: existing.status, restored: true };
   }
@@ -499,19 +512,20 @@ export async function createTask(data: {
     repeatEndDate,
   });
 
-  await audit(orgId, userId, "task.created", task._id.toString(), `Task "${title}" created (${taskType})`);
+  // Audit + notifications are fire-and-forget so they never block the create
+  // response. Each helper already swallows its own errors.
+  audit(orgId, userId, "task.created", task._id.toString(), `Task "${title}" created (${taskType})`).catch(() => {});
 
-  // Notifications based on type
   if (taskType === "individual" && resolvedAssigneeId && resolvedAssigneeId !== userId) {
-    await notifyForIndividualAssignment(task, userId, orgId);
+    notifyForIndividualAssignment(task, userId, orgId).catch(() => {});
   }
 
   if (taskType === "team" && teamId) {
-    await notifyTeamAssigned(task, userId, orgId);
+    notifyTeamAssigned(task, userId, orgId).catch(() => {});
   }
 
   if (taskType === "common") {
-    await notifyCommonTaskCreated(task, userId, orgId);
+    notifyCommonTaskCreated(task, userId, orgId).catch(() => {});
   }
 
   return { taskId: task._id, type: taskType, status: initialStatus };
