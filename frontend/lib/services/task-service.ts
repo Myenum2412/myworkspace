@@ -79,7 +79,8 @@ export const taskService = {
     } catch (error) {
       // A 403 "CSRF token missing" response sets the csrf cookie, so the
       // retry will carry the header. Not a validation/session failure.
-      if ((error as Error).message === "CSRF token missing") {
+      const msg = (error as Error).message;
+      if (msg === "CSRF token missing" || msg === "CSRF token mismatch") {
         return await attempt();
       }
       throw error;

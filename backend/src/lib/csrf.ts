@@ -55,8 +55,15 @@ function setCookie(res: Response, token: string): void {
  */
 export function csrfProtection() {
   return (req: Request, res: Response, next: NextFunction) => {
-    const token = crypto.randomBytes(32).toString("hex");
-    setCookie(res, token);
+    // Reuse the existing cookie token instead of rotating it on every request.
+    // The frontend reads `csrf-token` from the cookie and sends it as the
+    // `x-csrf-token` header; rotation here made that value go stale the moment
+    // another in-flight response (or a proxied response that drops Set-Cookie)
+    // refreshed the cookie, producing intermittent 403 "CSRF token mismatch"
+    // failures on task creation. A stable 256-bit, SameSite=strict token is the
+    // standard pattern and carries the same protections.
+    const token = req.cookies?.[CSRF_COOKIE_NAME] || crypto.randomBytes(32).toString("hex");
+    if (!req.cookies?.[CSRF_COOKIE_NAME]) setCookie(res, token);
 
     // Safe methods don't need CSRF validation
     if (SAFE_METHODS.has(req.method)) {
