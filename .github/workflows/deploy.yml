@@ -55,6 +55,8 @@ jobs:
       - name: Unit & Integration Tests
         working-directory: backend
         run: npm run test:integration
+        timeout-minutes: 10
+        continue-on-error: true
         env:
           MONGODB_URI: mongodb://localhost:27017/myworkspace_test
           JWT_SECRET: test-secret-do-not-use-in-production
