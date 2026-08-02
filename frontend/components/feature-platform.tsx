@@ -1,5 +1,4 @@
 import { CheckCircle, Users, FolderOpen, Clock, BarChart3, Shield, Layers } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export function FeaturePlatform() {
   return (
@@ -70,9 +69,9 @@ export function FeaturePlatform() {
             ))}
           </div>
           <div className="relative z-10 flex flex-col h-full justify-end">
-            <Button className="flex items-center gap-2 text-white font-bold text-lg hover:gap-4 bg-black transition-all">
-              View pricing <span>→</span>
-            </Button>
+            <p className="text-white/90 text-sm font-medium">
+              Give your clients a dedicated, secure portal to track projects and files.
+            </p>
           </div>
         </div>
       </div>

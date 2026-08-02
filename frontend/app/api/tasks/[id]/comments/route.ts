@@ -39,6 +39,7 @@ export async function GET(
         content: c.content,
         createdAt: c.createdAt,
         seenBy: Array.isArray(c.seenBy) ? c.seenBy : [],
+        attachments: Array.isArray(c.attachments) ? c.attachments : [],
       };
     });
 
@@ -59,9 +60,9 @@ export async function POST(
     }
 
     const { id } = await params;
-    const { content } = await request.json();
+    const { content, attachments } = await request.json();
 
-    if (!content || !content.trim()) {
+    if ((!content || !content.trim()) && !(Array.isArray(attachments) && attachments.length)) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 });
     }
 
@@ -70,7 +71,13 @@ export async function POST(
       senderId: session.user.id,
       senderName: session.user.name || "",
       senderAvatar: session.user.image || "",
-      content: content.trim(),
+      content: (content || "").trim(),
+      attachments: Array.isArray(attachments) ? attachments.map((a) => ({
+        id: a.id,
+        name: a.name || a.originalName || "",
+        size: a.size || 0,
+        type: a.type || a.mimeType || "application/octet-stream",
+      })) : [],
       createdAt: new Date(),
       seenBy: [session.user.id],
     };

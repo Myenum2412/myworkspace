@@ -71,6 +71,22 @@ const priorities = [
   { id: "p4", name: "urgent" },
 ];
 
+function buildTaskUploadFolder(project: string, taskTitle: string, dueDate?: Date): string {
+  const seg = (v: string | undefined) =>
+    (v || "")
+      .replace(/[/\\]/g, "_")
+      .replace(/\0/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[<>:"|?*]/g, "")
+      .trim()
+      .replace(/^\.+$/g, "")
+      .slice(0, 80);
+  const date = dueDate
+    ? `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, "0")}-${String(dueDate.getDate()).padStart(2, "0")}`
+    : new Date().toISOString().slice(0, 10);
+  return `${seg(project)}/${seg(taskTitle)}/${date}`;
+}
+
 function FormField({ label, required, className, children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
   return (
     <div className={`space-y-1.5 ${className || ""}`}>
@@ -121,7 +137,7 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
   const [repeatStartDateOpen, setRepeatStartDateOpen] = useState(false);
   const [repeatEndDateOpen, setRepeatEndDateOpen] = useState(false);
 
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -260,7 +276,23 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
         payload.teamId = selectedTeam;
       }
 
-      await taskService.createTask(payload as unknown as Partial<Task>);
+      const created = await taskService.createTask(payload as unknown as Partial<Task>);
+      const taskId = (created as any)?.taskId || (created as any)?._id || (created as any)?.id || "";
+
+      if (taskId && uploadedFiles.length > 0) {
+        const orgId = (session?.user as any)?.orgId || "";
+        const storageFolder = buildTaskUploadFolder(projectName, title, dueDate);
+        for (const file of Array.from(uploadedFiles)) {
+          const fd = new FormData();
+          fd.append("files", file as File);
+          if (orgId) fd.append("orgId", orgId);
+          fd.append("taskId", taskId);
+          fd.append("moduleName", "task");
+          fd.append("entityId", taskId);
+          if (storageFolder) fd.append("storageFolder", storageFolder);
+          await fetch("/api/files/upload", { method: "POST", credentials: "include", body: fd }).catch(() => {});
+        }
+      }
 
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       resetForm();

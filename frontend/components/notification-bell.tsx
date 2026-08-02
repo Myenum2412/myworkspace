@@ -61,6 +61,34 @@ export function NotificationBell() {
     archiveNotification, deleteNotification, loading, loadMore, hasMore,
   } = useNotifications(userId)
 
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const viewportRef = React.useRef<HTMLElement | null>(null)
+  const loadingRef = React.useRef(loading)
+  loadingRef.current = loading
+
+  const handleScroll = React.useCallback(() => {
+    const rootEl = scrollRef.current
+    if (!rootEl) return
+    // The Sheet only renders its content when open; re-locate the viewport lazily.
+    if (!viewportRef.current) {
+      viewportRef.current = rootEl.querySelector('[data-slot="scroll-area-viewport"]')
+    }
+    const el = viewportRef.current
+    if (!el) return
+    if (loadingRef.current) return
+    const threshold = 120
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold) {
+      loadMore()
+    }
+  }, [loadMore])
+
+  React.useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    el.addEventListener("scroll", handleScroll, { passive: true })
+    return () => el.removeEventListener("scroll", handleScroll)
+  }, [handleScroll])
+
   const handleMarkAllRead = React.useCallback(() => {
     markAllAsRead()
   }, [markAllAsRead])
@@ -103,7 +131,7 @@ export function NotificationBell() {
 
         <Separator />
 
-        <ScrollArea className="flex-1 [&_[data-slot=scroll-area-viewport]]:scroll-fade-y">
+        <ScrollArea ref={scrollRef} className="flex-1 [&_[data-slot=scroll-area-viewport]]:scroll-fade-y">
           {loading && notifications.length === 0 ? (
             <div className="flex items-center justify-center py-10">
               <div className="size-5 animate-spin rounded-sm border-2 border-muted border-t-primary" />
@@ -116,7 +144,7 @@ export function NotificationBell() {
             </div>
           ) : (
             <ul className="flex flex-col">
-              {notifications.slice(0, 20).map((item, index) => {
+              {notifications.map((item, index) => {
                 const Icon = categoryIcons[item.category] || NotificationsActiveIcon
                 return (
                   <li key={item.id}>
@@ -182,18 +210,21 @@ export function NotificationBell() {
                         <span className="mt-1.5 size-1.5 shrink-0 bg-primary rounded-sm" aria-label="Unread" />
                       )}
                     </button>
-                    {index < notifications.length - 1 && index < 19 && <Separator />}
+                    {index < notifications.length - 1 && <Separator />}
                   </li>
                 )
               })}
-              {hasMore && (
-                <div className="px-4 py-2 text-center">
-                  <Link href="/notifications">
-                    <Button variant="ghost" size="sm" className="text-xs">
-                      View all notifications
-                    </Button>
-                  </Link>
+
+              {loading && hasMore && (
+                <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
+                  <div className="size-4 animate-spin rounded-sm border-2 border-muted border-t-primary" />
+                  <span className="text-xs">Loading more…</span>
                 </div>
+              )}
+              {!hasMore && notifications.length > 0 && (
+                <li className="px-4 py-3 text-center text-xs text-muted-foreground">
+                  You&apos;re all caught up
+                </li>
               )}
             </ul>
           )}

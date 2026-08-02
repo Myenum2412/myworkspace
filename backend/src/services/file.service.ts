@@ -4,7 +4,7 @@ import { FileVersion } from "../lib/db/models/FileVersion.js";
 import { FileShare } from "../lib/db/models/FileShare.js";
 import { ShareLink } from "../lib/db/models/ShareLink.js";
 import { StorageQuota } from "../lib/db/models/StorageQuota.js";
-import { getStorageProvider, computeChecksum } from "../lib/storage/providers.js";
+import { getStorageProvider, getStorageProviderFor, getStorageType, readFromStorage, computeChecksum } from "../lib/storage/providers.js";
 import { checkUserQuota } from "../lib/uploads/upload-orchestrator.js";
 import { env } from "../config/env.js";
 import { AppError } from "../middleware/error.js";
@@ -37,6 +37,7 @@ export interface FileUploadInput {
   category?: string;
   moduleName?: string;
   entityId?: string;
+  storageFolder?: string;
 }
 
 export interface FileUploadStreamInput extends Omit<FileUploadInput, "buffer"> {
@@ -59,12 +60,39 @@ function invalidateFileCaches(orgId: string): void {
   cacheManager.invalidatePattern(CacheKeys.dashboardMetrics(orgId));
 }
 
+function safeSegment(value: string): string {
+  return value
+    .replace(/[/\\]/g, "_")
+    .replace(/\0/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/[<>:"|?*]/g, "")
+    .trim()
+    .replace(/^\.+$/g, "")
+    .slice(0, 80);
+}
+
+function safeSegmentChain(value: string | undefined): string {
+  if (!value) return "";
+  return value
+    .split("/")
+    .map(safeSegment)
+    .filter(Boolean)
+    .join("/");
+}
+
+export function buildStoragePath(input: { orgId: string; storageFolder?: string; originalName: string }): string {
+  const { orgId, storageFolder, originalName } = input;
+  const base = `${orgId}/${Date.now()}-${uuid()}-${originalName}`;
+  const folder = safeSegmentChain(storageFolder);
+  return folder ? `${folder}/${base}` : base;
+}
+
 export async function uploadFile(input: FileUploadInput): Promise<FileUploadResult> {
   const {
     orgId, clientId, folderId, taskId, projectId, uploaderId,
     name, originalName, mimeType, size, buffer, checksum,
     description, tags, skipDuplicates = true, category,
-    moduleName, entityId,
+    moduleName, entityId, storageFolder,
   } = input;
 
   const actualMimeType = validateFileMagicBytes(buffer, mimeType);
@@ -99,17 +127,18 @@ export async function uploadFile(input: FileUploadInput): Promise<FileUploadResu
   await checkUserQuota(orgId, uploaderId, size);
 
   const provider = getStorageProvider();
-  const storagePath = `${orgId}/${Date.now()}-${uuid()}-${originalName}`;
+  const storagePath = buildStoragePath({ orgId, storageFolder, originalName });
   await provider.save(buffer, storagePath);
 
   const fileId = uuid();
   const fileCategory = category || categorizeMime(actualMimeType);
 
-  await FileAttachment.create({
+  const storageProvider = getStorageType();
+    await FileAttachment.create({
     id: fileId, orgId, folderId: folderId || null, taskId: taskId || null, clientId: clientId || null, projectId: projectId || null,
     uploaderId, createdBy: uploaderId, name, originalName,
     mimeType: actualMimeType, size, storagePath,
-    storageProvider: "local",
+    storageProvider,
     category: fileCategory as any,
     checksum: sha, currentVersion: 1,
     description: description || "", tags: tags || [],
@@ -170,7 +199,7 @@ export async function uploadFileStream(input: FileUploadStreamInput): Promise<Fi
     orgId, clientId, folderId, taskId, projectId, uploaderId,
     name, originalName, mimeType, size, filePath, checksum,
     description, tags, skipDuplicates = true, category,
-    moduleName, entityId,
+    moduleName, entityId, storageFolder,
   } = input;
 
   const { createHash } = await import("crypto");
@@ -212,7 +241,7 @@ export async function uploadFileStream(input: FileUploadStreamInput): Promise<Fi
   await checkUserQuota(orgId, uploaderId, size);
 
   const provider = getStorageProvider();
-  const storagePath = `${orgId}/${Date.now()}-${uuid()}-${originalName}`;
+  const storagePath = buildStoragePath({ orgId, storageFolder, originalName });
 
   const readStream = createReadStream(filePath);
   if (typeof (provider as any).saveStream === "function") {
@@ -228,11 +257,12 @@ export async function uploadFileStream(input: FileUploadStreamInput): Promise<Fi
   const fileId = uuid();
   const fileCategory = category || categorizeMime(mimeType);
 
-  await FileAttachment.create({
+  const storageProvider = getStorageType();
+    await FileAttachment.create({
     id: fileId, orgId, folderId: folderId || null, taskId: taskId || null, clientId: clientId || null, projectId: projectId || null,
     uploaderId, createdBy: uploaderId, name, originalName,
     mimeType, size, storagePath,
-    storageProvider: "local",
+    storageProvider,
     category: fileCategory as any,
     checksum: sha, currentVersion: 1,
     description: description || "", tags: tags || [],
@@ -470,8 +500,7 @@ export async function getFileStream(fileId: string): Promise<{ buffer: Buffer; m
   }
 
   await FileAttachment.updateOne({ id: fileId }, { lastAccessedAt: new Date() });
-  const provider = getStorageProvider();
-  const buffer = await provider.get(file.storagePath);
+  const buffer = await readFromStorage(file.storagePath, file.storageProvider as string | null);
   if (!buffer) return null;
 
   return { buffer, mimeType: file.mimeType, originalName: file.originalName, size: file.size };

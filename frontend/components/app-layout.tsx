@@ -9,11 +9,9 @@ import { StaffSidebar } from "@/components/staff-sidebar";
 import { ClientSidebar } from "@/components/client-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
-import { SubscriptionGuard } from "@/components/subscription-guard";
 
 const Header = lazy(() => import("@/components/header").then(m => ({ default: m.Header })));
 const MobileBottomNav = lazy(() => import("@/components/mobile-bottom-nav").then(m => ({ default: m.MobileBottomNav })));
-const SubscriptionStatusBanner = lazy(() => import("@/components/subscription-status-banner").then(m => ({ default: m.SubscriptionStatusBanner })));
 const NewNav = lazy(() => import("@/components/landing/new-nav").then(m => ({ default: m.NewNav })));
 const NewFooter = lazy(() => import("@/components/landing/new-footer").then(m => ({ default: m.NewFooter })));
 const ProductTourProvider = lazy(() => import("@/components/product-tour").then(m => ({ default: m.ProductTourProvider })));
@@ -104,19 +102,17 @@ export function AppLayout({ children }: AppLayoutProps) {
     const isHomePage = pathname === "/";
 
     return (
-      <SubscriptionGuard>
-        <div className="flex min-h-screen flex-col">
-          <Suspense fallback={null}>
-            <NewNav />
-          </Suspense>
-          <main className={`flex-1 ${!isHomePage ? "pt-16" : ""}`}>
-            {children}
-          </main>
-          <Suspense fallback={null}>
-            <NewFooter />
-          </Suspense>
-        </div>
-      </SubscriptionGuard>
+      <div className="flex min-h-screen flex-col">
+        <Suspense fallback={null}>
+          <NewNav />
+        </Suspense>
+        <main className={`flex-1 ${!isHomePage ? "pt-16" : ""}`}>
+          {children}
+        </main>
+        <Suspense fallback={null}>
+          <NewFooter />
+        </Suspense>
+      </div>
     );
   }
 
@@ -131,14 +127,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       </Suspense>
       <SidebarInset>
         <Suspense fallback={null}>
-          <SubscriptionStatusBanner />
           <Header context={effectiveContext} />
         </Suspense>
         <main className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 lg:p-6 pb-16 sm:pb-3 md:pb-4 lg:p-6 min-w-0 max-w-full">
           <Suspense fallback={null}>
-            <ProductTourProvider>
-              <SubscriptionGuard>{children}</SubscriptionGuard>
-            </ProductTourProvider>
+            <ProductTourProvider>{children}</ProductTourProvider>
           </Suspense>
         </main>
         <Suspense fallback={null}>

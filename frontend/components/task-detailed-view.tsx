@@ -24,10 +24,11 @@ import {
   ListTodoIcon, CheckCircleIcon, XCircleIcon, PaperclipIcon,
   ActivityIcon, AlertCircleIcon, ClockIcon, Loader2Icon,
   CircleIcon, CircleDashedIcon, FileTextIcon, UserCheckIcon,
-  SaveIcon, UsersIcon,
+  SaveIcon, UsersIcon, DownloadIcon,
 } from "lucide-react";
 import FolderIcon from "@mui/icons-material/Folder";
 import { TaskChat } from "@/components/task-chat";
+import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 
@@ -134,6 +135,14 @@ const priorityIcons: Record<string, React.FC<any>> = {
   urgent: AlertCircleIcon,
 };
 
+function formatBytes(bytes: number, decimals = 2) {
+  if (!+bytes) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))} ${sizes[i]}`;
+}
+
 function Section({ icon: Icon, title, children, rightAction }: { icon: any; title: string; children: React.ReactNode, rightAction?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-3">
@@ -198,6 +207,31 @@ export function TaskDetailedView({
   const [task, setTask] = useState<Task>(initialTask);
   const [updating, setUpdating] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [taskAttachments, setTaskAttachments] = useState<Array<{ id: string; originalName: string; size: number; mimeType: string; createdAt: string }>>([]);
+  const [attachmentsLoading, setAttachmentsLoading] = useState(true);
+  const [previewFile, setPreviewFile] = useState<{ id: string; originalName: string; mimeType: string; size: number; createdAt: string } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const taskId = (task as any)._id || (task as any).id || "";
+    setAttachmentsLoading(true);
+    fetch(`/api/files?orgId=${encodeURIComponent((task as any).orgId || "")}&taskId=${encodeURIComponent(taskId)}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!active) return;
+        const files = Array.isArray(d?.data) ? d.data : [];
+        setTaskAttachments(files.map((f: any) => ({ id: f.id, originalName: f.originalName || f.name || "", size: f.size || 0, mimeType: f.mimeType || "application/octet-stream", createdAt: f.createdAt || "" })));
+      })
+      .catch(() => { if (active) setTaskAttachments([]); })
+      .finally(() => { if (active) setAttachmentsLoading(false); });
+    return () => { active = false; };
+  }, [task._id, (task as any).orgId]);
+
+  const openPreview = (att: { id: string; originalName: string; size: number; mimeType: string; createdAt: string }) => {
+    setPreviewFile(att);
+    setPreviewOpen(true);
+  };
 
   const taskType = task.type || "individual";
   const typeOptions = STATUS_OPTIONS_BY_TYPE[taskType] || STATUS_OPTIONS_BY_TYPE.individual;
@@ -410,11 +444,54 @@ export function TaskDetailedView({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <PersonBadge name={task.assigneeName} avatar={task.assigneeAvatar} role="Assigned To" />
               <PersonBadge name={task.creatorName} avatar="" role="Created By" />
-              {task.teamName && (
-                <PersonBadge name={task.teamName} avatar="" role="Team" />
-              )}
-              {task.teamHeadName && (
+{task.teamHeadName && (
                 <PersonBadge name={task.teamHeadName} avatar="" role="Team Head" />
+              )}
+            </div>
+          </Section>
+
+          <Section icon={PaperclipIcon} title="Attachments">
+            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-900/30 p-4 sm:p-5 shadow-sm">
+              {attachmentsLoading ? (
+                <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground">
+                  <Loader2Icon className="size-4 animate-spin" />
+                  <p className="text-sm">Loading attachments…</p>
+                </div>
+              ) : taskAttachments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-6 text-muted-foreground opacity-60">
+                  <PaperclipIcon className="size-6 mb-2 text-slate-400" />
+                  <p className="text-sm italic">No attachments for this task.</p>
+                </div>
+              ) : (
+                <div className="grid gap-2">
+                  {taskAttachments.map((att) => (
+                    <div
+                      key={att.id}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800/50 bg-white dark:bg-slate-900/40 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm transition-all group cursor-pointer"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => openPreview(att)}
+                        className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                        title="Open file online"
+                      >
+                        <FileTextIcon className="size-5 text-indigo-500 shrink-0" />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{att.originalName}</span>
+                          <span className="text-[11px] text-slate-500">{formatBytes(att.size)}</span>
+                        </div>
+                      </button>
+                      <a
+                        href={`/api/files/${att.id}?download=true`}
+                        download={att.originalName}
+                        title="Download"
+                        className="shrink-0 text-slate-400 group-hover:text-blue-600 transition-colors p-1.5"
+                      >
+                        <DownloadIcon className="size-4" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </Section>
@@ -502,6 +579,7 @@ export function TaskDetailedView({
         <TaskChat
           taskId={task._id}
           sessionUserId={sessionUserId || ""}
+          orgId={(task as any).orgId}
           onClose={onClose}
           taskTitle={task.title}
           taskStatus={task.status}
@@ -512,6 +590,14 @@ export function TaskDetailedView({
           creatorName={task.creatorName}
         />
       </div>
+
+      {/* Inline file preview - opens within this view, no new tab */}
+      <FilePreviewDialog
+        file={previewFile}
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        orgId={(task as any).orgId}
+      />
     </div>
   );
 }

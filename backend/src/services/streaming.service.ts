@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 import { Readable, PassThrough } from "stream";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
-import { getStorageProvider, isLocalProvider, IStorageProvider } from "../lib/storage/providers.js";
+import { getStorageProviderFor, readFromStorage, IStorageProvider } from "../lib/storage/providers.js";
 import { logger } from "../lib/logger/index.js";
 import { metricsRegistry } from "../lib/monitoring/index.js";
 
@@ -16,16 +16,35 @@ async function getFileRecord(fileId: string) {
     .lean();
 }
 
-async function getLocalPath(storagePath: string): Promise<string | null> {
-  const provider = getStorageProvider();
-  if (isLocalProvider()) {
-    const local = provider as any;
-    if (typeof local.fullPath === "function") {
-      return local.fullPath(storagePath);
+function fileProviderType(record: { storageProvider?: string | null }): string | null {
+  const p = (record.storageProvider as string | null) || null;
+  return p === "local" || p === "r2" ? p : null;
+}
+
+async function getLocalPath(storagePath: string, providerType?: string | null): Promise<string | null> {
+  // Only proven-local files stream straight from disk. When the record is
+  // "local", verify the file actually exists on disk; if it does not (e.g. it
+  // was actually stored in R2), return null so the resilient read is used.
+  if (providerType === "local") {
+    const fp = path.resolve(process.cwd(), "data", "uploads", storagePath);
+    try {
+      await fs.access(fp);
+      return fp;
+    } catch {
+      return null;
     }
-    return path.resolve(process.cwd(), "data", "uploads", storagePath);
   }
   return null;
+}
+
+function rangeStart(range: string, fileSize: number): number {
+  const start = parseInt(range.replace(/bytes=/, "").split("-")[0], 10) || 0;
+  return Math.min(start, fileSize - 1);
+}
+
+function rangeEnd(range: string, fileSize: number): number {
+  const raw = parseInt(range.replace(/bytes=/, "").split("-")[1], 10);
+  return Number.isFinite(raw) ? Math.min(raw, fileSize - 1) : fileSize - 1;
 }
 
 export async function streamFile(
@@ -49,90 +68,70 @@ export async function streamFile(
       return;
     }
 
-    const localPath = await getLocalPath(file.storagePath);
-    const provider = getStorageProvider();
     const fileSize = file.size;
     const range = req.headers.range;
     const mimeType = file.mimeType || "application/octet-stream";
     const fileName = file.originalName || "download";
 
-    if (range) {
-      const parts = range.replace(/bytes=/, "").split("-");
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    // Prefer a direct local-disk stream when the file is definitely local;
+    // otherwise read resiliently (recorded provider -> other provider -> global).
+    const localPath = await getLocalPath(file.storagePath, fileProviderType(file));
 
-      if (start >= fileSize || end >= fileSize) {
-        res.status(416).set({
-          "Content-Range": `bytes */${fileSize}`,
-        }).end();
+    if (localPath) {
+      const readStream = createReadStream(
+        localPath,
+        range ? { start: rangeStart(range, fileSize), end: rangeEnd(range, fileSize) } : undefined,
+      );
+      const status = range ? 206 : 200;
+      res.status(status);
+      res.set({
+        ...(range ? {
+          "Content-Range": `bytes ${rangeStart(range, fileSize)}-${rangeEnd(range, fileSize)}/${fileSize}`,
+        } : {}),
+        "Content-Length": String(range ? rangeEnd(range, fileSize) - rangeStart(range, fileSize) + 1 : fileSize),
+        "Content-Type": mimeType,
+        "Content-Disposition": `inline; filename="${fileName}"`,
+        "Accept-Ranges": "bytes",
+        ETag: etag,
+        "Last-Modified": lastModified,
+        "Cache-Control": "public, max-age=3600",
+      });
+      readStream.pipe(res);
+    } else {
+      const provider = getStorageProviderFor(fileProviderType(file));
+      const rangeResult = range ? await provider.getStreamRange(file.storagePath, rangeStart(range, fileSize), rangeEnd(range, fileSize)) : null;
+      if (rangeResult && range) {
+        res.status(206);
+        res.set({
+          "Content-Range": `bytes ${rangeStart(range, fileSize)}-${rangeEnd(range, fileSize)}/${fileSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": String(rangeResult.contentLength),
+          "Content-Type": mimeType,
+          "Content-Disposition": `inline; filename="${fileName}"`,
+          ETag: etag,
+          "Last-Modified": lastModified,
+          "Cache-Control": "public, max-age=3600",
+        });
+        rangeResult.stream.pipe(res);
         return;
       }
 
-      if (localPath) {
-        const readStream = createReadStream(localPath, { start, end });
-        const chunkSize = end - start + 1;
-        res.status(206);
-        res.set({
-          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-          "Accept-Ranges": "bytes",
-          "Content-Length": String(chunkSize),
-          "Content-Type": mimeType,
-          "Content-Disposition": `inline; filename="${fileName}"`,
-          ETag: etag,
-          "Last-Modified": lastModified,
-          "Cache-Control": "public, max-age=3600",
-        });
-        readStream.pipe(res);
-      } else {
-        const rangeResult = await provider.getStreamRange(file.storagePath, start, end);
-        if (!rangeResult) {
-          res.status(404).json({ error: "File not found in storage" });
-          return;
-        }
-        const { stream, contentLength } = rangeResult;
-        res.status(206);
-        res.set({
-          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-          "Accept-Ranges": "bytes",
-          "Content-Length": String(contentLength),
-          "Content-Type": mimeType,
-          "Content-Disposition": `inline; filename="${fileName}"`,
-          ETag: etag,
-          "Last-Modified": lastModified,
-          "Cache-Control": "public, max-age=3600",
-        });
-        stream.pipe(res);
+      // No range (or provider range failed) -> resilient buffered read.
+      const buffer = await readFromStorage(file.storagePath, fileProviderType(file));
+      if (!buffer) {
+        res.status(404).json({ error: "File not found in storage" });
+        return;
       }
-    } else {
-      if (localPath) {
-        const readStream = createReadStream(localPath);
-        res.set({
-          "Content-Length": String(fileSize),
-          "Content-Type": mimeType,
-          "Content-Disposition": `inline; filename="${fileName}"`,
-          "Accept-Ranges": "bytes",
-          ETag: etag,
-          "Last-Modified": lastModified,
-          "Cache-Control": "public, max-age=3600",
-        });
-        readStream.pipe(res);
-      } else {
-        const stream = await provider.getStream(file.storagePath);
-        if (!stream) {
-          res.status(404).json({ error: "File not found in storage" });
-          return;
-        }
-        res.set({
-          "Content-Length": String(fileSize),
-          "Content-Type": mimeType,
-          "Content-Disposition": `inline; filename="${fileName}"`,
-          "Accept-Ranges": "bytes",
-          ETag: etag,
-          "Last-Modified": lastModified,
-          "Cache-Control": "public, max-age=3600",
-        });
-        stream.pipe(res);
-      }
+      res.set({
+        "Content-Length": String(buffer.length),
+        "Content-Type": mimeType,
+        "Content-Disposition": `inline; filename="${fileName}"`,
+        "Accept-Ranges": "bytes",
+        ETag: etag,
+        "Last-Modified": lastModified,
+        "Cache-Control": "public, max-age=3600",
+      });
+      res.send(buffer);
     }
     metricsRegistry.observeHistogram("stream_duration_ms", { fileId }, Date.now() - startTime);
   } catch (err) {

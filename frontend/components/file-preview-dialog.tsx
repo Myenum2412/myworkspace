@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   FileIcon, DownloadIcon, LockIcon, UnlockIcon, HistoryIcon,
   Trash2Icon, RotateCcwIcon, CopyIcon, Share2Icon, FileTextIcon,
-  AlertCircleIcon, Loader2Icon,
+  AlertCircleIcon, Loader2Icon, ImageIcon, FilmIcon, MusicIcon,
+  FileArchiveIcon, FileSpreadsheetIcon, FileTypeIcon, FolderIcon,
 } from "lucide-react";
 
 type FileItem = {
@@ -54,16 +55,29 @@ function isPreviewable(mimeType: string) {
     || mimeType === "application/xml";
 }
 
+const FILE_ICONS: Record<string, React.ReactNode> = {
+  image: <ImageIcon className="size-4" />,
+  video: <FilmIcon className="size-4" />,
+  audio: <MusicIcon className="size-4" />,
+  pdf: <FileTextIcon className="size-4" />,
+  archive: <FileArchiveIcon className="size-4" />,
+  spreadsheet: <FileSpreadsheetIcon className="size-4" />,
+  document: <FileTypeIcon className="size-4" />,
+  text: <FileTypeIcon className="size-4" />,
+  folder: <FolderIcon className="size-4" />,
+  file: <FileIcon className="size-4" />,
+};
+
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return "🖼️";
-  if (mimeType.startsWith("video/")) return "🎬";
-  if (mimeType.startsWith("audio/")) return "🎵";
-  if (mimeType.includes("pdf")) return "📄";
-  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return "📦";
-  if (mimeType.includes("sheet") || mimeType.includes("excel")) return "📊";
-  if (mimeType.includes("document") || mimeType.includes("word")) return "📝";
-  if (mimeType.startsWith("text/")) return "📃";
-  return "📁";
+  if (mimeType.startsWith("image/")) return FILE_ICONS.image;
+  if (mimeType.startsWith("video/")) return FILE_ICONS.video;
+  if (mimeType.startsWith("audio/")) return FILE_ICONS.audio;
+  if (mimeType.includes("pdf")) return FILE_ICONS.pdf;
+  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return FILE_ICONS.archive;
+  if (mimeType.includes("sheet") || mimeType.includes("excel")) return FILE_ICONS.spreadsheet;
+  if (mimeType.includes("document") || mimeType.includes("word")) return FILE_ICONS.document;
+  if (mimeType.startsWith("text/")) return FILE_ICONS.text;
+  return FILE_ICONS.file;
 }
 
 export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, onRestore, onDuplicate, onLockToggle, onShare, trashed }: FilePreviewDialogProps) {

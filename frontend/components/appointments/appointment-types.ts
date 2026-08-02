@@ -32,7 +32,7 @@ export interface Appointment {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
-  source?: "web" | "whatsapp";
+  source?: "web";
 }
 
 export interface AppointmentStats {

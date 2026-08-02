@@ -212,6 +212,7 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tag
   const folderId = req.query.folderId as string | undefined;
   const clientId = req.query.clientId as string | undefined;
   const projectId = req.query.projectId as string | undefined;
+  const taskId = req.query.taskId as string | undefined;
   const category = req.query.category as string | undefined;
   const mimeType = req.query.mimeType as string | undefined;
   const uploaderId = req.query.uploaderId as string | undefined;
@@ -228,6 +229,7 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tag
   if (folderId !== undefined) filter.folderId = folderId || null;
   if (clientId) filter.clientId = clientId;
   if (projectId) filter.projectId = projectId;
+  if (taskId) filter.taskId = taskId;
   if (category) filter.category = category;
   if (mimeType) filter.mimeType = { $regex: mimeType.replace("*", ".*"), $options: "i" };
   if (uploaderId) filter.uploaderId = uploaderId;
@@ -245,7 +247,7 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tag
   else sortObj[sort] = 1;
 
   const [files, total] = await Promise.all([
-    FileAttachment.find(filter).sort(sortObj).skip(skip).limit(limit).select("id orgId folderId clientId projectId name originalName mimeType size category uploaderId description tags isLocked lockedBy approvalStatus createdAt updatedAt deletedAt").lean(),
+    FileAttachment.find(filter).sort(sortObj).skip(skip).limit(limit).select("id orgId folderId clientId projectId taskId name originalName mimeType size category uploaderId description tags isLocked lockedBy approvalStatus createdAt updatedAt deletedAt").lean(),
     FileAttachment.countDocuments(filter),
   ]);
 
@@ -754,6 +756,7 @@ router.post("/upload", upload.fields([{ name: "files", maxCount: env.MAX_FILES_P
           skipDuplicates: req.body.skipDuplicates !== "false",
           moduleName: req.body.moduleName as string | undefined,
           entityId: req.body.entityId as string | undefined,
+          storageFolder: req.body.storageFolder as string | undefined,
         });
       } else {
         result = await uploadFile({
@@ -773,6 +776,7 @@ router.post("/upload", upload.fields([{ name: "files", maxCount: env.MAX_FILES_P
           skipDuplicates: req.body.skipDuplicates !== "false",
           moduleName: req.body.moduleName as string | undefined,
           entityId: req.body.entityId as string | undefined,
+          storageFolder: req.body.storageFolder as string | undefined,
         });
       }
 

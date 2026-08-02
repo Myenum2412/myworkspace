@@ -1,6 +1,6 @@
 "use client"
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Eye, Pencil, Trash2, XCircle, CheckCircle, Ban, MessageCircle } from "lucide-react";
+import { MoreHorizontal, Eye, Pencil, Trash2, XCircle, CheckCircle, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -78,8 +78,7 @@ export const columns: ColumnDef<Appointment>[] = [
     cell: ({ row }) => {
       const source = row.getValue<string>("source") || "web";
       return (
-        <Badge variant={source === "whatsapp" ? "default" : "secondary"} className="gap-1">
-          {source === "whatsapp" && <MessageCircle className="size-3" />}
+        <Badge variant="secondary" className="gap-1">
           {source === "whatsapp" ? "WhatsApp" : "Web"}
         </Badge>
       );

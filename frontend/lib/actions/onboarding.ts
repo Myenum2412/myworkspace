@@ -8,7 +8,6 @@ import { redirect } from "next/navigation";
 import { ROLES } from "@/lib/rbac";
 
 export interface OnboardingData {
-  plan: string;
   companyDetails: {
     businessType: string;
     industry: string;
@@ -70,7 +69,7 @@ export async function completeOnboarding(data: OnboardingData) {
   }
 
   const updateFields: Record<string, unknown> = {
-    plan: data.plan,
+    plan: "enterprise",
     businessType: data.companyDetails.businessType,
     industry: data.companyDetails.industry,
     companyEmail: data.companyDetails.companyEmail,
@@ -122,7 +121,7 @@ export async function completeOnboarding(data: OnboardingData) {
     action: "onboarding.completed",
     entityType: "organization",
     entityId: orgId,
-    description: `Onboarding completed with plan: ${data.plan}`,
+    description: `Onboarding completed`,
     createdAt: new Date(),
   });
 

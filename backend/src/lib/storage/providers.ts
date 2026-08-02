@@ -412,6 +412,44 @@ export function getStorageProvider(): IStorageProvider {
   return new LocalStorageProvider();
 }
 
+/**
+ * Return the provider matching a file's recorded storageProvider field.
+ * Falls back to the globally-configured provider when no field is stored.
+ */
+export function getStorageProviderFor(providerType?: string | null): IStorageProvider {
+  if (providerType === "local") return new LocalStorageProvider();
+  if (providerType === "r2") return new R2StorageProvider();
+  return getStorageProvider();
+}
+
+/**
+ * Read a stored object resiliently: honour the file's recorded provider first,
+ * then fall back to the other provider, and finally to the globally-configured
+ * one. Handles files whose storageProvider field is missing or was recorded
+ * against a differently-configured backend (e.g. labeled "local" while stored
+ * in R2, or vice-versa).
+ */
+export async function readFromStorage(key: string, recordedProvider?: string | null): Promise<Buffer | null> {
+  const candidates: IStorageProvider[] = [];
+  if (recordedProvider === "local") candidates.push(new LocalStorageProvider(), new R2StorageProvider());
+  else if (recordedProvider === "r2") candidates.push(new R2StorageProvider(), new LocalStorageProvider());
+  else candidates.push(getStorageProvider(), new LocalStorageProvider(), new R2StorageProvider());
+
+  const seen = new Set<string>();
+  for (const provider of candidates) {
+    const type = provider instanceof LocalStorageProvider ? "local" : "r2";
+    if (seen.has(type)) continue;
+    seen.add(type);
+    try {
+      const buffer = await provider.get(key);
+      if (buffer) return buffer;
+    } catch {
+      /* try next provider */
+    }
+  }
+  return null;
+}
+
 export function isLocalProvider(): boolean {
   return !isR2Configured();
 }

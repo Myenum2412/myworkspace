@@ -15,7 +15,7 @@ type Attachment = {
   name: string;
   size: number;
   type: string;
-  url: string;
+  url?: string;
 };
 
 type Comment = {
@@ -49,6 +49,7 @@ function getFileIcon(type: string) {
 export function TaskChat({ 
   taskId, 
   sessionUserId, 
+  orgId,
   onClose,
   taskTitle = "Task Discussion",
   taskStatus = "open",
@@ -61,6 +62,7 @@ export function TaskChat({
 }: { 
   taskId: string; 
   sessionUserId: string; 
+  orgId?: string;
   onClose?: () => void;
   taskTitle?: string;
   taskStatus?: string;
@@ -157,17 +159,43 @@ export function TaskChat({
 
     setInput("");
     
-    // Simulate upload delay for attachments
+    // Upload attachments to the file service and link them to the task
     let uploadedFiles: Attachment[] = [];
     if (pendingAttachments.length > 0) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // mock upload time
-      uploadedFiles = pendingAttachments.map((f, idx) => ({
-        id: `mock-att-${Date.now()}-${idx}`,
-        name: f.name,
-        size: f.size,
-        type: f.type || "application/octet-stream",
-        url: URL.createObjectURL(f), // fake URL for preview
-      }));
+      const formData = new FormData();
+      pendingAttachments.forEach((f) => formData.append("files", f));
+      if (orgId) formData.append("orgId", orgId);
+      formData.append("taskId", taskId);
+      formData.append("moduleName", "task");
+      formData.append("entityId", taskId);
+      try {
+        const upRes = await fetch(`/api/files/upload`, {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        const upData = await upRes.json().catch(() => ({}));
+        const results = Array.isArray(upData?.results) ? upData.results : [];
+        uploadedFiles = pendingAttachments.map((f, idx) => {
+          const result = results[idx] || {};
+          const fileId = result.fileId || "";
+          return {
+            id: fileId || `local-att-${Date.now()}-${idx}`,
+            name: f.name,
+            size: f.size,
+            type: f.type || "application/octet-stream",
+            url: fileId ? `/api/files/${fileId}` : URL.createObjectURL(f),
+          };
+        });
+      } catch {
+        uploadedFiles = pendingAttachments.map((f, idx) => ({
+          id: `local-att-${Date.now()}-${idx}`,
+          name: f.name,
+          size: f.size,
+          type: f.type || "application/octet-stream",
+          url: URL.createObjectURL(f),
+        }));
+      }
       setPendingAttachments([]);
     }
     
@@ -178,13 +206,13 @@ export function TaskChat({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ content: text }),
+        body: JSON.stringify({ content: text, attachments: uploadedFiles }),
       });
       if (!res.ok) throw new Error();
       const d = await res.json();
       
-      // Inject mock attachments into the new comment locally
-      const newComment = { ...d.data, senderName: "You", senderAvatar: "", attachments: uploadedFiles };
+      // Inject the newly uploaded attachments into the created comment
+      const newComment = { ...d.data, senderName: "You", senderAvatar: "", attachments: d.data?.attachments?.length ? d.data.attachments : uploadedFiles };
       setComments((prev) => [...prev, newComment]);
     } catch {
       // If API fails, just append it locally for demonstration
@@ -367,7 +395,8 @@ export function TaskChat({
                   {c.attachments && c.attachments.length > 0 && (
                     <div className={`flex flex-col gap-2 mt-2`}>
                       {c.attachments.map(att => (
-                         <div key={att.id} className="flex items-center gap-3 p-3 rounded-sm border border-gray-200 bg-white hover:border-gray-300 transition-colors group/att cursor-pointer">
+                         <div key={att.id} className="flex items-center gap-3 p-3 rounded-sm border border-gray-200 bg-white hover:border-gray-300 transition-colors group/att">
+                          <a href={att.url || `/api/files/${att.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 flex-1 min-w-0" title="Open online">
                           <div className="shrink-0 bg-gray-50 p-2 rounded-sm">
                             {getFileIcon(att.type)}
                           </div>
@@ -375,7 +404,8 @@ export function TaskChat({
                             <span className="text-sm font-medium text-gray-900 truncate">{att.name}</span>
                             <span className="text-[11px] text-gray-500 font-medium">{formatBytes(att.size)}</span>
                           </div>
-                          <a href={att.url} download={att.name} className="shrink-0 text-gray-400 hover:text-blue-600 p-1.5 opacity-0 group-hover/att:opacity-100 transition-opacity">
+                          </a>
+                          <a href={att.url || `/api/files/${att.id}`} download={att.name} className="shrink-0 text-gray-400 hover:text-blue-600 p-1.5 opacity-0 group-hover/att:opacity-100 transition-opacity" title="Download">
                             <DownloadIcon className="size-4" />
                           </a>
                         </div>

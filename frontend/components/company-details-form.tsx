@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 interface CompanyDetailsFormProps {
   onSubmit: (data: CompanyDetails) => void;
-  onBack: () => void;
+  onBack?: () => void;
   isSubmitting?: boolean;
 }
 
@@ -282,10 +282,12 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
       </fieldset>
 
       <div className="flex items-center justify-between pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onBack} className="w-32 h-10">
-          <ArrowLeft className="mr-2" />
-          Back
-        </Button>
+        {onBack && (
+          <Button type="button" variant="outline" onClick={onBack} className="w-32 h-10">
+            <ArrowLeft className="mr-2" />
+            Back
+          </Button>
+        )}
         <Button type="submit" disabled={isSubmitting} className="w-32 h-10">
           {isSubmitting ? (
             <div className="flex items-center gap-2">

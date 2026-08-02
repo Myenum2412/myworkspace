@@ -165,14 +165,14 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 
 // POST /api/organizations -- create new org
 router.post("/", async (req: AuthRequest, res: Response) => {
-  const { name, slug, domain, plan } = req.body;
+  const { name, slug, domain } = req.body;
   if (!name || !slug) throw new AppError(400, "Name and slug are required");
 
   // Ensure slug uniqueness
   const existing = await Organization.findOne({ slug }).select("_id").lean();
   if (existing) throw new AppError(409, "An organization with this slug already exists");
 
-  const orgPlan = plan || "free";
+  const orgPlan = "enterprise";
   const org = await Organization.create({
     name,
     slug,

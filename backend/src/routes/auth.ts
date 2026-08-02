@@ -249,14 +249,13 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
       }], { session });
       user = createdUser;
 
-      const trialEnd = new Date(Date.now() + env.TRIAL_DAYS * 24 * 60 * 60 * 1000);
       const [createdOrg] = await Organization.create([{
         id: orgId,
         name: orgName,
         slug,
-        plan: "trial",
-        trialEnd,
-        subscriptionStatus: "trialing",
+        plan: "enterprise",
+        trialEnd: null,
+        subscriptionStatus: "active",
         ownerId: userId,
         createdBy: userId,
       }], { session });
@@ -605,7 +604,6 @@ router.post("/send-signup-otp", async (req: AuthRequest, res: Response) => {
   const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
   const name = requireString(req.body.name, "name", { min: 1, max: 200 });
   const company = optionalString(req.body.company, "company", { max: 200 });
-  const plan = optionalString(req.body.plan, "plan", { max: 50 });
 
   const [existingUser, existingClient] = await Promise.all([
     User.findOne({ email }).select("_id").lean(),
@@ -620,7 +618,7 @@ router.post("/send-signup-otp", async (req: AuthRequest, res: Response) => {
 
   await PendingSignup.updateOne(
     { email },
-    { $set: { email, name, company, otp, otpExpires, plan, createdAt: new Date() } },
+    { $set: { email, name, company, otp, otpExpires, createdAt: new Date() } },
     { upsert: true }
   );
 
@@ -636,7 +634,7 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
   const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
   const otp = requireString(req.body.otp, "otp", { min: 6, max: 6 });
 
-  const pending = await PendingSignup.findOne({ email }).select("email otp otpExpires name company plan").lean();
+  const pending = await PendingSignup.findOne({ email }).select("email otp otpExpires name company").lean();
   if (!pending) {
     throw new AppError(400, "No verification code found. Please request a new one.");
   }
@@ -657,7 +655,6 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
   const userNumber = await getNextSequence("userNumber");
   const company = pending.company;
   const name = pending.name;
-  const plan = pending.plan;
 
   const orgName = company || `${name}'s Organization`;
   const slug = await generateUniqueSlug(company || `${name}-org`);
@@ -682,14 +679,13 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
       }], { session: mongoSession });
       user = createdUser;
 
-      const trialEnd = new Date(Date.now() + env.TRIAL_DAYS * 24 * 60 * 60 * 1000);
       const [createdOrg] = await Organization.create([{
         id: orgId,
         name: orgName,
         slug,
-        plan: plan || "trial",
-        trialEnd: plan ? undefined : trialEnd,
-        subscriptionStatus: plan || "trialing",
+        plan: "enterprise",
+        trialEnd: null,
+        subscriptionStatus: "active",
         ownerId: userId,
         createdBy: userId,
       }], { session: mongoSession });

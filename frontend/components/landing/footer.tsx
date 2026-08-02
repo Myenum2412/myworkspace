@@ -3,7 +3,7 @@ import Link from "next/link";
 const footerLinks = [
   {
     title: "Product",
-    links: ["Features", "Pricing", "Changelog"],
+    links: ["Features", "Changelog"],
   },
   {
     title: "Company",

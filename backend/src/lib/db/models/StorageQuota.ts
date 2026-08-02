@@ -13,14 +13,16 @@ export interface IStorageQuota extends Document {
   updatedAt: Date;
 }
 
+const UNLIMITED = Number.MAX_SAFE_INTEGER;
+
 const storageQuotaSchema = new Schema<IStorageQuota>(
   {
     orgId: { type: String, required: true, unique: true },
-    maxStorageBytes: { type: Number, default: 2 * 1024 * 1024 * 1024 },
+    maxStorageBytes: { type: Number, default: UNLIMITED },
     usedStorageBytes: { type: Number, default: 0 },
-    maxFileSizeBytes: { type: Number, default: 2 * 1024 * 1024 * 1024 },
+    maxFileSizeBytes: { type: Number, default: UNLIMITED },
     allowedMimeTypes: { type: [String], default: [] },
-    userStorageLimitBytes: { type: Number, default: 2 * 1024 * 1024 * 1024 },
+    userStorageLimitBytes: { type: Number, default: UNLIMITED },
     versioningEnabled: { type: Boolean, default: true },
     retentionDays: { type: Number, default: 30 },
   },
@@ -35,34 +37,12 @@ export interface PlanLimits {
   userStorageLimitBytes: number;
 }
 
-const planToStorageLimits: Record<string, PlanLimits> = {
-  free: {
-    maxStorageBytes: 2 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
-    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
-  },
-  trial: {
-    maxStorageBytes: 2 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
-    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
-  },
-  starter: {
-    maxStorageBytes: 2 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
-    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
-  },
-  professional: {
-    maxStorageBytes: 2 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
-    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
-  },
-  enterprise: {
-    maxStorageBytes: 2 * 1024 * 1024 * 1024,
-    maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
-    userStorageLimitBytes: 2 * 1024 * 1024 * 1024,
-  },
+const unlimitedPlanLimits: PlanLimits = {
+  maxStorageBytes: UNLIMITED,
+  maxFileSizeBytes: UNLIMITED,
+  userStorageLimitBytes: UNLIMITED,
 };
 
-export function getPlanLimits(plan: string): PlanLimits {
-  return planToStorageLimits[plan] || planToStorageLimits.free;
+export function getPlanLimits(_plan: string): PlanLimits {
+  return unlimitedPlanLimits;
 }

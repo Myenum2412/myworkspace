@@ -57,8 +57,6 @@ export const env = {
   VALKEY_URL: process.env.VALKEY_URL || process.env.REDIS_URL || "redis://localhost:6379",
   REDIS_URL: process.env.REDIS_URL || process.env.VALKEY_URL || "redis://localhost:6379",
 
-  TRIAL_DAYS: parseInt(process.env.TRIAL_DAYS || "15", 10),
-
   RABBITMQ_URL: process.env.RABBITMQ_URL || "",
   RABBITMQ_PREFETCH: process.env.RABBITMQ_PREFETCH || "10",
 

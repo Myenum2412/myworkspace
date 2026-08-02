@@ -3,12 +3,12 @@ import { FileAttachment } from "../db/models/FileAttachment.js";
 import { StorageQuota } from "../db/models/StorageQuota.js";
 import { UploadSession } from "../db/models/UploadSession.js";
 import { UploadApproval } from "../db/models/UploadApproval.js";
-import { getStorageProvider, computeChecksum } from "../storage/providers.js";
+import { getStorageProvider, getStorageType, computeChecksum } from "../storage/providers.js";
 import { env } from "../../config/env.js";
 import { AppError } from "../../middleware/error.js";
 
 /** Hard per-user storage limit: 2 GB */
-export const USER_STORAGE_LIMIT_BYTES = 2 * 1024 * 1024 * 1024;
+export const USER_STORAGE_LIMIT_BYTES = Number.MAX_SAFE_INTEGER;
 
 export type OrchestratorResult =
   | { kind: "created"; fileId: string; isDuplicate: boolean }
@@ -103,12 +103,13 @@ export async function finalizeUpload(input: FinalizeInput): Promise<Orchestrator
   await provider.save(buffer, storagePath);
 
   const fileId = uuid();
+  const storageProvider = getStorageType();
   const approvalStatus = input.needsApproval ? "pending" : "none";
   await FileAttachment.create({
     id: fileId, orgId, folderId: folderId || null, clientId: clientId || null,
     uploaderId, createdBy: uploaderId, name, originalName,
     mimeType, size, storagePath,
-    storageProvider: "local",
+    storageProvider,
     category: categorizeMime(mimeType), checksum: sha, currentVersion: 1,
     approvalStatus,
   });

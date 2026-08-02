@@ -12,7 +12,6 @@ export const JOB_TYPES = [
   "calendar_event_notification",
   "email_scheduled",
   "sms_scheduled",
-  "whatsapp_scheduled",
   "push_notification",
   "in_app_notification",
   "daily_recurring",
@@ -44,7 +43,7 @@ export type JobType = (typeof JOB_TYPES)[number];
 export const SCHEDULE_TYPES = ["cron", "one_time", "recurring", "delayed", "interval", "event_triggered"] as const;
 export type ScheduleType = (typeof SCHEDULE_TYPES)[number];
 
-export const EXECUTION_CHANNELS = ["email", "sms", "whatsapp", "push", "in_app", "webhook", "system"] as const;
+export const EXECUTION_CHANNELS = ["email", "sms", "push", "in_app", "webhook", "system"] as const;
 export type ExecutionChannel = (typeof EXECUTION_CHANNELS)[number];
 
 export interface JobPayload {
@@ -159,7 +158,6 @@ export const JOB_TYPE_LABELS: Record<JobType, string> = {
   calendar_event_notification: "Calendar Event Notification",
   email_scheduled: "Scheduled Email",
   sms_scheduled: "Scheduled SMS",
-  whatsapp_scheduled: "Scheduled WhatsApp",
   push_notification: "Push Notification",
   in_app_notification: "In-App Notification",
   daily_recurring: "Daily Recurring",

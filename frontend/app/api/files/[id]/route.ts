@@ -3,111 +3,81 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
 import { validateOrgMembership } from "@/lib/org";
-import fs from "fs";
-import path from "path";
 
-const UPLOADS_DIR = path.resolve(process.cwd(), "data", "uploads");
-const CHUNK_SIZE = 10 * 1024 * 1024;
+const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
-function nodeStreamToWebStream(nodeStream: fs.ReadStream): ReadableStream<Uint8Array> {
-  return new ReadableStream({
-    start(controller) {
-      nodeStream.on("data", (chunk: string | Buffer) => {
-        const buf = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
-        controller.enqueue(new Uint8Array(buf));
-      });
-      nodeStream.on("end", () => controller.close());
-      nodeStream.on("error", (err) => controller.error(err));
-    },
-    cancel() {
-      nodeStream.destroy();
-    },
-  });
-}
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
+/**
+ * Proxy a file (or its stream) served by the backend. The backend picks the
+ * active storage provider (Cloudflare R2 or local disk) automatically, and
+ * supports HTTP range requests and on-demand downloads.
+ *
+ * Content-Disposition behaviour:
+ *  - ?download=true   -> attachment (forces save-as)
+ *  - ?preview=true    -> inline (open in browser) with no download prompt
+ *  - default          -> inline (view in browser)
+ * Download is only forced when the caller explicitly asks for it.
+ */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  let session;
   try {
-    session = await auth();
-  } catch {
-    return NextResponse.json({ error: "Authentication service unavailable" }, { status: 503 });
-  }
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const download = searchParams.get("download") === "true";
+    const preview = searchParams.get("preview") === "true";
 
-  const { id } = await params;
-  const { searchParams } = new URL(request.url);
-  const download = searchParams.get("download") === "true";
-  const preview = searchParams.get("preview") === "true";
+    const cookie = request.headers.get("cookie") || "";
+    const range = request.headers.get("range") || "";
+    const auth = request.headers.get("authorization") || "";
 
-  try {
-    const file = await db.collection(collections.fileAttachments).findOne({ id });
-    if (!file) {
-      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    const headers: Record<string, string> = { cookie };
+    if (range) headers.range = range;
+    if (auth) headers.authorization = auth;
+
+    // The backend /:id endpoint streams inline (preview) by default.
+    // ?download triggers /download/:id which forces an attachment disposition.
+    const backendPath = download
+      ? `${API_URL}/api/files/download/${id}`
+      : `${API_URL}/api/files/stream/${id}?preview=${preview}`;
+
+    let upstream: Response;
+    try {
+      upstream = await fetch(backendPath, { headers, cache: "no-store" });
+    } catch (err) {
+      console.error("[api/files/:id] backend request failed:", err);
+      return NextResponse.json({ error: "Backend unavailable" }, { status: 502 });
     }
 
-    const fileOrgId = (file.orgId as string) || "";
-    if (fileOrgId) {
-      const isMember = await validateOrgMembership(session.user.id, fileOrgId);
-      if (!isMember) {
-        return NextResponse.json({ error: "Not authorized to access this file" }, { status: 403 });
-      }
+    if (!upstream.ok) {
+      const text = await upstream.text().catch(() => "");
+      return NextResponse.json(
+        text ? { error: "File not found" } : { error: "File request failed" },
+        { status: upstream.status },
+      );
     }
 
-    const mime = file.mimeType || "application/octet-stream";
-    const localPath = path.join(UPLOADS_DIR, file.storagePath);
-    if (!fs.existsSync(localPath)) {
-      return NextResponse.json({ error: "File not found on disk" }, { status: 404 });
-    }
+    const contentType = upstream.headers.get("content-type") || "application/octet-stream";
+    const contentDisposition = upstream.headers.get("content-disposition");
+    const contentLength = upstream.headers.get("content-length");
+    const acceptRanges = upstream.headers.get("accept-ranges");
+    const contentRange = upstream.headers.get("content-range");
 
-    const stat = fs.statSync(localPath);
-    const fileSize = stat.size;
-    const rangeHeader = request.headers.get("range");
+    const outHeaders: HeadersInit = { "Content-Type": contentType };
+    if (contentDisposition) outHeaders["Content-Disposition"] = contentDisposition;
+    if (contentLength) outHeaders["Content-Length"] = contentLength;
+    if (acceptRanges) outHeaders["Accept-Ranges"] = acceptRanges;
+    if (contentRange) outHeaders["Content-Range"] = contentRange;
+    outHeaders["Cache-Control"] = upstream.headers.get("cache-control") || "public, max-age=3600";
 
-    if (rangeHeader && !download) {
-      const parts = rangeHeader.replace(/bytes=/, "").split("-");
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : Math.min(start + CHUNK_SIZE - 1, fileSize - 1);
-      const contentLength = end - start + 1;
-
-      const nodeStream = fs.createReadStream(localPath, { start, end });
-      const webStream = nodeStreamToWebStream(nodeStream);
-
-      return new Response(webStream, {
-        status: 206,
-        headers: {
-          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-          "Accept-Ranges": "bytes",
-          "Content-Length": String(contentLength),
-          "Content-Type": mime,
-          "Content-Disposition": `inline; filename="${file.originalName}"`,
-          "Cache-Control": "public, max-age=3600",
-        },
-      });
-    }
-
-    const nodeStream = fs.createReadStream(localPath);
-    const webStream = nodeStreamToWebStream(nodeStream);
-
-    const headers: Record<string, string> = {
-      "Content-Type": mime,
-      "Content-Length": String(fileSize),
-      "Accept-Ranges": "bytes",
-      "Cache-Control": "public, max-age=3600",
-    };
-    if (download) {
-      headers["Content-Disposition"] = `attachment; filename="${file.originalName}"`;
-    } else {
-      headers["Content-Disposition"] = preview
-        ? "inline"
-        : `inline; filename="${file.originalName}"`;
-    }
-
-    return new Response(webStream, { headers });
+    const body = await upstream.arrayBuffer();
+    return new Response(body, {
+      status: upstream.status,
+      headers: outHeaders,
+    });
   } catch {
     return NextResponse.json({ error: "Failed to read file" }, { status: 500 });
   }

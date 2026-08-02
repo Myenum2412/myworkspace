@@ -27,6 +27,7 @@ export async function GET(request: Request) {
   const clientId = searchParams.get("clientId");
   const folderId = searchParams.get("folderId");
   const uploaderId = searchParams.get("uploaderId");
+  const taskId = searchParams.get("taskId");
 
   try {
     const filter: Record<string, unknown> = { orgId, deletedAt: null };
@@ -46,6 +47,9 @@ export async function GET(request: Request) {
     }
     if (uploaderId) {
       filter.uploaderId = uploaderId;
+    }
+    if (taskId) {
+      filter.taskId = taskId;
     }
 
     const files = await db.collection(collections.fileAttachments)
@@ -84,6 +88,7 @@ export async function GET(request: Request) {
         clientId: f.clientId || null,
         projectId: f.projectId || null,
         projectName: p?.name || null,
+        taskId: f.taskId || null,
         description: f.description || "",
         storagePath: f.storagePath,
       };
