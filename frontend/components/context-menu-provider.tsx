@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Users, FileText, UserPlus, ListTodo,
 } from "lucide-react";
@@ -15,8 +15,11 @@ const menuItems = [
 
 export function ContextMenuProvider() {
   const router = useRouter();
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+
+  const isDashboard = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
   // Block zoom keyboard shortcuts
   useEffect(() => {
@@ -56,10 +59,11 @@ export function ContextMenuProvider() {
 
   const handleContextMenu = useCallback((e: MouseEvent) => {
     if (e.defaultPrevented) return;
+    if (!isDashboard) return;
     e.preventDefault();
     setPos({ x: e.clientX, y: e.clientY });
     setVisible(true);
-  }, []);
+  }, [isDashboard]);
 
   const handleClick = useCallback(() => {
     setVisible(false);
@@ -73,6 +77,10 @@ export function ContextMenuProvider() {
       document.removeEventListener("click", handleClick);
     };
   }, [handleContextMenu, handleClick]);
+
+  useEffect(() => {
+    setVisible(false);
+  }, [pathname]);
 
   if (!visible) return null;
 
