@@ -97,8 +97,13 @@ export function TiptapEditor({ value, onChange, placeholder }: TiptapEditorProps
       StarterKit.configure({
         heading: false,
         codeBlock: false,
-        // Disable extensions we register manually to prevent duplicate warnings
+        // Disable extensions we register manually below to prevent
+        // Tiptap's "Duplicate extension names" warning:
+        // - underline: registered as standalone Underline extension
+        // - link: StarterKit bundles Link via addExtensions(); we use
+        //   LinkExt directly with custom HTMLAttributes & openOnClick config
         underline: false,
+        link: false,
       }),
       Underline,
       // TextStyle is the base mark for color/font-size/font-family.
