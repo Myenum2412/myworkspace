@@ -30,6 +30,8 @@ stringData:
   # REDIS_URL is retained for backward compatibility; it targets the Valkey
   # service (Valkey is RESP-wire-compatible, so the connection string is unchanged).
   REDIS_URL: "redis://myworkspace-redis:6379"
+  # VALKEY_URL is the canonical Valkey connection string.
+  VALKEY_URL: "redis://myworkspace-redis:6379"
   VAPID_PUBLIC_KEY: "CHANGE_ME"
   VAPID_PRIVATE_KEY: "CHANGE_ME"
 

@@ -49,7 +49,7 @@ fi
 
 # ── 2. Valkey RDB Backup (Redis-compatible data store) ──
 log "Backing up Valkey..."
-REDIS_URL="${REDIS_URL:-redis://localhost:6379}"
+REDIS_URL="${VALKEY_URL:-${REDIS_URL:-redis://localhost:6379}}"
 VALKEY_CLI=""
 if command -v valkey-cli &>/dev/null; then
   VALKEY_CLI=valkey-cli

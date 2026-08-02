@@ -1,5 +1,5 @@
 import NodeCache from "node-cache";
-import { getRedis, isRedisConnected } from "./redis.js";
+import { getValkey, isValkeyConnected } from "./valkey.js";
 import { logger } from "./logger/index.js";
 import { metricsRegistry } from "./monitoring/index.js";
 
@@ -80,10 +80,10 @@ export class DistributedCache {
       return stale.value;
     }
 
-    if (isRedisConnected()) {
+    if (isValkeyConnected()) {
       try {
-        const redis = getRedis();
-        const raw = await redis.get(this.l2Key(key));
+        const valkey = getValkey();
+        const raw = await valkey.get(this.l2Key(key));
         if (raw) {
           const entry: CacheEntry<T> = JSON.parse(raw);
           if (!tenantId || entry.tenantId === tenantId) {
@@ -94,7 +94,7 @@ export class DistributedCache {
           }
         }
       } catch (err) {
-        logger.warn({ err, key }, "Redis L2 read failed");
+        logger.warn({ err, key }, "Valkey L2 read failed");
       }
     }
 
@@ -122,13 +122,13 @@ export class DistributedCache {
     metricsRegistry.incrementCounter("cache_sets_total", { layer: "l1" });
 
     const l2Ttl = ttl ?? this.config.l2Ttl;
-    if (isRedisConnected()) {
+    if (isValkeyConnected()) {
       try {
-        const redis = getRedis();
-        await redis.setex(this.l2Key(key), l2Ttl, JSON.stringify(entry));
+        const valkey = getValkey();
+        await valkey.setex(this.l2Key(key), l2Ttl, JSON.stringify(entry));
         metricsRegistry.incrementCounter("cache_sets_total", { layer: "l2" });
       } catch (err) {
-        logger.warn({ err, key }, "Redis L2 write failed");
+        logger.warn({ err, key }, "Valkey L2 write failed");
       }
     }
   }
@@ -158,12 +158,12 @@ export class DistributedCache {
     this.stale.del(`s:${k}`);
     this.stats.invalidations++;
 
-    if (isRedisConnected()) {
+    if (isValkeyConnected()) {
       try {
-        const redis = getRedis();
-        await redis.del(this.l2Key(key));
+        const valkey = getValkey();
+        await valkey.del(this.l2Key(key));
       } catch (err) {
-        logger.warn({ err, key }, "Redis L2 delete failed");
+        logger.warn({ err, key }, "Valkey L2 delete failed");
       }
     }
   }
@@ -176,15 +176,15 @@ export class DistributedCache {
     }
     this.stats.invalidations += keys.length;
 
-    if (isRedisConnected()) {
+    if (isValkeyConnected()) {
       try {
-        const redis = getRedis();
+        const valkey = getValkey();
         const l2Keys = keys.map(k => this.l2Key(k.replace(this.config.prefix, "")));
         if (l2Keys.length > 0) {
-          await redis.del(...l2Keys.map(k => k));
+          await valkey.del(...l2Keys.map(k => k));
         }
       } catch (err) {
-        logger.warn({ err, pattern }, "Redis L2 pattern delete failed");
+        logger.warn({ err, pattern }, "Valkey L2 pattern delete failed");
       }
     }
   }

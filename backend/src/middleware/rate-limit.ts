@@ -1,5 +1,6 @@
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import RedisStore from "rate-limit-redis";
+import { getValkey, isValkeyConnected } from "../lib/valkey.js";
 import { logger } from "../lib/logger/index.js";
 
 export const authLimiter = rateLimit({
@@ -73,16 +74,15 @@ export const publicInfoLimiter = rateLimit({
   keyGenerator: (req) => `public_info:${ipKeyGenerator(req.ip || "unknown")}`,
 });
 
-export function promoteRateLimitersToRedis() {
+export function promoteRateLimitersToValkey() {
   try {
-    const { getRedis, isRedisConnected } = require("../lib/redis.js");
-    const client = getRedis();
+    const client = getValkey();
 
-    // Poll for Redis readiness with exponential backoff
+    // Poll for Valkey readiness with exponential backoff
     let attempts = 0;
     const maxAttempts = 10;
     const check = () => {
-      if (isRedisConnected()) {
+      if (isValkeyConnected()) {
         const store = new RedisStore({
           sendCommand: (...args: string[]) => (client as any).call(...args),
         });
@@ -94,7 +94,7 @@ export function promoteRateLimitersToRedis() {
         (searchLimiter as any).store = store;
         (downloadLimiter as any).store = store;
         (publicInfoLimiter as any).store = store;
-        logger.info("Rate limiters promoted to Redis-backed store");
+        logger.info("Rate limiters promoted to Valkey-backed store");
         return;
       }
       if (attempts < maxAttempts) {

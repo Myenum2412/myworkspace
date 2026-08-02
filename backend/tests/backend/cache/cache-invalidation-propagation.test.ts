@@ -1,13 +1,13 @@
 import { jest } from "@jest/globals";
 import { cacheManager, CacheKeys } from "../../../src/lib/cache.js";
 
-jest.mock("../../../src/lib/redis.js", () => ({
-  redisGet: jest.fn().mockResolvedValue(null),
-  redisSet: jest.fn().mockResolvedValue(undefined),
-  redisDel: jest.fn().mockResolvedValue(undefined),
-  redisDelByPattern: jest.fn().mockResolvedValue(undefined),
-  isRedisConnected: jest.fn(() => true),
-  getRedis: jest.fn(() => ({
+jest.mock("../../../src/lib/valkey.js", () => ({
+  valkeyGet: jest.fn().mockResolvedValue(null),
+  valkeySet: jest.fn().mockResolvedValue(undefined),
+  valkeyDel: jest.fn().mockResolvedValue(undefined),
+  valkeyDelByPattern: jest.fn().mockResolvedValue(undefined),
+  isValkeyConnected: jest.fn(() => true),
+  getValkey: jest.fn(() => ({
     status: "ready",
     on: jest.fn(),
     connect: jest.fn(),

@@ -3,7 +3,7 @@ import { execSync, exec as execCallback } from "child_process";
 import { promisify } from "util";
 import NodeCache from "node-cache";
 import { Redis, Cluster } from "ioredis";
-import { getRedis, isRedisConnected } from "../lib/redis.js";
+import { getValkey, isValkeyConnected } from "../lib/valkey.js";
 import { logger } from "../lib/logger/index.js";
 import { cacheService } from "../lib/cache/cache-service.js";
 import type { AuthRequest } from "./auth.js";
@@ -77,8 +77,8 @@ async function checkValkey(): Promise<LayerHealth> {
   const details: Record<string, unknown> = {};
 
   try {
-    const client = getRedis();
-    if (!client || !isRedisConnected()) {
+    const client = getValkey();
+    if (!client || !isValkeyConnected()) {
       const elapsed = performance.now() - start;
       return {
         status: "down",

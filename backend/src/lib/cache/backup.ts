@@ -6,7 +6,7 @@ import { pipeline } from "stream/promises";
 import NodeCache from "node-cache";
 import { Redis, Cluster } from "ioredis";
 import { cacheService } from "./cache-service.js";
-import { getRedis, isRedisConnected } from "../redis.js";
+import { getValkey, isValkeyConnected } from "../valkey.js";
 import { logger } from "../logger/index.js";
 
 interface BackupEntry {
@@ -73,8 +73,8 @@ function generateBackupFilename(namespace?: string): string {
 
 async function getL2Client(): Promise<Redis | Cluster | null> {
   try {
-    const client = getRedis();
-    if (client && isRedisConnected()) return client;
+    const client = getValkey();
+    if (client && isValkeyConnected()) return client;
   } catch {
     // L2 unavailable
   }

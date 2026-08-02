@@ -15,7 +15,8 @@ import { requestTimeout } from "./middleware/timeout.js";
 import { perfLogger } from "./middleware/perf-logger.js";
 import { resolveOrgContext } from "./middleware/org-context.js";
 import mongoose from "mongoose";
-import { isRedisConnected } from "./lib/redis.js";
+import { isValkeyConnected } from "./lib/valkey.js";
+import { cacheHealth } from "./middleware/cache-health.js";
 import { metricsRegistry } from "./lib/monitoring/index.js";
 import { logger } from "./lib/logger/index.js";
 import authRoutes from "./routes/auth.js";
@@ -255,12 +256,74 @@ app.use((req, res, next) => {
 });
 
 // ── Prometheus metrics endpoint ──
-app.get("/metrics", (_req, res) => {
+app.get("/metrics", async (_req, res) => {
   const mem = process.memoryUsage();
   metricsRegistry.setGauge("process_memory_heap_used_bytes", {}, mem.heapUsed);
   metricsRegistry.setGauge("process_memory_heap_total_bytes", {}, mem.heapTotal);
   metricsRegistry.setGauge("process_memory_rss_bytes", {}, mem.rss);
   metricsRegistry.setGauge("process_uptime_seconds", {}, process.uptime());
+
+  // ── Valkey metrics (cache layer) ──
+  try {
+    const { getValkey, isValkeyConnected } = await import("./lib/valkey.js");
+    const client = getValkey();
+    if (client && isValkeyConnected()) {
+      const parseInfo = async (section: string) => {
+        const raw = await client.info(section);
+        const out: Record<string, string> = {};
+        for (const line of String(raw).split("\r\n")) {
+          if (line && !line.startsWith("#") && line.includes(":")) {
+            const [k, v] = line.split(":");
+            out[k] = v;
+          }
+        }
+        return out;
+      };
+
+      const [server, stats, memInfo, clients, keyspace, replication] = await Promise.all([
+        parseInfo("server"),
+        parseInfo("stats"),
+        parseInfo("memory"),
+        parseInfo("clients"),
+        parseInfo("keyspace"),
+        parseInfo("replication"),
+      ]);
+
+      metricsRegistry.setGauge("valkey_up", {}, 1);
+      metricsRegistry.setGauge("valkey_connected_clients", {}, parseInt(clients.connected_clients || "0", 10));
+      metricsRegistry.setGauge("valkey_used_memory_bytes", {}, parseInt(memInfo.used_memory || "0", 10));
+      metricsRegistry.setGauge("valkey_used_memory_peak_bytes", {}, parseInt(memInfo.used_memory_peak || "0", 10));
+      metricsRegistry.setGauge("valkey_keyspace_hits_total", {}, parseInt(stats.keyspace_hits || "0", 10));
+      metricsRegistry.setGauge("valkey_keyspace_misses_total", {}, parseInt(stats.keyspace_misses || "0", 10));
+      metricsRegistry.setGauge("valkey_expired_keys_total", {}, parseInt(stats.expired_keys || "0", 10));
+      metricsRegistry.setGauge("valkey_evicted_keys_total", {}, parseInt(stats.evicted_keys || "0", 10));
+      metricsRegistry.setGauge("valkey_total_commands_processed", {}, parseInt(stats.total_commands_processed || "0", 10));
+      metricsRegistry.setGauge("valkey_instantaneous_ops_per_sec", {}, parseInt(stats.instantaneous_ops_per_sec || "0", 10));
+      metricsRegistry.setGauge("valkey_total_connections_received", {}, parseInt(stats.total_connections_received || "0", 10));
+      metricsRegistry.setGauge("valkey_pubsub_channels", {}, parseInt(stats.pubsub_channels || "0", 10));
+      metricsRegistry.setGauge("valkey_pubsub_patterns", {}, parseInt(stats.pubsub_patterns || "0", 10));
+      metricsRegistry.setGauge("valkey_connected_slaves", {}, parseInt(replication.connected_slaves || "0", 10));
+      metricsRegistry.setGauge("valkey_master_link_status", { master_link_status: replication.master_link_status || "down" }, 1);
+
+      if (keyspace) {
+        for (const [db, stat] of Object.entries(keyspace)) {
+          const m = stat.match(/keys=(\d+)/);
+          if (m) metricsRegistry.setGauge("valkey_db_keys", { db }, parseInt(m[1], 10));
+        }
+      }
+
+      const hits = parseInt(stats.keyspace_hits || "0", 10);
+      const misses = parseInt(stats.keyspace_misses || "0", 10);
+      const total = hits + misses;
+      metricsRegistry.setGauge("valkey_cache_hit_ratio", {}, total > 0 ? hits / total : 0);
+      metricsRegistry.setGauge("valkey_cache_miss_ratio", {}, total > 0 ? misses / total : 0);
+    } else {
+      metricsRegistry.setGauge("valkey_up", {}, 0);
+    }
+  } catch {
+    metricsRegistry.setGauge("valkey_up", {}, 0);
+  }
+
   res.setHeader("Content-Type", "text/plain; version=0.0.4");
   res.send(metricsRegistry.getPrometheusFormat());
 });
@@ -276,8 +339,9 @@ app.get("/api/health", async (_req, res) => {
   } catch { checks.mongodb = "error"; healthy = false; }
 
   try {
-    checks.redis = isRedisConnected() ? "connected" : "disconnected";
-  } catch { checks.redis = "error"; }
+    checks.valkey = isValkeyConnected() ? "connected" : "disconnected";
+    checks.redis = checks.valkey;
+  } catch { checks.valkey = "error"; checks.redis = "error"; }
 
   try {
     const { isRabbitMQConfigured, getChannel } = await import("./lib/queue/connection.js");
@@ -313,6 +377,9 @@ app.get("/api/health", async (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// ── Cache/Valkey health & metrics ──
+app.get("/api/cache/health", cacheHealth());
 
 // ── Performance logging ──
 app.use(perfLogger);

@@ -2,7 +2,7 @@ import { Response, NextFunction } from "express";
 import NodeCache from "node-cache";
 import { Redis, Cluster } from "ioredis";
 import { cacheService } from "../lib/cache/cache-service.js";
-import { getRedis, isRedisConnected } from "../lib/redis.js";
+import { getValkey, isValkeyConnected } from "../lib/valkey.js";
 import { logger } from "../lib/logger/index.js";
 import { metricsRegistry } from "../lib/monitoring/index.js";
 import type { AuthRequest } from "./auth.js";
@@ -88,8 +88,8 @@ function buildCacheLayers(options: CacheEnhancedOptions): string[] {
 
 function getL2Client(): Redis | Cluster | null {
   try {
-    const client = getRedis();
-    if (client && isRedisConnected()) return client;
+    const client = getValkey();
+    if (client && isValkeyConnected()) return client;
   } catch {
     // L2 unavailable
   }
@@ -188,7 +188,7 @@ export function cacheEnhanced(options: CacheEnhancedOptions) {
       }
     }
 
-    // ── L2: Redis ──
+    // ── L2: Valkey ──
     const l2Hit = await getFromL2<string>(cacheKey);
     if (l2Hit !== null) {
       totalHits++;
@@ -348,7 +348,7 @@ export function cacheStats() {
           hits: totalStaleHits,
         },
         l2: {
-          connected: isRedisConnected(),
+          connected: isValkeyConnected(),
         },
         totals: {
           hits: totalHits,

@@ -10,7 +10,7 @@ import { logger } from "./lib/logger/index.js";
 import { getEnforcer } from "./config/casbin.js";
 import { startWorkers } from "./lib/queue/worker.js";
 import { getChannel, isRabbitMQConfigured } from "./lib/queue/connection.js";
-import { promoteRateLimitersToRedis } from "./middleware/rate-limit.js";
+import { promoteRateLimitersToValkey } from "./middleware/rate-limit.js";
 import { initSentry } from "./lib/sentry.js";
 import { metricsRegistry } from "./lib/monitoring/index.js";
 import { Server } from "http";
@@ -80,7 +80,7 @@ async function start() {
     logger.error({ err }, "JobScheduler.NET initialization failed");
   });
 
-  promoteRateLimitersToRedis();
+  promoteRateLimitersToValkey();
 
   server = createServer(app);
   server.keepAliveTimeout = 65000;

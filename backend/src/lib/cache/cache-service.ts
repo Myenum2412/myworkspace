@@ -1,6 +1,6 @@
 import NodeCache from "node-cache";
 import { EventEmitter } from "events";
-import { redisGet, redisSet, redisDel, isRedisConnected, redisDelByPattern } from "../redis.js";
+import { valkeyGet, valkeySet, valkeyDel, isValkeyConnected, valkeyDelByPattern } from "../valkey.js";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
 
@@ -92,9 +92,9 @@ class CacheService extends EventEmitter {
     if (result) {
       if (options?.tags) this.addToTagIndex(key, options.tags);
 
-      // L2: Redis write-through
-      if (isRedisConnected()) {
-        redisSet(key, value, ttl).catch((err) => {
+      // L2: Valkey write-through
+      if (isValkeyConnected()) {
+        valkeySet(key, value, ttl).catch((err) => {
           logger.warn({ err, key }, "L2 cache set failed");
         });
       }
@@ -111,11 +111,11 @@ class CacheService extends EventEmitter {
     return result;
   }
 
-  // ── L2: Redis fetch —─
+  // ── L2: Valkey fetch —─
   async getFromL2<T>(key: string): Promise<T | null> {
-    if (!isRedisConnected()) return null;
+    if (!isValkeyConnected()) return null;
     try {
-      const value = await redisGet<T>(key);
+      const value = await valkeyGet<T>(key);
       if (value !== null) {
         this.stats.hits.l2++;
         this.emit("hit", { key, layer: "l2" });
@@ -157,7 +157,7 @@ class CacheService extends EventEmitter {
 
     const promise = (async () => {
       try {
-        // L2: Redis
+        // L2: Valkey
         const l2 = await this.getFromL2<T>(key);
         if (l2 !== null) {
           this.local.set(key, l2, options?.ttl || 600);
@@ -219,8 +219,8 @@ class CacheService extends EventEmitter {
     this.cancelRefresh(key);
 
     // L2
-    if (isRedisConnected()) {
-      redisDel(key).catch(() => {});
+    if (isValkeyConnected()) {
+      valkeyDel(key).catch(() => {});
     }
     this.emit("invalidate", { key });
   }
@@ -231,8 +231,8 @@ class CacheService extends EventEmitter {
     const deleted = this.local.del(Array.from(keys));
     for (const key of keys) {
       this.staleLocal.del(`stale:${key}`);
-      if (isRedisConnected()) {
-        redisDel(key).catch(() => {});
+      if (isValkeyConnected()) {
+        valkeyDel(key).catch(() => {});
       }
     }
     this.emit("invalidateByTag", { tag, count: deleted });
@@ -246,8 +246,8 @@ class CacheService extends EventEmitter {
 
     for (const key of keys) {
       this.staleLocal.del(`stale:${key}`);
-      if (isRedisConnected()) {
-        redisDel(key).catch(() => {});
+      if (isValkeyConnected()) {
+        valkeyDel(key).catch(() => {});
       }
     }
     const deleted = this.local.del(keys);
@@ -261,8 +261,8 @@ class CacheService extends EventEmitter {
 
     for (const key of keys) {
       this.staleLocal.del(`stale:${key}`);
-      if (isRedisConnected()) {
-        redisDel(key).catch(() => {});
+      if (isValkeyConnected()) {
+        valkeyDel(key).catch(() => {});
       }
     }
     const deleted = this.local.del(keys);
@@ -298,7 +298,7 @@ class CacheService extends EventEmitter {
       version: this.version,
       layers: {
         l1: { keys: keys.length, hits: this.stats.hits.l1, misses: this.stats.misses.l1 },
-        l2: { hits: this.stats.hits.l2, misses: this.stats.misses.l2, connected: isRedisConnected() },
+        l2: { hits: this.stats.hits.l2, misses: this.stats.misses.l2, connected: isValkeyConnected() },
         staleKeys: this.staleLocal.keys().length,
         refreshQueues: this.refreshQueues.size,
         version: this.version,

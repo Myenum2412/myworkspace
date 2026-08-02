@@ -1,5 +1,5 @@
 import NodeCache from "node-cache";
-import { redisGet, redisSet, redisDel, isRedisConnected, redisDelByPattern } from "./redis.js";
+import { valkeyGet, valkeySet, valkeyDel, isValkeyConnected, valkeyDelByPattern } from "./valkey.js";
 import { logger } from "./logger/index.js";
 import { metricsRegistry } from "./monitoring/index.js";
 
@@ -57,9 +57,9 @@ export class CacheManager {
     this.cache.set(key, value, ttlSec);
     this.stats.sets++;
 
-    // L2: Redis (fire-and-forget)
-    redisSet(key, value, ttlSec).catch((err: Error) => {
-      logger.warn({ err, key }, "Redis cache set failed (L2)");
+    // L2: Valkey (fire-and-forget)
+    valkeySet(key, value, ttlSec).catch((err: Error) => {
+      logger.warn({ err, key }, "Valkey cache set failed (L2)");
     });
 
     metricsRegistry.incrementCounter("cache_sets_total", { layer: "l1" });
@@ -69,8 +69,8 @@ export class CacheManager {
     const keys = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys];
     for (const k of keys) {
       this.staleCache.del(`stale:${k}`);
-      redisDel(k).catch((err: Error) => {
-        logger.warn({ err, key: k }, "Redis cache del failed (L2)");
+      valkeyDel(k).catch((err: Error) => {
+        logger.warn({ err, key: k }, "Valkey cache del failed (L2)");
       });
     }
     this.stats.invalidations += keys.length;
@@ -81,8 +81,8 @@ export class CacheManager {
     const keys = this.cache.keys().filter((k: string) => k.includes(pattern));
     for (const k of keys) {
       this.staleCache.del(`stale:${k}`);
-      redisDel(k).catch((err: Error) => {
-        logger.warn({ err, key: k, pattern }, "Redis cache del-by-pattern (L2)");
+      valkeyDel(k).catch((err: Error) => {
+        logger.warn({ err, key: k, pattern }, "Valkey cache del-by-pattern (L2)");
       });
     }
     this.stats.invalidations += keys.length;
@@ -91,11 +91,11 @@ export class CacheManager {
 
   async invalidatePattern(pattern: string): Promise<void> {
     this.delByPattern(pattern);
-    if (isRedisConnected()) {
+    if (isValkeyConnected()) {
       try {
-        await redisDelByPattern(`*${pattern}*`);
+        await valkeyDelByPattern(`*${pattern}*`);
       } catch (err) {
-        logger.warn({ err, pattern }, "Redis pattern invalidation (L2) failed");
+        logger.warn({ err, pattern }, "Valkey pattern invalidation (L2) failed");
       }
     }
   }
@@ -139,10 +139,10 @@ export class CacheManager {
       return stale;
     }
 
-    // L2: Redis
-    if (isRedisConnected()) {
+    // L2: Valkey
+    if (isValkeyConnected()) {
       try {
-        const l2 = await redisGet<T>(key);
+        const l2 = await valkeyGet<T>(key);
         if (l2 !== null) {
           this.stats.hits.l2++;
           metricsRegistry.incrementCounter("cache_hits_total", { layer: "l2", key });
@@ -150,7 +150,7 @@ export class CacheManager {
           return l2;
         }
       } catch (err) {
-        logger.warn({ err, key }, "Redis L2 read failed");
+        logger.warn({ err, key }, "Valkey L2 read failed");
       }
     }
 

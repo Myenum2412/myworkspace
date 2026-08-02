@@ -52,7 +52,10 @@ export const env = {
 
   LOG_LEVEL: process.env.LOG_LEVEL || "",
 
-  REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
+  // Valkey connection string. VALKEY_URL is canonical; REDIS_URL is accepted as
+  // a backward-compatible alias (both schemes are RESP wire-compatible).
+  VALKEY_URL: process.env.VALKEY_URL || process.env.REDIS_URL || "redis://localhost:6379",
+  REDIS_URL: process.env.REDIS_URL || process.env.VALKEY_URL || "redis://localhost:6379",
 
   TRIAL_DAYS: parseInt(process.env.TRIAL_DAYS || "15", 10),
 

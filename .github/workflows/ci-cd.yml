@@ -82,6 +82,7 @@ jobs:
           NODE_ENV: test
           MONGODB_URI: mongodb://localhost:27017/test
           REDIS_URL: redis://localhost:6379
+          VALKEY_URL: redis://localhost:6379
 
   build:
     name: Build & Docker

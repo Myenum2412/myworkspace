@@ -73,16 +73,26 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
 
   const resolvedId = await resolveUserId(userId, email);
 
+  // The user's own orgId field is authoritative — the JWT orgId is derived from
+  // it at login and re-validated against it by verifyActiveUser on every
+  // request. Prefer it when resolving the "current" org so that multi-org
+  // users (who may have several org_members rows) are resolved deterministically
+  // to the same org the frontend displays, instead of whichever row MongoDB's
+  // findOne happens to return.
+  const userRecord = await User.findOne({ id: resolvedId }).select("orgId").lean();
+  const userOrgId = userRecord?.orgId || undefined;
+  const preferredOrg = orgId || userOrgId;
+
   // Parallelize all membership lookups
   const queries: Promise<any>[] = [
-    OrgMember.findOne(orgId ? { userId: resolvedId, orgId } : { userId: resolvedId }).lean(),
+    OrgMember.findOne(preferredOrg ? { userId: resolvedId, orgId: preferredOrg } : { userId: resolvedId }).lean(),
   ];
 
   if (mongoose.Types.ObjectId.isValid(resolvedId)) {
     const db = mongoose.connection.db;
     if (db) {
       const oidFilter: Record<string, any> = { userId: new mongoose.Types.ObjectId(resolvedId) };
-      if (orgId) oidFilter.orgId = orgId;
+      if (preferredOrg) oidFilter.orgId = preferredOrg;
       queries.push(db.collection("orgmembers").findOne(oidFilter));
     }
   }
@@ -103,7 +113,7 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
       const nextAuthFilter: Record<string, unknown> = {
         userId: { $in: [...new Set([resolvedId, userId].filter(Boolean))] },
       };
-      if (orgId) nextAuthFilter.orgId = orgId;
+      if (preferredOrg) nextAuthFilter.orgId = preferredOrg;
       const nextAuthMember = await db.collection("org_members").findOne(nextAuthFilter);
       if (nextAuthMember) {
         const orgIdVal = typeof nextAuthMember.orgId === "string" ? nextAuthMember.orgId : String(nextAuthMember.orgId);
@@ -112,6 +122,13 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
       }
     }
   } catch {}
+
+  // The user's own orgId field is authoritative even when no membership row
+  // exists (accounts created without a member record).
+  if (userOrgId && !orgId) {
+    cacheManager.set(cacheKey, userOrgId, ORG_CACHE_TTL);
+    return userOrgId;
+  }
 
   if (tokenOrgId && !orgId) return tokenOrgId;
   if (orgId) throw new AppError(403, "Not a member of this organization");
