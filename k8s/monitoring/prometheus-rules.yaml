@@ -48,15 +48,15 @@ data:
               summary: "MongoDB is down"
               description: "MongoDB connection has been lost"
 
-          # Redis Down
-          - alert: RedisDown
-            expr: up{job="redis"} == 0
+          # Valkey Down
+          - alert: ValkeyDown
+            expr: up{job="valkey"} == 0
             for: 1m
             labels:
               severity: critical
             annotations:
-              summary: "Redis is down"
-              description: "Redis connection has been lost"
+              summary: "Valkey is down"
+              description: "Valkey connection has been lost"
 
           # Pod Restart
           - alert: PodRestarting

@@ -37,7 +37,7 @@ stop_port() {
 
 
 ########################################
-# Infrastructure Checks (RabbitMQ, Redis)
+# Infrastructure Checks (RabbitMQ, Valkey/Redis)
 ########################################
 
 echo -e "${YELLOW}[1/6] Checking Infrastructure...${NC}"

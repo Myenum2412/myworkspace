@@ -21,14 +21,18 @@ services:
     restart: unless-stopped
 
   redis:
-    image: redis:7-alpine
+    # Valkey (Redis fork, RESP-wire-compatible). The service/container/port and
+    # REDIS_URL=redis://redis:6379 stay unchanged for 100% compatibility.
+    image: valkey/valkey:8-alpine
     container_name: myworkspace-redis
+    command: ["valkey-server", "/etc/valkey/valkey.conf"]
     ports:
       - "6379:6379"
     volumes:
+      - ./redis/valkey.conf:/etc/valkey/valkey.conf:ro
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -92,6 +92,7 @@ services:
         max-file: "3"
 
   redis:
+    # Valkey 8 (Redis-fork) — service name/port/URL remain compatible.
     deploy:
       resources:
         limits:

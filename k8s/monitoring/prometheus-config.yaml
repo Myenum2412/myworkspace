@@ -44,7 +44,7 @@ data:
             action: keep
             regex: myworkspace-frontend
 
-      - job_name: 'redis'
+      - job_name: 'valkey'
         static_configs:
           - targets: ['myworkspace-redis:6379']
 

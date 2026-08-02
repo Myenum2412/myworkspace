@@ -27,6 +27,8 @@ stringData:
   RESEND_API_KEY: "re_CHANGE_ME"
   STRIPE_SECRET_KEY: "sk_live_CHANGE_ME"
   STRIPE_WEBHOOK_SECRET: "whsec_CHANGE_ME"
+  # REDIS_URL is retained for backward compatibility; it targets the Valkey
+  # service (Valkey is RESP-wire-compatible, so the connection string is unchanged).
   REDIS_URL: "redis://myworkspace-redis:6379"
   VAPID_PUBLIC_KEY: "CHANGE_ME"
   VAPID_PRIVATE_KEY: "CHANGE_ME"

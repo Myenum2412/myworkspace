@@ -16,7 +16,7 @@ MyWorkSpace is a multi-tenant SaaS platform with an enterprise AI agent system.
 * Repository pattern for data access
 * CQRS where appropriate
 * Event-driven communication via EventEmitter
-* Multi-layer caching (L1 NodeCache, L2 Redis)
+* Multi-layer caching (L1 NodeCache, L2 Valkey)
 * Provider-agnostic AI with intelligent routing
 
 === Technology Stack
@@ -26,7 +26,7 @@ MyWorkSpace is a multi-tenant SaaS platform with an enterprise AI agent system.
 | Frontend | Next.js 16, React 19, TypeScript | SSR/CSR UI
 | API | Express.js 5, TypeScript | REST endpoints
 | Database | MongoDB Atlas (Mongoose 8) | Primary data store
-| Cache | Redis 7 (ioredis) + NodeCache | L1/L2 caching
+| Cache | Valkey 8 (ioredis) + NodeCache | L1/L2 caching
 | Queue | RabbitMQ (amqplib) | Async job processing
 | Scheduler | Agenda.js | Cron jobs
 | Real-time | Socket.IO | WebSocket comms
@@ -252,7 +252,7 @@ User Query → Embed → Vector Search → Hybrid Rank → Context → Prompt
                              │
               ┌──────────────┼──────────────┐
               │              │              │
-          MongoDB        Redis        RabbitMQ
+          MongoDB        Valkey       RabbitMQ
           (Atlas)       (Cluster)    (Mirrored)
 ```
 
@@ -267,8 +267,8 @@ User Query → Embed → Vector Search → Hybrid Rank → Context → Prompt
 
 == Monitoring & Observability
 
-* Prometheus metrics at `/metrics`
-* Health check at `/api/health` (MongoDB, Redis status)
+* Prometheus metrics at `/metrics` (includes `valkey_*` cache-layer metrics)
+* Health check at `/api/health` (MongoDB, Valkey status) and `/api/cache/health` (full cache-layer health)
 * Pino structured JSON logging
 * Correlation IDs via `x-request-id`
 * Sentry error tracking
@@ -282,7 +282,7 @@ User Query → Embed → Vector Search → Hybrid Rank → Context → Prompt
 == Performance Considerations
 
 * Multi-layer caching with background refresh
-* Connection pooling (Mongoose, Redis)
+* Connection pooling (Mongoose, Valkey/ioredis)
 * Parallel startup initialization
 * Context compression at threshold
 * Streaming responses for real-time UX

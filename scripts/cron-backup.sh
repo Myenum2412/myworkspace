@@ -26,7 +26,7 @@ notify() {
   fi
 }
 
-mkdir -p "$BACKUP_DIR/{mongodb,uploads,redis,cache}"
+mkdir -p "$BACKUP_DIR/{mongodb,uploads,valkey,cache}"
 
 notify "Starting production backup" "INFO"
 
@@ -47,14 +47,20 @@ else
   error "MONGODB_URI not set — skipping MongoDB backup"
 fi
 
-# ── 2. Redis RDB Backup ──
-log "Backing up Redis..."
+# ── 2. Valkey RDB Backup (Redis-compatible data store) ──
+log "Backing up Valkey..."
 REDIS_URL="${REDIS_URL:-redis://localhost:6379}"
-if command -v redis-cli &>/dev/null; then
-  redis-cli -u "$REDIS_URL" --rdb "$BACKUP_DIR/redis/dump_$TIMESTAMP.rdb" 2>/dev/null
-  notify "Redis RDB saved" "INFO"
+VALKEY_CLI=""
+if command -v valkey-cli &>/dev/null; then
+  VALKEY_CLI=valkey-cli
+elif command -v redis-cli &>/dev/null; then
+  VALKEY_CLI=redis-cli
+fi
+if [ -n "$VALKEY_CLI" ]; then
+  $VALKEY_CLI -u "$REDIS_URL" --rdb "$BACKUP_DIR/valkey/dump_$TIMESTAMP.rdb" 2>/dev/null
+  notify "Valkey RDB saved" "INFO"
 else
-  error "redis-cli not found — skipping Redis backup"
+  error "valkey-cli not found — skipping Valkey backup"
 fi
 
 # ── 3. Application Config Backup ──
@@ -70,7 +76,7 @@ tar czf "$BACKUP_DIR/config_$TIMESTAMP.tar.gz" \
 # ── 4. Cleanup old backups ──
 log "Cleaning backups older than $RETENTION_DAYS days..."
 find "$BACKUP_DIR/mongodb" -name "dump_*.gz" -mtime "+$RETENTION_DAYS" -delete
-find "$BACKUP_DIR/redis" -name "dump_*.rdb" -mtime "+$RETENTION_DAYS" -delete
+find "$BACKUP_DIR/valkey" -name "dump_*.rdb" -mtime "+$RETENTION_DAYS" -delete
 find "$BACKUP_DIR" -name "config_*.tar.gz" -mtime "+$RETENTION_DAYS" -delete
 
 # ── 5. Optional: Sync to S3-compatible storage ──

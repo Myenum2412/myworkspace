@@ -26,11 +26,20 @@ fi
 # echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 # sudo apt-get update -y && sudo apt-get install -y mongodb-org && sudo systemctl enable mongod && sudo systemctl start mongod
 
-# ── Redis (required) ───────────────────────────────
-if ! command -v redis-server &>/dev/null; then
-  sudo apt-get install -y redis-server
-  sudo systemctl enable redis-server
-  sudo systemctl start redis-server
+# ── Valkey (required, Redis-compatible) ──────────────
+# Prefer the official Valkey packages; fall back to distro redis-server only
+# if Valkey is unavailable on the target OS.
+if ! command -v valkey-server &>/dev/null && ! command -v redis-server &>/dev/null; then
+  if apt-cache show valkey-server &>/dev/null; then
+    sudo apt-get install -y valkey-server
+    sudo systemctl enable valkey-server
+    sudo systemctl start valkey-server
+  else
+    echo "valkey-server not in apt — installing redis-server (Valkey-compatible RESP protocol)"
+    sudo apt-get install -y redis-server
+    sudo systemctl enable redis-server
+    sudo systemctl start redis-server
+  fi
 fi
 
 # ── RabbitMQ (required for queues) ─────────────────

@@ -54,7 +54,7 @@ spec:
       ports:
         - protocol: TCP
           port: 27017
-    # Allow Redis
+    # Allow Valkey (Redis-compatible cache)
     - to:
         - podSelector:
             matchLabels:

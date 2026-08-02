@@ -30,14 +30,14 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: valkey
+  name: myworkspace-redis
   namespace: myworkspace
   labels:
-    app: valkey
+    app: myworkspace-redis
     layer: l2-cache
 spec:
   selector:
-    app: valkey
+    app: myworkspace-redis
   ports:
     - name: valkey
       port: 6379
@@ -46,21 +46,21 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: valkey
+  name: myworkspace-redis
   namespace: myworkspace
   labels:
-    app: valkey
+    app: myworkspace-redis
     layer: l2-cache
 spec:
-  serviceName: valkey
+  serviceName: myworkspace-redis
   replicas: 1
   selector:
     matchLabels:
-      app: valkey
+      app: myworkspace-redis
   template:
     metadata:
       labels:
-        app: valkey
+        app: myworkspace-redis
     spec:
       containers:
         - name: valkey
