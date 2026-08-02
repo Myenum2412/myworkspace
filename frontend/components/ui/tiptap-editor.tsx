@@ -3,7 +3,11 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
-import { TextStyle } from "@tiptap/extension-text-style";
+// FontFamily is re-exported from @tiptap/extension-text-style; importing it
+// directly from there avoids the duplicate 'textStyle' extension warning that
+// occurs when both TextStyle and FontFamily (which internally registers
+// TextStyle) are added separately.
+import { TextStyle, FontFamily } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import TaskList from "@tiptap/extension-task-list";
@@ -15,7 +19,6 @@ import TableHeader from "@tiptap/extension-table-header";
 import ImageExt from "@tiptap/extension-image";
 import LinkExt from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
-import FontFamily from "@tiptap/extension-font-family";
 import { useEffect, useCallback } from "react";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
@@ -94,13 +97,18 @@ export function TiptapEditor({ value, onChange, placeholder }: TiptapEditorProps
       StarterKit.configure({
         heading: false,
         codeBlock: false,
-        // Disabled because we register Underline as a standalone extension below
-        // to avoid Tiptap's "Duplicate extension names" warning
+        // Disable extensions we register manually to prevent duplicate warnings
         underline: false,
       }),
       Underline,
+      // TextStyle is the base mark for color/font-size/font-family.
+      // FontSize extends it — registering TextStyle once here covers all.
       TextStyle,
       FontSize,
+      // FontFamily is imported from @tiptap/extension-text-style (same package
+      // it internally uses), so it reuses the already-registered TextStyle mark
+      // instead of creating a second one.
+      FontFamily,
       Color,
       Highlight.configure({ multicolor: true }),
       TaskList,
@@ -112,7 +120,6 @@ export function TiptapEditor({ value, onChange, placeholder }: TiptapEditorProps
       ImageExt.configure({ inline: false }),
       LinkExt.configure({ openOnClick: false, HTMLAttributes: { class: "text-primary underline" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      FontFamily,
       HeadingExt.configure({ levels: [1, 2, 3] }),
     ],
     content: value || "",
