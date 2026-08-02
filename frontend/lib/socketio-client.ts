@@ -55,6 +55,11 @@ export function getSocketIO(token?: string): Socket {
       closeOnBeforeunload: false,
     });
 
+    // Increase listener limit to prevent MaxListenersExceededWarning.
+    // Multiple components (tabs, hooks) can attach listeners to this
+    // shared singleton; all are properly removed on unmount.
+    (socket as any).setMaxListeners?.(50);
+
     socket.on("connect_error", (err) => {
       if (/token|auth/i.test(err.message)) {
         tokenPromise = null;

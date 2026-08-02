@@ -94,6 +94,9 @@ export function TiptapEditor({ value, onChange, placeholder }: TiptapEditorProps
       StarterKit.configure({
         heading: false,
         codeBlock: false,
+        // Disabled because we register Underline as a standalone extension below
+        // to avoid Tiptap's "Duplicate extension names" warning
+        underline: false,
       }),
       Underline,
       TextStyle,
