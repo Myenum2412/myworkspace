@@ -9,18 +9,33 @@ export async function GET() {
   try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
-  if (!orgId) return NextResponse.json({ pendingItems: [], approvedItems: [], rejectedItems: [] });
+  if (!orgId) return NextResponse.json({ items: [] });
   try {
-    const [pendingRaw, approvedRaw, rejectedRaw] = await Promise.all([
-      db.collection(collections.tasks).find({ orgId, status: "review" }).sort({ createdAt: -1 }).toArray(),
-      db.collection(collections.tasks).find({ orgId, status: "done" }).sort({ createdAt: -1 }).toArray(),
-      db.collection(collections.tasks).find({ orgId, status: "rejected" }).sort({ createdAt: -1 }).toArray(),
-    ]);
-    const map = (arr: any[]) => arr.map((t) => ({
-      _id: t._id?.toString() || "", title: t.title || "", status: t.status || "", priority: t.priority || "",
-      assignee: t.assignee || "", project: t.project || "", dueDate: t.dueDate || null,
+    const raw = await db.collection(collections.tasks)
+      .find({ orgId, status: { $in: ["review", "done", "rejected"] } })
+      .sort({ createdAt: -1 }).toArray();
+    const items = raw.map((t: any) => ({
+      _id: t._id?.toString() || "",
+      itemType: "task",
+      title: t.title || "",
+      description: t.description || "",
+      status: t.status || "review",
+      priority: t.priority || "",
+      assignee: t.assignee || "",
+      assigneeId: t.assigneeId || "",
+      assigneeName: t.assigneeName || t.assignee || "",
+      creatorName: t.creatorName || "",
+      project: t.project || "",
+      projectId: t.projectId || "",
+      dueDate: t.dueDate ? String(t.dueDate) : "",
       createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : "",
+      approvedBy: t.approvedBy || "",
+      approvedAt: t.approvedAt ? new Date(t.approvedAt).toISOString() : "",
+      approvalNote: t.approvalNote || "",
+      rejectedBy: t.rejectedBy || "",
+      rejectedAt: t.rejectedAt ? new Date(t.rejectedAt).toISOString() : "",
+      rejectionReason: t.rejectionReason || "",
     }));
-    return NextResponse.json({ pendingItems: map(pendingRaw), approvedItems: map(approvedRaw), rejectedItems: map(rejectedRaw) });
-  } catch { return NextResponse.json({ pendingItems: [], approvedItems: [], rejectedItems: [] }); }
+    return NextResponse.json({ items });
+  } catch { return NextResponse.json({ items: [] }); }
 }

@@ -1,5 +1,12 @@
 import { v4 as uuid } from "uuid";
-import { getChannel, EXCHANGES, ROUTING_KEYS, QUEUES, publishWithConfirm } from "./connection.js";
+import {
+  getChannel,
+  isRabbitMQConfigured,
+  EXCHANGES,
+  ROUTING_KEYS,
+  QUEUES,
+  publishWithConfirm,
+} from "./connection.js";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
 
@@ -47,6 +54,10 @@ async function publish(
   event: DomainEvent,
   priority?: number,
 ) {
+  if (!isRabbitMQConfigured()) {
+    logger.debug({ eventType: event.type }, "RabbitMQ not configured — skipping event publish");
+    return true;
+  }
   try {
     const ch = await getChannel();
     const content = Buffer.from(JSON.stringify(event));

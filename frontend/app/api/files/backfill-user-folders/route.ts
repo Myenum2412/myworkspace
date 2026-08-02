@@ -36,7 +36,7 @@ export async function POST() {
         createdAt: new Date(), updatedAt: new Date(),
       });
 
-      const subfolders = ["Documents", "Contracts", "Invoices", "Quotations", "Projects", "Drawings", "Images", "Reports", "Attachments", "Other"];
+      const subfolders = ["Documents", "Contracts", "Invoices", "Projects", "Drawings", "Images", "Reports", "Attachments", "Other"];
       for (const sub of subfolders) {
         await db.collection("folders").insertOne({
           id: uuid(), orgId, parentId: rootFolderId, name: sub,

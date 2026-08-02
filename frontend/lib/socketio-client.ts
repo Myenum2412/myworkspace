@@ -24,7 +24,7 @@ function fetchSocketToken(): Promise<string | null> {
 
 function resolveTokenFromCookie(): string | null {
   try {
-    const secure = process.env.NEXTAUTH_URL?.startsWith("https") ? "__Secure-" : "";
+    const secure = (typeof window !== "undefined" && window.location.protocol === "https:") ? "__Secure-" : "";
     const name = `${secure}authjs.session-token`;
     const hit = document.cookie.split(";").map((c) => c.trim()).find((c) => c.startsWith(`${name}=`));
     if (!hit) return null;

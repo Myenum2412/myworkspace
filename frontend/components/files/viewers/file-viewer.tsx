@@ -28,7 +28,27 @@ const OFFICE_WORD = ["application/msword", "application/vnd.openxmlformats-offic
 const OFFICE_EXCEL = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv"];
 const OFFICE_PPT = ["application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation"];
 const OFFICE_TYPES = [...OFFICE_WORD, ...OFFICE_EXCEL, ...OFFICE_PPT];
-const CODE_EXTENSIONS = ["txt", "md", "json", "xml", "yaml", "yml", "log", "csv", "sql", "js", "ts", "jsx", "tsx", "html", "css", "scss", "php", "java", "py", "go", "rs", "c", "cpp", "h", "cs", "sh", "bat", "env", "cfg", "ini", "toml"];
+const CODE_EXTENSIONS = [
+  "txt", "text", "md", "markdown", "rst", "log",
+  "json", "jsonl", "jsonc", "tsv", "csv",
+  "xml", "yaml", "yml", "toml", "ini", "cfg", "conf", "env", "properties", "reg",
+  "sql", "graphql", "gql",
+  "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx",
+  "html", "htm", "xhtml", "xml", "css", "scss", "sass", "less", "styl",
+  "vue", "svelte", "astro",
+  "php", "phtml",
+  "java", "kt", "kts", "scala", "groovy",
+  "py", "pyw", "pyi", "pyx",
+  "go", "rs", "c", "h", "cpp", "hpp", "cc", "cxx",
+  "cs", "fs", "fsx", "vb",
+  "rb", "rake", "gemspec",
+  "swift", "m", "mm",
+  "lua", "r", "pl", "pm", "tcl", "dart",
+  "zig", "nim", "cr", "jl",
+  "sh", "bash", "zsh", "fish", "bat", "cmd", "ps1", "psm1",
+  "makefile", "dockerfile", "dockerignore", "gitignore", "gitattributes",
+  "cmake", "gradle", "sbt", "proto", "thrift", "ipynb", "diff", "patch",
+];
 const ARCHIVE_TYPES = ["application/zip", "application/x-rar-compressed", "application/x-7z-compressed", "application/x-tar", "application/gzip", "application/x-bzip2"];
 const MODEL_TYPES = ["model/gltf+json", "model/gltf-binary", "model/stl"];
 const CAD_TYPES = ["image/vnd.dwg", "image/vnd.dxf", "application/x-step"];
@@ -40,7 +60,10 @@ function getFileExtension(filename: string): string {
 
 function isCodeFile(file: FileItem): boolean {
   const ext = getFileExtension(file.originalName);
-  return CODE_EXTENSIONS.includes(ext) || file.mimeType?.startsWith("text/");
+  if (CODE_EXTENSIONS.includes(ext)) return true;
+  if (file.mimeType?.startsWith("text/")) return true;
+  const lower = file.originalName.toLowerCase();
+  return /^(makefile|dockerfile|dockerignore|gitignore|gitattributes|procfile)$/.test(lower);
 }
 
 function isOfficeFile(file: FileItem): boolean {
@@ -106,10 +129,15 @@ export function FileViewer({ file, src, showInfo = false }: FileViewerProps) {
               <p className="text-sm font-medium">{file.originalName}</p>
               <p className="text-xs">{file.mimeType || "Unknown type"} &middot; {formatSize(file.size)}</p>
             </div>
-            <p className="text-xs">Preview not available for this file type</p>
-            <Button variant="outline" size="sm" onClick={() => window.open(src, "_blank")}>
-              <DownloadIcon className="mr-1.5" /> Download to view
-            </Button>
+            <p className="text-xs">Inline preview is not available for this file type</p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => window.open(src, "_blank")}>
+                <DownloadIcon className="mr-1.5" /> Open in new tab
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}>
+                <DownloadIcon className="mr-1.5" /> Download
+              </Button>
+            </div>
           </div>
         );
     }

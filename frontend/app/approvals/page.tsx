@@ -28,5 +28,5 @@ export default function ApprovalsPage() {
   if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;
 
-  return <ApprovalsClient {...(data || {})} />;
+  return <ApprovalsClient items={(data as any)?.items || []} />;
 }
