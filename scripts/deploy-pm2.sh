@@ -28,7 +28,7 @@ git pull origin main
 log "=== Phase 3: Building backend ==="
 cd backend
 rm -rf node_modules dist
-NODE_OPTIONS="--max-old-space-size=2048" npm ci
+NODE_OPTIONS="--max-old-space-size=2048" npm ci --include=dev
 NODE_OPTIONS="--max-old-space-size=2048" npm run build
 cd ..
 

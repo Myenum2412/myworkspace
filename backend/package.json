@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "fuser -k 4000/tcp 2>/dev/null; tsx watch --env-file=.env src/index.ts",
-    "build": "tsc && cp src/config/*.conf src/config/*.csv dist/config/ 2>/dev/null; true",
+    "build": "tsc && (cp src/config/*.conf src/config/*.csv dist/config/ 2>/dev/null || true)",
     "start": "AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE=1 node --env-file=.env --disable-warning=DEP0169 dist/index.js",
     "db:seed": "tsx --env-file=.env src/lib/db/seed.ts",
     "db:seed-admin": "tsx --env-file=.env src/lib/db/seed-admin.ts",

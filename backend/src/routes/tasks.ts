@@ -2,7 +2,7 @@ import { Router, Response } from "express";
 import { AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { isAdminRole, canCreateTask } from "../lib/rbac/index.js";
-import { requireOrgMembership } from "../lib/org-utils.js";
+import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
 import {
   listTasks,
   createTask,
@@ -32,7 +32,7 @@ router.use(authenticate);
 // ─────────────────────────────────────────────
 router.get("/", async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
 
@@ -53,7 +53,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true, data: result.data, pagination: result.pagination });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Could not load tasks");
   }
 });
@@ -64,7 +64,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 router.post("/", async (req: AuthRequest, res: Response) => {
   try {
     if (!canCreateTask(req.user!.role)) throw new AppError(403, "Only admins and staff can create tasks");
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
 
     const result = await createTask({
       orgId,
@@ -101,7 +101,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 
     res.status(201).json({ success: true, data: { taskId: result.taskId, type: result.type, status: result.status } });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to create task");
   }
 });
@@ -111,7 +111,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     const oldTask = await Task.findById(req.params.id).select("assigneeId priority title").lean();
     await updateTask(req.params.id, req.user!.userId, req.body, req.query.scope as string | undefined);
     const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
@@ -128,7 +128,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to update task");
   }
 });
@@ -155,7 +155,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to delete task");
   }
 });
@@ -170,7 +170,7 @@ router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
     if (!status) throw new AppError(400, "Status is required");
     if (!Array.isArray(taskIds) || taskIds.length === 0) throw new AppError(400, "taskIds must be a non-empty array");
 
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     const result = await batchUpdateStatus(taskIds, status, req.user!.userId);
 
     Task.find({ _id: { $in: taskIds } }).select("title assigneeId").lean().then(tasks => {
@@ -183,7 +183,7 @@ router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true, data: { matched: result.matched, modified: result.modified } });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to batch update tasks");
   }
 });
@@ -195,7 +195,7 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
   try {
     const { status } = req.body;    
     if (!status) throw new AppError(400, "Status is required");
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     await updateTaskStatus(req.params.id, status, req.user!.userId);
     const fullTask = await Task.findById(req.params.id).lean();
 
@@ -210,7 +210,7 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true, data: fullTask });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to update task status");
   }
 });
@@ -222,7 +222,7 @@ router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
   try {
     const { assigneeId } = req.body;
     if (!assigneeId) throw new AppError(400, "assigneeId is required");
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     await assignIndividualTask(req.params.id, assigneeId, req.user!.userId);
     const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
 
@@ -232,7 +232,7 @@ router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to assign task");
   }
 });
@@ -242,7 +242,7 @@ router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     await submitForVerification(req.params.id, req.user!.userId);
     const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
 
@@ -260,7 +260,7 @@ router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) 
 
     res.json({ success: true });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to submit for verification");
   }
 });
@@ -270,7 +270,7 @@ router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) 
 // ─────────────────────────────────────────────
 router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     await approveTeamTask(req.params.id, req.user!.userId, req.body.note);
     const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
 
@@ -280,7 +280,7 @@ router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to approve task");
   }
 });
@@ -292,7 +292,7 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
   try {
     const { reason } = req.body;
     if (!reason) throw new AppError(400, "Rejection reason is required");
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     await rejectTeamTask(req.params.id, req.user!.userId, reason);
     const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
 
@@ -302,7 +302,7 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to reject task");
   }
 });
@@ -313,7 +313,7 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
 router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can publish tasks");
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     await publishCommonTask(req.params.id, req.user!.userId);
     const task = await Task.findById(req.params.id).select("title assigneeId creatorId selectedUserIds").lean();
 
@@ -336,7 +336,7 @@ router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to publish task");
   }
 });
@@ -347,7 +347,7 @@ router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
 router.post("/:id/activate", async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can activate tasks");
-    const orgId = await requireOrgMembership(req.user!.userId);
+    const orgId = await requireOrgMembershipFromRequest(req);
     await activateUpcomingTask(req.params.id, req.user!.userId);
     const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
 
@@ -365,7 +365,7 @@ router.post("/:id/activate", async (req: AuthRequest, res: Response) => {
 
     res.json({ success: true });
   } catch (err: any) {
-    if (err instanceof AppError) throw err;
+    if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to activate task");
   }
 });
