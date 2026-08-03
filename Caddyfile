@@ -7,14 +7,28 @@ myworkspace.myenum.in {
     header Link "https://fonts.googleapis.com; rel=preconnect; crossorigin"
     header Link "https://fonts.gstatic.com; rel=preconnect; crossorigin"
 
-    # ── Early Hints (103) ──
-    early_hints on
-    early_hints_link "</web-app-manifest-192x192.png>; rel=preload; as=image",
-        "</_next/static/css/*>; rel=preload; as=style"
-
-    # ── API routes → Express backend ──
-    handle /api/* {
+    # ── API routes ──
+    # Socket.IO (WebSocket upgrade + long-polling) must hit the backend directly,
+    # since Next.js rewrites do not proxy WebSocket upgrades.
+    handle /api/socketio/* {
         reverse_proxy localhost:4000 {
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
+    # Large TUS uploads go straight to the backend (no extra proxy hop).
+    handle /api/files-tus/* {
+        reverse_proxy localhost:4000
+    }
+
+    # Everything else under /api goes to the Next.js frontend. Next.js serves
+    # its own route handlers (e.g. /api/employees, /api/auth/*) and falls back
+    # to the Express backend (port 4000) for backend-owned routes via the
+    # rewrites in frontend/next.config.js.
+    handle /api/* {
+        reverse_proxy localhost:3000 {
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-Host {host}
