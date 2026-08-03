@@ -11,7 +11,7 @@ export interface IUser extends Document {
   image?: string;
   password?: string;
   status: "online" | "offline" | "break";
-  role: "org_admin" | "members" | "staffs" | "team_staff" | "hr" | "clients";
+  role: "org_admin" | "members" | "manager" | "team_leader" | "staffs" | "team_staff" | "hr" | "finance" | "contractors" | "clients" | "guest";
   permissions: string[];
   isActive: boolean;
   isWorkflowStaff?: boolean;
@@ -54,7 +54,7 @@ const userSchema = new Schema<IUser>(
     image: String,
     password: String,
     status: { type: String, enum: ["online", "offline", "break"], default: "offline" },
-    role: { type: String, enum: ["org_admin", "members", "staffs", "team_staff", "hr", "clients"], default: "staffs" },
+    role: { type: String, enum: ["org_admin", "members", "manager", "team_leader", "staffs", "team_staff", "hr", "finance", "contractors", "clients", "guest"], default: "staffs" },
     permissions: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
     isWorkflowStaff: { type: Boolean, default: false },

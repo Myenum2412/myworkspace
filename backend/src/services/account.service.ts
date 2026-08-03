@@ -109,10 +109,19 @@ export async function createStaffAccount(actor: AccountActor, data: CreateStaffI
   assertActor(actor);
   assertNoOrgIdOverride(actor, data.orgId);
 
-  const name = (typeof data.name === "string" ? data.name : "").trim();
   const email = requireEmail(data.email, "email");
 
-  const role = (data.role || "staffs").toLowerCase();
+  // The form sends firstName/lastName; derive a display name when absent.
+  const name =
+    (typeof data.name === "string" ? data.name : "").trim() ||
+    [data.firstName, data.lastName]
+      .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
+      .map((part) => part.trim())
+      .join(" ") ||
+    email.split("@")[0] ||
+    "Employee";
+
+  const role = String(data.role || data.roleName || "staffs").toLowerCase();
   if (!CREATABLE_ROLES.has(role)) {
     throw new AppError(403, "You are not allowed to create accounts with this role");
   }

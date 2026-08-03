@@ -18,6 +18,20 @@ import {
 } from "@/components/ui/select"
 import { Camera, ChevronDown, ChevronRight, Eye, EyeOff } from "lucide-react"
 import { getDropdownOptions } from "@/lib/dropdown-options"
+import { ROLES, ROLE_LABELS, type Role } from "@/lib/rbac"
+
+// Roles a workspace member may create for a staff account. Mirrors
+// CREATABLE_ROLES in backend/src/services/account.service.ts.
+const CREATABLE_ROLES: Role[] = [
+  ROLES.STAFFS,
+  ROLES.TEAM_STAFF,
+  ROLES.HR,
+  ROLES.MANAGER,
+  ROLES.TEAM_LEADER,
+  ROLES.FINANCE,
+  ROLES.CONTRACTORS,
+  ROLES.GUEST,
+]
 
 export interface FirstSlideEmployeeForm {
   displayId: string
@@ -272,10 +286,12 @@ export function WorkInfoSection({ formData, onChange, options }: WorkInfoSection
           <FieldLabel>Role Name</FieldLabel>
           <Select value={formData.roleName || "staffs"} onValueChange={(v) => onChange("roleName", v)}>
             <SelectTrigger>
-              <SelectValue placeholder="" />
+              <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent>
-              <OptionList options={[]} value={formData.roleName || undefined} />
+              {CREATABLE_ROLES.map((role) => (
+                <SelectItem key={role} value={role}>{ROLE_LABELS[role] || role}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </Field>
