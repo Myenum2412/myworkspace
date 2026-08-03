@@ -785,6 +785,33 @@ router.post("/upload", upload.fields([{ name: "files", maxCount: env.MAX_FILES_P
       } else {
         results.push({ originalName: file.originalname, fileId: result.fileId });
         notifyFile.uploaded(req.user!.userId, orgId, req.user!.userId, file.originalname, result.fileId).catch(() => {});
+        recordAuditLog({
+          orgId,
+          userId: req.user!.userId,
+          createdBy: req.user!.userId,
+          action: "file.uploaded",
+          entityType: "file",
+          entityId: result.fileId,
+          description: `Uploaded file ${file.originalname}`,
+          metadata: JSON.stringify({
+            filename: file.originalname,
+            size: file.size,
+            taskId: req.body.taskId || undefined,
+            projectId: req.body.projectId || undefined,
+          }),
+        }).catch(() => {});
+        if (req.body.taskId) {
+          recordAuditLog({
+            orgId,
+            userId: req.user!.userId,
+            createdBy: req.user!.userId,
+            action: "task.attachment_added",
+            entityType: "task",
+            entityId: req.body.taskId,
+            description: `Attachment "${file.originalname}" added to task`,
+            metadata: JSON.stringify({ fileId: result.fileId, filename: file.originalname }),
+          }).catch(() => {});
+        }
       }
     } catch (err: any) {
       results.push({ originalName: file.originalname, fileId: "", error: err.message });

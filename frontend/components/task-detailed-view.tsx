@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,6 +73,9 @@ export type Task = {
   rejectionReason?: string;
   project?: string;
   submittedAt?: string | null;
+  assigneeIds?: string[];
+  assignmentMode?: string;
+  memberStatuses?: { userId: string; status: string; updatedAt: string }[];
 };
 
 const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; icon: any; color: string }[]> = {
@@ -204,6 +208,9 @@ export function TaskDetailedView({
   onClose?: () => void;
   editable?: boolean;
 }) {
+  const { data: session } = useSession();
+  const currentUserId = sessionUserId || session?.user?.id || (session?.user as any)?.userId || "";
+
   const [task, setTask] = useState<Task>(initialTask);
   const [updating, setUpdating] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -211,6 +218,26 @@ export function TaskDetailedView({
   const [attachmentsLoading, setAttachmentsLoading] = useState(true);
   const [previewFile, setPreviewFile] = useState<{ id: string; originalName: string; mimeType: string; size: number; createdAt: string } | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/employees", { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!active) return;
+        const employeesList = data.employees || data.data || data || [];
+        setEmployees(employeesList.map((e: any) => ({
+          id: e.id,
+          firstName: e.firstName || e.name || "Unknown",
+          lastName: e.lastName || "",
+          avatar: e.avatar || "",
+          role: e.designation || e.role || "",
+        })));
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -256,7 +283,8 @@ export function TaskDetailedView({
         throw new Error(errorData.error || "Failed to update status");
       }
 
-      const finalTask = { ...task, status: newStatus };
+      const resData = await res.json();
+      const finalTask = resData.data ? { ...task, ...resData.data } : { ...task, status: newStatus };
       setTask(finalTask);
       onTaskUpdate?.(finalTask);
       toast.success("Task status updated");
@@ -441,13 +469,73 @@ export function TaskDetailedView({
           </Section>
 
           <Section icon={UserIcon} title="People">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
               <PersonBadge name={task.assigneeName} avatar={task.assigneeAvatar} role="Assigned To" />
               <PersonBadge name={task.creatorName} avatar="" role="Created By" />
-{task.teamHeadName && (
+              {task.teamHeadName && (
                 <PersonBadge name={task.teamHeadName} avatar="" role="Team Head" />
               )}
             </div>
+
+            {task.memberStatuses && task.memberStatuses.length > 0 && (
+              <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Team Assignment Progress</h4>
+                <div className="space-y-3">
+                  {task.memberStatuses.map((member) => {
+                    const emp = employees.find((e) => e.id === member.userId);
+                    const name = emp ? `${emp.firstName} ${emp.lastName}` : member.userId;
+                    const avatar = emp?.avatar || "";
+                    const designation = emp?.role || "Staff";
+                    const isSelf = member.userId === currentUserId;
+
+                    return (
+                      <div
+                        key={member.userId}
+                        className="flex items-center justify-between p-3 rounded-xl border border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="size-8">
+                            <AvatarImage src={avatar} />
+                            <AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{name}</p>
+                            <p className="text-xs text-muted-foreground">{designation}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {isSelf ? (
+                            <Select
+                              disabled={updating}
+                              value={member.status}
+                              onValueChange={(val) => handleStatusChange(val)}
+                            >
+                              <SelectTrigger className="h-8 w-[130px] text-xs">
+                                <SelectValue placeholder="Status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="assigned">Assigned</SelectItem>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="in_progress">In Progress</SelectItem>
+                                <SelectItem value="hold">Hold</SelectItem>
+                                <SelectItem value="under_review">Under Review</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Badge className="capitalize text-xs px-2.5 py-0.5" variant={member.status === "completed" ? "success" as any : "secondary"}>
+                              {member.status.replace("_", " ")}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </Section>
 
           <Section icon={PaperclipIcon} title="Attachments">

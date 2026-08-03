@@ -13,8 +13,8 @@ module.exports = {
     },
     {
       name: "myworkspace-frontend",
-      script: "node_modules/next/dist/bin/next-start",
-      args: "--port 3000",
+      script: "node_modules/next/dist/bin/next",
+      args: "start --port 3000",
       cwd: "./frontend",
       env: {
         NODE_ENV: "production",

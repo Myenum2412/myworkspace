@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { auth } from "@/lib/auth/config";
+import { getUserOrgId } from "@/lib/org";
 
 export async function GET(
   _request: NextRequest,
@@ -83,6 +84,23 @@ export async function POST(
     };
 
     const result = await db.collection(collections.taskComments).insertOne(doc);
+
+    try {
+      const orgId = await getUserOrgId(session.user.id, session.user.email);
+      if (orgId) {
+        await db.collection(collections.activityLogs).insertOne({
+          orgId,
+          userId: session.user.id,
+          createdBy: session.user.id,
+          action: "task.comment_added",
+          entityType: "task",
+          entityId: id,
+          description: `Comment added: "${(content || "").slice(0, 60)}"`,
+          success: true,
+          createdAt: new Date(),
+        });
+      }
+    } catch {}
 
     return NextResponse.json({
       data: {

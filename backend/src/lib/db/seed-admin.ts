@@ -78,6 +78,7 @@ async function seedAdmin() {
   console.log(`Permissions: ${admin.permissions.join(", ")}`);
 
   await mongoose.disconnect();
+  process.exit(0);
 }
 
 seedAdmin().catch((err) => {

@@ -2,6 +2,7 @@ import { DailyTaskEmailScheduler, EmailAuditLog } from "../lib/db/models/DailyTa
 import { Task } from "../lib/db/models/Task.js";
 import { User } from "../lib/db/models/User.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { TeamMember } from "../lib/db/models/TeamMember.js";
 import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
 import { sendEmail } from "../lib/mail/sender.js";
 import { buildDailyTaskEmail } from "../lib/mail/templates/factory-task.js";
@@ -133,29 +134,46 @@ export async function updateUserEmailPreferences(userId: string, preferences: {
 // ── Task Fetching ────────────────────────────────────────────────────
 
 async function getTasksForUser(userId: string, orgId: string): Promise<TaskWithDetails[]> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  
-  // Get tasks assigned to the user
-  const tasks = await Task.find({
+  const userTeams = await TeamMember.find({ userId }).lean();
+  const teamIds = userTeams.map((t: any) => t.teamId);
+
+  const query: any = {
     orgId,
-    assigneeId: userId,
     status: { $nin: ["completed", "cancelled", "closed"] },
-  }).lean();
-  
-  return tasks.map((task: any) => ({
-    id: task.id || task._id?.toString(),
-    title: task.title,
-    status: task.status,
-    priority: task.priority || "medium",
-    dueDate: task.dueDate,
-    project: task.project,
-    estimatedDuration: task.estimatedDuration,
-    description: task.description,
-  }));
+    $or: [
+      { assigneeId: userId },
+      { assigneeIds: userId },
+    ]
+  };
+
+  if (teamIds.length > 0) {
+    query.$or.push({ type: "team", teamId: { $in: teamIds } });
+  }
+
+  const tasks = await Task.find(query).lean();
+
+  const filteredTasks: TaskWithDetails[] = [];
+  for (const task of tasks) {
+    if (task.memberStatuses && task.memberStatuses.length > 0) {
+      const userStatusEntry = task.memberStatuses.find((m: any) => m.userId === userId);
+      if (userStatusEntry && userStatusEntry.status === "completed") {
+        continue;
+      }
+    }
+
+    filteredTasks.push({
+      id: task.id || task._id?.toString(),
+      title: task.title,
+      status: task.status,
+      priority: task.priority || "medium",
+      dueDate: task.dueDate,
+      project: task.project,
+      estimatedDuration: (task as any).estimatedDuration,
+      description: task.description,
+    });
+  }
+
+  return filteredTasks;
 }
 
 function categorizeTasks(tasks: TaskWithDetails[]) {

@@ -1,0 +1,18 @@
+import { MongoClient } from "mongodb";
+import { readFileSync } from "fs";
+const env = readFileSync("/root/myworkspace/backend/.env", "utf8");
+const m = env.match(/^MONGODB_URI=['"]?(.+?)['"]?$/m);
+const uri = m ? m[1].trim() : null;
+const c = new MongoClient(uri);
+await c.connect();
+const db = c.db("myworkspace");
+const orgs = await db.collection("organizations").find({}).project({ _id:1, id:1, name:1, ownerId:1 }).toArray();
+console.log("ORGS:");
+for (const o of orgs) console.log(JSON.stringify({ _id:o._id, id:o.id, name:o.name, ownerId:o.ownerId }));
+console.log("\nUSERS:");
+const users = await db.collection("users").find({}).project({ email:1, orgId:1, role:1, name:1 }).toArray();
+for (const u of users) console.log(JSON.stringify({ email:u.email, orgId:u.orgId, role:u.role }));
+console.log("\nCLIENT_USERS:");
+const cusers = await db.collection("clientusers").find({}).project({ email:1, orgId:1, role:1 }).toArray();
+for (const u of cusers) console.log(JSON.stringify({ email:u.email, orgId:u.orgId, role:u.role }));
+await c.close();

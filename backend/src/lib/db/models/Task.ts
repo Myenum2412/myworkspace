@@ -33,6 +33,15 @@ export interface ITask extends Document {
   rejectedAt?: Date;
   rejectionReason?: string;
 
+  // New fields for assignment mode and member status tracking
+  assigneeIds?: string[];
+  assignmentMode?: "workflow" | "workspace";
+  memberStatuses?: {
+    userId: string;
+    status: string;
+    updatedAt: Date;
+  }[];
+
   // Upcoming Task: scheduling
   startDate?: Date;
   scheduledDate?: Date;
@@ -97,6 +106,16 @@ const taskSchema = new Schema<ITask>(
     rejectedBy: { type: String },
     rejectedAt: Date,
     rejectionReason: { type: String, maxlength: 2000 },
+
+    assigneeIds: [{ type: String }],
+    assignmentMode: { type: String, enum: ["workflow", "workspace"], default: "workspace" },
+    memberStatuses: [
+      {
+        userId: { type: String, required: true },
+        status: { type: String, default: "assigned" },
+        updatedAt: { type: Date, default: Date.now },
+      },
+    ],
 
     startDate: Date,
     scheduledDate: Date,

@@ -168,19 +168,45 @@ async function getTeamHeadUserId(teamId: string): Promise<string | null> {
   return lead?.userId || null;
 }
 
-// ─────────────────────────────────────────────
-// Audit helper
-// ─────────────────────────────────────────────
-
-async function audit(orgId: string, userId: string, action: string, entityId: string, description: string, metadata?: string) {
-  await recordAuditLog({ orgId, userId, createdBy: userId, action, entityType: "task", entityId, description, metadata });
+async function audit(
+  orgId: string,
+  userId: string,
+  action: string,
+  entityId: string,
+  description: string,
+  metadata?: string,
+  previousValues?: Record<string, any>,
+  newValues?: Record<string, any>
+) {
+  await recordAuditLog({
+    orgId,
+    userId,
+    createdBy: userId,
+    action,
+    entityType: "task",
+    entityId,
+    description,
+    metadata,
+    previousValues,
+    newValues,
+  });
 }
 
 // ─────────────────────────────────────────────
 // Validate status transition
 // ─────────────────────────────────────────────
 
-function validateTransition(taskType: string, currentStatus: string, newStatus: string): void {
+function validateTransition(taskType: string, currentStatus: string, newStatus: string, existingTask?: any): void {
+  if (newStatus === "completed" || newStatus === "closed") {
+    if (existingTask && (existingTask.type === "team" || (existingTask.memberStatuses && existingTask.memberStatuses.length > 0))) {
+      const statuses = existingTask.memberStatuses || [];
+      const allCompleted = statuses.length > 0 && statuses.every((m: any) => m.status === "completed");
+      if (!allCompleted) {
+        throw new AppError(400, "Cannot complete task because not all assigned members have marked their work as completed.");
+      }
+    }
+  }
+
   const allowed = TYPE_TRANSITIONS[taskType]?.[currentStatus];
   if (!allowed) {
     throw new AppError(400, `No transitions allowed from status "${currentStatus}" for ${taskType} tasks`);
@@ -292,6 +318,9 @@ export async function listTasks(options: TaskListOptions): Promise<TaskListResul
         creator: 1,
         approver: 1,
         team: 1,
+        assigneeIds: 1,
+        assignmentMode: 1,
+        memberStatuses: 1,
       },
     },
 
@@ -375,6 +404,8 @@ export async function createTask(data: {
   repeatType?: "daily" | "weekly";
   repeatStartDate?: Date;
   repeatEndDate?: Date;
+  assigneeIds?: string[];
+  assignmentMode?: string;
 }): Promise<any> {
   const { orgId, userId } = data;
   const title = requireString(data.title, "title", { min: 1, max: 500 });
@@ -426,8 +457,6 @@ export async function createTask(data: {
     repeatEndDate = d;
   }
 
-  // Per-type validation — run in parallel with the duplicate check so the
-  // create path makes fewer sequential round-trips.
   const checks: Promise<unknown>[] = [];
 
   if (taskType === "individual" && assigneeId) {
@@ -455,7 +484,6 @@ export async function createTask(data: {
   }
 
   if (taskType === "common" && data.selectedUserIds && data.selectedUserIds.length > 0) {
-    // Validate all selected users belong to the org
     const selectedUserIds = data.selectedUserIds;
     checks.push((async () => {
       const results = await Promise.all(selectedUserIds.map((id: string) => isUserInOrg(id, orgId)));
@@ -467,6 +495,44 @@ export async function createTask(data: {
 
   if (taskType === "upcoming" && !scheduledDate && !dueDate) {
     throw new AppError(400, "Upcoming task requires a scheduledDate or dueDate");
+  }
+
+  const assignmentMode = data.assignmentMode || "workspace";
+  const assigneeIds = data.assigneeIds || (assigneeId ? [assigneeId] : []);
+
+  if (assignmentMode === "workflow") {
+    if (assigneeIds.length > 0) {
+      checks.push((async () => {
+        const validStaff = await User.find({
+          id: { $in: assigneeIds },
+          orgId,
+          $or: [{ isWorkflowStaff: true }, { role: { $in: ["staffs", "team_staff"] } }],
+          isActive: true
+        }).select("id").lean();
+        const validStaffIds = new Set(validStaff.map(s => s.id));
+        if (assigneeIds.some((id: string) => !validStaffIds.has(id))) {
+          throw new AppError(400, "In workflow mode, tasks can only be assigned to predefined workflow staff members.");
+        }
+      })());
+    }
+  }
+
+  let memberStatuses: { userId: string; status: string; updatedAt: Date }[] = [];
+  if (taskType === "team" && teamId) {
+    checks.push((async () => {
+      const teamMembers = await TeamMember.find({ teamId }).lean();
+      memberStatuses = teamMembers.map(m => ({
+        userId: m.userId,
+        status: "assigned",
+        updatedAt: new Date(),
+      }));
+    })());
+  } else if (assigneeIds.length > 0) {
+    memberStatuses = assigneeIds.map((uid: string) => ({
+      userId: uid,
+      status: "assigned",
+      updatedAt: new Date(),
+    }));
   }
 
   // Prevent duplicates: same title within 30s by the same creator in the same org
@@ -492,6 +558,9 @@ export async function createTask(data: {
     type: taskType,
     teamId,
     assigneeId: resolvedAssigneeId,
+    assigneeIds,
+    assignmentMode,
+    memberStatuses,
     creatorId: userId,
     createdBy: userId,
     title,
@@ -536,7 +605,7 @@ export async function createTask(data: {
 
 export async function updateTask(id: string, userId: string, body: any, scope?: string): Promise<void> {
   const { title, status, priority, assigneeId, description, dueDate, project, isSaved, isActive,
-          startDate, scheduledDate, selectedUserIds, rejectionReason, approvalNote } = body;
+          startDate, scheduledDate, selectedUserIds, rejectionReason, approvalNote, assigneeIds, assignmentMode, memberStatuses } = body;
   const userOrgId = await requireOrgMembership(userId);
 
   const existing = await Task.findById(id).lean();
@@ -547,7 +616,7 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
 
   // Validate status transition if status is changing
   if (status !== undefined && status !== existing.status) {
-    validateTransition(existing.type, existing.status, status);
+    validateTransition(existing.type, existing.status, status, existing);
   }
 
   // Validate assignee changes for individual tasks
@@ -561,6 +630,24 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
     const assigneeInOrg = await isUserInOrg(assigneeId, userOrgId);
     if (!assigneeInOrg) {
       throw new AppError(403, "Cannot assign task to a user outside this workspace");
+    }
+  }
+
+  // Validate workflow mode assignee constraints
+  if (assigneeIds !== undefined || assignmentMode !== undefined) {
+    const finalMode = assignmentMode !== undefined ? assignmentMode : existing.assignmentMode || "workspace";
+    const finalAssigneeIds = assigneeIds !== undefined ? assigneeIds : existing.assigneeIds || [];
+    if (finalMode === "workflow" && finalAssigneeIds.length > 0) {
+      const validStaff = await User.find({
+        id: { $in: finalAssigneeIds },
+        orgId: userOrgId,
+        $or: [{ isWorkflowStaff: true }, { role: { $in: ["staffs", "team_staff"] } }],
+        isActive: true
+      }).select("id").lean();
+      const validStaffIds = new Set(validStaff.map(s => s.id));
+      if (finalAssigneeIds.some((id: string) => !validStaffIds.has(id))) {
+        throw new AppError(400, "In workflow mode, tasks can only be assigned to predefined workflow staff members.");
+      }
     }
   }
 
@@ -588,10 +675,62 @@ export async function updateTask(id: string, userId: string, body: any, scope?: 
   if (rejectionReason !== undefined) updates.rejectionReason = rejectionReason;
   if (approvalNote !== undefined) updates.approvalNote = approvalNote;
 
+  if (assigneeIds !== undefined) {
+    updates.assigneeIds = assigneeIds;
+    // Sync memberStatuses
+    const currentMemberStatuses = existing.memberStatuses || [];
+    updates.memberStatuses = assigneeIds.map((uid: string) => {
+      const existingStatus = currentMemberStatuses.find((m: any) => m.userId === uid);
+      return {
+        userId: uid,
+        status: existingStatus ? existingStatus.status : "assigned",
+        updatedAt: existingStatus ? existingStatus.updatedAt : new Date(),
+      };
+    });
+  }
+  if (assignmentMode !== undefined) updates.assignmentMode = assignmentMode;
+  if (memberStatuses !== undefined) updates.memberStatuses = memberStatuses;
+
+  const previousValues: Record<string, any> = {};
+  const newValues: Record<string, any> = {};
+
+  if (title !== undefined && title !== existing.title) {
+    previousValues.title = existing.title;
+    newValues.title = title;
+  }
+  if (status !== undefined && status !== existing.status) {
+    previousValues.status = existing.status;
+    newValues.status = status;
+  }
+  if (priority !== undefined && priority !== existing.priority) {
+    previousValues.priority = existing.priority;
+    newValues.priority = priority;
+  }
+  if (assigneeId !== undefined && assigneeId !== existing.assigneeId) {
+    previousValues.assigneeId = existing.assigneeId;
+    newValues.assigneeId = assigneeId;
+  }
+  if (project !== undefined && project !== existing.project) {
+    previousValues.project = existing.project;
+    newValues.project = project;
+  }
+  if (dueDate !== undefined && String(dueDate) !== String(existing.dueDate)) {
+    previousValues.dueDate = existing.dueDate;
+    newValues.dueDate = dueDate;
+  }
+  if (assigneeIds !== undefined && JSON.stringify(assigneeIds) !== JSON.stringify(existing.assigneeIds)) {
+    previousValues.assigneeIds = existing.assigneeIds;
+    newValues.assigneeIds = assigneeIds;
+  }
+  if (memberStatuses !== undefined && JSON.stringify(memberStatuses) !== JSON.stringify(existing.memberStatuses)) {
+    previousValues.memberStatuses = existing.memberStatuses;
+    newValues.memberStatuses = memberStatuses;
+  }
+
   const updated = await Task.findByIdAndUpdate(id, updates, { new: true }).lean();
 
   const changeDesc = status ? `status changed to ${status}` : title ? "title updated" : "updated";
-  await audit(userOrgId, userId, "task.updated", id, `Task updated: ${changeDesc}`);
+  await audit(userOrgId, userId, "task.updated", id, `Task updated: ${changeDesc}`, undefined, previousValues, newValues);
 
   // Notifications
   const newAssigneeId = assigneeId !== undefined ? assigneeId : existing.assigneeId?.toString();
@@ -636,7 +775,7 @@ export async function updateTaskStatus(id: string, status: TaskStatus, userId: s
   if (!status) throw new AppError(400, "Status is required");
   const userOrgId = await requireOrgMembership(userId);
 
-  const existing = await Task.findById(id).lean();
+  const existing = await Task.findById(id);
   if (!existing) throw new AppError(404, "Task not found");
   if (existing.orgId.toString() !== userOrgId) throw new AppError(403, "Not authorized to modify this task");
 
@@ -656,11 +795,90 @@ export async function updateTaskStatus(id: string, status: TaskStatus, userId: s
     throw new AppError(403, "Not authorized to modify this task");
   }
 
-  validateTransition(existing.type, existing.status, status);
+  let memberUpdated = false;
+  let previousMemberStatus: string | undefined;
+  
+  if (existing.type === "team" || (existing.memberStatuses && existing.memberStatuses.length > 0)) {
+    let memberStatuses = existing.memberStatuses || [];
+    let userIndex = memberStatuses.findIndex(m => m.userId === userId);
+    
+    if (userIndex === -1 && existing.teamId) {
+      const isMember = await TeamMember.findOne({ userId, teamId: existing.teamId }).lean();
+      if (isMember) {
+        memberStatuses.push({
+          userId,
+          status: "assigned",
+          updatedAt: new Date(),
+        });
+        userIndex = memberStatuses.length - 1;
+      }
+    }
+    
+    if (userIndex !== -1) {
+      previousMemberStatus = memberStatuses[userIndex].status;
+      memberStatuses[userIndex].status = status;
+      memberStatuses[userIndex].updatedAt = new Date();
+      existing.memberStatuses = memberStatuses;
+      existing.markModified("memberStatuses");
+      memberUpdated = true;
+    }
+  }
 
-  await Task.findByIdAndUpdate(id, { status });
+  if (memberUpdated) {
+    const statuses = existing.memberStatuses || [];
+    const allCompleted = statuses.length > 0 && statuses.every(m => m.status === "completed");
+    
+    const oldStatus = existing.status;
+    if (allCompleted) {
+      existing.status = "completed";
+    } else {
+      if (existing.status === "completed") {
+        existing.status = "in_progress";
+      } else {
+        const anyActive = statuses.some(m => ["in_progress", "hold", "rejected", "submitted", "under_review"].includes(m.status));
+        if (anyActive) {
+          existing.status = "in_progress";
+        } else {
+          existing.status = "pending";
+        }
+      }
+    }
+    
+    await existing.save();
 
-  await audit(userOrgId, userId, "task.status_changed", id, `Status changed to ${status}`);
+    await audit(
+      userOrgId,
+      userId,
+      "task.member_status_changed",
+      id,
+      `Member status for ${userId} changed from ${previousMemberStatus || "none"} to ${status}`,
+      undefined,
+      { memberStatus: previousMemberStatus },
+      { memberStatus: status }
+    );
+
+    if (existing.status !== oldStatus) {
+      await audit(
+        userOrgId,
+        userId,
+        "task.status_changed",
+        id,
+        `Task status automatically updated to ${existing.status} because all sub-tasks are completed`,
+        undefined,
+        { status: oldStatus },
+        { status: existing.status }
+      );
+    }
+    return;
+  }
+
+  validateTransition(existing.type, existing.status, status, existing);
+
+  const oldStatus = existing.status;
+  existing.status = status;
+  await existing.save();
+
+  await audit(userOrgId, userId, "task.status_changed", id, `Status changed to ${status}`, undefined, { status: oldStatus }, { status });
 
   if (existing.assigneeId && existing.assigneeId !== userId) {
     const [updater, assigneeUser] = await Promise.all([

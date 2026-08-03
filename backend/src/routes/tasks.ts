@@ -80,6 +80,8 @@ router.post("/", async (req: AuthRequest, res: Response) => {
       startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
       scheduledDate: req.body.scheduledDate ? new Date(req.body.scheduledDate) : undefined,
       selectedUserIds: req.body.selectedUserIds,
+      assigneeIds: req.body.assigneeIds,
+      assignmentMode: req.body.assignmentMode,
       isSaved: req.body.isSaved,
       isActive: req.body.isActive,
       repeatType: req.body.repeatType,
@@ -195,18 +197,18 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
     if (!status) throw new AppError(400, "Status is required");
     const orgId = await requireOrgMembership(req.user!.userId);
     await updateTaskStatus(req.params.id, status, req.user!.userId);
-    const task = await Task.findById(req.params.id).select("title assigneeId creatorId").lean();
+    const fullTask = await Task.findById(req.params.id).lean();
 
-    if (task?.assigneeId) {
+    if (fullTask?.assigneeId) {
       const notifyFn = status === "completed" ? notifyTask.completed
         : status === "in_progress" ? notifyTask.started
         : status === "hold" ? notifyTask.paused
         : status === "reopened" ? notifyTask.reopened
         : notifyTask.updated;
-      notifyFn(task.assigneeId, orgId, req.user!.userId, task.title, req.params.id).catch(() => {});
+      notifyFn(fullTask.assigneeId, orgId, req.user!.userId, fullTask.title, req.params.id).catch(() => {});
     }
 
-    res.json({ success: true });
+    res.json({ success: true, data: fullTask });
   } catch (err: any) {
     if (err instanceof AppError) throw err;
     throw new AppError(500, err.message || "Failed to update task status");

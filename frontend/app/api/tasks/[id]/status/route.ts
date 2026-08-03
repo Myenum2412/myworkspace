@@ -24,12 +24,8 @@ export async function PATCH(
       body: JSON.stringify(body),
     });
     
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Request failed" }));
-      return NextResponse.json(err, { status: res.status });
-    }
-    
-    return NextResponse.json({ success: true });
+    const data = await res.json();
+    return NextResponse.json(data);
   } catch {
     return NextResponse.json({ error: "Failed to update task status" }, { status: 500 });
   }

@@ -14,6 +14,7 @@ export interface IUser extends Document {
   role: "org_admin" | "members" | "staffs" | "team_staff" | "hr" | "clients";
   permissions: string[];
   isActive: boolean;
+  isWorkflowStaff?: boolean;
   lastLogin?: Date;
   failedLoginAttempts: number;
   lockedUntil?: Date;
@@ -56,6 +57,7 @@ const userSchema = new Schema<IUser>(
     role: { type: String, enum: ["org_admin", "members", "staffs", "team_staff", "hr", "clients"], default: "staffs" },
     permissions: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
+    isWorkflowStaff: { type: Boolean, default: false },
     lastLogin: Date,
     tokenVersion: { type: Number, default: 0 },
     failedLoginAttempts: { type: Number, default: 0 },
