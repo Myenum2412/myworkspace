@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Shield, Cookie, Check, X, Globe, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Stats07 from "@/components/stats-07";
 
 interface ConsentStats {
   totalConsent: number;
@@ -35,101 +37,97 @@ export default function AdminConsentPage() {
 
   useEffect(() => { fetchStats(dateRange); }, [dateRange]);
 
-  const StatCard = ({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: any; color: string }) => (
-    <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-      <div className="flex items-center gap-2 mb-1">
-        <div className={`p-1.5 rounded-sm ${color}`}>
-          <Icon className="size-4 text-white" />
-        </div>
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</span>
-      </div>
-      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
-    </div>
-  );
-
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Consent Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Cookie consent analytics and compliance monitoring</p>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Consent Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">Cookie consent analytics and compliance monitoring</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="text-sm border border-gray-200 dark:border-gray-700 rounded-sm px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+            className="text-sm border border-border rounded-lg px-3 py-1.5 bg-card text-foreground"
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
           </select>
-          <button onClick={() => fetchStats(dateRange)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-sm">
-            <RefreshCw className="size-4 text-gray-400" />
+          <button onClick={() => fetchStats(dateRange)} className="p-2 text-muted-foreground hover:bg-muted rounded-lg">
+            <RefreshCw className="size-4" />
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800 rounded-sm animate-pulse" />)}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />)}
         </div>
       ) : stats ? (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Total Consents" value={stats.totalConsent.toLocaleString()} icon={Cookie} color="bg-blue-500" />
-            <StatCard label="Analytics Rate" value={`${stats.acceptanceRates.analytics}%`} icon={Check} color="bg-green-500" />
-            <StatCard label="Marketing Rate" value={`${stats.acceptanceRates.marketing}%`} icon={X} color="bg-orange-500" />
-            <StatCard label="Functional Rate" value={`${stats.acceptanceRates.functional}%`} icon={Globe} color="bg-purple-500" />
-          </div>
+          <Stats07
+            items={[
+              { name: "Total Consents", value: stats.totalConsent, subtitle: "Total consents" },
+              { name: "Analytics", value: stats.acceptanceRates.analytics, subtitle: "Analytics rate %" },
+              { name: "Marketing", value: stats.acceptanceRates.marketing, subtitle: "Marketing rate %" },
+              { name: "Functional", value: stats.acceptanceRates.functional, subtitle: "Functional rate %" },
+            ]}
+          />
 
-          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Acceptance Rates by Category</h3>
-            <div className="space-y-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Acceptance Rates by Category</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
               {Object.entries(stats.acceptanceRates).map(([category, rate]) => (
                 <div key={category}>
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="capitalize text-gray-700 dark:text-gray-300">{category}</span>
-                    <span className="text-gray-500">{rate}%</span>
+                    <span className="capitalize text-foreground">{category}</span>
+                    <span className="text-muted-foreground">{rate}%</span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-sm overflow-hidden">
+                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-sm bg-primary transition-all"
+                      className="h-full rounded-full bg-primary transition-all"
                       style={{ width: `${rate}%` }}
                     />
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">By Region</h3>
-              <div className="space-y-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>By Region</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 {stats.regionBreakdown.map(r => (
                   <div key={r.region} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">{r.region}</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-medium">{r.count.toLocaleString()}</span>
+                    <span className="text-muted-foreground">{r.region}</span>
+                    <span className="text-foreground font-medium">{r.count.toLocaleString()}</span>
                   </div>
                 ))}
-              </div>
-            </div>
-            <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">By Source</h3>
-              <div className="space-y-2">
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>By Source</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 {stats.sourceBreakdown.map(s => (
                   <div key={s.source} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400 capitalize">{s.source.replace("-", " ")}</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-medium">{s.count.toLocaleString()}</span>
+                    <span className="text-muted-foreground capitalize">{s.source.replace("-", " ")}</span>
+                    <span className="text-foreground font-medium">{s.count.toLocaleString()}</span>
                   </div>
                 ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </>
       ) : (
-        <div className="text-center py-12 text-gray-400">No consent data available</div>
+        <div className="text-center py-12 text-muted-foreground">No consent data available</div>
       )}
     </div>
   );

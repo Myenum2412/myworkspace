@@ -37,16 +37,16 @@ function StatCard({ item, maxValue, index }: { item: Stats07Item; maxValue: numb
   const fill = item.fill || defaultColors[index % defaultColors.length];
 
   return (
-    <Card className="p-3 shadow-2xs h-full">
-      <CardContent className="flex items-center justify-center space-x-3 p-0">
+    <Card className="p-4 h-full border bg-card shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md overflow-hidden surface-hover">
+      <CardContent className="flex items-center gap-4 p-0">
         <div className="relative flex items-center justify-center shrink-0">
-          <ChartContainer className="h-[64px] w-[64px]" config={chartConfig}>
+          <ChartContainer className="h-[64px] w-[64px] sm:h-[72px] sm:w-[72px]" config={chartConfig}>
             <RadialBarChart
-              barSize={5}
+              barSize={6}
               data={[{ capacity: percentage, fill }]}
               endAngle={-270}
               innerRadius={24}
-              outerRadius={48}
+              outerRadius={40}
               startAngle={90}
             >
               <PolarAngleAxis
@@ -59,24 +59,24 @@ function StatCard({ item, maxValue, index }: { item: Stats07Item; maxValue: numb
               <RadialBar
                 angleAxisId={0}
                 background
-                cornerRadius={10}
+                cornerRadius={12}
                 dataKey="capacity"
                 fill={fill}
               />
             </RadialBarChart>
           </ChartContainer>
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span className="font-medium text-sm text-foreground">
+            <span className="text-base sm:text-lg font-semibold tabular-nums tracking-tight text-foreground">
               {item.value}
             </span>
           </div>
         </div>
         <div className="min-w-0">
-          <dt className="font-medium text-foreground text-sm truncate">
+          <dt className="truncate text-sm font-medium text-foreground">
             {item.name}
           </dt>
           {item.subtitle && (
-            <dd className="text-muted-foreground text-xs truncate">
+            <dd className="truncate text-xs text-muted-foreground mt-0.5">
               {item.subtitle}
             </dd>
           )}
@@ -90,11 +90,9 @@ export default function Stats07({ items, className }: Stats07Props) {
   const maxValue = useMemo(() => Math.max(...items.map((x) => x.value), 1), [items]);
 
   return (
-    <dl className={`flex flex-row items-stretch gap-3 overflow-x-auto pb-1 ${className ?? ''}`}>
+    <dl className={`grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 ${className ?? ''}`}>
       {items.map((item, i) => (
-        <div key={item.name} className="flex-1 min-w-[160px]">
-          <StatCard item={item} maxValue={maxValue} index={i} />
-        </div>
+        <StatCard key={item.name} item={item} maxValue={maxValue} index={i} />
       ))}
     </dl>
   );

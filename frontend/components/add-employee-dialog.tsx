@@ -43,7 +43,7 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
               <div className="mb-4 rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+            <form onSubmit={handleSubmit} className="space-y-4 [&_input]:border-border [&_input]:bg-card [&_select>button]:border-border [&_select>button]:bg-card [&_textarea]:border-border [&_textarea]:bg-card">
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Full Name</Label>
                 <Input name="name" required placeholder="" />

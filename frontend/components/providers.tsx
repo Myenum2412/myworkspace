@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from "react";
 import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   QueryClient,
@@ -93,13 +94,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
         }}
         onSuccess={onPersistSuccess(queryClient)}
       >
-        <TooltipProvider>
-          <AppInitProvider>
-            <IndustryProvider>
-              {children}
-            </IndustryProvider>
-          </AppInitProvider>
-        </TooltipProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider>
+            <AppInitProvider>
+              <IndustryProvider>
+                {children}
+              </IndustryProvider>
+            </AppInitProvider>
+          </TooltipProvider>
+        </ThemeProvider>
       </PersistQueryClientProvider>
     </SessionProvider>
   );

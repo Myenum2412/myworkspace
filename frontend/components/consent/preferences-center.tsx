@@ -5,6 +5,7 @@ import { Shield, Cookie, Check, RotateCcw, Trash2 } from "lucide-react";
 import { useConsentStore, ConsentCategories } from "@/lib/consent/store";
 import { getConsentHistory } from "@/lib/consent/services";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const CATEGORIES: { key: keyof ConsentCategories; title: string; description: string }[] = [
   { key: "essential", title: "Essential", description: "Required for the website to function. Includes authentication, security, and session management." },
@@ -67,26 +68,26 @@ export function PreferencesCenter() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="size-10 rounded-sm bg-primary/10 flex items-center justify-center">
+        <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
           <Shield className="size-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Cookie Preferences</h1>
-          <p className="text-sm text-gray-500">Manage how we use cookies and tracking technologies</p>
+          <h1 className="text-xl font-bold text-foreground">Cookie Preferences</h1>
+          <p className="text-sm text-muted-foreground">Manage how we use cookies and tracking technologies</p>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+      <Card className="divide-y divide-border">
         {CATEGORIES.map(({ key, title, description }) => (
           <div key={key} className="flex items-start gap-4 p-4">
             <div className="flex-1 min-w-0">
-              <label htmlFor={`pref-${key}`} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+              <label htmlFor={`pref-${key}`} className="text-sm font-medium text-foreground cursor-pointer">
                 {title}
                 {key === "essential" && (
-                  <span className="ml-2 text-xs text-gray-400 font-normal">(Always active)</span>
+                  <span className="ml-2 text-xs text-muted-foreground font-normal">(Always active)</span>
                 )}
               </label>
-              <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
             </div>
             <div className="relative inline-flex items-center cursor-pointer">
               <input
@@ -97,11 +98,11 @@ export function PreferencesCenter() {
                 onChange={() => handleToggle(key)}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/30 rounded-sm peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-sm after:h-4 after:w-4 after:transition-all peer-checked:bg-primary" />
+              <div className="w-9 h-5 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary" />
             </div>
           </div>
         ))}
-      </div>
+      </Card>
 
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={handleSave} disabled={loading || updating}>
@@ -119,29 +120,29 @@ export function PreferencesCenter() {
       </div>
 
       {showHistory && history.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-          <div className="p-3 border-b border-gray-100 dark:border-gray-800">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Consent History</h3>
+        <Card className="overflow-hidden">
+          <div className="p-3 border-b border-border">
+            <h3 className="text-sm font-medium text-foreground">Consent History</h3>
           </div>
-          <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-60 overflow-y-auto">
+          <div className="divide-y divide-border max-h-60 overflow-y-auto">
             {history.map((h: any) => (
               <div key={h.id} className="p-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-700 dark:text-gray-300">Version {h.consentVersion}</span>
-                  <span className="text-xs text-gray-400">{formatDate(h.consentTimestamp)}</span>
+                  <span className="text-foreground">Version {h.consentVersion}</span>
+                  <span className="text-xs text-muted-foreground">{formatDate(h.consentTimestamp)}</span>
                 </div>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {Object.entries(h.categories || {}).filter(([, v]) => v).map(([k]) => (
-                    <span key={k} className="px-1.5 py-0.5 bg-primary/5 text-primary text-[10px] rounded-sm">{k}</span>
+                    <span key={k} className="px-1.5 py-0.5 bg-primary/5 text-primary text-[10px] rounded">{k}</span>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
-      <div className="text-xs text-gray-400 space-y-1">
+      <div className="text-xs text-muted-foreground space-y-1">
         <p>Your privacy matters to us. You can change your preferences at any time.</p>
         <p>Essential cookies are always enabled as they are required for platform functionality.</p>
       </div>

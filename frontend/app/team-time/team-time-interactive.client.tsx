@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RingStat } from "@/components/ring-stat";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -10,8 +11,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
-import { Users, Clock, CalendarDays, Activity, Loader2, Calendar, EyeIcon } from "lucide-react";
+import { Clock, Loader2, Calendar, EyeIcon } from "lucide-react";
 import { TeamMemberViewDialog } from "@/components/time-tracker/team-member-view-dialog";
+import Stats07, { type Stats07Item } from "@/components/stats-07";
 
 interface TeamMemberSummary {
   userId: string;
@@ -55,11 +57,11 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
   const summary = data?.summary || { totalMembers: 0, activeMembers: 0, totalHoursAll: "0", totalEntries: 0 };
   const filteredMembers = teamFilter === "all" ? members : members.filter((m) => m.entryCount > 0);
 
-  const statCards = [
-    { title: "Total Members", value: summary.totalMembers, icon: Users, color: "text-muted-foreground" },
-    { title: "Active Today", value: summary.activeMembers, icon: Activity, color: "text-primary" },
-    { title: "Total Hours", value: summary.totalHoursAll, icon: Clock, color: "text-warning" },
-    { title: "Total Entries", value: summary.totalEntries, icon: CalendarDays, color: "text-muted-foreground" },
+  const statItems: Stats07Item[] = [
+    { name: "Total Members", value: summary.totalMembers, subtitle: "Total members" },
+    { name: "Active Today", value: summary.activeMembers, subtitle: "Active today", fill: "#3b82f6" },
+    { name: "Total Hours", value: parseFloat(summary.totalHoursAll) || 0, subtitle: "Total hours", fill: "#f59e0b" },
+    { name: "Total Entries", value: summary.totalEntries, subtitle: "Total entries" },
   ];
 
   const getStatusDot = (status: string) => {
@@ -104,25 +106,15 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
         </Popover>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-        {statCards.map((card) => (
-          <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-              <card.icon className={`size-4 ${card.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{card.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Stats07 items={statItems} />
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <CardTitle>Team Members</CardTitle>
-            <div className="flex items-center gap-2">
+            <RingStat value={summary.activeMembers} max={summary.totalMembers} label="active" fill="var(--chart-2)" />
+          </div>
+          <div className="flex items-center gap-2">
               <Badge
                 variant={teamFilter === "all" ? "default" : "outline"}
                 className="cursor-pointer"
@@ -138,7 +130,6 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
                 Active ({summary.activeMembers})
               </Badge>
             </div>
-          </div>
         </CardHeader>
         <CardContent>
           {loading ? (

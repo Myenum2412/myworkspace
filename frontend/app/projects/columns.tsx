@@ -162,7 +162,7 @@ export function buildProjectColumns(t: (key: TermKey) => string): ColumnDef<Proj
         <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
           access === "Public"
             ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600"
+            : "bg-muted text-muted-foreground"
         }`}>
           {access}
         </span>
@@ -179,7 +179,7 @@ export function buildProjectColumns(t: (key: TermKey) => string): ColumnDef<Proj
         <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
           active
             ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600"
+            : "bg-muted text-muted-foreground"
         }`}>
           {status}
         </span>

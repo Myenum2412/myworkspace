@@ -20,7 +20,7 @@ type Invoice = {
 const statusStyles: Record<string, string> = {
   paid: "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400",
   open: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
-  void: "bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-400",
+  void: "bg-muted text-muted-foreground",
 };
 
 const columns: ColumnDef<Invoice>[] = [

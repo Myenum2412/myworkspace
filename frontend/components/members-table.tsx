@@ -377,8 +377,8 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
         <div className="flex-1" />
       </div>
 
-      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-200 bg-[#f3f4f6]">
+      <div className="border border-border bg-card shadow-xs overflow-hidden rounded-xl">
+        <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/40">
           {selected.size > 0 && (
             <span className="text-sm text-muted-foreground">
               {selected.size} selected
@@ -406,7 +406,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-border">
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={colSpan} className="px-4 py-3 h-32 text-center text-muted-foreground">
@@ -418,7 +418,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
               </tr>
               ) : (
                 paginated.map((member) => (
-                  <tr key={member.id} className={`bg-white group hover:bg-slate-50 transition-colors cursor-pointer ${selected.has(member.id) ? "bg-muted/30" : ""}`} onClick={() => setViewMember(member)}>
+                  <tr key={member.id} className={`bg-card group hover:bg-muted/40 transition-colors cursor-pointer ${selected.has(member.id) ? "bg-muted/30" : ""}`} onClick={() => setViewMember(member)}>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={selected.has(member.id)}

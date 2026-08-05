@@ -22,29 +22,6 @@ import Link from "next/link"
 import { ChevronRightIcon } from "lucide-react"
 import { useRoutePrefetcher } from "@/components/route-prefetcher"
 
-const navUnderlineStyles = `
-  .nav-underline {
-    position: relative;
-  }
-  .nav-underline::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%) scaleX(0);
-    width: 60%;
-    height: 2px;
-    background: currentColor;
-    border-radius: 1px;
-    transition: transform 0.3s ease;
-    opacity: 0.7;
-  }
-  .nav-underline:hover::after,
-  .nav-underline[data-active="true"]::after {
-    transform: translateX(-50%) scaleX(1);
-  }
-`
-
 export function NavMain({
   items,
   label = "Platform",
@@ -95,8 +72,11 @@ export function NavMain({
 
   return (
     <SidebarGroup className={className}>
-      <style>{navUnderlineStyles}</style>
-      {label && <SidebarGroupLabel className="text-sm font-semibold mb-1">{label}</SidebarGroupLabel>}
+      {label && (
+        <SidebarGroupLabel className="mb-0.5 px-3 text-[11px] font-semibold uppercase tracking-wider">
+          {label}
+        </SidebarGroupLabel>
+      )}
       <SidebarMenu>
         {items.map((item) => {
           const active = isActive(item)
@@ -109,11 +89,11 @@ export function NavMain({
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton size="lg" tooltip={item.title} className="text-base nav-underline relative" asChild data-active={active}>
+                  <SidebarMenuButton size="lg" tooltip={item.title} className="h-11 rounded-lg text-[13.5px] font-medium" asChild data-active={active}>
                     <Link href={item.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(item.url)} prefetch={true}>
                       {item.icon}
                       <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                      <ChevronRightIcon className="ml-auto size-5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+                      <ChevronRightIcon className="ml-auto size-4 opacity-60 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                     </Link>
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
@@ -123,7 +103,7 @@ export function NavMain({
                       const subActive = pathname === subItem.url
                       return (
                         <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild className="text-sm py-2 nav-underline relative" data-active={subActive}>
+                          <SidebarMenuSubButton asChild className="h-8 rounded-md py-1.5 text-[13px]" data-active={subActive}>
                             <Link href={subItem.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(subItem.url)} prefetch={true}>
                               <span>{subItem.title}</span>
                             </Link>
@@ -137,7 +117,7 @@ export function NavMain({
             </Collapsible>
           ) : (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton size="lg" tooltip={item.title} className="text-base nav-underline relative" asChild data-active={active}>
+              <SidebarMenuButton size="lg" tooltip={item.title} className="h-11 rounded-lg text-[13.5px] font-medium" asChild data-active={active}>
                 <Link href={item.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(item.url)} prefetch={true}>
                   {item.icon}
                   <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>

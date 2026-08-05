@@ -3,14 +3,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
+import { SidebarBrand } from "@/components/sidebar-brand";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
@@ -107,14 +106,7 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="h-20 border-b justify-center">
-        <div className="flex items-center gap-2 px-1 group-data-[collapsible=icon]:justify-center">
-          <Image src="/logo.jpeg" alt="MyWorkSpace Logo" width={32} height={32} className="size-8 rounded-full object-cover shadow-sm shrink-0" />
-          <h1 className="text-lg font-bold truncate group-data-[collapsible=icon]:hidden">
-            {t("app.name")}
-          </h1>
-        </div>
-      </SidebarHeader>
+      <SidebarBrand title={t("app.name")} />
       <SidebarContent>
         <NavMain items={visibleItems} label={t("nav.dashboard")} />
         <NavMain items={settingsItems} label={t("nav.settings")} className="mt-auto" />

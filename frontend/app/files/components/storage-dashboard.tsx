@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { HardDrive, Upload, Download, FileText, AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface StorageStats {
   totalSize: number;
@@ -56,9 +57,9 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-sm w-1/4" />
-          <div className="grid grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-sm" />)}
+          <div className="h-4 bg-muted rounded-lg w-1/4" />
+          <div className="grid grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-muted rounded-xl" />)}
           </div>
         </div>
       </div>
@@ -69,8 +70,8 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
     return (
       <div className="p-6 text-center">
         <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-        <p className="text-sm text-red-500">{error}</p>
-        <button onClick={fetchStats} className="mt-2 text-sm text-indigo-600 hover:underline">Retry</button>
+        <p className="text-sm text-destructive">{error}</p>
+        <button onClick={fetchStats} className="mt-2 text-sm text-primary hover:underline">Retry</button>
       </div>
     );
   }
@@ -80,39 +81,46 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
   const quotaPct = getQuotaPercentage();
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Storage Usage</h2>
-        <button onClick={fetchStats} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-sm">
-          <RefreshCw className="w-4 h-4 text-gray-400" />
+        <h2 className="text-lg font-semibold text-foreground">Storage Usage</h2>
+        <button onClick={fetchStats} className="p-1 text-muted-foreground hover:bg-muted rounded-lg">
+          <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Storage Quota</span>
-          <span className="text-xs text-gray-400">{quotaPct.toFixed(1)}% used</span>
-        </div>
-        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-sm overflow-hidden">
-          <div className={`h-full rounded-sm transition-all duration-500 ${getQuotaColor()}`} style={{ width: `${quotaPct}%` }} />
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Storage Quota</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">{formatBytes(stats.quotaUsed)} of {formatBytes(stats.quotaLimit)}</span>
+            <span className="text-xs text-muted-foreground">{quotaPct.toFixed(1)}% used</span>
+          </div>
+          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-500 ${getQuotaColor()}`} style={{ width: `${quotaPct}%` }} />
+          </div>
+        </CardContent>
+      </Card>
 
       {Object.keys(stats.byType).length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-sm border p-4">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">By File Type</h3>
-          <div className="space-y-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>By File Type</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
             {Object.entries(stats.byType).sort((a, b) => b[1].size - a[1].size).map(([type, data]) => (
               <div key={type} className="flex items-center justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400 capitalize">{type}</span>
+                <span className="text-muted-foreground capitalize">{type}</span>
                 <div className="flex items-center gap-4">
-                  <span className="text-gray-500">{data.count} files</span>
-                  <span className="text-gray-700 dark:text-gray-300 font-medium">{formatBytes(data.size)}</span>
+                  <span className="text-muted-foreground">{data.count} files</span>
+                  <span className="text-foreground font-medium">{formatBytes(data.size)}</span>
                 </div>
               </div>
             ))}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

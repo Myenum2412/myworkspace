@@ -69,25 +69,25 @@ export function CookieBanner() {
       {/* Banner */}
       {showBanner && !showPreferences && consent === null && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6">
-          <div className="mx-auto max-w-6xl bg-white dark:bg-gray-900 rounded-sm shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="mx-auto max-w-6xl bg-card text-card-foreground rounded-xl shadow-2xl border border-border overflow-hidden">
             <div className="p-4 md:p-6">
               <div className="flex items-start gap-4">
-                <div className="hidden md:flex size-12 shrink-0 items-center justify-center rounded-sm bg-primary/10">
+                <div className="hidden md:flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <Cookie className="size-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                    <h3 className="text-base font-semibold text-foreground">
                       We value your privacy
                     </h3>
                     <button
                       onClick={() => useConsentStore.getState().setShowBanner(false)}
-                      className="p-1 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
+                      className="p-1 rounded-lg hover:bg-muted text-muted-foreground"
                     >
                       <X className="size-4" />
                     </button>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 max-w-3xl">
+                  <p className="text-sm text-muted-foreground max-w-3xl">
                     We use cookies and similar technologies to enhance your browsing experience,
                     analyze website traffic, personalize content, and serve targeted advertisements.
                     You can customize your preferences or accept all cookies.{" "}
@@ -112,7 +112,7 @@ export function CookieBanner() {
                   onClick={() => setShowPreferences(true)}
                   variant="ghost"
                   size="sm"
-                  className="text-gray-500"
+                  className="text-muted-foreground"
                 >
                   <Shield className="size-3.5 mr-1.5" />
                   Customize
@@ -126,24 +126,24 @@ export function CookieBanner() {
       {/* Preferences Modal */}
       {showPreferences && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-sm shadow-2xl border border-gray-200 dark:border-gray-800 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="w-full max-w-lg bg-card text-card-foreground rounded-xl shadow-2xl border border-border max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-2">
                 <Shield className="size-5 text-primary" />
-                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-semibold text-foreground">
                   Cookie Preferences
                 </h3>
               </div>
               <button
                 onClick={() => setShowPreferences(false)}
-                className="p-1 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
+                className="p-1 rounded-lg hover:bg-muted text-muted-foreground"
               >
                 <X className="size-4" />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Manage your cookie preferences below. Essential cookies are always enabled
                 as they are required for the platform to function.
               </p>
@@ -156,16 +156,16 @@ export function CookieBanner() {
                 return (
                   <div
                     key={key}
-                    className="flex items-start gap-3 p-3 rounded-sm bg-gray-50 dark:bg-gray-800/50"
+                    className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
                   >
                     <div className="flex-1 min-w-0">
                       <label
                         htmlFor={`cookie-${key}`}
-                        className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
+                        className="text-sm font-medium text-foreground cursor-pointer"
                       >
                         {info.title}
                       </label>
-                      <p className="text-xs text-gray-500 mt-0.5">{info.description}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{info.description}</p>
                     </div>
                     <input
                       id={`cookie-${key}`}
@@ -177,14 +177,14 @@ export function CookieBanner() {
                         const cats = { ...(consent?.categories || {}), [key]: e.target.checked } as any;
                         useConsentStore.setState({ consent: { ...consent!, categories: cats } } as any);
                       }}
-                      className="mt-1 size-4 rounded-sm border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
+                      className="mt-1 size-4 rounded border-border text-primary focus:ring-primary disabled:opacity-50"
                     />
                   </div>
                 );
               })}
             </div>
 
-            <div className="flex items-center gap-3 p-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-3 p-4 border-t border-border">
               <Button
                 onClick={() => rejectNonEssential()}
                 variant="outline"

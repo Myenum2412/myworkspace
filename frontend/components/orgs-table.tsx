@@ -331,7 +331,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
           </div>
           <div className="flex-1" />
         </div>
-        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+        <div className="border border-border bg-card shadow-xs overflow-hidden rounded-xl">
           <table className="table-premium w-full text-sm text-left">
             <thead className="sticky top-0 z-10">
               <tr>
@@ -349,7 +349,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
                 <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="h-32 text-center text-muted-foreground px-4 py-3">
@@ -361,7 +361,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
                 </tr>
               ) : (
                 paginated.map((o) => (
-                  <tr key={o.id} className={`bg-white group hover:bg-slate-50 transition-colors cursor-pointer ${selected.has(o.id) ? "bg-muted/30" : ""}`} onClick={() => setViewOrg(o)}>
+                  <tr key={o.id} className={`bg-card group hover:bg-muted/40 transition-colors cursor-pointer ${selected.has(o.id) ? "bg-muted/30" : ""}`} onClick={() => setViewOrg(o)}>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={selected.has(o.id)}

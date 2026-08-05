@@ -114,7 +114,7 @@ export function DeleteSignupForm({ user }: { user: SignupRow }) {
         type="submit"
         variant="ghost"
         size="icon"
-        className="text-black hover:text-gray-600 hover:bg-blue-50"
+        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
         onClick={(e) => {
           if (!confirm(`Delete user "${user.name}"?`)) e.preventDefault();
         }}
@@ -133,7 +133,7 @@ export function DeleteOrgDashboardButton({ orgId, orgName }: { orgId: string; or
         type="submit"
         variant="ghost"
         size="icon"
-        className="text-black hover:text-gray-600 hover:bg-blue-50"
+        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
         onClick={(e) => {
           if (!confirm(`Delete organization "${orgName}"?`)) e.preventDefault();
         }}

@@ -129,7 +129,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <Suspense fallback={null}>
           <Header context={effectiveContext} />
         </Suspense>
-        <main className="flex flex-1 flex-col gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 lg:p-6 pb-16 sm:pb-3 md:pb-4 lg:p-6 min-w-0 max-w-full">
+        <main className="premium-scrollbar flex flex-1 flex-col gap-3 sm:gap-4 md:gap-5 p-3 sm:p-4 md:p-5 lg:p-7 pb-20 sm:pb-5 md:pb-5 lg:p-7 min-w-0 max-w-full">
           <Suspense fallback={null}>
             <ProductTourProvider>{children}</ProductTourProvider>
           </Suspense>

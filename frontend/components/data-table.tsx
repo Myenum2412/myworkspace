@@ -184,9 +184,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-2 sm:space-y-3 w-full">
-      <div className="border rounded-sm bg-card shadow-sm overflow-hidden w-full">
+      <div className="border rounded-xl bg-card shadow-xs overflow-hidden w-full">
         {!hideSearchBar && (
-          <div className="bg-muted/30 px-3 sm:px-4 py-2.5 sm:py-3 border-b">
+          <div className="bg-muted/40 px-3 sm:px-4 py-2.5 sm:py-3 border-b">
             <div className="flex items-center gap-4">
               {title && (
                 <span className="text-sm font-medium text-foreground whitespace-nowrap shrink-0">
@@ -199,7 +199,7 @@ export function DataTable<TData, TValue>({
                   placeholder={searchPlaceholder}
                   value={globalFilter}
                   onChange={(e) => handleFilterChange(e.target.value)}
-                  className="pl-9 w-full h-9 text-sm bg-white"
+                  className="pl-9 w-full h-9 text-sm"
                   aria-label={searchPlaceholder}
                 />
               </div>
@@ -213,7 +213,7 @@ export function DataTable<TData, TValue>({
         )}
         <div className="overflow-x-auto" ref={scrollRef}>
           <table className="table-premium w-full text-sm text-left">
-            <thead className="sticky top-0 z-10 bg-primary text-white">
+            <thead className="sticky top-0 z-10">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
@@ -221,7 +221,7 @@ export function DataTable<TData, TValue>({
                     return (
                       <th
                         key={header.id}
-                        className={`px-3 sm:px-4 py-3 font-semibold whitespace-nowrap text-xs sm:text-sm text-white ${
+                        className={`px-3 sm:px-4 py-3 font-semibold whitespace-nowrap text-xs sm:text-sm ${
                           canSort ? "cursor-pointer select-none hover:bg-muted/80" : ""
                         } ${(header.column.columnDef.meta as any)?.className ?? ""}`}
                         style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
@@ -236,7 +236,7 @@ export function DataTable<TData, TValue>({
                             ? null
                             : flexRender(header.column.columnDef.header, header.getContext())}
                           {canSort && (
-                            <ArrowUpDown className="size-3.5 text-white shrink-0" />
+                            <ArrowUpDown className="size-3.5 shrink-0" />
                           )}
                         </div>
                       </th>

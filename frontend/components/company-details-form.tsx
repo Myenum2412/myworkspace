@@ -136,7 +136,7 @@ export function CompanyDetailsForm({ onSubmit, onBack, isSubmitting }: CompanyDe
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-8 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+    <form onSubmit={handleSubmit} className="w-full space-y-8 [&_input]:border-border [&_input]:bg-card [&_select>button]:border-border [&_select>button]:bg-card [&_textarea]:border-border [&_textarea]:bg-card">
       {Object.keys(errors).length > 0 && (
         <div className="rounded-sm border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
           Fix {Object.keys(errors).length} field{Object.keys(errors).length === 1 ? "" : "s"} above.

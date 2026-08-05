@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BarChart3, TrendingUp, Users, DollarSign, Target, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Stats07 from "@/components/stats-07";
 
 interface AttributionReport {
   channels: { channel: string; events: number; uniqueUsers: number; conversions: number; conversionRate: number }[];
@@ -36,97 +38,91 @@ export default function AdminAttributionPage() {
 
   useEffect(() => { fetchData(dateRange); }, [dateRange]);
 
-  const StatCard = ({ label, value, icon: Icon, color, prefix = "", suffix = "" }: { label: string; value: string | number; icon: any; color: string; prefix?: string; suffix?: string }) => (
-    <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-      <div className="flex items-center gap-2 mb-1">
-        <div className={`p-1.5 rounded-sm ${color}`}>
-          <Icon className="size-4 text-white" />
-        </div>
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</span>
-      </div>
-      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{prefix}{typeof value === "number" ? value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : value}{suffix}</p>
-    </div>
-  );
-
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Marketing Attribution</h1>
-          <p className="text-sm text-gray-500 mt-1">Campaign performance, channel attribution, and conversion metrics</p>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Marketing Attribution</h1>
+          <p className="text-sm text-muted-foreground mt-1">Campaign performance, channel attribution, and conversion metrics</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="text-sm border border-gray-200 dark:border-gray-700 rounded-sm px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+            className="text-sm border border-border rounded-lg px-3 py-1.5 bg-card text-foreground"
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
           </select>
-          <button onClick={() => fetchData(dateRange)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-sm">
-            <RefreshCw className="size-4 text-gray-400" />
+          <button onClick={() => fetchData(dateRange)} className="p-2 text-muted-foreground hover:bg-muted rounded-lg">
+            <RefreshCw className="size-4" />
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800 rounded-sm animate-pulse" />)}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />)}
         </div>
       ) : data ? (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="LTV" value={data.ltv} icon={DollarSign} color="bg-green-500" prefix="$" />
-            <StatCard label="Churn Rate" value={data.churnRate} icon={TrendingUp} color="bg-red-500" suffix="%" />
-            <StatCard label="Activation Rate" value={data.activationRate} icon={Target} color="bg-blue-500" suffix="%" />
-            <StatCard label="Channels" value={data.channels.length} icon={BarChart3} color="bg-purple-500" />
-          </div>
+          <Stats07
+            items={[
+              { name: "LTV", value: data.ltv, subtitle: "Lifetime value" },
+              { name: "Churn Rate", value: data.churnRate, subtitle: "Churn rate %" },
+              { name: "Activation Rate", value: data.activationRate, subtitle: "Activation rate %" },
+              { name: "Channels", value: data.channels.length, subtitle: "Active channels" },
+            ]}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Channel Performance</h3>
-              <div className="space-y-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Channel Performance</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 {data.channels.map(c => (
                   <div key={c.channel} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700 dark:text-gray-300 capitalize">{c.channel}</span>
-                      <span className="text-gray-500">{c.conversions} conv / {c.conversionRate}%</span>
+                      <span className="text-foreground capitalize">{c.channel}</span>
+                      <span className="text-muted-foreground">{c.conversions} conv / {c.conversionRate}%</span>
                     </div>
-                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-sm overflow-hidden">
+                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-sm bg-primary transition-all"
+                        className="h-full rounded-full bg-primary transition-all"
                         style={{ width: `${c.conversionRate}%` }}
                       />
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Campaign Performance</h3>
-              {data.campaigns.length > 0 ? (
-                <div className="space-y-2">
-                  {data.campaigns.map(c => (
-                    <div key={c.campaign} className="flex items-center justify-between text-sm p-2 rounded-sm bg-gray-50 dark:bg-gray-800/50">
-                      <span className="text-gray-700 dark:text-gray-300 truncate max-w-[200px]">{c.campaign}</span>
-                      <div className="flex items-center gap-3 text-gray-500">
+            <Card>
+              <CardHeader>
+                <CardTitle>Campaign Performance</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {data.campaigns.length > 0 ? (
+                  data.campaigns.map(c => (
+                    <div key={c.campaign} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/50">
+                      <span className="text-foreground truncate max-w-[200px]">{c.campaign}</span>
+                      <div className="flex items-center gap-3 text-muted-foreground">
                         <span>{c.impressions} imp</span>
                         <span>{c.conversionRate}% conv</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-400 text-center py-8">No campaign data available</p>
-              )}
-            </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">No campaign data available</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </>
       ) : (
-        <div className="text-center py-12 text-gray-400">No attribution data available</div>
+        <div className="text-center py-12 text-muted-foreground">No attribution data available</div>
       )}
     </div>
   );

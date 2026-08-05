@@ -27,6 +27,7 @@ import { useUserStatus } from "@/hooks/use-user-status";
 import { SessionTracker } from "@/components/session-tracker";
 import { GlobalSearch } from "@/components/search/global-search";
 import { StaffStatusForm } from "@/components/staff-status-form";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { getAppContext, type AppContextType } from "@/lib/app-context";
 
@@ -77,12 +78,12 @@ export function Header({ context }: { context?: AppContextType }) {
   const contextLabel = CONTEXT_LABELS[appContext];
 
   return (
-    <header className="flex w-full h-14 sm:h-16 md:h-20 shrink-0 border-b items-center justify-between gap-2 px-2 sm:px-3 md:px-4 transition-[width,height] ease-linear safe-paddings">
+    <header className="sticky top-0 z-30 flex w-full h-14 sm:h-16 md:h-20 shrink-0 border-b items-center justify-between gap-2 px-2 sm:px-3 md:px-4 transition-[width,height] ease-linear safe-paddings glass-surface">
       <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
         <Separator orientation="vertical" className="mr-1 sm:mr-2 data-vertical:h-4 data-vertical:self-auto hidden sm:block" />
         <button
           onClick={toggleSidebar}
-          className="flex items-center justify-center size-8 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 touch-target-sm"
+          className="flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 touch-target-sm"
           aria-label="Toggle sidebar"
         >
           <MenuOpenIcon className="size-5" />
@@ -134,21 +135,22 @@ export function Header({ context }: { context?: AppContextType }) {
         </Breadcrumb>
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-2 md:gap-4 text-sm pr-1 sm:pr-2 shrink-0">
+      <div className="flex items-center gap-1 sm:gap-2 md:gap-3 text-sm pr-1 sm:pr-2 shrink-0">
         <NotificationBell />
         <button
           onClick={() => setSearchOpen(true)}
-          className="flex md:hidden items-center justify-center size-9 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer touch-target"
+          className="flex md:hidden items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer touch-target"
           aria-label="Search"
         >
           <Search className="size-4" />
         </button>
         <button
           onClick={() => setSearchOpen(true)}
-          className="hidden md:flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer px-2 py-1.5 rounded-sm hover:bg-muted/50"
+          className="hidden md:flex items-center gap-2.5 text-muted-foreground hover:text-foreground transition-all cursor-pointer h-9 pl-3 pr-1.5 rounded-lg border bg-card/60 hover:bg-card border-border hover:border-ring/40 shadow-xs w-48 lg:w-56 group"
         >
           <Search className="size-4" />
-          <kbd className="rounded-sm border bg-muted px-1.5 py-0.5 text-[10px] font-medium">⌘K</kbd>
+          <span className="flex-1 text-left text-sm">Search</span>
+          <kbd className="rounded-md border bg-muted/70 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground group-hover:border-ring/40">⌘K</kbd>
         </button>
 
         <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
@@ -164,6 +166,8 @@ export function Header({ context }: { context?: AppContextType }) {
           </time>
         </div>
 
+        <ThemeToggle />
+
         <Separator orientation="vertical" className="hidden lg:block h-6" />
 
         <SessionTracker />
@@ -173,7 +177,7 @@ export function Header({ context }: { context?: AppContextType }) {
             <PopoverTrigger asChild>
               <Badge
                 variant="secondary"
-                className="gap-1 sm:gap-2 min-w-0 h-8 sm:h-9 justify-start px-2 sm:px-3 text-xs sm:text-sm font-normal cursor-pointer hover:bg-muted transition-colors"
+                className="gap-1 sm:gap-2 min-w-0 h-8 sm:h-9 justify-start px-2 sm:px-3 text-xs sm:text-sm font-normal cursor-pointer hover:bg-muted transition-colors rounded-lg"
               >
                 <span className="relative flex size-2 shrink-0">
                   {status === "online" && (

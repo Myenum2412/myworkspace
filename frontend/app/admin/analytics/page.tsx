@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BarChart3, Activity, AlertTriangle, TrendingUp, Users, Zap, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Stats07 from "@/components/stats-07";
 
 interface AnalyticsData {
   totalEvents: number;
@@ -37,18 +39,6 @@ export default function AdminAnalyticsPage() {
 
   useEffect(() => { fetchData(dateRange); }, [dateRange]);
 
-  const StatCard = ({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: any; color: string }) => (
-    <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-      <div className="flex items-center gap-2 mb-1">
-        <div className={`p-1.5 rounded-sm ${color}`}>
-          <Icon className="size-4 text-white" />
-        </div>
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</span>
-      </div>
-      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{typeof value === "number" ? value.toLocaleString() : value}</p>
-    </div>
-  );
-
   const funnelLabels: Record<string, string> = {
     sign_up: "Signed Up",
     workspace_created: "Created Workspace",
@@ -58,92 +48,100 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Analytics Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Event tracking, feature adoption, and retention metrics</p>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Analytics Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">Event tracking, feature adoption, and retention metrics</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="text-sm border border-gray-200 dark:border-gray-700 rounded-sm px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+            className="text-sm border border-border rounded-lg px-3 py-1.5 bg-card text-foreground"
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
           </select>
-          <button onClick={() => fetchData(dateRange)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-sm">
-            <RefreshCw className="size-4 text-gray-400" />
+          <button onClick={() => fetchData(dateRange)} className="p-2 text-muted-foreground hover:bg-muted rounded-lg">
+            <RefreshCw className="size-4" />
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800 rounded-sm animate-pulse" />)}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />)}
         </div>
       ) : data ? (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Total Events" value={data.totalEvents} icon={Activity} color="bg-blue-500" />
-            <StatCard label="Categories" value={data.categoryBreakdown.length} icon={BarChart3} color="bg-green-500" />
-            <StatCard label="Error Rate" value={`${data.errorRate}%`} icon={AlertTriangle} color="bg-red-500" />
-            <StatCard label="Unique Events" value={data.topEvents.length} icon={Zap} color="bg-purple-500" />
-          </div>
+          <Stats07
+            items={[
+              { name: "Total Events", value: data.totalEvents, subtitle: "Total Events" },
+              { name: "Categories", value: data.categoryBreakdown.length, subtitle: "Event Categories" },
+              { name: "Error Rate", value: data.errorRate, subtitle: "Error rate %" },
+              { name: "Unique Events", value: data.topEvents.length, subtitle: "Unique Events" },
+            ]}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Top Events</h3>
-              <div className="space-y-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Events</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 {data.topEvents.slice(0, 10).map(e => (
                   <div key={e.event} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400 truncate">{e.event}</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-medium ml-4">{e.count.toLocaleString()}</span>
+                    <span className="text-muted-foreground truncate">{e.event}</span>
+                    <span className="text-foreground font-medium ml-4">{e.count.toLocaleString()}</span>
                   </div>
                 ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Conversion Funnel</h3>
-              <div className="space-y-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Conversion Funnel</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 {data.conversionFunnel.map((f, i) => {
                   const maxCount = data.conversionFunnel[0]?.count || 1;
                   const pct = Math.round((f.count / maxCount) * 100);
                   return (
                     <div key={f.event}>
                       <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="text-gray-700 dark:text-gray-300">{funnelLabels[f.event] || f.event}</span>
-                        <span className="text-gray-500">{f.count.toLocaleString()} users</span>
+                        <span className="text-foreground">{funnelLabels[f.event] || f.event}</span>
+                        <span className="text-muted-foreground">{f.count.toLocaleString()} users</span>
                       </div>
-                      <div className="w-full h-2.5 bg-gray-100 dark:bg-gray-800 rounded-sm overflow-hidden">
+                      <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-sm transition-all ${i === 0 ? "bg-primary" : i === data.conversionFunnel.length - 1 ? "bg-green-500" : "bg-blue-400"}`}
+                          className={`h-full rounded-full transition-all ${i === 0 ? "bg-primary" : i === data.conversionFunnel.length - 1 ? "bg-green-500" : "bg-blue-400"}`}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
                     </div>
                   );
                 })}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-sm border border-gray-200 dark:border-gray-800 p-4">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Event Categories</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Event Categories</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {data.categoryBreakdown.map(c => (
-                <div key={c.category} className="flex items-center justify-between p-2 rounded-sm bg-gray-50 dark:bg-gray-800/50">
-                  <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">{c.category}</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{c.count.toLocaleString()}</span>
+                <div key={c.category} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                  <span className="text-sm text-muted-foreground capitalize">{c.category}</span>
+                  <span className="text-sm font-medium text-foreground">{c.count.toLocaleString()}</span>
                 </div>
               ))}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </>
       ) : (
-        <div className="text-center py-12 text-gray-400">No analytics data available</div>
+        <div className="text-center py-12 text-muted-foreground">No analytics data available</div>
       )}
     </div>
   );

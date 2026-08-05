@@ -45,7 +45,7 @@ export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-lg">
+        <div className="border border-border bg-card shadow-xs overflow-hidden rounded-xl">
           <table className="table-premium w-full text-sm text-left">
             <thead className="sticky top-0 z-10">
               <tr>
@@ -61,11 +61,11 @@ export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }
                 <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-20">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {orgs.map((org) => (
                 <tr
                   key={org.id as string}
-                  className={`bg-white group hover:bg-slate-50 transition-colors ${selected.has(org.id as string) ? "bg-muted/30" : ""}`}
+                  className={`bg-card group hover:bg-muted/40 transition-colors ${selected.has(org.id as string) ? "bg-muted/30" : ""}`}
                 >
                   <td className="px-4 py-3">
                     <Checkbox
