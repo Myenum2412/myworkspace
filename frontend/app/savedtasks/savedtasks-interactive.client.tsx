@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, BookmarkIcon, SearchIcon, LayoutGridIcon, CalendarIcon } from "lucide-react";
+import { PlusIcon, BookmarkIcon, SearchIcon, LayoutGridIcon, CalendarIcon } from "@/lib/icons";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

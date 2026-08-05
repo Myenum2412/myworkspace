@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   FileIcon, DownloadIcon, LockIcon, Loader2Icon, AlertCircleIcon, FileTextIcon, ImageIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 type ShareFileInfo = {
   fileId: string;

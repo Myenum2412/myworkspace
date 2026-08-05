@@ -13,7 +13,7 @@ import {
   UserIcon,
   HardDriveIcon,
   ClipboardCheckIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { useStorage } from "@/hooks/file-system/use-file-data";
 import { formatSize } from "@/lib/file-system/types";
 

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { XCircleIcon, Loader2Icon, ListTodoIcon, FileIcon } from "lucide-react";
+import { XCircleIcon, Loader2Icon, ListTodoIcon, FileIcon } from "@/lib/icons";
 import { DataTable } from "../data-table";
 import { rejectedColumns, type ApprovalItem } from "../columns";
 import {

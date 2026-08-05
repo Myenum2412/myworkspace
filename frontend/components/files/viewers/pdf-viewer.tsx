@@ -17,7 +17,7 @@ import {
   XIcon,
   Loader2Icon,
   AlertCircleIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 

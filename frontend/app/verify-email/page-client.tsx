@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { VerifyEmailForm } from "@/components/verify-email-form";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/lib/icons";
 
 export function VerifyEmailClient() {
   const searchParams = useSearchParams();

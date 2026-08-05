@@ -1,8 +1,8 @@
 "use client"
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import FolderIcon from "@mui/icons-material/Folder";
-import { BarChart3, MoreHorizontal, Pencil, Settings, Trash2, Workflow, FileText, Eye } from "lucide-react";
+import { FolderIcon } from "@/lib/icons";
+import { BarChart3, MoreHorizontal, Pencil, Settings, Trash2, Workflow, FileText, Eye } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

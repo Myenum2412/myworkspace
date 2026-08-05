@@ -24,44 +24,44 @@ import {
   ActivityIcon,
   StarIcon,
   CreditCardIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 export const defaultOrgNavData = [
   {
     title: "Dashboard",
     url: "/orgmenu",
-    icon: <LayoutDashboardIcon className="size-5" />,
+    icon: <LayoutDashboardIcon className="size-6" />,
     isActive: true,
   },
   {
     title: "Organization",
     url: "/orgmenu/org",
-    icon: <Building2Icon className="size-5" />,
+    icon: <Building2Icon className="size-6" />,
   },
   {
     title: "Members",
     url: "/orgmenu/members",
-    icon: <UsersIcon className="size-5" />,
+    icon: <UsersIcon className="size-6" />,
   },
   {
     title: "Audit Logs",
     url: "/orgmenu/audit",
-    icon: <ClipboardListIcon className="size-5" />,
+    icon: <ClipboardListIcon className="size-6" />,
   },
   {
     title: "Security",
     url: "/orgmenu/security",
-    icon: <ShieldIcon className="size-5" />,
+    icon: <ShieldIcon className="size-6" />,
   },
   {
     title: "Plans",
     url: "/orgmenu/plans",
-    icon: <CreditCardIcon className="size-5" />,
+    icon: <CreditCardIcon className="size-6" />,
   },
   {
     title: "Settings",
     url: "/orgmenu/settings",
-    icon: <Settings2Icon className="size-5" />,
+    icon: <Settings2Icon className="size-6" />,
   },
 ];
 

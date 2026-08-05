@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   PlusIcon, ReceiptIcon, CheckCircleIcon, ClockIcon, IndianRupee,
   MoreHorizontalIcon, PencilIcon, Trash2Icon, DownloadIcon, ExternalLinkIcon, FileTextIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -14,7 +14,7 @@ import {
   RiHistoryLine,
   RiUserLine,
   RiTeamLine,
-} from "@remixicon/react"
+} from "@/lib/icons"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -37,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2Icon } from "lucide-react"
+import { Loader2Icon } from "@/lib/icons"
 
 type SchedulerSettings = {
   enabled: boolean

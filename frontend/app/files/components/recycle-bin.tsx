@@ -10,7 +10,7 @@ import {
   AlertTriangleIcon,
   SearchIcon,
   FileIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -90,7 +90,7 @@ export function RecycleBin() {
           <p className="text-xs">Deleted files will appear here</p>
         </div>
       ) : (
-        <div className="border rounded-sm">
+        <div className="border">
           <Table>
             <TableHeader>
               <TableRow>

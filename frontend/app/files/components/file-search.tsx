@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Search, X, FileText, Loader2 } from "lucide-react";
+import { Search, X, FileText, Loader2 } from "@/lib/icons";
 
 interface SearchResult {
   fileId: string;

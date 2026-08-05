@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Users, Clock, CalendarDays, Building2, Briefcase, Activity } from "lucide-react";
+import { Users, Clock, CalendarDays, Building2, Briefcase, Activity } from "@/lib/icons";
 
 interface TeamMemberSummary {
   userId: string;

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { RiTimeLine } from "@remixicon/react"
+import { RiTimeLine } from "@/lib/icons"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"

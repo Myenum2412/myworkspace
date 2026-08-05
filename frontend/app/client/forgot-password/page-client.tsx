@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ClientForgotPasswordForm } from "./form";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/lib/icons";
 
 export function ClientForgotPasswordClient() {
   const searchParams = useSearchParams();

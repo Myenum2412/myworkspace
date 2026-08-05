@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ROLES } from "@/lib/rbac";
-import { UserPlusIcon, PencilIcon, Trash2Icon, SearchIcon, CheckCircle2Icon, XCircleIcon } from "lucide-react";
+import { UserPlusIcon, PencilIcon, Trash2Icon, SearchIcon, CheckCircle2Icon, XCircleIcon } from "@/lib/icons";
 import { EditSignupDialog, DeleteSignupForm } from "@/components/dashboard-actions";
 
 interface SignupRow {
@@ -118,7 +118,7 @@ export function DashboardSignupsTable({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="border border-border bg-card shadow-xs overflow-hidden rounded-xl">
+        <div className="border border-border bg-card shadow-xs overflow-hidden">
           <table className="table-premium w-full text-sm text-left">
             <thead className="sticky top-0 z-10">
               <tr>

@@ -26,7 +26,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import FolderIcon from "@mui/icons-material/Folder";
+import { FolderIcon } from "@/lib/icons";
 import {
   AlertCircleIcon,
   Building2Icon,
@@ -35,7 +35,7 @@ import {
   Loader2Icon,
   PlusIcon,
   SearchIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { FileExplorer } from "@/components/file-explorer";
 
 type ClientFolder = {

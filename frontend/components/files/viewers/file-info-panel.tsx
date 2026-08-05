@@ -14,7 +14,7 @@ import {
   ClockIcon,
   ShieldCheckIcon,
   DatabaseIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 interface FileInfoPanelProps {
   file: FileItem;

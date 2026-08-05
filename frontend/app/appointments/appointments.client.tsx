@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, ChevronLeftIcon, Loader2 } from "lucide-react";
+import { PlusIcon, ChevronLeftIcon, Loader2 } from "@/lib/icons";
 import { AppointmentForm } from "@/components/appointments/appointment-form";
 import { AppointmentList } from "@/components/appointments/appointment-list";
 import { AppointmentViewDialog } from "@/components/appointments/appointment-view-dialog";

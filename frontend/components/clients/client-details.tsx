@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, Copy, Eye, EyeOff } from "lucide-react";
+import { CheckCircle2, Copy, Eye, EyeOff } from "@/lib/icons";
 import type { Credentials } from "@/components/clients/client-types";
 
 type ClientSuccessDialogProps = {

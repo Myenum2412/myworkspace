@@ -6,7 +6,7 @@ import {
   RiMapPinLine, RiTimeLine, RiGoogleLine, RiCheckLine,
   RiSettings3Line, RiCheckboxCircleLine, RiCheckboxBlankCircleLine,
   RiRefreshLine,
-} from "@remixicon/react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon } from "@/lib/icons";
 
 type CalendarEvent = {
   id: string;

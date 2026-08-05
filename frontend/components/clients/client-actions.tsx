@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import FolderIcon from "@mui/icons-material/Folder";
-import { Loader2, AlertCircle, X, Trash2, FileText } from "lucide-react";
+import { FolderIcon } from "@/lib/icons";
+import { Loader2, AlertCircle, X, Trash2, FileText } from "@/lib/icons";
 import { apiFetch } from "@/lib/api";
 import {
   EditClientFormFields,

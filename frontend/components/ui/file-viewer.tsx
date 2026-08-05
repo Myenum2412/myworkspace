@@ -28,7 +28,7 @@ import {
   ArchiveIcon,
   AlertCircleIcon,
   Loader2Icon,
-} from "lucide-react"
+} from "@/lib/icons"
 
 export type ViewerFile = {
   url: string

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeftIcon, LockIcon, CheckCircleIcon, Loader2Icon } from "lucide-react";
+import { ArrowLeftIcon, LockIcon, CheckCircleIcon, Loader2Icon } from "@/lib/icons";
 import Link from "next/link";
 
 export function ClientResetPasswordForm({ token, email }: { token?: string; email?: string }) {

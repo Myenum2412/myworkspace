@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileIcon, Calendar, User, HardDrive, Tag, Clock } from "lucide-react";
+import { FileIcon, Calendar, User, HardDrive, Tag, Clock } from "@/lib/icons";
 
 type RecycledFile = {
   id: string;

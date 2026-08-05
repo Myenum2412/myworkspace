@@ -21,7 +21,7 @@ export default function StaffRolesPage() {
           <CardTitle>Roles & Permissions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="table-premium w-full text-sm text-left">
                 <thead>

@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, TrendingUp, TimerIcon, BarChart3, Trash2, Loader2 } from "lucide-react";
+import { Clock, TrendingUp, TimerIcon, BarChart3, Trash2, Loader2, ClockIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface Entry {
@@ -120,10 +121,11 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold" data-tour-step-id="step-time-tracker">Time Tracker</h1>
-        <p className="text-sm text-muted-foreground mt-1">Weekly overview of your tracked time</p>
-      </div>
+      <PageHeader
+        icon={<ClockIcon className="size-6" />}
+        title={<h1 data-tour-step-id="step-time-tracker">Time Tracker</h1>}
+        subtitle={<p>Weekly overview of your tracked time</p>}
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -192,7 +194,7 @@ export default function TimeTrackerOverview({ data: initialData }: { data: Entry
           {data.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">No entries this week</p>
           ) : (
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
               {/* Desktop table */}
               <table className="table-premium hidden sm:table w-full text-sm text-left">
                 <thead>

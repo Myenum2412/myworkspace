@@ -7,7 +7,7 @@ import {
   RiBankCardLine,
   RiShieldCheckLine,
   RiCloseLine,
-} from "@remixicon/react"
+} from "@/lib/icons"
 
 import {
   Accordion,

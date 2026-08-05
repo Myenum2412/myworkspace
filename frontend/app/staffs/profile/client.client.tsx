@@ -48,7 +48,7 @@ import {
   Trophy,
   BarChart3Icon,
   ChevronDownIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 import nextDynamic from "next/dynamic";
 const BannerUpload = nextDynamic(

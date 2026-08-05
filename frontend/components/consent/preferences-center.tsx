@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, Cookie, Check, RotateCcw, Trash2 } from "lucide-react";
+import { Shield, Cookie, Check, RotateCcw, Trash2 } from "@/lib/icons";
 import { useConsentStore, ConsentCategories } from "@/lib/consent/store";
 import { getConsentHistory } from "@/lib/consent/services";
 import { Button } from "@/components/ui/button";

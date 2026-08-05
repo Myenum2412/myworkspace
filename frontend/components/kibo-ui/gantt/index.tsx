@@ -27,7 +27,7 @@ import {
 } from "date-fns";
 import { atom, useAtom } from "jotai";
 import throttle from "lodash.throttle";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { PlusIcon, TrashIcon } from "@/lib/icons";
 import type {
   CSSProperties,
   FC,
@@ -618,8 +618,7 @@ export const GanttAddFeatureHelper: FC<GanttAddFeatureHelperProps> = ({
         type="button"
       >
         <PlusIcon
-          className="pointer-events-none select-none text-muted-foreground"
-          size={16}
+          className="pointer-events-none select-none text-muted-foreground size-4"
         />
       </button>
     </div>
@@ -739,7 +738,7 @@ export const GanttCreateMarkerTrigger: FC<GanttCreateMarkerTriggerProps> = ({
           onClick={handleClick}
           type="button"
         >
-          <PlusIcon className="text-muted-foreground" size={12} />
+          <PlusIcon className="size-3 text-muted-foreground" />
         </button>
         <div className="whitespace-nowrap rounded-sm border border-border/50 bg-background/90 px-2 py-1 text-foreground text-xs backdrop-blur-lg">
           {formatDate(date, "MMM dd, yyyy")}
@@ -1148,7 +1147,7 @@ export const GanttMarker: FC<
               className="flex items-center gap-2 text-destructive"
               onClick={handleRemove}
             >
-              <TrashIcon size={16} />
+              <TrashIcon className="size-4" />
               Remove marker
             </ContextMenuItem>
           ) : null}

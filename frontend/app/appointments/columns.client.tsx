@@ -1,6 +1,6 @@
 "use client"
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Eye, Pencil, Trash2, XCircle, CheckCircle, Ban } from "lucide-react";
+import { MoreHorizontal, Eye, Pencil, Trash2, XCircle, CheckCircle, Ban } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {

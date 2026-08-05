@@ -16,7 +16,7 @@ import {
   Building2, Mail, Phone, MapPin, Globe, User, Briefcase,
   Hash, FileText, Calendar, CreditCard, Banknote, Tag, Info,
   Users, Key, Upload, Send, Loader2, CheckCircle2, AlertCircle,
-} from "lucide-react";
+} from "@/lib/icons";
 import type { Client } from "@/app/clients/columns";
 import { sendClientWelcomeEmail } from "@/lib/mail";
 

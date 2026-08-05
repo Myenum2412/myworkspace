@@ -7,7 +7,7 @@ import {
   RiCalendarLine,
   RiMapPinLine,
   RiTimeLine,
-} from "@remixicon/react"
+} from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import {

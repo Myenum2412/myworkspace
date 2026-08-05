@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { CheckCircle, FileText, Loader2, Upload, X, AlertCircle } from "lucide-react"
+import { CheckCircle, FileText, Loader2, Upload, X, AlertCircle } from "@/lib/icons"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"

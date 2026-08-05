@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { RiArrowRightLine } from "@remixicon/react"
+import { RiArrowRightLine } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 

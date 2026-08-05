@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, ChevronLeftIcon, SearchIcon } from "lucide-react";
+import { PlusIcon, ChevronLeftIcon, SearchIcon } from "@/lib/icons";
 import { ContractorList } from "@/components/contractors/contractor-list";
 import { ContractorForm } from "@/components/contractors/contractor-form";
 import { ContractorViewDialog } from "@/components/contractors/contractor-view-dialog";

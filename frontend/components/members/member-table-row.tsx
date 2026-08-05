@@ -9,7 +9,7 @@ import {
   Trash2Icon,
   CheckCircle2Icon,
   XCircleIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,

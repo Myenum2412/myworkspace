@@ -15,7 +15,7 @@ import {
 } from "@/components/kibo-ui/gantt";
 import type { GanttFeature, GanttStatus } from "@/components/kibo-ui/gantt";
 import groupBy from "lodash.groupby";
-import { EyeIcon, TrashIcon } from "lucide-react";
+import { EyeIcon, TrashIcon } from "@/lib/icons";
 import { useEffect, useMemo, useState } from "react";
 import {
   ContextMenu,
@@ -148,14 +148,14 @@ const TaskGanttView = ({ tasks, onViewTask }: TaskGanttViewProps) => {
                         className="flex items-center gap-2"
                         onClick={() => handleViewFeature(feature.id)}
                       >
-                        <EyeIcon className="text-muted-foreground" size={16} />
+                        <EyeIcon className="size-4 text-muted-foreground" />
                         View task
                       </ContextMenuItem>
                       <ContextMenuItem
                         className="flex items-center gap-2 text-destructive"
                         onClick={() => handleRemoveFeature(feature.id)}
                       >
-                        <TrashIcon size={16} />
+                        <TrashIcon className="size-4" />
                         Remove
                       </ContextMenuItem>
                     </ContextMenuContent>

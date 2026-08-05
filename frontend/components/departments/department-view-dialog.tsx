@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Building2, Users, CircleDollarSign, Briefcase, User } from "lucide-react";
+import { Building2, Users, CircleDollarSign, Briefcase, User } from "@/lib/icons";
 
 type Department = {
   name: string;

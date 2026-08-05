@@ -8,7 +8,7 @@ import {
   SkipBackIcon,
   SkipForwardIcon,
   MusicIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { formatSize } from "@/lib/file-system/types";
 

@@ -12,7 +12,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import type { TeamDetail, TeamMember } from "./team-types";
-import { CrownIcon } from "lucide-react";
+import { CrownIcon } from "@/lib/icons";
 import { getInitials } from "./team-types";
 
 function TeamNode({ data }: { data: { label: string; description?: string } }) {

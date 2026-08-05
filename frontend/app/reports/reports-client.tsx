@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { BarChart3Icon, SearchIcon, MedalIcon } from "lucide-react";
+import { BarChart3Icon, SearchIcon, MedalIcon } from "@/lib/icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LeaderboardRankings } from "@/components/ui/leaderboard-rankings";
 import type { LeaderboardRankingItem } from "@/components/ui/leaderboard-rankings";

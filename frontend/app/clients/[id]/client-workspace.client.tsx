@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import FolderIcon from "@mui/icons-material/Folder";
+import { FolderIcon } from "@/lib/icons";
 import {
   ArrowLeft,
   BarChart3,
@@ -10,8 +10,8 @@ import {
   Settings,
   ShieldCheck,
   Workflow,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+} from "@/lib/icons";
+import type { LucideIcon } from "@/lib/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

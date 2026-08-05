@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertCircleIcon, FileText } from "lucide-react";
+import { Loader2, AlertCircleIcon, FileText, LayoutDashboardIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 
 type RecentFile = {
   id: string;
@@ -70,9 +71,10 @@ export default function ClientDashboardPage() {
 
   return (
     <div className="min-h-screen p-6 space-y-6">
-      <h1 className="text-2xl font-bold">
-        Welcome{name ? `, ${name}` : ""}. {getGreeting()}!
-      </h1>
+      <PageHeader
+        icon={<LayoutDashboardIcon className="size-6" />}
+        title={<h1>Welcome{name ? `, ${name}` : ""}. {getGreeting()}!</h1>}
+      />
 
       {billing && billing.pendingCount > 0 && (
         <div className="w-full flex items-center gap-4 rounded-sm border border-amber-200 bg-amber-50 px-6 py-4">

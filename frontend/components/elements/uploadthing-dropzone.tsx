@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Upload, FileText, Copy, ExternalLink, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, FileText, Copy, ExternalLink, X, Loader2, CheckCircle, AlertCircle } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";

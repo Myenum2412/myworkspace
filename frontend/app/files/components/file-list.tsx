@@ -19,7 +19,7 @@ import {
   ScissorsIcon,
   ClipboardPasteIcon,
   ArrowRightIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,

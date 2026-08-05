@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { BarChart3Icon } from "lucide-react"
+import { BarChart3Icon } from "@/lib/icons"
+import { PageHeader } from "@/components/page-header"
 
 type Props = {
   reportsData: ReportsData | null
@@ -20,10 +21,10 @@ export function DashboardReportsClient({ reportsData }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <BarChart3Icon className="size-6 shrink-0" />
-        <h1 className="text-xl sm:text-2xl font-bold">Reports</h1>
-      </div>
+      <PageHeader
+        icon={<BarChart3Icon className="size-6" />}
+        title={<h1>Reports</h1>}
+      />
 
       <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
         <Card>

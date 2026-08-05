@@ -32,8 +32,9 @@ import {
   ChevronRight,
   SearchIcon,
   XIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import Stats07 from "@/components/stats-07";
+import { PageHeader } from "@/components/page-header";
 
 type RevisionItem = {
   id: number;
@@ -153,44 +154,43 @@ export default function RevisionsInteractive() {
       ) : (
       <>
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
-        <div className="flex items-center gap-3 min-w-0 shrink-0">
-          <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
-            <RotateCcwIcon className="size-5 text-primary" />
+      <PageHeader
+        className="mb-4 sm:mb-6"
+        icon={<RotateCcwIcon className="size-6" />}
+        title={<h1>Revisions</h1>}
+        subtitle={
+          <p>
+            {items.length} {items.length === 1 ? "item" : "items"} total
+          </p>
+        }
+        search={
+          <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">
+            <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder=""
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 border-0 shadow-none focus-visible:ring-0 w-full"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                >
+                  <XIcon className="size-4" />
+                </button>
+              )}
+            </div>
           </div>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold tracking-tight">Revisions</h1>
-            <p className="text-sm text-muted-foreground">
-              {items.length} {items.length === 1 ? "item" : "items"} total
-            </p>
-          </div>
-        </div>
-
-        <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">
-          <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              placeholder=""
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 border-0 shadow-none focus-visible:ring-0 w-full"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
-              >
-                <XIcon className="size-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <Button size="sm" onClick={() => setAddOpen(true)} className="gap-2 shrink-0 touch-target">
-          <PlusIcon className="size-4" />
-          Add Revision
-        </Button>
-      </div>
+        }
+        actions={
+          <Button size="sm" onClick={() => setAddOpen(true)} className="gap-2 shrink-0 touch-target">
+            <PlusIcon className="size-4" />
+            Add Revision
+          </Button>
+        }
+      />
 
       {/* Search (mobile) */}
       <div className="relative w-full mb-4 sm:hidden">
@@ -222,7 +222,7 @@ export default function RevisionsInteractive() {
       />
 
       {/* Table */}
-      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)] rounded-lg mt-4">
+      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)] mt-4">
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="table-premium w-full text-sm text-left" style={{ minWidth: 750 }}>
             <thead className="sticky top-0 z-10 bg-primary">

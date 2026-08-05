@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   Loader2Icon, CheckCircle2Icon, Trash2Icon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { UploadThingDropzone } from "@/components/elements/uploadthing-dropzone";
 import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import { FileShareDialog } from "@/components/file-share-dialog";

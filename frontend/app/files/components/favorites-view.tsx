@@ -4,7 +4,7 @@ import { useFavorites } from "@/hooks/file-system/use-favorites";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { getFileIcon } from "@/components/files/utils";
 import { formatSize } from "@/lib/file-system/types";
-import { StarIcon, FolderIcon } from "lucide-react";
+import { StarIcon, FolderIcon } from "@/lib/icons";
 
 export function FavoritesView() {
   const { favorites, toggleFavorite, isLoading } = useFavorites();

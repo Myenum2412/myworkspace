@@ -17,7 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { apiFetch } from "@/lib/api";
-import { AlertCircle, Loader2, Plus, Trash2, Upload, X } from "lucide-react";
+import { AlertCircle, Loader2, Plus, Trash2, Upload, X } from "@/lib/icons";
 import type { Client } from "@/app/clients/columns";
 import type { Credentials } from "@/components/clients/client-types";
 

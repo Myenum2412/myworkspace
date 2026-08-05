@@ -8,7 +8,7 @@ import {
   FileIcon, FileTextIcon, ImageIcon, FileArchiveIcon, XIcon, 
   DownloadIcon, Loader2Icon, CheckCheckIcon,
   MoreHorizontalIcon, ReplyIcon, PencilIcon, Trash2Icon
-} from "lucide-react";
+} from "@/lib/icons";
 
 type Attachment = {
   id: string;

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Search, File, Folder, CheckSquare, Projector, Users, Building2, UserCircle, Loader2 } from "lucide-react";
+import { Search, File, Folder, CheckSquare, Projector, Users, Building2, UserCircle, Loader2 } from "@/lib/icons";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";

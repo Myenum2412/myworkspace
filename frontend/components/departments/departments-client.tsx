@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Building2, Users, EyeIcon } from "lucide-react";
+import { Building2, Users, EyeIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { DepartmentViewDialog } from "./department-view-dialog";
 

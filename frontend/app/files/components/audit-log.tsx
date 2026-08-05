@@ -19,7 +19,7 @@ import {
   PencilIcon,
   UserIcon,
   LockIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -148,7 +148,7 @@ export function AuditLogView() {
         </div>
       ) : (
         <>
-          <div className="border rounded-sm">
+          <div className="border">
             <Table>
               <TableHeader>
                 <TableRow>

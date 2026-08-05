@@ -1,5 +1,5 @@
 "use client"
-import { CheckCheckIcon } from "lucide-react";
+import { CheckCheckIcon } from "@/lib/icons";
 import { DataTable as SharedDataTable } from "@/components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 

@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, Calendar, Loader2, Trash2, EyeIcon, Plus, Save } from "lucide-react";
+import { Clock, Calendar, Loader2, Trash2, EyeIcon, Plus, Save } from "@/lib/icons";
 import { TimeEntryViewDialog } from "@/components/time-tracker/time-entry-view-dialog";
 
 interface TimeEntry {
@@ -211,7 +211,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-sm overflow-hidden">
+          <div className="border overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b">
@@ -333,7 +333,7 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
               <p className="text-sm">Go to Time Tracker to log your hours</p>
             </div>
           ) : (
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
               <table className="table-premium w-full text-sm text-left">
                 <thead>
                   <tr>

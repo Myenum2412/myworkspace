@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { UserX, Calendar, User, Mail, Briefcase, Building2, FileText, Tag } from "lucide-react";
+import { UserX, Calendar, User, Mail, Briefcase, Building2, FileText, Tag } from "@/lib/icons";
 import type { TerminatedEmployee } from "@/app/employees/columns";
 
 type TerminatedViewDialogProps = {

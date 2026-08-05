@@ -10,7 +10,7 @@ import {
   FileAudioIcon,
   FileIcon,
   Loader2Icon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 type MimeCategory = { _id: string; count: number; size: number };
 

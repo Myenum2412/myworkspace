@@ -1,4 +1,4 @@
-import { RiGithubFill, RiTwitterXFill, RiDiscordFill } from "@remixicon/react"
+import { RiGithubFill, RiTwitterXFill, RiDiscordFill } from "@/lib/icons"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"

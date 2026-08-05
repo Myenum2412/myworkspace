@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2Icon, MailIcon, PlusIcon, XIcon } from "lucide-react";
+import { Loader2Icon, MailIcon, PlusIcon, XIcon } from "@/lib/icons";
 
 export function InviteMemberFormInteractive() {
   const [emails, setEmails] = useState<string[]>([""]);

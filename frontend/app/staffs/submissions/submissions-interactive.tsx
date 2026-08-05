@@ -24,7 +24,7 @@ import {
   Loader2Icon,
   FolderKanbanIcon,
   ChevronDown,
-} from "lucide-react";
+} from "@/lib/icons";
 import Stats07 from "@/components/stats-07";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -982,7 +982,7 @@ function SubmissionsTab({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm overflow-x-auto">
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
             <table className="table-premium w-full text-sm text-left min-w-[1200px]">
               <thead>
                 <tr>
@@ -1073,7 +1073,7 @@ function SubmissionsTab({
 
                               {/* Accessories Spec Table */}
                               {item.accessories && (
-                                <div className="border border-slate-200 rounded-sm bg-card shadow-sm overflow-hidden">
+                                <div className="border border-slate-200 bg-card shadow-sm overflow-hidden">
                                   <div className="bg-muted/30 px-4 py-3 border-b flex flex-row items-center justify-between">
                                     <div className="space-y-0.5">
                                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Accessories Details</h4>
@@ -1128,7 +1128,7 @@ function SubmissionsTab({
 
                               {/* Couplers Spec Table */}
                               {item.couplers && (
-                                <div className="border border-slate-200 rounded-sm bg-card shadow-sm overflow-hidden">
+                                <div className="border border-slate-200 bg-card shadow-sm overflow-hidden">
                                   <div className="bg-muted/30 px-4 py-3 border-b flex flex-row items-center justify-between">
                                     <div className="space-y-0.5">
                                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Couplers Details</h4>
@@ -1181,7 +1181,7 @@ function SubmissionsTab({
 
                               {/* Mesh Spec Table */}
                               {item.meshList && (
-                                <div className="border border-slate-200 rounded-sm bg-card shadow-sm overflow-hidden">
+                                <div className="border border-slate-200 bg-card shadow-sm overflow-hidden">
                                   <div className="bg-muted/30 px-4 py-3 border-b flex flex-row items-center justify-between">
                                     <div className="space-y-0.5">
                                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Mesh List Details</h4>

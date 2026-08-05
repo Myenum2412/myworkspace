@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { PlusCircle, X, FileText, Search, Trash2 } from "lucide-react";
+import { PlusCircle, X, FileText, Search, Trash2 } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -246,7 +246,7 @@ export default function NewInvoicePageClient() {
         </div>
       </div>
 
-      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col rounded-lg">
+      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col">
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="table-premium w-full text-sm text-left" style={{ minWidth: 700 }}>
             <thead className="sticky top-0 z-10">

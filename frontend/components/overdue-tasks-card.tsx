@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircleIcon } from "lucide-react";
+import { AlertCircleIcon } from "@/lib/icons";
 
 export type OverdueTask = {
   _id?: string;

@@ -3,7 +3,7 @@
 import { useSharedFiles } from "@/hooks/file-system/use-file-data";
 import { formatSize } from "@/lib/file-system/types";
 import { getFileIcon } from "@/components/files/utils";
-import { DownloadIcon, Share2Icon, UserIcon, ClockIcon } from "lucide-react";
+import { DownloadIcon, Share2Icon, UserIcon, ClockIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -42,7 +42,7 @@ export function SharedWithMe() {
         <p className="text-sm text-muted-foreground">{shares.length} shared file{shares.length !== 1 ? "s" : ""}</p>
       </div>
 
-      <div className="border rounded-sm">
+      <div className="border">
         <Table>
           <TableHeader>
             <TableRow>

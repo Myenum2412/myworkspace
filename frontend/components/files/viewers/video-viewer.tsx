@@ -10,7 +10,7 @@ import {
   DownloadIcon,
   Volume2Icon,
   VolumeXIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 

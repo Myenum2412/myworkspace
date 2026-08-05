@@ -9,7 +9,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
-import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, HistoryIcon, CheckCircle2Icon, PencilIcon } from "lucide-react"
+import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, HistoryIcon, CheckCircle2Icon, PencilIcon } from "@/lib/icons"
 import { employeeService } from "@/lib/services/employee-service"
 import { getDropdownOptions } from "@/lib/dropdown-options"
 
@@ -250,18 +250,6 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
 
   return (
     <>
-      <div className="flex items-start gap-3 px-4 sm:px-6 pt-4 sm:pt-6 pb-2 shrink-0 bg-white border-b">
-        <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-xl font-semibold text-black">
-            <UserIcon className="size-5" />
-            {isViewMode ? "Details" : "Edit"}
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            {isViewMode ? "View employee information across all sections." : "Update employee details across all sections."}
-          </p>
-        </div>
-      </div>
-
       {formSuccess && (
         <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-sm bg-green-50 px-3 py-2 text-sm text-green-700">
           <CheckCircle2Icon className="size-4 shrink-0" />

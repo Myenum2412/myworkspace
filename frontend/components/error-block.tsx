@@ -1,4 +1,4 @@
-import { RiErrorWarningLine, RiRefreshLine } from "@remixicon/react"
+import { RiErrorWarningLine, RiRefreshLine } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 

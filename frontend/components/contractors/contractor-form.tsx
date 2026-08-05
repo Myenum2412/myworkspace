@@ -12,7 +12,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { apiFetch } from "@/lib/api";
-import { AlertCircle, Loader2, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Loader2, Plus, Trash2 } from "@/lib/icons";
 
 const CONTRACTOR_TYPES = ["Individual", "Company", "Subcontractor"];
 const MAIN_TRADES = [

@@ -12,7 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { DownloadIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { DownloadIcon, ChevronLeftIcon, ChevronRightIcon } from "@/lib/icons";
 import { useState, useEffect } from "react";
 
 export function PreviewDialog() {

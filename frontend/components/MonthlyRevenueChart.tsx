@@ -17,7 +17,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { TrendingUpIcon } from "lucide-react"
+import { TrendingUpIcon } from "@/lib/icons"
 
 const chartConfig = {
   revenue: {

@@ -5,7 +5,8 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileTextIcon, ExternalLinkIcon, ClockIcon, CheckCircleIcon, IndianRupee, ReceiptIcon, TrendingUpIcon, PlusIcon } from "lucide-react";
+import { FileTextIcon, ExternalLinkIcon, ClockIcon, CheckCircleIcon, ReceiptIcon, TrendingUpIcon, PlusIcon, AttachMoneyIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 import Link from "next/link";
 import { useBootstrapStore } from "@/stores/bootstrap-store";
 
@@ -77,16 +78,16 @@ export default function BillingPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <IndianRupee className="size-6" />
-          <h1 className="text-xl sm:text-2xl font-bold" data-tour-step-id="step-billing">Billing</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild size="sm"><Link href="/billing/receipts"><ReceiptIcon className="mr-1" />My Receipts</Link></Button>
-          <Button asChild size="sm"><Link href="/billing/invoices"><FileTextIcon className="mr-1" />Invoices</Link></Button>
-        </div>
-      </div>
+      <PageHeader
+        icon={<AttachMoneyIcon className="size-6" />}
+        title={<span data-tour-step-id="step-billing">Billing</span>}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm"><Link href="/billing/receipts"><ReceiptIcon className="mr-1" />My Receipts</Link></Button>
+            <Button asChild size="sm"><Link href="/billing/invoices"><FileTextIcon className="mr-1" />Invoices</Link></Button>
+          </div>
+        }
+      />
 
       {error && <div className="rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
 

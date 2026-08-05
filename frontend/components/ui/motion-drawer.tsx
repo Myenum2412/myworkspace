@@ -1,6 +1,6 @@
 'use client';
 import { cn } from '@/lib/utils';
-import { Menu, X } from 'lucide-react';
+import { Menu, X } from '@/lib/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import type React from 'react';
 import { useState } from 'react';
@@ -255,7 +255,7 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
                   whileTap={{ scale: 0.9 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <X size={20} /> {/* Close */}
+                  <X className="size-5" /> {/* Close */}
                 </motion.button>
               )}
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
+import { TrendingUp } from "@/lib/icons"
 import { Bar, BarChart, XAxis, YAxis } from "recharts"
 import {
   Card,

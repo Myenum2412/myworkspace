@@ -195,14 +195,14 @@
   --chart-4: oklch(0.606 0.25 292.72);
   --chart-5: oklch(0.638 0.208 25.33);
   --radius: 0.875rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: oklch(0.36 0.01 257.5);
-  --sidebar-primary: #1f6feb;
+  --sidebar: #F6FAFD;
+  --sidebar-foreground: oklch(0.32 0.014 260);
+  --sidebar-primary: oklch(0.545 0.222 276.72);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: #eef1f6;
-  --sidebar-accent-foreground: oklch(0.24 0.015 257.5);
-  --sidebar-border: #e8eaef;
-  --sidebar-ring: #1f6feb;
+  --sidebar-accent: #E7F1FA;
+  --sidebar-accent-foreground: oklch(0.445 0.12 276.72);
+  --sidebar-border: #D3E6F4;
+  --sidebar-ring: oklch(0.585 0.233 277.117);
   --success: #16a34a;
   --success-foreground: #ffffff;
   --info: #3b82f6;
@@ -464,7 +464,6 @@
   border-spacing: 0;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
   overflow: hidden;
 }
 

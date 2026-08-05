@@ -22,7 +22,7 @@ import {
   UserIcon,
   ClockIcon,
   HardDriveIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 interface VersionHistoryProps {
   file: FileItem;

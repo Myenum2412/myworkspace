@@ -22,9 +22,9 @@ import {
   XCircleIcon, ChevronLeftIcon, StarIcon, CopyIcon, ForwardIcon,
   DownloadIcon, UserIcon, Building2Icon, ClockIcon, MailIcon,
   PhoneCallIcon, InfoIcon,
-} from "lucide-react";
-import ChatIcon from '@mui/icons-material/Chat';
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+} from "@/lib/icons";
+import { ChatIcon } from "@/lib/icons";
+import { NotificationsActiveIcon } from "@/lib/icons";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 

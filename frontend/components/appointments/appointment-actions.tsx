@@ -10,7 +10,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/lib/icons";
 import { AppointmentForm } from "./appointment-form";
 import type { Appointment, Doctor, AppointmentStatus } from "./appointment-types";
 

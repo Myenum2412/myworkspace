@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2Icon, AlertCircleIcon } from "lucide-react";
+import { Loader2Icon, AlertCircleIcon } from "@/lib/icons";
 import { DataTable } from "@/components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useIndustry } from "@/components/industry-provider";

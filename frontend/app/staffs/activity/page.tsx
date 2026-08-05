@@ -10,7 +10,7 @@ import { DataTable } from "@/components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 import { apiFetch } from "@/lib/api";
 import { useIndustry } from "@/components/industry-provider";
-import { ClockIcon, ActivityIcon } from "lucide-react";
+import { ClockIcon, ActivityIcon } from "@/lib/icons";
 
 type ActivityRow = {
   id: string;

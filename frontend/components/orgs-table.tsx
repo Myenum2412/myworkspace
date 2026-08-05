@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "@/lib/icons";
 import {
   Dialog,
   DialogContent,
@@ -40,7 +40,7 @@ import {
   CheckCircle2Icon,
   EyeIcon,
   CalendarDays,
-} from "lucide-react";
+} from "@/lib/icons";
 import { updateOrganization, deleteOrganization } from "@/actions/admin";
 
 interface OrgRow {
@@ -331,7 +331,7 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
           </div>
           <div className="flex-1" />
         </div>
-        <div className="border border-border bg-card shadow-xs overflow-hidden rounded-xl">
+        <div className="border border-border bg-card shadow-xs overflow-hidden">
           <table className="table-premium w-full text-sm text-left">
             <thead className="sticky top-0 z-10">
               <tr>

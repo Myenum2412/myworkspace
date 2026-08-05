@@ -27,7 +27,7 @@ import { UploadDialog } from "./components/upload-queue";
 import { FileSearch } from "./components/file-search";
 import { StorageDashboard } from "./components/storage-dashboard";
 import { ApprovalFilesView } from "./components/approval-files-view";
-import { RiUploadCloud2Line } from "@remixicon/react";
+import { RiUploadCloud2Line } from "@/lib/icons";
 
 interface FileManagerClientProps {
   orgId: string;

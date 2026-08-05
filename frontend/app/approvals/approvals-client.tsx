@@ -17,7 +17,7 @@ import {
   FileIcon,
   CheckIcon,
   SearchIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { DataTable } from "./data-table";
 import type { ApprovalItem } from "./columns";
 import {

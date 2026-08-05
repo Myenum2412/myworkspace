@@ -27,7 +27,7 @@ import {
   MailIcon,
   MapPinIcon,
   CalendarIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Separator } from "@/components/ui/separator";
 
 type Employee = Record<string, any>;

@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Settings2Icon, PaletteIcon, CheckCircle2Icon, AlertCircleIcon } from "lucide-react";
+import { Settings2Icon, PaletteIcon, CheckCircle2Icon, AlertCircleIcon } from "@/lib/icons";
 
 interface SettingsFormInteractiveProps {
   initial: {

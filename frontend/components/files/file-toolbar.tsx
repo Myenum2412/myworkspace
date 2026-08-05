@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ViewMode } from "./types";
-import MuiFolderIcon from "@mui/icons-material/Folder";
+import { MuiFolderIcon } from "@/lib/icons";
 import {
   SearchIcon, ArrowUpIcon, PlusIcon, Building2Icon, UploadIcon,
   Grid3X3Icon, ListIcon, Loader2Icon, UserPlusIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 interface FileToolbarProps {
   search: string;

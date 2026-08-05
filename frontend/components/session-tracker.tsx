@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Clock, Play, Coffee } from "lucide-react";
+import { Clock, Play, Coffee } from "@/lib/icons";
 
 export function SessionTracker() {
   const {

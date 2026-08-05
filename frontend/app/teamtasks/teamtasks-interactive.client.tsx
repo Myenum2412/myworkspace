@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { UsersIcon, PlusIcon, LayoutGridIcon, CalendarIcon } from "lucide-react";
+import { UsersIcon, PlusIcon, LayoutGridIcon, CalendarIcon } from "@/lib/icons";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 import { TaskDataTable } from "@/components/task-data-table";
 import TaskGanttView from "@/components/task-gantt-view";

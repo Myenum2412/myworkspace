@@ -4,7 +4,7 @@ import { useRecentFiles } from "@/hooks/file-system/use-file-data";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import { getFileIcon } from "@/components/files/utils";
 import { formatSize } from "@/lib/file-system/types";
-import { ClockIcon, DownloadIcon, EyeIcon } from "lucide-react";
+import { ClockIcon, DownloadIcon, EyeIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 
 export function RecentView() {

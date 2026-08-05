@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, Loader2, SearchIcon } from "lucide-react";
+import { PlusIcon, Loader2, SearchIcon, HeartHandshakeIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 import type { Engagement } from "@/app/engagement/columns";
 import { DataTable } from "@/app/engagement/data-table";
 import { columns, makeActionsCell } from "@/app/engagement/columns";
@@ -124,10 +125,11 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold shrink-0">Interaction Followups</h1>
-          <div className="flex-1 flex justify-center">
-            <div className="relative w-full max-w-sm">
+        <PageHeader
+          icon={<HeartHandshakeIcon className="size-6" />}
+          title="Interaction Followups"
+          search={
+            <div className="relative w-full">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 placeholder="Search interactions..."
@@ -136,12 +138,14 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
                 className="pl-9 h-9 bg-white"
               />
             </div>
-          </div>
-          <Button onClick={() => setShowForm(true)} className="shrink-0">
-            <PlusIcon className="mr-2 size-4" />
-            Add Interaction Followup
-          </Button>
-        </div>
+          }
+          actions={
+            <Button onClick={() => setShowForm(true)} className="shrink-0">
+              <PlusIcon className="mr-2 size-4" />
+              Add Interaction Followup
+            </Button>
+          }
+        />
 
         {/* Stats Overview */}
         <Stats07

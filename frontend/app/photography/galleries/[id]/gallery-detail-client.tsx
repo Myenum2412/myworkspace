@@ -16,7 +16,7 @@ import {
   ImageIcon,
   Loader2Icon,
   CheckCircle2Icon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 interface Gallery {
   id: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeftIcon } from "lucide-react";
+import { ChevronLeftIcon } from "@/lib/icons";
 import type { Employee } from "@/app/employees/columns";
 import { EmployeeEditForm } from "@/app/employees/employee-edit-form";
 

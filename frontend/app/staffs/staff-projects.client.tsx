@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FolderKanbanIcon, PlusIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { FolderKanbanIcon, PlusIcon, ChevronLeft, ChevronRight } from "@/lib/icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

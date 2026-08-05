@@ -3,7 +3,7 @@ import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronLeft, ChevronRight, EyeIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, EyeIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -78,7 +78,7 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
           <CardTitle>Today</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
             <table className="table-premium w-full text-sm text-left">
               <thead>
                 <tr>

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { PlusIcon, QrCodeIcon, EyeIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, QrCodeIcon, EyeIcon, Trash2Icon, CameraAltIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 
 interface Gallery {
   _id: string;
@@ -56,16 +57,17 @@ export function PhotographyPageClient({ orgId, galleries: initialGalleries }: { 
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Photography</h1>
-          <p className="text-sm text-muted-foreground">Manage QR-based face gallery access</p>
-        </div>
-        <Button onClick={() => setShowCreate(!showCreate)}>
-          <PlusIcon className="mr-1" />
-          Create Gallery
-        </Button>
-      </div>
+      <PageHeader
+        icon={<CameraAltIcon className="size-6" />}
+        title={<h1>Photography</h1>}
+        subtitle={<p>Manage QR-based face gallery access</p>}
+        actions={
+          <Button onClick={() => setShowCreate(!showCreate)}>
+            <PlusIcon className="mr-1" />
+            Create Gallery
+          </Button>
+        }
+      />
 
       {showCreate && (
         <Card>

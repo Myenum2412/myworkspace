@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon } from "@/lib/icons";
 import { DataTable } from "@/components/data-table";
 import { buildProjectColumns } from "@/app/projects/columns";
 import type { ProjectListProps } from "./project-types";

@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Camera, ChevronDown, ChevronRight, Eye, EyeOff } from "lucide-react"
+import { Camera, ChevronDown, ChevronRight, Eye, EyeOff } from "@/lib/icons"
 import { getDropdownOptions } from "@/lib/dropdown-options"
 import { ROLES, ROLE_LABELS, type Role } from "@/lib/rbac"
 

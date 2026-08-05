@@ -16,7 +16,7 @@ import {
   ClockIcon,
   ArrowLeftIcon,
   RefreshCwIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -355,8 +355,8 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
         </div>
       )}
 
-      <div className="flex-1 grid grid-cols-[32%_68%] [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
-        <ScrollArea className="h-full border-r px-5 py-4">
+      <div className="flex-1 grid grid-cols-2 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+        <ScrollArea className="h-full border-r bg-white px-5 py-4">
           <div className="space-y-6">
             <FormField label="Task Category" required>
               <div className="grid grid-cols-3 gap-1.5">
@@ -624,7 +624,7 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
           </div>
         </ScrollArea>
 
-        <fieldset className="border p-4 space-y-4 flex flex-col h-full">
+        <fieldset className="border p-4 space-y-4 flex flex-col h-full bg-white">
           <legend className="text-sm font-semibold px-2">Description <span className="text-destructive">*</span></legend>
           <div className="flex-1 min-h-0">
             <TiptapEditor

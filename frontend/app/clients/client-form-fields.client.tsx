@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "@/lib/icons";
 import {
   Select,
   SelectContent,

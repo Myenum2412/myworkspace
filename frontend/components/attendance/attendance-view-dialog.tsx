@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Clock, Calendar, LogIn, LogOut } from "lucide-react";
+import { User, Clock, Calendar, LogIn, LogOut } from "@/lib/icons";
 
 type AttendanceRecord = {
   name: string;

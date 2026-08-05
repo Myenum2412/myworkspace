@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
   Link2Icon, CopyIcon, UsersIcon, Loader2Icon, CheckCircle2Icon, XIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 interface FileShareDialogProps {
   open: boolean;

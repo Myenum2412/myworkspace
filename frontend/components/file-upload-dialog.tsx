@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   UploadIcon, XIcon, FileText, Loader2Icon, AlertCircleIcon, CheckCircleIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Progress } from "@/components/ui/progress";
 
 interface UploadFile {

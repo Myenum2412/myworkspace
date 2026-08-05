@@ -12,7 +12,7 @@ import {
   ChevronRightIcon,
   InfoIcon,
   PanelLeftIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { useState, useEffect } from "react";
 import { FileInfoPanel } from "@/components/files/viewers/file-info-panel";
 

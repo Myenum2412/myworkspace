@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { XIcon, PlusIcon, UsersIcon, UserIcon } from "lucide-react";
+import { XIcon, PlusIcon, UsersIcon, UserIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import {

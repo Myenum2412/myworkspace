@@ -22,7 +22,7 @@ import {
   PlusIcon,
   Trash2Icon,
   Loader2Icon,
-} from "lucide-react";
+} from "@/lib/icons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { PageHeader } from "@/components/page-header";
 import Link from "next/link";
 import { ROLES } from "@/lib/rbac";
 
@@ -162,21 +163,15 @@ export default function MembersPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-0 p-4 sm:p-6">
-      <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
-        <div className="flex items-center gap-3 min-w-0 shrink-0">
-          <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
-            <UsersIcon className="size-5 text-primary" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold tracking-tight">Members</h1>
-            <p className="text-sm text-muted-foreground">
-              {filteredMembers.length} {filteredMembers.length === 1 ? "member" : "members"}
-              {hasActiveFilters ? " found" : " total"}
-            </p>
-          </div>
-        </div>
-
-        <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">
+      <PageHeader
+        className="mb-4 sm:mb-6"
+        icon={<UsersIcon className="size-6" />}
+        title={<h1>Members</h1>}
+        subtitle={<p>
+          {filteredMembers.length} {filteredMembers.length === 1 ? "member" : "members"}
+          {hasActiveFilters ? " found" : " total"}
+        </p>}
+        search={
           <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
@@ -194,12 +189,13 @@ export default function MembersPage() {
               </button>
             )}
           </div>
-        </div>
-
-        <Button asChild className="gap-2 shrink-0 touch-target">
-          <Link href="/orgmenu/members/invite"><PlusIcon className="size-4" /> Invite Member</Link>
-        </Button>
-      </div>
+        }
+        actions={
+          <Button asChild className="gap-2 shrink-0 touch-target">
+            <Link href="/orgmenu/members/invite"><PlusIcon className="size-4" /> Invite Member</Link>
+          </Button>
+        }
+      />
 
       <div className="relative w-full mb-4 sm:hidden">
         <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
@@ -221,7 +217,7 @@ export default function MembersPage() {
         </div>
       </div>
 
-      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)] rounded-lg">
+      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)]">
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="table-premium w-full text-sm text-left" style={{ minWidth: 1200 }}>
             <thead className="sticky top-0 z-10">

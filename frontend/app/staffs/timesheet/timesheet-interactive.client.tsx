@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusIcon, Trash2Icon, SaveIcon, ClockIcon, ChevronDownIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon, SaveIcon, ClockIcon, ChevronDownIcon } from "@/lib/icons";
 import { toast } from "sonner";
 
 type Task = {

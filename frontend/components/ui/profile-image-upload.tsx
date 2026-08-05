@@ -1,7 +1,7 @@
 "use client";
 
 import { FileUpload } from "@ark-ui/react/file-upload";
-import { Upload } from "lucide-react";
+import { Upload } from "@/lib/icons";
 
 type Props = {
   onFile: (file: File) => void;

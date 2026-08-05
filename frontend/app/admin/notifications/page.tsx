@@ -26,7 +26,7 @@ import {
   Loader2Icon, SendIcon, MailIcon, CheckCircle2Icon,
   AlertCircleIcon, BarChart3Icon, TrendingUpIcon,
   ActivityIcon, HeartPulseIcon, SearchIcon, FilterIcon, ClockIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 const COLORS = {
   critical: "#ef4444", high: "#f97316", medium: "#3b82f6", low: "#94a3b8",

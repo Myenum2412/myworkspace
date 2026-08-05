@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { forgotPasswordAction } from "@/lib/auth/actions";
-import { ArrowLeftIcon, MailIcon } from "lucide-react";
+import { ArrowLeftIcon, MailIcon } from "@/lib/icons";
 
 export function ForgotPasswordForm({ className, searchParams, ...props }: React.ComponentProps<"div"> & { searchParams: Record<string, string> }) {
   const success = searchParams.success;

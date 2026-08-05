@@ -11,7 +11,7 @@ import {
   DownloadIcon,
   InfoIcon,
   ImageIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { formatSize } from "@/lib/file-system/types";
 

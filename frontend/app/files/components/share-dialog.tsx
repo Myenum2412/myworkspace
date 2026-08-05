@@ -33,7 +33,7 @@ import {
   GlobeIcon,
   LockIcon,
   ClockIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import * as api from "@/lib/file-system/api";
 
 export function ShareDialog() {

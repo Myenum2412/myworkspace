@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import {
   UsersIcon, PlusIcon, SearchIcon, XIcon,
   MoreHorizontalIcon, PencilIcon, Trash2Icon,
-} from "lucide-react";
+} from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -25,7 +25,7 @@ import {
   LockIcon,
   FileTextIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 function Field({ icon: Icon, label, value }: { icon: React.FC<{ className?: string }>; label: string; value?: React.ReactNode }) {
   return (

@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ROLES } from "@/lib/rbac";
-import { PencilIcon, Trash2Icon, AlertCircleIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon, AlertCircleIcon } from "@/lib/icons";
 import { updateRecentUser, deleteRecentUser, deleteOrganization } from "@/actions/admin";
 
 interface SignupRow {

@@ -22,7 +22,7 @@ import {
   XCircleIcon,
   ClockIcon,
   FileIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { DataTable } from "@/components/data-table";
 import { type ColumnDef } from "@tanstack/react-table";
 import type { FileItem } from "@/lib/file-system/types";

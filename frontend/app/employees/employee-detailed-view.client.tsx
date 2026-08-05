@@ -25,7 +25,7 @@ import {
   FileIcon,
   DownloadIcon,
   ExternalLinkIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import type { Employee } from "./columns";
 
 const statusColors: Record<string, string> = {

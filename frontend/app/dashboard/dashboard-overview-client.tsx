@@ -20,11 +20,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
+import { PageHeader } from "@/components/page-header"
 import {
   ListTodo, Clock, CalendarIcon, TrendingUpIcon,
   Users, FolderKanbanIcon, Building2Icon,
-  IndianRupeeIcon, ArrowRightIcon, SearchIcon,
-} from "lucide-react"
+  IndianRupeeIcon, ArrowRightIcon, SearchIcon, LayoutDashboardIcon,
+} from "@/lib/icons"
 import Link from "next/link"
 import DashboardCalendarPopup from "@/components/dashboard-calendar-popup"
 import Stats07 from "@/components/stats-07"
@@ -119,29 +120,34 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-0.5">
-        <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight" data-tour-step-id="step-dashboard">{t("page.dashboard.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Welcome back — here&apos;s what&apos;s happening across your workspace.</p>
-        </div>
-        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-          <div className="relative w-full md:w-64">
+      <PageHeader
+        icon={<LayoutDashboardIcon className="size-6" />}
+        title={
+          <h1 data-tour-step-id="step-dashboard">{t("page.dashboard.title")}</h1>
+        }
+        subtitle={<p>Welcome back — here&apos;s what&apos;s happening across your workspace.</p>}
+        search={
+          <div className="relative">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder={t("page.dashboard.searchPlaceholder")}
-              className="pl-9 h-9 bg-card rounded-lg"
+              className="pl-9 h-9 bg-card rounded-lg w-full"
               data-tour-step-id="step-search"
             />
           </div>
-          <div className="inline-flex" data-tour-step-id="step-calendar"><DashboardCalendarPopup /></div>
-          <Button asChild size="sm" className="h-9 rounded-lg" data-tour-step-id="step-new-task">
-            <Link href="/createtask">
-              <ListTodo className="mr-1.5" />
-              {t("page.dashboard.newTask")}
-            </Link>
-          </Button>
-        </div>
-      </div>
+        }
+        actions={
+          <>
+            <div className="inline-flex" data-tour-step-id="step-calendar"><DashboardCalendarPopup /></div>
+            <Button asChild size="sm" className="h-9 rounded-lg" data-tour-step-id="step-new-task">
+              <Link href="/createtask">
+                <ListTodo className="mr-1.5" />
+                {t("page.dashboard.newTask")}
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       <div data-tour-step-id="step-stats">
         <Stats07

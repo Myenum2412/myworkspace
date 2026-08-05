@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShieldAlertIcon, HomeIcon } from "lucide-react";
+import { ShieldAlertIcon, HomeIcon } from "@/lib/icons";
 import Link from "next/link";
 
 export default function OrgLayout({ children }: { children: React.ReactNode }) {

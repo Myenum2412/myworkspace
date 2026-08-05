@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { CopyIcon, UploadIcon, FileTextIcon, XIcon, MailIcon, RefreshCwIcon, CheckCircleIcon, AlertCircleIcon } from "lucide-react"
+import { CopyIcon, UploadIcon, FileTextIcon, XIcon, MailIcon, RefreshCwIcon, CheckCircleIcon, AlertCircleIcon } from "@/lib/icons"
 
 import { getDropdownOptions } from "@/lib/dropdown-options"
 

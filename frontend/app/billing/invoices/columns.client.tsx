@@ -8,7 +8,7 @@ import {
   RiDeleteBinLine,
   RiExternalLinkLine,
   RiMoreLine,
-} from "@remixicon/react"
+} from "@/lib/icons"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"

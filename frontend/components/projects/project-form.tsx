@@ -29,7 +29,7 @@ import {
   UploadIcon,
   ArrowLeftIcon,
   SearchIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import type { ProjectCreateFormProps, ProjectEditFormProps } from "./project-types";
 

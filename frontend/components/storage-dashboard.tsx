@@ -7,7 +7,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import {
   HardDrive, FileText, Image, Video, Music, Archive, Files,
   AlertTriangle,
-} from "lucide-react";
+} from "@/lib/icons";
 
 const USER_STORAGE_LIMIT = 1024 * 1024 * 1024;
 

@@ -4,7 +4,7 @@ import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/
 import {
   PencilIcon, InfoIcon, Trash2Icon, FileTextIcon, DownloadIcon,
   CopyIcon, Share2Icon, LockIcon, UnlockIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 interface BaseProps {
   onRename?: () => void;

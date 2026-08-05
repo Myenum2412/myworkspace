@@ -19,8 +19,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import { CalendarIcon, Search } from "lucide-react";
+import { MenuOpenIcon } from "@/lib/icons";
+import { CalendarIcon, Search } from "@/lib/icons";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useUserStatus } from "@/hooks/use-user-status";

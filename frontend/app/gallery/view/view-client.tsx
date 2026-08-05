@@ -12,7 +12,7 @@ import {
   ChevronRightIcon,
   ClockIcon,
   UserIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 interface GalleryImage {
   id: string;

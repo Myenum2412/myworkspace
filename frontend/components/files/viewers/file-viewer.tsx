@@ -10,7 +10,7 @@ import { CodeViewer } from "./code-viewer";
 import { ArchiveViewer } from "./archive-viewer";
 import { ModelViewer } from "./model-viewer";
 import { FileInfoPanel } from "./file-info-panel";
-import { DownloadIcon, FileIcon } from "lucide-react";
+import { DownloadIcon, FileIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatSize } from "@/lib/file-system/types";

@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, Loader2, ChevronLeftIcon, SaveIcon, SearchIcon } from "lucide-react";
+import { PlusIcon, Loader2, ChevronLeftIcon, SaveIcon, SearchIcon } from "@/lib/icons";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Client } from "@/app/clients/columns";
 import type { Credentials } from "@/components/clients/client-types";

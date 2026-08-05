@@ -9,7 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { FolderIcon, HomeIcon } from "lucide-react";
+import { FolderIcon, HomeIcon } from "@/lib/icons";
 
 export function BreadcrumbNav() {
   const { breadcrumbs, setCurrentFolder, setBreadcrumbs } = useFileSystemStore();

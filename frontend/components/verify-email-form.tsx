@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { verifyEmailAction } from "@/lib/auth/actions";
-import { ArrowLeftIcon, CheckCircleIcon, XCircleIcon } from "lucide-react";
+import { ArrowLeftIcon, CheckCircleIcon, XCircleIcon } from "@/lib/icons";
 
 export function VerifyEmailForm({ className, searchParams, ...props }: React.ComponentProps<"div"> & { searchParams: Record<string, string> }) {
   const token = searchParams.token;

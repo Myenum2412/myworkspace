@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "@/lib/icons";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ROLES, isAdminRole } from "@/lib/rbac";
-import { SearchIcon, CheckCircle2Icon, XCircleIcon, PencilIcon, Trash2Icon, AlertCircleIcon, EyeIcon, Building2, Briefcase, Phone, MapPin, CalendarDays, ShieldCheck, LogIn, Globe, BadgeCheck } from "lucide-react";
+import { SearchIcon, CheckCircle2Icon, XCircleIcon, PencilIcon, Trash2Icon, AlertCircleIcon, EyeIcon, Building2, Briefcase, Phone, MapPin, CalendarDays, ShieldCheck, LogIn, Globe, BadgeCheck } from "@/lib/icons";
 import { updateMember, deleteMember } from "@/actions/admin";
 
 interface MemberData {
@@ -377,7 +377,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
         <div className="flex-1" />
       </div>
 
-      <div className="border border-border bg-card shadow-xs overflow-hidden rounded-xl">
+      <div className="border border-border bg-card shadow-xs overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/40">
           {selected.size > 0 && (
             <span className="text-sm text-muted-foreground">

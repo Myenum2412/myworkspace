@@ -7,7 +7,7 @@ import {
   TableIcon,
   PresentationIcon,
   ExternalLinkIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { getFileExtension } from "@/lib/file-system/types";
 

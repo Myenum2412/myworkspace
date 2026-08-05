@@ -7,7 +7,7 @@ import {
   RiCheckLine,
   RiMailLine,
   RiUserLine,
-} from "@remixicon/react"
+} from "@/lib/icons"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"

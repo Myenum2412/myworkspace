@@ -20,7 +20,7 @@ import {
   CalendarIcon,
   AlertCircleIcon,
   ClockIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { DataTable } from "@/components/data-table";
 
 export interface TaskRow {

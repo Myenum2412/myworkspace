@@ -10,7 +10,7 @@ import {
   RiRefreshLine,
   RiExternalLinkLine,
   RiRobot2Line,
-} from "@remixicon/react"
+} from "@/lib/icons"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Loader2Icon } from "lucide-react"
+import { Loader2Icon } from "@/lib/icons"
 
 type CalendarConnection = {
   id: string

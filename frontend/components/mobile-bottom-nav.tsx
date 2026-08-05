@@ -16,7 +16,7 @@ import {
   ReceiptIcon,
   Settings2Icon,
   type LucideIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { useIndustry } from "@/components/industry-provider";
 

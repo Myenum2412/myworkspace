@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { ClientResetPasswordForm } from "./form";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/lib/icons";
 
 export function ClientResetPasswordClient() {
   const searchParams = useSearchParams();

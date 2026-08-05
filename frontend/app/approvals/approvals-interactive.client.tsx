@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Loader2Icon, CheckCircleIcon, XCircleIcon, ListTodoIcon, AlertCircleIcon, FileIcon } from "lucide-react";
+import { Loader2Icon, CheckCircleIcon, XCircleIcon, ListTodoIcon, AlertCircleIcon, FileIcon, CheckCheckIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 import { DataTable } from "./data-table";
 import { pendingColumns, type ApprovalItem } from "./columns";
 import {
@@ -126,24 +127,15 @@ export default function ApprovalsInteractive({ initialItems }: ApprovalsInteract
   ];
 
   const isFile = selectedItem?.itemType === "file";
-  const hasNotifications = pending.length > 0;
 
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-        <div className="flex items-center gap-2">
-          {hasNotifications ? (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 shrink-0">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 shrink-0">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-            </svg>
-          )}
-          <h1 className="text-xl sm:text-2xl font-bold">Pending Approvals</h1>
-          <Badge variant="secondary" className="ml-auto shrink-0">{pending.length} pending</Badge>
-        </div>
+        <PageHeader
+          icon={<CheckCheckIcon className="size-6" />}
+          title="Pending Approvals"
+          actions={<Badge variant="secondary" className="shrink-0">{pending.length} pending</Badge>}
+        />
 
         {error ? (
           <div className="flex items-center justify-center py-12 text-destructive">{error}</div>

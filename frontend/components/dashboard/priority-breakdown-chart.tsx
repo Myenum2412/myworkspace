@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircleIcon } from "lucide-react";
+import { AlertCircleIcon } from "@/lib/icons";
 
 export type PriorityData = {
   name: string;

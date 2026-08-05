@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/lib/icons";
 import type { Appointment, AppointmentStatus } from "./appointment-types";
 
 interface Props {

@@ -17,7 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { UserX, Undo2, Loader2Icon, EyeIcon } from "lucide-react";
+import { UserX, Undo2, Loader2Icon, EyeIcon } from "@/lib/icons";
 import { TerminatedViewDialog } from "@/components/employees/terminated-view-dialog";
 import type { TerminatedEmployee } from "../employees/columns";
 

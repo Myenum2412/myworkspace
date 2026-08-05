@@ -4,7 +4,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, FilterIcon, CheckIcon, XIcon, SearchIcon } from "lucide-react";
+import { PlusIcon, FilterIcon, CheckIcon, XIcon, SearchIcon, PackageIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -147,10 +148,11 @@ export default function StocksPage() {
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 min-w-0 w-full">
-        <div className="flex items-center shrink-0">
-          <h1 className="text-xl sm:text-2xl font-bold flex-1">Inventory</h1>
-          <div className="relative flex-1 flex justify-center">
-            <div className="relative w-full max-w-sm">
+        <PageHeader
+          icon={<PackageIcon className="size-6" />}
+          title="Inventory"
+          search={
+            <div className="relative w-full">
               <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
               <Input
                 placeholder="Search inventory..."
@@ -159,8 +161,9 @@ export default function StocksPage() {
                 className="pl-8 h-9 w-full text-sm bg-white"
               />
             </div>
-          </div>
-          <div className="flex items-center gap-2 flex-1 justify-end">
+          }
+          actions={
+            <>
             {statuses.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -211,8 +214,9 @@ export default function StocksPage() {
               <PlusIcon className="mr-1.5 size-4" />
               Add Inventory
             </Button>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {/* Stats Overview */}
         <Stats07 items={statsItems} />

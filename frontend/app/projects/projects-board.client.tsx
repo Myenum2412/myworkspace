@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   ClockIcon, AlertCircleIcon, CheckCircle2Icon, CircleIcon,
   PlusIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import type { Project } from "@/components/projects/project-types";
 
 interface BoardProps {

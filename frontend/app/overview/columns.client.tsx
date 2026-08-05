@@ -14,7 +14,7 @@ import {
   PencilIcon,
   Trash2Icon,
   MoreHorizontalIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 export type Task = {
   _id: string;

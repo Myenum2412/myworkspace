@@ -7,7 +7,7 @@ import {
   UsersIcon,
   PencilIcon,
   UserXIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,

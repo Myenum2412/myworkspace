@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle, FileText, Loader2, Upload, X } from 'lucide-react';
+import { CheckCircle, FileText, Loader2, Upload, X } from '@/lib/icons';
 import type React from 'react';
 import { useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { FolderIcon } from 'lucide-react';
+import { FolderIcon } from '@/lib/icons';
 
 interface UploadItem {
   id: string;

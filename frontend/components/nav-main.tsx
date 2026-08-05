@@ -19,7 +19,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
-import { ChevronRightIcon } from "lucide-react"
+import { ChevronRightIcon } from "@/lib/icons"
 import { useRoutePrefetcher } from "@/components/route-prefetcher"
 
 export function NavMain({
@@ -73,7 +73,7 @@ export function NavMain({
   return (
     <SidebarGroup className={className}>
       {label && (
-        <SidebarGroupLabel className="mb-1 px-3 text-[11px] font-medium uppercase tracking-wider text-sidebar-foreground/45">
+        <SidebarGroupLabel className="mb-0.5 px-3 text-[11px] font-semibold uppercase tracking-wider">
           {label}
         </SidebarGroupLabel>
       )}
@@ -89,7 +89,7 @@ export function NavMain({
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-<SidebarMenuButton size="lg" tooltip={item.title} className="h-11 rounded-lg text-[13.5px] font-medium transition-colors duration-150 data-[active=true]:bg-[#e8f1ff] data-[active=true]:text-[#1f6feb] data-[active=true]:hover:bg-[#e8f1ff]" asChild data-active={active}>
+                  <SidebarMenuButton size="lg" tooltip={item.title} className="h-11 rounded-lg text-[13.5px] font-medium" asChild data-active={active}>
                     <Link href={item.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(item.url)} prefetch={true}>
                       {item.icon}
                       <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
@@ -103,7 +103,7 @@ export function NavMain({
                       const subActive = pathname === subItem.url
                       return (
                         <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild className="h-8 rounded-md py-1.5 text-[13px] transition-colors duration-150 data-[active=true]:text-[#1f6feb] data-[active=true]:hover:bg-[#e8f1ff]" data-active={subActive}>
+                          <SidebarMenuSubButton asChild className="h-8 rounded-md py-1.5 text-[13px]" data-active={subActive}>
                             <Link href={subItem.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(subItem.url)} prefetch={true}>
                               <span>{subItem.title}</span>
                             </Link>
@@ -117,7 +117,7 @@ export function NavMain({
             </Collapsible>
           ) : (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton size="lg" tooltip={item.title} className="h-11 rounded-lg text-[13.5px] font-medium transition-colors duration-150 data-[active=true]:bg-[#e8f1ff] data-[active=true]:text-[#1f6feb] data-[active=true]:hover:bg-[#e8f1ff]" asChild data-active={active}>
+              <SidebarMenuButton size="lg" tooltip={item.title} className="h-11 rounded-lg text-[13.5px] font-medium" asChild data-active={active}>
                 <Link href={item.url} onClick={closeMobile} onMouseEnter={() => handleMouseEnter(item.url)} prefetch={true}>
                   {item.icon}
                   <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>

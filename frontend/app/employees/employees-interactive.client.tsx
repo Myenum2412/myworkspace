@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   XIcon,
   ChevronLeftIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import type { Employee } from "./columns";
 import { AddEmployeeForm } from "./add-employee-form";
 import { EmployeeList } from "@/components/employees/employee-list";

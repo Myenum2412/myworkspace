@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import { NotificationsActiveIcon } from "@/lib/icons";
 import {
   RiCheckLine,
   RiErrorWarningLine,
@@ -10,7 +10,7 @@ import {
   RiMegaphoneLine,
   RiShieldCheckLine,
   RiUserAddLine,
-} from "@remixicon/react"
+} from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"

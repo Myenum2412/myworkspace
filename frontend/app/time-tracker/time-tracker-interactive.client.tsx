@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Loader2, Trash2, PlusCircle, EyeIcon } from "lucide-react";
+import { Calendar, Clock, Loader2, Trash2, PlusCircle, EyeIcon } from "@/lib/icons";
 import { TimeEntryViewDialog } from "@/components/time-tracker/time-entry-view-dialog";
 import {
   DropdownMenu,
@@ -452,7 +452,7 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                 </div>
               </div>
             )}
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
               {/* Desktop table */}
               <table className="table-premium hidden sm:table w-full text-sm text-left">
                 <thead>

@@ -6,7 +6,7 @@ import {
   FileText, Info,
   GripVertical, PlusCircle, ChevronDown, Trash2,
   Sparkles, X, LayoutTemplate, Loader2Icon, Upload, PaperclipIcon
-} from "lucide-react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -357,7 +357,7 @@ export default function InvoiceFormPage() {
           </div>
 
           {/* Table Section */}
-          <div className="border border-gray-200 rounded-sm overflow-hidden">
+          <div className="border border-gray-200 overflow-hidden">
             {!isSimplifiedView && (
               <div className="bg-[#f9fafb] px-3 sm:px-4 py-2 border-b border-gray-200">
                 <span className="font-semibold text-white-800 text-sm">Item Table</span>

@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ListTodoIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { ListTodoIcon, ChevronLeft, ChevronRight } from "@/lib/icons";
 import { useIndustry } from "@/components/industry-provider";
 
 export default function StaffUpcomingTasksPage() {
@@ -69,7 +69,7 @@ export default function StaffUpcomingTasksPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
             <table className="table-premium w-full text-sm text-left">
               <thead>
                 <tr>

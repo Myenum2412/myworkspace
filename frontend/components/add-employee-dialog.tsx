@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { XIcon } from "lucide-react";
+import { XIcon } from "@/lib/icons";
 import { addEmployeeAction } from "@/actions/employees";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

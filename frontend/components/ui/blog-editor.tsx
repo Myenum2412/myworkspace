@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { BoldIcon, ItalicIcon, UnderlineIcon, ListIcon, ListOrderedIcon, HighlighterIcon } from "lucide-react";
+import { BoldIcon, ItalicIcon, UnderlineIcon, ListIcon, ListOrderedIcon, HighlighterIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 
 interface BlogEditorProps {

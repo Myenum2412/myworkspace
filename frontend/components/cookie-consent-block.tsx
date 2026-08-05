@@ -28,7 +28,6 @@ export default function CookieConsentBlock() {
   const [visible, setVisible] = React.useState(false)
 
   React.useEffect(() => {
-    if (pathname.startsWith("/addons")) return
     const consent = getStoredConsent()
     if (!consent) {
       setVisible(true)
@@ -40,7 +39,7 @@ export default function CookieConsentBlock() {
     setVisible(false)
   }
 
-  if (!visible || pathname.startsWith("/addons")) return null
+  if (!visible) return null
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background">

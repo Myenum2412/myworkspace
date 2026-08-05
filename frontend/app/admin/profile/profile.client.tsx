@@ -35,7 +35,7 @@ import {
   PhoneIcon,
   AlertCircleIcon,
   CheckCircleIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import nextDynamic from "next/dynamic";
 import { useProfileForm, planLabels, statusColors, roleBadge } from "@/hooks/use-profile-form";
 import type { ProfileData } from "@/hooks/use-profile-form";

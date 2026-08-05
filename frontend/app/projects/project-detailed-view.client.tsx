@@ -10,7 +10,7 @@ import {
   CheckCircle2Icon, ArrowUpIcon, ArrowDownIcon, CircleIcon,
   DownloadIcon, EyeIcon, FileIcon, FileSpreadsheetIcon, FileImageIcon, FileArchiveIcon,
   TimerIcon, ListChecksIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import type { Project } from "@/components/projects/project-types";
 import { DataTable } from "@/components/data-table";
 import { TaskDataTable } from "@/components/task-data-table";

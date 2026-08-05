@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, X, FileText } from "lucide-react";
+import { Upload, X, FileText } from "@/lib/icons";
 import { Card } from "@/components/ui/card";
 
 interface TableUploadProps {

@@ -2,7 +2,7 @@ import {
   RiArrowRightLine,
   RiArrowRightUpLine,
   RiSparkling2Line,
-} from "@remixicon/react"
+} from "@/lib/icons"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"

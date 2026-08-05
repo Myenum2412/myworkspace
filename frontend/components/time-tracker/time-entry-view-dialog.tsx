@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar, FileText, Tag, User, CheckCircle2, XCircle } from "lucide-react";
+import { Clock, Calendar, FileText, Tag, User, CheckCircle2, XCircle } from "@/lib/icons";
 
 interface TimeEntry {
   id: string;

@@ -1,4 +1,4 @@
-import { Shield, Zap, RefreshCw, Headphones } from 'lucide-react'
+import { Shield, Zap, RefreshCw, Headphones } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
 interface FeatureItem {

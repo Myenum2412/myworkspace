@@ -10,8 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import FolderIcon from "@mui/icons-material/Folder";
-import { PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon, ClockIcon } from "lucide-react";
+import { FolderIcon } from "@/lib/icons";
+import { PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon, ClockIcon } from "@/lib/icons";
 import type { Project } from "@/components/projects/project-types";
 import type { TermKey } from "@/lib/industry-terms";
 

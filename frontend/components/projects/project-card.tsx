@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Trash2Icon, Loader2Icon } from "lucide-react";
+import { Trash2Icon, Loader2Icon } from "@/lib/icons";
 import type { ProjectDeleteDialogProps } from "./project-types";
 
 export default function ProjectDeleteDialog({

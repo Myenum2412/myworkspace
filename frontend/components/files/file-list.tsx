@@ -8,11 +8,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import MuiFolderIcon from "@mui/icons-material/Folder";
+import { MuiFolderIcon } from "@/lib/icons";
 import {
   Loader2Icon, LockIcon, MoreHorizontalIcon,
   Trash2Icon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { FileItem, FolderItem, ViewMode, formatSize } from "./types";
 import { getFileIcon } from "./utils";
 import { FileContextMenu } from "./file-context-menu";
@@ -198,7 +198,7 @@ export function FileList({
           ))}
         </div>
       ) : (
-        <div className="border border-gray-200 bg-white shadow-sm overflow-x-auto rounded-sm">
+        <div className="border border-gray-200 bg-white shadow-sm overflow-x-auto">
           <table className="table-premium w-full text-sm text-left">
             <thead>
               <tr className="border-b text-left text-sm font-semibold">

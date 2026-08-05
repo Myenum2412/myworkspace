@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { X, Cookie, Shield } from "lucide-react";
+import { X, Cookie, Shield } from "@/lib/icons";
 import { useConsentStore } from "@/lib/consent/store";
 import { applyConsent } from "@/lib/analytics/script-loader";
 import { tracker } from "@/lib/analytics/tracker";

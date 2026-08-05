@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CameraIcon, XIcon, Loader2Icon } from "lucide-react";
+import { CameraIcon, XIcon, Loader2Icon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 
 export interface Row {

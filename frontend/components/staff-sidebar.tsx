@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ROLES } from "@/lib/rbac";
 import { useIndustry } from "@/components/industry-provider";
-import FolderIcon from "@mui/icons-material/Folder";
+import { FolderIcon } from "@/lib/icons";
 import {
   LayoutDashboardIcon,
   ListTodoIcon,
@@ -22,19 +22,19 @@ import {
   RotateCcwIcon,
   FolderKanbanIcon,
   SendIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 function buildStaffNavData(t: (key: any) => string) {
   return [
-    { title: t("nav.dashboard"), url: "/staffs", icon: <LayoutDashboardIcon className="size-5" />, isActive: true },
-    { title: t("nav.staffTasks"), url: "/staffs/tasks", icon: <ListTodoIcon className="size-5" /> },
-    { title: t("nav.projects"), url: "/staffs/projects", icon: <FolderKanbanIcon className="size-5" /> },
-    { title: t("nav.staffTimesheet"), url: "/staffs/timesheet", icon: <ClockIcon className="size-5" /> },
-    { title: t("nav.staffUpcomingTasks"), url: "/staffs/upcoming-tasks", icon: <CalendarClockIcon className="size-5" /> },
-    { title: t("nav.fileManager"), url: "/staffs/files", icon: <FolderIcon className="size-5" /> },
-    { title: t("nav.staffActivity"), url: "/staffs/activity", icon: <ActivityIcon className="size-5" /> },
-    { title: t("nav.reworks"), url: "/staffs/reworks", icon: <RotateCcwIcon className="size-5" /> },
-    { title: "Submissions", url: "/staffs/submissions", icon: <SendIcon className="size-5" /> },
+    { title: t("nav.dashboard"), url: "/staffs", icon: <LayoutDashboardIcon className="size-6" />, isActive: true },
+    { title: t("nav.staffTasks"), url: "/staffs/tasks", icon: <ListTodoIcon className="size-6" /> },
+    { title: t("nav.projects"), url: "/staffs/projects", icon: <FolderKanbanIcon className="size-6" /> },
+    { title: t("nav.staffTimesheet"), url: "/staffs/timesheet", icon: <ClockIcon className="size-6" /> },
+    { title: t("nav.staffUpcomingTasks"), url: "/staffs/upcoming-tasks", icon: <CalendarClockIcon className="size-6" /> },
+    { title: t("nav.fileManager"), url: "/staffs/files", icon: <FolderIcon className="size-6" /> },
+    { title: t("nav.staffActivity"), url: "/staffs/activity", icon: <ActivityIcon className="size-6" /> },
+    { title: t("nav.reworks"), url: "/staffs/reworks", icon: <RotateCcwIcon className="size-6" /> },
+    { title: "Submissions", url: "/staffs/submissions", icon: <SendIcon className="size-6" /> },
   ];
 }
 

@@ -21,7 +21,7 @@ import {
   XIcon,
   ChevronLeft,
   ChevronRight,
-} from "lucide-react";
+} from "@/lib/icons";
 import type { Employee } from "@/app/employees/columns";
 import type { SortField, SortDir } from "./employee-types";
 import { EmployeeTableRow } from "./employee-table-row";
@@ -163,7 +163,7 @@ export function EmployeeList({
         </div>
 
         {/* Table View */}
-        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)] rounded-lg">
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)]">
           <div className="overflow-x-auto overflow-y-auto flex-1">
             <table className="table-premium w-full text-sm text-left" style={{ minWidth: 1300 }}>
               <thead className="sticky top-0 z-10">

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   PlusIcon, ListTodoIcon, SearchIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TaskDetailedView } from "@/components/task-detailed-view";

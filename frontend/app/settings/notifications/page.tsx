@@ -16,8 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
-import { Loader2Icon, SaveIcon, GlobeIcon } from "lucide-react";
+import { NotificationsActiveIcon } from "@/lib/icons";
+import { Loader2Icon, SaveIcon, GlobeIcon } from "@/lib/icons";
 
 interface ChannelSettings {
   inApp: boolean;

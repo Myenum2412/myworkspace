@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
-import { UsersIcon, FolderIcon, FileIcon, Loader2Icon, SearchIcon, FolderOpenIcon, UserIcon, DownloadIcon } from "lucide-react";
+import { UsersIcon, FolderIcon, FileIcon, Loader2Icon, SearchIcon, FolderOpenIcon, UserIcon, DownloadIcon } from "@/lib/icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { formatSize } from "@/lib/file-system/types";

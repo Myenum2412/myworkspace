@@ -5,7 +5,7 @@ import Link from "next/link";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ListTodoIcon } from "lucide-react";
+import { ChevronRight, ListTodoIcon } from "@/lib/icons";
 import { DataTable } from "@/components/data-table";
 
 const statusStyles: Record<string, string> = {

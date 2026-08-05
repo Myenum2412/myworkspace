@@ -1,5 +1,5 @@
 'use client';
-import { AlertTriangleIcon, Trash2Icon } from 'lucide-react';
+import { AlertTriangleIcon, Trash2Icon } from '@/lib/icons';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {

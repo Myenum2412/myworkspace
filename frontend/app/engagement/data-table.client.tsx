@@ -1,5 +1,5 @@
 "use client"
-import { MessageSquareIcon } from "lucide-react";
+import { MessageSquareIcon } from "@/lib/icons";
 import { DataTable as SharedDataTable } from "@/components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 

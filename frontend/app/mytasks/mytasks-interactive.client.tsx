@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusIcon, SearchIcon, LayoutGridIcon, CalendarIcon } from "lucide-react";
+import { PlusIcon, SearchIcon, LayoutGridIcon, CalendarIcon } from "@/lib/icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TaskDetailedView } from "@/components/task-detailed-view";

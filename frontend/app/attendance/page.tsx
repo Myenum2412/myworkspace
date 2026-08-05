@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AttendanceTable } from "@/components/attendance/attendance-table";
-import { CalendarCheckIcon } from "lucide-react";
+import { CalendarCheckIcon } from "@/lib/icons";
 
 export default function StaffAttendancePage() {
   const { data: session, status } = useSession();

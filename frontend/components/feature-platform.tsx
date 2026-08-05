@@ -1,4 +1,4 @@
-import { CheckCircle, Users, FolderOpen, Clock, BarChart3, Shield, Layers } from "lucide-react";
+import { CheckCircle, Users, FolderOpen, Clock, BarChart3, Shield, Layers } from "@/lib/icons";
 
 export function FeaturePlatform() {
   return (

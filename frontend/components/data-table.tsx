@@ -27,7 +27,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
-} from "lucide-react";
+} from "@/lib/icons";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -184,7 +184,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-2 sm:space-y-3 w-full">
-      <div className="border rounded-xl bg-card shadow-xs overflow-hidden w-full">
+      <div className="border bg-card shadow-xs overflow-hidden w-full">
         {!hideSearchBar && (
           <div className="bg-muted/40 px-3 sm:px-4 py-2.5 sm:py-3 border-b">
             <div className="flex items-center gap-4">

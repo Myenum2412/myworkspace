@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2Icon, ChevronLeftIcon, SearchIcon, XIcon } from "lucide-react";
+import { Trash2Icon, ChevronLeftIcon, SearchIcon, XIcon } from "@/lib/icons";
 import type { Project } from "@/components/projects/project-types";
 import { PROJECT_COLORS } from "@/components/projects/project-types";
 import { ProjectDetailedView } from "./project-detailed-view";

@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, ListTodoIcon, SearchIcon, AlertCircleIcon, CrownIcon, UserIcon } from "lucide-react";
+import { PlusIcon, SearchIcon, AlertCircleIcon, CrownIcon, UserIcon, ListChecksIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -145,12 +146,10 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <ListTodoIcon className="size-5 sm:size-6" />
-            <h1 className="text-xl sm:text-2xl font-bold">Task Overview</h1>
-          </div>
-          <div className="flex-1 flex justify-center max-w-md mx-4">
+        <PageHeader
+          icon={<ListChecksIcon className="size-6" />}
+          title="Task Overview"
+          search={
             <div className="relative w-full">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
@@ -160,12 +159,14 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
                 className="pl-9 h-9 bg-white"
               />
             </div>
-          </div>
-          <Button onClick={() => router.push('/createtask')} className="touch-target">
-            <PlusIcon className="mr-2 size-4" />
-            New Task
-          </Button>
-        </div>
+          }
+          actions={
+            <Button onClick={() => router.push('/createtask')} className="touch-target">
+              <PlusIcon className="mr-2 size-4" />
+              New Task
+            </Button>
+          }
+        />
 
         <Stats07
           items={[

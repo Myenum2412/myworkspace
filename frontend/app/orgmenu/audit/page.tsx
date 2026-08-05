@@ -22,13 +22,14 @@ import {
   Trash2Icon,
   Loader2Icon,
   MoreHorizontalIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PageHeader } from "@/components/page-header";
 
 interface AuditLog {
   id: string;
@@ -129,21 +130,15 @@ export default function AuditPage() {
   return (
     <main className="flex flex-1 flex-col gap-0 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
-        <div className="flex items-center gap-3 min-w-0 shrink-0">
-          <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
-            <ClipboardListIcon className="size-5 text-primary" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold tracking-tight">Audit Logs</h1>
-            <p className="text-sm text-muted-foreground">
-              {filteredLogs.length} {filteredLogs.length === 1 ? "log" : "logs"}
-              {hasActiveFilters ? " found" : " total"}
-            </p>
-          </div>
-        </div>
-
-        <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">
+      <PageHeader
+        className="mb-4 sm:mb-6"
+        icon={<ClipboardListIcon className="size-6" />}
+        title={<h1>Audit Logs</h1>}
+        subtitle={<p>
+          {filteredLogs.length} {filteredLogs.length === 1 ? "log" : "logs"}
+          {hasActiveFilters ? " found" : " total"}
+        </p>}
+        search={
           <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
@@ -161,15 +156,16 @@ export default function AuditPage() {
               </button>
             )}
           </div>
-        </div>
-
-        {selectedIds.size > 0 && (
-          <Button variant="destructive" size="sm" onClick={() => handleDelete()} disabled={deleting}>
-            {deleting ? <Loader2Icon className="size-4 animate-spin" /> : <Trash2Icon className="size-4" />}
-            <span className="ml-1.5">Delete ({selectedIds.size})</span>
-          </Button>
-        )}
-      </div>
+        }
+        actions={
+          selectedIds.size > 0 ? (
+            <Button variant="destructive" size="sm" onClick={() => handleDelete()} disabled={deleting}>
+              {deleting ? <Loader2Icon className="size-4 animate-spin" /> : <Trash2Icon className="size-4" />}
+              <span className="ml-1.5">Delete ({selectedIds.size})</span>
+            </Button>
+          ) : null
+        }
+      />
 
       {/* Search (mobile) */}
       <div className="relative w-full mb-4 sm:hidden">
@@ -193,7 +189,7 @@ export default function AuditPage() {
       </div>
 
       {/* Table */}
-      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)] rounded-lg">
+      <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)]">
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="table-premium w-full text-sm text-left" style={{ minWidth: 700 }}>
             <thead className="sticky top-0 z-10">

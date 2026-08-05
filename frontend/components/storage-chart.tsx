@@ -18,7 +18,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
-import { HardDrive, Database, Check } from "lucide-react";
+import { HardDrive, Database, Check } from "@/lib/icons";
 
 const PLAN_TIERS = [
   { name: "Free", plan: "free", inr: "₹0", usd: "$0", storage: "10 GB", storageGB: 10 },

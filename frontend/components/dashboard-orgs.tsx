@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Building2Icon } from "lucide-react";
+import { Building2Icon } from "@/lib/icons";
 import { DeleteOrgDashboardButton } from "@/components/dashboard-actions";
 
 export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }) {
@@ -45,7 +45,7 @@ export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="border border-border bg-card shadow-xs overflow-hidden rounded-xl">
+        <div className="border border-border bg-card shadow-xs overflow-hidden">
           <table className="table-premium w-full text-sm text-left">
             <thead className="sticky top-0 z-10">
               <tr>

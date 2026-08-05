@@ -8,7 +8,7 @@ import {
   WrapTextIcon,
   SearchIcon,
   XIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getFileExtension } from "@/lib/file-system/types";

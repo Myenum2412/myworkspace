@@ -27,7 +27,7 @@ import {
   CopyIcon,
   FolderIcon,
   ChevronRightIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 export function CreateFolderDialog() {
   const { isCreatingFolder, setIsCreatingFolder, currentFolderId, orgId } = useFileSystemStore();

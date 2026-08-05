@@ -1,5 +1,5 @@
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
-import { LayoutDashboard, Users, Clock, BarChart3, Shield } from "lucide-react";
+import { NotificationsActiveIcon } from "@/lib/icons";
+import { LayoutDashboard, Users, Clock, BarChart3, Shield } from "@/lib/icons";
 
 const features = [
   {

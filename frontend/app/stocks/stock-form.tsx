@@ -10,7 +10,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X } from "@/lib/icons";
 
 const CATEGORIES = ["Saree", "Cotton Saree", "Silk Saree", "Ready Made", "Accessories", "Other"];
 const UNITS = ["Pcs", "Kg", "Gram", "Liter", "Meter", "Box", "Pack", "Dozen", "Set"];

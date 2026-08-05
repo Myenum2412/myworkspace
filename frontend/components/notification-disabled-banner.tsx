@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BellOffIcon, XIcon } from "lucide-react";
+import { BellOffIcon, XIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 
 export function NotificationDisabledBanner() {

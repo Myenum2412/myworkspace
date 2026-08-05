@@ -26,8 +26,8 @@ import {
   ActivityIcon, AlertCircleIcon, ClockIcon, Loader2Icon,
   CircleIcon, CircleDashedIcon, FileTextIcon, UserCheckIcon,
   SaveIcon, UsersIcon, DownloadIcon,
-} from "lucide-react";
-import FolderIcon from "@mui/icons-material/Folder";
+} from "@/lib/icons";
+import { FolderIcon } from "@/lib/icons";
 import { TaskChat } from "@/components/task-chat";
 import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import { toast } from "sonner";

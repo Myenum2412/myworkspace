@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircleIcon, Search, X, Trash2, Pencil, Loader2 } from "lucide-react";
+import { PlusCircleIcon, Search, X, Trash2, Pencil, Loader2 } from "@/lib/icons";
 import Link from "next/link";
 
 interface Service {
@@ -144,7 +144,7 @@ export default function BillingServicesPage() {
         </div>
       </div>
 
-      <div className="border border-gray-200 bg-white overflow-hidden flex flex-col rounded-sm">
+      <div className="border border-gray-200 bg-white overflow-hidden flex flex-col">
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="table-premium w-full text-sm text-left" style={{ minWidth: 800 }}>
             <thead className="sticky top-0 z-10">

@@ -11,7 +11,7 @@ import {
   Trash2Icon, RotateCcwIcon, CopyIcon, Share2Icon, FileTextIcon,
   AlertCircleIcon, Loader2Icon, ImageIcon, FilmIcon, MusicIcon,
   FileArchiveIcon, FileSpreadsheetIcon, FileTypeIcon, FolderIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 type FileItem = {
   id: string;

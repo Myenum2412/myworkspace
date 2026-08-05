@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
-import { Clock, Loader2, Calendar, EyeIcon } from "lucide-react";
+import { Clock, Loader2, Calendar, EyeIcon } from "@/lib/icons";
 import { TeamMemberViewDialog } from "@/components/time-tracker/team-member-view-dialog";
 import Stats07, { type Stats07Item } from "@/components/stats-07";
 
@@ -147,7 +147,7 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
               <p className="text-sm">Select a different date to view team activity</p>
             </div>
           ) : (
-            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+            <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
               <table className="table-premium w-full text-sm text-left">
                 <thead>
                   <tr>

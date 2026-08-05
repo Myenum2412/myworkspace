@@ -1,7 +1,7 @@
 "use client";
 
-import FolderIcon from "@mui/icons-material/Folder";
-import { ChevronRightIcon } from "lucide-react";
+import { FolderIcon } from "@/lib/icons";
+import { ChevronRightIcon } from "@/lib/icons";
 
 interface FileBreadcrumbProps {
   breadcrumbs: { id: string | null; name: string }[];

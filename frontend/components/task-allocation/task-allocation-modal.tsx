@@ -14,7 +14,7 @@ import {
   UsersIcon,
   ClockIcon,
   RefreshCwIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";

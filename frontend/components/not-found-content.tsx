@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Home } from "lucide-react";
+import { ArrowLeft, Home } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 
 export function NotFoundContent() {

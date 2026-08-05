@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Trophy } from "lucide-react"
+import { Trophy } from "@/lib/icons"
 
 import { cn } from "@/lib/utils"
 

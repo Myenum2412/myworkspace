@@ -1,5 +1,5 @@
 
-import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
+import { AlertTriangle, Loader2, RefreshCw } from "@/lib/icons";
 
 interface FailedLogin {
   _id: string;

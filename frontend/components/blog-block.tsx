@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { RiArrowRightLine, RiTimeLine } from "@remixicon/react"
+import { RiArrowRightLine, RiTimeLine } from "@/lib/icons"
 import Link from "next/link"
 
 const posts = [
@@ -89,8 +89,7 @@ export default function BlogBlock() {
             <Link href="/blog">
               All Articles
               <RiArrowRightLine
-                className="transition-transform duration-200 group-hover:translate-x-0.5"
-                size={15}
+                className="transition-transform duration-200 group-hover:translate-x-0.5 size-[15px]"
               />
             </Link>
           </Button>
@@ -121,7 +120,7 @@ export default function BlogBlock() {
                     {post.category}
                   </Badge>
                   <span className="flex shrink-0 items-center gap-1 text-xs leading-none text-muted-foreground">
-                    <RiTimeLine size={11} className="shrink-0" />
+                    <RiTimeLine className="size-[11px] shrink-0" />
                     {post.readTime}
                   </span>
                 </div>
@@ -156,8 +155,7 @@ export default function BlogBlock() {
                     </span>
                   </div>
                   <RiArrowRightLine
-                    size={14}
-                    className="shrink-0 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                    className="size-[14px] shrink-0 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                     aria-hidden="true"
                   />
                 </div>

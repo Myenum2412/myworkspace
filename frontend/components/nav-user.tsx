@@ -28,9 +28,9 @@ import {
   BadgeCheckIcon,
   CreditCardIcon,
   LogOutIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { logoutAction } from "@/lib/auth/actions";
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import { NotificationsActiveIcon } from "@/lib/icons";
 import { useRouter } from "next/navigation";
 import { getAppContext } from "@/lib/app-context";
 import { ROLES } from "@/lib/rbac";

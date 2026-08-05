@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef, type CSSProperties } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { toast } from "sonner"
 import {
   RiMailLine,
@@ -11,13 +11,17 @@ import {
   RiLayout2Line,
   RiLink,
   RiShieldCheckLine,
-} from "@remixicon/react"
+  Settings2Icon,
+} from "@/lib/icons"
+
+import { PageHeader } from "@/components/page-header"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Field,
+  FieldContent,
   FieldDescription,
   FieldLabel,
 } from "@/components/ui/field"
@@ -51,7 +55,7 @@ import {
   PlusIcon,
   Trash2Icon,
   MinusIcon,
-} from "lucide-react"
+} from "@/lib/icons"
 
 const SECTION_LIMITS_KEY = "myworkspace_section_limits"
 
@@ -274,20 +278,16 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
   }
 
   return (
-    <div
-      className="min-h-svh w-full text-foreground"
-      style={{ "--primary": "#1f6feb" } as CSSProperties}
-    >
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6 sm:p-8">
-        <header className="flex flex-col gap-1">
-          <h1 className="text-3xl font-semibold tracking-tight" data-tour-step-id="step-settings">Settings</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your account, billing, and team settings.
-          </p>
-        </header>
+    <div className="min-h-svh w-full bg-white text-foreground p-6">
+      <div className="flex w-full flex-col gap-8">
+        <PageHeader
+          icon={<Settings2Icon className="size-6" />}
+          title={<h1 data-tour-step-id="step-settings">Settings</h1>}
+          subtitle={<p>Manage your account, billing, and team settings.</p>}
+        />
 
         <Tabs defaultValue="account" className="gap-6">
-          <TabsList className="h-11 w-full justify-start gap-1 overflow-x-auto rounded-xl border bg-muted/30 p-1 sm:w-auto">
+          <TabsList className="w-full sm:w-auto">
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="team">Team</TabsTrigger>
@@ -298,89 +298,84 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
 
           <TabsContent value="account">
             <div className="flex flex-col gap-6">
-              <section className="rounded-2xl border border-border bg-white p-6 shadow-sm">
-                <h2 className="text-base font-semibold">Profile</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Update your personal details and preferences.</p>
+              <div>
+                <h2 className="text-lg font-semibold">Profile</h2>
+                <p className="text-sm text-muted-foreground">Update your personal details and preferences.</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <Avatar className="size-16">
+                  <AvatarImage src={initialUser.avatar} alt={fullName} className="grayscale" />
+                  <AvatarFallback>{fullName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)}</AvatarFallback>
+                </Avatar>
+                <Button variant="outline" size="sm">Change Avatar</Button>
+              </div>
 
-                <div className="mt-5 flex items-center gap-4">
-                  <Avatar className="size-14">
-                    <AvatarImage src={initialUser.avatar} alt={fullName} className="grayscale" />
-                    <AvatarFallback>{fullName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)}</AvatarFallback>
-                  </Avatar>
-                  <Button variant="outline" size="sm">Change Avatar</Button>
-                </div>
+              <Field>
+                <FieldLabel htmlFor="full-name">Full name</FieldLabel>
+                <Input
+                  id="full-name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Your name"
+                />
+              </Field>
 
-                <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                  <Field>
-                    <FieldLabel htmlFor="full-name">Full name</FieldLabel>
-                    <Input
-                      id="full-name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Your name"
-                      className="h-9 rounded-lg"
-                    />
-                  </Field>
+              <Field>
+                <FieldLabel htmlFor="email">Email address</FieldLabel>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                />
+                <FieldDescription>
+                  Used for sign-in and account notices.
+                </FieldDescription>
+              </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="email">Email address</FieldLabel>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      className="h-9 rounded-lg"
-                    />
-                    <FieldDescription>
-                      Used for sign-in and account notices.
-                    </FieldDescription>
-                  </Field>
-                </div>
-              </section>
+              <Separator />
 
-              <section className="rounded-2xl border border-border bg-white p-6 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium">Marketing emails</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Receive product news and occasional offers.
-                    </p>
-                  </div>
-                  <Switch
-                    id="marketing-emails"
-                    checked={marketingEmails}
-                    onCheckedChange={setMarketingEmails}
-                  />
-                </div>
-              </section>
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldLabel htmlFor="marketing-emails">
+                    Marketing emails
+                  </FieldLabel>
+                  <FieldDescription>
+                    Receive product news and occasional offers.
+                  </FieldDescription>
+                </FieldContent>
+                <Switch
+                  id="marketing-emails"
+                  checked={marketingEmails}
+                  onCheckedChange={setMarketingEmails}
+                />
+              </Field>
             </div>
           </TabsContent>
 
           <TabsContent value="general">
-            <div className="flex flex-col gap-6">
+            <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-semibold">General Settings</h2>
                 <p className="text-sm text-muted-foreground">Manage workspace-wide configurations and dropdown options.</p>
               </div>
 
-              <section className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+              <div className="border rounded-sm p-4 space-y-3">
                 <div>
                   <h3 className="text-sm font-medium">Workspace Industry</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">Select the industry for your workspace. This customizes the terminology used across the application.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Select the industry for your workspace. This customizes the terminology used across the application.</p>
                 </div>
-                <div className="mt-4">
-                  <WorkspaceIndustrySelect />
-                </div>
-              </section>
-
-               <div className="grid gap-5 grid-cols-1 sm:grid-cols-2">
+                <WorkspaceIndustrySelect />
+              </div>
+              <Separator />
+               <div className="grid gap-4 grid-cols-2">
                 {Object.entries(sectionLabels).map(([key, label]) => {
                   const items = dropdownOptions[key] || DEFAULT_DROPDOWN_OPTIONS[key as keyof typeof DEFAULT_DROPDOWN_OPTIONS] || []
                   const limit = sectionLimits[key] ?? DEFAULT_SECTION_LIMITS[key] ?? 20
                   const atLimit = items.length >= limit
                   return (
-                    <section key={key} className="rounded-2xl border border-border bg-white p-5 shadow-sm space-y-3">
+                    <div key={key} className="border rounded-sm p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-medium">{label}</h3>
                         <Badge variant={atLimit ? "destructive" : "secondary"}>
@@ -429,7 +424,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                           onChange={(e) => setNewItems({ ...newItems, [key]: e.target.value })}
                           onKeyDown={(e) => { if (e.key === "Enter" && !atLimit) { e.preventDefault(); addDropdownItem(key) } }}
                           disabled={atLimit}
-                          className="h-9 rounded-lg text-xs"
+                          className="h-8 text-xs"
                         />
                         <Button
                           size="sm"
@@ -444,7 +439,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                       {atLimit && (
                         <p className="text-xs text-destructive">Maximum limit reached.</p>
                       )}
-                    </section>
+                    </div>
                   )
                 })}
               </div>
@@ -457,22 +452,21 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 <h2 className="text-lg font-semibold">Team Settings</h2>
                 <p className="text-sm text-muted-foreground">Configure team defaults and permissions.</p>
               </div>
-              <section className="divide-y divide-border rounded-2xl border border-border bg-white shadow-sm">
-                <div className="flex items-center justify-between gap-4 p-5">
-                  <div className="space-y-0.5">
-                    <Label>Allow Self Assignment</Label>
-                    <p className="text-xs text-muted-foreground">Members can assign tasks to themselves</p>
-                  </div>
-                  <Switch checked={formData.team.allowSelfAssign ?? true} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, allowSelfAssign: v } })} />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Allow Self Assignment</Label>
+                  <p className="text-xs text-muted-foreground">Members can assign tasks to themselves</p>
                 </div>
-                <div className="flex items-center justify-between gap-4 p-5">
-                  <div className="space-y-0.5">
-                    <Label>Show Teams as Assignees</Label>
-                    <p className="text-xs text-muted-foreground">When ON, show Teams in New Task form; when OFF, show Staffs</p>
-                  </div>
-                  <Switch checked={formData.team.showTeamAsAssignee ?? false} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, showTeamAsAssignee: v } })} />
+                <Switch checked={formData.team.allowSelfAssign ?? true} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, allowSelfAssign: v } })} />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Show Teams as Assignees</Label>
+                  <p className="text-xs text-muted-foreground">When ON, show Teams in New Task form; when OFF, show Staffs</p>
                 </div>
-              </section>
+                <Switch checked={formData.team.showTeamAsAssignee ?? false} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, showTeamAsAssignee: v } })} />
+              </div>
             </div>
           </TabsContent>
 
@@ -484,11 +478,12 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
               </div>
 
               {/* Task Notifications */}
-              <section className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-                <div className="border-b border-border px-5 py-4">
-                  <h3 className="text-sm font-semibold text-foreground">Tasks</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Tasks</h3>
+                  <Separator className="flex-1" />
                 </div>
-                <div className="divide-y divide-border">
+                <div className="grid gap-3">
                   {[
                     { key: "taskAssigned", label: "Task Assigned", desc: "When a task is assigned to you" },
                     { key: "taskStatusChange", label: "Task Status Changes", desc: "When task status is updated" },
@@ -498,10 +493,10 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                     { key: "taskDeadlines", label: "Task Deadlines", desc: "When a task deadline is approaching" },
                     { key: "taskCompleted", label: "Task Completed", desc: "When a task you're involved in is completed" },
                   ].map(({ key, label, desc }) => (
-                    <div key={key} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                    <div key={key} className="flex items-center justify-between py-2">
                       <div>
-                        <Label className="text-sm cursor-pointer font-medium">{label}</Label>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
                         checked={!!formData.notifications[key as keyof typeof formData.notifications]}
@@ -510,24 +505,25 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                     </div>
                   ))}
                 </div>
-              </section>
+              </div>
 
               {/* Project Notifications */}
-              <section className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-                <div className="border-b border-border px-5 py-4">
-                  <h3 className="text-sm font-semibold text-foreground">Projects</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Projects</h3>
+                  <Separator className="flex-1" />
                 </div>
-                <div className="divide-y divide-border">
+                <div className="grid gap-3">
                   {[
                     { key: "projectUpdates", label: "Project Updates", desc: "When project details are updated" },
                     { key: "projectMentions", label: "Project Mentions", desc: "When you're mentioned in a project" },
                     { key: "projectMilestones", label: "Project Milestones", desc: "When a milestone is reached" },
                     { key: "projectDeadlines", label: "Project Deadlines", desc: "When project deadlines approach" },
                   ].map(({ key, label, desc }) => (
-                    <div key={key} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                    <div key={key} className="flex items-center justify-between py-2">
                       <div>
-                        <Label className="text-sm cursor-pointer font-medium">{label}</Label>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
                         checked={!!formData.notifications[key as keyof typeof formData.notifications]}
@@ -536,23 +532,24 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                     </div>
                   ))}
                 </div>
-              </section>
+              </div>
 
               {/* Team Notifications */}
-              <section className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-                <div className="border-b border-border px-5 py-4">
-                  <h3 className="text-sm font-semibold text-foreground">Team</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Team</h3>
+                  <Separator className="flex-1" />
                 </div>
-                <div className="divide-y divide-border">
+                <div className="grid gap-3">
                   {[
                     { key: "memberJoinLeave", label: "Member Join/Leave", desc: "When team members join or leave" },
                     { key: "teamMentions", label: "Team Mentions", desc: "When you're mentioned in team chat" },
                     { key: "teamUpdates", label: "Team Updates", desc: "When team settings or details change" },
                   ].map(({ key, label, desc }) => (
-                    <div key={key} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                    <div key={key} className="flex items-center justify-between py-2">
                       <div>
-                        <Label className="text-sm cursor-pointer font-medium">{label}</Label>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
                         checked={!!formData.notifications[key as keyof typeof formData.notifications]}
@@ -561,23 +558,24 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                     </div>
                   ))}
                 </div>
-              </section>
+              </div>
 
               {/* Calendar Notifications */}
-              <section className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-                <div className="border-b border-border px-5 py-4">
-                  <h3 className="text-sm font-semibold text-foreground">Calendar</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Calendar</h3>
+                  <Separator className="flex-1" />
                 </div>
-                <div className="divide-y divide-border">
+                <div className="grid gap-3">
                   {[
                     { key: "calendarReminders", label: "Calendar Reminders", desc: "Reminders for upcoming events" },
                     { key: "meetingReminders", label: "Meeting Reminders", desc: "Reminders before meetings start" },
                     { key: "meetingInvitations", label: "Meeting Invitations", desc: "When you're invited to a meeting" },
                   ].map(({ key, label, desc }) => (
-                    <div key={key} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                    <div key={key} className="flex items-center justify-between py-2">
                       <div>
-                        <Label className="text-sm cursor-pointer font-medium">{label}</Label>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
                         checked={!!formData.notifications[key as keyof typeof formData.notifications]}
@@ -586,24 +584,25 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                     </div>
                   ))}
                 </div>
-              </section>
+              </div>
 
               {/* System Notifications */}
-              <section className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-                <div className="border-b border-border px-5 py-4">
-                  <h3 className="text-sm font-semibold text-foreground">System</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">System</h3>
+                  <Separator className="flex-1" />
                 </div>
-                <div className="divide-y divide-border">
+                <div className="grid gap-3">
                   {[
                     { key: "securityAlerts", label: "Security Alerts", desc: "Important security notifications" },
                     { key: "billingUpdates", label: "Billing Updates", desc: "Payment and subscription updates" },
                     { key: "systemUpdates", label: "System Updates", desc: "Platform updates and maintenance" },
                     { key: "featureAnnouncements", label: "Feature Announcements", desc: "New features and improvements" },
                   ].map(({ key, label, desc }) => (
-                    <div key={key} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                    <div key={key} className="flex items-center justify-between py-2">
                       <div>
-                        <Label className="text-sm cursor-pointer font-medium">{label}</Label>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
                         checked={!!formData.notifications[key as keyof typeof formData.notifications]}
@@ -612,23 +611,24 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                     </div>
                   ))}
                 </div>
-              </section>
+              </div>
 
               {/* Email Notifications */}
-              <section className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-                <div className="border-b border-border px-5 py-4">
-                  <h3 className="text-sm font-semibold text-foreground">Email</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Email</h3>
+                  <Separator className="flex-1" />
                 </div>
-                <div className="divide-y divide-border">
+                <div className="grid gap-3">
                   {[
                     { key: "emailDigest", label: "Email Digest", desc: "Receive periodic email summaries" },
                     { key: "weeklyReport", label: "Weekly Report", desc: "Weekly activity summary" },
                     { key: "dailySummary", label: "Daily Summary", desc: "Daily activity summary" },
                   ].map(({ key, label, desc }) => (
-                    <div key={key} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                    <div key={key} className="flex items-center justify-between py-2">
                       <div>
-                        <Label className="text-sm cursor-pointer font-medium">{label}</Label>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
                         checked={!!formData.notifications[key as keyof typeof formData.notifications]}
@@ -637,24 +637,25 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                     </div>
                   ))}
                 </div>
-              </section>
+              </div>
 
               {/* Push Notifications */}
-              <section className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-                <div className="border-b border-border px-5 py-4">
-                  <h3 className="text-sm font-semibold text-foreground">Push Notifications</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Push Notifications</h3>
+                  <Separator className="flex-1" />
                 </div>
-                <div className="divide-y divide-border">
+                <div className="grid gap-3">
                   {[
                     { key: "pushEnabled", label: "Enable Push Notifications", desc: "Receive push notifications on your devices" },
                     { key: "pushTaskUpdates", label: "Task Updates", desc: "Push notifications for task changes" },
                     { key: "pushCalendarEvents", label: "Calendar Events", desc: "Push notifications for calendar events" },
                     { key: "pushTeamMessages", label: "Team Messages", desc: "Push notifications for team messages" },
                   ].map(({ key, label, desc }) => (
-                    <div key={key} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                    <div key={key} className="flex items-center justify-between py-2">
                       <div>
-                        <Label className="text-sm cursor-pointer font-medium">{label}</Label>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
+                        <Label className="text-sm cursor-pointer">{label}</Label>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
                         checked={!!formData.notifications[key as keyof typeof formData.notifications]}
@@ -663,15 +664,17 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                     </div>
                   ))}
                 </div>
-              </section>
+              </div>
 
               {/* Email Automation Link */}
-              <Button variant="outline" asChild className="justify-start gap-2 self-start rounded-lg">
-                <a href="/settings/email-automation">
-                  <RiMailLine className="size-4" />
-                  Configure Daily Task Email Scheduler
-                </a>
-              </Button>
+              <div className="mt-4 pt-4 border-t">
+                <Button variant="outline" asChild>
+                  <a href="/settings/email-automation" className="gap-2">
+                    <RiMailLine className="size-4" />
+                    Configure Daily Task Email Scheduler
+                  </a>
+                </Button>
+              </div>
             </div>
           </TabsContent>
 

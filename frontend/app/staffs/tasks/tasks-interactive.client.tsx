@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ListTodoIcon, SearchIcon, ChevronLeft, ChevronRight,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -298,7 +298,7 @@ function UpcomingTasksTable({ tasks, onView }: { tasks: any[]; onView: (task: an
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm">
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden">
           <table className="table-premium w-full text-sm text-left">
             <thead>
               <tr>

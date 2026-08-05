@@ -27,7 +27,7 @@ import {
   ImageIcon, Link as LinkIcon, AlignLeft, AlignCenter, AlignRight,
   Undo, Redo, Palette, Highlighter,
   Heading1 as H1Icon, Heading2 as H2Icon, Heading3 as H3Icon,
-} from "lucide-react";
+} from "@/lib/icons";
 import HeadingExt from "@tiptap/extension-heading";
 
 const FontSize = TextStyle.extend({
@@ -163,7 +163,7 @@ export function TiptapEditor({ value, onChange, placeholder }: TiptapEditorProps
   if (!editor) return null;
 
   return (
-    <div className="flex flex-col h-full border rounded-sm overflow-hidden bg-background">
+    <div className="flex flex-col h-full border rounded-sm overflow-hidden bg-white">
       <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b bg-muted/30 shrink-0">
         <MenuButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold (Ctrl+B)">
           <Bold className="size-4" />

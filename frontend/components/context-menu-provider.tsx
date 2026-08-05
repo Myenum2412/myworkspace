@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Users, FileText, UserPlus, ListTodo,
-} from "lucide-react";
+} from "@/lib/icons";
 
 const menuItems = [
   { label: "Create Client", icon: Users, href: "/clients" },

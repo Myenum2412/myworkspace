@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { INDUSTRIES } from "@/lib/industries";
-import { ArrowRight, ArrowLeft, Globe } from "lucide-react";
+import { ArrowRight, ArrowLeft, Globe } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 interface CompanyDetailsFormProps {

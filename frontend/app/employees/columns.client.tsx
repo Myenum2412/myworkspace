@@ -2,7 +2,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontalIcon, PencilIcon, Trash2Icon, UserXIcon } from "lucide-react";
+import { MoreHorizontalIcon, PencilIcon, Trash2Icon, UserXIcon } from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,

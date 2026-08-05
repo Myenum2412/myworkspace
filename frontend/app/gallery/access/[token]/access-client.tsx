@@ -14,7 +14,7 @@ import {
   QrCodeIcon,
   CheckCircle2Icon,
   XCircleIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 export function GalleryAccessClient({
   token,

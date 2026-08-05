@@ -2,7 +2,7 @@ import {
   ImageIcon, FileIcon, FileTextIcon, ArchiveIcon, FilmIcon, MusicIcon,
   TableIcon, PresentationIcon, FileCodeIcon, FileJsonIcon, FileSpreadsheetIcon,
   FileTypeIcon, VideoIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 
 const imageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/avif", "image/svg+xml", "image/bmp", "image/tiff", "image/x-icon", "image/heic", "image/heif"];
 const videoTypes = ["video/mp4", "video/quicktime", "video/x-msvideo", "video/x-matroska", "video/x-ms-wmv", "video/x-flv", "video/webm", "video/mpeg", "video/3gpp", "video/ogg", "video/mp2t"];

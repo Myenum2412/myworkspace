@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import FolderIcon from "@mui/icons-material/Folder";
-import { LogOut, Receipt, FileText, Loader2, AlertCircleIcon, ClockIcon } from "lucide-react";
+import { FolderIcon } from "@/lib/icons";
+import { LogOut, Receipt, FileText, Loader2, AlertCircleIcon, ClockIcon } from "@/lib/icons";
 import Link from "next/link";
 import { useIndustry } from "@/components/industry-provider";
 
