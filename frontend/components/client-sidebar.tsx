@@ -20,9 +20,9 @@ import {
 
 function buildClientNavData(t: (key: any) => string) {
   return [
-    { title: t("nav.dashboard"), url: "/client/dashboard", icon: <LayoutDashboardIcon className="size-6" />, isActive: true },
-    { title: t("nav.fileManager"), url: "/client/file-manager", icon: <FolderIcon className="size-6" /> },
-    { title: t("nav.clientBills"), url: "/client/bills", icon: <ReceiptIcon className="size-6" /> },
+    { title: t("nav.dashboard"), url: "/client/dashboard", icon: <LayoutDashboardIcon className="size-5" />, isActive: true },
+    { title: t("nav.fileManager"), url: "/client/file-manager", icon: <FolderIcon className="size-5" /> },
+    { title: t("nav.clientBills"), url: "/client/bills", icon: <ReceiptIcon className="size-5" /> },
   ];
 }
 

@@ -30,38 +30,38 @@ export const defaultOrgNavData = [
   {
     title: "Dashboard",
     url: "/orgmenu",
-    icon: <LayoutDashboardIcon className="size-6" />,
+    icon: <LayoutDashboardIcon className="size-5" />,
     isActive: true,
   },
   {
     title: "Organization",
     url: "/orgmenu/org",
-    icon: <Building2Icon className="size-6" />,
+    icon: <Building2Icon className="size-5" />,
   },
   {
     title: "Members",
     url: "/orgmenu/members",
-    icon: <UsersIcon className="size-6" />,
+    icon: <UsersIcon className="size-5" />,
   },
   {
     title: "Audit Logs",
     url: "/orgmenu/audit",
-    icon: <ClipboardListIcon className="size-6" />,
+    icon: <ClipboardListIcon className="size-5" />,
   },
   {
     title: "Security",
     url: "/orgmenu/security",
-    icon: <ShieldIcon className="size-6" />,
+    icon: <ShieldIcon className="size-5" />,
   },
   {
     title: "Plans",
     url: "/orgmenu/plans",
-    icon: <CreditCardIcon className="size-6" />,
+    icon: <CreditCardIcon className="size-5" />,
   },
   {
     title: "Settings",
     url: "/orgmenu/settings",
-    icon: <Settings2Icon className="size-6" />,
+    icon: <Settings2Icon className="size-5" />,
   },
 ];
 

@@ -52,8 +52,8 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-2xl font-bold tracking-tight text-black">Welcome back</h1>
+        <p className="text-sm text-black">
           {loading ? "Preparing your workspace..." : "Sign in to your account to continue"}
         </p>
       </div>
@@ -122,9 +122,9 @@ export function LoginForm({ className, error, ...props }: React.ComponentProps<"
         <GoogleIcon /><span>Google</span>
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-center text-sm text-black">
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="font-medium text-foreground underline-offset-4 hover:underline">
+        <Link href="/signup" className="font-medium text-black underline-offset-4 hover:underline">
           Create one free
         </Link>
       </p>

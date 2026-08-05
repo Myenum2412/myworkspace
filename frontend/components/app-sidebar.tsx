@@ -71,27 +71,27 @@ export function AppSidebar({
   }, []);
 
   const platformItems: NavItem[] = [
-    { title: t("nav.dashboard"), url: "/dashboard", icon: <LayoutDashboardIcon className="size-6" />, isActive: true },
-    { title: t("nav.overview"), url: "/overview", icon: <ListChecksIcon className="size-6" /> },
-    { title: t("nav.employees"), url: "/employees", icon: <UsersIcon className="size-6" /> },
-    { title: t("nav.projects"), url: "/projects", icon: <WorkflowIcon className="size-6" /> },
-    { title: t("nav.approvals"), url: "/approvals", icon: <CheckCheckIcon className="size-6" /> },
-    { title: t("nav.timeTracker"), url: "/time-tracker", icon: <ClockIcon className="size-6" /> },
-    { title: t("nav.fileManager"), url: "/files", icon: <MuiFolderIcon className="size-6" /> },
-    { title: t("nav.billing"), url: "/billing", icon: <AttachMoneyIcon className="size-6" /> },
-    { title: t("nav.engagement"), url: "/engagement", icon: <HeartHandshakeIcon className="size-6" /> },
-    { title: t("nav.inventory"), url: "/stocks", icon: <PackageIcon className="size-6" /> },
-    { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-6" /> },
-    { title: t("nav.addons"), url: "/addons", icon: <AddonsIcon className="size-6" /> },
-    { title: t("nav.reports"), url: "/dashboard/reports", icon: <BarChart3Icon className="size-6" /> },
+    { title: t("nav.dashboard"), url: "/dashboard", icon: <LayoutDashboardIcon className="size-5" />, isActive: true },
+    { title: t("nav.overview"), url: "/overview", icon: <ListChecksIcon className="size-5" /> },
+    { title: t("nav.employees"), url: "/employees", icon: <UsersIcon className="size-5" /> },
+    { title: t("nav.projects"), url: "/projects", icon: <WorkflowIcon className="size-5" /> },
+    { title: t("nav.approvals"), url: "/approvals", icon: <CheckCheckIcon className="size-5" /> },
+    { title: t("nav.timeTracker"), url: "/time-tracker", icon: <ClockIcon className="size-5" /> },
+    { title: t("nav.fileManager"), url: "/files", icon: <MuiFolderIcon className="size-5" /> },
+    { title: t("nav.billing"), url: "/billing", icon: <AttachMoneyIcon className="size-5" /> },
+    { title: t("nav.engagement"), url: "/engagement", icon: <HeartHandshakeIcon className="size-5" /> },
+    { title: t("nav.inventory"), url: "/stocks", icon: <PackageIcon className="size-5" /> },
+    { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-5" /> },
+    { title: t("nav.addons"), url: "/addons", icon: <AddonsIcon className="size-5" /> },
+    { title: t("nav.reports"), url: "/dashboard/reports", icon: <BarChart3Icon className="size-5" /> },
   ];
 
   const photographyItem: NavItem = {
-    title: t("nav.photography"), url: "/photography", icon: <CameraAltIcon className="size-6" />,
+    title: t("nav.photography"), url: "/photography", icon: <CameraAltIcon className="size-5" />,
   };
 
   const settingsItem: NavItem = {
-    title: t("nav.settings"), url: "/settings", icon: <Settings2Icon className="size-6" />,
+    title: t("nav.settings"), url: "/settings", icon: <Settings2Icon className="size-5" />,
   };
 
   const role = user.role || "";
