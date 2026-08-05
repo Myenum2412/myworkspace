@@ -86,16 +86,15 @@ export async function GET() {
   try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
-  if (!orgId) return NextResponse.json({ overviewTasks: [], currentUserId: "", teamTasks: [], allTasks: [], orgId: "", myTasks: [], userId: "", savedTasks: [], upcomingTasks: [] });
+  if (!orgId) return NextResponse.json({ overviewTasks: [], currentUserId: "", teamTasks: [], allTasks: [], orgId: "", myTasks: [], userId: "", upcomingTasks: [] });
   try {
     const userId = session.user.id;
     const now = new Date();
     const coll = db.collection(collections.tasks);
-    const [tasksRaw, teamTasksRaw, myTasksRaw, savedTasksRaw, upcomingRaw] = await Promise.all([
+    const [tasksRaw, teamTasksRaw, myTasksRaw, upcomingRaw] = await Promise.all([
       coll.aggregate(buildTaskLookupPipeline({ orgId }, { createdAt: -1 }, 10)).toArray(),
       coll.aggregate(buildTaskLookupPipeline({ orgId, teamId: { $exists: true, $nin: [null, ""] } }, { createdAt: -1 }, 50)).toArray(),
       coll.aggregate(buildTaskLookupPipeline({ orgId, assigneeId: userId }, { createdAt: -1 }, 10)).toArray(),
-      coll.aggregate(buildTaskLookupPipeline({ orgId, isSaved: true }, { createdAt: -1 }, 10)).toArray(),
       coll.aggregate(buildTaskLookupPipeline({ orgId, dueDate: { $gte: now }, status: { $nin: ["done", "cancelled"] } }, { dueDate: 1 }, 10)).toArray(),
     ]);
     return NextResponse.json({
@@ -106,8 +105,7 @@ export async function GET() {
       orgId,
       myTasks: myTasksRaw.map(mapTask),
       userId,
-      savedTasks: savedTasksRaw.map(mapTask),
       upcomingTasks: upcomingRaw.map(mapTask),
     });
-  } catch { return NextResponse.json({ overviewTasks: [], currentUserId: "", teamTasks: [], allTasks: [], orgId: "", myTasks: [], userId: "", savedTasks: [], upcomingTasks: [] }); }
+  } catch { return NextResponse.json({ overviewTasks: [], currentUserId: "", teamTasks: [], allTasks: [], orgId: "", myTasks: [], userId: "", upcomingTasks: [] }); }
 }

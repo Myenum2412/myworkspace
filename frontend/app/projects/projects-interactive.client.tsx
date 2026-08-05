@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2Icon, ChevronLeftIcon, SearchIcon, XIcon } from "@/lib/icons";
+import { Trash2Icon, ChevronLeftIcon, SearchIcon, XIcon, FolderIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 import type { Project } from "@/components/projects/project-types";
 import { PROJECT_COLORS } from "@/components/projects/project-types";
 import { ProjectDetailedView } from "./project-detailed-view";
@@ -474,23 +475,32 @@ export default function ProjectsInteractive({
           </div>
         ) : (
           <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl sm:text-2xl font-bold shrink-0" data-tour-step-id="step-projects">{t("page.projects.title")}</h1>
-              <div className="flex-1 flex justify-center">
-                <div className="relative w-full max-w-sm">
+            <PageHeader
+              icon={<FolderIcon className="size-6" />}
+              title={<h1 data-tour-step-id="step-projects">{t("page.projects.title")}</h1>}
+              subtitle={<p>{filteredProjects.length} {filteredProjects.length === 1 ? "project" : "projects"}</p>}
+              search={
+                <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input
                     placeholder={t("page.projects.searchPlaceholder")}
                     value={externalSearchQuery || ""}
                     onChange={(e) => onSearchChange?.(e.target.value)}
-                    className="pl-9 h-9 bg-white"
+                    className="pl-9 h-9"
                   />
+                  {externalSearchQuery && (
+                    <button onClick={() => onSearchChange?.("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1">
+                      <XIcon className="size-4" />
+                    </button>
+                  )}
                 </div>
-              </div>
-              <Button onClick={() => setShowForm(true)} size="sm" className="shrink-0">
-                {t("page.projects.newProject")}
-              </Button>
-            </div>
+              }
+              actions={
+                <Button onClick={() => setShowForm(true)} className="shrink-0 touch-target">
+                  {t("page.projects.newProject")}
+                </Button>
+              }
+            />
             <ProjectsDashboard projects={filteredProjects} />
             <ProjectList
               projects={filteredProjects}

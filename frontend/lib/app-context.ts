@@ -9,7 +9,7 @@ export const WORKSPACE_ROUTES = [
   "/calendar", "/time-tracker", "/time-reports", "/my-time",
   "/teamtasks", "/settings", "/profile", "/admin",
   "/departments", "/addemployees", "/addprojects",
-  "/savedtasks", "/upcomingtasks", "/terminated",
+  "/upcomingtasks", "/terminated",
   "/upload", "/billing", "/files",
   "/attendance", "/appointments", "/engagement", "/stocks", "/reworks"
 ];

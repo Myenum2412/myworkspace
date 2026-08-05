@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 import type { Employee } from "@/app/employees/columns";
 import type { SortField, SortDir } from "./employee-types";
 import { EmployeeTableRow } from "./employee-table-row";
@@ -100,29 +101,24 @@ export function EmployeeList({
   return (
     <>
       <main className="flex flex-1 flex-col gap-0 p-4 sm:p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
-          <div className="flex items-center gap-3 min-w-0 shrink-0">
-            <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
-              <UsersIcon className="size-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-xl font-bold tracking-tight">Employees</h1>
-              <p className="text-sm text-muted-foreground">
-                {filteredCount} {filteredCount === 1 ? "member" : "members"}
-                {hasActiveFilters ? " found" : " total"}
-              </p>
-            </div>
-          </div>
-
-          <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">
-            <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+        <PageHeader
+          className="mb-4 sm:mb-6"
+          icon={<UsersIcon className="size-6" />}
+          title={<h1>Employees</h1>}
+          subtitle={
+            <p>
+              {filteredCount} {filteredCount === 1 ? "member" : "members"}
+              {hasActiveFilters ? " found" : " total"}
+            </p>
+          }
+          search={
+            <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
-                placeholder=""
+                placeholder="Search employees..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-9 h-9 border-0 shadow-none focus-visible:ring-0 w-full"
+                className="pl-9 h-9 border border-gray-200 bg-white rounded-sm shadow-none focus-visible:ring-0 w-full"
               />
               {searchQuery && (
                 <button
@@ -133,34 +129,14 @@ export function EmployeeList({
                 </button>
               )}
             </div>
-          </div>
-
-          <Button onClick={onAdd} className="gap-2 shrink-0 touch-target">
-            <PlusIcon className="size-4" />
-            Add Employee
-          </Button>
-        </div>
-
-        {/* Search (mobile) */}
-        <div className="relative w-full mb-4 sm:hidden">
-          <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              placeholder=""
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9 h-10 border-0 shadow-none focus-visible:ring-0 w-full"
-            />
-            {searchQuery && (
-              <button
-                onClick={onSearchClear}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
-              >
-                <XIcon className="size-4" />
-              </button>
-            )}
-          </div>
-        </div>
+          }
+          actions={
+            <Button onClick={onAdd} className="gap-2 shrink-0 touch-target">
+              <PlusIcon className="size-4" />
+              Add Employee
+            </Button>
+          }
+        />
 
         {/* Table View */}
         <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)]">

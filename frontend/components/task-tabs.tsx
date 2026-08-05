@@ -8,7 +8,6 @@ const TASK_TABS = [
   { value: "team_tasks", label: "Team Tasks", href: "/teamtasks" },
   { value: "all_tasks", label: "All Tasks", href: "/alltasks" },
   { value: "my_tasks", label: "My Tasks", href: "/mytasks" },
-  { value: "saved_tasks", label: "Saved Tasks", href: "/savedtasks" },
   { value: "upcoming_tasks", label: "Upcoming Tasks", href: "/upcomingtasks" },
 ];
 

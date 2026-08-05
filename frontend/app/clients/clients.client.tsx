@@ -2,7 +2,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, Loader2, ChevronLeftIcon, SaveIcon, SearchIcon } from "@/lib/icons";
+import { PlusIcon, Loader2, ChevronLeftIcon, SaveIcon, SearchIcon, XIcon, UsersIcon } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Client } from "@/app/clients/columns";
 import type { Credentials } from "@/components/clients/client-types";
@@ -222,24 +223,33 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold shrink-0" data-tour-step-id="step-clients">Clients</h1>
-          <div className="flex-1 flex justify-center">
-            <div className="relative w-full max-w-sm">
+        <PageHeader
+          icon={<UsersIcon className="size-6" />}
+          title={<h1 data-tour-step-id="step-clients">Clients</h1>}
+          subtitle={<p>{filteredClients.length} {filteredClients.length === 1 ? "client" : "clients"}</p>}
+          search={
+            <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 placeholder="Search clients..."
                 value={externalSearchQuery || ""}
                 onChange={(e) => onSearchChange?.(e.target.value)}
-                className="pl-9 h-9 bg-white"
+                className="pl-9 h-9"
               />
+              {externalSearchQuery && (
+                <button onClick={() => onSearchChange?.("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1">
+                  <XIcon className="size-4" />
+                </button>
+              )}
             </div>
-          </div>
-          <Button onClick={() => setPageView("add")} className="shrink-0">
-            <PlusIcon className="mr-2 size-4" />
-            Add Client
-          </Button>
-        </div>
+          }
+          actions={
+            <Button onClick={() => setPageView("add")} className="shrink-0 touch-target">
+              <PlusIcon className="size-4" />
+              Add Client
+            </Button>
+          }
+        />
 
         <ClientList
           clients={filteredClients}

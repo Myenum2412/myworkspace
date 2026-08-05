@@ -5,13 +5,11 @@ import OverviewInteractive from "./overview-interactive.client"
 import TeamTasksOverview from "@/components/team-tasks-overview"
 import AllTasksInteractive from "../alltasks/alltasks-interactive.client"
 import MyTasksInteractive from "../mytasks/mytasks-interactive.client"
-import SavedTasksInteractive from "../savedtasks/savedtasks-interactive.client"
 import UpcomingTasksInteractive from "../upcomingtasks/upcomingtasks-interactive.client"
 import type { Task } from "./columns.client"
 import type { TeamTask } from "../teamtasks/teamtasks-interactive.client"
 import type { AllTasksProps } from "../alltasks/alltasks-interactive.client"
 import type { MyTasksProps } from "../mytasks/mytasks-interactive.client"
-import type { SavedTask } from "../savedtasks/savedtasks-interactive.client"
 import type { UpcomingTask } from "../upcomingtasks/upcomingtasks-interactive.client"
 
 type OverviewClientProps = {
@@ -22,7 +20,6 @@ type OverviewClientProps = {
   orgId: string
   myTasks: MyTasksProps["initialTasks"]
   userId: string
-  savedTasks: SavedTask[]
   upcomingTasks: UpcomingTask[]
 }
 
@@ -34,7 +31,6 @@ export default function OverviewClient({
   orgId,
   myTasks,
   userId,
-  savedTasks,
   upcomingTasks,
 }: OverviewClientProps) {
   return (
@@ -65,12 +61,6 @@ export default function OverviewClient({
           My Tasks
         </TabsTrigger>
         <TabsTrigger
-          value="saved_tasks"
-          className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
-        >
-          Saved Tasks
-        </TabsTrigger>
-        <TabsTrigger
           value="upcoming_tasks"
           className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
         >
@@ -92,10 +82,6 @@ export default function OverviewClient({
 
       <TabsContent value="my_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
         <MyTasksInteractive initialTasks={myTasks} orgId={orgId} userId={userId} />
-      </TabsContent>
-
-      <TabsContent value="saved_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
-        <SavedTasksInteractive initialTasks={savedTasks} />
       </TabsContent>
 
       <TabsContent value="upcoming_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">

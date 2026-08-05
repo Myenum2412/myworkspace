@@ -7,6 +7,7 @@ import {
   UsersIcon, PlusIcon, SearchIcon, XIcon,
   MoreHorizontalIcon, PencilIcon, Trash2Icon,
 } from "@/lib/icons";
+import { PageHeader } from "@/components/page-header";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,50 +45,31 @@ export function TeamList({
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
-        <div className="flex items-center gap-3 min-w-0 shrink-0">
-          <div className="flex items-center justify-center size-10 rounded-sm bg-primary/10 shrink-0">
-            <UsersIcon className="size-5 text-primary" />
+      <PageHeader
+        className="mb-4 sm:mb-6"
+        icon={<UsersIcon className="size-6" />}
+        title={<h1>Teams</h1>}
+        subtitle={<p>Manage your team members and their roles</p>}
+        search={
+          <div className="relative">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search teams..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 w-full"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1">
+                <XIcon className="size-4" />
+              </button>
+            )}
           </div>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold tracking-tight">Teams</h1>
-            <p className="text-sm text-muted-foreground">Manage your team members and their roles</p>
-          </div>
-        </div>
-
-        <div className="relative w-full max-w-md mx-auto px-4 hidden sm:block">
-          <SearchIcon className="absolute left-7 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Search teams..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 w-full bg-white"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-              <XIcon className="size-4" />
-            </button>
-          )}
-        </div>
-
-        <Button onClick={onCreateTeam} className="shrink-0"><PlusIcon className="mr-2 size-4" />New Team</Button>
-      </div>
-
-      {/* Search (mobile) */}
-      <div className="relative w-full mb-4 sm:hidden">
-        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          placeholder="Search teams..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 h-10 w-full bg-white"
-        />
-        {searchQuery && (
-          <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-            <XIcon className="size-4" />
-          </button>
-        )}
-      </div>
+        }
+        actions={
+          <Button onClick={onCreateTeam} className="shrink-0 touch-target"><PlusIcon className="size-4" />New Team</Button>
+        }
+      />
 
       <DataTable
             columns={columns.map((col) => ({

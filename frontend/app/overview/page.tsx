@@ -28,7 +28,7 @@ export default function OverviewPage() {
   if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
   if (!session?.user) return null;
 
-  const defaults = { overviewTasks: [], currentUserId: "", teamTasks: [], allTasks: [], orgId: "", myTasks: [], userId: "", savedTasks: [], upcomingTasks: [] };
+  const defaults = { overviewTasks: [], currentUserId: "", teamTasks: [], allTasks: [], orgId: "", myTasks: [], userId: "", upcomingTasks: [] };
 
   return <OverviewClient {...(data || defaults)} />;
 }
