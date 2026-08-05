@@ -123,6 +123,20 @@ export function downloadFile(id: string) {
   window.open(`${API.files}/${id}/download`, "_blank");
 }
 
+export function bulkDownload(ids: string[]) {
+  if (!ids.length) return;
+  const popup = window.open(`${API.files}/${ids[0]}/download`, "_blank");
+  if (popup) {
+    ids.slice(1).forEach((id, i) => {
+      setTimeout(() => {
+        popup.location.href = `${API.files}/${id}/download`;
+      }, (i + 1) * 2000);
+    });
+  } else {
+    ids.forEach((id) => window.open(`${API.files}/${id}/download`, "_blank"));
+  }
+}
+
 export function getFileUrl(id: string) {
   return `${API.files}/${id}`;
 }

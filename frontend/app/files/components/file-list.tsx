@@ -1,272 +1,155 @@
 "use client";
 
-import { useState } from "react";
 import { useFileSystemStore } from "@/lib/file-system/store";
-import { getFileIcon, getFileTypeColor } from "@/components/files/utils";
-import { formatSize } from "@/lib/file-system/types";
 import { cn } from "@/lib/utils";
-import {
-  FolderIcon,
-  DownloadIcon,
-  Trash2Icon,
-  EyeIcon,
-  PencilIcon,
-  Share2Icon,
-  MoreHorizontalIcon,
-  StarIcon,
-  LockIcon,
-  CopyIcon,
-  ScissorsIcon,
-  ClipboardPasteIcon,
-  ArrowRightIcon,
-} from "@/lib/icons";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import * as api from "@/lib/file-system/api";
+import { type FileItem, type FolderItem, formatSize, type SortField } from "@/lib/file-system/types";
+import { CheckIcon, ArrowUpIcon, ArrowDownIcon, FolderIcon } from "@/lib/icons";
+import { getFileIcon } from "@/components/files/utils";
+import { DriveOverflowMenu } from "./drive-menu";
 
-function ListThumbnail({ file }: { file: { id: string; mimeType: string; originalName: string } }) {
-  const [error, setError] = useState(false);
-
-  if (file.mimeType.startsWith("image/") && !error) {
-    return (
-      <img
-        src={`/api/files/thumbnail/${file.id}?size=small`}
-        alt={file.originalName}
-        className="size-8 rounded-sm object-cover shrink-0"
-        loading="lazy"
-        onError={() => setError(true)}
-      />
-    );
-  }
-
-  return <>{getFileIcon(file.mimeType)}</>;
+function formatDate(value?: string) {
+  if (!value) return "—";
+  const d = new Date(value);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return `Today at ${d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+  const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+  if (d.getFullYear() !== now.getFullYear()) opts.year = "numeric";
+  return d.toLocaleDateString(undefined, opts);
 }
 
-export function FileList() {
-  const {
-    folders,
-    files,
-    selectedIds,
-    toggleSelection,
-    selectAll,
-    clearSelection,
-    setCurrentFolder,
-    setPreviewFile,
-    setPreviewPaneFile,
-    previewPaneFile,
-    setShareFile,
-    setRenameTarget,
-    setPropertiesTarget,
-    setMoveTarget,
-    setClipboard,
-    clipboard,
-    breadcrumbs,
-  } = useFileSystemStore();
+function SortHeader({ label, field, className }: { label: string; field: SortField; className?: string }) {
+  const sortField = useFileSystemStore((s) => s.sortField);
+  const sortDir = useFileSystemStore((s) => s.sortDir);
+  const setSort = useFileSystemStore((s) => s.setSort);
+  const active = sortField === field;
+  const Arrow = sortDir === "asc" ? ArrowUpIcon : ArrowDownIcon;
 
+  return (
+    <button
+      className={cn(
+        "group inline-flex cursor-pointer select-none items-center gap-1 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground",
+        active && "text-foreground",
+        className
+      )}
+      onClick={() => setSort(field, active && sortDir === "asc" ? "desc" : "asc")}
+    >
+      {label}
+      {active && <Arrow className="size-3" />}
+    </button>
+  );
+}
+
+function RowCheckbox({ selected, onToggle }: { selected: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onToggle();
+      }}
+      className={cn(
+        "grid size-5 shrink-0 place-items-center rounded-full border transition-colors",
+        selected ? "border-primary bg-primary text-primary-foreground" : "border-border text-transparent",
+        !selected && "opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100"
+      )}
+    >
+      <CheckIcon className="size-3" />
+    </button>
+  );
+}
+
+function FolderRow({ folder }: { folder: FolderItem }) {
+  const { selectedIds, toggleSelection, setCurrentFolder, breadcrumbs } = useFileSystemStore();
+  const selected = selectedIds.has(folder.id);
+
+  return (
+    <div
+      className={cn(
+        "group group/row flex cursor-pointer items-center gap-3 px-3 py-1.5 transition-colors hover:bg-muted/50",
+        selected && "bg-primary/[0.05]"
+      )}
+      onClick={() => toggleSelection(folder.id)}
+      onDoubleClick={() => {
+        setCurrentFolder(folder.id);
+        useFileSystemStore.getState().setBreadcrumbs([...breadcrumbs, { id: folder.id, name: folder.name }]);
+      }}
+    >
+      <RowCheckbox selected={selected} onToggle={() => toggleSelection(folder.id)} />
+      <div className="flex min-w-0 flex-1 items-center gap-2.5">
+        <FolderIcon className="size-5 shrink-0 text-primary/70" />
+        <span className="truncate text-sm font-medium text-foreground">{folder.name}</span>
+      </div>
+      <span className="hidden w-40 shrink-0 truncate text-xs text-muted-foreground md:block">—</span>
+      <span className="hidden w-24 shrink-0 text-xs text-muted-foreground lg:block">—</span>
+      <span className="hidden w-28 shrink-0 text-xs text-muted-foreground xl:block">
+        {formatDate(folder.updatedAt || folder.createdAt)}
+      </span>
+      <DriveOverflowMenu kind="folder" item={folder} />
+    </div>
+  );
+}
+
+function FileRow({ file }: { file: FileItem }) {
+  const { selectedIds, toggleSelection, setPreviewFile } = useFileSystemStore();
+  const selected = selectedIds.has(file.id);
+
+  return (
+    <div
+      className={cn(
+        "group group/row flex cursor-pointer items-center gap-3 px-3 py-1.5 transition-colors hover:bg-muted/50",
+        selected && "bg-primary/[0.05]"
+      )}
+      onClick={() => toggleSelection(file.id)}
+      onDoubleClick={() => setPreviewFile(file)}
+    >
+      <RowCheckbox selected={selected} onToggle={() => toggleSelection(file.id)} />
+      <div className="flex min-w-0 flex-1 items-center gap-2.5">
+        <span className="shrink-0">{file.mimeType.startsWith("image/") ? (
+          <img src={`/api/files/thumbnail/${file.id}?size=small`} alt="" className="size-5 rounded object-cover" loading="lazy" />
+        ) : (
+          <span className="grid size-5 place-items-center text-muted-foreground">
+            <FileGlyph file={file} />
+          </span>
+        )}</span>
+        <span className="truncate text-sm text-foreground">{file.originalName}</span>
+      </div>
+      <span className="hidden w-40 shrink-0 truncate text-xs text-muted-foreground md:block">{file.uploaderName || "—"}</span>
+      <span className="hidden w-24 shrink-0 text-xs text-muted-foreground lg:block">{formatSize(file.size)}</span>
+      <span className="hidden w-28 shrink-0 text-xs text-muted-foreground xl:block">{formatDate(file.updatedAt || file.createdAt)}</span>
+      <DriveOverflowMenu kind="file" item={file} />
+    </div>
+  );
+}
+
+function FileGlyph({ file }: { file: FileItem }) {
+  return <>{getFileIcon(file.mimeType, file.originalName)}</>;
+}
+
+export function DriveList() {
+  const { folders, files, selectedIds, selectAll, clearSelection } = useFileSystemStore();
   const allIds = [...folders.map((f) => f.id), ...files.map((f) => f.id)];
   const allSelected = allIds.length > 0 && allIds.every((id) => selectedIds.has(id));
 
-  if (allIds.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
-        <FolderIcon className="size-16 text-muted-foreground/20" />
-        <p className="text-sm">This folder is empty</p>
-        <p className="text-xs">Upload files or create a folder to get started</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="overflow-hidden">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b">
-            <th className="w-10 px-3 py-2.5">
-              <Checkbox
-                checked={allSelected}
-                onCheckedChange={() => allSelected ? clearSelection() : selectAll()}
-              />
-            </th>
-            <th className="text-left px-3 py-2.5 font-medium text-xs text-muted-foreground uppercase tracking-wider">Name</th>
-            <th className="text-left px-3 py-2.5 font-medium text-xs text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Type</th>
-            <th className="text-left px-3 py-2.5 font-medium text-xs text-muted-foreground uppercase tracking-wider hidden md:table-cell">Size</th>
-            <th className="text-left px-3 py-2.5 font-medium text-xs text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Owner</th>
-            <th className="text-left px-3 py-2.5 font-medium text-xs text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Modified</th>
-            <th className="w-12 px-3 py-2.5" />
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {folders.map((folder) => (
-            <tr
-              key={folder.id}
-              className={cn(
-                "group hover:bg-muted/30 cursor-pointer transition-colors",
-                selectedIds.has(folder.id) && "bg-primary/5",
-              )}
-              onDoubleClick={() => {
-                setCurrentFolder(folder.id);
-                useFileSystemStore.getState().setBreadcrumbs([
-                  ...breadcrumbs,
-                  { id: folder.id, name: folder.name },
-                ]);
-              }}
-            >
-              <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                <Checkbox
-                  checked={selectedIds.has(folder.id)}
-                  onCheckedChange={() => toggleSelection(folder.id)}
-                />
-              </td>
-              <td className="px-3 py-2.5">
-                <div className="flex items-center gap-2.5">
-                  <FolderIcon className="size-4 shrink-0 text-primary/60" />
-                  <span className="font-medium truncate">{folder.name}</span>
-                </div>
-              </td>
-              <td className="px-3 py-2.5 text-muted-foreground hidden sm:table-cell">Folder</td>
-              <td className="px-3 py-2.5 text-muted-foreground hidden md:table-cell">—</td>
-              <td className="px-3 py-2.5 text-muted-foreground hidden lg:table-cell">—</td>
-              <td className="px-3 py-2.5 text-muted-foreground hidden lg:table-cell">
-                {folder.createdAt ? new Date(folder.createdAt).toLocaleDateString() : "—"}
-              </td>
-              <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="p-0 opacity-0 group-hover:opacity-100">
-                      <MoreHorizontalIcon className="size-3.5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem onSelect={() => setCurrentFolder(folder.id)}>
-                      <FolderIcon className="size-3.5 mr-2" /> Open
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setRenameTarget({ type: "folder", id: folder.id, name: folder.name })}>
-                      <PencilIcon className="size-3.5 mr-2" /> Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setClipboard({ ids: [folder.id], action: "copy" })}>
-                      <CopyIcon className="size-3.5 mr-2" /> Copy
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setClipboard({ ids: [folder.id], action: "cut" })}>
-                      <ScissorsIcon className="size-3.5 mr-2" /> Cut
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setMoveTarget({ type: "folder", id: folder.id })}>
-                      <ArrowRightIcon className="size-3.5 mr-2" /> Move
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => setPropertiesTarget({ type: "folder", id: folder.id })}>
-                      <EyeIcon className="size-3.5 mr-2" /> Properties
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onSelect={() => {
-                        if (confirm(`Delete folder "${folder.name}"?`)) {
-                          useFileSystemStore.getState().removeFolder(folder.id);
-                          api.deleteFolder(folder.id).catch(console.error);
-                        }
-                      }}
-                    >
-                      <Trash2Icon className="size-3.5 mr-2" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </td>
-            </tr>
-          ))}
-          {files.map((file) => (
-            <tr
-              key={file.id}
-              className={cn(
-                "group hover:bg-muted/30 cursor-pointer transition-colors",
-                selectedIds.has(file.id) && "bg-primary/5",
-                previewPaneFile?.id === file.id && "bg-blue-50/50 dark:bg-blue-950/20",
-              )}
-              onClick={() => setPreviewPaneFile(file)}
-              onDoubleClick={() => setPreviewFile(file)}
-            >
-              <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                <Checkbox
-                  checked={selectedIds.has(file.id)}
-                  onCheckedChange={() => toggleSelection(file.id)}
-                />
-              </td>
-              <td className="px-3 py-2.5">
-                <div className="flex items-center gap-2.5">
-                  <ListThumbnail file={file} />
-                  <span className="font-medium truncate">{file.originalName}</span>
-                  {file.isFavorite && <StarIcon className="size-3 fill-amber-400 text-amber-400 shrink-0" />}
-                  {file.isLocked && <LockIcon className="size-3 text-muted-foreground shrink-0" />}
-                </div>
-              </td>
-              <td className="px-3 py-2.5 text-muted-foreground hidden sm:table-cell">
-                {file.mimeType.split("/").pop()?.toUpperCase() || "FILE"}
-              </td>
-              <td className="px-3 py-2.5 text-muted-foreground hidden md:table-cell">{formatSize(file.size)}</td>
-              <td className="px-3 py-2.5 text-muted-foreground hidden lg:table-cell">{file.uploaderName || "—"}</td>
-              <td className="px-3 py-2.5 text-muted-foreground hidden lg:table-cell">
-                {file.updatedAt ? new Date(file.updatedAt).toLocaleDateString() : (file.createdAt ? new Date(file.createdAt).toLocaleDateString() : "—")}
-              </td>
-              <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="p-0 opacity-0 group-hover:opacity-100">
-                      <MoreHorizontalIcon className="size-3.5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem onSelect={() => setPreviewFile(file)}>
-                      <EyeIcon className="size-3.5 mr-2" /> Preview
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => window.open(`/api/files/${file.id}/download`, "_blank")}>
-                      <DownloadIcon className="size-3.5 mr-2" /> Download
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setShareFile(file)}>
-                      <Share2Icon className="size-3.5 mr-2" /> Share
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setRenameTarget({ type: "file", id: file.id, name: file.originalName })}>
-                      <PencilIcon className="size-3.5 mr-2" /> Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setClipboard({ ids: [file.id], action: "copy" })}>
-                      <CopyIcon className="size-3.5 mr-2" /> Copy
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setClipboard({ ids: [file.id], action: "cut" })}>
-                      <ScissorsIcon className="size-3.5 mr-2" /> Cut
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => {
-                      api.duplicateFile(file.id).catch(console.error);
-                    }}>
-                      <CopyIcon className="size-3.5 mr-2" /> Duplicate
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => setPropertiesTarget({ type: "file", id: file.id })}>
-                      <EyeIcon className="size-3.5 mr-2" /> Properties
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onSelect={() => {
-                        if (confirm(`Delete "${file.originalName}"?`)) {
-                          useFileSystemStore.getState().removeFile(file.id);
-                          api.deleteFile(file.id).catch(console.error);
-                        }
-                      }}
-                    >
-                      <Trash2Icon className="size-3.5 mr-2" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="overflow-hidden rounded-xl border border-border/80 bg-card">
+      <div className="flex items-center gap-3 border-b border-border/70 bg-muted/30 px-3 py-0">
+        <button
+          onClick={() => (allSelected ? clearSelection() : selectAll())}
+          className="grid size-5 shrink-0 place-items-center rounded-full border border-border bg-background transition-colors hover:border-primary"
+          aria-pressed={allSelected}
+        >
+          {allSelected && <CheckIcon className="size-3 text-primary" />}
+        </button>
+        <span className="min-w-0 flex-1"><SortHeader label="Name" field="name" /></span>
+        <span className="hidden w-40 md:block"><SortHeader label="Owner" field="uploaderName" className="w-full justify-start" /></span>
+        <span className="hidden w-24 lg:block"><SortHeader label="Size" field="size" className="w-full justify-start" /></span>
+        <span className="hidden w-28 xl:block"><SortHeader label="Modified" field="updatedAt" className="w-full justify-start" /></span>
+        <span className="w-8 shrink-0" />
+      </div>
+      <div className="divide-y divide-border/50">
+        {folders.map((folder) => <FolderRow key={folder.id} folder={folder} />)}
+        {files.map((file) => <FileRow key={file.id} file={file} />)}
+      </div>
     </div>
   );
 }

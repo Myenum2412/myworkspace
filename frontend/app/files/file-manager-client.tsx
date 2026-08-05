@@ -5,30 +5,35 @@ import { useFileSystemStore } from "@/lib/file-system/store";
 import { useFileData } from "@/hooks/file-system/use-file-data";
 import { useKeyboardShortcuts } from "@/hooks/file-system/use-keyboard";
 import { cn } from "@/lib/utils";
-import { Sidebar } from "./components/sidebar";
-import { Toolbar } from "./components/toolbar";
-import { BreadcrumbNav } from "./components/breadcrumb-nav";
-import { FileGrid } from "./components/file-grid";
-import { FileList } from "./components/file-list";
+import type { FileItem } from "@/lib/file-system/types";
+import { ROLES } from "@/lib/rbac";
+import { Menu } from "@/lib/icons";
+
+import { DriveSidebar } from "./components/sidebar";
+import { DriveToolbar } from "./components/drive-toolbar";
+import { DriveGrid } from "./components/file-grid";
+import { DriveList } from "./components/file-list";
+import { DetailsPanel } from "./components/details-panel";
+import { DriveNewFab } from "./components/drive-new";
+import { DriveSkeleton, DriveEmpty, DriveError } from "./components/drive-states";
 import { PreviewDialog } from "./components/preview-dialog";
 import { PreviewPane } from "./components/preview-pane";
 import { ShareDialog } from "./components/share-dialog";
 import { PropertiesPanel } from "./components/properties-panel";
 import { RecycleBin } from "./components/recycle-bin";
 import { AuditLogView } from "./components/audit-log";
-
 import { RecentView } from "./components/recent-view";
+import { FavoritesView } from "./components/favorites-view";
+import { SharedWithMe } from "./components/shared-view";
 import { ClientFilesView } from "./components/client-files-view";
 import { StaffFilesView } from "./components/staff-files-view";
 import { TeamFilesView } from "./components/team-files-view";
-import { ROLES } from "@/lib/rbac";
+import { StorageDashboard } from "./components/storage-dashboard";
+import { ApprovalFilesView } from "./components/approval-files-view";
 import { CreateFolderDialog, RenameDialog, MoveDialog } from "./components/dialogs";
 import { UploadDialog } from "./components/upload-queue";
 import { FileSearch } from "./components/file-search";
-import { StorageDashboard } from "./components/storage-dashboard";
-import { ApprovalFilesView } from "./components/approval-files-view";
 import { RiUploadCloud2Line } from "@/lib/icons";
-
 interface FileManagerClientProps {
   orgId: string;
   userId: string;
@@ -40,20 +45,19 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
   const viewMode = useFileSystemStore((s) => s.viewMode);
   const previewFile = useFileSystemStore((s) => s.previewFile);
   const previewPaneFile = useFileSystemStore((s) => s.previewPaneFile);
-  const { loading } = useFileData();
+  const selectedIds = useFileSystemStore((s) => s.selectedIds);
+  const files = useFileSystemStore((s) => s.files);
+  const folders = useFileSystemStore((s) => s.folders);
+  const { loading, error, refetch } = useFileData();
+
   const [searchOpen, setSearchOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsFile, setDetailsFile] = useState<FileItem | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const dragDepth = useRef(0);
 
   useKeyboardShortcuts();
-
-  useEffect(() => {
-    useFileSystemStore.getState().setOrgContext(orgId, userId, userRole);
-  }, [orgId, userId, userRole]);
-
-  useEffect(() => {
-    useFileSystemStore.getState().setPreviewPaneFile(null);
-  }, [currentNav]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -66,12 +70,45 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  useEffect(() => {
+    useFileSystemStore.getState().setOrgContext(orgId, userId, userRole);
+  }, [orgId, userId, userRole]);
+
+  useEffect(() => {
+    useFileSystemStore.getState().setPreviewPaneFile(null);
+    setDetailsOpen(false);
+    setDetailsFile(null);
+    setMobileNavOpen(false);
+  }, [currentNav]);
+
+  useEffect(() => {
+    if (previewPaneFile) setDetailsFile(previewPaneFile);
+  }, [previewPaneFile]);
+
+  const handleNew = useCallback((action: "upload" | "folder") => {
+    if (action === "folder") {
+      useFileSystemStore.getState().setIsCreatingFolder(true);
+    } else {
+      useFileSystemStore.getState().setShowUpload(true);
+    }
+  }, []);
+
+  const onToggleDetails = useCallback(() => {
+    setDetailsOpen((open) => {
+      const next = !open;
+      if (next) {
+        const selFile = files.find((f) => selectedIds.has(f.id) && selectedIds.size === 1);
+        setDetailsFile(previewPaneFile || selFile || null);
+      }
+      return next;
+    });
+  }, [files, selectedIds, previewPaneFile]);
+
   const onDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     dragDepth.current += 1;
     if (dragDepth.current === 1) setIsDraggingOver(true);
   }, []);
-
   const onDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     dragDepth.current -= 1;
@@ -80,25 +117,28 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
       setIsDraggingOver(false);
     }
   }, []);
-
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
   }, []);
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      dragDepth.current = 0;
+      setIsDraggingOver(false);
+      const dropped = Array.from(e.dataTransfer.files);
+      if (dropped.length > 0 && userRole !== ROLES.CLIENTS) {
+        useFileSystemStore.getState().setPendingFiles(dropped);
+        useFileSystemStore.getState().setShowUpload(true);
+      }
+    },
+    [userRole]
+  );
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    dragDepth.current = 0;
-    setIsDraggingOver(false);
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0 && userRole !== ROLES.CLIENTS) {
-      useFileSystemStore.getState().setPendingFiles(files);
-      useFileSystemStore.getState().setShowUpload(true);
-    }
-  }, [userRole]);
+  const contentEmpty = folders.length === 0 && files.length === 0 && !loading;
 
   return (
     <div
-      className="flex h-[calc(100vh-3.5rem)] relative"
+      className="relative flex h-[calc(100vh-3.5rem)] overflow-hidden"
       data-tour-step-id="step-files"
       onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
@@ -109,64 +149,95 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
         <PreviewPane onClose={() => useFileSystemStore.getState().setPreviewPaneFile(null)} />
       ) : (
         <>
-          <Sidebar />
+          {/* Desktop sidebar */}
+          <div className="hidden lg:block">
+            <DriveSidebar onNew={handleNew} />
+          </div>
 
-          <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {currentNav === "files" && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <BreadcrumbNav />
-                  </div>
-                  <Toolbar readonly={userRole === ROLES.CLIENTS} />
-                  {loading ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                      {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="aspect-square rounded-sm bg-muted animate-pulse" />
-                      ))}
-                    </div>
-                  ) : viewMode === "grid" ? (
-                    <FileGrid />
-                  ) : (
-                    <FileList />
-                  )}
-                </>
-              )}
-
-              {currentNav === "approvals" && <ApprovalFilesView />}
-              {currentNav === "recent" && <RecentView />}
-              {currentNav === "recycle" && <RecycleBin />}
-              {currentNav === "audit" && <AuditLogView />}
-              {currentNav === "team" && <TeamFilesView />}
-              {currentNav === "client-files" && <ClientFilesView />}
-              {currentNav === "staff-files" && <StaffFilesView />}
-              {currentNav === "storage" && <StorageDashboard orgId={orgId} />}
+          {/* Mobile nav drawer */}
+          {mobileNavOpen && (
+            <div className="fixed inset-0 z-40 lg:hidden">
+              <div className="absolute inset-0 bg-black/40" onClick={() => setMobileNavOpen(false)} />
+              <div className="absolute inset-y-0 left-0">
+                <DriveSidebar onNew={(a) => { handleNew(a); setMobileNavOpen(false); }} />
+              </div>
             </div>
+          )}
+
+          <main className="flex min-w-0 flex-1 flex-col">
+            <DriveToolbar
+              detailsOpen={detailsOpen}
+              onToggleDetails={onToggleDetails}
+              searchOpen={searchOpen}
+              onSearchFocus={() => {}}
+              onNew={handleNew}
+              onMenu={() => setMobileNavOpen(true)}
+            />
+
+            {currentNav === "files" && (
+              <div className="flex min-h-0 flex-1">
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="h-full flex-1 overflow-y-auto">
+                    <div className="px-4 py-4 sm:px-6">
+                      {loading ? (
+                        <DriveSkeleton viewMode={viewMode} />
+                      ) : error ? (
+                        <DriveError message={(error as Error)?.message} onRetry={() => refetch()} />
+                      ) : contentEmpty ? (
+                        <DriveEmpty hasFolders={folders.length > 0} readonly={userRole === ROLES.CLIENTS} onNew={handleNew} />
+                      ) : viewMode === "grid" ? (
+                        <DriveGrid />
+                      ) : (
+                        <DriveList />
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {detailsOpen && (
+                  <div className="hidden lg:block">
+                    <DetailsPanel file={detailsFile} onClose={() => setDetailsOpen(false)} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {currentNav !== "files" && (
+              <div className="min-h-0 flex-1">
+                <div className="h-full overflow-y-auto p-4 sm:p-6">
+                  {currentNav === "approvals" && <ApprovalFilesView />}
+                  {currentNav === "recent" && <RecentView />}
+                  {currentNav === "favorites" && <FavoritesView />}
+                  {currentNav === "shared" && <SharedWithMe />}
+                  {currentNav === "recycle" && <RecycleBin />}
+                  {currentNav === "audit" && <AuditLogView />}
+                  {currentNav === "team" && <TeamFilesView />}
+                  {currentNav === "client-files" && <ClientFilesView />}
+                  {currentNav === "staff-files" && <StaffFilesView />}
+                  {currentNav === "storage" && <StorageDashboard orgId={orgId} />}
+                </div>
+              </div>
+            )}
+
+            <DriveNewFab onNew={handleNew} />
           </main>
         </>
       )}
 
-      {/* Drag-and-drop overlay */}
       {isDraggingOver && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm pointer-events-none">
-          <div className={cn(
-            "flex flex-col items-center gap-4 rounded-lg border-2 border-dashed px-12 py-10 transition-colors",
-            "border-primary bg-primary/5"
-          )}>
-            <div className="flex size-16 items-center justify-center rounded-lg border border-primary bg-background text-primary">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-dashed border-primary px-14 py-12 bg-primary/5">
+            <div className="grid size-16 place-items-center rounded-2xl border border-primary bg-background text-primary">
               <RiUploadCloud2Line className="size-8" />
             </div>
             <div className="text-center">
               <p className="text-lg font-semibold text-foreground">Drop files to upload</p>
-              <p className="text-sm text-muted-foreground">
-                Files will be uploaded to the current folder
-              </p>
+              <p className="text-sm text-muted-foreground">Files will be uploaded to the current folder</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Dialogs and overlays */}
+      {/* Dialogs */}
       <CreateFolderDialog />
       <RenameDialog />
       <MoveDialog />
@@ -180,7 +251,7 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
           orgId={orgId}
           onSelectFile={(fileId) => {
             useFileSystemStore.getState().setPreviewFile(
-              useFileSystemStore.getState().files.find(f => f.id === fileId) || null
+              useFileSystemStore.getState().files.find((f) => f.id === fileId) || null
             );
             setSearchOpen(false);
           }}
