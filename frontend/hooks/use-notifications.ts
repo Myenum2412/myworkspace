@@ -206,10 +206,8 @@ export function useNotifications(userId?: string) {
   }, [userId]);
 
   useEffect(() => {
-    if (permission === "granted" && "serviceWorker" in navigator) {
-      navigator.serviceWorker.ready
-        .then((reg) => subscribeToPush(reg))
-        .catch(() => {});
+    if (permission === "granted") {
+      subscribeToPush().catch(() => {});
     }
   }, [permission]);
 

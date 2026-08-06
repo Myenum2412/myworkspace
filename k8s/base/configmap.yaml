@@ -32,7 +32,6 @@ stringData:
   REDIS_URL: "redis://myworkspace-redis:6379"
   # VALKEY_URL is the canonical Valkey connection string.
   VALKEY_URL: "redis://myworkspace-redis:6379"
-  VAPID_PUBLIC_KEY: "CHANGE_ME"
-  VAPID_PRIVATE_KEY: "CHANGE_ME"
+  NTFY_BASE_URL: "https://myworkspace.myenum.in"
 
 

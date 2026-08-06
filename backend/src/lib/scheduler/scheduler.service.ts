@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { v4 as uuid } from "uuid";
 import mongoose from "mongoose";
+import { CronExpressionParser } from "cron-parser";
 import { env } from "../../config/env.js";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
@@ -337,9 +338,11 @@ class SchedulerService {
 
     if (job.cronExpression) {
       try {
-        const later = require("later");
-        const schedule = later.parse.cron(job.cronExpression, job.hasSeconds || false);
-        const next = later.schedule(schedule).next(1, new Date());
+        const expression = CronExpressionParser.parse(job.cronExpression, {
+          currentDate: new Date(),
+          tz: job.timezone || "UTC",
+        });
+        const next = expression.next().toDate();
         return next instanceof Date ? next : null;
       } catch {
         try {

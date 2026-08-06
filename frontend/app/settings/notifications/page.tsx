@@ -17,7 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { NotificationsActiveIcon } from "@/lib/icons";
-import { Loader2Icon, SaveIcon, GlobeIcon } from "@/lib/icons";
+import { Loader2Icon, SaveIcon, GlobeIcon, BellIcon, CopyIcon, ExternalLinkIcon } from "@/lib/icons";
+import { getPushTopic, type NtfyTopic } from "@/lib/push-subscription";
+import { toast } from "sonner";
 
 interface ChannelSettings {
   inApp: boolean;
@@ -83,11 +85,16 @@ export default function NotificationSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<NotificationSettingsData | null>(null);
+  const [pushInfo, setPushInfo] = useState<NtfyTopic | null>(null);
 
   useEffect(() => {
     if (!session?.user?.id) return;
     fetchSettings();
   }, [session]);
+
+  useEffect(() => {
+    getPushTopic().then((t) => setPushInfo(t)).catch(() => {});
+  }, []);
 
   const fetchSettings = async () => {
     try {
@@ -248,6 +255,52 @@ export default function NotificationSettingsPage() {
             <Switch checked={settings?.criticalNotificationsAlwaysOn ?? true}
               onCheckedChange={(v) => setSettings((p) => p ? { ...p, criticalNotificationsAlwaysOn: v } : p)} />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BellIcon className="size-4" />
+            Push Notifications (ntfy)
+          </CardTitle>
+          <CardDescription>Receive push notifications on any device via ntfy</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {pushInfo?.enabled ? (
+            <>
+              <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
+                <p className="text-xs text-muted-foreground mb-1">Your private push topic</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 truncate rounded-md bg-background px-2 py-1 text-sm font-mono text-foreground">
+                    {pushInfo.topic}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-0"
+                    onClick={() => {
+                      navigator.clipboard.writeText(pushInfo.topic).then(() => toast.success("Topic copied to clipboard"));
+                    }}
+                  >
+                    <CopyIcon className="size-4" />
+                  </Button>
+                </div>
+              </div>
+              <Button asChild variant="outline" className="w-full gap-1.5">
+                <a href={pushInfo.subscribeUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLinkIcon className="size-4" /> Open in ntfy app
+                </a>
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Open this link on your phone or desktop to subscribe your device to push notifications. You will receive a push for every notification on this account.
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Push notifications are not configured. Ask your administrator to set the <code className="rounded bg-muted px-1.5 py-0.5 text-xs">NTFY_BASE_URL</code> environment variable.
+            </p>
+          )}
         </CardContent>
       </Card>
 

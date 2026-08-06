@@ -64,12 +64,12 @@ export async function checkNotificationHealth(): Promise<HealthStatus> {
     checks.smtp = { status: "unhealthy", latency: 0, error: err.message };
   }
 
-  // VAPID check (Web Push)
+  // ntfy check (push)
   try {
     checks.vapid = {
-      status: env.VAPID_PUBLIC_KEY ? "healthy" : "disabled",
+      status: env.NTFY_BASE_URL ? "healthy" : "disabled",
       latency: 0,
-      error: env.VAPID_PUBLIC_KEY ? undefined : "VAPID keys not configured",
+      error: env.NTFY_BASE_URL ? undefined : "NTFY_BASE_URL not configured",
     };
   } catch (err: any) {
     checks.vapid = { status: "unhealthy", latency: 0, error: err.message };

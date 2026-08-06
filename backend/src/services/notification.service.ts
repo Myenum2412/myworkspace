@@ -237,6 +237,8 @@ async function deliverPush(doc: any, payload: any): Promise<void> {
         url: a.url || doc.link,
       })),
       tag: `notification:${doc._id}`,
+      priority: doc.priority,
+      type: doc.type,
     });
   } catch (err: any) {
     logger.error({ err: err.message, userId: doc.userId }, "Push notification failed");

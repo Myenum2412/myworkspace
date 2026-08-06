@@ -143,6 +143,12 @@ export const SYSTEM_JOBS: SystemJobDefinition[] = [
     cron: "0 2 * * *",
     description: "Generates daily and weekly repeated task instances",
   },
+  {
+    name: "calendar-sync",
+    type: "calendar_sync",
+    cron: "*/30 * * * *",
+    description: "Synchronizes connected Google calendars for all users",
+  },
 ];
 
 export const jobRegistry = {

@@ -66,6 +66,12 @@ export const env = {
   VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || "",
   VAPID_SUBJECT: process.env.VAPID_SUBJECT || "mailto:admin@myenum.in",
 
+  // ntfy push notification server. All push notifications are published to the
+  // per-user topic "{NTFY_TOPIC_PREFIX}-{userId}" on this server.
+  // Auto-derives "https://<host>" (same domain as the app) when not explicitly set.
+  NTFY_BASE_URL: (process.env.NTFY_BASE_URL || deriveNtfyBaseUrl() || "").replace(/\/+$/, ""),
+  NTFY_TOPIC_PREFIX: process.env.NTFY_TOPIC_PREFIX || "mws",
+
   // Scheduler Configuration (JobScheduler.NET / Bree)
   SCHEDULER_HEARTBEAT_INTERVAL: process.env.SCHEDULER_HEARTBEAT_INTERVAL || "* * * * *",
   SCHEDULER_HEALTH_CHECK_INTERVAL_MS: parseInt(process.env.SCHEDULER_HEALTH_CHECK_INTERVAL_MS || "30000", 10),
@@ -84,3 +90,13 @@ export const env = {
   BUSINESS_HOURS_END: parseInt(process.env.BUSINESS_HOURS_END || "18"),
 
 };
+
+function deriveNtfyBaseUrl(): string {
+  const appUrl = process.env.APP_URL || process.env.CORS_ORIGIN?.split(",")[0] || "";
+  if (!appUrl) return "";
+  try {
+    return new URL(appUrl).origin;
+  } catch {
+    return "";
+  }
+}

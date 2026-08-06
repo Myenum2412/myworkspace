@@ -227,14 +227,14 @@ async function emitSocket(event: EngineEvent, notificationDoc?: any) {
 
 async function sendPush(event: EngineEvent, notificationDoc?: any) {
   try {
-    if (CRITICAL_TYPES.has(event.type)) {
-      await sendPushNotification(event.userId, {
-        title: event.title,
-        message: event.message || "",
-        link: event.link,
-        tag: `notification:${notificationDoc?._id || event.type}`,
-      });
-    }
+    await sendPushNotification(event.userId, {
+      title: event.title,
+      message: event.message || "",
+      link: event.link,
+      tag: `notification:${notificationDoc?._id || event.type}`,
+      priority: event.priority || "normal",
+      type: event.type,
+    });
   } catch (err) {
     logger.error({ err }, "Push notification failed");
   }

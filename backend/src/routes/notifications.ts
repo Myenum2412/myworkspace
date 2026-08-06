@@ -19,7 +19,8 @@ import {
   snoozeNotification,
   getNotificationAnalytics,
 } from "../services/notification.service.js";
-import { configureVapid, getVapidPublicKey, subscribeUser, unsubscribeUser } from "../services/push.service.js";
+import { configureVapid, getPushConfig, subscribeUser, unsubscribeUser } from "../services/push.service.js";
+import { getUserTopic } from "../services/ntfy.service.js";
 import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
 import { Notification } from "../lib/db/models/Notification.js";
 import { EmailLog } from "../lib/db/models/EmailLog.js";
@@ -30,11 +31,27 @@ const router = Router();
 
 router.use(authenticate);
 
-// VAPID public key
-router.get("/vapid-public-key", optionalAuth, (_req: AuthRequest, res: Response) => {
+// Push configuration (ntfy)
+router.get("/push/config", optionalAuth, (_req: AuthRequest, res: Response) => {
   configureVapid();
-  const key = getVapidPublicKey();
-  res.json({ success: true, data: { publicKey: key } });
+  const config = getPushConfig();
+  res.json({ success: true, data: config });
+});
+
+// Per-user ntfy topic (used by the frontend to build subscribe links)
+router.get("/push/topic", (req: AuthRequest, res: Response) => {
+  configureVapid();
+  const config = getPushConfig();
+  const topic = getUserTopic(req.user!.userId);
+  res.json({
+    success: true,
+    data: {
+      enabled: config.enabled,
+      baseUrl: config.baseUrl,
+      topic,
+      subscribeUrl: config.enabled ? `${config.baseUrl}/${topic}` : "",
+    },
+  });
 });
 
 // Create notification (for system/API use)
@@ -169,8 +186,10 @@ router.post("/:id/snooze", async (req: AuthRequest, res: Response) => {
   res.json({ success: true });
 });
 
-// ─── Push subscription ───
+// ─── Push subscription (ntfy) ───
 
+// Legacy web-push subscription endpoint. Kept for compatibility — the active
+// push channel is ntfy, which is configured via /push/topic on the frontend.
 router.post("/push/subscribe", async (req: AuthRequest, res: Response) => {
   configureVapid();
   const { endpoint, keys, userAgent } = req.body;
