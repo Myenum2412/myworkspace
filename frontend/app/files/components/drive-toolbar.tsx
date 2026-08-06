@@ -19,7 +19,6 @@ import {
   UploadIcon,
   FolderPlusIcon,
   FilterListIcon,
-  Menu,
 } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,14 +60,12 @@ export function DriveToolbar({
   searchOpen,
   onSearchFocus,
   onNew,
-  onMenu,
 }: {
   detailsOpen: boolean;
   onToggleDetails: () => void;
   searchOpen: boolean;
   onSearchFocus: () => void;
   onNew: (action: "upload" | "folder") => void;
-  onMenu: () => void;
 }) {
   const {
     breadcrumbs,
@@ -125,14 +122,6 @@ export function DriveToolbar({
   return (
     <div className="shrink-0 border-b border-border/70 bg-card/60 backdrop-blur">
       <div className="flex items-center gap-2 px-4 py-2.5">
-        {/* Mobile nav toggle */}
-        <button
-          onClick={onMenu}
-          className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground lg:hidden"
-        >
-          <Menu className="size-5" />
-        </button>
-
         {/* Breadcrumb */}
         <div className="flex min-w-0 items-center">
           <button

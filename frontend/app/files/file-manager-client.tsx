@@ -7,9 +7,7 @@ import { useKeyboardShortcuts } from "@/hooks/file-system/use-keyboard";
 import { cn } from "@/lib/utils";
 import type { FileItem } from "@/lib/file-system/types";
 import { ROLES } from "@/lib/rbac";
-import { Menu } from "@/lib/icons";
 
-import { DriveSidebar } from "./components/sidebar";
 import { DriveToolbar } from "./components/drive-toolbar";
 import { DriveGrid } from "./components/file-grid";
 import { DriveList } from "./components/file-list";
@@ -53,7 +51,6 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
   const [searchOpen, setSearchOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsFile, setDetailsFile] = useState<FileItem | null>(null);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const dragDepth = useRef(0);
 
@@ -78,7 +75,6 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
     useFileSystemStore.getState().setPreviewPaneFile(null);
     setDetailsOpen(false);
     setDetailsFile(null);
-    setMobileNavOpen(false);
   }, [currentNav]);
 
   useEffect(() => {
@@ -138,7 +134,7 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
 
   return (
     <div
-      className="relative flex h-[calc(100vh-3.5rem)] overflow-hidden"
+      className="relative flex h-full w-full min-h-0 overflow-hidden bg-background"
       data-tour-step-id="step-files"
       onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
@@ -149,21 +145,6 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
         <PreviewPane onClose={() => useFileSystemStore.getState().setPreviewPaneFile(null)} />
       ) : (
         <>
-          {/* Desktop sidebar */}
-          <div className="hidden lg:block">
-            <DriveSidebar onNew={handleNew} />
-          </div>
-
-          {/* Mobile nav drawer */}
-          {mobileNavOpen && (
-            <div className="fixed inset-0 z-40 lg:hidden">
-              <div className="absolute inset-0 bg-black/40" onClick={() => setMobileNavOpen(false)} />
-              <div className="absolute inset-y-0 left-0">
-                <DriveSidebar onNew={(a) => { handleNew(a); setMobileNavOpen(false); }} />
-              </div>
-            </div>
-          )}
-
           <main className="flex min-w-0 flex-1 flex-col">
             <DriveToolbar
               detailsOpen={detailsOpen}
@@ -171,14 +152,13 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
               searchOpen={searchOpen}
               onSearchFocus={() => {}}
               onNew={handleNew}
-              onMenu={() => setMobileNavOpen(true)}
             />
 
             {currentNav === "files" && (
               <div className="flex min-h-0 flex-1">
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div className="h-full flex-1 overflow-y-auto">
-                    <div className="px-4 py-4 sm:px-6">
+                    <div className="px-4 py-5 sm:px-6 lg:px-8">
                       {loading ? (
                         <DriveSkeleton viewMode={viewMode} />
                       ) : error ? (

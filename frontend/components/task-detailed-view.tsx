@@ -147,13 +147,39 @@ function formatBytes(bytes: number, decimals = 2) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))} ${sizes[i]}`;
 }
 
+function formatDate(value?: string | null, withTime = false) {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    ...(withTime ? { hour: "numeric", minute: "2-digit" } : {}),
+  });
+}
+
+function DetailItem({ icon: Icon, label, value, className }: { icon?: any; label: string; value?: React.ReactNode; className?: string }) {
+  return (
+    <div className={`flex flex-col gap-1 ${className || ""}`}>
+      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        {Icon && <Icon className="size-3 shrink-0" />}
+        {label}
+      </dt>
+      <dd className="text-sm font-medium text-foreground min-w-0 truncate" title={typeof value === "string" ? value : undefined}>
+        {value ?? "—"}
+      </dd>
+    </div>
+  );
+}
+
 function Section({ icon: Icon, title, children, rightAction }: { icon: any; title: string; children: React.ReactNode, rightAction?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/50 pb-2">
+      <div className="flex items-center justify-between pb-2 border-b border-border">
         <div className="flex items-center gap-2">
-          {Icon && <Icon className="size-4 text-slate-400 dark:text-slate-500 shrink-0" />}
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+          {Icon && <Icon className="size-4 text-muted-foreground shrink-0" />}
+          <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             {title}
           </h3>
         </div>
@@ -172,16 +198,16 @@ function PersonBadge({ name, avatar, role }: { name?: string; avatar?: string; r
     .slice(0, 2)
     .toUpperCase();
   return (
-    <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50/20 dark:bg-slate-900/20 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-all duration-200">
-      <Avatar className="size-9 border border-slate-205 dark:border-slate-800 shrink-0 shadow-sm">
+    <div className="flex items-center gap-3 p-3.5 rounded-lg border border-border bg-muted/40 hover:bg-muted/70 transition-colors">
+      <Avatar className="size-9 border border-border shrink-0 shadow-sm">
         {avatar ? <AvatarImage src={avatar} alt={name} /> : null}
-        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs font-bold">
+        <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
           {initials}
         </AvatarFallback>
       </Avatar>
       <div className="flex flex-col min-w-0">
-        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">{role}</span>
-        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{name || "Unassigned"}</span>
+        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1.5">{role}</span>
+        <span className="text-sm font-semibold text-foreground truncate">{name || "Unassigned"}</span>
       </div>
     </div>
   );
@@ -321,21 +347,32 @@ export function TaskDetailedView({
   const PriorityIcon = priorityIcons[task.priority] || CircleIcon;
   const typeBadge = TYPE_BADGES[taskType] || TYPE_BADGES.individual;
 
+  const findEmployeeByFullName = (name?: string) => {
+    if (!name) return undefined;
+    const normalized = name.trim().toLowerCase();
+    return employees.find((e) => {
+      const fullName = `${e.firstName} ${e.lastName || ""}`.trim().toLowerCase();
+      return fullName === normalized || e.firstName.toLowerCase() === normalized;
+    });
+  };
+  const creatorEmployee = findEmployeeByFullName(task.creatorName);
+  const teamHeadEmployee = findEmployeeByFullName(task.teamHeadName);
+
   return (
     <div className="flex flex-col sm:flex-row w-full h-full overflow-hidden bg-background">
       <div className="flex-1 min-w-0 overflow-y-auto">
 
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/40">
+        <div className="px-6 py-5 border-b border-border bg-background/95 backdrop-blur sticky top-0 z-10">
           <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="text-xs font-semibold text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2.5 py-0.5 rounded-md flex items-center gap-1 border border-indigo-100/50 dark:border-indigo-900/30">
-              <FolderIcon className="!size-3.5 text-indigo-550 shrink-0" />
+            <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-md flex items-center gap-1 border border-primary/15">
+              <FolderIcon className="size-3.5 shrink-0" />
               {task.project || "General Workspace"}
             </span>
-            <Badge variant="secondary" className="bg-slate-50 text-slate-600 dark:bg-slate-900/50 dark:text-slate-350 border border-slate-200/50 dark:border-slate-800 text-xs px-2.5 py-0.5 font-medium rounded-md">
+            <Badge variant="secondary" className="text-xs px-2.5 py-1 font-medium rounded-md">
               {typeBadge.label}
             </Badge>
-            <Badge className={`${priorityStyles[task.priority.toLowerCase()] || "bg-slate-100 text-slate-700"} text-xs px-2.5 py-0.5 font-semibold rounded-md flex items-center gap-1 border`}>
+            <Badge className={`${priorityStyles[task.priority.toLowerCase()] || "bg-muted text-muted-foreground"} text-xs px-2.5 py-1 font-semibold rounded-md flex items-center gap-1 border`}>
               <PriorityIcon className="size-3 shrink-0" />
               <span className="capitalize">{task.priority} Priority</span>
             </Badge>
@@ -347,16 +384,16 @@ export function TaskDetailedView({
               const isOverdue = diffMs < 0 && !COMPLETED.has(task.status);
               const isDueSoon = diffMs > 0 && diffMs <= 86400000 && !COMPLETED.has(task.status);
               return (
-                <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 ml-1">
+                <span className="text-xs text-muted-foreground flex items-center gap-1.5 ml-1">
                   <CalendarIcon className="size-3.5" />
                   Due {new Date(task.dueDate!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   {isOverdue && (
-                    <Badge className="bg-rose-50 text-rose-700 border-rose-200/80 text-[10px] px-2 py-0 gap-1 rounded-md">
+                    <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px] px-2 py-0 gap-1 rounded-md">
                       <AlertCircleIcon className="size-2.5" /> Overdue
                     </Badge>
                   )}
                   {isDueSoon && (
-                    <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] px-2 py-0 gap-1 rounded-md">
+                    <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] px-2 py-0 gap-1 rounded-md">
                       <ClockIcon className="size-2.5" /> Due Soon
                     </Badge>
                   )}
@@ -365,15 +402,15 @@ export function TaskDetailedView({
             })()}
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-5">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-5">
             {task.title}
           </h1>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 bg-slate-50/50 dark:bg-slate-900/20 p-4 rounded-xl border border-slate-100 dark:border-slate-800/40">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 bg-muted/40 p-4 rounded-xl border border-border">
             <div className="flex flex-col gap-1.5 shrink-0">
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</label>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Status</label>
               <Select value={task.status} onValueChange={handleStatusChange} disabled={updating}>
-                <SelectTrigger className="w-full sm:w-[180px] h-10 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 font-semibold text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm">
+                <SelectTrigger className="w-full sm:w-[180px] h-10 rounded-lg bg-card font-semibold text-sm shadow-sm">
                   {updating ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2Icon className="size-4 animate-spin" /> Updating...
@@ -381,15 +418,15 @@ export function TaskDetailedView({
                   ) : (
                     <div className="flex items-center gap-2">
                       <StatusIcon className={`size-4 ${activeStatusOpt?.color}`} />
-                      <span className="text-slate-800 dark:text-slate-200">{activeStatusOpt?.label}</span>
+                      <span className="text-foreground">{activeStatusOpt?.label}</span>
                     </div>
                   )}
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent className="rounded-lg">
                   {typeOptions.map((opt) => {
                     const OptIcon = opt.icon;
                     return (
-                      <SelectItem key={opt.value} value={opt.value} className="rounded-lg my-0.5">
+                      <SelectItem key={opt.value} value={opt.value} className="rounded-md my-0.5">
                         <div className="flex items-center gap-2">
                           <OptIcon className={`size-4 ${opt.color}`} />
                           {opt.label}
@@ -402,15 +439,15 @@ export function TaskDetailedView({
             </div>
 
             <div className="flex flex-col gap-1.5 flex-1 max-w-none sm:max-w-xs sm:ml-auto">
-              <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+              <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                 <span>Progress</span>
-                <span className="text-slate-850 dark:text-slate-250 font-bold">{progress}%</span>
+                <span className="text-foreground font-bold">{progress}%</span>
               </div>
-              <div className="h-2.5 w-full bg-slate-200/50 dark:bg-slate-850/80 rounded-full overflow-hidden border border-slate-200/20 dark:border-slate-800/40">
+              <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden border border-border/50">
                 <div
                   className={`h-full rounded-full transition-all duration-500 bg-gradient-to-r ${
                     task.status === "completed" || task.status === "approved" || task.status === "closed" ? "from-emerald-400 to-green-500" :
-                    task.status === "rejected" || task.status === "cancelled" ? "from-orange-400 to-red-500" : "from-blue-500 to-indigo-600"
+                    task.status === "rejected" || task.status === "cancelled" ? "from-orange-400 to-red-500" : "from-primary to-indigo-600"
                   }`}
                   style={{ width: `${progress}%` }}
                 />
@@ -419,21 +456,21 @@ export function TaskDetailedView({
 
             <div className="flex flex-wrap items-center gap-2 sm:ml-4">
               {taskType === "team" && task.status === "in_progress" && (
-                <Button size="sm" variant="default" className="px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => handleAction("submit-verification")} disabled={actionLoading}>
+                <Button size="sm" variant="default" className="px-4 rounded-lg text-xs font-semibold shadow-sm" onClick={() => handleAction("submit-verification")} disabled={actionLoading}>
                   {actionLoading ? <Loader2Icon className="size-3.5 animate-spin mr-1.5" /> : <AlertCircleIcon className="size-3.5 mr-1.5" />}
                   Submit for Verification
                 </Button>
               )}
               {taskType === "team" && task.status === "submitted" && (
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="default" className="px-4 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={() => {
+                  <Button size="sm" variant="default" className="px-4 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={() => {
                     const note = prompt("Approval note (optional):");
                     handleAction("approve", { note });
                   }} disabled={actionLoading}>
                     <CheckCircleIcon className="size-3.5 mr-1.5" />
                     Approve
                   </Button>
-                  <Button size="sm" variant="destructive" className="px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => {
+                  <Button size="sm" variant="destructive" className="px-4 rounded-lg text-xs font-semibold shadow-sm" onClick={() => {
                     const reason = prompt("Rejection reason (required):");
                     if (reason) handleAction("reject", { reason });
                   }} disabled={actionLoading}>
@@ -443,7 +480,7 @@ export function TaskDetailedView({
                 </div>
               )}
               {taskType === "upcoming" && task.status === "scheduled" && (
-                <Button size="sm" variant="default" className="px-4 rounded-xl text-xs font-semibold shadow-sm" onClick={() => handleAction("activate")} disabled={actionLoading}>
+                <Button size="sm" variant="default" className="px-4 rounded-lg text-xs font-semibold shadow-sm" onClick={() => handleAction("activate")} disabled={actionLoading}>
                   {actionLoading ? <Loader2Icon className="size-3.5 animate-spin mr-1.5" /> : <ClockIcon className="size-3.5 mr-1.5" />}
                   Activate Now
                 </Button>
@@ -456,30 +493,65 @@ export function TaskDetailedView({
         <div className="px-6 py-6 space-y-7">
 
           <Section icon={AlignLeftIcon} title="Description">
-            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-900/30 p-4 sm:p-5 shadow-sm">
+            <div className="rounded-lg border border-border bg-card shadow-sm p-4 sm:p-5">
               {task.description ? (
-                <div className="text-sm leading-relaxed text-slate-700 dark:text-slate-300" dangerouslySetInnerHTML={{ __html: task.description }} />
+                <div className="text-sm leading-relaxed text-foreground" dangerouslySetInnerHTML={{ __html: task.description }} />
               ) : (
                 <div className="flex flex-col items-center justify-center py-6 text-muted-foreground opacity-60">
-                  <AlignLeftIcon className="size-6 mb-2 text-slate-400" />
+                  <AlignLeftIcon className="size-6 mb-2" />
                   <p className="text-sm italic">No description provided for this task.</p>
                 </div>
               )}
             </div>
           </Section>
 
+          <Section icon={FileTextIcon} title="Details">
+            <div className="rounded-lg border border-border bg-card shadow-sm p-5">
+              <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
+                <DetailItem icon={HashIcon} label="Task ID" value={<code className="text-xs text-muted-foreground">{task._id}</code>} />
+                <DetailItem icon={UserIcon} label="Created By" value={task.creatorName} />
+                <DetailItem icon={UserCheckIcon} label="Assigned To" value={taskType === "team" ? (task.teamName || "Team") : task.assigneeName} />
+                {taskType === "team" && task.teamName && (
+                  <DetailItem icon={UsersIcon} label="Team" value={task.teamName} />
+                )}
+                <DetailItem icon={CalendarIcon} label="Start Date" value={formatDate(task.startDate)} />
+                <DetailItem icon={CalendarIcon} label="Due Date" value={formatDate(task.dueDate)} />
+                {task.scheduledDate && (
+                  <DetailItem icon={CalendarIcon} label="Scheduled" value={formatDate(task.scheduledDate)} />
+                )}
+                {task.activatedAt && (
+                  <DetailItem icon={ActivityIcon} label="Activated" value={formatDate(task.activatedAt)} />
+                )}
+                {task.submittedAt && (
+                  <DetailItem icon={ClockIcon} label="Submitted" value={formatDate(task.submittedAt, true)} />
+                )}
+                <DetailItem icon={ClockIcon} label="Created" value={formatDate(task.createdAt, true)} />
+                <DetailItem icon={ClockIcon} label="Last Updated" value={formatDate(task.updatedAt, true)} />
+                {task.assignmentMode && (
+                  <DetailItem icon={UserIcon} label="Assignment Mode" value={<span className="capitalize">{task.assignmentMode.replace(/_/g, " ")}</span>} />
+                )}
+                {task.assigneeIds && task.assigneeIds.length > 0 && (
+                  <DetailItem icon={UsersIcon} label="Members" value={`${task.assigneeIds.length}`} />
+                )}
+                {task.project && (
+                  <DetailItem icon={FolderIcon} label="Project" value={task.project} />
+                )}
+              </dl>
+            </div>
+          </Section>
+
           <Section icon={UserIcon} title="People">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
               <PersonBadge name={task.assigneeName} avatar={task.assigneeAvatar} role="Assigned To" />
-              <PersonBadge name={task.creatorName} avatar="" role="Created By" />
+              <PersonBadge name={task.creatorName} avatar={creatorEmployee?.avatar || ""} role="Created By" />
               {task.teamHeadName && (
-                <PersonBadge name={task.teamHeadName} avatar="" role="Team Head" />
+                <PersonBadge name={task.teamHeadName} avatar={teamHeadEmployee?.avatar || ""} role="Team Head" />
               )}
             </div>
 
             {task.memberStatuses && task.memberStatuses.length > 0 && (
-              <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-4">
-                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Team Assignment Progress</h4>
+              <div className="mt-4 border-t border-border pt-4">
+                <h4 className="text-sm font-semibold text-foreground mb-3">Team Assignment Progress</h4>
                 <div className="space-y-3">
                   {task.memberStatuses.map((member) => {
                     const emp = employees.find((e) => e.id === member.userId);
@@ -491,7 +563,7 @@ export function TaskDetailedView({
                     return (
                       <div
                         key={member.userId}
-                        className="flex items-center justify-between p-3 rounded-xl border border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20"
+                        className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/40"
                       >
                         <div className="flex items-center gap-3">
                           <Avatar className="size-8">
@@ -499,7 +571,7 @@ export function TaskDetailedView({
                             <AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{name}</p>
+                            <p className="text-sm font-medium text-foreground">{name}</p>
                             <p className="text-xs text-muted-foreground">{designation}</p>
                           </div>
                         </div>
@@ -539,7 +611,7 @@ export function TaskDetailedView({
           </Section>
 
           <Section icon={PaperclipIcon} title="Attachments">
-            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-900/30 p-4 sm:p-5 shadow-sm">
+            <div className="rounded-lg border border-border bg-card shadow-sm p-4 sm:p-5">
               {attachmentsLoading ? (
                 <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground">
                   <Loader2Icon className="size-4 animate-spin" />
@@ -547,7 +619,7 @@ export function TaskDetailedView({
                 </div>
               ) : taskAttachments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-6 text-muted-foreground opacity-60">
-                  <PaperclipIcon className="size-6 mb-2 text-slate-400" />
+                  <PaperclipIcon className="size-6 mb-2" />
                   <p className="text-sm italic">No attachments for this task.</p>
                 </div>
               ) : (
@@ -555,7 +627,7 @@ export function TaskDetailedView({
                   {taskAttachments.map((att) => (
                     <div
                       key={att.id}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800/50 bg-white dark:bg-slate-900/40 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm transition-all group cursor-pointer"
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/40 hover:shadow-sm transition-all group cursor-pointer"
                     >
                       <button
                         type="button"
@@ -563,17 +635,17 @@ export function TaskDetailedView({
                         className="flex items-center gap-3 flex-1 min-w-0 text-left"
                         title="Open file online"
                       >
-                        <FileTextIcon className="size-5 text-indigo-500 shrink-0" />
+                        <FileTextIcon className="size-5 text-primary shrink-0" />
                         <div className="flex flex-col min-w-0 flex-1">
-                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{att.originalName}</span>
-                          <span className="text-[11px] text-slate-500">{formatBytes(att.size)}</span>
+                          <span className="text-sm font-medium text-foreground truncate">{att.originalName}</span>
+                          <span className="text-[11px] text-muted-foreground">{formatBytes(att.size)}</span>
                         </div>
                       </button>
                       <a
                         href={`/api/files/${att.id}?download=true`}
                         download={att.originalName}
                         title="Download"
-                        className="shrink-0 text-slate-400 group-hover:text-blue-600 transition-colors p-1.5"
+                        className="shrink-0 text-muted-foreground hover:text-primary transition-colors p-1.5"
                       >
                         <DownloadIcon className="size-4" />
                       </a>
@@ -586,19 +658,19 @@ export function TaskDetailedView({
 
           {(task.status === "approved" || (task.status === "completed" && task.approvedBy)) && (
             <Section icon={CheckCircleIcon} title="Approval Details">
-              <div className="rounded-xl border border-emerald-100 dark:border-emerald-950 bg-emerald-50/30 dark:bg-emerald-950/20 p-5 shadow-sm">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 text-emerald-800 dark:text-emerald-300">
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-5 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 text-emerald-700 dark:text-emerald-300">
                   <div className="flex items-center gap-2">
-                    <UserCheckIcon className="size-4.5 text-emerald-600 dark:text-emerald-400" />
+                    <UserCheckIcon className="size-4 text-emerald-600 dark:text-emerald-400" />
                     <span className="font-semibold text-sm">Task Approved</span>
                   </div>
-                  <span className="text-[10px] font-medium opacity-80 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-355 px-2.5 py-0.5 rounded-md sm:ml-auto">
+                  <span className="text-[10px] font-medium opacity-80 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-md sm:ml-auto">
                     {task.approvedAt ? new Date(task.approvedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" }) : ""}
                   </span>
                 </div>
                 {task.approvalNote && (
-                  <div className="bg-white/80 dark:bg-slate-900/60 rounded-lg p-3 text-sm text-emerald-900 dark:text-emerald-250 border border-emerald-100/50 dark:border-emerald-900/30">
-                    <span className="font-bold block text-[9px] uppercase tracking-widest opacity-60 mb-1">Note</span>
+                  <div className="bg-card rounded-lg p-3 text-sm text-foreground border border-border">
+                    <span className="font-bold block text-[9px] uppercase tracking-widest text-emerald-600 opacity-70 mb-1">Note</span>
                     {task.approvalNote}
                   </div>
                 )}
@@ -611,19 +683,19 @@ export function TaskDetailedView({
 
           {(task.status === "rejected" && task.rejectionReason) && (
             <Section icon={XCircleIcon} title="Rejection Details">
-              <div className="rounded-xl border border-rose-100 dark:border-rose-950 bg-rose-50/30 dark:bg-rose-950/20 p-5 shadow-sm">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 text-rose-800 dark:text-rose-350">
+              <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-5 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 text-rose-700 dark:text-rose-300">
                   <div className="flex items-center gap-2">
-                    <XCircleIcon className="size-4.5 text-rose-600 dark:text-rose-400" />
+                    <XCircleIcon className="size-4 text-rose-600 dark:text-rose-400" />
                     <span className="font-semibold text-sm">Task Rejected</span>
                   </div>
-                  <span className="text-[10px] font-medium opacity-80 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-350 px-2.5 py-0.5 rounded-md sm:ml-auto">
+                  <span className="text-[10px] font-medium opacity-80 bg-rose-500/15 text-rose-700 dark:text-rose-300 px-2.5 py-0.5 rounded-md sm:ml-auto">
                     {task.rejectedAt ? new Date(task.rejectedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" }) : ""}
                   </span>
                 </div>
                 {task.rejectionReason && (
-                  <div className="bg-white/80 dark:bg-slate-900/60 rounded-lg p-3 text-sm text-rose-900 dark:text-rose-250 border border-rose-100/50 dark:border-rose-900/30">
-                    <span className="font-bold block text-[9px] uppercase tracking-widest opacity-60 mb-1">Reason</span>
+                  <div className="bg-card rounded-lg p-3 text-sm text-foreground border border-border">
+                    <span className="font-bold block text-[9px] uppercase tracking-widest text-rose-600 opacity-70 mb-1">Reason</span>
                     {task.rejectionReason}
                   </div>
                 )}
@@ -632,25 +704,25 @@ export function TaskDetailedView({
           )}
 
           <Section icon={ActivityIcon} title="Activity Timeline">
-            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-900/30 p-5 shadow-sm">
-              <div className="relative border-l-2 border-slate-200 dark:border-slate-800 ml-2.5 space-y-5 pb-1">
+            <div className="rounded-lg border border-border bg-card shadow-sm p-5">
+              <div className="relative border-l-2 border-border ml-2.5 space-y-5 pb-1">
                 <div className="relative pl-6">
-                  <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-indigo-500 ring-4 ring-white dark:ring-slate-900 shadow-sm" />
-                  <p className="text-sm font-semibold text-slate-850 dark:text-slate-200">Task Created</p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-primary ring-4 ring-background shadow-sm" />
+                  <p className="text-sm font-semibold text-foreground">Task Created</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {new Date(task.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
                 <div className="relative pl-6">
-                  <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-slate-400 ring-4 ring-white dark:ring-slate-900 shadow-sm" />
-                  <p className="text-sm font-semibold text-slate-850 dark:text-slate-200">Assigned to {task.assigneeName || "Someone"}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">By {task.creatorName}</p>
+                  <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-muted-foreground ring-4 ring-background shadow-sm" />
+                  <p className="text-sm font-semibold text-foreground">Assigned to {task.assigneeName || "Someone"}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">By {task.creatorName}</p>
                 </div>
                 {task.updatedAt && (
                   <div className="relative pl-6">
-                    <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-amber-500 ring-4 ring-white dark:ring-slate-900 shadow-sm" />
-                    <p className="text-sm font-semibold text-slate-850 dark:text-slate-200">Last Activity</p>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-amber-500 ring-4 ring-background shadow-sm" />
+                    <p className="text-sm font-semibold text-foreground">Last Activity</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {new Date(task.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                     </p>
                   </div>
@@ -663,7 +735,7 @@ export function TaskDetailedView({
       </div>
 
       {/* Right Column - Comments / Chat */}
-      <div className="w-full sm:w-[360px] shrink-0 flex flex-col border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-800/40 h-full">
+      <div className="w-full sm:w-[360px] shrink-0 flex flex-col border-t sm:border-t-0 sm:border-l border-border h-full bg-card">
         <TaskChat
           taskId={task._id}
           sessionUserId={sessionUserId || ""}

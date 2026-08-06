@@ -120,6 +120,21 @@ export function AppLayout({ children }: AppLayoutProps) {
     return null;
   }
 
+  if (pathname === "/files" || pathname.startsWith("/files/")) {
+    return (
+      <SidebarProvider open={open} onOpenChange={setOpen}>
+        <Suspense fallback={null}>
+          <SidebarByContext context={effectiveContext} user={user} />
+        </Suspense>
+        <SidebarInset className="h-[100dvh] overflow-hidden">
+          <Suspense fallback={null}>
+            <ProductTourProvider>{children}</ProductTourProvider>
+          </Suspense>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <SidebarProvider open={open} onOpenChange={setOpen}>
       <Suspense fallback={null}>

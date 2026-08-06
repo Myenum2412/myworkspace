@@ -16,6 +16,7 @@ import {
   ClockIcon,
   ArrowLeftIcon,
   RefreshCwIcon,
+  ListTodoIcon,
 } from "@/lib/icons";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -24,6 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 import dynamic from "next/dynamic";
 
@@ -313,35 +316,35 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
 
   return (
     <>
-      <div className="px-6 py-4 shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="" onClick={() => { onClose ? onClose() : router.back(); }}>
+      <div className="px-6 py-4 shrink-0 bg-background/95 backdrop-blur border-b">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button variant="ghost" size="icon" onClick={() => { onClose ? onClose() : router.back(); }}>
               <ArrowLeftIcon className="size-4" />
             </Button>
-            <div>
-              <h2 className="text-xl font-semibold">Create New Task</h2>
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold tracking-tight">Create New Task</h2>
               <p className="text-sm text-muted-foreground">
                 Create and assign work to your team
               </p>
             </div>
           </div>
           {localTaskDefs.length > 0 && (
-              <Select onValueChange={(val) => {
+            <Select onValueChange={(val) => {
               const selected = localTaskDefs.find((d) => d.id === val);
               if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
             }}>
-              <SelectTrigger className="w-fit gap-1 border text-xs font-medium text-muted-foreground shadow-none truncate">
-                <FileTextIcon className="size-3 shrink-0" />
+              <SelectTrigger className="w-fit gap-1.5 rounded-lg text-xs font-medium text-muted-foreground truncate">
+                <FileTextIcon className="size-3.5 shrink-0" />
                 <span className="max-w-[100px] truncate">Template</span>
               </SelectTrigger>
-              <SelectContent align="end" className="text-xs shadow-none">
+              <SelectContent align="end" className="text-xs">
                 {localTaskDefs
                   .filter((d) => d.isActive)
                   .filter((d, i, arr) => arr.findIndex((x) => x.id === d.id) === i)
                   .map((def) => (
-                  <SelectItem key={def.id} value={def.id} className="text-xs">{def.name}</SelectItem>
-                ))}
+                    <SelectItem key={def.id} value={def.id} className="text-xs">{def.name}</SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           )}
@@ -349,294 +352,350 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
       </div>
 
       {formError && (
-        <div className="mx-6 flex items-center gap-2 border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive shrink-0">
-          <AlertCircleIcon className="size-3.5 shrink-0" />
+        <div className="mx-6 mt-4 flex items-center gap-2 rounded-lg border border-destructive/25 bg-destructive/10 px-3.5 py-2.5 text-xs text-destructive shrink-0">
+          <AlertCircleIcon className="size-4 shrink-0" />
           {formError}
         </div>
       )}
 
-      <div className="flex-1 grid grid-cols-2 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
-        <ScrollArea className="h-full border-r bg-white px-5 py-4">
-          <div className="space-y-6">
-            <FormField label="Task Category" required>
-              <div className="grid grid-cols-3 gap-1.5">
-                {TASK_TYPES.map(({ id, name, icon: Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setTaskType(id)}
-                    className={`flex flex-col items-center justify-center gap-1 rounded-sm border p-2 text-[11px] font-medium transition-colors ${ taskType === id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted" }`}
-                  >
-                    <Icon className="size-4" />
-                    <span className="text-center leading-tight">{name}</span>
-                  </button>
-                ))}
-              </div>
-            </FormField>
+      <div className="flex-1 grid grid-cols-2 min-h-0">
+        <ScrollArea className="h-full border-r bg-muted/25">
+          <div className="mx-auto max-w-[760px] space-y-4 px-5 py-5">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="flex size-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <ListTodoIcon className="size-3.5" />
+                  </span>
+                  Task Type
+                  <Badge variant="secondary" className="ml-auto font-medium capitalize">
+                    {taskType}
+                  </Badge>
+                </CardTitle>
+                <CardDescription>Choose how this task should be assigned.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  {TASK_TYPES.map(({ id, name, icon: Icon, desc }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setTaskType(id)}
+                      className={`flex flex-col items-start gap-1.5 rounded-xl border-2 p-4 text-left transition-all ${taskType === id ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"}`}
+                    >
+                      <span className={`flex size-8 items-center justify-center rounded-lg ${taskType === id ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                        <Icon className="size-4" />
+                      </span>
+                      <span className="text-sm font-medium text-foreground">{name}</span>
+                      <span className="text-xs text-muted-foreground">{desc}</span>
+                    </button>
+                  ))}
+                </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setRepeatEnabled(!repeatEnabled)}
-                className={`flex items-center gap-2 rounded-sm border px-3 py-2 text-xs font-medium transition-colors ${repeatEnabled ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
-              >
-                <RefreshCwIcon className="size-3.5" />
-                Repeated
-              </button>
-              {repeatEnabled && (
-                <div className="flex items-center gap-2">
+                <Separator />
+
+                <div className="flex flex-wrap items-center gap-2.5">
                   <button
                     type="button"
-                    onClick={() => setRepeatType("daily")}
-                    className={`rounded-sm border px-2.5 py-1.5 text-xs font-medium ${repeatType === "daily" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}
+                    onClick={() => setRepeatEnabled(!repeatEnabled)}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${repeatEnabled ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
                   >
-                    Daily
+                    <RefreshCwIcon className="size-3.5" />
+                    Repeated
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => { setRepeatType("weekly"); if (repeatStartDate) { const end = new Date(repeatStartDate); end.setDate(end.getDate() + 6); setRepeatEndDate(end); } }}
-                    className={`rounded-sm border px-2.5 py-1.5 text-xs font-medium ${repeatType === "weekly" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}
-                  >
-                    Weekly
-                  </button>
-                  <Popover open={repeatStartDateOpen} onOpenChange={setRepeatStartDateOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-xs font-normal">
-                        {repeatStartDate ? repeatStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Start date"}
-                        <CalendarIcon className="size-3 ml-1" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-sm" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={repeatStartDate}
-                        onSelect={(d) => {
-                          setRepeatStartDate(d);
-                          if (repeatType === "weekly" && d) {
-                            const end = new Date(d);
-                            end.setDate(end.getDate() + 6);
-                            setRepeatEndDate(end);
+                  {repeatEnabled && (
+                    <>
+                      <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+                        <button
+                          type="button"
+                          onClick={() => setRepeatType("daily")}
+                          className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${repeatType === "daily" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
+                        >
+                          Daily
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setRepeatType("weekly"); if (repeatStartDate) { const end = new Date(repeatStartDate); end.setDate(end.getDate() + 6); setRepeatEndDate(end); } }}
+                          className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${repeatType === "weekly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
+                        >
+                          Weekly
+                        </button>
+                      </div>
+                      <Popover open={repeatStartDateOpen} onOpenChange={setRepeatStartDateOpen}>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className="rounded-lg text-xs font-normal">
+                            {repeatStartDate ? repeatStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Start date"}
+                            <CalendarIcon className="size-3 ml-1" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={repeatStartDate}
+                            onSelect={(d) => {
+                              setRepeatStartDate(d);
+                              if (repeatType === "weekly" && d) {
+                                const end = new Date(d);
+                                end.setDate(end.getDate() + 6);
+                                setRepeatEndDate(end);
+                              }
+                              setRepeatStartDateOpen(false);
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {repeatType === "weekly" && (
+                        <>
+                          <span className="text-xs text-muted-foreground">to</span>
+                          <Popover open={repeatEndDateOpen} onOpenChange={setRepeatEndDateOpen}>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" size="sm" className="rounded-lg text-xs font-normal">
+                                {repeatEndDate ? repeatEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "End date"}
+                                <CalendarIcon className="size-3 ml-1" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                              <Calendar mode="single" selected={repeatEndDate} onSelect={(d) => { setRepeatEndDate(d); setRepeatEndDateOpen(false); }} />
+                            </PopoverContent>
+                          </Popover>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="flex size-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <FileTextIcon className="size-3.5" />
+                  </span>
+                  Task Details
+                </CardTitle>
+                <CardDescription>Describe the work that needs to be done.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField label="Task Title" required>
+                  <Input
+                    placeholder="e.g. Design landing page hero section"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="text-sm rounded-lg"
+                  />
+                </FormField>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <FormField label="Client">
+                    <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
+                      <SelectTrigger className="text-sm rounded-lg">
+                        <SelectValue placeholder="Select" className="truncate" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-lg">
+                        {isLoadingData && clientList.length === 0 ? (
+                          <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading clients...</div>
+                        ) : clientList.length === 0 ? (
+                          <div className="px-2 py-4 text-center text-xs text-muted-foreground">No clients</div>
+                        ) : clientList.map((c) => (
+                          <SelectItem key={c} value={c} className="text-sm truncate">{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+
+                  <FormField label="Project">
+                    <Select value={projectName} onValueChange={setProjectName}>
+                      <SelectTrigger className="text-sm rounded-lg">
+                        <SelectValue placeholder="Select" className="truncate" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-lg">
+                        {(() => {
+                          const visibleProjects = selectedClient
+                            ? projectList.filter((p) => p.client === selectedClient)
+                            : projectList;
+                          if (isLoadingData && visibleProjects.length === 0) {
+                            return <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading projects...</div>;
                           }
-                          setRepeatStartDateOpen(false);
+                          if (visibleProjects.length === 0) {
+                            return <div className="px-2 py-4 text-center text-xs text-muted-foreground">No projects</div>;
+                          }
+                          return visibleProjects.map((p) => (
+                            <SelectItem key={p.id || p.name} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
+                          ));
+                        })()}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+
+                  <FormField label="Priority" required>
+                    <PrioritySelector
+                      selectedPriority={priority}
+                      priorities={priorities}
+                      onSelect={(val: string) => {
+                        if (val !== "quick-add") setPriority(val);
+                      }}
+                    />
+                  </FormField>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="flex size-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <UsersIcon className="size-3.5" />
+                  </span>
+                  Assignment & Timeline
+                </CardTitle>
+                <CardDescription>Set the due date and who will complete this task.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {taskType === "individual" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField label="Due Date">
+                      <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-between rounded-lg text-sm font-normal">
+                            {dueDate ? (
+                              <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                            ) : (
+                              <span className="text-muted-foreground">Select a date</span>
+                            )}
+                            <CalendarIcon className="size-3.5 text-muted-foreground" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                          <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                        </PopoverContent>
+                      </Popover>
+                    </FormField>
+
+                    <FormField label="Assign To">
+                      <AssigneeSelector
+                        selectedAssignee={selectedAssignee}
+                        selectedAssigneeType={selectedAssigneeType}
+                        employees={employees}
+                        teams={[]}
+                        isLoading={isLoadingData}
+                        showTeamAsAssignee={false}
+                        onSelect={(id: string) => {
+                          setSelectedAssignee(id);
+                          setSelectedAssigneeType("staff");
+                        }}
+                        onRemove={() => {
+                          setSelectedAssignee(null);
+                          setSelectedAssigneeType(null);
                         }}
                       />
-                    </PopoverContent>
-                  </Popover>
-                  {repeatType === "weekly" && (
-                    <span className="text-xs text-muted-foreground">to</span>
-                  )}
-                  {repeatType === "weekly" && (
-                    <Popover open={repeatEndDateOpen} onOpenChange={setRepeatEndDateOpen}>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-xs font-normal">
-                          {repeatEndDate ? repeatEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "End date"}
-                          <CalendarIcon className="size-3 ml-1" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 rounded-sm" align="start">
-                        <Calendar mode="single" selected={repeatEndDate} onSelect={(d) => { setRepeatEndDate(d); setRepeatEndDateOpen(false); }} />
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <Separator />
-
-            <FormField label="Task Title" required>
-              <Input
-                placeholder=""
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="text-sm"
-              />
-            </FormField>
-
-            <div className="grid grid-cols-3 gap-3">
-              <FormField label="Client">
-                <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
-                  <SelectTrigger className="text-sm shadow-none">
-                    <SelectValue placeholder="" className="truncate" />
-                  </SelectTrigger>
-                  <SelectContent className="shadow-none">
-                    {isLoadingData && clientList.length === 0 ? (
-                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading clients...</div>
-                    ) : clientList.length === 0 ? (
-                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">No clients</div>
-                    ) : clientList.map((c) => (
-                      <SelectItem key={c} value={c} className="text-sm truncate">{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
-
-              <FormField label="Project">
-                <Select value={projectName} onValueChange={setProjectName}>
-                  <SelectTrigger className="text-sm shadow-none">
-                    <SelectValue placeholder="" className="truncate" />
-                  </SelectTrigger>
-                  <SelectContent className="shadow-none">
-                    {(() => {
-                      const visibleProjects = selectedClient
-                        ? projectList.filter((p) => p.client === selectedClient)
-                        : projectList;
-                      if (isLoadingData && visibleProjects.length === 0) {
-                        return <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading projects...</div>;
-                      }
-                      if (visibleProjects.length === 0) {
-                        return <div className="px-2 py-4 text-center text-xs text-muted-foreground">No projects</div>;
-                      }
-                      return visibleProjects.map((p) => (
-                        <SelectItem key={p.id || p.name} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
-                      ));
-                    })()}
-                  </SelectContent>
-                </Select>
-              </FormField>
-
-              <FormField label="Priority" required>
-                  <PrioritySelector
-                    selectedPriority={priority}
-                    priorities={priorities}
-                    onSelect={(val: string) => {
-                      if (val !== "quick-add") setPriority(val);
-                    }}
-                  />
-              </FormField>
-            </div>
-
-            <Separator />
-
-            {taskType === "individual" && (
-              <div className="grid grid-cols-2 gap-3">
-                <FormField label="Due Date">
-                  <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="justify-between text-sm font-normal">
-                        {dueDate ? (
-                          <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                        ) : (
-                          <span className="text-muted-foreground">Due date</span>
-                        )}
-                        <CalendarIcon className="size-3.5 text-muted-foreground" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-sm" align="start">
-                      <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
-                    </PopoverContent>
-                  </Popover>
-                </FormField>
-
-                <FormField label="Assign To">
-                  <AssigneeSelector
-                    selectedAssignee={selectedAssignee}
-                    selectedAssigneeType={selectedAssigneeType}
-                    employees={employees}
-                    teams={[]}
-                    isLoading={isLoadingData}
-                    showTeamAsAssignee={false}
-                    onSelect={(id: string) => {
-                      setSelectedAssignee(id);
-                      setSelectedAssigneeType("staff");
-                    }}
-                    onRemove={() => {
-                      setSelectedAssignee(null);
-                      setSelectedAssigneeType(null);
-                    }}
-                  />
-                </FormField>
-              </div>
-            )}
-
-            {taskType === "team" && (
-              <div className="grid grid-cols-2 gap-3">
-                <FormField label="Due Date">
-                  <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="justify-between text-sm font-normal">
-                        {dueDate ? (
-                          <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                        ) : (
-                          <span className="text-muted-foreground">Due date</span>
-                        )}
-                        <CalendarIcon className="size-3.5 text-muted-foreground" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-sm" align="start">
-                      <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
-                    </PopoverContent>
-                  </Popover>
-                </FormField>
-
-                <FormField label="Assign Team" required>
-                  <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                  <SelectTrigger className="text-sm shadow-none">
-                    <SelectValue placeholder="Select a team" className="truncate" />
-                  </SelectTrigger>
-                  <SelectContent className="shadow-none">
-                    {isLoadingData && teams.length === 0 ? (
-                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading teams...</div>
-                    ) : teams.length === 0 ? (
-                      <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
-                    ) : (
-                      teams.map((t) => (
-                        <SelectItem key={t.id} value={t.id} className="text-sm truncate">{t.name} ({t.memberCount} members)</SelectItem>
-                      ))
-                    )}
-                    </SelectContent>
-                  </Select>
-                </FormField>
-              </div>
-            )}
-
-            <Separator />
-
-            <fieldset className="border p-4 space-y-4">
-              <legend className="text-sm font-semibold px-2 flex items-center gap-1">
-                <PaperclipIcon className="size-3" />
-                Attachments
-              </legend>
-              <div className="border border-dashed p-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-foreground">Drop files or click to browse</p>
-                    <p className="text-[11px] text-muted-foreground truncate">PDF, DOC, XLS, images — up to 10MB</p>
+                    </FormField>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => {
-                      const el = document.querySelector<HTMLInputElement>('[data-file-trigger]');
-                      if (el) el.click();
-                    }}
-                  >
-                    Browse
-                  </Button>
+                )}
+
+                {taskType === "team" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField label="Due Date">
+                      <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-between rounded-lg text-sm font-normal">
+                            {dueDate ? (
+                              <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                            ) : (
+                              <span className="text-muted-foreground">Select a date</span>
+                            )}
+                            <CalendarIcon className="size-3.5 text-muted-foreground" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                          <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                        </PopoverContent>
+                      </Popover>
+                    </FormField>
+
+                    <FormField label="Assign Team" required>
+                      <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                        <SelectTrigger className="text-sm rounded-lg">
+                          <SelectValue placeholder="Select a team" className="truncate" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-lg">
+                          {isLoadingData && teams.length === 0 ? (
+                            <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading teams...</div>
+                          ) : teams.length === 0 ? (
+                            <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
+                          ) : (
+                            teams.map((t) => (
+                              <SelectItem key={t.id} value={t.id} className="text-sm truncate">{t.name} ({t.memberCount} members)</SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </FormField>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="flex size-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <PaperclipIcon className="size-3.5" />
+                  </span>
+                  Attachments
+                </CardTitle>
+                <CardDescription>Attach reference files for this task.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-xl border border-dashed bg-muted/30 p-4 transition-colors hover:bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">Drop files or click to browse</p>
+                      <p className="text-xs text-muted-foreground truncate">PDF, DOC, XLS, images — up to 10MB</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg text-xs"
+                      onClick={() => {
+                        const el = document.querySelector<HTMLInputElement>('[data-file-trigger]');
+                        if (el) el.click();
+                      }}
+                    >
+                      Browse
+                    </Button>
+                  </div>
+                  <div data-file-trigger className="mt-2">
+                    <TableUpload onFilesChange={setUploadedFiles} compactImage={true} />
+                  </div>
                 </div>
-                <div data-file-trigger className="mt-2">
-                  <TableUpload onFilesChange={setUploadedFiles} compactImage={true} />
-                </div>
-              </div>
-            </fieldset>
+              </CardContent>
+            </Card>
           </div>
         </ScrollArea>
 
-        <fieldset className="border p-4 space-y-4 flex flex-col h-full bg-white">
-          <legend className="text-sm font-semibold px-2">Description <span className="text-destructive">*</span></legend>
-          <div className="flex-1 min-h-0">
+        <div className="flex flex-col min-h-0 bg-muted/25">
+          <div className="px-5 pt-5 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="flex size-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <FileTextIcon className="size-3.5" />
+              </span>
+              <h3 className="text-sm font-semibold">Description <span className="text-destructive">*</span></h3>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Add rich context, checklists, and instructions.</p>
+          </div>
+          <div className="flex-1 min-h-0 px-5 pb-5">
             <TiptapEditor
               value={description}
               onChange={setDescription}
               placeholder="Write your task description here..."
             />
           </div>
-        </fieldset>
+        </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 px-6 py-4 border-t bg-muted/10 shrink-0">
+      <div className="flex items-center justify-between gap-3 border-t bg-background px-6 py-4 shrink-0">
         <Button
           variant="ghost"
           onClick={() => { onClose ? onClose() : router.back(); }}
@@ -647,6 +706,7 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || !title.trim() || !description.trim() || !priority || (taskType === "team" && !selectedTeam)}
+          className="rounded-lg"
         >
           {isSubmitting ? (
             <><Loader2 className="animate-spin mr-1.5" />Creating...</>
