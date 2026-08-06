@@ -22,6 +22,7 @@ import {
   ClockIcon,
 } from "@/lib/icons";
 import { DataTable } from "@/components/data-table";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 export interface TaskRow {
   _id: string;
@@ -269,13 +270,16 @@ export function TaskDataTable({
             )}
             {onView && onEdit && <DropdownMenuSeparator />}
             {onDelete && (
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={(e) => { e.stopPropagation(); onDelete(row.original); }}
+              <DeleteConfirmDialog
+                title="Delete Task"
+                description="Are you sure you want to delete this task? This action cannot be undone."
+                onConfirm={() => onDelete(row.original)}
               >
-                <Trash2Icon className="mr-2 size-4" />
-                Delete
-              </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                  <Trash2Icon className="mr-2 size-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DeleteConfirmDialog>
             )}
           </DropdownMenuContent>
         </DropdownMenu>

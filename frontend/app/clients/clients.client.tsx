@@ -10,7 +10,6 @@ import type { Credentials } from "@/components/clients/client-types";
 import { ClientList } from "@/components/clients/client-list";
 import { ClientForm } from "@/components/clients/client-form";
 import { ClientSuccessDialog } from "@/components/clients/client-details";
-import { ClientDeleteDialog } from "@/components/clients/client-actions";
 import { ClientViewDialog } from "@/components/clients/client-view-dialog";
 import { EditClientFormFields, EMPTY_VALUES, valuesFromClient, payloadFromValues } from "@/app/clients/client-form-fields.client";
 
@@ -47,7 +46,6 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
   const [showSuccess, setShowSuccess] = useState(false);
   const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [viewingClient, setViewingClient] = useState<Client | null>(null);
-  const [deletingClient, setDeletingClient] = useState<Client | null>(null);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>(EMPTY_VALUES);
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
@@ -89,9 +87,16 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
     }
   }
 
-  function handleClientDeleted(id: string) {
-    setClients((prev) => prev.filter((c) => c.id !== id));
-    setDeletingClient(null);
+  async function handleDelete(client: Client) {
+    const res = await fetch(`/api/clients/${encodeURIComponent(client.id)}`, {
+      method: "DELETE",
+      headers: CSRF_HEADERS,
+      credentials: "include",
+    });
+    if (res.ok) {
+      setClients((prev) => prev.filter((c) => c.id !== client.id));
+      refreshClients();
+    }
   }
 
   function handleBack() {
@@ -255,7 +260,7 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
           clients={filteredClients}
           onView={(client) => setViewingClient(client)}
           onEdit={handleEdit}
-          onDelete={(client) => { setDeletingClient(client); }}
+          onDelete={handleDelete}
           hideSearchBar
         />
       </main>
@@ -264,13 +269,6 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
         client={viewingClient}
         open={!!viewingClient}
         onOpenChange={(open) => { if (!open) setViewingClient(null); }}
-      />
-
-      <ClientDeleteDialog
-        client={deletingClient}
-        open={!!deletingClient}
-        onOpenChange={(open) => { if (!open) setDeletingClient(null); }}
-        onClientDeleted={handleClientDeleted}
       />
     </>
   );

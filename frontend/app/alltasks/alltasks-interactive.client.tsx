@@ -117,7 +117,6 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
   }, [filteredTasks]);
 
   const handleDelete = useCallback(async (t: UiTask) => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
     try {
       const res = await apiFetch(`/api/tasks/${t._id}`, { method: "DELETE" });
       if (res.ok) {

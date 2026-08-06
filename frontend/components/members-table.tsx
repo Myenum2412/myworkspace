@@ -28,6 +28,7 @@ import {
 import { ROLES, isAdminRole } from "@/lib/rbac";
 import { SearchIcon, CheckCircle2Icon, XCircleIcon, PencilIcon, Trash2Icon, AlertCircleIcon, EyeIcon, Building2, Briefcase, Phone, MapPin, CalendarDays, ShieldCheck, LogIn, Globe, BadgeCheck } from "@/lib/icons";
 import { updateMember, deleteMember } from "@/actions/admin";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 interface MemberData {
   id: string;
@@ -469,21 +470,25 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                         <Button variant="ghost" size="icon" className="" onClick={() => setEditingMember(member)}>
                           <PencilIcon className="size-4" />
                         </Button>
-                        <form action={deleteMember}>
-                          <input type="hidden" name="userId" value={member.userId} />
-                          <input type="hidden" name="orgId" value={member.orgId} />
+                        <DeleteConfirmDialog
+                          title="Delete member"
+                          description={`Are you sure you want to delete member "${member.name}"? This action cannot be undone.`}
+                          confirmLabel="Delete"
+                          onConfirm={async () => {
+                            const fd = new FormData();
+                            fd.set("userId", member.userId);
+                            fd.set("orgId", member.orgId);
+                            await deleteMember(fd);
+                          }}
+                        >
                           <Button
-                            type="submit"
                             variant="ghost"
                             size="icon"
                             className="text-black hover:text-gray-600 hover:bg-blue-50"
-                            onClick={(e) => {
-                              if (!confirm(`Delete member "${member.name}"?`)) e.preventDefault();
-                            }}
                           >
                             <Trash2Icon className="size-4" />
                           </Button>
-                        </form>
+                        </DeleteConfirmDialog>
                       </div>
                     </td>
                   </tr>

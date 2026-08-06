@@ -7,6 +7,7 @@ import {
   UsersIcon, PlusIcon, SearchIcon, XIcon,
   MoreHorizontalIcon, PencilIcon, Trash2Icon,
 } from "@/lib/icons";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { PageHeader } from "@/components/page-header";
 import {
   DropdownMenu,
@@ -86,7 +87,13 @@ export function TeamList({
                           <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); onViewTeam(team); }}><UsersIcon className="mr-2 size-4" />View Members</DropdownMenuItem>
                           <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); onEditTeam(team); }}><PencilIcon className="mr-2 size-4" />Edit</DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive" onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDeleteTeam(team.id); }}><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
+                          <DeleteConfirmDialog
+                            title="Delete Team"
+                            description="Are you sure you want to delete this team? All members will be removed. This action cannot be undone."
+                            onConfirm={() => onDeleteTeam(team.id)}
+                          >
+                            <DropdownMenuItem className="text-destructive"><Trash2Icon className="mr-2 size-4" />Delete</DropdownMenuItem>
+                          </DeleteConfirmDialog>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     );

@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import * as api from "@/lib/file-system/api";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 function BreadcrumbCrumb({ label, icon, onClick, last }: { label: string; icon?: React.ReactNode; onClick: () => void; last?: boolean }) {
   if (last) {
@@ -103,11 +104,9 @@ export function DriveToolbar({
 
   const handleDeleteSelected = useCallback(() => {
     const ids = Array.from(selectedIds);
-    if (confirm(`Delete ${ids.length} selected item${ids.length > 1 ? "s" : ""}?`)) {
-      api.bulkDelete(ids).catch(console.error);
-      ids.forEach((id) => useFileSystemStore.getState().removeFile(id));
-      clearSelection();
-    }
+    api.bulkDelete(ids).catch(console.error);
+    ids.forEach((id) => useFileSystemStore.getState().removeFile(id));
+    clearSelection();
   }, [selectedIds, clearSelection]);
 
   const sortOptions: { value: string; label: string }[] = [
@@ -315,9 +314,16 @@ export function DriveToolbar({
           </Button>
           <div className="flex-1" />
           {!readonly && (
-            <Button variant="ghost" size="sm" className="h-8 rounded-full text-xs text-destructive hover:bg-destructive/10" onClick={handleDeleteSelected}>
-              <Trash2Icon className="mr-1.5 size-3.5" /> Move to trash
-            </Button>
+            <DeleteConfirmDialog
+              title="Move to trash"
+              description={`Delete ${selectedCount} selected item${selectedCount > 1 ? "s" : ""}? This action cannot be undone.`}
+              confirmLabel="Delete"
+              onConfirm={handleDeleteSelected}
+            >
+              <Button variant="ghost" size="sm" className="h-8 rounded-full text-xs text-destructive hover:bg-destructive/10">
+                <Trash2Icon className="mr-1.5 size-3.5" /> Move to trash
+              </Button>
+            </DeleteConfirmDialog>
           )}
           <Button variant="ghost" size="sm" className="h-8 rounded-full text-xs" onClick={clearSelection}>
             <XIcon className="mr-1.5 size-3.5" /> Clear

@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PageHeader } from "@/components/page-header";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 interface AuditLog {
   id: string;
@@ -159,10 +160,18 @@ export default function AuditPage() {
         }
         actions={
           selectedIds.size > 0 ? (
-            <Button variant="destructive" size="sm" onClick={() => handleDelete()} disabled={deleting}>
-              {deleting ? <Loader2Icon className="size-4 animate-spin" /> : <Trash2Icon className="size-4" />}
-              <span className="ml-1.5">Delete ({selectedIds.size})</span>
-            </Button>
+            <DeleteConfirmDialog
+              title="Delete audit logs"
+              description={`Delete ${selectedIds.size} selected log${selectedIds.size > 1 ? "s" : ""}? This action cannot be undone.`}
+              confirmLabel="Delete"
+              disabled={deleting}
+              onConfirm={() => handleDelete()}
+            >
+              <Button variant="destructive" size="sm" disabled={deleting}>
+                {deleting ? <Loader2Icon className="size-4 animate-spin" /> : <Trash2Icon className="size-4" />}
+                <span className="ml-1.5">Delete ({selectedIds.size})</span>
+              </Button>
+            </DeleteConfirmDialog>
           ) : null
         }
       />

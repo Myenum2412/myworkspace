@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { generateInvoicePDF } from "@/lib/pdf"
+import { DeleteConfirmDialog } from "@/components/dialog-03"
 
 export type Invoice = {
   id: string
@@ -171,14 +172,21 @@ export const columns: ColumnDef<Invoice>[] = [
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive" onClick={async () => {
-                if (confirm("Are you sure you want to delete this invoice?")) {
-                  await fetch(`/api/billing/invoices/${inv.id}`, { method: "DELETE" })
-                  window.location.reload()
-                }
-              }}>
-                <RiDeleteBinLine aria-hidden="true" />
-                Delete
+              <DropdownMenuItem className="text-destructive" onClick={(e) => e.stopPropagation()}>
+                <DeleteConfirmDialog
+                  title="Delete invoice"
+                  description={`Are you sure you want to delete invoice #${inv.number || inv.id}? This action cannot be undone.`}
+                  confirmLabel="Delete"
+                  onConfirm={async () => {
+                    await fetch(`/api/billing/invoices/${inv.id}`, { method: "DELETE" })
+                    window.location.reload()
+                  }}
+                >
+                  <span className="flex w-full items-center">
+                    <RiDeleteBinLine aria-hidden="true" className="mr-2" />
+                    Delete
+                  </span>
+                </DeleteConfirmDialog>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

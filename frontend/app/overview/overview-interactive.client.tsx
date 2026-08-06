@@ -113,7 +113,6 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   ];
 
   const handleDelete = useCallback(async (task: Task) => {
-    if (!confirm(`Are you sure you want to delete "${task.title}"?`)) return;
     try {
       const res = await apiFetch(`/api/tasks/${task._id}`, { method: "DELETE" });
       if (res.ok) {

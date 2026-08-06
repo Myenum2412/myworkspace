@@ -20,7 +20,6 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
   const [showForm, setShowForm] = useState(false);
   const [editingEngagement, setEditingEngagement] = useState<Engagement | null>(null);
   const [viewingEngagement, setViewingEngagement] = useState<Engagement | null>(null);
-  const [deletingEngagement, setDeletingEngagement] = useState<Engagement | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredEngagements = useMemo(() => {
@@ -77,15 +76,13 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
     }
   }
 
-  async function handleDelete() {
-    if (!deletingEngagement) return;
+  async function handleDelete(engagement: Engagement) {
     try {
-      await fetch(`/api/engagements?id=${deletingEngagement.id}`, {
+      await fetch(`/api/engagements?id=${engagement.id}`, {
         method: "DELETE",
         credentials: "include",
       });
       await refreshEngagements();
-      setDeletingEngagement(null);
     } catch {
     }
   }
@@ -95,7 +92,6 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
     setEditingEngagement(engagement);
     setShowForm(true);
   }, []);
-  const handleDeleteClick = useCallback((engagement: Engagement) => setDeletingEngagement(engagement), []);
 
   // Stats summary
   const stats = useMemo(() => {
@@ -161,7 +157,7 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
 
         <div className="flex-1">
           <DataTable
-            columns={[...columns, makeActionsCell(handleView, handleEdit, handleDeleteClick)]}
+            columns={[...columns, makeActionsCell(handleView, handleEdit, handleDelete)]}
             data={filteredEngagements}
             onRowClick={handleView}
             hideSearchBar
@@ -206,25 +202,6 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
                 onSave={handleSave}
                 onCancel={() => { setShowForm(false); setEditingEngagement(null); }}
               />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {deletingEngagement && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDeletingEngagement(null)}>
-          <div className="bg-background rounded-sm shadow-lg w-full max-w-md m-4" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold">Delete Interaction Followup</h2>
-            </div>
-            <div className="p-6">
-              <p className="text-sm text-muted-foreground mb-6">
-                Are you sure you want to delete this interaction followup for <strong>{deletingEngagement?.customerName}</strong>? This action cannot be undone.
-              </p>
-              <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setDeletingEngagement(null)}>Cancel</Button>
-                <Button variant="destructive" onClick={handleDelete}>Delete</Button>
-              </div>
             </div>
           </div>
         </div>

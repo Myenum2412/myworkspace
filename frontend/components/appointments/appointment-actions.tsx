@@ -61,53 +61,6 @@ export function AppointmentEditDialog({ appointment: propAppointment, doctors, o
   );
 }
 
-interface DeleteProps {
-  appointment: Appointment | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onDeleted: (id: string) => void;
-}
-
-export function AppointmentDeleteDialog({ appointment: propAppointment, open, onOpenChange, onDeleted }: DeleteProps) {
-  if (!propAppointment) return null;
-  const appt = propAppointment;
-  const [deleting, setDeleting] = useState(false);
-
-  async function handleDelete() {
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/appointments/${appt.id}`, { method: "DELETE" });
-      const json = await res.json();
-      if (json.success) {
-        onDeleted(appt.id);
-        onOpenChange(false);
-      }
-    } finally {
-      setDeleting(false);
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Delete Appointment</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete appointment <strong>{appt.appointmentId}</strong> for <strong>{appt.patientName}</strong>? This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-            {deleting && <Loader2 className="mr-2 animate-spin" />}
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 interface CancelProps {
   appointment: Appointment | null;
   open: boolean;

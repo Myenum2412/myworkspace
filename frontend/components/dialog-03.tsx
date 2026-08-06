@@ -1,6 +1,6 @@
 'use client';
 import { AlertTriangleIcon, Trash2Icon } from '@/lib/icons';
-import { useState } from 'react';
+import { useState, cloneElement, isValidElement, type ReactElement, type MouseEvent, type SyntheticEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -43,10 +43,22 @@ export function DeleteConfirmDialog({
     }
   };
 
+  const triggerChild = (() => {
+    if (isValidElement(children)) {
+      return cloneElement(children as ReactElement<{ onSelect?: (e: SyntheticEvent) => void }>, {
+        onSelect: (e: SyntheticEvent) => {
+          e.preventDefault();
+          (children.props as { onSelect?: (e: SyntheticEvent) => void } | undefined)?.onSelect?.(e);
+        },
+      });
+    }
+    return children;
+  })();
+
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-        {children}
+      <DialogTrigger asChild onClick={(e: MouseEvent) => e.stopPropagation()}>
+        {triggerChild}
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start space-x-4">

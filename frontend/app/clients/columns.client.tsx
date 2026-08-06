@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 export type Client = {
   id: string;
@@ -164,7 +165,7 @@ export const columns: ColumnDef<Client>[] = [
  */
 export function makeActionsCell(
   onView: (client: Client) => void,
-  onDelete: (client: Client) => void,
+  onDelete: (client: Client) => void | Promise<void>,
   onEdit?: (client: Client) => void,
 ): ColumnDef<Client> {
   return {
@@ -190,13 +191,16 @@ export function makeActionsCell(
                 Edit
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onSelect={() => onDelete(client)}
+            <DeleteConfirmDialog
+              title="Delete Client"
+              description={client ? `Are you sure you want to permanently remove ${client.name} (${client.company})?` : "Are you sure you want to permanently remove this client?"}
+              onConfirm={() => onDelete(client)}
             >
-              <Trash2 className="mr-2 size-4" />
-              Delete
-            </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive focus:text-destructive">
+                <Trash2 className="mr-2 size-4" />
+                Delete
+              </DropdownMenuItem>
+            </DeleteConfirmDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       );

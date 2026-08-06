@@ -8,7 +8,6 @@ import { AppointmentList } from "@/components/appointments/appointment-list";
 import { AppointmentViewDialog } from "@/components/appointments/appointment-view-dialog";
 import { AppointmentEditDialog } from "@/components/appointments/appointment-actions";
 import { AppointmentCancelDialog } from "@/components/appointments/appointment-actions";
-import { AppointmentDeleteDialog } from "@/components/appointments/appointment-actions";
 import { AppointmentStatusDialog } from "@/components/appointments/appointment-status-actions";
 import { getSocketIO } from "@/lib/socketio-client";
 import type { Appointment, AppointmentStats, Doctor, AppointmentPageView } from "@/components/appointments/appointment-types";
@@ -24,7 +23,6 @@ export default function Appointments({ initialDoctors }: { initialDoctors: Docto
   const [viewingAppt, setViewingAppt] = useState<Appointment | null>(null);
   const [editingAppt, setEditingAppt] = useState<Appointment | null>(null);
   const [cancellingAppt, setCancellingAppt] = useState<Appointment | null>(null);
-  const [deletingAppt, setDeletingAppt] = useState<Appointment | null>(null);
   const [statusAppt, setStatusAppt] = useState<Appointment | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -110,10 +108,13 @@ export default function Appointments({ initialDoctors }: { initialDoctors: Docto
     fetchData();
   }
 
-  function handleDeleted(id: string) {
-    setAppointments((prev) => prev.filter((a) => a.id !== id));
-    setDeletingAppt(null);
-    fetchData();
+  async function handleDelete(appt: Appointment) {
+    const res = await fetch(`/api/appointments/${appt.id}`, { method: "DELETE" });
+    const json = await res.json();
+    if (json.success) {
+      setAppointments((prev) => prev.filter((a) => a.id !== appt.id));
+      fetchData();
+    }
   }
 
   function handleStatusChanged(appt: Appointment) {
@@ -174,9 +175,11 @@ export default function Appointments({ initialDoctors }: { initialDoctors: Docto
           onView={(appt) => setViewingAppt(appt)}
           onEdit={(appt) => setEditingAppt(appt)}
           onCancel={(appt) => setCancellingAppt(appt)}
-          onDelete={(appt) => setDeletingAppt(appt)}
+          onDelete={handleDelete}
         />
       </main>
+
+
 
       <AppointmentViewDialog
         appointment={viewingAppt}
@@ -197,13 +200,6 @@ export default function Appointments({ initialDoctors }: { initialDoctors: Docto
         open={!!cancellingAppt}
         onOpenChange={(open) => { if (!open) setCancellingAppt(null); }}
         onStatusChanged={handleStatusChanged}
-      />
-
-      <AppointmentDeleteDialog
-        appointment={deletingAppt}
-        open={!!deletingAppt}
-        onOpenChange={(open) => { if (!open) setDeletingAppt(null); }}
-        onDeleted={handleDeleted}
       />
 
       <AppointmentStatusDialog

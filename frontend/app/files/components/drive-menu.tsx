@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/context-menu";
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/file-system/use-favorites";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 type MenuVariant = "dropdown" | "context";
 
@@ -99,7 +100,7 @@ function isDropdown(variant: MenuVariant) {
   return variant === "dropdown";
 }
 
-function Item({ variant, children, className, onSelect }: { variant: MenuVariant; children: React.ReactNode; className?: string; onSelect: () => void }) {
+function Item({ variant, children, className, onSelect }: { variant: MenuVariant; children: React.ReactNode; className?: string; onSelect?: () => void }) {
   if (isDropdown(variant)) {
     return (
       <DropdownMenuItem className={className} onSelect={onSelect}>
@@ -160,18 +161,19 @@ export function FileMenu({ file, variant }: { file: FileItem; variant: MenuVaria
       </Item>
       <Separator variant={variant} />
       {!readonly && (
-        <Item
-          variant={variant}
-          className="text-destructive"
-          onSelect={() => {
-            if (confirm(`Delete "${file.originalName}"?`)) {
-              useFileSystemStore.getState().removeFile(file.id);
-              api.deleteFile(file.id).catch(console.error);
-            }
+        <DeleteConfirmDialog
+          title="Delete file"
+          description={`Are you sure you want to delete "${file.originalName}"? This will move it to the recycle bin.`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            useFileSystemStore.getState().removeFile(file.id);
+            api.deleteFile(file.id).catch(console.error);
           }}
         >
-          <Trash2Icon className="size-4 mr-2.5" /> Delete
-        </Item>
+          <Item variant={variant} className="text-destructive">
+            <Trash2Icon className="size-4 mr-2.5" /> Delete
+          </Item>
+        </DeleteConfirmDialog>
       )}
     </>
   );
@@ -211,18 +213,19 @@ export function FolderMenu({ folder, variant }: { folder: FolderItem; variant: M
       </Item>
       <Separator variant={variant} />
       {!readonly && (
-        <Item
-          variant={variant}
-          className="text-destructive"
-          onSelect={() => {
-            if (confirm(`Delete folder "${folder.name}"?`)) {
-              useFileSystemStore.getState().removeFolder(folder.id);
-              api.deleteFolder(folder.id).catch(console.error);
-            }
+        <DeleteConfirmDialog
+          title="Delete folder"
+          description={`Are you sure you want to delete folder "${folder.name}"? This will move it to the recycle bin.`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            useFileSystemStore.getState().removeFolder(folder.id);
+            api.deleteFolder(folder.id).catch(console.error);
           }}
         >
-          <Trash2Icon className="size-4 mr-2.5" /> Delete
-        </Item>
+          <Item variant={variant} className="text-destructive">
+            <Trash2Icon className="size-4 mr-2.5" /> Delete
+          </Item>
+        </DeleteConfirmDialog>
       )}
     </>
   );

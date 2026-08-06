@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -230,22 +231,24 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
 
 function DeleteOrgButton({ org }: { org: OrgRow }) {
   return (
-    <form action={deleteOrganization}>
-      <input type="hidden" name="id" value={org.id} />
+    <DeleteConfirmDialog
+      title="Delete organization"
+      description={`Are you sure you want to delete organization "${org.name}"? This will also remove all its members. This action cannot be undone.`}
+      confirmLabel="Delete"
+      onConfirm={async () => {
+        const fd = new FormData();
+        fd.set("id", org.id);
+        await deleteOrganization(fd);
+      }}
+    >
       <Button
-        type="submit"
         variant="ghost"
         size="icon"
         className="text-black hover:text-gray-600 hover:bg-blue-50"
-        onClick={(e) => {
-          if (!confirm(`Delete organization "${org.name}"? This will also remove all its members.`)) {
-            e.preventDefault();
-          }
-        }}
       >
         <Trash2Icon className="size-4" />
       </Button>
-    </form>
+    </DeleteConfirmDialog>
   );
 }
 

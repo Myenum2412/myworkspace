@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PlusIcon, QrCodeIcon, EyeIcon, Trash2Icon, CameraAltIcon } from "@/lib/icons";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { PageHeader } from "@/components/page-header";
 
 interface Gallery {
@@ -48,7 +49,6 @@ export function PhotographyPageClient({ orgId, galleries: initialGalleries }: { 
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this gallery and all its data?")) return;
     const res = await fetch(`/api/photography/galleries?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       setGalleries((prev) => prev.filter((g) => g.id !== id));
@@ -121,9 +121,16 @@ export function PhotographyPageClient({ orgId, galleries: initialGalleries }: { 
                 <Button size="sm" variant="outline" className="flex-1" onClick={() => router.push(`/photography/galleries/${gallery.id}?tab=qr`)}>
                   <QrCodeIcon className="size-3 mr-1" /> QR
                 </Button>
-                <Button size="sm" variant="ghost" className="shrink-0" onClick={() => handleDelete(gallery.id)}>
-                  <Trash2Icon className="size-3 text-destructive" />
-                </Button>
+                <DeleteConfirmDialog
+                  title="Delete gallery"
+                  description={`Delete "${gallery.name}" and all its data? This action cannot be undone.`}
+                  confirmLabel="Delete"
+                  onConfirm={() => handleDelete(gallery.id)}
+                >
+                  <Button size="sm" variant="ghost" className="shrink-0">
+                    <Trash2Icon className="size-3 text-destructive" />
+                  </Button>
+                </DeleteConfirmDialog>
               </div>
             </CardContent>
           </Card>

@@ -15,6 +15,7 @@ import {
   Trash2Icon,
   MoreHorizontalIcon,
 } from "@/lib/icons";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 export type Task = {
   _id: string;
@@ -169,15 +170,15 @@ export function createColumns(callbacks: TaskColumnCallbacks = {}): ColumnDef<Ta
                 <PencilIcon className="mr-2 size-4" />Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  onDelete?.(task);
-                }}
+              <DeleteConfirmDialog
+                title="Delete Task"
+                description="Are you sure you want to delete this task? This action cannot be undone."
+                onConfirm={() => onDelete?.(task)}
               >
-                <Trash2Icon className="mr-2 size-4" />Delete
-              </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                  <Trash2Icon className="mr-2 size-4" />Delete
+                </DropdownMenuItem>
+              </DeleteConfirmDialog>
             </DropdownMenuContent>
           </DropdownMenu>
         );

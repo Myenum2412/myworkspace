@@ -51,7 +51,6 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
   }, [localTasks]);
 
   const handleDelete = useCallback(async (t: TeamTask) => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
     try {
       const res = await apiFetch(`/api/tasks/${t._id}`, { method: "DELETE" });
       if (res.ok) setLocalTasks((prev) => prev.filter((x) => x._id !== t._id));

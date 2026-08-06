@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Appointment, AppointmentStatus } from "@/components/appointments/appointment-types";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 export const statusColorMap: Record<AppointmentStatus, string> = {
   Pending: "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
@@ -98,7 +99,7 @@ export function makeActionsCell(
   onView: (appt: Appointment) => void,
   onEdit: (appt: Appointment) => void,
   onCancel: (appt: Appointment) => void,
-  onDelete: (appt: Appointment) => void,
+  onDelete: (appt: Appointment) => void | Promise<void>,
 ): ColumnDef<Appointment> {
   return {
     id: "actions",
@@ -127,13 +128,16 @@ export function makeActionsCell(
                 Cancel Appointment
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onSelect={() => onDelete(appt)}
+            <DeleteConfirmDialog
+              title="Delete Appointment"
+              description={`Are you sure you want to delete appointment ${appt.appointmentId} for ${appt.patientName}? This action cannot be undone.`}
+              onConfirm={() => onDelete(appt)}
             >
-              <Trash2 className="mr-2 size-4" />
-              Delete
-            </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive focus:text-destructive">
+                <Trash2 className="mr-2 size-4" />
+                Delete
+              </DropdownMenuItem>
+            </DeleteConfirmDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       );

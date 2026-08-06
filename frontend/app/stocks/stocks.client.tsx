@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Stock } from "@/app/stocks/columns";
 import { DataTable } from "@/app/stocks/data-table";
-import { columns } from "@/app/stocks/columns";
+import { columns, makeActionsCell } from "@/app/stocks/columns";
 import { StockForm } from "@/app/stocks/stock-form";
 import Stats07 from "@/components/stats-07";
 
@@ -28,7 +28,6 @@ export default function StocksPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [viewingStock, setViewingStock] = useState<Stock | null>(null);
-  const [deletingStock, setDeletingStock] = useState<Stock | null>(null);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -71,6 +70,11 @@ export default function StocksPage() {
   }
 
   const handleView = useCallback((stock: Stock) => setViewingStock(stock), []);
+
+  const handleEdit = useCallback((stock: Stock) => {
+    setEditingStock(stock);
+    setShowForm(true);
+  }, []);
 
   const stats = useMemo(() => {
     const totalItems = stocks.length;
@@ -130,15 +134,13 @@ export default function StocksPage() {
     }
   }
 
-  async function handleDelete() {
-    if (!deletingStock) return;
+  async function handleDelete(stock: Stock) {
     try {
-      await fetch(`/api/stocks/${encodeURIComponent(deletingStock.id)}`, {
+      await fetch(`/api/stocks/${encodeURIComponent(stock.id)}`, {
         method: "DELETE",
         credentials: "include",
       });
       await refreshStocks();
-      setDeletingStock(null);
     } catch {
     }
   }
@@ -222,7 +224,7 @@ export default function StocksPage() {
         <Stats07 items={statsItems} />
 
         <DataTable
-            columns={columns}
+            columns={[...columns, makeActionsCell(handleView, handleEdit, handleDelete)]}
             data={filteredData}
             onRowClick={handleView}
             searchQuery={searchQuery}
@@ -280,25 +282,6 @@ export default function StocksPage() {
                 onSave={handleSave}
                 onCancel={() => { setShowForm(false); setEditingStock(null); }}
               />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {deletingStock && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDeletingStock(null)}>
-          <div className="bg-background rounded-sm shadow-lg w-full max-w-md m-4" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold">Delete Stock</h2>
-            </div>
-            <div className="p-6">
-              <p className="text-sm text-muted-foreground mb-6">
-                Are you sure you want to delete <strong>{deletingStock?.productName}</strong>? This action cannot be undone.
-              </p>
-              <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setDeletingStock(null)}>Cancel</Button>
-                <Button variant="destructive" onClick={handleDelete}>Delete</Button>
-              </div>
             </div>
           </div>
         </div>

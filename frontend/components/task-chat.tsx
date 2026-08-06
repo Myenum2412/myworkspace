@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { 
   SendIcon, MessageSquareIcon, PaperclipIcon,
   FileIcon, FileTextIcon, ImageIcon, FileArchiveIcon, XIcon, 
@@ -233,7 +234,6 @@ export function TaskChat({
   const [editingId, setEditingId] = useState<string | null>(null);
 
   async function deleteComment(id: string) {
-    if (!confirm("Delete this message?")) return;
     try {
       const res = await fetch(`/api/tasks/${taskId}/comments/${id}`, {
         method: "DELETE",
@@ -383,9 +383,16 @@ export function TaskChat({
                           <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-900" onClick={() => { setEditingId(c.id); setInput(c.content); }}>
                             <PencilIcon className="size-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => deleteComment(c.id)}>
-                            <Trash2Icon className="size-3.5" />
-                          </Button>
+                          <DeleteConfirmDialog
+                            title="Delete message"
+                            description="Are you sure you want to delete this message? This action cannot be undone."
+                            confirmLabel="Delete"
+                            onConfirm={() => deleteComment(c.id)}
+                          >
+                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                              <Trash2Icon className="size-3.5" />
+                            </Button>
+                          </DeleteConfirmDialog>
                         </>
                       )}
                     </div>

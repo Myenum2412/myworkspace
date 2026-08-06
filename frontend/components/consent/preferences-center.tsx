@@ -6,6 +6,7 @@ import { useConsentStore, ConsentCategories } from "@/lib/consent/store";
 import { getConsentHistory } from "@/lib/consent/services";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 const CATEGORIES: { key: keyof ConsentCategories; title: string; description: string }[] = [
   { key: "essential", title: "Essential", description: "Required for the website to function. Includes authentication, security, and session management." },
@@ -46,7 +47,6 @@ export function PreferencesCenter() {
   };
 
   const handleWithdraw = async () => {
-    if (!confirm("Are you sure you want to withdraw all consent? This will disable all non-essential cookies.")) return;
     setLoading(true);
     await withdrawConsent();
     setLocalCats(null);
@@ -109,10 +109,18 @@ export function PreferencesCenter() {
           <Check className="mr-1.5" />
           {loading ? "Saving..." : "Save Preferences"}
         </Button>
-        <Button onClick={handleWithdraw} variant="outline" disabled={loading}>
-          <Trash2 className="mr-1.5" />
-          Withdraw Consent
-        </Button>
+        <DeleteConfirmDialog
+          title="Withdraw consent"
+          description="Are you sure you want to withdraw all consent? This will disable all non-essential cookies."
+          confirmLabel="Withdraw"
+          onConfirm={handleWithdraw}
+          disabled={loading}
+        >
+          <Button variant="outline" disabled={loading}>
+            <Trash2 className="mr-1.5" />
+            Withdraw Consent
+          </Button>
+        </DeleteConfirmDialog>
         <Button onClick={loadHistory} variant="ghost" size="sm">
           <RotateCcw className="mr-1.5" />
           {showHistory ? "Hide History" : "View History"}

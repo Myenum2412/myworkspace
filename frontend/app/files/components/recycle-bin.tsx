@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table";
 import { useFileSystemStore } from "@/lib/file-system/store";
 import * as api from "@/lib/file-system/api";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 export function RecycleBin() {
   const { orgId, search, setSearch } = useFileSystemStore();
@@ -38,14 +39,12 @@ export function RecycleBin() {
   }
 
   async function handlePermanentDelete(id: string) {
-    if (!confirm("Permanently delete this file? This cannot be undone.")) return;
     setDeleting(id);
     try { await api.permanentDeleteFile(id); refetch(); } catch (e) { console.error(e); }
     finally { setDeleting(null); }
   }
 
   async function handleEmptyBin() {
-    if (!confirm(`Permanently delete all ${files?.length || 0} files in the recycle bin?`)) return;
     if (!files) return;
     const ids = files.map((f) => f.id);
     try { await api.bulkPermanentDelete(ids); refetch(); } catch (e) { console.error(e); }
@@ -63,9 +62,16 @@ export function RecycleBin() {
           </p>
         </div>
         {(files?.length || 0) > 0 && (
-          <Button variant="destructive" size="sm" onClick={handleEmptyBin}>
-            <Trash2Icon className="mr-1.5" /> Empty Bin
-          </Button>
+          <DeleteConfirmDialog
+            title="Empty recycle bin"
+            description={`Permanently delete all ${files?.length || 0} files in the recycle bin? This action cannot be undone.`}
+            confirmLabel="Empty Bin"
+            onConfirm={handleEmptyBin}
+          >
+            <Button variant="destructive" size="sm">
+              <Trash2Icon className="mr-1.5" /> Empty Bin
+            </Button>
+          </DeleteConfirmDialog>
         )}
       </div>
 
@@ -131,16 +137,23 @@ export function RecycleBin() {
                         <RotateCcwIcon className="size-3 mr-1" />
                         Restore
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-destructive"
-                        onClick={() => handlePermanentDelete(file.id)}
+                      <DeleteConfirmDialog
+                        title="Delete file"
+                        description="Permanently delete this file? This cannot be undone."
+                        confirmLabel="Delete"
                         disabled={deleting === file.id}
+                        onConfirm={() => handlePermanentDelete(file.id)}
                       >
-                        <AlertTriangleIcon className="size-3 mr-1" />
-                        Delete
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-destructive"
+                          disabled={deleting === file.id}
+                        >
+                          <AlertTriangleIcon className="size-3 mr-1" />
+                          Delete
+                        </Button>
+                      </DeleteConfirmDialog>
                     </div>
                   </TableCell>
                 </TableRow>

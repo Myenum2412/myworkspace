@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 export type Contractor = {
   id: string;
@@ -127,7 +128,7 @@ export const columns: ColumnDef<Contractor>[] = [
 export function makeActionsCell(
   onView: (contractor: Contractor) => void,
   onEdit: (contractor: Contractor) => void,
-  onDelete: (contractor: Contractor) => void,
+  onDelete: (contractor: Contractor) => void | Promise<void>,
 ): ColumnDef<Contractor> {
   return {
     id: "actions",
@@ -150,13 +151,16 @@ export function makeActionsCell(
               <Pencil className="mr-2 size-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onSelect={() => onDelete(c)}
+            <DeleteConfirmDialog
+              title="Delete Contractor"
+              description={`Are you sure you want to delete ${c.fullName}? This action cannot be undone.`}
+              onConfirm={() => onDelete(c)}
             >
-              <Trash2 className="mr-2 size-4" />
-              Delete
-            </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive focus:text-destructive">
+                <Trash2 className="mr-2 size-4" />
+                Delete
+              </DropdownMenuItem>
+            </DeleteConfirmDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       );

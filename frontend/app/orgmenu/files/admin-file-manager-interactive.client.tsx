@@ -38,6 +38,7 @@ import {
   FilesIcon,
 } from "@/lib/icons";
 import { UploadThingDropzone } from "@/components/elements/uploadthing-dropzone";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 type FileCategory = "profile" | "report" | "general";
 
@@ -82,7 +83,6 @@ function getFileIcon(mimeType: string) {
 
 function DeleteFileButton({ file, onDeleted }: { file: FileItem; onDeleted: () => void }) {
   async function handleDelete() {
-    if (!confirm(`Delete "${file.originalName}"?`)) return;
     try {
       const res = await fetch(`/api/files/${file.id}`, {
         method: "DELETE",
@@ -93,14 +93,20 @@ function DeleteFileButton({ file, onDeleted }: { file: FileItem; onDeleted: () =
   }
 
   return (
-    <Button
-      onClick={handleDelete}
-      variant="ghost"
-      size="icon"
-      className="text-black hover:text-gray-600 hover:bg-blue-50"
+    <DeleteConfirmDialog
+      title="Delete file"
+      description={`Delete "${file.originalName}"? This action cannot be undone.`}
+      confirmLabel="Delete"
+      onConfirm={handleDelete}
     >
-      <Trash2Icon className="size-3.5" />
-    </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-black hover:text-gray-600 hover:bg-blue-50"
+      >
+        <Trash2Icon className="size-3.5" />
+      </Button>
+    </DeleteConfirmDialog>
   );
 }
 

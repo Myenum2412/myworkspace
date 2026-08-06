@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { ROLES } from "@/lib/rbac";
 import { PencilIcon, Trash2Icon, AlertCircleIcon } from "@/lib/icons";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { updateRecentUser, deleteRecentUser, deleteOrganization } from "@/actions/admin";
 
 interface SignupRow {
@@ -108,38 +109,46 @@ export function EditSignupDialog({
 
 export function DeleteSignupForm({ user }: { user: SignupRow }) {
   return (
-    <form action={deleteRecentUser}>
-      <input type="hidden" name="userId" value={user.userId} />
+    <DeleteConfirmDialog
+      title="Delete user"
+      description={`Are you sure you want to delete user "${user.name}"? This action cannot be undone.`}
+      confirmLabel="Delete"
+      onConfirm={async () => {
+        const fd = new FormData();
+        fd.set("userId", user.userId);
+        await deleteRecentUser(fd);
+      }}
+    >
       <Button
-        type="submit"
         variant="ghost"
         size="icon"
         className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-        onClick={(e) => {
-          if (!confirm(`Delete user "${user.name}"?`)) e.preventDefault();
-        }}
       >
         <Trash2Icon className="size-3.5" />
       </Button>
-    </form>
+    </DeleteConfirmDialog>
   );
 }
 
 export function DeleteOrgDashboardButton({ orgId, orgName }: { orgId: string; orgName: string }) {
   return (
-    <form action={deleteOrganization}>
-      <input type="hidden" name="id" value={orgId} />
+    <DeleteConfirmDialog
+      title="Delete organization"
+      description={`Are you sure you want to delete organization "${orgName}"? This action cannot be undone.`}
+      confirmLabel="Delete"
+      onConfirm={async () => {
+        const fd = new FormData();
+        fd.set("id", orgId);
+        await deleteOrganization(fd);
+      }}
+    >
       <Button
-        type="submit"
         variant="ghost"
         size="icon"
         className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-        onClick={(e) => {
-          if (!confirm(`Delete organization "${orgName}"?`)) e.preventDefault();
-        }}
       >
         <Trash2Icon className="size-3.5" />
       </Button>
-    </form>
+    </DeleteConfirmDialog>
   );
 }

@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { ContractorList } from "@/components/contractors/contractor-list";
 import { ContractorForm } from "@/components/contractors/contractor-form";
 import { ContractorViewDialog } from "@/components/contractors/contractor-view-dialog";
-import { ContractorEditDialog, ContractorDeleteDialog } from "@/components/contractors/contractor-actions";
+import { ContractorEditDialog } from "@/components/contractors/contractor-actions";
 import type { Contractor } from "@/app/contractors/columns";
 
 type ContractorsPageProps = {
@@ -20,7 +20,6 @@ export default function ContractorsPage({ searchQuery: externalSearchQuery, onSe
   const [pageView, setPageView] = useState<"list" | "add">("list");
   const [viewingContractor, setViewingContractor] = useState<Contractor | null>(null);
   const [editingContractor, setEditingContractor] = useState<Contractor | null>(null);
-  const [deletingContractor, setDeletingContractor] = useState<Contractor | null>(null);
 
   const filteredContractors = useMemo(() => {
     if (!externalSearchQuery) return contractors;
@@ -57,9 +56,14 @@ export default function ContractorsPage({ searchQuery: externalSearchQuery, onSe
     setContractors((prev) => prev.map((c) => (c.id === contractor.id ? contractor : c)));
   }
 
-  function handleContractorDeleted(id: string) {
-    setContractors((prev) => prev.filter((c) => c.id !== id));
-    setDeletingContractor(null);
+  async function handleDelete(contractor: Contractor) {
+    const res = await fetch(`/api/contractors/${contractor.id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (res.ok) {
+      setContractors((prev) => prev.filter((c) => c.id !== contractor.id));
+    }
   }
 
   if (pageView === "add") {
@@ -120,7 +124,7 @@ export default function ContractorsPage({ searchQuery: externalSearchQuery, onSe
           contractors={filteredContractors}
           onView={(c) => setViewingContractor(c)}
           onEdit={(c) => setEditingContractor(c)}
-          onDelete={(c) => setDeletingContractor(c)}
+          onDelete={handleDelete}
         />
       </main>
 
@@ -135,13 +139,6 @@ export default function ContractorsPage({ searchQuery: externalSearchQuery, onSe
         open={!!editingContractor}
         onOpenChange={(open) => { if (!open) setEditingContractor(null); }}
         onContractorUpdated={handleContractorUpdated}
-      />
-
-      <ContractorDeleteDialog
-        contractor={deletingContractor}
-        open={!!deletingContractor}
-        onOpenChange={(open) => { if (!open) setDeletingContractor(null); }}
-        onContractorDeleted={handleContractorDeleted}
       />
     </>
   );

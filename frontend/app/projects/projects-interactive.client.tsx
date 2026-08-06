@@ -13,7 +13,7 @@ import ProjectsDashboard from "./projects-dashboard";
 import { useIndustry } from "@/components/industry-provider";
 
 import { ProjectCreateForm, ProjectEditForm } from "@/components/projects/project-form";
-import ProjectDeleteDialog from "@/components/projects/project-card";
+import DeleteConfirmDialog from "@/components/dialog-03";
 import { createProjectAction } from "@/actions/projects";
 
 export interface ProjectsInteractiveProps {
@@ -202,9 +202,6 @@ export default function ProjectsInteractive({
     }
   }
 
-  const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
   function handleView(project: Project) {
     setViewProject(project);
   }
@@ -248,7 +245,6 @@ export default function ProjectsInteractive({
   }
 
   async function handleDelete(project: Project) {
-    setDeleting(true);
     try {
       const res = await fetch(`/api/projects/${project.id}`, {
         method: "DELETE",
@@ -256,11 +252,9 @@ export default function ProjectsInteractive({
       });
       if (res.ok) {
         setProjects((prev) => prev.filter((p) => p.id !== project.id));
+        if (viewProject?.id === project.id) setViewProject(null);
       }
-    } catch {} finally {
-      setDeleting(false);
-      setDeleteConfirm(null);
-    }
+    } catch {}
   }
 
   async function handleSave() {
@@ -466,9 +460,15 @@ export default function ProjectsInteractive({
                 <Button variant="outline" size="sm" className="touch-target" onClick={() => handleEditFromView(viewProject)}>
                   Edit Project
                 </Button>
-                <Button variant="destructive" size="sm" className="touch-target" onClick={() => setDeleteConfirm(viewProject)}>
-                  <Trash2Icon className="mr-2 size-4" />Delete
-                </Button>
+                <DeleteConfirmDialog
+                  title="Delete Project"
+                  description={`Are you sure you want to delete ${viewProject.name}? This action cannot be undone.`}
+                  onConfirm={() => handleDelete(viewProject)}
+                >
+                  <Button variant="destructive" size="sm" className="touch-target">
+                    <Trash2Icon className="mr-2 size-4" />Delete
+                  </Button>
+                </DeleteConfirmDialog>
               </div>
             </div>
             <ProjectDetailedView project={viewProject} orgId={orgId} />
@@ -507,19 +507,12 @@ export default function ProjectsInteractive({
               loading={loading}
               onView={handleView}
               onEdit={handleEdit}
-              onDelete={(p) => setDeleteConfirm(p)}
+              onDelete={handleDelete}
               onNewProject={() => setShowForm(true)}
             />
           </div>
         )}
       </main>
-
-      <ProjectDeleteDialog
-        deleteConfirm={deleteConfirm}
-        setDeleteConfirm={setDeleteConfirm}
-        deleting={deleting}
-        onDelete={handleDelete}
-      />
     </>
   );
 }

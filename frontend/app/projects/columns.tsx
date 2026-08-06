@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { FolderIcon } from "@/lib/icons";
 import { PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon, ClockIcon } from "@/lib/icons";
 import type { Project } from "@/components/projects/project-types";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import type { TermKey } from "@/lib/industry-terms";
 
 function getProjectDueStatus(project: Project): "overdue" | "due-soon" | "normal" {
@@ -207,12 +208,15 @@ export function buildProjectColumns(t: (key: TermKey) => string): ColumnDef<Proj
               <PencilIcon className="size-3.5 mr-2" /> Edit
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => meta?.onDelete?.(project)}
-              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+            <DeleteConfirmDialog
+              title="Delete Project"
+              description={`Are you sure you want to delete ${project.name}? This action cannot be undone.`}
+              onConfirm={() => meta?.onDelete?.(project)}
             >
-              <Trash2Icon className="size-3.5 mr-2" /> Delete
-            </DropdownMenuItem>
+              <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                <Trash2Icon className="size-3.5 mr-2" /> Delete
+              </DropdownMenuItem>
+            </DeleteConfirmDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       );

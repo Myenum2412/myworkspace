@@ -162,7 +162,6 @@ export default function TeamsInteractive({ teams: initialTeams, members: initial
   }
 
   async function handleDelete(teamId: string) {
-    if (!confirm("Delete this team? All members will be removed.")) return;
     try {
       const res = await fetch(`/api/teams/${teamId}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {

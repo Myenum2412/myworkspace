@@ -22,6 +22,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import type { TeamDetail, TeamMember, OrgMember } from "./team-types";
 import { getInitials } from "./team-types";
 
@@ -91,7 +92,13 @@ export function TeamMembers({
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{team.members.length} members</Badge>
           <Button variant="outline" size="sm" onClick={() => onShowAddMemberChange(true)}><UserPlusIcon className="mr-2" />Add Member</Button>
-          <Button variant="destructive" size="sm" onClick={() => onDelete(team.id)}><Trash2Icon className="mr-2" />Delete Team</Button>
+          <DeleteConfirmDialog
+            title="Delete Team"
+            description="Are you sure you want to delete this team? All members will be removed. This action cannot be undone."
+            onConfirm={() => onDelete(team.id)}
+          >
+            <Button variant="destructive" size="sm"><Trash2Icon className="mr-2" />Delete Team</Button>
+          </DeleteConfirmDialog>
         </div>
       </div>
 

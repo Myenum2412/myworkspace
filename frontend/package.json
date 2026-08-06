@@ -84,6 +84,7 @@
     "jspdf": "^4.2.1",
     "lodash.groupby": "^4.6.0",
     "lodash.throttle": "^4.1.1",
+    "lucide-react": "^1.28.0",
     "mongodb": "^7.3.0",
     "motion": "^12.40.0",
     "next": "^16.2.10",
