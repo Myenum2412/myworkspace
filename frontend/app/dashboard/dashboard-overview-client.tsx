@@ -25,6 +25,7 @@ import {
   ListTodo, Clock, CalendarIcon, TrendingUpIcon,
   Users, FolderKanbanIcon, Building2Icon,
   IndianRupeeIcon, ArrowRightIcon, SearchIcon, LayoutDashboardIcon,
+  SendIcon,
 } from "@/lib/icons"
 import Link from "next/link"
 import DashboardCalendarPopup from "@/components/dashboard-calendar-popup"
@@ -77,6 +78,9 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
   const { t } = useIndustry();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(initialData || null);
   const [loading, setLoading] = useState(!initialData);
+  const [submissions, setSubmissions] = useState<{
+    total: number; ffu: number; app: number; rr: number; totalWeight: number;
+  }>({ total: 0, ffu: 0, app: 0, rr: 0, totalWeight: 0 });
 
   useEffect(() => {
     if (initialData) return;
@@ -86,6 +90,25 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [initialData]);
+
+  useEffect(() => {
+    fetch("/api/staffs/tasks")
+      .then((r) => r.json())
+      .then((data) => {
+        const tasks = Array.isArray(data?.initialTasks) ? data.initialTasks : [];
+        let ffu = 0, app = 0, rr = 0, totalWeight = 0;
+        for (const task of tasks) {
+          const status = String(task.status || "").toUpperCase();
+          if (["DONE", "COMPLETED", "APPROVED", "ACCEPTED", "SUCCESS"].includes(status)) app++;
+          else if (["REVIEW", "REJECTED", "REVISION", "REREVIEW", "REVISE", "R&R"].includes(status)) rr++;
+          else ffu++;
+          const weight = parseFloat(String(task.priority || "").replace(/[^\d.\-]/g, ""));
+          if (!isNaN(weight)) totalWeight += weight;
+        }
+        setSubmissions({ total: tasks.length, ffu, app, rr, totalWeight });
+      })
+      .catch(() => {});
+  }, []);
 
   const {
     totalTasks = 0, completedTasks = 0, inProgressTasks = 0, overdueTasks = 0,
@@ -279,6 +302,44 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="flex flex-col">
+        <CardHeader className="px-4 pt-4 sm:px-5">
+          <div className="flex items-start justify-between gap-3">
+            <CardTitleWithIcon icon={<SendIcon className="size-3.5 sm:size-4" />}>
+              {t("nav.submissions")} Overview
+            </CardTitleWithIcon>
+            <RingStat value={submissions.app} max={Math.max(submissions.total, 1)} label="approved" fill="var(--chart-2)" />
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="rounded-xl border bg-card p-4">
+              <p className="text-xs text-muted-foreground">Total Submissions</p>
+              <p className="text-2xl font-semibold tabular-nums">{submissions.total}</p>
+            </div>
+            <div className="rounded-xl border bg-card p-4">
+              <p className="text-xs text-muted-foreground">FFU</p>
+              <p className="text-2xl font-semibold tabular-nums text-blue-600">{submissions.ffu}</p>
+            </div>
+            <div className="rounded-xl border bg-card p-4">
+              <p className="text-xs text-muted-foreground">Approved</p>
+              <p className="text-2xl font-semibold tabular-nums text-green-600">{submissions.app}</p>
+            </div>
+            <div className="rounded-xl border bg-card p-4">
+              <p className="text-xs text-muted-foreground">R&R</p>
+              <p className="text-2xl font-semibold tabular-nums text-amber-600">{submissions.rr}</p>
+            </div>
+            <div className="rounded-xl border bg-card p-4">
+              <p className="text-xs text-muted-foreground">Total Weight</p>
+              <p className="text-2xl font-semibold tabular-nums">
+                {submissions.totalWeight > 0 ? `${Math.round(submissions.totalWeight * 100) / 100} t` : "—"}
+              </p>
+            </div>
+          </div>
+          <ViewMoreFooter href="/submissions" label="View Submissions" />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-3 sm:gap-4 md:gap-5 grid-cols-1 lg:grid-cols-6">
         <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">

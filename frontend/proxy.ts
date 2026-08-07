@@ -36,7 +36,7 @@ const WORKSPACE_PREFIXES = [
   "/createtask", "/createproject",
   "/upload", "/billing", "/files",
   "/attendance", "/appointments",
-  "/ai", "/engagement", "/stocks", "/reworks", "/addons",
+  "/ai", "/engagement", "/stocks", "/reworks", "/submissions", "/addons",
   "/chat", "/notifications",
 ];
 

@@ -27,6 +27,7 @@ import {
   PackageIcon,
   RotateCcwIcon,
   BarChart3Icon,
+  SendIcon,
 } from "@/lib/icons";
 import { useIndustry } from "@/components/industry-provider";
 
@@ -77,6 +78,7 @@ export function AppSidebar({
     { title: t("nav.engagement"), url: "/engagement", icon: <HeartHandshakeIcon className="size-6" /> },
     { title: t("nav.inventory"), url: "/stocks", icon: <PackageIcon className="size-6" /> },
     { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-6" /> },
+    { title: t("nav.submissions"), url: "/submissions", icon: <SendIcon className="size-6" /> },
     { title: t("nav.reports"), url: "/dashboard/reports", icon: <BarChart3Icon className="size-6" /> },
   ];
 
