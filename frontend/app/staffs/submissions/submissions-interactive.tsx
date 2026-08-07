@@ -24,6 +24,7 @@ import {
   Loader2Icon,
   FolderKanbanIcon,
   ChevronDown,
+  PencilIcon,
 } from "@/lib/icons";
 import Stats07 from "@/components/stats-07";
 
@@ -123,6 +124,21 @@ function normalizeSubmissionStatus(value?: string): SubmissionStatus {
   if (["DONE", "COMPLETED", "APPROVED", "ACCEPTED", "SUCCESS"].includes(upper)) return "APP";
   if (["REVIEW", "REJECTED", "REVISION", "REREVIEW", "REVISE", "R&R"].includes(upper)) return "R&R";
   return upper || "FFU";
+}
+
+function parseWeight(value: string | number | undefined): number {
+  if (value === null || value === undefined) return 0;
+  const n = parseFloat(String(value).replace(/[^\d.\-]/g, ""));
+  return isNaN(n) ? 0 : n;
+}
+
+function isValidWeight(value: string): boolean {
+  return value.trim() !== "" && !Number.isNaN(parseWeight(value));
+}
+
+function formatWeight(value: number): string {
+  const rounded = Math.round(value * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
 }
 
 // ─── Inline Add Form Component ────────────────────────────────────────────────
@@ -354,7 +370,7 @@ function AddSubmissionForm({
   };
 
   const handleCreateSubmissions = () => {
-    const validRows = rows.filter((r) => r.projectName && r.drawNo.trim() !== "");
+    const validRows = rows.filter((r) => r.projectName && r.drawNo.trim() !== "" && isValidWeight(r.weight));
     if (validRows.length === 0) return;
     onSave(validRows);
   };
@@ -452,8 +468,11 @@ function AddSubmissionForm({
                 </div>
 
                 <div className="col-span-1 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Weight</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Weight *</label>
                   <Input
+                    type="number"
+                    min="0"
+                    step="any"
                     value={row.weight}
                     onChange={(e) => updateRowField(row.rowId, "weight", e.target.value)}
                     placeholder="Rebar wgt"
@@ -847,7 +866,7 @@ function AddSubmissionForm({
         </Button>
         <Button
           onClick={handleCreateSubmissions}
-          disabled={rows.some(r => !r.projectName || r.drawNo.trim() === "")}
+          disabled={rows.some(r => !r.projectName || r.drawNo.trim() === "" || !isValidWeight(r.weight))}
           className="bg-primary hover:bg-primary/95 text-white font-semibold text-xs h-9 px-5"
         >
           Create Submissions
@@ -1002,12 +1021,13 @@ function SubmissionsTab({
                   <th className="px-4 py-3.5 font-semibold text-center whitespace-nowrap">Couplers</th>
                   <th className="px-4 py-3.5 font-semibold text-center whitespace-nowrap">Mesh List</th>
                   <th className="px-4 py-3.5 font-semibold text-center whitespace-nowrap w-24">Details</th>
+                  <th className="px-4 py-3.5 font-semibold text-center whitespace-nowrap w-20">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {items.length === 0 ? (
                   <tr>
-                    <td colSpan={12} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={13} className="px-4 py-10 text-center text-muted-foreground">
                       No submissions yet. Click &quot;Add Submission&quot; to get started.
                     </td>
                   </tr>
@@ -1033,7 +1053,7 @@ function SubmissionsTab({
                         <Input value={item.description} onChange={(e) => setItems((p) => p.map((i) => i.id === item.id ? { ...i, description: e.target.value } : i))} className="h-8 min-w-[180px] text-xs bg-white border-slate-200 focus:border-blue-500" placeholder="Work Description" />
                       </td>
                       <td className="px-4 py-2">
-                        <Input value={item.weight} onChange={(e) => setItems((p) => p.map((i) => i.id === item.id ? { ...i, weight: e.target.value } : i))} className="h-8 w-24 text-xs bg-white border-slate-200 focus:border-blue-500" placeholder="2.4 t" />
+                        <Input type="number" min="0" step="any" value={item.weight} onChange={(e) => setItems((p) => p.map((i) => i.id === item.id ? { ...i, weight: e.target.value } : i))} className="h-8 w-24 text-xs bg-white border-slate-200 focus:border-blue-500" placeholder="2.4 t" />
                       </td>
                       <td className="px-4 py-2">
                         <Select value={item.status} onValueChange={(v) => updateStatus(item.id, v as SubmissionStatus)}>
@@ -1058,10 +1078,21 @@ function SubmissionsTab({
                           <ChevronDown className={`size-4 transition-transform duration-200 ${expandedRowId === item.id ? "rotate-180" : ""}`} />
                         </Button>
                       </td>
+                      <td className="px-4 py-2 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          onClick={() => setExpandedRowId(expandedRowId === item.id ? null : item.id)}
+                          title="Edit submission"
+                        >
+                          <PencilIcon className="size-4" />
+                        </Button>
+                      </td>
                     </tr>
                     {expandedRowId === item.id && (
                       <tr className="bg-slate-50/60">
-                        <td colSpan={12} className="px-6 py-5 border-b">
+                        <td colSpan={13} className="px-6 py-5 border-b">
                           <div className="space-y-6">
                             <div className="flex items-center justify-between">
                               <h3 className="text-sm font-semibold text-slate-800">
@@ -1317,6 +1348,7 @@ function OverviewTab({ submissions }: { submissions: Submission[] }) {
                 <tr>
                   <th className="px-4 py-3.5 font-semibold">Project Name</th>
                   <th className="px-4 py-3.5 font-semibold text-center">Total</th>
+                  <th className="px-4 py-3.5 font-semibold text-center">Total Weight</th>
                   <th className="px-4 py-3.5 font-semibold text-center">FFU</th>
                   <th className="px-4 py-3.5 font-semibold text-center">APP</th>
                   <th className="px-4 py-3.5 font-semibold text-center">R&R</th>
@@ -1324,11 +1356,16 @@ function OverviewTab({ submissions }: { submissions: Submission[] }) {
               </thead>
               <tbody>
                 {Object.entries(byProject).length === 0 ? (
-                  <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No submissions yet.</td></tr>
+                  <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No submissions yet.</td></tr>
                 ) : Object.entries(byProject).map(([project, items]) => (
                   <tr key={project} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 font-medium">{project}</td>
                     <td className="px-4 py-3 text-center">{items.length}</td>
+                    <td className="px-4 py-3 text-center font-semibold">
+                      {items.reduce((sum, i) => sum + parseWeight(i.weight), 0) > 0
+                        ? `${formatWeight(items.reduce((sum, i) => sum + parseWeight(i.weight), 0))} t`
+                        : <span className="text-muted-foreground font-normal">—</span>}
+                    </td>
                     {(["FFU", "APP", "R&R"] as SubmissionStatus[]).map((s) => {
                       const n = items.filter((i) => i.status === s).length;
                       return (
