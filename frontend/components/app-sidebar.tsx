@@ -81,15 +81,15 @@ export function AppSidebar({
     { title: t("nav.approvals"), url: "/approvals", icon: <CheckCheckIcon className="size-6" /> },
     { title: t("nav.timeTracker"), url: "/time-tracker", icon: <ClockIcon className="size-6" /> },
     { title: t("nav.fileManager"), url: "/files", icon: <MuiFolderIcon className="size-6" /> },
+    { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-6" /> },
+    { title: t("nav.submissions"), url: "/submissions", icon: <SendIcon className="size-6" /> },
     { title: t("nav.billing"), url: "/billing", icon: <AttachMoneyIcon className="size-6" /> },
+    { title: t("nav.inventory"), url: "/stocks", icon: <PackageIcon className="size-6" /> },
     {
       title: t("nav.engagement"),
       url: "/engagement",
       icon: <HeartHandshakeIcon className="size-6" />,
     },
-    { title: t("nav.inventory"), url: "/stocks", icon: <PackageIcon className="size-6" /> },
-    { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-6" /> },
-    { title: t("nav.submissions"), url: "/submissions", icon: <SendIcon className="size-6" /> },
     {
       title: t("nav.reports"),
       url: "/dashboard/reports",
