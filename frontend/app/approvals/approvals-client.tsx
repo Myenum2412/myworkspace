@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -21,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import {
   AlertCircleIcon,
@@ -30,7 +28,6 @@ import {
   FileIcon,
   ListTodoIcon,
   Loader2Icon,
-  SearchIcon,
   XCircleIcon,
 } from "@/lib/icons";
 import type { ApprovalItem } from "./columns";
@@ -50,7 +47,9 @@ const priorityColors: Record<string, string> = {
 function getFileExtension(name?: string): string {
   if (!name) return "";
   const parts = name.split(".");
-  return parts.length > 1 ? parts.pop()!.toLowerCase() : "";
+  if (parts.length <= 1) return "";
+  const last = parts[parts.length - 1];
+  return last ? last.toLowerCase() : "";
 }
 
 const CODE_EXTENSIONS = [
@@ -108,7 +107,7 @@ const CODE_EXTENSIONS = [
   "patch",
 ];
 
-function typeForItem(item: ApprovalItem): string {
+function _typeForItem(item: ApprovalItem): string {
   if (item.itemType === "file") return "file";
   // Files are typically detected by a filename with a non-code extension.
   if (item.fileName) {
@@ -168,8 +167,8 @@ function typeOfItem(item: ApprovalItem): string {
 }
 
 function normalizeStatus(status: string): "pending" | "approved" | "rejected" {
-  if (status === "done" || status === "approved") return "approved";
-  if (status === "cancelled" || status === "rejected") return "rejected";
+  if (["done", "approved", "completed"].includes(status)) return "approved";
+  if (["cancelled", "rejected"].includes(status)) return "rejected";
   return "pending";
 }
 
@@ -198,8 +197,7 @@ export default function ApprovalsClient({ items }: Props) {
   const [data, setData] = useState<ApprovalItem[]>(items);
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  const [error, setError] = useState("");
+  const [error, _setError] = useState("");
 
   const [selectedItem, setSelectedItem] = useState<ApprovalItem | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
@@ -210,40 +208,14 @@ export default function ApprovalsClient({ items }: Props) {
   const [actionError, setActionError] = useState("");
   const [actionSubmitting, setActionSubmitting] = useState(false);
 
-  const counts = useMemo(() => {
-    const c = { pending: 0, approved: 0, rejected: 0, file: 0, task: 0 };
-    for (const it of items) {
-      const n = normalizeStatus(it.status);
-      if (n === "pending" || n === "approved" || n === "rejected") c[n]++;
-      typeOfItem(it) === "file" ? c.file++ : c.task++;
-    }
-    return c;
-  }, [items]);
-
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
     return data.filter((it) => {
       const n = normalizeStatus(it.status);
       if (statusFilter !== "all" && n !== statusFilter) return false;
       if (typeFilter !== "all" && typeOfItem(it) !== typeFilter) return false;
-      if (q) {
-        const haystack = [
-          it.title,
-          it.fileName,
-          it.assigneeName,
-          it.uploaderName,
-          it.creatorName,
-          it.description,
-          it.priority,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
       return true;
     });
-  }, [data, statusFilter, typeFilter, search]);
+  }, [data, statusFilter, typeFilter]);
 
   function openView(item: ApprovalItem) {
     setSelectedItem(item);
@@ -320,7 +292,7 @@ export default function ApprovalsClient({ items }: Props) {
     }
   }
 
-  const role: { [k: string]: ApprovalItem } = {};
+  const _role: { [k: string]: ApprovalItem } = {};
   const selectedNorm = selectedItem ? normalizeStatus(selectedItem.status) : "";
   const isFileSelected = selectedItem ? typeOfItem(selectedItem) === "file" : false;
 
@@ -370,14 +342,64 @@ export default function ApprovalsClient({ items }: Props) {
       id: "submittedBy",
       header: "Submitted By",
       cell: ({ row }) => {
-        const name =
-          typeOfItem(row.original) === "file"
-            ? row.original.uploaderName || row.original.assigneeName
-            : row.original.assigneeName || row.original.assigneeId;
-        return name ? (
-          <span className="text-sm">{name}</span>
-        ) : (
-          <span className="text-sm text-muted-foreground">—</span>
+        const item = row.original;
+        const isFile = typeOfItem(item) === "file";
+        const name = isFile
+          ? item.uploaderName || item.assigneeName
+          : item.assigneeName || item.assigneeId;
+        const avatar = isFile ? item.uploaderAvatar : item.assigneeAvatar;
+        if (!name) return <span className="text-sm text-muted-foreground">—</span>;
+        return (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0 overflow-hidden">
+              {avatar ? (
+                // biome-ignore lint/performance/noImgElement: user avatar from auth provider
+                <img src={avatar} alt={name} className="size-full object-cover" />
+              ) : (
+                <span>
+                  {name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </span>
+              )}
+            </div>
+            <span className="text-sm font-medium truncate">{name}</span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "approvedBy",
+      header: "Approved By",
+      cell: ({ row }) => {
+        const item = row.original;
+        const norm = normalizeStatus(item.status);
+        if (norm !== "approved") return <span className="text-sm text-muted-foreground">—</span>;
+        const name = item.approvedByName || item.approvedBy;
+        const avatar = item.approvedByAvatar;
+        if (!name) return <span className="text-sm text-muted-foreground">—</span>;
+        return (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0 overflow-hidden">
+              {avatar ? (
+                // biome-ignore lint/performance/noImgElement: user avatar from auth provider
+                <img src={avatar} alt={name} className="size-full object-cover" />
+              ) : (
+                <span>
+                  {name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </span>
+              )}
+            </div>
+            <span className="text-sm font-medium truncate">{name}</span>
+          </div>
         );
       },
     },
@@ -394,7 +416,7 @@ export default function ApprovalsClient({ items }: Props) {
           <div>
             <span className="text-xs text-muted-foreground block">{label}</span>
             <span className="text-sm">
-              {isNaN(date.getTime()) ? "—" : date.toLocaleDateString()}
+              {Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString()}
             </span>
           </div>
         );
@@ -413,11 +435,14 @@ export default function ApprovalsClient({ items }: Props) {
         const norm = normalizeStatus(item.status);
         if (norm === "pending") {
           return (
-            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-1">
               <Button
                 size="sm"
                 className="text-xs bg-green-500 hover:bg-green-700 touch-target"
-                onClick={() => openAction(item, "approve")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openAction(item, "approve");
+                }}
               >
                 <CheckCircleIcon className="size-3 mr-1" />
                 Approve
@@ -426,7 +451,10 @@ export default function ApprovalsClient({ items }: Props) {
                 size="sm"
                 variant="outline"
                 className="text-xs text-black border-blue-200 hover:bg-blue-100 touch-target"
-                onClick={() => openAction(item, "reject")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openAction(item, "reject");
+                }}
               >
                 <XCircleIcon className="size-3 mr-1" />
                 Reject
@@ -435,7 +463,7 @@ export default function ApprovalsClient({ items }: Props) {
           );
         }
         return (
-          <div className="flex items-center justify-end pr-1" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-end pr-1">
             {norm === "approved" ? (
               <span className="inline-flex items-center text-xs text-green-600">
                 <CheckIcon className="size-3.5 mr-1" />
@@ -454,91 +482,61 @@ export default function ApprovalsClient({ items }: Props) {
     },
   ];
 
-  const filterButton = (value: string, label: string, count: number) => {
-    const active = statusFilter === value;
-    return (
-      <button
-        key={value}
-        onClick={() => setStatusFilter(value)}
-        className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors touch-target ${
-          active
-            ? "bg-primary text-primary-foreground border-primary"
-            : "bg-card text-muted-foreground border-border hover:bg-muted"
-        }`}
-      >
-        {label}
-        <span
-          className={`ml-1.5 ${active ? "text-primary-foreground/80" : "text-muted-foreground/70"}`}
-        >
-          {count}
-        </span>
-      </button>
-    );
-  };
-
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold">Approvals</h1>
-            <p className="text-xs text-muted-foreground">
-              Approve, review and filter pending, approved and rejected items.
-            </p>
-          </div>
-          <Badge variant="secondary" className="sm:ml-auto shrink-0 self-start sm:self-center">
-            {items.length} total
-          </Badge>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col gap-3">
-          {/* Status filter tabs */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {filterButton("all", "All", items.length)}
-            {filterButton("pending", "Pending Approvals", counts.pending)}
-            {filterButton("approved", "Approved", counts.approved)}
-            {filterButton("rejected", "Rejected", counts.rejected)}
-          </div>
-
-          {/* Search + type filter row */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <div className="relative flex-1 min-w-0">
-              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by title, assignee, priority…"
-                className="pl-8 h-9 text-sm"
-              />
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+          <div className="flex items-center gap-3 min-w-0 shrink-0">
+            <div className="size-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <ListTodoIcon className="size-5" />
             </div>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold leading-tight">Approvals</h1>
+              <p className="text-xs text-muted-foreground truncate">
+                Approve, review and filter pending, approved and rejected items.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-40 h-10 text-sm shrink-0">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-40 h-9 text-sm shrink-0">
+              <SelectTrigger className="w-36 h-10 text-sm shrink-0">
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="task">Tasks</SelectItem>
                 <SelectItem value="file">Files</SelectItem>
               </SelectContent>
             </Select>
-            {(search || statusFilter !== "all" || typeFilter !== "all") && (
+            {(statusFilter !== "all" || typeFilter !== "all") && (
               <button
+                type="button"
                 onClick={() => {
-                  setSearch("");
                   setStatusFilter("all");
                   setTypeFilter("all");
                 }}
                 className="text-xs text-muted-foreground hover:text-foreground shrink-0 underline-offset-2 hover:underline"
               >
-                Clear filters
+                Clear
               </button>
             )}
           </div>
         </div>
 
         {/* Results summary */}
-        {(search || statusFilter !== "all" || typeFilter !== "all") && (
+        {(statusFilter !== "all" || typeFilter !== "all") && (
           <p className="text-xs text-muted-foreground">
             Showing <span className="font-medium text-foreground">{filtered.length}</span> of{" "}
             {items.length} items
@@ -567,97 +565,112 @@ export default function ApprovalsClient({ items }: Props) {
           }
         }}
       >
-        <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
+        <DialogContent className="p-0 flex flex-col max-w-xl" showCloseButton={false}>
           {selectedItem && (
             <>
-              <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 shrink-0">
-                <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  {isFileSelected ? (
-                    <FileIcon className="size-4 sm:size-5" />
-                  ) : (
-                    <ListTodoIcon className="size-4 sm:size-5" />
-                  )}
-                  {selectedItem.title || selectedItem.fileName}
-                </DialogTitle>
-                <DialogDescription>
-                  {isFileSelected
-                    ? "File upload details for approval review."
-                    : "Task details for approval review."}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-4">
-                <div className="flex items-center gap-2">
+              <div className="relative shrink-0 overflow-hidden rounded-t-lg border-b bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-4 sm:px-6 pt-4 sm:pt-5 pb-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        selectedNorm === "rejected"
+                          ? "bg-red-100 text-red-600"
+                          : selectedNorm === "approved"
+                            ? "bg-green-100 text-green-600"
+                            : "bg-amber-100 text-amber-600"
+                      }`}
+                    >
+                      {isFileSelected ? (
+                        <FileIcon className="size-5" />
+                      ) : (
+                        <ListTodoIcon className="size-5" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <DialogTitle className="text-base sm:text-lg font-bold leading-snug truncate">
+                        {selectedItem.title || selectedItem.fileName}
+                      </DialogTitle>
+                      <DialogDescription className="mt-0.5 text-xs text-muted-foreground">
+                        {isFileSelected
+                          ? "File upload details for approval review"
+                          : "Task details for approval review"}
+                      </DialogDescription>
+                    </div>
+                  </div>
                   <StatusBadge status={selectedItem.status} />
                 </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
                 {(selectedItem.description || selectedItem.fileName) && (
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                  <div className="rounded-lg border bg-card px-4 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
                       {isFileSelected ? "File Name" : "Description"}
                     </p>
-                    <p className="text-sm">
+                    <p className="text-sm leading-relaxed">
                       {isFileSelected ? selectedItem.fileName : selectedItem.description}
                     </p>
                   </div>
                 )}
-                <Separator />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-sm border bg-card px-3 py-2">
+
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                  <div className="rounded-lg border bg-card px-3 py-2.5">
                     <p className="text-[11px] text-muted-foreground">Type</p>
                     <p className="font-medium capitalize mt-0.5">
                       {isFileSelected ? "file" : "task"}
                     </p>
                   </div>
                   {!isFileSelected && (
-                    <div className="rounded-sm border bg-card px-3 py-2">
+                    <div className="rounded-lg border bg-card px-3 py-2.5">
                       <p className="text-[11px] text-muted-foreground">Priority</p>
                       <p className="font-medium capitalize mt-0.5">
                         {selectedItem.priority || "—"}
                       </p>
                     </div>
                   )}
-                  <div className="rounded-sm border bg-card px-3 py-2">
+                  <div className="rounded-lg border bg-card px-3 py-2.5">
                     <p className="text-[11px] text-muted-foreground">
                       {isFileSelected ? "Uploaded By" : "Assignee"}
                     </p>
-                    <p className="font-medium mt-0.5">
+                    <p className="font-medium mt-0.5 truncate">
                       {(isFileSelected
                         ? selectedItem.uploaderName
                         : selectedItem.assigneeName || selectedItem.assigneeId) || "—"}
                     </p>
                   </div>
-                  <div className="rounded-sm border bg-card px-3 py-2">
+                  <div className="rounded-lg border bg-card px-3 py-2.5">
                     <p className="text-[11px] text-muted-foreground">
                       {isFileSelected ? "Uploaded At" : "Due Date"}
                     </p>
                     <p className="font-medium mt-0.5">
-                      {(isFileSelected ? selectedItem.createdAt : selectedItem.dueDate)
-                        ? new Date(
-                            (isFileSelected ? selectedItem.createdAt : selectedItem.dueDate)!,
-                          ).toLocaleDateString()
-                        : "—"}
+                      {(() => {
+                        const dateVal = isFileSelected
+                          ? selectedItem.createdAt
+                          : selectedItem.dueDate;
+                        return dateVal ? new Date(dateVal).toLocaleDateString() : "—";
+                      })()}
                     </p>
                   </div>
                   {!isFileSelected && selectedItem.creatorName && (
-                    <div className="rounded-sm border bg-card px-3 py-2">
+                    <div className="rounded-lg border bg-card px-3 py-2.5">
                       <p className="text-[11px] text-muted-foreground">Creator</p>
-                      <p className="font-medium mt-0.5">{selectedItem.creatorName}</p>
+                      <p className="font-medium mt-0.5 truncate">{selectedItem.creatorName}</p>
                     </div>
                   )}
                   {isFileSelected && selectedItem.mimeType && (
-                    <div className="rounded-sm border bg-card px-3 py-2">
+                    <div className="rounded-lg border bg-card px-3 py-2.5">
                       <p className="text-[11px] text-muted-foreground">File Type</p>
                       <p className="font-medium mt-0.5">{selectedItem.mimeType}</p>
                     </div>
                   )}
                   {selectedNorm !== "pending" && selectedItem.approvedBy && (
-                    <div className="rounded-sm border bg-card px-3 py-2">
+                    <div className="rounded-lg border bg-card px-3 py-2.5">
                       <p className="text-[11px] text-muted-foreground">Approved By</p>
-                      <p className="font-medium mt-0.5">{selectedItem.approvedBy}</p>
+                      <p className="font-medium mt-0.5 truncate">{selectedItem.approvedBy}</p>
                     </div>
                   )}
                   {selectedNorm === "rejected" && (
-                    <div className="rounded-sm border bg-card px-3 py-2">
+                    <div className="rounded-lg border bg-card px-3 py-2.5">
                       <p className="text-[11px] text-muted-foreground">Rejected At</p>
                       <p className="font-medium mt-0.5">
                         {selectedItem.rejectedAt
@@ -668,26 +681,20 @@ export default function ApprovalsClient({ items }: Props) {
                   )}
                 </div>
                 {selectedNorm === "rejected" && selectedItem.rejectionReason && (
-                  <>
-                    <Separator />
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                        Rejection Reason
-                      </p>
-                      <p className="text-sm">{selectedItem.rejectionReason}</p>
-                    </div>
-                  </>
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-red-700 mb-1">
+                      Rejection Reason
+                    </p>
+                    <p className="text-sm text-red-800">{selectedItem.rejectionReason}</p>
+                  </div>
                 )}
                 {selectedNorm === "approved" && selectedItem.approvalNote && (
-                  <>
-                    <Separator />
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                        Approval Note
-                      </p>
-                      <p className="text-sm">{selectedItem.approvalNote}</p>
-                    </div>
-                  </>
+                  <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-green-700 mb-1">
+                      Approval Note
+                    </p>
+                    <p className="text-sm text-green-800">{selectedItem.approvalNote}</p>
+                  </div>
                 )}
               </div>
 
@@ -698,14 +705,14 @@ export default function ApprovalsClient({ items }: Props) {
                     setViewOpen(false);
                     setSelectedItem(null);
                   }}
-                  className="touch-target"
+                  className="h-10 w-full sm:w-auto min-w-28 touch-target"
                 >
                   Close
                 </Button>
                 {selectedNorm === "pending" && (
                   <>
                     <Button
-                      className="bg-green-500 hover:bg-green-700 touch-target"
+                      className="bg-green-500 hover:bg-green-700 h-10 w-full sm:w-auto min-w-32 touch-target"
                       onClick={() => {
                         setViewOpen(false);
                         openAction(selectedItem, "approve");
@@ -716,7 +723,7 @@ export default function ApprovalsClient({ items }: Props) {
                     </Button>
                     <Button
                       variant="outline"
-                      className="text-black border-blue-200 hover:bg-blue-100 touch-target"
+                      className="text-black border-blue-200 hover:bg-blue-100 h-10 w-full sm:w-auto min-w-32 touch-target"
                       onClick={() => {
                         setViewOpen(false);
                         openAction(selectedItem, "reject");

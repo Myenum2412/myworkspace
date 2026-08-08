@@ -1,8 +1,7 @@
 "use client";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CheckCircleIcon, FileIcon, XCircleIcon } from "@/lib/icons";
+import { FileIcon } from "@/lib/icons";
 
 export type ApprovalItem = {
   _id: string;
@@ -16,12 +15,17 @@ export type ApprovalItem = {
   assigneeAvatar?: string;
   creatorId?: string;
   creatorName?: string;
+  creatorAvatar?: string;
   description?: string;
   createdAt?: string;
   approvedBy?: string;
+  approvedByName?: string;
+  approvedByAvatar?: string;
   approvedAt?: string;
   approvalNote?: string;
   rejectedBy?: string;
+  rejectedByName?: string;
+  rejectedByAvatar?: string;
   rejectedAt?: string;
   rejectionReason?: string;
   // File-specific fields
@@ -30,6 +34,7 @@ export type ApprovalItem = {
   mimeType?: string;
   uploaderId?: string;
   uploaderName?: string;
+  uploaderAvatar?: string;
 };
 
 export type ApprovalTask = ApprovalItem;
@@ -67,7 +72,7 @@ function TypeBadge({ itemType }: { itemType: string }) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  if (status === "done" || status === "approved") {
+  if (status === "done" || status === "approved" || status === "completed") {
     return <Badge className="bg-green-100 text-green-700 text-xs font-medium">Approved</Badge>;
   }
   if (status === "cancelled" || status === "rejected") {
@@ -113,14 +118,30 @@ export const pendingColumns: ColumnDef<ApprovalItem>[] = [
     accessorKey: "assigneeName",
     header: "Submitted By",
     cell: ({ row }) => {
-      const name =
-        row.original.itemType === "file"
-          ? row.original.uploaderName || row.original.assigneeName
-          : row.original.assigneeName;
-      return name ? (
-        <span className="text-sm">{name}</span>
-      ) : (
-        <span className="text-sm text-muted-foreground">—</span>
+      const item = row.original;
+      const isFile = item.itemType === "file";
+      const name = isFile ? item.uploaderName || item.assigneeName : item.assigneeName;
+      const avatar = isFile ? item.uploaderAvatar : item.assigneeAvatar;
+      if (!name) return <span className="text-sm text-muted-foreground">—</span>;
+      return (
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="size-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0 overflow-hidden">
+            {avatar ? (
+              // biome-ignore lint/performance/noImgElement: user avatar from auth provider
+              <img src={avatar} alt={name} className="size-full object-cover" />
+            ) : (
+              <span>
+                {name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </span>
+            )}
+          </div>
+          <span className="text-sm font-medium truncate">{name}</span>
+        </div>
       );
     },
   },

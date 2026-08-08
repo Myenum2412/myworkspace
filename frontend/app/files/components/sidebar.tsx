@@ -6,8 +6,8 @@ import type { NavSection } from "@/lib/file-system/types";
 import { formatSize } from "@/lib/file-system/types";
 import {
   Building2Icon,
-  ClipboardCheckIcon,
   ClockIcon,
+  FileCheckIcon,
   FolderIcon,
   HardDriveIcon,
   HistoryIcon,
@@ -34,31 +34,27 @@ const primaryNav: NavItem[] = [
 ];
 
 const secondaryNav: NavItem[] = [
-  { id: "approvals", label: "Approvals", icon: <ClipboardCheckIcon className="size-4.5" /> },
+  { id: "approvals", label: "Approvals", icon: <FileCheckIcon className="size-4.5" /> },
   { id: "team", label: "Team Files", icon: <UsersIcon className="size-4.5" /> },
   { id: "client-files", label: "Client Files", icon: <Building2Icon className="size-4.5" /> },
   { id: "staff-files", label: "Staff Files", icon: <UserIcon className="size-4.5" /> },
   { id: "audit", label: "Audit Log", icon: <HistoryIcon className="size-4.5" /> },
 ];
 
-export function DriveSidebar({
-  onNew,
-  onCollapse,
-}: {
-  onNew: (action: "upload" | "folder") => void;
-  onCollapse?: () => void;
-}) {
+export function DriveSidebar({ onNew }: { onNew: (action: "upload" | "folder") => void }) {
   const currentNav = useFileSystemStore((s) => s.currentNav);
   const setCurrentNav = useFileSystemStore((s) => s.setCurrentNav);
   const { data: stats } = useStorage();
 
-  const usedPct =
-    stats && stats.maxStorage ? Math.min(100, (stats.usedStorage / stats.maxStorage) * 100) : 0;
+  const usedPct = stats?.maxStorage
+    ? Math.min(100, (stats.usedStorage / stats.maxStorage) * 100)
+    : 0;
 
   function NavButton({ item }: { item: NavItem }) {
     const active = currentNav === item.id;
     return (
       <button
+        type="button"
         onClick={() => setCurrentNav(item.id)}
         className={cn(
           "group flex w-full items-center gap-2.5 rounded-full px-3 py-2 text-sm transition-all",
@@ -84,6 +80,7 @@ export function DriveSidebar({
     <aside className="flex h-full w-[264px] shrink-0 flex-col border-r border-border/70 bg-card/50">
       <div className="p-3">
         <button
+          type="button"
           onClick={() => onNew("upload")}
           className="group flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md"
         >
