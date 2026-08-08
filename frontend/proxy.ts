@@ -74,12 +74,11 @@ const WORKSPACE_PREFIXES = [
   "/attendance",
   "/appointments",
   "/ai",
-  "/engagement",
-  "/stocks",
   "/reworks",
   "/submissions",
   "/addons",
   "/chat",
+  "/change-order",
   "/notifications",
 ];
 
@@ -243,8 +242,14 @@ const ROLE_ROUTE_ACCESS: Record<string, string[]> = {
   ],
   "/settings": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
   "/overview": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
-  "/engagement": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
-  "/stocks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.FINANCE],
+  "/change-order": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.FINANCE,
+  ],
   "/reworks": [
     ROLES.ORG_ADMIN,
     ROLES.MEMBERS,

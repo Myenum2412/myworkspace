@@ -13,7 +13,9 @@ export type TermKey =
   | "nav.fileManager"
   | "nav.billing"
   | "nav.engagement"
+  | "nav.chatting"
   | "nav.inventory"
+  | "nav.changeOrder"
   | "nav.reworks"
   | "nav.submissions"
   | "nav.reports"
@@ -140,7 +142,9 @@ const terms: Record<Industry, Record<TermKey, string>> = {
     "nav.fileManager": "File Manager",
     "nav.billing": "Billing",
     "nav.engagement": "Interaction Followups",
+    "nav.chatting": "Chatting",
     "nav.inventory": "Inventory",
+    "nav.changeOrder": "Change Order",
     "nav.reworks": "Revision",
     "nav.submissions": "Submissions",
     "nav.reports": "Reports",
@@ -267,7 +271,9 @@ const terms: Record<Industry, Record<TermKey, string>> = {
     "nav.fileManager": "Medical Records",
     "nav.billing": "Billing",
     "nav.engagement": "Followups",
+    "nav.chatting": "Chatting",
     "nav.inventory": "Pharmacy",
+    "nav.changeOrder": "Change Order",
     "nav.reworks": "Revision",
     "nav.submissions": "Submissions",
     "nav.reports": "Reports",
@@ -393,8 +399,6 @@ export const DEFAULT_INDUSTRY: Industry = "construction";
 export function getTerms(industry: Industry): Record<TermKey, string> {
   return terms[industry] || terms[DEFAULT_INDUSTRY];
 }
-
-const tCache = new Map<string, Record<TermKey, string>>();
 
 export function t(industry: Industry, key: TermKey): string {
   const lang = getTerms(industry);

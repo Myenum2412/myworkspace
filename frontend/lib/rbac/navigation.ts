@@ -1,4 +1,4 @@
-import { ROLES, type Role } from "./index";
+import { ROLES } from "./index";
 
 /**
  * Permission-Aware Navigation Filtering
@@ -205,8 +205,14 @@ const NAV_ACCESS_CONTROL: Record<string, string[]> = {
 
   // ── Settings ──
   "/settings": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
-  "/engagement": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
-  "/stocks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.FINANCE],
+  "/change-order": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.FINANCE,
+  ],
 
   // ── Staff Management ──
   "/staffs": [
@@ -289,7 +295,7 @@ export function canAccessPath(role: string, path: string): boolean {
   // Check prefix match (longest match first)
   const sortedPaths = Object.keys(NAV_ACCESS_CONTROL).sort((a, b) => b.length - a.length);
   for (const navPath of sortedPaths) {
-    if (path.startsWith(navPath + "/") || path === navPath) {
+    if (path.startsWith(`${navPath}/`) || path === navPath) {
       return NAV_ACCESS_CONTROL[navPath].includes(role);
     }
   }

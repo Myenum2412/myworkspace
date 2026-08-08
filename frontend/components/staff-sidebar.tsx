@@ -17,9 +17,10 @@ import {
   RotateCcwIcon,
   SendIcon,
 } from "@/lib/icons";
+import type { TermKey } from "@/lib/industry-terms";
 import { ROLES } from "@/lib/rbac";
 
-function buildStaffNavData(t: (key: any) => string) {
+function buildStaffNavData(t: (key: TermKey) => string) {
   return [
     {
       title: t("nav.dashboard"),
@@ -51,6 +52,16 @@ function buildStaffNavData(t: (key: any) => string) {
     },
     { title: t("nav.reworks"), url: "/staffs/reworks", icon: <RotateCcwIcon className="size-6" /> },
     { title: "Submissions", url: "/staffs/submissions", icon: <SendIcon className="size-6" /> },
+    {
+      title: t("nav.changeOrder"),
+      url: "/change-order",
+      icon: <ListTodoIcon className="size-6" />,
+    },
+    {
+      title: t("nav.chatting"),
+      url: "/chat",
+      icon: <FolderKanbanIcon className="size-6" />,
+    },
   ];
 }
 

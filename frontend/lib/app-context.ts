@@ -51,16 +51,16 @@ export const WORKSPACE_ROUTES = [
   "/files",
   "/attendance",
   "/appointments",
-  "/engagement",
-  "/stocks",
   "/reworks",
+  "/change-order",
+  "/chat",
 ];
 
 export function getAppContext(pathname: string): AppContextType {
   if (pathname.startsWith("/orgmenu")) return "origin";
   if (pathname.startsWith("/staffs")) return "staff";
   if (pathname === "/client" || pathname.startsWith("/client/")) return "client";
-  if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "public";
+  if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return "public";
   if (WORKSPACE_ROUTES.some((p) => pathname.startsWith(p))) return "workspace";
   if (pathname.startsWith("/api") || pathname.startsWith("/_next")) return "public";
   return "workspace";
@@ -73,7 +73,7 @@ export function isRouteInContext(pathname: string, context: AppContextType): boo
 
 export function isAppPage(pathname: string): boolean {
   if (pathname === "/") return false;
-  if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+  if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return false;
   }
   if (pathname.startsWith("/api") || pathname.startsWith("/_next")) return false;

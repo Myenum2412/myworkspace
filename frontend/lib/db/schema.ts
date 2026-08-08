@@ -49,6 +49,7 @@ export const collections = {
   downloadHistory: "download_history",
   engagements: "engagements",
   stocks: "stocks",
+  changeOrders: "changeorders",
   webhookConfigs: "webhook_configs",
   uploadApprovals: "upload_approvals",
   departments: "departments",

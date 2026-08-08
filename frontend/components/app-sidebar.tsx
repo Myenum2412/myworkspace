@@ -18,17 +18,13 @@ import {
   LayoutDashboardIcon,
   ListChecksIcon,
   MuiFolderIcon,
-  PackageIcon,
   RotateCcwIcon,
   SendIcon,
   Settings2Icon,
   UsersIcon,
   WorkflowIcon,
 } from "@/lib/icons";
-import type { TermKey } from "@/lib/industry-terms";
-import { isAdminRole, ROLES } from "@/lib/rbac";
-import { canAccessPath, filterNavByRole } from "@/lib/rbac/navigation";
-import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
+import { filterNavByRole } from "@/lib/rbac/navigation";
 
 export interface NavItem {
   title: string;
@@ -84,12 +80,12 @@ export function AppSidebar({
     { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-6" /> },
     { title: t("nav.submissions"), url: "/submissions", icon: <SendIcon className="size-6" /> },
     { title: t("nav.billing"), url: "/billing", icon: <AttachMoneyIcon className="size-6" /> },
-    { title: t("nav.inventory"), url: "/stocks", icon: <PackageIcon className="size-6" /> },
     {
-      title: t("nav.engagement"),
-      url: "/engagement",
-      icon: <HeartHandshakeIcon className="size-6" />,
+      title: t("nav.changeOrder"),
+      url: "/change-order",
+      icon: <ListChecksIcon className="size-6" />,
     },
+    { title: t("nav.chatting"), url: "/chat", icon: <HeartHandshakeIcon className="size-6" /> },
     {
       title: t("nav.reports"),
       url: "/dashboard/reports",
