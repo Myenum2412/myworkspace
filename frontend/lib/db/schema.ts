@@ -36,6 +36,7 @@ export const collections = {
   emailConnections: "email_connections",
   meetings: "meetings",
   chatMessages: "chat_messages",
+  chatChannels: "chat_channels",
   doctors: "doctors",
   appointments: "appointments",
   qrGalleries: "qr_galleries",
