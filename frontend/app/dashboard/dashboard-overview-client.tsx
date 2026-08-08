@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 type DashboardData = {
   totalTasks: number;
   completedTasks: number;
@@ -51,7 +53,6 @@ import {
   LayoutDashboardIcon,
   ListTodo,
   SearchIcon,
-  SendIcon,
   TrendingUpIcon,
   Users,
 } from "@/lib/icons";
@@ -119,6 +120,30 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
     rr: number;
     totalWeight: number;
   }>({ total: 0, ffu: 0, app: 0, rr: 0, totalWeight: 0 });
+  const [selectedMemberEmails, setSelectedMemberEmails] = useState<Set<string>>(new Set());
+
+  const visibleMembers = (dashboardData?.members || []).slice(0, ROWS_PER_CARD);
+  const allMembersSelected =
+    visibleMembers.length > 0 && visibleMembers.every((m) => selectedMemberEmails.has(m.email));
+  const toggleMember = (email: string) => {
+    setSelectedMemberEmails((prev) => {
+      const next = new Set(prev);
+      if (next.has(email)) next.delete(email);
+      else next.add(email);
+      return next;
+    });
+  };
+  const toggleAllMembers = () => {
+    setSelectedMemberEmails((prev) => {
+      const next = new Set(prev);
+      if (visibleMembers.every((m) => next.has(m.email))) {
+        for (const m of visibleMembers) next.delete(m.email);
+      } else {
+        for (const m of visibleMembers) next.add(m.email);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (initialData) return;
@@ -153,9 +178,6 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
   }, []);
 
   const {
-    totalTasks = 0,
-    completedTasks = 0,
-    inProgressTasks = 0,
     overdueTasks = 0,
     todayTasks = 0,
     pendingApproval = 0,
@@ -228,22 +250,6 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
       <div data-tour-step-id="step-stats">
         <Stats07
           items={[
-            {
-              name: t("page.dashboard.totalTasks"),
-              value: totalTasks,
-              subtitle: `${completedTasks} ${t("common.active").toLowerCase()}`,
-            },
-            {
-              name: t("page.dashboard.inProgress"),
-              value: inProgressTasks,
-              subtitle: t("common.active"),
-            },
-            {
-              name: t("page.dashboard.overdue"),
-              value: overdueTasks,
-              subtitle: "Past due date",
-              fill: "#ef4444",
-            },
             { name: t("page.dashboard.today"), value: todayTasks, subtitle: "Created today" },
             {
               name: t("page.dashboard.pendingApproval"),
@@ -254,6 +260,23 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
               name: t("page.dashboard.projects"),
               value: projects.length,
               subtitle: `${t("common.active")} ${t("page.dashboard.projects").toLowerCase()}`,
+            },
+            {
+              name: t("nav.submissions"),
+              value: submissions.total,
+              subtitle: `${t("common.active")} ${t("nav.submissions").toLowerCase()}`,
+            },
+            {
+              name: t("page.dashboard.overdue"),
+              value: overdueTasks,
+              subtitle: "Past due date",
+              fill: "#ef4444",
+            },
+            {
+              name: t("page.dashboard.pendingPayments"),
+              value: pendingInvoices.length,
+              subtitle: `${t("common.active")} ${t("page.dashboard.pendingPayments").toLowerCase()}`,
+              fill: "#f59e0b",
             },
           ]}
         />
@@ -405,53 +428,6 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
         </Card>
       </div>
 
-      <Card className="flex flex-col">
-        <CardHeader className="px-4 pt-4 sm:px-5">
-          <div className="flex items-start justify-between gap-3">
-            <CardTitleWithIcon icon={<SendIcon className="size-3.5 sm:size-4" />}>
-              {t("nav.submissions")} Overview
-            </CardTitleWithIcon>
-            <RingStat
-              value={submissions.app}
-              max={Math.max(submissions.total, 1)}
-              label="approved"
-              fill="var(--chart-2)"
-            />
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div className="rounded-xl border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Total Submissions</p>
-              <p className="text-2xl font-semibold tabular-nums">{submissions.total}</p>
-            </div>
-            <div className="rounded-xl border bg-card p-4">
-              <p className="text-xs text-muted-foreground">FFU</p>
-              <p className="text-2xl font-semibold tabular-nums text-blue-600">{submissions.ffu}</p>
-            </div>
-            <div className="rounded-xl border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Approved</p>
-              <p className="text-2xl font-semibold tabular-nums text-green-600">
-                {submissions.app}
-              </p>
-            </div>
-            <div className="rounded-xl border bg-card p-4">
-              <p className="text-xs text-muted-foreground">R&R</p>
-              <p className="text-2xl font-semibold tabular-nums text-amber-600">{submissions.rr}</p>
-            </div>
-            <div className="rounded-xl border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Total Weight</p>
-              <p className="text-2xl font-semibold tabular-nums">
-                {submissions.totalWeight > 0
-                  ? `${Math.round(submissions.totalWeight * 100) / 100} t`
-                  : "—"}
-              </p>
-            </div>
-          </div>
-          <ViewMoreFooter href="/submissions" label="View Submissions" />
-        </CardContent>
-      </Card>
-
       <div className="grid gap-3 sm:gap-4 md:gap-5 grid-cols-1 lg:grid-cols-6">
         <Card className="flex flex-col min-h-[280px] sm:min-h-[320px] lg:h-[360px] lg:col-span-3">
           <CardHeader className="px-4 pt-4 sm:px-5">
@@ -561,6 +537,10 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
                       key={m.email}
                       className="border rounded-xl p-3 bg-card flex items-center gap-3"
                     >
+                      <Checkbox
+                        checked={selectedMemberEmails.has(m.email)}
+                        onCheckedChange={() => toggleMember(m.email)}
+                      />
                       <Avatar className="size-10 shrink-0">
                         <AvatarImage src={m.avatar} alt={m.name} />
                         <AvatarFallback>{getInitials(m.name)}</AvatarFallback>
@@ -581,6 +561,13 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
                 <table className="table-premium hidden sm:table w-full text-sm text-left">
                   <thead>
                     <tr>
+                      <th className="w-10">
+                        <Checkbox
+                          checked={allMembersSelected}
+                          onCheckedChange={toggleAllMembers}
+                          aria-label="Select all members"
+                        />
+                      </th>
                       <th>Name</th>
                       <th>Role</th>
                       <th>Status</th>
@@ -589,6 +576,13 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
                   <tbody>
                     {members.slice(0, ROWS_PER_CARD).map((m) => (
                       <tr key={m.email}>
+                        <td>
+                          <Checkbox
+                            checked={selectedMemberEmails.has(m.email)}
+                            onCheckedChange={() => toggleMember(m.email)}
+                            aria-label={`Select ${m.name}`}
+                          />
+                        </td>
                         <td>
                           <div className="flex items-center gap-3">
                             <Avatar className="size-8">

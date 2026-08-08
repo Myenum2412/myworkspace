@@ -119,7 +119,12 @@ export function TeamMembers({
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{team.members.length} members</Badge>
-          <Button variant="outline" size="sm" onClick={() => onShowAddMemberChange(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-white text-black border-white hover:bg-white/90 hover:text-black"
+            onClick={() => onShowAddMemberChange(true)}
+          >
             <UserPlusIcon className="mr-2" />
             Add Member
           </Button>
@@ -177,6 +182,14 @@ export function TeamMembers({
                         onViewMemberOpenChange(true);
                       }}
                     >
+                      <td className="px-2 py-3 text-center">
+                        <Checkbox
+                          checked={selectedIds.includes(m.id)}
+                          onCheckedChange={() => toggleSelect(m.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label={`Select ${m.name}`}
+                        />
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {m.avatar ? (
@@ -309,6 +322,12 @@ export function TeamMembers({
                     }}
                   >
                     <div className="flex items-center gap-3">
+                      <Checkbox
+                        checked={selectedIds.includes(m.id)}
+                        onCheckedChange={() => toggleSelect(m.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={`Select ${m.name}`}
+                      />
                       <div className="size-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
                         {m.avatar ? (
                           <img src={m.avatar} alt={m.name} className="size-full object-cover" />
