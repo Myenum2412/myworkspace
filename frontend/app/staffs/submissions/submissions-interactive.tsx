@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -130,7 +129,7 @@ function normalizeSubmissionStatus(value?: string): SubmissionStatus {
 function parseWeight(value: string | number | undefined): number {
   if (value === null || value === undefined) return 0;
   const n = parseFloat(String(value).replace(/[^\d.-]/g, ""));
-  return isNaN(n) ? 0 : n;
+  return Number.isNaN(n) ? 0 : n;
 }
 
 function isValidWeight(value: string): boolean {
@@ -191,7 +190,7 @@ function AddSubmissionForm({
     fetch("/api/staffs/projects")
       .then((r) => r.json())
       .then((d) => {
-        const list = (d.initialProjects || []).map((p: any) => ({
+        const list = (d.initialProjects || []).map((p: { id: string; name: string }) => ({
           id: p.id,
           name: p.name,
         }));
@@ -261,7 +260,7 @@ function AddSubmissionForm({
     setRows((prev) => prev.filter((r) => r.rowId !== rowId));
   };
 
-  const updateRowField = (rowId: string, field: keyof SubmissionRow, value: any) => {
+  const updateRowField = (rowId: string, field: keyof SubmissionRow, value: string | boolean) => {
     setRows((prev) => prev.map((r) => (r.rowId === rowId ? { ...r, [field]: value } : r)));
   };
 
@@ -452,10 +451,10 @@ function AddSubmissionForm({
                 </div>
 
                 <div className="col-span-2 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
                     <FolderKanbanIcon className="size-3 text-muted-foreground" />
                     Project *
-                  </label>
+                  </span>
                   {loadingProjects ? (
                     <div className="flex items-center gap-2 h-8 px-3 border rounded text-xs text-muted-foreground bg-slate-50">
                       <Loader2Icon className="size-3 animate-spin" />
@@ -480,9 +479,7 @@ function AddSubmissionForm({
                 </div>
 
                 <div className="col-span-2 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Draw No *
-                  </label>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Draw No *</span>
                   <Input
                     value={row.drawNo}
                     onChange={(e) => updateRowField(row.rowId, "drawNo", e.target.value)}
@@ -492,7 +489,7 @@ function AddSubmissionForm({
                 </div>
 
                 <div className="col-span-1 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Prefix</label>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Prefix</span>
                   <Input
                     value={row.prefix}
                     onChange={(e) => updateRowField(row.rowId, "prefix", e.target.value)}
@@ -502,7 +499,7 @@ function AddSubmissionForm({
                 </div>
 
                 <div className="col-span-1 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Element</label>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Element</span>
                   <Input
                     value={row.element}
                     onChange={(e) => updateRowField(row.rowId, "element", e.target.value)}
@@ -512,9 +509,9 @@ function AddSubmissionForm({
                 </div>
 
                 <div className="col-span-2 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">
                     Work Description
-                  </label>
+                  </span>
                   <Input
                     value={row.workDescription}
                     onChange={(e) => updateRowField(row.rowId, "workDescription", e.target.value)}
@@ -524,7 +521,7 @@ function AddSubmissionForm({
                 </div>
 
                 <div className="col-span-1 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Weight *</label>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Weight *</span>
                   <Input
                     type="number"
                     min="0"
@@ -537,7 +534,7 @@ function AddSubmissionForm({
                 </div>
 
                 <div className="col-span-1 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Status</label>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Status</span>
                   <Select
                     value={row.status}
                     onValueChange={(val) => updateRowField(row.rowId, "status", val)}
@@ -555,7 +552,7 @@ function AddSubmissionForm({
 
                 <div className="col-span-1 flex items-center justify-around gap-2 pb-2">
                   <div className="flex flex-col items-center gap-1">
-                    <label className="text-[9px] font-bold text-slate-500 uppercase">Acc</label>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase">Acc</span>
                     <Checkbox
                       checked={row.accessoriesEnabled}
                       onCheckedChange={(val) =>
@@ -564,14 +561,14 @@ function AddSubmissionForm({
                     />
                   </div>
                   <div className="flex flex-col items-center gap-1">
-                    <label className="text-[9px] font-bold text-slate-500 uppercase">Cpl</label>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase">Cpl</span>
                     <Checkbox
                       checked={row.couplersEnabled}
                       onCheckedChange={(val) => updateRowField(row.rowId, "couplersEnabled", !!val)}
                     />
                   </div>
                   <div className="flex flex-col items-center gap-1">
-                    <label className="text-[9px] font-bold text-slate-500 uppercase">Mesh</label>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase">Mesh</span>
                     <Checkbox
                       checked={row.meshListEnabled}
                       onCheckedChange={(val) => updateRowField(row.rowId, "meshListEnabled", !!val)}
@@ -1052,11 +1049,9 @@ function AddSubmissionForm({
 function SubmissionsTab({
   items,
   setItems,
-  onAddView,
 }: {
   items: Submission[];
   setItems: React.Dispatch<React.SetStateAction<Submission[]>>;
-  onAddView: () => void;
 }) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(30);
@@ -2178,23 +2173,37 @@ export default function SubmissionsInteractive() {
       .then((data) => {
         if (cancelled) return;
         const tasks = Array.isArray(data?.initialTasks) ? data.initialTasks : [];
-        const mapped = tasks.map((task: any, index: number) => ({
-          id: Number(task.id || task._id || index + 1),
-          selected: false,
-          projectName: task.project || task.teamName || "No project",
-          drawNo: String(task.id || task._id || `TASK-${index + 1}`),
-          prefix: "",
-          element: task.title || "Untitled task",
-          description: task.description || "",
-          weight: task.priority || "N/A",
-          status: normalizeSubmissionStatus(task.status),
-          accessories: true,
-          couplers: true,
-          meshList: true,
-          accessoriesList: [],
-          couplersList: [],
-          meshListItems: [],
-        }));
+        const mapped = tasks.map(
+          (
+            task: {
+              id?: unknown;
+              _id?: unknown;
+              project?: string;
+              teamName?: string;
+              title?: string;
+              description?: string;
+              priority?: string;
+              status?: string;
+            },
+            index: number,
+          ) => ({
+            id: index + 1,
+            selected: false,
+            projectName: task.project || task.teamName || "No project",
+            drawNo: String(task.id || task._id || `TASK-${index + 1}`),
+            prefix: "",
+            element: task.title || "Untitled task",
+            description: task.description || "",
+            weight: task.priority || "N/A",
+            status: normalizeSubmissionStatus(task.status),
+            accessories: true,
+            couplers: true,
+            meshList: true,
+            accessoriesList: [],
+            couplersList: [],
+            meshListItems: [],
+          }),
+        );
         setItems(mapped);
       })
       .catch(() => {
@@ -2296,11 +2305,7 @@ export default function SubmissionsInteractive() {
               </CardContent>
             </Card>
           ) : (
-            <SubmissionsTab
-              items={items}
-              setItems={setItems}
-              onAddView={() => setPageView("add")}
-            />
+            <SubmissionsTab items={items} setItems={setItems} />
           )}
         </TabsContent>
       </Tabs>
